@@ -202,7 +202,7 @@ public class IdsToFilter
 	{
 		if (noValue)
 		{
-			return Stream.empty();
+			return Stream.of(this);
 		}
 		else if (singleValue != null)
 		{

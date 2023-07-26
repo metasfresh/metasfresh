@@ -1,25 +1,15 @@
 package de.metas.rest_api.bpartner_pricelist;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.CurrencyCode;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.productprice.ProductPriceRepository;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
-import de.metas.product.ProductId;
-import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePrice;
-import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.uom.UomId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
@@ -34,14 +24,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyCode;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePrice;
+import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
+import de.metas.tax.api.TaxCategoryId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -84,7 +82,7 @@ public class BpartnerPriceListRestControllerTest
 
 		createMasterData();
 
-		restController = new BpartnerPriceListRestController(new BpartnerPriceListServicesFacade(new ProductPriceRepository(new ProductTaxCategoryService(new ProductTaxCategoryRepository()))));
+		restController = new BpartnerPriceListRestController(new BpartnerPriceListServicesFacade());
 	}
 
 	private void createMasterData()
@@ -251,7 +249,6 @@ public class BpartnerPriceListRestControllerTest
 		productPrice.setM_Product_ID(productId.getRepoId());
 		productPrice.setPriceStd(BigDecimal.valueOf(price));
 		productPrice.setC_TaxCategory_ID(taxCategoryId.getRepoId());
-		productPrice.setC_UOM_ID(UomId.EACH.getRepoId());
 		saveRecord(productPrice);
 	}
 }

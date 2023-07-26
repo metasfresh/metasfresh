@@ -1,21 +1,23 @@
 package de.metas.bpartner;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import lombok.Getter;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_BPartner;
-
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_BPartner;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,7 +47,7 @@ public enum ShipmentAllocationBestBeforePolicy implements ReferenceListAwareEnum
 
 	Newest_First(X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First);
 
-	public static final ReferenceId AD_REFERENCE_ID = ReferenceId.ofRepoId(X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID);
+	public static final int AD_REFERENCE_ID = X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID;
 
 	@Getter
 	private final String code;
@@ -90,14 +92,14 @@ public enum ShipmentAllocationBestBeforePolicy implements ReferenceListAwareEnum
 	{
 		if (this == Expiring_First)
 		{
-			final LocalDate bestBefore1Effective = CoalesceUtil.coalesceNotNull(bestBefore1, LocalDate.MAX);
-			final LocalDate bestBefore2Effective = CoalesceUtil.coalesceNotNull(bestBefore2, LocalDate.MAX);
+			final LocalDate bestBefore1Effective = CoalesceUtil.coalesce(bestBefore1, LocalDate.MAX);
+			final LocalDate bestBefore2Effective = CoalesceUtil.coalesce(bestBefore2, LocalDate.MAX);
 			return bestBefore1Effective.compareTo(bestBefore2Effective);
 		}
 		else if (this == Newest_First)
 		{
-			final LocalDate bestBefore1Effective = CoalesceUtil.coalesceNotNull(bestBefore1, LocalDate.MIN);
-			final LocalDate bestBefore2Effective = CoalesceUtil.coalesceNotNull(bestBefore2, LocalDate.MIN);
+			final LocalDate bestBefore1Effective = CoalesceUtil.coalesce(bestBefore1, LocalDate.MIN);
+			final LocalDate bestBefore2Effective = CoalesceUtil.coalesce(bestBefore2, LocalDate.MIN);
 			return -1 * bestBefore1Effective.compareTo(bestBefore2Effective);
 		}
 		else

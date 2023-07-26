@@ -11,7 +11,6 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 
-import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.user.UserId;
@@ -41,13 +40,13 @@ import lombok.NonNull;
 
 public class DataEntryRecordTestConstants
 {
-	public static final LocalDate DATE = LocalDate.of(2019/* year */, 2/* month */, 12/* dayOfMonth */);
+	public static final LocalDate DATE = LocalDate.of(2019/* year */, 02/* month */, 12/* dayOfMonth */);
 
-	public static final ZonedDateTime CREATED = ZonedDateTime.of(2019/* year */, 2/* month */, 12/* dayOfMonth */, 13/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
+	public static final ZonedDateTime CREATED = ZonedDateTime.of(2019/* year */, 02/* month */, 12/* dayOfMonth */, 13/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
 
-	public static final ZonedDateTime UPDATED = ZonedDateTime.of(2019/* year */, 2/* month */, 12/* dayOfMonth */, 14/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
+	public static final ZonedDateTime UPDATED = ZonedDateTime.of(2019/* year */, 02/* month */, 12/* dayOfMonth */, 14/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
 
-	public static final CreatedUpdatedInfo CREATED_UPDATED_INFO = CreatedUpdatedInfo
+	public static final DataEntryCreatedUpdatedInfo CREATED_UPDATED_INFO = DataEntryCreatedUpdatedInfo
 			.createNew(UserId.ofRepoId(10), CREATED)
 			.updated(UserId.ofRepoId(20), UPDATED);
 
@@ -71,12 +70,12 @@ public class DataEntryRecordTestConstants
 	private static String loadJson()
 	{
 		final URL url = Resources.getResource("de/metas/dataentry/data/DataEntryRecordTestConstants_SIMPLE_DATA_ENTRY_FIELD_DATA.json");
-		final String expectedString;
+		String expectedString;
 		try
 		{
 			expectedString = Resources.toString(url, Charsets.UTF_8);
 		}
-		catch (final IOException e)
+		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}

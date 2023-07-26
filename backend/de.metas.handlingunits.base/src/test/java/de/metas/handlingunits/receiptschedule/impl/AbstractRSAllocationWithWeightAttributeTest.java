@@ -39,8 +39,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
-import de.metas.interfaces.I_C_DocType;
-import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -49,21 +47,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Base class for quickly setting up tests with RS-HU-WeightAttribute allocations & operations
@@ -100,17 +91,6 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 	protected void afterInitialize()
 	{
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
-
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
-
-		// Setup required Doctypes
-		{
-			purchaseOrderDocType = InterfaceWrapperHelper.create(Env.getCtx(), I_C_DocType.class, ITrx.TRXNAME_None);
-			purchaseOrderDocType.setDocBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder);
-			purchaseOrderDocType.setAD_Org_ID(0);
-			saveRecord(purchaseOrderDocType);
-		}
 
 		//
 		// Important! We don't want the HUContext to rebuild itself when it's duplicated
@@ -153,6 +133,10 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		// Create WeightNet Adjuster instance for testing
 		rsNetWeightAdjuster = new HUReceiptScheduleWeightNetAdjuster(huContext);
 
+		//
+		// Misc
+		// NOT (we don't care): enabling strict values because we want to make sure that only defined fields are used
+		// POJOWrapper.getWrapper(rs).setStrictValues(true);
 	}
 
 	protected I_M_ReceiptSchedule createReceiptSchedule(final BigDecimal qty)
@@ -182,7 +166,6 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		{
 			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class, receiptSchedule);
 			order.setIsSOTrx(false); // purchase
-			order.setC_DocType_ID(purchaseOrderDocType.getC_DocType_ID());
 			InterfaceWrapperHelper.save(order);
 
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, receiptSchedule);
@@ -221,8 +204,6 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 
 		return receiptSchedule;
 	}
-
-	protected I_C_DocType purchaseOrderDocType;
 
 	/**
 	 * Initialize Receipt Schedule HU Allocations for given HUs

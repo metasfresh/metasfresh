@@ -31,7 +31,6 @@
  import de.metas.currency.CurrencyPrecision;
  import de.metas.document.engine.DocStatus;
  import de.metas.logging.LogManager;
- import de.metas.money.CurrencyId;
  import de.metas.order.IOrderBL;
  import de.metas.order.IOrderDAO;
  import de.metas.order.IOrderLineBL;
@@ -50,7 +49,6 @@
  import de.metas.util.Loggables;
  import de.metas.util.Services;
  import lombok.NonNull;
- import org.adempiere.model.InterfaceWrapperHelper;
  import org.compiere.model.I_C_Order;
  import org.compiere.model.I_C_OrderLine;
  import org.compiere.util.TimeUtil;
@@ -141,7 +139,6 @@
 									.vendorBPartnerId(BPartnerId.ofRepoId(mediatedOrder.getC_BPartner_ID()))
 									.orderDateAcct(Objects.requireNonNull(TimeUtil.asLocalDate(mediatedOrder.getDateAcct(), orgZoneId)))
 									.updated(TimeUtil.asInstantNonNull(mediatedOrder.getUpdated()))
-									.currencyId(CurrencyId.ofRepoId(mediatedOrder.getC_Currency_ID()))
 									.mediatedOrderLines(mediatedOrderLines)
 									.build());
 	 }
@@ -155,14 +152,11 @@
 			 return Optional.empty();
 		 }
 
-		 final Quantity orderedQty = orderLineBL.getQtyOrdered(InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class));
-
 		 return Optional.of(MediatedOrderLine.builder()
 									.id(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 									.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 									.updated(Objects.requireNonNull(TimeUtil.asInstant(orderLine.getUpdated())))
 									.invoicedCommissionPoints(getCommissionPoints(orderLine, isTaxIncluded))
-									.orderedQty(orderedQty)
 									.build());
 	 }
 
@@ -177,7 +171,14 @@
 		 final Tax taxRecord = taxDAO.getTaxById(orderLine.getC_Tax_ID());
 		 final CurrencyPrecision precision = orderLineBL.extractPricePrecision(orderLine);
 
-		 final Quantity orderedQtyPriceUOM = getOrderedQtyInPriceUOM(orderLine);
+		 final UomId stockUOMId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+		 final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
+		 final Quantity orderedQtyStock = Quantity.of(orderLine.getQtyOrdered(), uomDao.getById(stockUOMId));
+
+		 final Quantity orderedQtyPriceUOM = priceUOMId != null
+				 ? uomConversionService.convertQuantityTo(orderedQtyStock, ProductId.ofRepoId(orderLine.getM_Product_ID()), priceUOMId)
+				 : orderedQtyStock;
+
 		 final BigDecimal priceForOrderedQty = orderedQtyPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual());
 
 		 final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(
@@ -191,19 +192,7 @@
 	 private boolean hasTheRightStatus(@NonNull final DocStatus orderDocStatus)
 	 {
 		 return orderDocStatus.isCompleted()
-				 || orderDocStatus.isInProgress()
+				 || orderDocStatus.isInProgress() // we need to consider this status for the case that a completed order is reactivated
 				 || orderDocStatus.isClosed();
-	 }
-
-	 @NonNull
-	 private Quantity getOrderedQtyInPriceUOM(@NonNull final I_C_OrderLine orderLine)
-	 {
-		 final UomId stockUOMId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		 final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
-		 final Quantity orderedQtyStock = Quantity.of(orderLine.getQtyOrdered(), uomDao.getById(stockUOMId));
-
-		 return priceUOMId != null
-				 ? uomConversionService.convertQuantityTo(orderedQtyStock, ProductId.ofRepoId(orderLine.getM_Product_ID()), priceUOMId)
-				 : orderedQtyStock;
 	 }
  }

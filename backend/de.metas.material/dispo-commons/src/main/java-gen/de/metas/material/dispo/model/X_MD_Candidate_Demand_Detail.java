@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implements I_MD_Candidate_Demand_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -50761220L;
+	private static final long serialVersionUID = 224168650L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Demand_Detail (Properties ctx, int MD_Candidate_Demand_Detail_ID, String trxName)
@@ -184,20 +184,5 @@ public class X_MD_Candidate_Demand_Detail extends org.compiere.model.PO implemen
 	{
 		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setM_InOutLine_ID (final int M_InOutLine_ID)
-	{
-		if (M_InOutLine_ID < 1)
-			set_Value (COLUMNNAME_M_InOutLine_ID, null);
-		else
-			set_Value (COLUMNNAME_M_InOutLine_ID, M_InOutLine_ID);
-	}
-
-	@Override
-	public int getM_InOutLine_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_M_InOutLine_ID);
 	}
 }

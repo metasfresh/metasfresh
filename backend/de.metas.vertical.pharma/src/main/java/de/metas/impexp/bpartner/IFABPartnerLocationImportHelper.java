@@ -1,7 +1,21 @@
 package de.metas.impexp.bpartner;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
@@ -11,17 +25,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-
-import javax.annotation.Nullable;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -55,7 +58,7 @@ import java.util.stream.Collectors;
 			.thenComparing(Address::getPobox)
 			.thenComparingInt(Address::getCounrytId);
 
-	@Nullable public I_C_BPartner_Location importRecord(
+	final @Nullable public I_C_BPartner_Location importRecord(
 			@NonNull final I_I_Pharma_BPartner importRecord,
 			@NonNull final List<I_I_Pharma_BPartner> previousImportRecordsForSameBPartner)
 	{
@@ -149,9 +152,11 @@ import java.util.stream.Collectors;
 			@NonNull final I_I_Pharma_BPartner importRecord,
 			@NonNull final List<I_I_Pharma_BPartner> previousImportRecordsForSameBPartner)
 	{
-		return previousImportRecordsForSameBPartner.stream()
+		final List<I_I_Pharma_BPartner> alreadyImportedBPAddresses = previousImportRecordsForSameBPartner.stream()
 				.filter(createEqualAddressFilter(importRecord))
 				.collect(Collectors.toList());
+
+		return alreadyImportedBPAddresses;
 	}
 
 	private Predicate<I_I_Pharma_BPartner> createEqualAddressFilter(@NonNull final I_I_Pharma_BPartner importRecord)
@@ -166,17 +171,22 @@ import java.util.stream.Collectors;
 	}
 
 	@Value
-	public static class Address
+	public class Address
 	{
-		int counrytId;
-		@Nullable String city;
-		@Nullable String address1;
-		@Nullable String address2;
-		@Nullable String postal;
-		@Nullable String pobox;
-		int bpLocationId;
+		final int counrytId;
+		@Nullable
+		final String city;
+		@Nullable
+		final String address1;
+		@Nullable
+		final String address2;
+		@Nullable
+		final String postal;
+		@Nullable
+		final String pobox;;
+		final int bpLocationId;
 
-		@Builder
+		@Builder(builderMethodName = "builder")
 		public Address(int counrytId, String city, String address1, String address2, String postal, String pobox, int bpLocationId)
 		{
 			this.counrytId = counrytId;
@@ -268,7 +278,7 @@ import java.util.stream.Collectors;
 	}
 
 	@VisibleForTesting
-	String buildAddress1(@NonNull final I_I_Pharma_BPartner importRecord)
+	protected String buildAddress1(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00str()))
@@ -296,7 +306,7 @@ import java.util.stream.Collectors;
 	}
 
 	@VisibleForTesting
-	String buildAddress2(@NonNull final I_I_Pharma_BPartner importRecord)
+	protected String buildAddress2(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00hnrb()))
@@ -316,7 +326,7 @@ import java.util.stream.Collectors;
 	}
 
 	@VisibleForTesting
-	String buildPOBox(@NonNull final I_I_Pharma_BPartner importRecord)
+	protected String buildPOBox(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (!Check.isEmpty(importRecord.getb00plzpf1()))

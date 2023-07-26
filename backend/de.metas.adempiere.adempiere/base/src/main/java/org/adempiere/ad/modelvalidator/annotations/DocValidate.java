@@ -27,6 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
+
 /**
  * Indicates that the annotated method shall be triggered on a particular document action model validator event.
  *
@@ -47,7 +49,7 @@ public @interface DocValidate
 	/**
 	 * On which timings shall we call the annotated methods.
 	 *
-	 * For more information about timings, please check {@link org.compiere.model.ModelValidator} values.
+	 * For more information about timings, please check {@link DocTimingType#getTiming()} values.
 	 *
 	 * At least one event shall be specified.
 	 */

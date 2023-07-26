@@ -36,7 +36,7 @@ import org.compiere.util.Evaluatee;
  */
 public interface IExpressionEvaluator<ET extends IExpression<V>, V>
 {
-	enum OnVariableNotFound
+	public enum OnVariableNotFound
 	{
 		/**
 		 * Use default value for unparsed token. This means:
@@ -71,7 +71,10 @@ public interface IExpressionEvaluator<ET extends IExpression<V>, V>
 	}
 
 	/**
-
+	 * 
+	 * @param ctx
+	 * @param expression
+	 * @param onVariableNotFound
 	 * @return resulting value or "no result" (which you could check it with {@link #isNoResult(Object)}.
 	 * @throws ExpressionEvaluationException in case evaluation failed.
 	 */

@@ -11,7 +11,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
@@ -517,7 +517,7 @@ public final class ViewColumnHelper
 			}
 		}
 
-		final LookupValue lookupValue = LookupDataSourceFactory.sharedInstance().listByAD_Reference_Value_ID(listReferenceId).findById(code);
+		final LookupValue lookupValue = LookupDataSourceFactory.instance.listByAD_Reference_Value_ID(listReferenceId.getRepoId()).findById(code);
 		if (lookupValue == null)
 		{
 			return StringLookupValue.unknown(code.toString());

@@ -22,7 +22,6 @@
 
 package de.metas.bpartner.quick_input.service;
 
-import de.metas.bpartner.attributes.related.service.BpartnerRelatedRecordsRepository;
 import de.metas.bpartner.attributes.service.BPartnerAttributesRepository;
 import de.metas.bpartner.attributes.service.BPartnerContactAttributesRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -33,14 +32,9 @@ import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrate
 import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.bpartner.user.role.repository.UserRoleRepository;
-import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.greeting.GreetingStandardType;
-import de.metas.user.UserDefaultAttributesRepository;
-import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import lombok.NonNull;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -87,16 +81,12 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService = new BPartnerQuickInputService(
 				new BPartnerQuickInputRepository(),
 				new BPartnerQuickInputAttributesRepository(),
-				new BPartnerQuickInputRelatedRecordsRepository(),
 				new BPartnerContactQuickInputAttributesRepository(),
 				new BPartnerNameAndGreetingStrategies(Optional.of(strategies)),
-				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository()),
+				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository()),
 				new BPartnerAttributesRepository(),
-				new BpartnerRelatedRecordsRepository(),
-				new BPartnerContactAttributesRepository(),
-				new UserGroupRepository(),
-				NullCustomizedWindowInfoMapRepository.instance,
-				new UserDefaultAttributesRepository());
+				new BPartnerContactAttributesRepository()
+		);
 
 		greeting_MR = createGreeting(GreetingStandardType.MR);
 		greeting_MRS = createGreeting(GreetingStandardType.MRS);
@@ -123,7 +113,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 
 		refresh(partner);
 		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " + firstName);
-		assertThat(partner.getC_Greeting_ID()).isEqualTo(-1);
+		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
 	}
 
 	@Test
@@ -180,7 +170,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " And " + firstName2 + " " + lastname);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName+" And " + firstName2 + " "+ lastname);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
@@ -215,8 +205,8 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " "
-				+ lastname + " And " + firstName2 + " " + lastname2);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName+ " "
+														+ lastname+" And " + firstName2 + " "+ lastname2);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
@@ -242,10 +232,10 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	}
 
 	private I_C_BPartner_Contact_QuickInput createUser(final I_C_BPartner_QuickInput partner,
-													   final String firstName,
-													   final String lastname,
-													   final I_C_Greeting greeting,
-													   final boolean isMembership)
+			final String firstName,
+			final String lastname,
+			final I_C_Greeting greeting,
+			final boolean isMembership)
 	{
 		final I_C_BPartner_Contact_QuickInput user = newInstance(I_C_BPartner_Contact_QuickInput.class);
 		user.setC_BPartner_QuickInput_ID(partner.getC_BPartner_QuickInput_ID());

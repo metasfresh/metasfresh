@@ -1,20 +1,22 @@
 package org.adempiere.ad.housekeeping;
 
-import ch.qos.logback.classic.Level;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
-import de.metas.logging.LogManager;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Optional;
+
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -43,7 +45,7 @@ public class HouseKeepingService
 {
 	private static final Logger logger = LogManager.getLogger(HouseKeepingService.class);
 
-	public static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
+	private static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
 
 	private final ImmutableList<IStartupHouseKeepingTask> startupTasks;
 
@@ -61,7 +63,7 @@ public class HouseKeepingService
 		final boolean skipHouseKeeping = sysConfigBL.getBooleanValue(SYSCONFIG_SKIP_HOUSE_KEEPING, false);
 		if (skipHouseKeeping)
 		{
-			logger.warn("SysConfig {} = {} => skipping execution of the housekeeping tasks", SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping);
+			logger.warn("SysConfig {} = {} => skipping execution of the housekeeping tasks", new Object[] { SYSCONFIG_SKIP_HOUSE_KEEPING, skipHouseKeeping });
 			return;
 		}
 
@@ -69,7 +71,7 @@ public class HouseKeepingService
 		final Stopwatch allTasksWatch = Stopwatch.createStarted();
 
 		final ILoggable loggable = Loggables.logback(logger, Level.INFO);
-		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(loggable);)
+		try (final IAutoCloseable temporaryLoggable = Loggables.temporarySetLoggable(loggable);)
 		{
 			for (final IStartupHouseKeepingTask task : startupTasks)
 			{
@@ -92,9 +94,9 @@ public class HouseKeepingService
 					task.executeTask();
 					logger.info("Finished executing task {}; elapsed time={}", taskName, currentTaskWatch.stop());
 				}
-				catch (final Exception e)
+				catch (Exception e)
 				{
-					logger.warn("Failed to execute task {}; skipped; elapsed time={}; exception={}", taskName, currentTaskWatch.stop(), e);
+					logger.warn("Failed to execute task {}; skipped; elapsed time={}", taskName, e, currentTaskWatch.stop());
 				}
 			}
 		}

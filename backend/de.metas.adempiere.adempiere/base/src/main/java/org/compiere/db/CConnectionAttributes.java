@@ -88,10 +88,8 @@ public final class CConnectionAttributes
 
 	@Builder.Default
 	private String dbName = "metasfresh";
-	@Builder.Default
-	private String dbUid = "metasfresh";
-	@Builder.Default
-	private String dbPwd = "metasfresh";
+	private String dbUid;
+	private String dbPwd;
 
 	/**
 	 * Builds connection attributes string representation.

@@ -42,8 +42,8 @@ public class JSONDocumentFieldTest
 	@Test
 	public void test_deserialize_PreliminaryTest() throws Exception
 	{
-		final JSONDocumentField field = new JSONDocumentField("field1")
-				.setWidgetType(null); // N/A
+		final JSONLayoutWidgetType jsonWidgetType = null; // N/A
+		final JSONDocumentField field = new JSONDocumentField("field1", jsonWidgetType);
 
 		final String json = jsonObjectMapper.writeValueAsString(field);
 

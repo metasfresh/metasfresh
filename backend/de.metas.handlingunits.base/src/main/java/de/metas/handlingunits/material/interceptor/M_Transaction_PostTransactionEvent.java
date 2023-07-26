@@ -82,7 +82,7 @@ public class M_Transaction_PostTransactionEvent
 		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted);
 		for (final MaterialEvent event : events)
 		{
-			materialEventService.enqueueEventNow(event);
+			materialEventService.postEventAsync(event);
 		}
 	}
 }

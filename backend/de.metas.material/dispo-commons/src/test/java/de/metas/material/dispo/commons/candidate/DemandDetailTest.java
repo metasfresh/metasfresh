@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons.candidate;
 
-import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static java.math.BigDecimal.TEN;

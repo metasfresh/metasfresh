@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -60,7 +60,7 @@ public class PickingHURowsRepositoryTest
 				.shipmentScheduleId(shipmentScheduleId2)
 				.build());
 
-		assertThat(query.getWarehouseIds()).containsExactly(warehouseId);
+		assertThat(query.getWarehouseId()).isEqualTo(warehouseId);
 		assertThat(query.getProductIds()).containsExactly(productId);
 	}
 

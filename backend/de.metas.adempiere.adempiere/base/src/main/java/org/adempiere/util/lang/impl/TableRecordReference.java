@@ -521,7 +521,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	public static <T> List<T> getModels(
-			@NonNull final Collection<? extends ITableRecordReference> references,
+			@NonNull final Collection<ITableRecordReference> references,
 			@NonNull final Class<T> modelClass)
 	{
 		return references

@@ -4,25 +4,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
-import de.metas.handlingunits.pporder.api.UpdateDraftReceiptCandidateRequest;
-import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreatePickedReceiptCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -31,26 +22,19 @@ import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemPartId;
 import de.metas.picking.service.PackingItems;
-import de.metas.picking.service.PickedHuAndQty;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.picking.service.impl.ShipmentSchedulesSupplier;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /*
@@ -77,10 +61,11 @@ import java.util.Set;
 
 /**
  * Process picking candidate.
- * <p>
+ *
  * The status will be changed from InProgress to Processed.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class ProcessHUsAndPickingCandidateCommand
 {
@@ -89,24 +74,12 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByPickFromHUId;
 	private final ImmutableSet<HuId> pickFromHuIds;
-	private final OnOverDelivery onOverDelivery;
-	@Nullable
-	private final PPOrderId ppOrderId;
-
-	//
-	// State
-	private final ShipmentSchedulesSupplier shipmentSchedulesSupplier;
-	private final Map<HuId, PickedHuAndQty> transactionedHus = new HashMap<>();
-
-	private static final AdMessageKey MSG_ONLY_CLEARED_HUs_CAN_BE_PICKED = AdMessageKey.of("OnlyClearedHusCanBePicked");
+	private final boolean allowOverDelivery;
 
 	@Builder
 	private ProcessHUsAndPickingCandidateCommand(
@@ -115,11 +88,10 @@ public class ProcessHUsAndPickingCandidateCommand
 			//
 			@NonNull final List<PickingCandidate> pickingCandidates,
 			@NonNull @Singular final Set<HuId> additionalPickFromHuIds,
-			@NonNull final OnOverDelivery onOverDelivery,
-			@Nullable final PPOrderId ppOrderId)
+			final boolean allowOverDelivery)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
-		for (final PickingCandidate pickingCandidate : pickingCandidates)
+		for (PickingCandidate pickingCandidate : pickingCandidates)
 		{
 			pickingCandidate.assertDraft();
 			if (!pickingCandidate.getPickFrom().isPickFromHU())
@@ -128,7 +100,6 @@ public class ProcessHUsAndPickingCandidateCommand
 			}
 		}
 
-		validateClearedHUs(pickingCandidates, additionalPickFromHuIds);
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
@@ -136,18 +107,12 @@ public class ProcessHUsAndPickingCandidateCommand
 				pickingCandidates,
 				pickingCandidate -> pickingCandidate.getPickFrom().getHuId());
 
-		this.pickFromHuIds = ImmutableSet.<HuId>builder()
+		this.pickFromHuIds = ImmutableSet.<HuId> builder()
 				.addAll(pickingCandidatesByPickFromHUId.keySet())
 				.addAll(additionalPickFromHuIds)
 				.build();
 
-		this.onOverDelivery = onOverDelivery;
-
-		this.ppOrderId = ppOrderId;
-
-		this.shipmentSchedulesSupplier = ShipmentSchedulesSupplier.builder()
-				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
-				.build();
+		this.allowOverDelivery = allowOverDelivery;
 	}
 
 	public ImmutableList<PickingCandidate> perform()
@@ -155,61 +120,9 @@ public class ProcessHUsAndPickingCandidateCommand
 		allocateHUsToShipmentSchedule();
 		destroyEmptySourceHUs();
 
-		updateAndCreateReceipt();
+		final ImmutableList<PickingCandidate> processedPickingCandidates = changeStatusToProcessedAndSave();
 
-		return changeStatusToProcessedAndSave();
-	}
-
-	private void updateAndCreateReceipt()
-	{
-		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
-		pickingCandidates.forEach(this::updateAnCreateManufacturingReceiptCandidatesForPickingCandidate);
-	}
-
-	private void updateAnCreateManufacturingReceiptCandidatesForPickingCandidate(final PickingCandidate pc)
-	{
-		if (ppOrderId == null)
-		{
-			return;
-		}
-
-
-		final PickedHuAndQty item = getPickedHuAndQty(pc);
-		if (item != null)
-		{
-			final HuId pickedHUId = item.getPickedHUId();
-			final HuId orignalHUId = item.getOriginalHUId();
-			if (orignalHUId.getRepoId() != pickedHUId.getRepoId())
-			{
-				// create receipt for the picked HU after split
-				CreatePickedReceiptCommand.builder()
-						.receiveFromHUId(pickedHUId)
-						.movementDate(SystemTime.asZonedDateTime())
-						.qtyToReceive(item.getQtyPicked())
-						.orderId(ppOrderId)
-						.build()
-						.execute();
-
-				// update qty for the original HU
-				updateManufacturingReceiptCandidate(item);
-			}
-
-		}
-	}
-
-	private void updateManufacturingReceiptCandidate(@NonNull final PickedHuAndQty item)
-	{
-		final HuId huId = item.getOriginalHUId();
-		final Quantity qtyToUpdate = item.getQtyToPick().subtract(item.getQtyPicked());
-
-		final UpdateDraftReceiptCandidateRequest request = UpdateDraftReceiptCandidateRequest.builder()
-				.pickingOrderId(Objects.requireNonNull(ppOrderId))
-				.huID(huId)
-				.qtyReceived(qtyToUpdate)
-				.build();
-
-		huPPOrderQtyBL.updateDraftReceiptCandidate(request);
-
+		return processedPickingCandidates;
 	}
 
 	private void allocateHUsToShipmentSchedule()
@@ -228,14 +141,11 @@ public class ProcessHUsAndPickingCandidateCommand
 		final List<IPackingItem> itemsToPack = createItemsToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		itemsToPack.forEach(itemToPack -> {
-			final HU2PackingItemsAllocator allocator = HU2PackingItemsAllocator.builder()
-					.shipmentSchedulesSupplier(shipmentSchedulesSupplier)
+			HU2PackingItemsAllocator.builder()
 					.itemToPack(itemToPack)
-					.onOverDelivery(onOverDelivery)
+					.allowOverDelivery(allowOverDelivery)
 					.pickFromHU(hu)
 					.allocate();
-
-			transactionedHus.putAll(allocator.getPickedHUs());
 		});
 	}
 
@@ -247,7 +157,9 @@ public class ProcessHUsAndPickingCandidateCommand
 				.stream()
 				.map(this::createPackingItemPart)
 				.map(PackingItems::newPackingItem)
-				.forEach(item -> packingItems.merge(item.getGroupingKey(), item, IPackingItem::addPartsAndReturn));
+				.forEach(item -> {
+					packingItems.merge(item.getGroupingKey(), item, IPackingItem::addPartsAndReturn);
+				});
 
 		return ImmutableList.copyOf(packingItems.values());
 	}
@@ -304,46 +216,10 @@ public class ProcessHUsAndPickingCandidateCommand
 	private ImmutableList<PickingCandidate> changeStatusToProcessedAndSave()
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
-		pickingCandidates.forEach(pc -> pc.changeStatusToProcessed(getPickedHUId(pc)));
+
+		pickingCandidates.forEach(PickingCandidate::changeStatusToProcessed);
 		pickingCandidateRepository.saveAll(pickingCandidates);
 
 		return pickingCandidates;
-	}
-
-	@Nullable
-	private PickedHuAndQty getPickedHuAndQty(@NonNull final PickingCandidate pc)
-	{
-		final HuId initialHuId = pc.getPickFrom().getHuId();
-		return initialHuId != null ? transactionedHus.get(initialHuId) : null;
-	}
-
-	@Nullable
-	private HuId getPickedHUId(@NonNull final PickingCandidate pc)
-	{
-		final PickedHuAndQty item = getPickedHuAndQty(pc);
-		final HuId initialHuId = pc.getPickFrom().getHuId(); // allow fallback on picking candidate HU as picked HU
-		return item != null ? item.getPickedHUId() : initialHuId;
-	}
-
-	private void validateClearedHUs(@NonNull final List<PickingCandidate> pickingCandidates, @NonNull final Set<HuId> additionalPickFromHuIds)
-	{
-		final ImmutableSet.Builder<HuId> huIdCollector = ImmutableSet.builder();
-
-		pickingCandidates
-				.stream()
-				.map(PickingCandidate::getPickFrom)
-				.map(PickFrom::getHuId)
-				.filter(Objects::nonNull)
-				.forEach(huIdCollector::add);
-
-		final ImmutableSet<HuId> husToValidate = huIdCollector.addAll(additionalPickFromHuIds).build();
-
-		final boolean anyNotClearedHUs = husToValidate.stream()
-				.anyMatch(huId -> !handlingUnitsBL.isHUHierarchyCleared(huId));
-
-		if (anyNotClearedHUs)
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_ONLY_CLEARED_HUs_CAN_BE_PICKED));
-		}
 	}
 }

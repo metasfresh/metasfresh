@@ -1,17 +1,11 @@
 package de.metas.contracts.commission.salesrep.interceptor;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -25,8 +19,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -60,9 +52,6 @@ public class C_Invoice
 	private final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
 	private final DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
 	private final IBPartnerBL bpartnerBL;
-
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
 
 	public C_Invoice(
 			@NonNull final IBPartnerBL bpartnerBL,
@@ -154,20 +143,5 @@ public class C_Invoice
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_SalesRep_ID());
 		bpartnerBL.validateSalesRep(bPartnerId, salesRepId);
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Invoice.COLUMNNAME_C_BPartner_ID)
-	public void checkExcludedProducts(@NonNull final I_C_Invoice invoiceRecord)
-	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
-		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoiceRecord.isSOTrx());
-
-		invoiceDAO.retrieveLines(invoiceId)
-				.stream()
-				.map(I_C_InvoiceLine::getM_Product_ID)
-				.map(ProductId::ofRepoIdOrNull)
-				.filter(Objects::nonNull)
-				.forEach(productId -> partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, bPartnerId));
 	}
 }

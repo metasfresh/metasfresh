@@ -1,60 +1,54 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <artifactId>de.metas.parent</artifactId>
-        <groupId>de.metas</groupId>
-        <version>10.0.0</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
-    <groupId>de.metas.device.adempiere</groupId>
-    <artifactId>de.metas.device.adempiere</artifactId>
+	<groupId>de.metas.device.adempiere</groupId>
+	<artifactId>de.metas.device.adempiere</artifactId>
 
-    <properties>
-        <migration-sql-basedir>41-de.metas.device</migration-sql-basedir>
-    </properties>
+	<properties>
+		<migration-sql-basedir>41-de.metas.device</migration-sql-basedir>
+	</properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>de.metas.device.api</groupId>
-            <artifactId>de.metas.device.api</artifactId>
-            <version>10.0.0</version>
-        </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>de.metas.device.api</groupId>
+			<artifactId>de.metas.device.api</artifactId>
+			<version>10.0.0</version>
+		</dependency>
 
-        <dependency>
-            <groupId>de.metas.adempiere.adempiere</groupId>
-            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
-            <version>10.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>de.metas.adempiere.adempiere</groupId>
-            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
-            <version>10.0.0</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>de.metas.global_qrcode</groupId>
-            <artifactId>de.metas.global_qrcode.api</artifactId>
-            <version>10.0.0</version>
-        </dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+	</dependencies>
 
 </project>

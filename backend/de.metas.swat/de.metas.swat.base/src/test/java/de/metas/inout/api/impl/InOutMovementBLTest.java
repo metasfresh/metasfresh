@@ -1,11 +1,14 @@
 package de.metas.inout.api.impl;
 
-import de.metas.acct.api.ProductActivityProvider;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.interfaces.I_M_Movement;
-import de.metas.product.IProductActivityProvider;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.test.AdempiereTestHelper;
@@ -17,18 +20,16 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.Assertions;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.interfaces.I_M_Movement;
+import de.metas.product.IProductActivityProvider;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -57,7 +58,7 @@ public class InOutMovementBLTest
 
 	private static final BigDecimal THIRTEEN = new BigDecimal(13);
 	private static final BigDecimal THREEHUNDRED = new BigDecimal(300);
-	private I_M_Warehouse warehouseForIssues;
+	private org.adempiere.warehouse.model.I_M_Warehouse warehouseForIssues;
 	private I_M_Locator locatorForIssues;
 	private InOutMovementBL inOutMovementBL;
 
@@ -66,7 +67,7 @@ public class InOutMovementBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		warehouseForIssues = newInstanceOutOfTrx(I_M_Warehouse.class);
+		warehouseForIssues = newInstanceOutOfTrx(org.adempiere.warehouse.model.I_M_Warehouse.class);
 		warehouseForIssues.setIsIssueWarehouse(true);
 		warehouseForIssues.setName("Warehouse for Issues");
 		warehouseForIssues.setValue("Warehouse for Issues");
@@ -74,7 +75,7 @@ public class InOutMovementBLTest
 
 		locatorForIssues = createLocator(warehouseForIssues);
 
-		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		inOutMovementBL = new InOutMovementBL();
 	}
@@ -122,16 +123,16 @@ public class InOutMovementBLTest
 		// invoke the method under test
 		final List<I_M_Movement> movements = inOutMovementBL.generateMovementFromReceiptLines(receiptLines, LocatorId.ofRecordOrNull(receiptLocator));
 
-		Assertions.assertEquals(1, movements.size(), "1 movements shall be created");
+		Assert.assertEquals("1 movements shall be created", 1, movements.size());
 
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movements.get(0));
 
-		Assertions.assertEquals(1, movementLines.size(), "1 movement line shall be created");
+		Assert.assertEquals("1 movement line shall be created", 1, movementLines.size());
 
-		Assertions.assertEquals(receiptLine.getMovementQty(), movementLines.get(0).getMovementQty(), "Wrong qty in movement line");
-		Assertions.assertEquals(receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID(), "Wrong product in movement line");
-		Assertions.assertEquals(receiptLocator, movementLines.get(0).getM_Locator(), "Wrong locator in movement line");
-		Assertions.assertEquals(locatorForIssues, movementLines.get(0).getM_LocatorTo(), "Wrong locator To in movement line");
+		Assert.assertEquals("Wrong qty in movement line", receiptLine.getMovementQty(), movementLines.get(0).getMovementQty());
+		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID());
+		Assert.assertEquals("Wrong locator in movement line", receiptLocator, movementLines.get(0).getM_Locator());
+		Assert.assertEquals("Wrong locator To in movement line", locatorForIssues, movementLines.get(0).getM_LocatorTo());
 
 	}
 
@@ -155,15 +156,15 @@ public class InOutMovementBLTest
 		// invoke the method under test
 		final List<I_M_Movement> movements = inOutMovementBL.generateMovementFromReceiptLines(receiptLines, LocatorId.ofRecordOrNull(destinationLotator));
 
-		Assertions.assertEquals(1, movements.size(), "1 movements shall be created");
+		Assert.assertEquals("1 movements shall be created", 1, movements.size());
 
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movements.get(0));
 
-		Assertions.assertEquals(1, movementLines.size(), "1 movement line shall be created");
+		Assert.assertEquals("1 movement line shall be created", 1, movementLines.size());
 
-		Assertions.assertEquals(receiptLine.getMovementQty(), movementLines.get(0).getMovementQty(), "Wrong qty in movement line");
-		Assertions.assertEquals(receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID(), "Wrong product in movement line");
-		Assertions.assertEquals(receiptLocator, movementLines.get(0).getM_Locator(), "Wrong locator in movement line");
+		Assert.assertEquals("Wrong qty in movement line", receiptLine.getMovementQty(), movementLines.get(0).getMovementQty());
+		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID());
+		Assert.assertEquals("Wrong locator in movement line", receiptLocator, movementLines.get(0).getM_Locator());
 	}
 
 	@Test
@@ -183,16 +184,16 @@ public class InOutMovementBLTest
 		// invoke the method under test
 		final List<I_M_Movement> movements = inOutMovementBL.generateMovementFromReceiptLines(receiptLines, null);
 
-		Assertions.assertEquals(1, movements.size(), "1 movements shall be created");
+		Assert.assertEquals("1 movements shall be created", 1, movements.size());
 
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movements.get(0));
 
-		Assertions.assertEquals(1, movementLines.size(), "1 movement line shall be created");
+		Assert.assertEquals("1 movement line shall be created", 1, movementLines.size());
 
-		Assertions.assertEquals(receiptLine.getMovementQty(), movementLines.get(0).getMovementQty(), "Wrong qty in movement line");
-		Assertions.assertEquals(receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID(), "Wrong product in movement line");
-		Assertions.assertEquals(receiptLocator, movementLines.get(0).getM_Locator(), "Wrong locator in movement line");
-		Assertions.assertEquals(locatorForIssues, movementLines.get(0).getM_LocatorTo(), "Wrong locator To in movement line");
+		Assert.assertEquals("Wrong qty in movement line", receiptLine.getMovementQty(), movementLines.get(0).getMovementQty());
+		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID());
+		Assert.assertEquals("Wrong locator in movement line", receiptLocator, movementLines.get(0).getM_Locator());
+		Assert.assertEquals("Wrong locator To in movement line", locatorForIssues, movementLines.get(0).getM_LocatorTo());
 	}
 
 	/**
@@ -218,8 +219,8 @@ public class InOutMovementBLTest
 		final List<I_M_Movement> movements = inOutMovementBL.generateMovementFromReceiptLines(receiptLines, destinationId);
 		assertThat(movements).as("2 movements shall be created").hasSize(2);
 
-		Assertions.assertEquals(receipt, movements.get(0).getM_InOut(), "M_InOut_ID shall be set in the movements");
-		Assertions.assertEquals(receipt, movements.get(1).getM_InOut(), "M_InOut_ID shall be set in the movements");
+		Assert.assertEquals("M_InOut_ID shall be set in the movements", receipt, movements.get(0).getM_InOut());
+		Assert.assertEquals("M_InOut_ID shall be set in the movements", receipt, movements.get(1).getM_InOut());
 	}
 
 	private I_M_InOut createReceipt(final I_M_Locator receiptLocator)

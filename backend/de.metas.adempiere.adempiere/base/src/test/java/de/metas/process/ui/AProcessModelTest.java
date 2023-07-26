@@ -1,7 +1,6 @@
 package de.metas.process.ui;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
@@ -97,13 +96,6 @@ public class AProcessModelTest
 
 			@Override
 			public <T> List<T> getSelectedModels(final Class<T> modelClass)
-			{
-				throw new UnsupportedOperationException();
-			}
-
-			@NonNull
-			@Override
-			public <T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass)
 			{
 				throw new UnsupportedOperationException();
 			}

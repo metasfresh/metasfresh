@@ -1,36 +1,50 @@
 package de.metas.acct.api.impl;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.FactAcctQuery;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IFactAcctListenersService;
-import de.metas.document.engine.IDocument;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.List;
+import java.util.Properties;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
-import java.util.List;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IFactAcctListenersService;
+import de.metas.document.engine.IDocument;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class FactAcctDAO implements IFactAcctDAO
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
-
 	@Override
 	public I_Fact_Acct getById(final int factAcctId)
 	{
@@ -44,7 +58,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		factAcctListenersService.fireAfterUnpost(document);
+		Services.get(IFactAcctListenersService.class).fireAfterUnpost(document);
 
 		return countDeleted;
 	}
@@ -58,21 +72,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		factAcctListenersService.fireAfterUnpost(documentObj);
-
-		return countDeleted;
-	}
-
-	@Override
-	public int deleteForRecordRef(@NonNull final TableRecordReference recordRef)
-	{
-		final int adTableId = recordRef.getAD_Table_ID();
-		final int recordId = recordRef.getRecord_ID();
-		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
-				.create()
-				.deleteDirectly();
-
-		factAcctListenersService.fireAfterUnpost(recordRef);
+		Services.get(IFactAcctListenersService.class).fireAfterUnpost(documentObj);
 
 		return countDeleted;
 	}
@@ -89,30 +89,31 @@ public class FactAcctDAO implements IFactAcctDAO
 
 	private IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		return queryBL
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
 				.orderBy()
-				.addColumn(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID) // make sure we have a predictable order
+				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID) // make sure we have a predictable order
 				.endOrderBy();
 	}
 
 	@Override
-	public List<I_Fact_Acct> retrieveForDocumentLine(final String tableName, final int recordId, @NonNull final Object documentLine)
+	public List<I_Fact_Acct> retrieveForDocumentLine(final String tableName, final int recordId, final Object documentLine)
 	{
-		final int adTableId = adTableDAO.retrieveTableId(tableName);
+		Check.assumeNotNull(documentLine, "documentLine not null");
+		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		final int lineId = InterfaceWrapperHelper.getId(documentLine);
 
-		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL
+		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class, documentLine)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId);
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId);
 
 		// make sure we have a predictable order
 		queryBuilder.orderBy()
-				.addColumn(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID);
+				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID);
 
 		return queryBuilder.create().list();
 	}
@@ -132,66 +133,19 @@ public class FactAcctDAO implements IFactAcctDAO
 	public int updateActivityForDocumentLine(final Properties ctx, final int adTableId, final int recordId, final int lineId, final int activityId)
 	{
 		// Make sure we are updating the Fact_Acct records in a transaction
-		trxManager.assertThreadInheritedTrxExists();
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
-		return queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId)
-				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final int countUpdated = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId)
+				.addNotEqualsFilter(I_Fact_Acct.COLUMN_C_Activity_ID, activityId)
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
 				.execute();
-	}
 
-	@Override
-	public List<I_Fact_Acct> list(@NonNull final List<FactAcctQuery> queries)
-	{
-		final IQuery<I_Fact_Acct> query = queries.stream()
-				.map(this::toSqlQuery)
-				.reduce(IQuery.unionDistict())
-				.orElse(null);
-		if (query == null)
-		{
-			return ImmutableList.of();
-		}
-
-		return query.list();
-	}
-
-	@Override
-	public List<I_Fact_Acct> list(@NonNull final FactAcctQuery query)
-	{
-		return toSqlQuery(query).list();
-	}
-
-	private IQuery<I_Fact_Acct> toSqlQuery(@NonNull final FactAcctQuery query)
-	{
-		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
-				.orderBy(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID);
-
-		if (query.getAcctSchemaId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
-		}
-		if (!Check.isBlank(query.getAccountConceptualName()))
-		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, query.getAccountConceptualName());
-		}
-		if (query.getTableName() != null)
-		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableDAO.retrieveAdTableId(query.getTableName()));
-		}
-		if (query.getRecordId() > 0)
-		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, query.getRecordId());
-		}
-		if (query.getLineId() > 0)
-		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, query.getLineId());
-		}
-
-		return queryBuilder.create();
+		return countUpdated;
 	}
 }

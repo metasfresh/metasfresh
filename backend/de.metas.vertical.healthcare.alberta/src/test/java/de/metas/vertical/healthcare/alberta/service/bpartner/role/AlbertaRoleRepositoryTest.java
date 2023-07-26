@@ -22,28 +22,41 @@
 
 package de.metas.vertical.healthcare.alberta.service.bpartner.role;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRole;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleType;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(SnapshotExtension.class)
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+
 public class AlbertaRoleRepositoryTest
 {
 	private AlbertaRoleRepository albertaRoleRepository;
-	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		albertaRoleRepository =  new AlbertaRoleRepository();
+	}
+
+	@BeforeAll
+	public static void initStatic()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	public static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
@@ -59,6 +72,6 @@ public class AlbertaRoleRepositoryTest
 		final AlbertaRole result = albertaRoleRepository.save(role);
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 }

@@ -22,14 +22,12 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lock.api.ILock;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
+
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lock.api.ILock;
 
 /**
  * Helper used to tag {@link I_C_Invoice_Candidate} scheduled to recompute with a given tag or a newly generated tag.
@@ -70,6 +68,8 @@ public interface IInvoiceCandRecomputeTagger
 
 	/**
 	 * Delete given invoice candidates which were scheduled for recompute and are tagged with current tag.
+	 * 
+	 * @param invoiceCandidateIds
 	 */
 	void deleteTaggedAndInvalidateCache(Collection<Integer> invoiceCandidateIds);
 
@@ -97,6 +97,8 @@ public interface IInvoiceCandRecomputeTagger
 
 	/**
 	 * Consider only those invoice candidates which were tagged with given tag.
+	 * 
+	 * @param tag
 	 */
 	IInvoiceCandRecomputeTagger setTaggedWith(InvoiceCandRecomputeTag tag);
 
@@ -117,11 +119,14 @@ public interface IInvoiceCandRecomputeTagger
 
 	/**
 	 * Sets maximum number of invoice candidates to tag.
+	 * 
+	 * @param limit
 	 */
 	IInvoiceCandRecomputeTagger setLimit(int limit);
 
-	void setOnlyInvoiceCandidateIds(@NonNull InvoiceCandidateIdsSelection onlyInvoiceCandidateIds);
+	IInvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates);
 
-	@Nullable
-	InvoiceCandidateIdsSelection getOnlyInvoiceCandidateIds();
+	IInvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates);
+
+	boolean isOnlyC_Invoice_Candidate_IDs();
 }

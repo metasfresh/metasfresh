@@ -37,8 +37,8 @@ CREATE TABLE report.fresh_ADR_umsatzliste_bpartner_report
 	
 	startdate character varying(250),
 	enddate character varying(250),
-	ad_org_id numeric,
-    org character varying(250)
+	ad_org_id numeric
+	
 );
 
 
@@ -63,10 +63,8 @@ SELECT
 	 ,COALESCE ((SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $5), 'alle') AS attributes
 	 ,to_char($1, 'DD.MM.YYYY') AS Base_Period_Start
 	 ,to_char($2, 'DD.MM.YYYY') AS Base_Period_End
-	 ,um.ad_org_id
-     ,COALESCE((SELECT name FROM AD_Org WHERE $7 = AD_Org_ID AND isActive = 'Y'), 'Keine vorhanden') AS org
-
-FROM report.fresh_umsatzliste_bpartner_report(
+	 ,um.ad_org_id 
+	 FROM report.fresh_umsatzliste_bpartner_report(
 			$1,
 			$2,
 			 null, --$P{Comp_Period_Start},

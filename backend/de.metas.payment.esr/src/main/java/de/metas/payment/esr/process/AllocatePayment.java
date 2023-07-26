@@ -25,13 +25,15 @@ package de.metas.payment.esr.process;
  * #L%
  */
 
-import de.metas.allocation.api.IAllocationBL;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+
+import de.metas.allocation.api.IAllocationBL;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * @author cg
@@ -83,7 +85,10 @@ public class AllocatePayment extends de.metas.process.JavaProcess
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(getCtx(), p_C_Invoice_ID, I_C_Invoice.class, get_TrxName());
 		Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
 
-		return MSG_OK;
+		final boolean ignoreProcessed = false;
+		Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
+
+		return "OK";
 	}
 
 }

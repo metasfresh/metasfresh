@@ -122,15 +122,15 @@ public class X_Revolut_Payment_Export extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public void setSwiftCode (final @Nullable java.lang.String SwiftCode)
+	public void setBIC (final @Nullable java.lang.String BIC)
 	{
-		set_Value (COLUMNNAME_SwiftCode, SwiftCode);
+		set_Value (COLUMNNAME_BIC, BIC);
 	}
 
 	@Override
-	public java.lang.String getSwiftCode()
+	public java.lang.String getBIC()
 	{
-		return get_ValueAsString(COLUMNNAME_SwiftCode);
+		return get_ValueAsString(COLUMNNAME_BIC);
 	}
 
 	@Override

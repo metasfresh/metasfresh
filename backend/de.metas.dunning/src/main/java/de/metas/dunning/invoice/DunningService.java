@@ -1,27 +1,19 @@
 package de.metas.dunning.invoice;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.dunning.DunningDocId;
-import de.metas.dunning.api.IDunningDAO;
-import de.metas.dunning.model.I_C_DunningDoc;
-import de.metas.dunning.model.I_C_DunningDoc_Line;
-import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
-import de.metas.dunning.model.I_C_Dunning_Candidate;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import de.metas.dunning.DunningDocId;
+import de.metas.dunning.model.I_C_DunningDoc_Line;
+import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
+import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,9 +41,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 public class DunningService
 {
 
-	final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
-	final IBPartnerDAO partnersRepo = Services.get(IBPartnerDAO.class);
-
 	public List<I_C_Invoice> retrieveDunnedInvoices(@NonNull final DunningDocId dunningDocId)
 	{
 		return Services
@@ -60,33 +49,9 @@ public class DunningService
 				.addEqualsFilter(I_C_DunningDoc_Line.COLUMN_C_DunningDoc_ID, dunningDocId)
 				.andCollectChildren(I_C_DunningDoc_Line_Source.COLUMN_C_DunningDoc_Line_ID)
 				.andCollect(I_C_DunningDoc_Line_Source.COLUMN_C_Dunning_Candidate_ID)
-				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Invoice.class))
+				.addEqualsFilter(I_C_Dunning_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Invoice.class))
 				.andCollect(I_C_Dunning_Candidate.COLUMN_Record_ID, I_C_Invoice.class)
 				.create()
 				.list();
-	}
-
-	@Nullable
-	public String getLocationEmail(@NonNull final DunningDocId dunningDocId)
-	{
-		final I_C_DunningDoc dunningDocRecord = dunningDAO.getByIdInTrx(dunningDocId);
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(dunningDocRecord.getC_BPartner_ID());
-		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, dunningDocRecord.getC_BPartner_Location_ID()));
-
-		final String locationEmail = bpartnerLocation.getEMail();
-		if (!Check.isEmpty(locationEmail))
-		{
-			return locationEmail;
-		}
-
-		final BPartnerContactId dunningContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, dunningDocRecord.getC_Dunning_Contact_ID());
-
-		if (dunningContactId == null)
-		{
-			return null;
-		}
-
-		return partnersRepo.getContactLocationEmail(dunningContactId);
 	}
 }

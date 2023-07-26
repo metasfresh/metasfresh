@@ -1,21 +1,20 @@
 package org.eevolution.mrp.api.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
-import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
-import de.metas.event.IEventBusFactory;
 import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.material.event.MaterialEventObserver;
+import de.metas.logging.LogManager;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
@@ -23,10 +22,7 @@ import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
-import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.resource.ManufacturingResourceType;
-import de.metas.resource.ResourceService;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.util.Services;
@@ -42,7 +38,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
@@ -60,19 +55,18 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderDocBaseType;
-import org.eevolution.api.impl.ProductBOMService;
-import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.PPProductPlanningBuilder;
 import org.eevolution.util.ProductBOMBuilder;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -167,6 +161,7 @@ public class MRPTestHelper
 		this.docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 
 		setupContext();
+		setupMRPExecutorService();
 
 		registerModelValidators();
 
@@ -208,6 +203,11 @@ public class MRPTestHelper
 		SystemTime.setTimeSource(() -> _today.toInstant().toEpochMilli());
 	}
 
+	private void setupMRPExecutorService()
+	{
+		LogManager.setLoggerLevel(getMRPLogger(), Level.INFO);
+	}
+
 	private void createMasterData()
 	{
 		this.uomEach = createUOM("Ea");
@@ -218,7 +218,7 @@ public class MRPTestHelper
 		this.resourceType_Plants = createResourceType("Plants");
 		this.resourceType_Workcenters = createResourceType("Workcenters");
 
-		final I_S_Resource workcenter1 = createResource("workcenter1", ManufacturingResourceType.WorkCenter, resourceType_Workcenters);
+		final I_S_Resource workcenter1 = createResource("workcenter1", X_S_Resource.MANUFACTURINGRESOURCETYPE_WorkCenter, resourceType_Workcenters);
 		final ResourceId workcenter1Id = ResourceId.ofRepoId(workcenter1.getS_Resource_ID());
 
 		this.workflow_Standard = createWorkflow("Standard_MFG");
@@ -241,11 +241,11 @@ public class MRPTestHelper
 
 	private void createMasterData_WarehouseAndPlants()
 	{
-		this.plant01 = createResource("Plant01", ManufacturingResourceType.Plant, resourceType_Plants);
+		this.plant01 = createResource("Plant01", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, resourceType_Plants);
 		this.warehouse_plant01 = createWarehouse("Plant01_Warehouse01", adOrg01);
 		this.warehouse_plant01_locatorId = getDefaultLocatorId(warehouse_plant01);
 
-		this.plant02 = createResource("Plant02", ManufacturingResourceType.Plant, resourceType_Plants);
+		this.plant02 = createResource("Plant02", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, resourceType_Plants);
 		this.warehouse_plant02 = createWarehouse("Plant02_Warehouse01", adOrg01);
 
 		this.warehouse_picking01 = createWarehouse("Picking_Warehouse01", adOrg01);
@@ -260,8 +260,6 @@ public class MRPTestHelper
 	{
 		// FIXME: workaround to bypass org.adempiere.document.service.impl.PlainDocActionBL.isDocumentTable(String) failure
 		PlainDocumentBL.isDocumentTableResponse = false;
-
-		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 
 		final I_AD_Client client = null;
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
@@ -279,18 +277,14 @@ public class MRPTestHelper
 		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
 				materialEventConverter,
-				PlainEventBusFactory.newInstance(),
-				new MaterialEventObserver());
+				PlainEventBusFactory.newInstance());
 		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
 
 		return new org.eevolution.model.LiberoValidator(
 				ppOrderConverter,
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
-				new PPOrderBOMBL(),
-				new DDOrderLowLevelService(new DDOrderLowLevelDAO(), ResourceService.newInstanceForJUnitTesting()),
-				new ProductBOMVersionsDAO(),
-				new ProductBOMService(new ProductBOMVersionsDAO()));
+				new PPOrderBOMBL());
 	}
 
 	public Timestamp getToday()
@@ -353,12 +347,12 @@ public class MRPTestHelper
 
 	public I_S_Resource createResource(
 			final String name,
-			final ManufacturingResourceType manufacturingResourceType,
+			final String manufacturingResourceType,
 			final I_S_ResourceType resourceType)
 	{
 		final I_S_Resource resource = InterfaceWrapperHelper.newInstance(I_S_Resource.class, contextProvider);
 		resource.setIsManufacturingResource(true);
-		resource.setManufacturingResourceType(manufacturingResourceType.getCode());
+		resource.setManufacturingResourceType(manufacturingResourceType);
 		resource.setIsAvailable(true);
 		resource.setName(name);
 		resource.setValue(name);
@@ -395,7 +389,7 @@ public class MRPTestHelper
 
 	private static LocatorId getDefaultLocatorId(final I_M_Warehouse warehouse)
 	{
-		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	public I_C_UOM createUOM(final String name)
@@ -537,6 +531,11 @@ public class MRPTestHelper
 		InterfaceWrapperHelper.save(docType);
 	}
 
+	public void dumpMRPRecords(final String message)
+	{
+		MRPTracer.dumpMRPRecords(message);
+	}
+
 	public ProductBOMBuilder newProductBOM()
 	{
 		return new ProductBOMBuilder()
@@ -575,6 +574,11 @@ public class MRPTestHelper
 
 	}
 
+	public final Logger getMRPLogger()
+	{
+		return LogManager.getLogger(IMaterialPlanningContext.LOGGERNAME);
+	}
+
 	public I_PP_Order createPP_Order(
 			final I_PP_Product_BOM productBOM,
 			final String qtyOrderedStr,
@@ -598,15 +602,6 @@ public class MRPTestHelper
 		Services.get(IPPOrderDAO.class).save(ppOrder);
 
 		return ppOrder;
-	}
-
-	public I_PP_Product_BOMVersions createBOMVersions(final ProductId productId)
-	{
-		final I_PP_Product_BOMVersions bomVersions = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMVersions.class, contextProvider);
-		bomVersions.setM_Product_ID(productId.getRepoId());
-		bomVersions.setName("BOM Versions");
-		InterfaceWrapperHelper.save(bomVersions);
-		return bomVersions;
 	}
 
 	private void setCommonProperties(final I_PP_Order ppOrder)

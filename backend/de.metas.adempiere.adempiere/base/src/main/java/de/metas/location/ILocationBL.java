@@ -19,7 +19,7 @@ public interface ILocationBL extends ISingletonService
 	/**
 	 * Build address string based on given locationId and bpartner and user blocks
 	 * 
-	 * @implSpec task FRESH-119: transaction no longer needed in this method. Provide the location as object, not by its ID. This way we avoid unnecessary extra loading of the object based on id.
+	 * task FRESH-119: transaction no longer needed in this method. Provide the location as object, not by its ID. This way we avoid unnecessary extra loading of the object based on id.
 	 * 
 	 * @param bpartner - optional parameter; we need this for language
 	 *
@@ -41,6 +41,4 @@ public interface ILocationBL extends ISingletonService
 	 * @return new duplicated location
 	 */
 	I_C_Location duplicate(I_C_Location location);
-
-	CountryCode getCountryCodeByLocationId(@NonNull LocationId id);
 }

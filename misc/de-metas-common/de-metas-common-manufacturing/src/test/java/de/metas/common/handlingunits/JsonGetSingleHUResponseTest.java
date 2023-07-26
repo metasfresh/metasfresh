@@ -22,7 +22,6 @@
 
 package de.metas.common.handlingunits;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.common.JsonTestHelper;
 import org.junit.jupiter.api.Test;
 
@@ -33,42 +32,17 @@ class JsonGetSingleHUResponseTest
 	@Test
 	void testSerializeDeserialize()
 	{
-		final JsonHUAttributes attributes = JsonHUAttributes.builder()
-				.list(ImmutableList.of(
-						JsonHUAttribute.builder()
-								.code("StringAttribute")
-								.caption("string attribute caption")
-								.value("string value")
-								.build(),
-						JsonHUAttribute.builder()
-								.code("IntegerAttribute")
-								.caption("integer attribute caption")
-								.value(123)
-								.build(),
-						JsonHUAttribute.builder()
-								.code("BigDecimalAttribute")
-								.caption("BigDecimal attribute caption")
-								.value(new BigDecimal("123.45"))
-								.build(),
-						JsonHUAttribute.builder()
-								.code("BooleanAttribute")
-								.caption("Boolean attribute caption")
-								.value(true)
-								.build()
-				))
-				.build();
+		final JsonHUAttributes attributes = new JsonHUAttributes();
+		attributes.putAttribute("stringAttribute", "string value");
+		attributes.putAttribute("integerAttribute", 123);
+		attributes.putAttribute("numberAttribute", new BigDecimal("123.45"));
+		attributes.putAttribute("booleanAttribute", true);
 
 		JsonTestHelper.testSerializeDeserialize(
 				JsonGetSingleHUResponse.builder()
 						.result(JsonHU.builder()
 								.id("id")
 								.huStatus("huStatus")
-								.huStatusCaption("huStatusCaption")
-								.displayName("displayName")
-								.qrCode(JsonHUQRCode.builder()
-										.code("qrCode")
-										.displayable("displayableQRCode")
-										.build())
 								.warehouseValue("warehouseValue")
 								.locatorValue("locatorValue")
 								.product(JsonHUProduct.builder()
@@ -83,7 +57,7 @@ class JsonGetSingleHUResponseTest
 										.qty("44")
 										.uom("KGM")
 										.build())
-								.attributes2(attributes)
+								.attributes(attributes)
 								.build())
 						.build()
 		);

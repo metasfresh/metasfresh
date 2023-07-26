@@ -22,16 +22,17 @@ package de.metas.product.impl;
  * #L%
  */
 
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.product.IStorageBL;
-import de.metas.product.async.spi.impl.M_Storage_Add;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Properties;
+
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.MStorage;
 
-import java.math.BigDecimal;
-import java.util.Properties;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.product.IStorageBL;
+import de.metas.product.async.spi.impl.M_Storage_Add;
+import de.metas.util.Services;
 
 public class StorageBL implements IStorageBL
 {
@@ -106,7 +107,8 @@ public class StorageBL implements IStorageBL
 
 		// @formatter:off
 		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, M_Storage_Add.class)
-				.newWorkPackage()
+			.newBlock()
+				.newWorkpackage()
 				.bindToTrxName(trxName)
 				.parameters()
 					.setParameter(M_Storage_Add.WP_PARAM_M_Warehouse_ID, M_Warehouse_ID)
@@ -118,7 +120,7 @@ public class StorageBL implements IStorageBL
 					.setParameter(M_Storage_Add.WP_PARAM_diffQtyReserved, diffQtyReserved)
 					.setParameter(M_Storage_Add.WP_PARAM_diffQtyOrdered, diffQtyOrdered)
 				.end()
-				.buildAndEnqueue(); // @formatter:on
+				.build(); // @formatter:on
 	}
 
 	@Override

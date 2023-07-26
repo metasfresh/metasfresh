@@ -1,8 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import de.metas.ad_reference.ADRefListItem;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
@@ -31,7 +28,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -39,6 +36,8 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -81,11 +80,10 @@ import java.util.Set;
 public class WebuiHUTransformParametersFiller
 {
 	// services
-	private final ADReferenceService adReferenceService;
-	private final LookupDataSourceFactory lookupDataSourceFactory;
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUStatusBL statusBL = Services.get(IHUStatusBL.class);
+	private final transient IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL statusBL = Services.get(IHUStatusBL.class);
 
 	// Context
 	private final HUEditorView _view;
@@ -95,17 +93,12 @@ public class WebuiHUTransformParametersFiller
 	private final boolean _isMoveToDifferentWarehouseEnabled;
 
 	@Builder
-	private WebuiHUTransformParametersFiller(
-			@NonNull final ADReferenceService adReferenceService,
-			@NonNull LookupDataSourceFactory lookupDataSourceFactory,
-			@NonNull final HUEditorView view,
-			@NonNull final HUEditorRow selectedRow,
-			@Nullable final ActionType actionType,
-			final boolean checkExistingHUsInsideView,
-			final boolean isMoveToDifferentWarehouseEnabled)
+	private WebuiHUTransformParametersFiller(@NonNull final HUEditorView view,
+											 @NonNull final HUEditorRow selectedRow,
+											 @Nullable final ActionType actionType,
+											 final boolean checkExistingHUsInsideView,
+											 final boolean isMoveToDifferentWarehouseEnabled)
 	{
-		this.adReferenceService = adReferenceService;
-		this.lookupDataSourceFactory = lookupDataSourceFactory;
 		this._view = view;
 		this._selectedRow = selectedRow;
 		this._actionType = actionType;
@@ -192,8 +185,8 @@ public class WebuiHUTransformParametersFiller
 
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final I_AD_Process_Para processParameter = adProcessDAO.retrieveProcessParameter(processId, WEBUI_M_HU_Transform.PARAM_Action);
-		final ReferenceId actionsReferenceId = ReferenceId.ofRepoId(processParameter.getAD_Reference_Value_ID());
-		final Collection<ADRefListItem> allActiveActionItems = adReferenceService.retrieveListItems(actionsReferenceId);
+		final int actionsReferenceId = processParameter.getAD_Reference_Value_ID();
+		final Collection<ADRefListItem> allActiveActionItems = adReferenceDAO.retrieveListItems(actionsReferenceId);
 
 		final String adLanguage = Env.getAD_Language();
 
@@ -354,7 +347,7 @@ public class WebuiHUTransformParametersFiller
 			// TODO: cache the descriptor
 			// TODO: filter by TUs
 			// TODO: search by barcode too
-			final LookupDescriptor lookupDescriptor = lookupDataSourceFactory.getLookupDescriptorProviders().sql()
+			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
 					.setCtxTableName(null) // ctxTableName
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
@@ -411,7 +404,7 @@ public class WebuiHUTransformParametersFiller
 			// TODO: cache the descriptor
 			// TODO: filter by LUs
 			// TODO: search by barcode too
-			final LookupDescriptor lookupDescriptor = lookupDataSourceFactory.getLookupDescriptorProviders().sql()
+			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
 					.setCtxTableName(null) // ctxTableName
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
@@ -429,14 +422,14 @@ public class WebuiHUTransformParametersFiller
 			final LookupDescriptor lookupDescriptor,
 			final LookupDataSourceContext context)
 	{
-		final LookupDataSource dataSource = lookupDataSourceFactory.getLookupDataSource(lookupDescriptor);
+		final LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 		final IdsToFilter idsToFilter = context.getIdsToFilter();
 		if (idsToFilter.isSingleValue())
 		{
 			final LookupValue result = dataSource.findById(idsToFilter.getSingleValueAsObject());
 			return LookupValuesPage.ofNullable(result);
 		}
-		else if (idsToFilter.isMultipleValues())
+		else if(idsToFilter.isMultipleValues())
 		{
 			final LookupValuesList result = dataSource.findByIdsOrdered(idsToFilter.getMultipleValues());
 			return LookupValuesPage.allValues(result);

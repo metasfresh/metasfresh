@@ -69,6 +69,11 @@ describe('Create new Stock Control Purchase', function () {
       .apply();
   });
 
+  it('Execute action Fresh_QtyOnHand_UpdateSeqNo', function () {
+    cy.executeHeaderAction('Fresh_QtyOnHand_UpdateSeqNo');
+    cy.getNotificationModal('Process completed successfully');
+  });
+
   it('Check Processed button', function () {
     cy.setCheckBoxValue('Processed', true);
   });

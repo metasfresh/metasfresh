@@ -22,7 +22,6 @@
 
 package de.metas.report;
 
-import de.metas.process.AdProcessId;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -38,7 +37,6 @@ public interface DocumentReportAdvisor
 	@NonNull
 	DocumentReportInfo getDocumentReportInfo(
 			@NonNull TableRecordReference recordRef,
-			@Nullable PrintFormatId adPrintFormatToUseId,
-			@Nullable final AdProcessId reportProcessIdToUse);
+			@Nullable PrintFormatId adPrintFormatToUseId);
 
 }

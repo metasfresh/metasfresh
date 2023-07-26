@@ -1,9 +1,8 @@
 package de.metas.material.cockpit.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Cockpit
  *  @author metasfresh (generated) 
@@ -59,7 +58,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributesKey (@Nullable String AttributesKey);
+	void setAttributesKey (@Nullable java.lang.String AttributesKey);
 
 	/**
 	 * Get AttributesKey (technical).
@@ -68,7 +67,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getAttributesKey();
+	@Nullable java.lang.String getAttributesKey();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_AttributesKey = new ModelColumn<>(I_MD_Cockpit.class, "AttributesKey", null);
 	String COLUMNNAME_AttributesKey = "AttributesKey";
@@ -143,6 +142,48 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set MDCandidateQtyStock.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMDCandidateQtyStock (@Nullable BigDecimal MDCandidateQtyStock);
+
+	/**
+	 * Get MDCandidateQtyStock.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMDCandidateQtyStock();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock", null);
+	String COLUMNNAME_MDCandidateQtyStock = "MDCandidateQtyStock";
+
+	/**
+	 * Set Material Cockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Cockpit_ID (int MD_Cockpit_ID);
+
+	/**
+	 * Get Material Cockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Cockpit_ID();
+
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
+	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -187,67 +228,27 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Material Cockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Cockpit_ID (int MD_Cockpit_ID);
-
-	/**
-	 * Get Material Cockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Cockpit_ID();
-
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
-	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
-
-	/**
-	 * Set 📆 MDCandidateQtyStock.
+	 * Set Vendor Promised.
+	 * Vom Lieferanten per Webapplikation zugesagte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMDCandidateQtyStock_AtDate (@Nullable BigDecimal MDCandidateQtyStock_AtDate);
+	void setPMM_QtyPromised_OnDate (@Nullable BigDecimal PMM_QtyPromised_OnDate);
 
 	/**
-	 * Get 📆 MDCandidateQtyStock.
+	 * Get Vendor Promised.
+	 * Vom Lieferanten per Webapplikation zugesagte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getMDCandidateQtyStock_AtDate();
+	BigDecimal getPMM_QtyPromised_OnDate();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock_AtDate", null);
-	String COLUMNNAME_MDCandidateQtyStock_AtDate = "MDCandidateQtyStock_AtDate";
-
-	/**
-	 * Set 📆 Vendor Promised.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPMM_QtyPromised_OnDate_AtDate (@Nullable BigDecimal PMM_QtyPromised_OnDate_AtDate);
-
-	/**
-	 * Get 📆 Vendor Promised.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getPMM_QtyPromised_OnDate_AtDate();
-
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_PMM_QtyPromised_OnDate_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "PMM_QtyPromised_OnDate_AtDate", null);
-	String COLUMNNAME_PMM_QtyPromised_OnDate_AtDate = "PMM_QtyPromised_OnDate_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_PMM_QtyPromised_OnDate = new ModelColumn<>(I_MD_Cockpit.class, "PMM_QtyPromised_OnDate", null);
+	String COLUMNNAME_PMM_QtyPromised_OnDate = "PMM_QtyPromised_OnDate";
 
 	/**
 	 * Set Produktname.
@@ -257,7 +258,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductName (@Nullable String ProductName);
+	void setProductName (@Nullable java.lang.String ProductName);
 
 	/**
 	 * Get Produktname.
@@ -267,7 +268,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getProductName();
+	@Nullable java.lang.String getProductName();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductName = new ModelColumn<>(I_MD_Cockpit.class, "ProductName", null);
 	String COLUMNNAME_ProductName = "ProductName";
@@ -281,7 +282,7 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductValue (@Nullable String ProductValue);
+	void setProductValue (@Nullable java.lang.String ProductValue);
 
 	/**
 	 * Get Product Value.
@@ -292,192 +293,192 @@ public interface I_MD_Cockpit
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getProductValue();
+	@Nullable java.lang.String getProductValue();
 
 	ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductValue = new ModelColumn<>(I_MD_Cockpit.class, "ProductValue", null);
 	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set 📆 Pending distribution source.
+	 * Set Pending distribution source.
 	 * Not-yet removed quantity from a distribution order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyDemand_DD_Order_AtDate (@Nullable BigDecimal QtyDemand_DD_Order_AtDate);
+	void setQtyDemand_DD_Order (@Nullable BigDecimal QtyDemand_DD_Order);
 
 	/**
-	 * Get 📆 Pending distribution source.
+	 * Get Pending distribution source.
 	 * Not-yet removed quantity from a distribution order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyDemand_DD_Order_AtDate();
+	BigDecimal getQtyDemand_DD_Order();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_DD_Order_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_DD_Order_AtDate", null);
-	String COLUMNNAME_QtyDemand_DD_Order_AtDate = "QtyDemand_DD_Order_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_DD_Order = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_DD_Order", null);
+	String COLUMNNAME_QtyDemand_DD_Order = "QtyDemand_DD_Order";
 
 	/**
-	 * Set 📆 Manufacturing issue - pending.
+	 * Set Manufacturing issue - pending.
 	 * Not-yet issued quantity from a manufacturing order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyDemand_PP_Order_AtDate (@Nullable BigDecimal QtyDemand_PP_Order_AtDate);
+	void setQtyDemand_PP_Order (@Nullable BigDecimal QtyDemand_PP_Order);
 
 	/**
-	 * Get 📆 Manufacturing issue - pending.
+	 * Get Manufacturing issue - pending.
 	 * Not-yet issued quantity from a manufacturing order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyDemand_PP_Order_AtDate();
+	BigDecimal getQtyDemand_PP_Order();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_PP_Order_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_PP_Order_AtDate", null);
-	String COLUMNNAME_QtyDemand_PP_Order_AtDate = "QtyDemand_PP_Order_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_PP_Order = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_PP_Order", null);
+	String COLUMNNAME_QtyDemand_PP_Order = "QtyDemand_PP_Order";
 
 	/**
-	 * Set 📆 Sold - pending.
+	 * Set Sold - pending.
 	 * Quantity from sales orderes for the respective date that was not yet shipped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyDemand_SalesOrder_AtDate (@Nullable BigDecimal QtyDemand_SalesOrder_AtDate);
+	void setQtyDemand_SalesOrder (@Nullable BigDecimal QtyDemand_SalesOrder);
 
 	/**
-	 * Get 📆 Sold - pending.
+	 * Get Sold - pending.
 	 * Quantity from sales orderes for the respective date that was not yet shipped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyDemand_SalesOrder_AtDate();
+	BigDecimal getQtyDemand_SalesOrder();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_SalesOrder_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_SalesOrder_AtDate", null);
-	String COLUMNNAME_QtyDemand_SalesOrder_AtDate = "QtyDemand_SalesOrder_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemand_SalesOrder = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemand_SalesOrder", null);
+	String COLUMNNAME_QtyDemand_SalesOrder = "QtyDemand_SalesOrder";
 
 	/**
-	 * Set 📆 Pending demands.
+	 * Set Pending demands.
 	 * Sum of the planned demands from purchase orders, manufacturing orders and destribution orders
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyDemandSum_AtDate (@Nullable BigDecimal QtyDemandSum_AtDate);
+	void setQtyDemandSum (@Nullable BigDecimal QtyDemandSum);
 
 	/**
-	 * Get 📆 Pending demands.
+	 * Get Pending demands.
 	 * Sum of the planned demands from purchase orders, manufacturing orders and destribution orders
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyDemandSum_AtDate();
+	BigDecimal getQtyDemandSum();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemandSum_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemandSum_AtDate", null);
-	String COLUMNNAME_QtyDemandSum_AtDate = "QtyDemandSum_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyDemandSum = new ModelColumn<>(I_MD_Cockpit.class, "QtyDemandSum", null);
+	String COLUMNNAME_QtyDemandSum = "QtyDemandSum";
 
 	/**
-	 * Set 📆 Expected surplus.
+	 * Set Expected surplus.
 	 * Stock with added/subtracted pending supplies and issues
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyExpectedSurplus_AtDate (@Nullable BigDecimal QtyExpectedSurplus_AtDate);
+	void setQtyExpectedSurplus (@Nullable BigDecimal QtyExpectedSurplus);
 
 	/**
-	 * Get 📆 Expected surplus.
+	 * Get Expected surplus.
 	 * Stock with added/subtracted pending supplies and issues
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyExpectedSurplus_AtDate();
+	BigDecimal getQtyExpectedSurplus();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyExpectedSurplus_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyExpectedSurplus_AtDate", null);
-	String COLUMNNAME_QtyExpectedSurplus_AtDate = "QtyExpectedSurplus_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyExpectedSurplus = new ModelColumn<>(I_MD_Cockpit.class, "QtyExpectedSurplus", null);
+	String COLUMNNAME_QtyExpectedSurplus = "QtyExpectedSurplus";
 
 	/**
-	 * Set 📆 Inventory count.
+	 * Set Inventory count.
 	 * Bestand laut der letzten Inventur
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyInventoryCount_AtDate (@Nullable BigDecimal QtyInventoryCount_AtDate);
+	void setQtyInventoryCount (@Nullable BigDecimal QtyInventoryCount);
 
 	/**
-	 * Get 📆 Inventory count.
+	 * Get Inventory count.
 	 * Bestand laut der letzten Inventur
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyInventoryCount_AtDate();
+	BigDecimal getQtyInventoryCount();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyInventoryCount_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyInventoryCount_AtDate", null);
-	String COLUMNNAME_QtyInventoryCount_AtDate = "QtyInventoryCount_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyInventoryCount = new ModelColumn<>(I_MD_Cockpit.class, "QtyInventoryCount", null);
+	String COLUMNNAME_QtyInventoryCount = "QtyInventoryCount";
 
 	/**
-	 * Set 📆 Inventory time.
+	 * Set Inventory time.
 	 * Zeipunkt, an dem die Inventur fertig gestellt wurde.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyInventoryTime_AtDate (@Nullable java.sql.Timestamp QtyInventoryTime_AtDate);
+	void setQtyInventoryTime (@Nullable java.sql.Timestamp QtyInventoryTime);
 
 	/**
-	 * Get 📆 Inventory time.
+	 * Get Inventory time.
 	 * Zeipunkt, an dem die Inventur fertig gestellt wurde.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getQtyInventoryTime_AtDate();
+	@Nullable java.sql.Timestamp getQtyInventoryTime();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyInventoryTime_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyInventoryTime_AtDate", null);
-	String COLUMNNAME_QtyInventoryTime_AtDate = "QtyInventoryTime_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyInventoryTime = new ModelColumn<>(I_MD_Cockpit.class, "QtyInventoryTime", null);
+	String COLUMNNAME_QtyInventoryTime = "QtyInventoryTime";
 
 	/**
-	 * Set 📆 Internal Usage.
+	 * Set Internal Usage.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyMaterialentnahme_AtDate (@Nullable BigDecimal QtyMaterialentnahme_AtDate);
+	void setQtyMaterialentnahme (@Nullable BigDecimal QtyMaterialentnahme);
 
 	/**
-	 * Get 📆 Internal Usage.
+	 * Get Internal Usage.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyMaterialentnahme_AtDate();
+	BigDecimal getQtyMaterialentnahme();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyMaterialentnahme_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyMaterialentnahme_AtDate", null);
-	String COLUMNNAME_QtyMaterialentnahme_AtDate = "QtyMaterialentnahme_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyMaterialentnahme = new ModelColumn<>(I_MD_Cockpit.class, "QtyMaterialentnahme", null);
+	String COLUMNNAME_QtyMaterialentnahme = "QtyMaterialentnahme";
 
 	/**
 	 * Set Zählmenge.
@@ -524,232 +525,232 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_QtyStockChange = "QtyStockChange";
 
 	/**
-	 * Set 📆 Stock.
+	 * Set Stock.
 	 * On-hand quantity for the respective date, with added/subtracted material increases and decreases since the count or inventory.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyStockCurrent_AtDate (@Nullable BigDecimal QtyStockCurrent_AtDate);
+	void setQtyStockCurrent (@Nullable BigDecimal QtyStockCurrent);
 
 	/**
-	 * Get 📆 Stock.
+	 * Get Stock.
 	 * On-hand quantity for the respective date, with added/subtracted material increases and decreases since the count or inventory.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyStockCurrent_AtDate();
+	BigDecimal getQtyStockCurrent();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockCurrent_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockCurrent_AtDate", null);
-	String COLUMNNAME_QtyStockCurrent_AtDate = "QtyStockCurrent_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockCurrent = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockCurrent", null);
+	String COLUMNNAME_QtyStockCurrent = "QtyStockCurrent";
 
 	/**
-	 * Set 📆 Stock count.
+	 * Set Stock count.
 	 * Menge laut "grober" Zählung.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyStockEstimateCount_AtDate (@Nullable BigDecimal QtyStockEstimateCount_AtDate);
+	void setQtyStockEstimateCount (@Nullable BigDecimal QtyStockEstimateCount);
 
 	/**
-	 * Get 📆 Stock count.
+	 * Get Stock count.
 	 * Menge laut "grober" Zählung.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyStockEstimateCount_AtDate();
+	BigDecimal getQtyStockEstimateCount();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateCount_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateCount_AtDate", null);
-	String COLUMNNAME_QtyStockEstimateCount_AtDate = "QtyStockEstimateCount_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateCount = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateCount", null);
+	String COLUMNNAME_QtyStockEstimateCount = "QtyStockEstimateCount";
 
 	/**
-	 * Set 📆 Zählbestand Reihenfolge.
+	 * Set Zählbestand Reihenfolge.
 	 * "Reihenfolge"-Wert mit dem die entsprechende Position im Zählbestand erfasst wurde
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyStockEstimateSeqNo_AtDate (int QtyStockEstimateSeqNo_AtDate);
+	void setQtyStockEstimateSeqNo (int QtyStockEstimateSeqNo);
 
 	/**
-	 * Get 📆 Zählbestand Reihenfolge.
+	 * Get Zählbestand Reihenfolge.
 	 * "Reihenfolge"-Wert mit dem die entsprechende Position im Zählbestand erfasst wurde
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getQtyStockEstimateSeqNo_AtDate();
+	int getQtyStockEstimateSeqNo();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateSeqNo_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateSeqNo_AtDate", null);
-	String COLUMNNAME_QtyStockEstimateSeqNo_AtDate = "QtyStockEstimateSeqNo_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateSeqNo = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateSeqNo", null);
+	String COLUMNNAME_QtyStockEstimateSeqNo = "QtyStockEstimateSeqNo";
 
 	/**
-	 * Set 📆 Stock estimate time.
+	 * Set Stock estimate time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyStockEstimateTime_AtDate (@Nullable java.sql.Timestamp QtyStockEstimateTime_AtDate);
+	void setQtyStockEstimateTime (@Nullable java.sql.Timestamp QtyStockEstimateTime);
 
 	/**
-	 * Get 📆 Stock estimate time.
+	 * Get Stock estimate time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getQtyStockEstimateTime_AtDate();
+	@Nullable java.sql.Timestamp getQtyStockEstimateTime();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateTime_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateTime_AtDate", null);
-	String COLUMNNAME_QtyStockEstimateTime_AtDate = "QtyStockEstimateTime_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyStockEstimateTime = new ModelColumn<>(I_MD_Cockpit.class, "QtyStockEstimateTime", null);
+	String COLUMNNAME_QtyStockEstimateTime = "QtyStockEstimateTime";
 
 	/**
-	 * Set 📆 Pending distribution target.
+	 * Set Pending distribution target.
 	 * Not-yet added quantity from a distribution order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtySupply_DD_Order_AtDate (@Nullable BigDecimal QtySupply_DD_Order_AtDate);
+	void setQtySupply_DD_Order (@Nullable BigDecimal QtySupply_DD_Order);
 
 	/**
-	 * Get 📆 Pending distribution target.
+	 * Get Pending distribution target.
 	 * Not-yet added quantity from a distribution order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtySupply_DD_Order_AtDate();
+	BigDecimal getQtySupply_DD_Order();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_DD_Order_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_DD_Order_AtDate", null);
-	String COLUMNNAME_QtySupply_DD_Order_AtDate = "QtySupply_DD_Order_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_DD_Order = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_DD_Order", null);
+	String COLUMNNAME_QtySupply_DD_Order = "QtySupply_DD_Order";
 
 	/**
-	 * Set 📆 Pending manufacturing receipt.
+	 * Set Pending manufacturing receipt.
 	 * Not-yet received quantity from a manufacturing order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtySupply_PP_Order_AtDate (@Nullable BigDecimal QtySupply_PP_Order_AtDate);
+	void setQtySupply_PP_Order (@Nullable BigDecimal QtySupply_PP_Order);
 
 	/**
-	 * Get 📆 Pending manufacturing receipt.
+	 * Get Pending manufacturing receipt.
 	 * Not-yet received quantity from a manufacturing order.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtySupply_PP_Order_AtDate();
+	BigDecimal getQtySupply_PP_Order();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_PP_Order_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_PP_Order_AtDate", null);
-	String COLUMNNAME_QtySupply_PP_Order_AtDate = "QtySupply_PP_Order_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_PP_Order = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_PP_Order", null);
+	String COLUMNNAME_QtySupply_PP_Order = "QtySupply_PP_Order";
 
 	/**
-	 * Set 📆 Purchased - pending.
+	 * Set Purchased - pending.
 	 * Quantity from purchase orders for the respective date that was not yet received
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtySupply_PurchaseOrder_AtDate (@Nullable BigDecimal QtySupply_PurchaseOrder_AtDate);
+	void setQtySupply_PurchaseOrder (@Nullable BigDecimal QtySupply_PurchaseOrder);
 
 	/**
-	 * Get 📆 Purchased - pending.
+	 * Get Purchased - pending.
 	 * Quantity from purchase orders for the respective date that was not yet received
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtySupply_PurchaseOrder_AtDate();
+	BigDecimal getQtySupply_PurchaseOrder();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_PurchaseOrder_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_PurchaseOrder_AtDate", null);
-	String COLUMNNAME_QtySupply_PurchaseOrder_AtDate = "QtySupply_PurchaseOrder_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupply_PurchaseOrder = new ModelColumn<>(I_MD_Cockpit.class, "QtySupply_PurchaseOrder", null);
+	String COLUMNNAME_QtySupply_PurchaseOrder = "QtySupply_PurchaseOrder";
 
 	/**
-	 * Set 📆 Required supplies.
+	 * Set Required supplies.
 	 * Sum of all required supplies, where the planned stock is below the planned shippings
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtySupplyRequired_AtDate (@Nullable BigDecimal QtySupplyRequired_AtDate);
+	void setQtySupplyRequired (@Nullable BigDecimal QtySupplyRequired);
 
 	/**
-	 * Get 📆 Required supplies.
+	 * Get Required supplies.
 	 * Sum of all required supplies, where the planned stock is below the planned shippings
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtySupplyRequired_AtDate();
+	BigDecimal getQtySupplyRequired();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplyRequired_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplyRequired_AtDate", null);
-	String COLUMNNAME_QtySupplyRequired_AtDate = "QtySupplyRequired_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplyRequired = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplyRequired", null);
+	String COLUMNNAME_QtySupplyRequired = "QtySupplyRequired";
 
 	/**
-	 * Set 📆 Pending supplies.
+	 * Set Pending supplies.
 	 * Sum of the planned supplies from purchase orders, manufacturing orders and destribution orders
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtySupplySum_AtDate (@Nullable BigDecimal QtySupplySum_AtDate);
+	void setQtySupplySum (@Nullable BigDecimal QtySupplySum);
 
 	/**
-	 * Get 📆 Pending supplies.
+	 * Get Pending supplies.
 	 * Sum of the planned supplies from purchase orders, manufacturing orders and destribution orders
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtySupplySum_AtDate();
+	BigDecimal getQtySupplySum();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplySum_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplySum_AtDate", null);
-	String COLUMNNAME_QtySupplySum_AtDate = "QtySupplySum_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplySum = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplySum", null);
+	String COLUMNNAME_QtySupplySum = "QtySupplySum";
 
 	/**
-	 * Set 📆 Open requriements.
+	 * Set Open requriements.
 	 * Required supplies that are not yet covered by purchase, production or distribution.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtySupplyToSchedule_AtDate (@Nullable BigDecimal QtySupplyToSchedule_AtDate);
+	void setQtySupplyToSchedule (@Nullable BigDecimal QtySupplyToSchedule);
 
 	/**
-	 * Get 📆 Open requriements.
+	 * Get Open requriements.
 	 * Required supplies that are not yet covered by purchase, production or distribution.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtySupplyToSchedule_AtDate();
+	BigDecimal getQtySupplyToSchedule();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplyToSchedule_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplyToSchedule_AtDate", null);
-	String COLUMNNAME_QtySupplyToSchedule_AtDate = "QtySupplyToSchedule_AtDate";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_QtySupplyToSchedule = new ModelColumn<>(I_MD_Cockpit.class, "QtySupplyToSchedule", null);
+	String COLUMNNAME_QtySupplyToSchedule = "QtySupplyToSchedule";
 
 	/**
 	 * Get Updated.

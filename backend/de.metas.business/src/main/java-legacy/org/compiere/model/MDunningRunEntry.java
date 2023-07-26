@@ -16,20 +16,20 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.bpartner.exceptions.BPartnerNoAddressException;
-import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.bpartner.service.impl.CreditStatus;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.bpartner.exceptions.BPartnerNoAddressException;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Dunning Run Entry Model
@@ -276,7 +276,7 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 				if (level.isSetCreditStop())
 				{
 					// set this particular credit status in the bp stats
-					bpartnerStatsDAO.setSOCreditStatus(stats, CreditStatus.CreditStop);
+					bpartnerStatsDAO.setSOCreditStatus(stats, X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop);
 				}
 				if (level.isSetPaymentTerm())
 				{

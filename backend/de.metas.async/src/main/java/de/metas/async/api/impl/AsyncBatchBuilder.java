@@ -23,23 +23,21 @@ package de.metas.async.api.impl;
  */
 
 
-import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IAsyncBatchBuilder;
-import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkpackageProcessorContextFactory;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
-import de.metas.organization.OrgId;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 
-import java.util.Optional;
-import java.util.Properties;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBuilder;
+import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 class AsyncBatchBuilder implements IAsyncBatchBuilder
 {
@@ -47,20 +45,19 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	private final transient AsyncBatchBL asyncBatchBL;
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
-	private final IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
 
 	// Parameters
 	private Properties _ctx;
 	private PInstanceId adPInstanceId;
-	private AsyncBatchId _parentAsyncBatchId;
+	private int parentAsycnBatchId;
 	private int _countExpected;
 	private String _name;
 	private String _description;
 	private I_C_Async_Batch_Type _asyncBatchType;
-	private OrgId orgId;
 
 	AsyncBatchBuilder(final AsyncBatchBL asyncBatchBL)
 	{
+		super();
 		this.asyncBatchBL = asyncBatchBL;
 	}
 
@@ -75,14 +72,9 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	{
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.create(getCtx(), I_C_Async_Batch.class, ITrx.TRXNAME_None);
 		asyncBatch.setAD_PInstance_ID(PInstanceId.toRepoId(getAD_PInstance_Creator_ID()));
-		asyncBatch.setParent_Async_Batch_ID(AsyncBatchId.toRepoId(getParentAsyncBatchId()));
+		asyncBatch.setParent_Async_Batch_ID(getParentAsycnBatchId());
 		asyncBatch.setName(getName());
 		asyncBatch.setDescription(getDescription());
-		if (getOrgId() != null)
-		{
-			final int orgIdRepoId = getOrgId().getRepoId();
-			asyncBatch.setAD_Org_ID(orgIdRepoId);
-		}
 		if (getCountExpected()>0)
 		{
 			asyncBatch.setCountExpected(getCountExpected());
@@ -135,16 +127,15 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		return adPInstanceId;
 	}
 
-	private AsyncBatchId getParentAsyncBatchId()
+	private int getParentAsycnBatchId()
 	{
-		return Optional.ofNullable(_parentAsyncBatchId)
-				.orElse(contextFactory.getThreadInheritedWorkpackageAsyncBatch());
+		return parentAsycnBatchId;
 	}
 
 	@Override
-	public IAsyncBatchBuilder setParentAsyncBatchId(final AsyncBatchId parentAsyncBatchId)
+	public IAsyncBatchBuilder setParentAsycnBatchId(int parentAsycnBatchId)
 	{
-		_parentAsyncBatchId = parentAsyncBatchId;
+		this.parentAsycnBatchId = parentAsycnBatchId;
 		return this;
 	}
 
@@ -172,11 +163,6 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		return _description;
 	}
 
-	private OrgId getOrgId()
-	{
-		return orgId;
-	}
-
 	@Override
 	public IAsyncBatchBuilder setC_Async_Batch_Type(final String internalName)
 	{
@@ -188,13 +174,6 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	{
 		Check.assumeNotNull(_asyncBatchType, "_asyncBatchType not null");
 		return _asyncBatchType;
-	}
-
-	@Override
-	public IAsyncBatchBuilder setOrgId(final OrgId orgId)
-	{
-		this.orgId = orgId;
-		return this;
 	}
 
 }

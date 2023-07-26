@@ -1,7 +1,24 @@
 package de.metas.ui.web.handlingunits.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -21,22 +38,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
 /*
  * #%L
@@ -99,17 +100,9 @@ public class WEBUIHUCreationWithSerialNumberService
 			final int serialNoCount = availableSerialNumbers.size();
 			final int cusToCreateCount = qtyCU < serialNoCount ? qtyCU : serialNoCount;
 
-			final Set<HuId> splitCUIDs = splitIntoCUs(huEditorRowHierarchy, cusToCreateCount)
-					.stream()
-					// #12728
-					// If the selectedCuRow does not have a parent, it will be added to the set of
-					// split CUs (see de.metas.ui.web.handlingunits.process.WEBUIHUCreationWithSerialNumberService.createCUsBatch)
-					// Make sure the serial numbers get into the actual, new split CUs (with greater IDs) first, and only afterwards in the source row.
-					.sorted(Comparator.comparing(HuId::getRepoId).reversed())
-					.collect(ImmutableSet.toImmutableSet());
-
-			assignSerialNumbersToCUs(splitCUIDs, availableSerialNumbers);
-			huIDsAdded.addAll(splitCUIDs);
+			final Set<HuId> splittedCUIDs = splitIntoCUs(huEditorRowHierarchy, cusToCreateCount);
+			assignSerialNumbersToCUs(splittedCUIDs, availableSerialNumbers);
+			huIDsAdded.addAll(splittedCUIDs);
 		}
 
 		return WebuiHUTransformCommandResult.builder()
@@ -165,14 +158,14 @@ public class WEBUIHUCreationWithSerialNumberService
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToNewCU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()));
 
 				final Predicate<? super I_M_HU> //
-						newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuId().getRepoId();
+				newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuId().getRepoId();
 
 				splitCUIDs.addAll(createdCUs
-										  .stream()
-										  .filter(newCUisDifferentFromInputHU)
-										  .map(I_M_HU::getM_HU_ID)
-										  .map(HuId::ofRepoId)
-										  .collect(ImmutableSet.toImmutableSet()));
+						.stream()
+						.filter(newCUisDifferentFromInputHU)
+						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet()));
 			}
 		}
 		else
@@ -197,10 +190,10 @@ public class WEBUIHUCreationWithSerialNumberService
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(huToSplit, Quantity.of(BigDecimal.ONE, cuRow.getC_UOM()), parentHU);
 
 				splitCUIDs.addAll(createdCUs
-										  .stream()
-										  .map(I_M_HU::getM_HU_ID)
-										  .map(HuId::ofRepoId)
-										  .collect(ImmutableSet.toImmutableSet()));
+						.stream()
+						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet()));
 			}
 		}
 

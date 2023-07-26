@@ -22,14 +22,16 @@
 
 package de.metas.handlingunits;
 
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.util.ISingletonService;
+import java.util.Collection;
+
+import java.util.List;
+
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.util.Collection;
-import java.util.List;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.ISingletonService;
 
 public interface IHUStatusBL extends ISingletonService
 {
@@ -53,12 +55,12 @@ public interface IHUStatusBL extends ISingletonService
 	 * Assert that a change of {@link I_M_HU#COLUMN_HUStatus} from the given {@code oldHuStatus} to the given {@code newHuStatus} is allowd.
 	 *
 	 * @param huRecord used to create a more informative error message
-	 * @throws AdempiereException if the transition is not allowed.
+	 * @throw {@link AdempiereException} if the transition is not allowed.
 	 */
 	void assertStatusChangeIsAllowed(I_M_HU huRecord, String oldHuStatus, String newHuStatus);
 
 	/**
-	 * Assert that {@link I_M_HU#COLUMNNAME_M_Locator_ID} may be updated in HUs that have the given {@code huStatus}.
+	 * Assert that {@link I_M_HU#COLUMN_M_Locator_ID} may be updated in HUs that have the given {@code huStatus}.
 	 *
 	 * @param huRecord used to create a more informative error message
 	 * @throws AdempiereException if the locatorId may not be updated.

@@ -1,24 +1,46 @@
 package de.metas.handlingunits.attribute.spi.impl;
 
+import org.adempiere.mm.attributes.AttributeId;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.spi.IHUTrxAttributeProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
-import de.metas.util.Services;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 /**
  * Process an {@link I_M_HU_Trx_Attribute} for an {@link I_M_HU}.
  *
  * @author tsa
+ *
  */
 public class HUTrxAttributeProcessor_HU implements IHUTrxAttributeProcessor
 {
@@ -32,15 +54,12 @@ public class HUTrxAttributeProcessor_HU implements IHUTrxAttributeProcessor
 
 		final I_M_HU hu = InterfaceWrapperHelper.create(referencedModel, I_M_HU.class);
 
-		final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 		final IHUAttributesDAO huAttributesDAO = huContext.getHUAttributeStorageFactory().getHUAttributesDAO();
 		final I_M_HU_Attribute huAttributeExisting = retrieveHUAttribute(huAttributesDAO, trxAttribute);
 
 		final I_M_HU_Attribute huAttribute;
 		if (huAttributeExisting == null)
 		{
-			final I_M_HU_PI_Attribute huPIAttributeRecord = huPIAttributesDAO.getById(HuPackingInstructionsAttributeId.ofRepoIdOrNull(trxAttribute.getM_HU_PI_Attribute_ID()));
-
 			// Create new attribute
 			huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class, hu);
 			huAttribute.setAD_Org_ID(hu.getAD_Org_ID());
@@ -48,7 +67,6 @@ public class HUTrxAttributeProcessor_HU implements IHUTrxAttributeProcessor
 			huAttribute.setM_Attribute_ID(trxAttribute.getM_Attribute_ID());
 
 			huAttribute.setM_HU_PI_Attribute_ID(trxAttribute.getM_HU_PI_Attribute_ID());
-			huAttribute.setIsUnique(huPIAttributeRecord != null && huPIAttributeRecord.isUnique());
 		}
 		else
 		{

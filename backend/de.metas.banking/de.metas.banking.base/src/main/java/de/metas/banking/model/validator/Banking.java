@@ -33,7 +33,6 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
-import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
@@ -89,7 +88,7 @@ public class Banking extends AbstractModuleInterceptor
 		{
 			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_Payment(bankStatementBL, paymentBL, sysConfigBL, cashStatementBL)); // 04203
 			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_PaySelection(bankAccountService)); // 04203
-			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_PaySelectionLine()); // 04203
+			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelectionLine.instance); // 04203
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment_Request.instance); // 08596
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_AllocationHdr.instance); // 08972
 		}
@@ -99,10 +98,9 @@ public class Banking extends AbstractModuleInterceptor
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatement(bankStatementBL));
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
-		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatementLine(bankStatementBL, currencyConversionBL));
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatementLine(bankStatementBL));
 	}
 }

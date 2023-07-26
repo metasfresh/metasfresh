@@ -144,11 +144,6 @@ describe.skip('MasterWindowContainer', () => {
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get('/login/isLoggedIn')
-      .reply(200, true);
-
-    nock(config.API_URL)
-      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .get(`/notifications/websocketEndpoint`)
       .reply(200, `/notifications/${userSessionData.userProfileId}`);
 
@@ -169,7 +164,7 @@ describe.skip('MasterWindowContainer', () => {
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine,%2BC_OrderLine_ID`)
+      .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine`)
       .reply(200, { result: rowFixtures.row_data1 });
 
     nock(config.API_URL)

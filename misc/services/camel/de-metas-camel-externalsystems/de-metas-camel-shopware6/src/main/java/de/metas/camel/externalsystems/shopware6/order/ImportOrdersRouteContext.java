@@ -25,22 +25,12 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
-import de.metas.camel.externalsystems.shopware6.api.model.order.Customer;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
-import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
-import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
-import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
-import de.metas.common.externalsystem.JsonProductLookup;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.util.Check;
-import de.metas.common.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -51,11 +41,9 @@ import lombok.Setter;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
 
 @Data
 @Builder
@@ -74,9 +62,6 @@ public class ImportOrdersRouteContext
 	private CurrencyInfoProvider currencyInfoProvider;
 
 	@NonNull
-	private final SalutationInfoProvider salutationInfoProvider;
-
-	@NonNull
 	@Setter(AccessLevel.NONE)
 	private JsonExternalSystemRequest externalSystemRequest;
 
@@ -84,9 +69,6 @@ public class ImportOrdersRouteContext
 	@Builder.Default
 	@Setter(AccessLevel.NONE)
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
-
-	@Nullable
-	private final String emailJsonPath;
 
 	@Nullable
 	@Setter(AccessLevel.NONE)
@@ -111,14 +93,6 @@ public class ImportOrdersRouteContext
 	private String bpLocationCustomJsonPath;
 
 	@Nullable
-	private final JsonMetasfreshId pInstanceId;
-
-	@Getter(AccessLevel.NONE)
-	private final boolean skipNextImportStartingTimestamp;
-
-	private final int pageLimit;
-
-	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
 
@@ -132,12 +106,6 @@ public class ImportOrdersRouteContext
 	private boolean isMultipleShippingAddresses;
 
 	@Nullable
-	private String metasfreshIdJsonPath;
-
-	@Nullable
-	private String shopwareIdJsonPath;
-
-	@Nullable
 	@Getter(AccessLevel.NONE)
 	private JsonShippingCost shippingCost;
 
@@ -146,20 +114,6 @@ public class ImportOrdersRouteContext
 
 	@Nullable
 	private JsonCustomerGroup bPartnerCustomerGroup;
-
-	@NonNull
-	private JsonProductLookup jsonProductLookup;
-
-	@Nullable
-	JsonAddress orderShippingAddress;
-
-	@Setter(AccessLevel.NONE)
-	private int ordersResponsePageIndex;
-
-	private boolean moreOrdersAvailable;
-
-	@Nullable
-	private PriceListBasicInfo priceListBasicInfo;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -202,11 +156,6 @@ public class ImportOrdersRouteContext
 
 	public void setNextImportStartingTimestamp(@NonNull final DateAndImportStatus dateAndImportStatus)
 	{
-		if (this.skipNextImportStartingTimestamp)
-		{
-			return;
-		}
-
 		if (this.nextImportStartingTimestamp == null)
 		{
 			this.nextImportStartingTimestamp = dateAndImportStatus;
@@ -251,7 +200,7 @@ public class ImportOrdersRouteContext
 	@NonNull
 	public Optional<Instant> getNextImportStartingTimestamp()
 	{
-		if (this.skipNextImportStartingTimestamp || nextImportStartingTimestamp == null)
+		if (nextImportStartingTimestamp == null)
 		{
 			return Optional.empty();
 		}
@@ -268,84 +217,5 @@ public class ImportOrdersRouteContext
 		}
 
 		return shippingCost;
-	}
-
-	@Nullable
-	public JsonExternalSystemShopware6ConfigMapping getMatchingShopware6Mapping()
-	{
-		if (shopware6ConfigMappings == null
-				|| Check.isEmpty(shopware6ConfigMappings.getJsonExternalSystemShopware6ConfigMappingList())
-				|| bPartnerCustomerGroup == null)
-		{
-			return null;
-		}
-
-		return shopware6ConfigMappings.getJsonExternalSystemShopware6ConfigMappingList()
-				.stream()
-				.filter(mapping -> mapping.isGroupMatching(bPartnerCustomerGroup.getName()))
-				.min(Comparator.comparingInt(JsonExternalSystemShopware6ConfigMapping::getSeqNo))
-				.orElse(null);
-	}
-
-	@NonNull
-	public ExternalIdentifier getBPExternalIdentifier()
-	{
-		final Customer customer = getOrderNotNull().getCustomer();
-
-		return customer.getExternalIdentifier(metasfreshIdJsonPath, shopwareIdJsonPath);
-	}
-
-	@NonNull
-	public ExternalIdentifier getUserId()
-	{
-		final Customer customer = getOrderNotNull().getCustomer();
-
-		return customer.getShopwareId(shopwareIdJsonPath);
-	}
-
-	@Nullable
-	public String getExtendedShippingLocationBPartnerName()
-	{
-		if (orderShippingAddress == null)
-		{
-			throw new RuntimeException("orderShippingAddress cannot be null at this stage!");
-		}
-
-		final BiFunction<String, String, String> prepareNameSegment = (segment, separator) -> Optional.ofNullable(segment)
-				.map(StringUtils::trimBlankToNull)
-				.map(s -> s + separator)
-				.orElse("");
-
-		final String locationBPartnerName =
-				prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n")
-						+ prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
-						+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
-						+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
-						+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
-						+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
-
-		return StringUtils.trimBlankToNull(locationBPartnerName);
-	}
-
-	@NonNull
-	public JsonAddress getOrderShippingAddressNotNull()
-	{
-		return Check.assumeNotNull(orderShippingAddress, "orderShippingAddress cannot be null at this stage!");
-	}
-
-	@Nullable
-	private String getSalutationDisplayNameById(@Nullable final String salutationId)
-	{
-		if (Check.isBlank(salutationId))
-		{
-			return null;
-		}
-
-		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
-	}
-
-	public void incrementPageIndex()
-	{
-		this.ordersResponsePageIndex++;
 	}
 }

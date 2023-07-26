@@ -25,12 +25,12 @@ package de.metas.rest_api.utils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.bpartner.GLN;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -276,7 +276,7 @@ public class IdentifierString
 		final int repoId = Integer.parseInt(value);
 		return JsonMetasfreshId.of(repoId);
 	}
-
+	
 	public <T extends RepoIdAware> T asMetasfreshId(@NonNull final IntFunction<T> mapper)
 	{
 		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);
@@ -311,20 +311,5 @@ public class IdentifierString
 		Check.assume(Type.INTERNALNAME.equals(type), "The type of this instance needs to be {}; this={}", Type.INTERNALNAME, this);
 
 		return value;
-	}
-
-	public boolean isMetasfreshId()
-	{
-		return Type.METASFRESH_ID.equals(type);
-	}
-
-	public boolean isExternalId()
-	{
-		return Type.EXTERNAL_ID.equals(type);
-	}
-
-	public boolean isValue()
-	{
-		return Type.VALUE.equals(type);
 	}
 }

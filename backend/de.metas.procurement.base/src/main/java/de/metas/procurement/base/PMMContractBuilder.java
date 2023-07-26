@@ -1,28 +1,18 @@
 package de.metas.procurement.base;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
-import de.metas.calendar.standard.ICalendarDAO;
-import de.metas.calendar.standard.IPeriodBL;
-import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 import de.metas.organization.OrgId;
-import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
-import de.metas.procurement.base.model.I_C_Flatrate_Term;
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,17 +28,27 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
+
+import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.IPeriodBL;
+import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -112,7 +112,6 @@ public class PMMContractBuilder
 	private final transient IPMMContractsBL pmmContractsBL = Services.get(IPMMContractsBL.class);
 	private final transient ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	private final transient IPeriodBL periodBL = Services.get(IPeriodBL.class);
-	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	//
@@ -279,10 +278,8 @@ public class PMMContractBuilder
 		final I_C_Calendar calendar = term.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract();
 
 		final Properties ctx = getContext().getCtx();
-		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
-		final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(term.getStartDate(), orgId, orgDAO::getTimeZone);
-		final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(term.getEndDate(), orgId, orgDAO::getTimeZone);
-		return  calendarDAO.retrievePeriods(ctx, calendar, startDate, endDate, ITrx.TRXNAME_None);
+		final List<I_C_Period> periods = calendarDAO.retrievePeriods(ctx, calendar, term.getStartDate(), term.getEndDate(), ITrx.TRXNAME_None);
+		return periods;
 	}
 
 	private I_C_Flatrate_DataEntry createFlatrateDataEntry(final I_C_Flatrate_Term term, final I_C_Period period)

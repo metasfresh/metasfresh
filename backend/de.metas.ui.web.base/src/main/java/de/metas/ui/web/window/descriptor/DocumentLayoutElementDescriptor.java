@@ -75,8 +75,7 @@ public final class DocumentLayoutElementDescriptor
 					.setCaption(field.getCaption())
 					.setPublicField(true)
 					.setLookupInfos(field.getLookupDescriptor().orElse(null))
-					.setSupportZoomInto(field.isSupportZoomInto())
-					.setForbidNewRecordCreation(field.isForbidNewRecordCreation()));
+					.setSupportZoomInto(field.isSupportZoomInto()));
 		}
 
 		return elementBuilder;

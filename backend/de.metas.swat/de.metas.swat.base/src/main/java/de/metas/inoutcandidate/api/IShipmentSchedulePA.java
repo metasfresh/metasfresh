@@ -45,8 +45,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
 
-	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(Set<ShipmentScheduleId> ids, Class<T> clazz);
-
 	@Nullable
 	I_M_ShipmentSchedule getByOrderLineId(OrderLineId orderLineId);
 
@@ -119,6 +117,4 @@ public interface IShipmentSchedulePA extends ISingletonService
 	ImmutableList<I_M_ShipmentSchedule> getByReferences(ImmutableList<TableRecordReference> recordRefs);
 
 	ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(OrderId orderId);
-
-	ImmutableSet<OrderId> getOrderIds(IQueryFilter<? extends I_M_ShipmentSchedule> filter);
 }

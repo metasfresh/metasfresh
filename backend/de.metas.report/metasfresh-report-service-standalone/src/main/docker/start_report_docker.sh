@@ -235,8 +235,6 @@ then
 	set -x
 fi
 
-echo_variable_values
-
 set_properties /opt/metasfresh/metasfresh-report/metasfresh.properties
 
 if [ "$db_wait_for_dbms" != "n" ];

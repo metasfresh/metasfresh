@@ -86,12 +86,6 @@ public class BPartnerLocationId implements RepoIdAware
 		return bpLocationId != null ? bpLocationId.getRepoId() : -1;
 	}
 
-	@Nullable
-	public static Integer toRepoIdOrNull(@Nullable final BPartnerLocationId bpLocationId)
-	{
-		return bpLocationId != null ? bpLocationId.getRepoId() : null;
-	}
-
 	public static boolean equals(final BPartnerLocationId id1, final BPartnerLocationId id2)
 	{
 		return Objects.equals(id1, id2);

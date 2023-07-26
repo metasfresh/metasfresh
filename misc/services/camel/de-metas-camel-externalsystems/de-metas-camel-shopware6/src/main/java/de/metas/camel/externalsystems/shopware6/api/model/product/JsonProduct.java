@@ -27,31 +27,21 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
-import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 @Value
 @Builder
-@AllArgsConstructor
 @JsonDeserialize(builder = JsonProduct.JsonProductBuilder.class)
 public class JsonProduct
 {
 	@NonNull
 	@JsonProperty("id")
 	String id;
-
-	@Nullable
-	@JsonProperty("parentId")
-	String parentId;
 
 	@Nullable
 	@JsonProperty("name")
@@ -65,14 +55,6 @@ public class JsonProduct
 	@JsonProperty("ean")
 	String ean;
 
-	@Nullable
-	@JsonProperty("unitId")
-	String unitId;
-
-	@Nullable
-	@JsonProperty("tax")
-	JsonTax jsonTax;
-
 	@NonNull
 	@JsonProperty("createdAt")
 	ZonedDateTime createdAt;
@@ -80,10 +62,6 @@ public class JsonProduct
 	@Nullable
 	@JsonProperty("updatedAt")
 	ZonedDateTime updatedAt;
-
-	@Nullable
-	@JsonProperty("price")
-	List<JsonPrice> prices;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
@@ -102,5 +80,4 @@ public class JsonProduct
 
 		return createdAt;
 	}
-
 }

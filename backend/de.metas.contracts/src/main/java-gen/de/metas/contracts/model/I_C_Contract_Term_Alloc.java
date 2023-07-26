@@ -1,82 +1,101 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for C_Contract_Term_Alloc
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_Contract_Term_Alloc 
 {
 
-	String Table_Name = "C_Contract_Term_Alloc";
+    /** TableName=C_Contract_Term_Alloc */
+    public static final String Table_Name = "C_Contract_Term_Alloc";
 
-//	/** AD_Table_ID=540419 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540419 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_Client>(I_C_Contract_Term_Alloc.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_Org>(I_C_Contract_Term_Alloc.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Process Instance.
-	 * Instance of a Process
+	 * Set Prozess-Instanz.
+	 * Instanz eines Prozesses
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_PInstance_ID (int AD_PInstance_ID);
+	public void setAD_PInstance_ID (int AD_PInstance_ID);
 
 	/**
-	 * Get Process Instance.
-	 * Instance of a Process
+	 * Get Prozess-Instanz.
+	 * Instanz eines Prozesses
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_PInstance_ID();
+	public int getAD_PInstance_ID();
 
-	@Nullable org.compiere.model.I_AD_PInstance getAD_PInstance();
+	public org.compiere.model.I_AD_PInstance getAD_PInstance();
 
-	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
+	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance);
 
-	ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_C_Contract_Term_Alloc.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
-	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
+    /** Column definition for AD_PInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_PInstance>(I_C_Contract_Term_Alloc.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
+    /** Column name AD_PInstance_ID */
+    public static final String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
 	 * Set Auftragskandidat - Laufender Vertrag.
@@ -85,7 +104,7 @@ public interface I_C_Contract_Term_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Contract_Term_Alloc_ID (int C_Contract_Term_Alloc_ID);
+	public void setC_Contract_Term_Alloc_ID (int C_Contract_Term_Alloc_ID);
 
 	/**
 	 * Get Auftragskandidat - Laufender Vertrag.
@@ -94,84 +113,100 @@ public interface I_C_Contract_Term_Alloc
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Contract_Term_Alloc_ID();
+	public int getC_Contract_Term_Alloc_ID();
 
-	ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_C_Contract_Term_Alloc_ID = new ModelColumn<>(I_C_Contract_Term_Alloc.class, "C_Contract_Term_Alloc_ID", null);
-	String COLUMNNAME_C_Contract_Term_Alloc_ID = "C_Contract_Term_Alloc_ID";
+    /** Column definition for C_Contract_Term_Alloc_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_C_Contract_Term_Alloc_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object>(I_C_Contract_Term_Alloc.class, "C_Contract_Term_Alloc_ID", null);
+    /** Column name C_Contract_Term_Alloc_ID */
+    public static final String COLUMNNAME_C_Contract_Term_Alloc_ID = "C_Contract_Term_Alloc_ID";
 
 	/**
-	 * Set Flatrate Term.
+	 * Set Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
 
 	/**
-	 * Get Flatrate Term.
+	 * Get Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Flatrate_Term_ID();
+	public int getC_Flatrate_Term_ID();
 
-	de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
+	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
-	void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
+	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 
-	ModelColumn<I_C_Contract_Term_Alloc, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Contract_Term_Alloc.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
-	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+    /** Column definition for C_Flatrate_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, de.metas.contracts.model.I_C_Flatrate_Term>(I_C_Contract_Term_Alloc.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
+    /** Column name C_Flatrate_Term_ID */
+    public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
-	 * Set Orderline Candidate.
+	 * Set Auftragskandidat.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_OLCand_ID (int C_OLCand_ID);
+	public void setC_OLCand_ID (int C_OLCand_ID);
 
 	/**
-	 * Get Orderline Candidate.
+	 * Get Auftragskandidat.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_OLCand_ID();
+	public int getC_OLCand_ID();
 
-	ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_C_OLCand_ID = new ModelColumn<>(I_C_Contract_Term_Alloc.class, "C_OLCand_ID", null);
-	String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
+	public de.metas.ordercandidate.model.I_C_OLCand getC_OLCand();
+
+	public void setC_OLCand(de.metas.ordercandidate.model.I_C_OLCand C_OLCand);
+
+    /** Column definition for C_OLCand_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, de.metas.ordercandidate.model.I_C_OLCand> COLUMN_C_OLCand_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, de.metas.ordercandidate.model.I_C_OLCand>(I_C_Contract_Term_Alloc.class, "C_OLCand_ID", de.metas.ordercandidate.model.I_C_OLCand.class);
+    /** Column name C_OLCand_ID */
+    public static final String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_Created = new ModelColumn<>(I_C_Contract_Term_Alloc.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object>(I_C_Contract_Term_Alloc.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_User>(I_C_Contract_Term_Alloc.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Status.
+	 * Set Belegstatus.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -179,65 +214,75 @@ public interface I_C_Contract_Term_Alloc
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setDocStatus (@Nullable java.lang.String DocStatus);
+	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Status.
+	 * Get Belegstatus.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	@Nullable java.lang.String getDocStatus();
+	public java.lang.String getDocStatus();
 
-	ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Contract_Term_Alloc.class, "DocStatus", null);
-	String COLUMNNAME_DocStatus = "DocStatus";
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object>(I_C_Contract_Term_Alloc.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Contract_Term_Alloc.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object>(I_C_Contract_Term_Alloc.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_Updated = new ModelColumn<>(I_C_Contract_Term_Alloc.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, Object>(I_C_Contract_Term_Alloc.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Contract_Term_Alloc, org.compiere.model.I_AD_User>(I_C_Contract_Term_Alloc.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

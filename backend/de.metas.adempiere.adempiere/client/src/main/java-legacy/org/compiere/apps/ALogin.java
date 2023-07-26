@@ -17,26 +17,19 @@
 package org.compiere.apps;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.security.Role;
-import de.metas.security.RoleId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
@@ -69,7 +62,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -90,9 +82,7 @@ public final class ALogin extends CDialog
 	private static final long serialVersionUID = 7789299589024390163L;
 
 	// services
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * Construct the dialog. Need to call initLogin for dynamic start
@@ -709,12 +699,11 @@ public final class ALogin extends CDialog
 	 */
 	private boolean defaultsOK()
 	{
-		final KeyNamePair orgKNP = orgCombo.getSelectedItem();
-		if (orgKNP == null)
+		KeyNamePair org = orgCombo.getSelectedItem();
+		if (org == null)
 		{
 			return false;
 		}
-		final OrgId orgId = OrgId.ofRepoId(orgKNP.getKey());
 
 		// Set Properties
 		Ini.setProperty(Ini.P_CONNECTION, CConnection.get().toStringLong());
@@ -724,7 +713,7 @@ public final class ALogin extends CDialog
 		Ini.setProperty(Ini.P_LANGUAGE, ad_language);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, ad_language);
 
-		String error = m_login.validateLogin(orgId);
+		String error = m_login.validateLogin(org);
 		if (error != null && error.length() > 0)
 		{
 			ADialog.info(m_WindowNo, this, error);
@@ -734,7 +723,7 @@ public final class ALogin extends CDialog
 
 		// Load Properties and save Ini values
 		statusBar.setStatusLine("Loading Preferences");
-		final String msg = m_login.loadPreferences(orgId, dateField.getTimestamp());
+		final String msg = m_login.loadPreferences(org, dateField.getTimestamp());
 		if (!Check.isEmpty(msg))
 		{
 			ADialog.info(m_WindowNo, this, msg);
@@ -782,11 +771,10 @@ public final class ALogin extends CDialog
 		//
 		// Authenticate and get roles
 		m_login = new Login(getCtx());
-		final List<KeyNamePair> roleKNPs;
+		final Set<KeyNamePair> roles;
 		try
 		{
-			final ImmutableList<Role> roles = m_login.authenticate(m_user, HashableString.ofPlainValue(m_pwd)).getAvailableRoles();
-			roleKNPs = toRoleKeyNamePairList(roles);
+			roles = m_login.authenticate(m_user, HashableString.ofPlainValue(m_pwd));
 		}
 		catch (Throwable e)
 		{
@@ -799,7 +787,7 @@ public final class ALogin extends CDialog
 		}
 
 		changeCombo(() -> {
-			roleCombo.setModel(ListComboBoxModel.ofNullable(roleKNPs));
+			roleCombo.setModel(ListComboBoxModel.ofNullable(roles));
 
 			// If we have only one role, we can hide the combobox - metas-2009_0021_AP1_G94
 			if (roleCombo.getItemCount() == 1)
@@ -810,10 +798,10 @@ public final class ALogin extends CDialog
 			}
 			else
 			{
-				final KeyNamePair defaultRoleKNP = findDefaultRole(roleKNPs);
-				if (defaultRoleKNP != null)
+				final KeyNamePair defaultRole = findDefaultRole(roles);
+				if (defaultRole != null)
 				{
-					roleCombo.setSelectedItem(defaultRoleKNP);
+					roleCombo.setSelectedItem(defaultRole);
 				}
 
 				roleLabel.setVisible(true);
@@ -850,24 +838,21 @@ public final class ALogin extends CDialog
 		}
 	}
 
-	private static KeyNamePair findDefaultRole(final List<KeyNamePair> roles)
+	private static KeyNamePair findDefaultRole(final Set<KeyNamePair> roles)
 	{
 		if (Check.isEmpty(roles))
 		{
 			return null;
 		}
 
-		if(Ini.isSwingClient())
+		final String iniDefaultRoleName = Ini.getProperty(Ini.P_ROLE);
+		if (!Check.isEmpty(iniDefaultRoleName))
 		{
-			final String iniDefaultRoleName = Ini.getProperty(Ini.P_ROLE);
-			if (!Check.isEmpty(iniDefaultRoleName))
+			for (final KeyNamePair role : roles)
 			{
-				for (final KeyNamePair role : roles)
+				if (Objects.equals(role.getName(), iniDefaultRoleName))
 				{
-					if (Objects.equals(role.getName(), iniDefaultRoleName))
-					{
-						return role;
-					}
+					return role;
 				}
 			}
 		}
@@ -881,17 +866,15 @@ public final class ALogin extends CDialog
 	private void roleComboChanged()
 	{
 		changeCombo(() -> {
-			final KeyNamePair roleKNP = roleCombo.getSelectedItem();
-			if (roleKNP == null)
+			final KeyNamePair role = roleCombo.getSelectedItem();
+			if (role == null)
 			{
 				return;
 			}
 
-			log.trace("role changed: {}", roleKNP);
+			log.trace("role changed: {}", role);
 
-			final RoleId roleId = RoleId.ofRepoId(roleKNP.getKey());
-			final Set<ClientId> clientIds = m_login.setRoleAndGetClients(roleId);
-			final List<KeyNamePair> clients = toClientKeyNamePairList(clientIds);
+			final Set<KeyNamePair> clients = m_login.setRoleAndGetClients(role);
 			clientCombo.setModel(ListComboBoxModel.ofNullable(clients));
 			orgCombo.setModel(new ListComboBoxModel<>());
 
@@ -914,39 +897,7 @@ public final class ALogin extends CDialog
 		clientComboChanged();
 	}
 
-	private List<KeyNamePair> toRoleKeyNamePairList(@NonNull final List<Role> roles)
-	{
-		return roles
-				.stream()
-				.filter(role -> role.getId().isSystem()) // to limit annoying mistakes
-				.map(role -> KeyNamePair.of(role.getId(), role.getName()))
-				.distinct()
-				.sorted(Comparator.comparing(KeyNamePair::getName))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private List<KeyNamePair> toClientKeyNamePairList(@NonNull final Set<ClientId> clientIds)
-	{
-		return clientDAO.getByIds(clientIds)
-				.stream()
-				.map(clientRecord -> KeyNamePair.of(clientRecord.getAD_Client_ID(), clientRecord.getName()))
-				.distinct()
-				.sorted(Comparator.comparing(KeyNamePair::getName))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private List<KeyNamePair> toOrgKeyNamePairList(@NonNull final Set<OrgId> orgIds)
-	{
-		return orgDAO.getByIds(orgIds)
-				.stream()
-				.map(orgRecord -> KeyNamePair.of(orgRecord.getAD_Org_ID(), orgRecord.getName()))
-				.distinct()
-				.sorted(Comparator.comparing(KeyNamePair::getName))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-
-	private static KeyNamePair findDefaultClient(final List<KeyNamePair> clients)
+	private static KeyNamePair findDefaultClient(final Set<KeyNamePair> clients)
 	{
 		if (Check.isEmpty(clients))
 		{
@@ -974,20 +925,17 @@ public final class ALogin extends CDialog
 	private void clientComboChanged()
 	{
 		changeCombo(() -> {
-			final KeyNamePair clientKNP = clientCombo.getSelectedItem();
-			if (clientKNP == null)
+			final KeyNamePair client = clientCombo.getSelectedItem();
+			if (client == null)
 			{
 				return;
 			}
-			log.trace("client changed: {}", clientKNP);
+			log.trace("client changed: {}", client);
 
 			showHideDateField();
 
 			//
-			final ClientId clientId = ClientId.ofRepoId(clientKNP.getKey());
-			final String clientName = clientKNP.getName();
-			final Set<OrgId> orgIds = m_login.setClientAndGetOrgs(clientId, clientName);
-			final List<KeyNamePair> orgs = toOrgKeyNamePairList(orgIds);
+			final Set<KeyNamePair> orgs = m_login.setClientAndGetOrgs(client);
 			orgCombo.setModel(ListComboBoxModel.ofNullable(orgs));
 			// No Orgs
 			if (orgs == null || orgs.isEmpty())
@@ -1006,7 +954,7 @@ public final class ALogin extends CDialog
 		orgComboChanged();
 	}
 
-	private static KeyNamePair findDefaultOrg(final List<KeyNamePair> orgs)
+	private static KeyNamePair findDefaultOrg(final Set<KeyNamePair> orgs)
 	{
 		if (Check.isEmpty(orgs))
 		{

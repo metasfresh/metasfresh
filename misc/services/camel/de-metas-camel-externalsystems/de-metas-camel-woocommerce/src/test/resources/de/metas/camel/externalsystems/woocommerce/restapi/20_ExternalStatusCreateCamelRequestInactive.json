@@ -1,9 +1,0 @@
-{
-  "externalSystemConfigType": "WOO",
-  "externalSystemChildConfigValue": "childValue",
-  "serviceValue": "defaultRestAPIWOO",
-  "jsonStatusRequest": {
-    "status": "Inactive",
-    "adPInstanceId": 123
-  }
-}

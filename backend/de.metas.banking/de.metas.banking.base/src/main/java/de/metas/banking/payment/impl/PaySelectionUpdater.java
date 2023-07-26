@@ -1,41 +1,7 @@
 package de.metas.banking.payment.impl;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableSet;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.banking.PaySelectionId;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.banking.payment.IPaySelectionUpdater;
-import de.metas.banking.payment.InvoiceMatchingMode;
-import de.metas.banking.payment.PaySelectionTrxType;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.ModelCacheInvalidationService;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.document.engine.DocStatus;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.payment.PaymentRule;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.model.POInfo;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,17 +15,51 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import javax.annotation.Nullable;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.POInfo;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.banking.PaySelectionId;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.banking.payment.InvoiceMatchingMode;
+import de.metas.banking.payment.PaySelectionTrxType;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.document.engine.DocStatus;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentRule;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
 	// services
-	private static final Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
+	private static final transient Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
-	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
+	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private boolean _configurable = true;
 
@@ -360,7 +360,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				sql += " AND ";
 			}
 
-			sql += "daysbetween(?,  i.duedate::timestamp WITH TIME ZONE)  >= 0"; // ##
+			sql += "paymentTermDueDays(C_PaymentTerm_ID, DateInvoiced, ?) >= 0"; // ##
 			sqlParams.add(payDate);
 
 			if (isOnlyDiscount())
@@ -596,9 +596,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private ImmutableSet<PaymentRule> retrieveInvoicePaymentRules()
 	{
 		final POInfo invoicePOInfo = POInfo.getPOInfo(I_C_Invoice.Table_Name);
-		final ReferenceId paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
+		final int paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
 
-		final Set<String> paymentRules = adReferenceService.getRefListById(paymentRuleReferenceId).getValues();
+		final Set<String> paymentRules = Services.get(IADReferenceDAO.class).retrieveListValues(paymentRuleReferenceId);
 		if (paymentRules == null || paymentRules.isEmpty())
 		{
 			throw new AdempiereException("No active payment rules were found");
@@ -617,7 +617,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_PaySelection.Table_Name, paySelectionId),
 						CacheInvalidateRequest.allChildRecords(I_C_PaySelection.Table_Name, paySelectionId, I_C_PaySelectionLine.Table_Name)),
-				ModelCacheInvalidationTiming.AFTER_CHANGE);
+				ModelCacheInvalidationTiming.CHANGE);
 	}
 
 	private boolean isOnlyDiscount()

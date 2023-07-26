@@ -22,10 +22,7 @@
 
 package de.metas.order.createFrom;
 
-import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.copy_with_details.template.CopyTemplate;
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -36,7 +33,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -51,14 +50,12 @@ public class CreateSalesOrderFromProposalCommand
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final OrderId fromProposalId;
 	private final DocTypeId newOrderDocTypeId;
 	private final Timestamp newOrderDateOrdered;
 	private final String poReference;
 	private final boolean completeIt;
-	private final boolean isKeepProposalPrices;
 
 	@Builder
 	private CreateSalesOrderFromProposalCommand(
@@ -66,16 +63,13 @@ public class CreateSalesOrderFromProposalCommand
 			@NonNull final DocTypeId newOrderDocTypeId,
 			@Nullable final Timestamp newOrderDateOrdered,
 			@Nullable final String poReference,
-			final boolean completeIt,
-			final boolean isKeepProposalPrices
-	)
+			final boolean completeIt)
 	{
 		this.fromProposalId = fromProposalId;
 		this.newOrderDocTypeId = newOrderDocTypeId;
 		this.newOrderDateOrdered = newOrderDateOrdered;
 		this.poReference = poReference;
 		this.completeIt = completeIt;
-		this.isKeepProposalPrices = isKeepProposalPrices;
 	}
 
 	public I_C_Order execute()
@@ -83,7 +77,7 @@ public class CreateSalesOrderFromProposalCommand
 		final I_C_Order fromProposal = orderBL.getById(fromProposalId);
 		if (!orderBL.isSalesProposalOrQuotation(fromProposal))
 		{
-			throw new AdempiereException("Not a quotation/proposal: " + fromProposal);
+			throw new AdempiereException("Not an quotation/proposal: " + fromProposal);
 		}
 
 		final I_C_Order newSalesOrder = copyProposalHeader(fromProposal);
@@ -129,13 +123,12 @@ public class CreateSalesOrderFromProposalCommand
 			@NonNull final I_C_Order newSalesOrder)
 	{
 		CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name)
-				.onChildRecordCopied(this::onRecordCopied)
-				.copyChildren(
-						InterfaceWrapperHelper.getPO(newSalesOrder),
-						InterfaceWrapperHelper.getPO(fromProposal));
+				.setParentPO(InterfaceWrapperHelper.getPO(newSalesOrder))
+				.addChildRecordCopiedListener(this::onRecordCopied)
+				.copyRecord(InterfaceWrapperHelper.getPO(fromProposal), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void onRecordCopied(@NonNull final PO to, @NonNull final PO from, @NonNull final CopyTemplate template)
+	private void onRecordCopied(@NonNull final PO to, @NonNull final PO from)
 	{
 		if (InterfaceWrapperHelper.isInstanceOf(to, I_C_OrderLine.class)
 				&& InterfaceWrapperHelper.isInstanceOf(from, I_C_OrderLine.class))
@@ -144,15 +137,7 @@ public class CreateSalesOrderFromProposalCommand
 			final I_C_OrderLine fromProposalLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);
 
 			newSalesOrderLine.setRef_ProposalLine_ID(fromProposalLine.getC_OrderLine_ID());
-
-			final I_C_Order fromProposal = fromProposalLine.getC_Order();
-			final DocTypeId proposalDocType = DocTypeId.ofRepoId(fromProposal.getC_DocType_ID());
-			if (isKeepProposalPrices
-					&& docTypeBL.isSalesQuotation(proposalDocType))
-			{
-				newSalesOrderLine.setIsManualPrice(true);
-				newSalesOrderLine.setPriceActual(fromProposalLine.getPriceActual());
-			}
+			orderDAO.save(newSalesOrderLine);
 		}
 	}
 

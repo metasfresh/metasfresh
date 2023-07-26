@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
@@ -13,7 +12,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -86,10 +84,6 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	@NonNull
 	private final String labelsLinkColumnName;
 
-	@Getter
-	@Nullable
-	private final ReferenceId labelsValueReferenceId;
-
 	/**
 	 * Table name (e.g. C_BPartner)
 	 */
@@ -114,21 +108,18 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			@NonNull final String labelsTableName,
 			@NonNull final String labelsValueColumnName,
 			@NonNull final String labelsLinkColumnName,
-			boolean labelsValuesUseNumericKey,
-			@NonNull final LookupDataSource labelsValuesLookupDataSource,
-			@Nullable final ReferenceId labelsValueReferenceId)
+			@NonNull final LookupDescriptor labelsValuesLookupDescriptor)
 	{
 		this.fieldName = fieldName;
 		this.labelsTableName = labelsTableName;
 		this.labelsValueColumnName = labelsValueColumnName;
-		this.labelsValueReferenceId = labelsValueReferenceId;
-		this.labelsValuesLookupDataSource = labelsValuesLookupDataSource;
-		this.labelsValuesUseNumericKey = labelsValuesUseNumericKey;
+		this.labelsValuesLookupDataSource = LookupDataSourceFactory.instance.getLookupDataSource(labelsValuesLookupDescriptor);
+		this.labelsValuesUseNumericKey = labelsValuesLookupDescriptor.isNumericKey();
 		this.labelsLinkColumnName = labelsLinkColumnName;
 		this.tableName = tableName;
 		this.linkColumnName = linkColumnName;
 
-		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName+"/-1"));
+		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName));
 	}
 
 	@Override
@@ -301,13 +292,11 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		}
 	}
 
-	public ColumnSql getSqlForFetchingValueIdsByLinkId(@NonNull final String tableNameOrAlias)
+	public String getSqlForFetchingValueIdsByLinkId(@NonNull final String tableNameOrAlias)
 	{
-		final String sql = "SELECT array_agg(" + labelsValueColumnName + ")"
+		return "SELECT array_agg(" + labelsValueColumnName + ")"
 				+ " FROM " + labelsTableName
 				+ " WHERE " + labelsLinkColumnName + "=" + tableNameOrAlias + "." + linkColumnName
 				+ " AND IsActive='Y'";
-
-		return ColumnSql.ofSql(sql, tableNameOrAlias);
 	}
 }

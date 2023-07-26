@@ -1,9 +1,17 @@
 package de.metas.contracts.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-import de.metas.contacts.invoice.interim.invoicecandidatehandler.FlatrateTermInterimInvoice_Handler;
+
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.invoicecandidatehandler.FlatrateTermRefund_Handler;
 import de.metas.contracts.subscription.invoicecandidatehandler.FlatrateTermSubscription_Handler;
@@ -18,39 +26,20 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.TimeUtil;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
-import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
-import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_Flatrate_Term}.
- * Also see {@link ConditionTypeSpecificInvoiceCandidateHandler}.
+ *
  */
 public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 {
-	public final static String SYS_Config_AUTO_INVOICE = "de.metas.contracts.invoicecandidate.ALLOW_AUTO_INVOICE";
-
 	private final Map<String, ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers;
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public FlatrateTerm_Handler()
 	{
-		this(ImmutableList.<ConditionTypeSpecificInvoiceCandidateHandler>of(
+		this(ImmutableList.<ConditionTypeSpecificInvoiceCandidateHandler> of(
 				new FlatrateTermSubscription_Handler(),
-				new FlatrateTermRefund_Handler(),
-				new FlatrateTermInterimInvoice_Handler()));
+				new FlatrateTermRefund_Handler()));
 	}
 
 	public FlatrateTerm_Handler(
@@ -63,34 +52,16 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
+	public boolean isCreateMissingCandidatesAutomatically(final Object flatrateTerm)
 	{
-		final boolean allowAutoInvoice = sysConfigBL.getBooleanValue(SYS_Config_AUTO_INVOICE, false);
-		return allowAutoInvoice ? CREATE_CANDIDATES_AND_INVOICES : CREATE_CANDIDATES;
-	}
-
-	@Override
-	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object flatrateTermObj)
-	{
-		final I_C_Flatrate_Term flatrateTerm = create(flatrateTermObj, I_C_Flatrate_Term.class);
-		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();
-
-		for (final ConditionTypeSpecificInvoiceCandidateHandler specificHandler : specificHandlers)
-		{
-			final CandidatesAutoCreateMode modeForTerm = specificHandler.isMissingInvoiceCandidate(flatrateTerm);
-			if (modeForTerm != CandidatesAutoCreateMode.DONT)
-			{
-				return modeForTerm;
-			}
-		}
-		return CandidatesAutoCreateMode.DONT;
+		return isMissingInvoiceCandidate(flatrateTerm);
 	}
 
 	/**
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have an invoice candidate referencing them.
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
+	public Iterator<I_C_Flatrate_Term> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();
 		Iterator<I_C_Flatrate_Term> result = null;
@@ -110,12 +81,29 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public InvoiceCandidateGenerateResult createCandidatesFor(@NonNull final InvoiceCandidateGenerateRequest request)
+	public boolean isMissingInvoiceCandidate(final Object flatrateTermObj)
+	{
+		final I_C_Flatrate_Term flatrateTerm = create(flatrateTermObj, I_C_Flatrate_Term.class);
+
+		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();
+
+		for (final ConditionTypeSpecificInvoiceCandidateHandler specificHandler : specificHandlers)
+		{
+			if (specificHandler.isMissingInvoiceCandidate(flatrateTerm))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
 		final I_C_Flatrate_Term term = request.getModel(I_C_Flatrate_Term.class);
 
-		final List<I_C_Invoice_Candidate> invoiceCandidates = createCandidatesForTerm(term);
-		return InvoiceCandidateGenerateResult.of(this, invoiceCandidates);
+		final I_C_Invoice_Candidate ic = createCandidateForTerm(term);
+		return InvoiceCandidateGenerateResult.of(this, ic);
 	}
 
 	@Override
@@ -146,30 +134,24 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		return false;
 	}
 
-	@Nullable
-	private List<I_C_Invoice_Candidate> createCandidatesForTerm(@NonNull final I_C_Flatrate_Term term)
+	private I_C_Invoice_Candidate createCandidateForTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (HandlerTools.isCancelledContract(term))
 		{
-			return Collections.emptyList();
+			return null;
 		}
-		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
-		final List<I_C_Invoice_Candidate> invoiceCandidates = handler.createInvoiceCandidates(term);
+		final I_C_Invoice_Candidate ic = HandlerTools.createIcAndSetCommonFields(term);
+		ic.setC_ILCandHandler(getHandlerRecord());
 
-		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
-		{
-			ic.setC_ILCandHandler(getHandlerRecord());
+		setOrderedData(ic);
 
-			setOrderedData(ic);
+		// note that C_Invoice_Cand.QtyDelivered by InvoiceCandBL, so
+		// whatever InvoiceRule set in the conditions should be OK
+		ic.setInvoiceRule(term.getC_Flatrate_Conditions().getInvoiceRule());
 
-			// note that C_Invoice_Cand.QtyDelivered by InvoiceCandBL, so
-			// whatever InvoiceRule set in the conditions should be OK
-			ic.setInvoiceRule(term.getC_Flatrate_Conditions().getInvoiceRule());
-
-			handler.setSpecificInvoiceCandidateValues(ic, term);
-		}
-		return invoiceCandidates;
+		getSpecificHandler(term).setSpecificInvoiceCandidateValues(ic, term);
+		return ic;
 	}
 
 	/**
@@ -187,7 +169,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
-		ic.setDateOrdered(TimeUtil.asTimestamp(handler.calculateDateOrdered(ic)));
+		ic.setDateOrdered(handler.calculateDateOrdered(ic));
 
 		final Quantity calculateQtyOrdered = handler.calculateQtyEntered(ic);
 
@@ -248,20 +230,8 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final ConditionTypeSpecificInvoiceCandidateHandler handlerOrNull = conditionTypeSpecificInvoiceCandidateHandlers.get(term.getType_Conditions());
 		return Check.assumeNotNull(handlerOrNull,
-								   "The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
-								   term.getType_Conditions(), term);
-	}
-
-	@Override
-	public void postSave(@NonNull final InvoiceCandidateGenerateResult result)
-	{
-		for (final I_C_Invoice_Candidate ic: result.getC_Invoice_Candidates())
-		{
-			final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
-			final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
-
-			handler.postSave(ic);
-		}
+				"The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
+				term.getType_Conditions(), term);
 	}
 
 }

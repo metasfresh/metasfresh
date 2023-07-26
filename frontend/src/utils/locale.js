@@ -20,24 +20,6 @@ export function getCurrentActiveLocale() {
   return localStorage.getItem(LOCAL_LANG);
 }
 
-/**
- * @param {string} locale in form of 'en_US', 'de_DE
- * @returns {string} extracted language (e.g. 'en', 'de')
- */
-export function extractLanguageFromLocale(locale) {
-  if (!locale) return 'de';
-  const idx = locale.indexOf('_');
-  if (idx > 0) {
-    return locale.substr(0, idx);
-  } else {
-    return locale;
-  }
-}
-
-export function getCurrentActiveLanguage() {
-  return extractLanguageFromLocale(getCurrentActiveLocale());
-}
-
 export function setCurrentActiveLocale(lang) {
   localStorage.setItem(LOCAL_LANG, lang);
 

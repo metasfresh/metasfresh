@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
+import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -59,6 +60,7 @@ public class EnqueuePurchaseCandidateRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonPurchaseCandidatesRequest.class))
 				.removeHeaders("CamelHttp*")
+				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{metasfresh.enqueue-purchases-candidate-v2.api.uri}}")
 

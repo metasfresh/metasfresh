@@ -34,21 +34,31 @@
         "caption": "Filters",
         "includedFilters": [
           {
-            "filterId": "default",
-            "caption": "Default filter",
-            "frequent": false
-          },
-          {
             "filterId": "userquery-540024",
             "caption": "Abrechnung_offen_normal",
             "frequent": false,
             "inlineRenderMode": "button",
             "parametersLayoutType": "panel",
-            "debugProperties": { "sortNo": 20002 }
+            "debugProperties": {}
           }
         ]
       }
     ],
-    "filtersActive": []
+    "filtersActive": [
+      {
+        "filterId": "default",
+        "parameters": [
+          {
+            "parameterName": "C_BPartner_ID",
+            "value": {
+              "key": "2156429",
+              "caption": "1000003_TestVendor",
+              "description": "1000003_TestVendor"
+            },
+            "valueTo": null
+          }
+        ]
+      }
+    ]
   }
 }

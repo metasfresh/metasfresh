@@ -1,13 +1,11 @@
 package org.compiere.util;
 
-import org.compiere.util.Evaluatees.CompositeEvaluatee;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.compiere.util.Evaluatees.CompositeEvaluatee;
+import org.junit.Assert;
+import org.junit.Test;
 
 /*
  * #%L
@@ -40,8 +38,8 @@ public class EvaluateesTest
 		final Evaluatee e2 = dummyEvaluatee("e2");
 		final Evaluatee e3 = dummyEvaluatee("e3");
 
-		test_composeNotNulls(Collections.singletonList(e1), e1);
-		test_composeNotNulls(Collections.singletonList(e1), null, e1, null);
+		test_composeNotNulls(Arrays.asList(e1), e1);
+		test_composeNotNulls(Arrays.asList(e1), null, e1, null);
 		test_composeNotNulls(Arrays.asList(e1, e2, e3), e1, e2, e3);
 		test_composeNotNulls(Arrays.asList(e1, e2, e3), null, e1, null, e2, null, e3, null, null, null, null);
 	}
@@ -50,7 +48,7 @@ public class EvaluateesTest
 	{
 		final CompositeEvaluatee composite = (CompositeEvaluatee)Evaluatees.composeNotNulls(evaluatees);
 		final List<Evaluatee> actualSources = composite.getSources();
-		assertThat(actualSources).isEqualTo(expectedSources);
+		Assert.assertEquals(expectedSources, actualSources);
 	}
 
 	private static Evaluatee dummyEvaluatee(final String name)

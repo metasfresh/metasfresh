@@ -146,7 +146,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	public LookupValuesList getAvailableProducts()
 	{
 		final List<ProductId> productIds = getProductIds();
-		return LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_M_Product.Table_Name).findByIdsOrdered(productIds);
+		return LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name).findByIdsOrdered(productIds);
 	}
 
 	@Override

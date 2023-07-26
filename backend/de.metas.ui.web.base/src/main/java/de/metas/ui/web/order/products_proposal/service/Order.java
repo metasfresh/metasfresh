@@ -1,13 +1,18 @@
 package de.metas.ui.web.order.products_proposal.service;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -15,11 +20,6 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.Optional;
 
 /*
  * #%L
@@ -48,9 +48,6 @@ import java.util.Optional;
 public class Order
 {
 	@NonNull
-	ClientAndOrgId clientAndOrgId;
-
-	@NonNull
 	OrderId orderId;
 
 	@NonNull
@@ -58,9 +55,6 @@ public class Order
 
 	@NonNull
 	ZonedDateTime datePromised;
-
-	@NonNull
-	ZonedDateTime dateOrdered;
 
 	@NonNull
 	BPartnerId bpartnerId;
@@ -81,12 +75,7 @@ public class Order
 
 	@NonNull
 	Currency currency;
-
-	@Nullable
-	Integer incoTermsId;
-
-	@Nullable
-	OrderId refOrderId;
+	
 
 	@NonNull
 	ImmutableList<OrderLine> lines;
@@ -101,15 +90,4 @@ public class Order
 				.findFirst();
 	}
 
-	@NonNull
-	public OrderLine getFirstMatchingOrderLine(@NonNull final ProductId productId)
-	{
-		return getLines()
-				.stream()
-				.filter(line -> line.isMatching(productId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No line found for productId !")
-						.appendParametersToMessage()
-						.setParameter("productId", productId));
-	}
 }

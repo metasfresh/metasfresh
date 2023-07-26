@@ -54,7 +54,6 @@ public class CommissionFact
 		this.points = points;
 	}
 
-	@NonNull
 	public static Optional<CommissionFact> createFact(
 			@NonNull final Instant timestamp,
 			@NonNull final CommissionState state,

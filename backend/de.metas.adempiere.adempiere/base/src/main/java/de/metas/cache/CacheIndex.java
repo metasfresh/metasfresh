@@ -1,15 +1,17 @@
 package de.metas.cache;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.SetMultimap;
-import de.metas.logging.LogManager;
-import lombok.NonNull;
+import java.util.Collection;
+import java.util.Set;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
-import java.util.Collection;
-import java.util.Set;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
+
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -168,11 +170,5 @@ public final class CacheIndex<DataItemId, CacheKey, DataItem> implements Caching
 
 		logger.debug("Removing pairs from index: {}, {}", recordRefs, dataItemId);
 		recordRefs.forEach(recordRef -> _recordRef_to_dateItemId.remove(recordRef, dataItemId));
-	}
-
-	@Override
-	public boolean isResetAll(final TableRecordReference recordRef)
-	{
-		return adapter.isResetAll(recordRef);
 	}
 }

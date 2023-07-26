@@ -23,9 +23,11 @@
 package de.metas.ui.web.order.attachmenteditor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentLinksRequest;
 import de.metas.attachments.AttachmentTags;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -48,6 +50,7 @@ import org.compiere.model.I_C_Order;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -58,34 +61,16 @@ public class OrderAttachmentRow implements IViewRow
 {
 	private static final String SYS_CONFIG_PREFIX = "de.metas.ui.web.order.attachmenteditor.OrderAttachmentRow.field";
 
-	public static final String FIELD_AttachmentId = "AttachmentId";
-	@Getter
-	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo,
-			widgetSize = WidgetSize.Small,
-			captionKey = "AD_AttachmentEntry_ID",
-			fieldName = FIELD_AttachmentId,
-			editor = ViewEditorRenderMode.NEVER)
-	private final Integer attachmentEntryId;
-		
-	public static final String FIELD_IsDirectlyAttachToPurchaseOrder = "IsDirectlyAttachToPurchaseOrder";
-	@Getter
-	@ViewColumn(seqNo = 15, widgetType = DocumentFieldWidgetType.YesNo,
-			widgetSize = WidgetSize.Small,
-			captionKey = FIELD_IsDirectlyAttachToPurchaseOrder,
-			fieldName = FIELD_IsDirectlyAttachToPurchaseOrder,
-			editor = ViewEditorRenderMode.NEVER)
-	private final Boolean isDirectlyAttachToPurchaseOrder;
-
 	public static final String FIELD_IsAttachToPurchaseOrder = "IsAttachToPurchaseOrder";
 	@Getter
-	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.YesNo,
+	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo,
 			widgetSize = WidgetSize.Small,
 			captionKey = "IsAttachToPurchaseOrder",
 			fieldName = FIELD_IsAttachToPurchaseOrder,
 			editor = ViewEditorRenderMode.ALWAYS)
 	private final Boolean isAttachToPurchaseOrder;
 
-	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup,
+	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Lookup,
 			widgetSize = WidgetSize.Small,
 			captionKey = I_Alberta_PrescriptionRequest.COLUMNNAME_C_BPartner_Patient_ID,
 			displayed = ViewColumn.ViewColumnLayout.Displayed.SYSCONFIG,
@@ -95,7 +80,7 @@ public class OrderAttachmentRow implements IViewRow
 	@Getter
 	private final LookupValue patient;
 
-	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup,
+	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup,
 			widgetSize = WidgetSize.Small,
 			captionKey = I_C_BPartner_AlbertaPatient.COLUMNNAME_C_BPartner_Payer_ID,
 			displayed = ViewColumn.ViewColumnLayout.Displayed.SYSCONFIG,
@@ -105,7 +90,7 @@ public class OrderAttachmentRow implements IViewRow
 	@Getter
 	private final LookupValue payer;
 
-	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Lookup,
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup,
 			widgetSize = WidgetSize.Small, captionKey = I_Alberta_PrescriptionRequest.COLUMNNAME_C_BPartner_Pharmacy_ID,
 			displayed = ViewColumn.ViewColumnLayout.Displayed.SYSCONFIG,
 			displayedSysConfigPrefix = SYS_CONFIG_PREFIX,
@@ -114,14 +99,14 @@ public class OrderAttachmentRow implements IViewRow
 	@Getter
 	private final LookupValue pharmacy;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.ZonedDateTime,
+	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime,
 			widgetSize = WidgetSize.Small,
 			captionKey = I_C_Order.COLUMNNAME_DatePromised,
 			editor = ViewEditorRenderMode.NEVER)
 	@Getter
 	private final ZonedDateTime datePromised;
 
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Text,
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Text,
 			widgetSize = WidgetSize.Small,
 			captionKey = I_AD_AttachmentEntry.COLUMNNAME_FileName,
 			editor = ViewEditorRenderMode.NEVER)
@@ -130,14 +115,19 @@ public class OrderAttachmentRow implements IViewRow
 
 	private final I_C_Order selectedPurchaseOrder;
 
+	@NonNull
+	private final Set<TableRecordReference> salesOrderRecordRefs;
+
 	private final AttachmentEntry attachmentEntry;
 	private final DocumentId rowId;
 
+	private final Boolean isAttachToPurchaseOrderInitial;
 	private final ViewRowFieldNameAndJsonValuesHolder<OrderAttachmentRow> values;
 
 	@Builder(toBuilder = true)
 	private OrderAttachmentRow(
 			@NonNull final Boolean isAttachToPurchaseOrder,
+			@NonNull final Boolean isAttachToPurchaseOrderInitial,
 			@Nullable final LookupValue patient,
 			@NonNull final I_C_Order selectedPurchaseOrder,
 			@NonNull final AttachmentEntry attachmentEntry,
@@ -145,11 +135,11 @@ public class OrderAttachmentRow implements IViewRow
 			@Nullable final LookupValue pharmacy,
 			@Nullable final ZonedDateTime datePromised,
 			@Nullable final String filename,
+			@Nullable final Set<TableRecordReference> salesOrderRecordRefs,
 			@NonNull final DocumentId rowId)
 	{
-		this.attachmentEntryId = attachmentEntry.getId().getRepoId();
 		this.isAttachToPurchaseOrder = isAttachToPurchaseOrder;
-		this.isDirectlyAttachToPurchaseOrder = attachmentEntry.hasLinkToRecord(TableRecordReference.of(selectedPurchaseOrder));
+		this.isAttachToPurchaseOrderInitial = isAttachToPurchaseOrderInitial;
 		this.patient = patient;
 		this.payer = payer;
 		this.pharmacy = pharmacy;
@@ -157,6 +147,7 @@ public class OrderAttachmentRow implements IViewRow
 		this.filename = filename;
 		this.selectedPurchaseOrder = selectedPurchaseOrder;
 		this.attachmentEntry = attachmentEntry;
+		this.salesOrderRecordRefs = CoalesceUtil.coalesceNotNull(salesOrderRecordRefs, ImmutableSet.of());
 		this.rowId = rowId;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(OrderAttachmentRow.class);
@@ -204,32 +195,37 @@ public class OrderAttachmentRow implements IViewRow
 
 	Optional<AttachmentLinksRequest> toAttachmentLinksRequest()
 	{
+		if (isAttachToPurchaseOrderInitial == isAttachToPurchaseOrder)
+		{
+			return Optional.empty();
+		}
+
 		final Map<String, String> emailAttachmentTagAsMap = new HashMap<>();
 		emailAttachmentTagAsMap.put(TAGNAME_SEND_VIA_EMAIL, Boolean.TRUE.toString());
 
 		final AttachmentTags emailAttachmentTag = AttachmentTags.ofMap(emailAttachmentTagAsMap);
 
-		final TableRecordReference purchaseOrderRecordRef = getPurchaseOrderRecordRef();
-
-		if (isAttachToPurchaseOrder)
+		if (!isAttachToPurchaseOrderInitial && isAttachToPurchaseOrder)
 		{
 			return Optional.of(AttachmentLinksRequest.builder()
 									   .attachmentEntryId(attachmentEntry.getId())
-									   .linksToAdd(ImmutableList.of(purchaseOrderRecordRef))
+									   .linksToAdd(ImmutableList.of(getPurchaseOrderRecordRef()))
 									   .tagsToAdd(emailAttachmentTag)
 									   .build());
 		}
-		else if (isDirectlyAttachToPurchaseOrder)
+		else if (isAttachToPurchaseOrderInitial && !isAttachToPurchaseOrder)
 		{
 			return isAttachmentLinkedOnlyToPO()
-					? Optional.of(AttachmentLinksRequest.builder()
-										  .attachmentEntryId(attachmentEntry.getId())
-										  .tagsToRemove(emailAttachmentTag)
-										  .build())
-
+					? getSalesOrderRecordRef()
+					.map(salesOrderRecordRef -> AttachmentLinksRequest.builder()
+							.attachmentEntryId(attachmentEntry.getId())
+							.linksToRemove(ImmutableList.copyOf(salesOrderRecordRef))
+							.tagsToRemove(emailAttachmentTag)
+							.build()
+					)
 					: Optional.of(AttachmentLinksRequest.builder()
 										  .attachmentEntryId(attachmentEntry.getId())
-										  .linksToRemove(ImmutableList.of(purchaseOrderRecordRef))
+										  .linksToRemove(ImmutableList.copyOf(getOrderRelatedRecordRef()))
 										  .tagsToRemove(emailAttachmentTag)
 										  .build());
 		}
@@ -239,12 +235,31 @@ public class OrderAttachmentRow implements IViewRow
 
 	private boolean isAttachmentLinkedOnlyToPO()
 	{
-		return attachmentEntry.getLinkedRecords().size() == 1
-				&& attachmentEntry.getLinkedRecords().contains(getPurchaseOrderRecordRef());
+		final Set<TableRecordReference> orderRelatedRecordRef = getOrderRelatedRecordRef();
+
+		return orderRelatedRecordRef.containsAll(attachmentEntry.getLinkedRecords());
+	}
+
+	@NonNull
+	private Optional<Set<TableRecordReference>> getSalesOrderRecordRef()
+	{
+		return salesOrderRecordRefs.isEmpty()
+				? Optional.empty()
+				: Optional.of(salesOrderRecordRefs);
 	}
 
 	private TableRecordReference getPurchaseOrderRecordRef()
 	{
 		return TableRecordReference.of(I_C_Order.Table_Name, selectedPurchaseOrder.getC_Order_ID());
+	}
+
+	@NonNull
+	private Set<TableRecordReference> getOrderRelatedRecordRef()
+	{
+		final Set<TableRecordReference> poRelatedRecordRefs = new HashSet<>();
+		poRelatedRecordRefs.add(getPurchaseOrderRecordRef());
+		poRelatedRecordRefs.addAll(salesOrderRecordRefs);
+
+		return poRelatedRecordRefs;
 	}
 }

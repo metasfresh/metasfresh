@@ -5,7 +5,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
-import de.metas.websocket.sender.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;

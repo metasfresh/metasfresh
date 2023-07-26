@@ -1,16 +1,17 @@
 package de.metas.rest_api.bpartner_pricelist.response;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 import de.metas.currency.CurrencyCode;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -22,12 +23,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,25 +40,30 @@ import java.math.BigDecimal;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonResponsePrice
 {
-	@Schema(type = "java.lang.Integer",
-			description = "This translates to `M_Product.M_Product_ID`.")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			dataType = "java.lang.Integer", //
+			value = "This translates to `M_Product.M_Product_ID`.")
 	@NonNull
-	ProductId productId;
+	private ProductId productId;
 
 	@NonNull
-	String productCode;
+	private String productCode;
 
 	@NonNull
-	BigDecimal price;
+	private BigDecimal price;
 
-	@Schema(minLength = 1,
-			type = "java.lang.String", //
-			description = "Currency code (3 letters)")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			dataType = "java.lang.String", //
+			value = "Currency code (3 letters)")
 	@NonNull
 	CurrencyCode currencyCode;
 
-	@Schema(type = "java.lang.Integer", //
-			description = "This translates to `C_TaxCategory_ID`.")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			dataType = "java.lang.Integer", //
+			value = "This translates to `C_TaxCategory_ID`.")
 	@NonNull
 	TaxCategoryId taxCategoryId;
 }

@@ -22,20 +22,32 @@ package org.adempiere.ad.wrapper;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.cache.CacheMgt;
+import java.lang.management.ManagementFactory;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.annotation.Nullable;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+
 import de.metas.common.util.time.SystemTime;
-import de.metas.impexp.processing.IImportInterceptor;
-import de.metas.logging.LogManager;
-import de.metas.monitoring.exception.MonitoringException;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorFactory;
 import org.adempiere.ad.modelvalidator.CompositeModelInterceptor;
@@ -60,29 +72,20 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-import java.lang.management.ManagementFactory;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.cache.CacheMgt;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.logging.LogManager;
+import de.metas.monitoring.exception.MonitoringException;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngine
 {
@@ -94,13 +97,13 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
 
 	@NonNull
-	public static POJOLookupMap get()
+	public static POJOLookupMap getNonNull()
 	{
-		return Check.assumeNotNull(getOrNull(), "POJOLookupMap.get() shall not return null at this point");
+		return Check.assumeNotNull(get(), "POJOLookupMap.get() shall not return null at this point");
 	}
 
 	@Nullable
-	private static POJOLookupMap getOrNull()
+	public static POJOLookupMap get()
 	{
 		final POJOLookupMap threadInstance = threadInstanceRef.get();
 		if (threadInstance != null)
@@ -122,7 +125,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public static POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
-		final POJOLookupMap database = getOrNull();
+		final POJOLookupMap database = get();
 		if (database == null)
 		{
 			return null;
@@ -138,7 +141,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public static POJOLookupMap getInMemoryDatabaseForTableName(final String tableName)
 	{
-		final POJOLookupMap database = getOrNull();
+		final POJOLookupMap database = get();
 		if (database == null)
 		{
 			return null;
@@ -152,7 +155,20 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return database;
 	}
 
-	private static void destroyThreadLocalStorage()
+	public static POJOLookupMap createThreadLocalStorage()
+	{
+		POJOLookupMap threadInstance = threadInstanceRef.get();
+		if (threadInstance == null)
+		{
+			final String name = "Thread-" + Thread.currentThread().getName();
+			threadInstance = new POJOLookupMap(name);
+			threadInstanceRef.set(threadInstance);
+		}
+
+		return threadInstance;
+	}
+
+	public static void destroyThreadLocalStorage()
 	{
 		final POJOLookupMap threadInstance = threadInstanceRef.get();
 		if (threadInstance == null)
@@ -184,7 +200,9 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		instance.unregisterAllInterceptors();
 	}
 
-	private POJONextIdSupplier nextIdSupplier = newNextIdSupplier();
+	// NOTE: because in some tests we are using hardcoded IDs which are like ~50000, we decided to start the IDs sequence from 100k.
+	private static final int DEFAULT_FirstId = 100000;
+	private int nextId = DEFAULT_FirstId;
 
 	/**
 	 * Database name
@@ -197,9 +215,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	Map<String, Map<Integer, Object>> cachedObjects = new HashMap<>();
 	Map<PInstanceId, ImmutableSet<Integer>> selectionId2selection = new HashMap<>();
 
-	/**
-	 * true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working.
-	 */
+	/** true if we want that values to be copied on save and not only referenced. Setting to true is like an actual database is working. */
 	@Getter
 	@Setter
 	private boolean copyOnSave = true;
@@ -221,28 +237,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		registerJMX();
 	}
 
-	private static POJONextIdSupplier newNextIdSupplier()
-	{
-		return POJONextIdSuppliers.newSingleSharedSequence();
-	}
-
-	public static void resetToDefaultNextIdSupplier()
-	{
-		setNextIdSupplier(newNextIdSupplier());
-	}
-
-	public static void setNextIdSupplier(@NonNull final POJONextIdSupplier nextIdSupplier)
-	{
-		final POJONextIdSupplier nextIdSupplierOld = instance.nextIdSupplier;
-		instance.nextIdSupplier = nextIdSupplier;
-
-		System.out.println("Changed nextIdSupplier from " + nextIdSupplierOld + " to " + instance.nextIdSupplier);
-	}
-
 	@Override
 	public int nextId(String tableName)
 	{
-		return nextIdSupplier.nextId(tableName);
+		nextId++;
+		return nextId;
 	}
 
 	private <T> T copy(final T model)
@@ -286,11 +285,13 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		if (clazz.isAssignableFrom(result.getClass()))
 		{
-			@SuppressWarnings("unchecked") final T resultConv = (T)result;
+			@SuppressWarnings("unchecked")
+			final T resultConv = (T)result;
 			return resultConv;
 		}
 
-		return POJOWrapper.create(result, clazz);
+		final T resultConv = POJOWrapper.create(result, clazz);
+		return resultConv;
 	}
 
 	public <T> T lookup(int tableId, int recordId)
@@ -309,7 +310,8 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return null;
 		}
 
-		@SuppressWarnings("unchecked") final T value = (T)getCopy(tableRecords, recordId);
+		@SuppressWarnings("unchecked")
+		final T value = (T)getCopy(tableRecords, recordId);
 		return value;
 	}
 
@@ -336,11 +338,15 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public <T> T newInstance(Properties ctx, Class<T> interfaceClass)
 	{
-		return POJOWrapper.create(ctx, interfaceClass, this);
+		final T model = POJOWrapper.create(ctx, interfaceClass, this);
+		return model;
 	}
 
 	/**
 	 * Create a new object using global ctx (Env.getCtx()) and Trx.TRX_None as transaction.
+	 *
+	 * @param interfaceClass
+	 * @return
 	 */
 	public <T> T newInstance(Class<T> interfaceClass)
 	{
@@ -376,7 +382,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		runInTrx(trxName, new TrxRunnable2()
 		{
 			@Override
-			public void run(String localTrxName)
+			public void run(String localTrxName) throws Exception
 			{
 				wrapper.setTrxName(localTrxName);
 
@@ -418,8 +424,13 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					}
 				}
 
-				// we use LinkedHashMap to preserve the order in which the objects are saved
-				Map<Integer, Object> tableRecords = cachedObjects.computeIfAbsent(tableName, k -> new LinkedHashMap<>());
+				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
+				if (tableRecords == null)
+				{
+					// we use LinkedHashMap to preserve the order in which the objects are saved
+					tableRecords = new LinkedHashMap<>();
+					cachedObjects.put(tableName, tableRecords);
+				}
 
 				putCopy(tableRecords, id, model, isNew);
 			}
@@ -530,7 +541,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return Collections.emptyList();
 		}
 
-		final ArrayList<T> result = filter == null ? new ArrayList<>() : new ArrayList<>(recordsMap.size());
+		final List<T> result = filter == null ? new ArrayList<>() : new ArrayList<>(recordsMap.size());
 		for (final Object o : recordsMap.values())
 		{
 			final T record = copy(POJOWrapper.create(o, clazz));
@@ -544,7 +555,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		if (orderByComparator != null)
 		{
-			result.sort(orderByComparator);
+			Collections.sort(result, orderByComparator);
 		}
 
 		instancesTracker.track(result);
@@ -562,12 +573,8 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 		// NOTE: in case of raw records we are not doing a copy of models
 
-		return new ArrayList<>(recordsMap.values());
-	}
-
-	public <T> T getFirstOnly(Class<T> clazz)
-	{
-		return getFirstOnly(clazz, null);
+		final List<Object> records = new ArrayList<>(recordsMap.values());
+		return records;
 	}
 
 	public <T> T getFirstOnly(Class<T> clazz, IQueryFilter<T> filter)
@@ -580,14 +587,14 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	}
 
 	public <T> T getFirstOnly(final String tableName,
-							  final Class<T> clazz,
-							  final IQueryFilter<T> filter,
-							  final Comparator<T> orderByComparator,
-							  final boolean throwExIfMoreThenOneFound,
-							  final String trxName)
+			final Class<T> clazz,
+			final IQueryFilter<T> filter,
+			final Comparator<T> orderByComparator,
+			final boolean throwExIfMoreThenOneFound,
+			final String trxName)
 	{
 		final List<T> result = getRecords(tableName, clazz, filter, orderByComparator, trxName);
-		if (result.isEmpty())
+		if (result == null || result.isEmpty())
 		{
 			return null;
 		}
@@ -619,7 +626,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	public <T> T getFirst(final String tableName, Class<T> clazz, IQueryFilter<T> filter, final Comparator<T> orderByComparator, final String trxName)
 	{
 		final List<T> result = getRecords(tableName, clazz, filter, orderByComparator, trxName);
-		if (result.isEmpty())
+		if (result == null || result.isEmpty())
 		{
 			return null;
 		}
@@ -665,6 +672,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		System.out.println(dumpStatusToString(message, tableNames));
 	}
 
+	public String dumpStatusToString()
+	{
+		return dumpStatusToString("DATABASE");
+	}
+
 	public String dumpStatusToString(final String message)
 	{
 		return dumpStatusToString(message, new String[0]);
@@ -697,10 +709,10 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				continue;
 			}
 
-			sb.append("\nTable ").append(tableName).append(": ").append(map.size()).append(" records");
+			sb.append("\nTable " + tableName + ": " + map.size() + " records");
 			for (final Object o : map.values())
 			{
-				sb.append("\n\t").append(o);
+				sb.append("\n\t" + o);
 			}
 		}
 
@@ -709,7 +721,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	public void clear()
 	{
-		POJOLookupMap.resetToDefaultNextIdSupplier();
+		nextId = DEFAULT_FirstId;
 		cachedObjects.clear();
 	}
 
@@ -756,7 +768,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		{
 
 			@Override
-			public void run(String localTrxName)
+			public void run(String localTrxName) throws Exception
 			{
 				wrapper.setTrxName(localTrxName);
 
@@ -797,7 +809,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			}
 		});
 
-		return Boolean.TRUE.equals(deleted.getValue());
+		return deleted.getValue();
 	}
 
 	private void assertSameTableName(final String tableName, final Class<?> clazz)
@@ -984,7 +996,15 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				mbs.registerMBean(jmxBean, name);
 			}
 		}
-		catch (final InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException e)
+		catch (final InstanceAlreadyExistsException e)
+		{
+			throw new MonitoringException("Unable to register mbean", e);
+		}
+		catch (final MBeanRegistrationException e)
+		{
+			throw new MonitoringException("Unable to register mbean", e);
+		}
+		catch (final NotCompliantMBeanException e)
 		{
 			throw new MonitoringException("Unable to register mbean", e);
 		}
@@ -1008,7 +1028,12 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		{
 			mbs.unregisterMBean(jmxName);
 		}
-		catch (final MBeanRegistrationException | InstanceNotFoundException e)
+		catch (final MBeanRegistrationException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (final InstanceNotFoundException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1017,6 +1042,16 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	private final Set<String> appliesIncludeOnlyTablePrefixes = new HashSet<>();
 	private final Set<String> appliesExcludeTablePrefixes = new HashSet<>();
+
+	public void addAppliesIncludeOnlyTablenamePrefix(final String tablenamePrefix)
+	{
+		appliesIncludeOnlyTablePrefixes.add(tablenamePrefix);
+	}
+
+	public void addAppliesExcludeTablenamePrefix(final String tablenamePrefix)
+	{
+		appliesExcludeTablePrefixes.add(tablenamePrefix);
+	}
 
 	public boolean appliesToTableName(final String tableName)
 	{
@@ -1073,7 +1108,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 		else
 		{
-			final ImmutableSet<Integer> combinedSelectionSet = ImmutableSet.<Integer>builder()
+			final ImmutableSet<Integer> combinedSelectionSet = ImmutableSet.<Integer> builder()
 					.addAll(existingSelectionSet)
 					.addAll(selectionSet).build();
 			this.selectionId2selection.put(selectionId, combinedSelectionSet);
@@ -1092,8 +1127,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return selectionId;
 	}
 
-	@SafeVarargs
-	public final <T> PInstanceId createSelectionFromModels(T... models)
+	public <T> PInstanceId createSelectionFromModels(@SuppressWarnings("unchecked") T... models)
 	{
 		final PInstanceId adPInstanceId = createSelectionPInstanceId();
 
@@ -1138,19 +1172,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		final Set<Integer> selection = selectionId2selection.get(selectionId);
 		return selection != null ? selection : ImmutableSet.of();
-	}
-
-	public void dumpSelections()
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("=====================[ SELECTIONS ]============================================================");
-		for (final PInstanceId selectionId : selectionId2selection.keySet())
-		{
-			sb.append("\n\t").append(selectionId).append(": ").append(selectionId2selection.get(selectionId));
-		}
-		sb.append("\n");
-
-		System.out.println(sb.toString());
 	}
 
 	/**

@@ -18,8 +18,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 /**
  * 
  * @author tsa
@@ -90,7 +88,7 @@ public final class FilterWarehouseByDocTypeValidationRule extends AbstractJavaVa
 	}
 
 	@Override
-	public Set<String> getParameters(@Nullable final String contextTableName)
+	public Set<String> getParameters()
 	{
 		return PARAMS;
 	}

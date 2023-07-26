@@ -7,7 +7,6 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_Commission_Overview_V
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
 public interface I_C_Commission_Overview_V 
 {
 
@@ -70,26 +69,6 @@ public interface I_C_Commission_Overview_V
 	int getBill_BPartner_ID();
 
 	String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
-
-	/**
-	 * Set Payer.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_Payer_ID (int C_BPartner_Payer_ID);
-
-	/**
-	 * Get Payer.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_Payer_ID();
-
-	String COLUMNNAME_C_BPartner_Payer_ID = "C_BPartner_Payer_ID";
 
 	/**
 	 * Set Sales partner.
@@ -158,7 +137,7 @@ public interface I_C_Commission_Overview_V
 	String COLUMNNAME_C_Commission_Overview_V_ID = "C_Commission_Overview_V_ID";
 
 	/**
-	 * Set Sales commission detail.
+	 * Set Settings detail.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -167,7 +146,7 @@ public interface I_C_Commission_Overview_V
 	void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID);
 
 	/**
-	 * Get Sales commission detail.
+	 * Get Settings detail.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -375,31 +354,6 @@ public interface I_C_Commission_Overview_V
 	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
 
 	/**
-	 * Set Brokerage commission detail.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_MediatedCommissionSettingsLine_ID (int C_MediatedCommissionSettingsLine_ID);
-
-	/**
-	 * Get Brokerage commission detail.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_MediatedCommissionSettingsLine_ID();
-
-	@Nullable de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine getC_MediatedCommissionSettingsLine();
-
-	void setC_MediatedCommissionSettingsLine(@Nullable de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine C_MediatedCommissionSettingsLine);
-
-	ModelColumn<I_C_Commission_Overview_V, de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine> COLUMN_C_MediatedCommissionSettingsLine_ID = new ModelColumn<>(I_C_Commission_Overview_V.class, "C_MediatedCommissionSettingsLine_ID", de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine.class);
-	String COLUMNNAME_C_MediatedCommissionSettingsLine_ID = "C_MediatedCommissionSettingsLine_ID";
-
-	/**
 	 * Set Date.
 	 * Document date of the commission trigger
 	 *
@@ -589,31 +543,7 @@ public interface I_C_Commission_Overview_V
 	String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
-	 * Set Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsSOTrx (boolean IsSOTrx);
-
-	/**
-	 * Get Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSOTrx();
-
-	ModelColumn<I_C_Commission_Overview_V, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_C_Commission_Overview_V.class, "IsSOTrx", null);
-	String COLUMNNAME_IsSOTrx = "IsSOTrx";
-
-	/**
-	 * Set Level.
-	 * Hierachy-Level of the respective record. The customer's direct sales rep has level 0. The higher in the hierachy a participating sales rep is, the higher is their level.
+	 * Set Hierarchy level.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -622,8 +552,7 @@ public interface I_C_Commission_Overview_V
 	void setLevelHierarchy (int LevelHierarchy);
 
 	/**
-	 * Get Level.
-	 * Hierachy-Level of the respective record. The customer's direct sales rep has level 0. The higher in the hierachy a participating sales rep is, the higher is their level.
+	 * Get Hierarchy level.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false

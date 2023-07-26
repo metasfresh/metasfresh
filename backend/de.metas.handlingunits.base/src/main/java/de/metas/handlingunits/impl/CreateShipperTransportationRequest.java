@@ -33,7 +33,7 @@ import java.time.LocalDate;
 
 @Value
 @Builder
-public class CreateShipperTransportationRequest
+class CreateShipperTransportationRequest
 {
 	@NonNull
 	OrgId orgId;
@@ -46,10 +46,4 @@ public class CreateShipperTransportationRequest
 
 	@NonNull
 	LocalDate shipDate;
-
-	/**
-	 * Should be {@code false} if metasfresh on-the-fly-picked HUs, but the user doesn't need to know which ones.
-	 * Should be {@code true} if the user is supposed to physically in the real world find and put into the package exactly those HUs that metasfresh picked on the fly.
-	 */
-	boolean assignAnonymouslyPickedHUs;
 }

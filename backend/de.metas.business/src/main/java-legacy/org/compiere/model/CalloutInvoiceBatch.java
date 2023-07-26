@@ -20,11 +20,11 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.tax.api.ITaxBL;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -33,6 +33,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.logging.MetasfreshLastError;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
@@ -414,7 +415,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 			{
 				final int C_Tax_ID = taxID.intValue();
 				final MTax tax = new MTax (ctx, C_Tax_ID, null);
-				TaxAmt = Services.get(ITaxBL.class).calculateTaxAmt(tax, LineNetAmt, IsTaxIncluded, StdPrecision);
+				TaxAmt = tax.calculateTax(LineNetAmt, IsTaxIncluded, StdPrecision);
 				mTab.setValue("TaxAmt", TaxAmt);
 			}
 		}

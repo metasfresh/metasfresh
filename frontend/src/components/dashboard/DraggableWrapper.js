@@ -1,19 +1,22 @@
+import update from 'immutability-helper';
 import produce from 'immer';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import counterpart from 'counterpart';
+import { DragDropContext } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
+import { connect } from 'react-redux';
 
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
-  addDashboardWidget,
   changeKPIItem,
   changeTargetIndicatorsItem,
   getKPIsDashboard,
   getTargetIndicatorsDashboard,
-  removeDashboardWidget,
 } from '../../actions/DashboardActions';
+import {
+  addDashboardWidget,
+  removeDashboardWidget,
+} from '../../actions/BoardActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawChart from '../charts/RawChart';
 import RawList from '../widget/List/RawList';
@@ -21,11 +24,11 @@ import ChartWidget from './ChartWidget';
 import DndWidget from './DndWidget';
 import Placeholder from './Placeholder';
 import Sidenav from './Sidenav';
-import EntityType from './EntityType';
 
 export class DraggableWrapper extends Component {
   state = {
-    indicatorsLoaded: false,
+    cards: [],
+    indicators: [],
     idMaximized: null,
     websocketEndpoint: null,
     chartOptions: false,
@@ -39,8 +42,8 @@ export class DraggableWrapper extends Component {
   };
 
   componentDidMount = () => {
-    this.loadKPIs();
-    this.loadTargetIndicators();
+    this.getDashboard();
+    this.getIndicators();
   };
 
   componentDidUpdate = (prevProps, prevState) => {
@@ -60,19 +63,27 @@ export class DraggableWrapper extends Component {
   };
 
   handleFocus = (name) => {
-    this.setState({ listFocused: name });
+    this.setState({
+      listFocused: name,
+    });
   };
 
   handleBlur = () => {
-    this.setState({ listFocused: null });
+    this.setState({
+      listFocused: null,
+    });
   };
 
   closeDropdown = () => {
-    this.setState({ listToggled: null });
+    this.setState({
+      listToggled: null,
+    });
   };
 
   openDropdown = (name) => {
-    this.setState({ listToggled: name });
+    this.setState({
+      listToggled: name,
+    });
   };
 
   onWebsocketEvent = (event) => {
@@ -87,266 +98,271 @@ export class DraggableWrapper extends Component {
     }
   };
 
-  onDashboardItemDataChanged = (wsEvent) => {
-    const indicators = this.state[EntityType.TARGET_INDICATOR] ?? [];
-    const kpis = this.state[EntityType.KPI] ?? [];
+  onDashboardItemDataChanged = (event) => {
+    const { indicators, cards } = this.state;
 
     const indicatorsNew = produce(indicators, (draft) => {
       const index = draft.findIndex(
-        (indicator) => indicator.id === wsEvent.itemId
+        (indicator) => indicator.id === event.itemId
       );
       if (index !== -1) {
-        draft[index] = { ...draft[index], data: wsEvent.data };
+        draft[index] = { ...draft[index], data: event.data };
       }
     });
 
-    const kpisNew = produce(kpis, (draft) => {
-      const index = kpis.findIndex((kpi) => kpi.id === wsEvent.itemId);
+    const cardsNew = produce(cards, (draft) => {
+      const index = cards.findIndex((card) => card.id === event.itemId);
       if (index !== -1) {
-        draft[index] = { ...draft[index], data: wsEvent.data };
+        draft[index] = { ...draft[index], data: event.data };
       }
     });
 
-    this.setState({
-      [EntityType.TARGET_INDICATOR]: indicatorsNew,
-      [EntityType.KPI]: kpisNew,
-    });
+    this.setState({ cards: cardsNew, indicators: indicatorsNew });
   };
 
-  onDashboardStructureChanged = (wsEvent) => {
-    switch (wsEvent.widgetType) {
+  onDashboardStructureChanged = (event) => {
+    switch (event.widgetType) {
       case 'TargetIndicator':
-        this.loadTargetIndicators();
+        this.getIndicators();
         break;
       case 'KPI':
-        this.loadKPIs();
+        this.getDashboard();
         break;
     }
   };
 
-  loadTargetIndicators = () => {
+  getIndicators = () => {
     getTargetIndicatorsDashboard().then((response) => {
       this.setState({
-        [EntityType.TARGET_INDICATOR]: response.data.items,
-        indicatorsLoaded: true,
+        indicators: response.data.items,
       });
     });
   };
 
-  loadKPIs = () => {
+  getDashboard = () => {
     getKPIsDashboard().then((response) => {
       this.setState({
-        [EntityType.KPI]: response.data.items,
+        cards: response.data.items,
         websocketEndpoint: response.data.websocketEndpoint,
       });
     });
   };
 
-  getType = (entity) => {
-    return entity === EntityType.KPI ? 'kpis' : 'targetIndicators';
+  getType = (entity) => (entity === 'cards' ? 'kpis' : 'targetIndicators');
+
+  addCard = (entity, id) => {
+    const tmpItemIndex = this.state[entity].findIndex((i) => i.id === id);
+    addDashboardWidget(this.getType(entity), id, tmpItemIndex).then((res) => {
+      this.setState((prev) =>
+        update(prev, {
+          [entity]: {
+            [tmpItemIndex]: { $set: res.data },
+          },
+        })
+      );
+    });
   };
 
-  onDrop = ({ entity, id, isNew, droppedOverId }) => {
-    const position =
-      this.state[entity]?.findIndex((item) => item.id === droppedOverId) ?? -1;
+  onDrop = (entity, id) => {
+    const position = this.state[entity].findIndex((i) => i.id === id);
+    console.log('entity=%o, id=%o, position=%o', entity, id, position);
 
-    console.log('onDrop', {
-      entity,
-      id,
-      isNew,
-      droppedOverId,
-      position,
-      state: this.state,
-    });
-
-    if (isNew) {
-      addDashboardWidget(this.getType(entity), id, position);
-      // NOTE: will be updated via websockets
+    if (entity === 'cards') {
+      changeKPIItem(id, 'position', position);
     } else {
-      if (entity === EntityType.KPI) {
-        changeKPIItem(id, 'position', position);
-        // NOTE: will be updated via websockets
-      } else if (entity === EntityType.TARGET_INDICATOR) {
-        changeTargetIndicatorsItem(id, 'position', position);
-        // NOTE: will be updated via websockets
-      } else {
-        console.warn(`Unknown entity: ${entity}`);
-      }
+      changeTargetIndicatorsItem(id, 'position', position);
     }
   };
 
-  onRemove = (entity, index, id) => {
-    removeDashboardWidget(this.getType(entity), id);
-    // NOTE: will be updated via websockets
-  };
-
-  maximizeWidget = (id) => {
-    this.setState({ idMaximized: id });
-  };
-
-  renderIndicators = () => {
-    const { editmode } = this.props;
-    const targetIndicators = this.state[EntityType.TARGET_INDICATOR] ?? [];
-
-    if (targetIndicators.length <= 0) {
-      if (editmode) {
-        return (
-          <div className="indicators-wrapper">
-            <DndWidget
-              id="indicatorsPlaceholder"
-              index={-1}
-              entity={EntityType.TARGET_INDICATOR}
-              placeholder={true}
-              transparent={false}
-              onDrop={this.onDrop}
-            >
-              <Placeholder
-                entity={EntityType.TARGET_INDICATOR}
-                description={counterpart.translate(
-                  'dashboard.targetIndicators.dropContainer.caption'
-                )}
-              />
-            </DndWidget>
-          </div>
-        );
-      } else {
-        return null;
-      }
+  moveCard = (entity, dragIndex, hoverIndex, item) => {
+    const draggedItem = this.state[entity][dragIndex];
+    if (draggedItem) {
+      // When we are inserting added
+      this.setState((prev) =>
+        update(prev, {
+          [entity]: {
+            $splice: [
+              [dragIndex, 1],
+              [hoverIndex, 0, draggedItem],
+            ],
+          },
+        })
+      );
     } else {
-      return (
-        <div className={'indicators-wrapper'}>
-          {targetIndicators.map((indicator, index) => (
-            <DndWidget
-              key={indicator.id}
-              id={indicator.id}
-              index={index}
-              entity={EntityType.TARGET_INDICATOR}
-              transparent={!editmode}
-              className="indicator-card"
-              onDrop={this.onDrop}
-              onRemove={this.onRemove}
-            >
-              {
-                <RawChart
-                  key={indicator.id}
-                  id={indicator.id}
-                  index={index}
-                  caption={indicator.caption}
-                  fields={indicator.kpi.fields}
-                  zoomToDetailsAvailable={
-                    !!indicator.kpi.zoomToDetailsAvailable
-                  }
-                  chartType={'Indicator'}
-                  kpi={false}
-                  data={indicator.data}
-                  noData={indicator.fetchOnDrop}
-                  handleChartOptions={this.handleChartOptions}
-                  editmode={editmode}
-                />
-              }
-            </DndWidget>
-          ))}
-        </div>
+      // When we are adding card
+      const newItem = {
+        id: item.id,
+        fetchOnDrop: true,
+        kpi: { chartType: this.getType(entity) },
+      };
+      this.setState((prev) =>
+        update(prev, {
+          [entity]:
+            prev[entity].length === 0
+              ? {
+                  $set: [newItem],
+                }
+              : {
+                  $splice: [
+                    [dragIndex, 1],
+                    [hoverIndex, 0, newItem],
+                  ],
+                },
+        })
       );
     }
   };
 
-  renderEmptyPage = () => {
+  removeCard = (entity, index, id) => {
+    removeDashboardWidget(this.getType(entity), id);
+    this.setState((prev) =>
+      update(prev, {
+        [entity]: {
+          $splice: [[index, 1]],
+        },
+      })
+    );
+  };
+
+  maximizeWidget = (id) => {
+    this.setState({
+      idMaximized: id,
+    });
+  };
+
+  renderIndicators = () => {
+    const { indicators } = this.state;
     const { editmode } = this.props;
-    const { indicatorsLoaded } = this.state;
 
-    // Don't show logo if edit mode is active
-    if (editmode) return null;
+    if (!indicators.length && editmode)
+      return (
+        <div className="indicators-wrapper">
+          <DndWidget
+            moveCard={this.moveCard}
+            addCard={this.addCard}
+            entity={'indicators'}
+            placeholder={true}
+            transparent={!editmode}
+          >
+            <Placeholder
+              entity={'indicators'}
+              description={'Drop Target Indicator widget here.'}
+            />
+          </DndWidget>
+        </div>
+      );
 
-    // Don't show logo if indicators/KPIs are not loaded yet
-    if (!indicatorsLoaded) return null;
-
-    // Don't show logo if we have Target Indicators
-    const indicators = this.state[EntityType.TARGET_INDICATOR] ?? [];
-    if (indicators.length > 0) return null;
-
-    // Don't show logo if we have KPIs
-    const kpis = this.state[EntityType.KPI] ?? [];
-    if (kpis.length > 0) return null;
+    if (!indicators.length) return false;
 
     return (
-      <div className="dashboard-wrapper dashboard-logo-wrapper">
-        <div className="logo-wrapper">
-          <img src={logo} alt="logo" />
-        </div>
+      <div className={'indicators-wrapper'}>
+        {indicators.map((indicator, id) => (
+          <DndWidget
+            key={id}
+            id={indicator.id}
+            index={id}
+            moveCard={this.moveCard}
+            addCard={this.addCard}
+            onDrop={this.onDrop}
+            removeCard={this.removeCard}
+            entity={'indicators'}
+            transparent={!editmode}
+          >
+            <RawChart
+              id={indicator.id}
+              index={id}
+              caption={indicator.caption}
+              fields={indicator.kpi.fields}
+              zoomToDetailsAvailable={
+                indicator.kpi.zoomToDetailsAvailable
+                  ? indicator.kpi.zoomToDetailsAvailable
+                  : false
+              }
+              chartType={'Indicator'}
+              kpi={false}
+              data={indicator.data}
+              noData={indicator.fetchOnDrop}
+              handleChartOptions={this.handleChartOptions}
+              {...{ editmode }}
+            />
+          </DndWidget>
+        ))}
       </div>
     );
   };
 
   renderKpis = () => {
+    const { cards, idMaximized } = this.state;
     const { editmode } = this.props;
-    const { idMaximized } = this.state;
-    const kpis = this.state[EntityType.KPI] ?? [];
 
-    if (kpis.length <= 0) {
-      if (editmode) {
-        return (
-          <div className="kpis-wrapper">
-            <DndWidget
-              id="kpisPlaceholder"
-              index={-1}
-              placeholder={true}
-              entity={EntityType.KPI}
-              transparent={false}
-              onDrop={this.onDrop}
-            >
-              <Placeholder
-                entity={EntityType.KPI}
-                description={counterpart.translate(
-                  'dashboard.kpis.dropContainer.caption'
-                )}
-              />
-            </DndWidget>
-          </div>
-        );
-      } else {
-        return null;
-      }
-    } else {
+    if (!cards.length && editmode)
       return (
         <div className="kpis-wrapper">
-          {kpis.map((item, index) => {
+          <DndWidget
+            placeholder={true}
+            entity={'cards'}
+            moveCard={this.moveCard}
+            addCard={this.addCard}
+            transparent={!editmode}
+          >
+            <Placeholder
+              entity={'cards'}
+              description={'Drop KPI widget here.'}
+            />
+          </DndWidget>
+        </div>
+      );
+
+    return (
+      <div className="kpis-wrapper">
+        {cards.length > 0 ? (
+          cards.map((item, id) => {
             return (
               <DndWidget
-                key={item.id}
-                index={index}
+                key={id}
+                index={id}
                 id={item.id}
-                entity={EntityType.KPI}
+                moveCard={this.moveCard}
+                addCard={this.addCard}
+                onDrop={this.onDrop}
+                removeCard={this.removeCard}
+                entity={'cards'}
                 className={
                   'draggable-widget ' +
                   (idMaximized === item.id ? 'draggable-widget-maximize ' : '')
                 }
                 transparent={!editmode}
-                onDrop={this.onDrop}
-                onRemove={this.onRemove}
               >
                 <ChartWidget
                   key={item.id}
                   id={item.id}
-                  index={index}
+                  index={id}
                   chartType={item.kpi.chartType}
                   caption={item.caption}
                   fields={item.kpi.fields}
                   groupBy={item.kpi.groupByField}
+                  kpi={true}
+                  moveCard={this.moveCard}
                   idMaximized={idMaximized}
                   maximizeWidget={this.maximizeWidget}
                   text={item.caption}
                   data={item.data}
                   noData={item.fetchOnDrop}
                   handleChartOptions={this.handleChartOptions}
-                  editmode={editmode}
+                  {...{ editmode }}
                 />
               </DndWidget>
             );
-          })}
-        </div>
-      );
-    }
+          })
+        ) : (
+          <div className="dashboard-wrapper dashboard-logo-wrapper">
+            <div className="logo-wrapper">
+              <img src={logo} />
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   renderOptionModal = () => {
@@ -365,9 +381,7 @@ export class DraggableWrapper extends Component {
           <div className="chart-options-wrapper">
             <div className="chart-options">
               <div className="form-group">
-                <label>
-                  {counterpart.translate('dashboard.item.settings.caption')}
-                </label>
+                <label>caption</label>
                 <input
                   className="input-options input-secondary"
                   value={captionHandler}
@@ -375,25 +389,14 @@ export class DraggableWrapper extends Component {
                 />
               </div>
               <div className="form-group">
-                <label>
-                  {counterpart.translate(
-                    'dashboard.item.settings.interval.caption'
-                  )}
-                </label>
+                <label>interval</label>
                 <div className="chart-options-list-wrapper">
                   <RawList
                     onSelect={(option) =>
                       this.handleOptionSelect('interval', option)
                     }
                     tabIndex={0}
-                    list={[
-                      {
-                        caption: counterpart.translate(
-                          'dashboard.item.settings.interval.week'
-                        ),
-                        value: 'week',
-                      },
-                    ]}
+                    list={[{ caption: 'week', value: 'week' }]}
                     selected={interval}
                     isFocused={listFocused === 'interval'}
                     isToggled={listToggled === 'interval'}
@@ -405,27 +408,16 @@ export class DraggableWrapper extends Component {
                 </div>
               </div>
               <div className="form-group">
-                <label>
-                  {counterpart.translate(
-                    'dashboard.item.settings.when.caption'
-                  )}
-                </label>
+                <label>when</label>
                 <div className="chart-options-list-wrapper">
                   <RawList
                     onSelect={(option) =>
                       this.handleOptionSelect('when', option)
                     }
                     list={[
+                      { caption: 'now', value: 'now' },
                       {
-                        caption: counterpart.translate(
-                          'dashboard.item.settings.when.now'
-                        ),
-                        value: 'now',
-                      },
-                      {
-                        caption: counterpart.translate(
-                          'dashboard.item.settings.when.lastWeek'
-                        ),
+                        caption: 'last week',
                         value: 'lastWeek',
                       },
                     ]}
@@ -446,7 +438,7 @@ export class DraggableWrapper extends Component {
                 className="btn btn-meta-outline-secondary btn-sm"
                 onClick={() => this.changeChartData('caption', captionHandler)}
               >
-                {counterpart.translate('dashboard.item.settings.save')}
+                Save
               </button>
             </div>
           </div>
@@ -510,23 +502,21 @@ export class DraggableWrapper extends Component {
     const { editmode } = this.props;
 
     return (
-      <DndProvider backend={HTML5Backend}>
-        <div className="dashboard-cards-wrapper">
-          {this.renderOptionModal()}
-          <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
-            {this.renderIndicators()}
-            {this.renderKpis()}
-          </div>
-          {editmode && <Sidenav />}
-          {this.renderEmptyPage()}
+      <div className="dashboard-cards-wrapper">
+        {this.renderOptionModal()}
+        <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
+          {this.renderIndicators()}
+          {this.renderKpis()}
         </div>
-      </DndProvider>
+        {editmode && <Sidenav addCard={this.addCard} />}
+      </div>
     );
   }
 }
 
 DraggableWrapper.propTypes = {
+  dispatch: PropTypes.func.isRequired,
   editmode: PropTypes.bool,
 };
 
-export default DraggableWrapper;
+export default connect()(DragDropContext(HTML5Backend)(DraggableWrapper));

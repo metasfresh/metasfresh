@@ -1,9 +1,5 @@
 package de.metas.contracts.impl;
 
-import de.metas.acct.GLCategoryRepository;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -12,11 +8,9 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.contracts.pricing.SubscriptionPricingRule;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.order.compensationGroup.FlatrateConditionsExcludedProductsRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
@@ -25,11 +19,8 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
-import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
-import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -198,8 +189,6 @@ public class FlatrateTermTestHelper
 	{
 		final ContractOrderService contractOrderService = new ContractOrderService();
 
-		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
-
 		final OrderGroupCompensationChangesHandler groupChangesHandler = new OrderGroupCompensationChangesHandler(
 				new OrderGroupRepository(
 						new GroupCompensationLineCreateRequestFactory(),
@@ -212,12 +201,8 @@ public class FlatrateTermTestHelper
 
 		final MainValidator mainInterceptor = new MainValidator(
 				contractOrderService,
-				documentLocationBL,
 				groupChangesHandler,
-				inoutLinesWithMissingInvoiceCandidateRepo,
-				new CallOrderContractService(),
-				ADReferenceService.newMocked(),
-				new GLCategoryRepository());
+				inoutLinesWithMissingInvoiceCandidateRepo);
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

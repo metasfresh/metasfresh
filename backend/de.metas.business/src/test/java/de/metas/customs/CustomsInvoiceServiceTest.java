@@ -629,7 +629,6 @@ public class CustomsInvoiceServiceTest
 		shipmentLineRecord.setC_UOM_ID(orderLineRecord.getC_UOM_ID());
 		shipmentLineRecord.setQtyEntered(orderLineRecord.getQtyEntered());
 
-		shipmentLineRecord.setC_Order_ID(orderLineRecord.getC_Order_ID());
 		shipmentLineRecord.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
 
 		save(shipmentLineRecord);

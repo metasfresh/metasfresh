@@ -29,12 +29,13 @@ import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Column;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.Properties;
 
 /*
@@ -109,17 +110,17 @@ public class WebuiDocumentReferencesService
 		return documentReferences;
 	}
 
-	public Optional<DocumentFilter> getDocumentReferenceFilter(
+	public DocumentFilter getDocumentReferenceFilter(
 			@NonNull final DocumentPath sourceDocumentPath,
 			@NonNull final WindowId targetWindowId,
 			@Nullable final WebuiDocumentReferenceId documentReferenceId,
 			@NonNull final RelatedDocumentsPermissions permissions)
 	{
-		return getDocumentReference(sourceDocumentPath, targetWindowId, documentReferenceId, permissions)
-				.map(WebuiDocumentReference::getFilter);
+		final WebuiDocumentReference documentReference = getDocumentReference(sourceDocumentPath, targetWindowId, documentReferenceId, permissions);
+		return documentReference.getFilter();
 	}
 
-	private Optional<WebuiDocumentReference> getDocumentReference(
+	private WebuiDocumentReference getDocumentReference(
 			@NonNull final DocumentPath sourceDocumentPath,
 			@NonNull final WindowId targetWindowId,
 			@Nullable final WebuiDocumentReferenceId documentReferenceId,
@@ -128,24 +129,20 @@ public class WebuiDocumentReferencesService
 		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
 			if (sourceDocument.isNew())
 			{
-				//throw new AdempiereException("New documents cannot be referenced: " + sourceDocument);
-				return Optional.empty();
+				throw new AdempiereException("New documents cannot be referenced: " + sourceDocument);
 			}
 
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
-			return relatedDocumentsFactory.retrieveRelatedDocuments(
-							zoomSource,
-							targetWindowId.toAdWindowId(),
-							documentReferenceId != null ? documentReferenceId.toRelatedDocumentsId() : null,
-							permissions)
-					.map(relatedDocument -> toWebuiDocumentReference(relatedDocument, sourceDocument));
-		});
-	}
+			final RelatedDocuments relatedDocuments = relatedDocumentsFactory.retrieveRelatedDocuments(
+					zoomSource,
+					targetWindowId.toAdWindowId(),
+					documentReferenceId != null ? documentReferenceId.toRelatedDocumentsId() : null,
+					permissions);
 
-	private WebuiDocumentReference toWebuiDocumentReference(final RelatedDocuments relatedDocuments, final Document sourceDocument)
-	{
-		final ITranslatableString filterCaption = extractFilterCaption(sourceDocument, relatedDocuments);
-		return WebuiDocumentReferenceCandidate.toDocumentReference(relatedDocuments, filterCaption);
+			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument, relatedDocuments);
+
+			return WebuiDocumentReferenceCandidate.toDocumentReference(relatedDocuments, filterCaption);
+		});
 	}
 
 	private ITranslatableString extractFilterCaption(
@@ -254,7 +251,8 @@ public class WebuiDocumentReferencesService
 			if (keyColumnName != null)
 			{
 				final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-				return adTableDAO.getMinimalColumnInfo(tableName, keyColumnName).isGenericZoomOrigin();
+				final I_AD_Column idColumn = adTableDAO.retrieveColumn(tableName, keyColumnName);
+				return idColumn.isGenericZoomOrigin();
 			}
 			return false;
 		}

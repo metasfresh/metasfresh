@@ -28,6 +28,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -44,7 +45,6 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.security.IRoleDAO;
@@ -68,7 +68,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -112,7 +111,7 @@ public final class WorkflowExecutionContext
 	private final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
-	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.distributed("de.metas.document.UserNotifications");
+	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
 
 	@NonNull
 	@Getter
@@ -165,7 +164,7 @@ public final class WorkflowExecutionContext
 	@NonNull
 	public WFResponsibleId getWFResponsibleId()
 	{
-		return CoalesceUtil.coalesceNotNull(getWorkflow().getResponsibleId(), WFResponsibleId.Invoker);
+		return CoalesceUtil.coalesce(getWorkflow().getResponsibleId(), WFResponsibleId.Invoker);
 	}
 
 	@NonNull
@@ -228,7 +227,7 @@ public final class WorkflowExecutionContext
 	@Nullable
 	public Object getDocumentColumnValueByColumnId(
 			@NonNull final TableRecordReference documentRef,
-			final AdColumnId adColumnId)
+			final int adColumnId)
 	{
 		return getPO(documentRef).get_ValueOfColumn(adColumnId);
 	}
@@ -305,15 +304,24 @@ public final class WorkflowExecutionContext
 		}
 
 		final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-				LocalDateAndOrgId.ofLocalDate(SystemTime.asLocalDate(), clientAndOrgId.getOrgId()),
+				null, // TODAY
 				(CurrencyConversionTypeId)null,
-				clientAndOrgId.getClientId());
+				clientAndOrgId.getClientId(),
+				clientAndOrgId.getOrgId());
 
 		final CurrencyConversionResult conversionResult = currencyBL.convert(
 				conversionCtx,
 				amount.toBigDecimal(),
 				amount.getCurrencyId(),
 				toCurrencyId);
+		if (conversionResult == null)
+		{
+			throw new NoCurrencyRateFoundException(
+					currencyBL.getCurrencyCodeById(amount.getCurrencyId()),
+					currencyBL.getCurrencyCodeById(toCurrencyId),
+					conversionCtx.getConversionDate(),
+					null);
+		}
 
 		return Money.of(conversionResult.getAmount(), toCurrencyId);
 	}

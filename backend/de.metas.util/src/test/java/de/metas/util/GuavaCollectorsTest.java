@@ -1,18 +1,24 @@
 package de.metas.util;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L
@@ -39,96 +45,132 @@ import static org.assertj.core.api.Assertions.*;
 public class GuavaCollectorsTest
 {
 	@Test
-	void test_toImmutableList()
+	public void test_toImmutableList()
 	{
 		final List<Integer> source = Arrays.asList(1, 2, 3, 1, 2, 3);
-		assertThat(source.stream().collect(GuavaCollectors.toImmutableList()))
-				.isEqualTo(source);
+
+		final List<Integer> resultExpected = source;
+		final List<Integer> result = source.stream().collect(GuavaCollectors.toImmutableList());
+
+		Assert.assertEquals(resultExpected, result);
 	}
 
 	@Test
-	void test_toImmutableListExcludingDuplicates()
+	public void test_toImmutableListExcludingDuplicates()
 	{
-		assertThat(Stream.of(1, 2, 3, 1, 2, 3, 4).collect(GuavaCollectors.toImmutableListExcludingDuplicates()))
-				.containsExactly(1, 2, 3, 4);
+		final List<Integer> source = Arrays.asList(1, 2, 3, 1, 2, 3, 4);
+
+		final List<Integer> resultExpected = Arrays.asList(1, 2, 3, 4);
+		final List<Integer> result = source.stream().collect(GuavaCollectors.toImmutableListExcludingDuplicates());
+
+		Assert.assertEquals(resultExpected, result);
 	}
 
 	@Test
-	void test_toImmutableListExcludingDuplicates_With_KeyFunction_DuplicatesConsumer()
+	public void test_toImmutableListExcludingDuplicates_With_KeyFunction_DuplicatesConsumer()
 	{
-		final List<IPair<Integer, String>> source = Arrays.asList(
-				ImmutablePair.of(1, "one"),
-				ImmutablePair.of(2, "two"),
-				ImmutablePair.of(3, "three"),
-				ImmutablePair.of(1, "one-again"),
-				ImmutablePair.of(2, "two-again"),
-				ImmutablePair.of(3, "three-again"),
-				ImmutablePair.of(4, "four")
+		final List<IPair<Integer, String>> source = Arrays.<IPair<Integer, String>> asList(
+				ImmutablePair.of(1, "one"), ImmutablePair.of(2, "two"), ImmutablePair.of(3, "three") //
+				, ImmutablePair.of(1, "one-again"), ImmutablePair.of(2, "two-again"), ImmutablePair.of(3, "three-again") //
+				, ImmutablePair.of(4, "four") //
+		);
+
+		final List<IPair<Integer, String>> resultExpected = Arrays.<IPair<Integer, String>> asList(
+				ImmutablePair.of(1, "one"), ImmutablePair.of(2, "two"), ImmutablePair.of(3, "three") //
+				, ImmutablePair.of(4, "four") //
+		);
+
+		final List<IPair<Integer, String>> duplicatesExpected = Arrays.<IPair<Integer, String>> asList(
+				ImmutablePair.of(1, "one-again"), ImmutablePair.of(2, "two-again"), ImmutablePair.of(3, "three-again") //
 		);
 
 		final List<IPair<Integer, String>> duplicatesActual = new ArrayList<>();
-		assertThat(source.stream().collect(GuavaCollectors.toImmutableListExcludingDuplicates(IPair::getLeft, (key, item) -> duplicatesActual.add(item))))
-				.containsExactly(
-						ImmutablePair.of(1, "one"),
-						ImmutablePair.of(2, "two"),
-						ImmutablePair.of(3, "three"),
-						ImmutablePair.of(4, "four")
-				);
-		assertThat(duplicatesActual)
-				.containsExactly(
-						ImmutablePair.of(1, "one-again"),
-						ImmutablePair.of(2, "two-again"),
-						ImmutablePair.of(3, "three-again")
-				);
+		final Function<IPair<Integer, String>, Integer> keyFunction = item -> item.getLeft();
+		final BiConsumer<Integer, IPair<Integer, String>> duplicatesConsumer = (key, item) -> {
+			duplicatesActual.add(item);
+		};
+
+		ImmutableList<IPair<Integer, String>> resultActual = source
+				.stream()
+				.collect(GuavaCollectors.toImmutableListExcludingDuplicates(keyFunction, duplicatesConsumer));
+
+		Assert.assertEquals("Result", resultExpected, resultActual);
+		Assert.assertEquals("Duplicates", duplicatesExpected, duplicatesActual);
 	}
 
 	@Test
-	void test_toImmutableSet()
+	public void test_toImmutableSet()
 	{
-		assertThat(Stream.of(1, 2, 3, 1, 2, 3, 4).collect(GuavaCollectors.toImmutableSet()))
-				.containsExactly(1, 2, 3, 4);
+		final List<Integer> source = Arrays.asList(1, 2, 3, 1, 2, 3, 4);
+
+		final Set<Integer> resultExpected = ImmutableSet.of(1, 2, 3, 4);
+		final Set<Integer> result = source.stream().collect(GuavaCollectors.toImmutableSet());
+
+		Assert.assertEquals(resultExpected, result);
 	}
 
 	@Test
-	void test_toImmutableSetHandlingDuplicates()
+	public void test_toImmutableSetHandlingDuplicates()
 	{
-		//noinspection ResultOfMethodCallIgnored
-		assertThatThrownBy(() ->
-				Stream.of("1", "2", "3", "1").collect(GuavaCollectors.toImmutableSetHandlingDuplicates(DuplicateElementException.throwExceptionConsumer()))
-		).isInstanceOfSatisfying(DuplicateElementException.class, (ex) -> assertThat((String)ex.getElement()).isEqualTo("1"));
+		final List<Integer> source = Arrays.asList(1, 2, 3, 1);
+
+		try
+		{
+			final Set<Integer> result = source.stream().collect(GuavaCollectors.toImmutableSetHandlingDuplicates(DuplicateElementException.throwExceptionConsumer()));
+			Assert.fail("Exception was expected but we got: " + result);
+		}
+		catch (final DuplicateElementException ex)
+		{
+			final Integer expected = 1;
+			final Integer actual = ex.getElement();
+			Assert.assertEquals(expected, actual);
+		}
 	}
 
 	@Test
-	void test_toImmutableSetHandlingDuplicates_NoDuplicates()
+	public void test_toImmutableSetHandlingDuplicates_NoDuplicates()
 	{
-		assertThat(Stream.of(1, 2, 3, 4).collect(GuavaCollectors.toImmutableSetHandlingDuplicates(DuplicateElementException.throwExceptionConsumer())))
-				.containsExactly(1, 2, 3, 4);
+		final List<Integer> source = Arrays.asList(1, 2, 3, 4);
+
+		final Set<Integer> resultExpected = ImmutableSet.of(1, 2, 3, 4);
+		final Set<Integer> result = source.stream().collect(GuavaCollectors.toImmutableSetHandlingDuplicates(DuplicateElementException.throwExceptionConsumer()));
+
+		Assert.assertEquals(resultExpected, result);
 	}
 
 	@Test
-	void test_toImmutableMapByKeyKeepFirstDuplicate()
+	public void test_toImmutableMapByKeyKeepFirstDuplicate()
 	{
-		assertThat(Stream.of("1_one", "2_two1", "2_two2", "3_three").collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(value -> value.substring(0, 1))))
-				.isEqualTo(ImmutableMap.of("1", "1_one", "2", "2_two1", "3", "3_three"));
-	}
+		final ImmutableMap<String, String> result = Stream.of("1_one", "2_two1", "2_two2", "3_three")
+				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(value -> value.substring(0, 1)));
 
-	/**
-	 * i.e. make sure the last duplicate is kept
-	 */
+		final ImmutableMap<String, String> resultExpected = ImmutableMap.of("1", "1_one", "2", "2_two1", "3", "3_three");
+
+		Assert.assertEquals(resultExpected, result);
+	}
+	
+	/** i.e. make sure the last duplicate is kept */
 	@Test
-	void test_toImmutableMapByKey()
+	public void test_toImmutableMapByKey()
 	{
-		assertThat(Stream.of("1_one", "2_two1", "2_two2", "3_three").collect(GuavaCollectors.toImmutableMapByKey(value -> value.substring(0, 1))))
-				.isEqualTo(ImmutableMap.of("1", "1_one", "2", "2_two2", "3", "3_three"));
+		final ImmutableMap<String, String> result = Stream.of("1_one", "2_two1", "2_two2", "3_three")
+				.collect(GuavaCollectors.toImmutableMapByKey(value -> value.substring(0, 1)));
+
+		final ImmutableMap<String, String> resultExpected = ImmutableMap.of("1", "1_one", "2", "2_two2", "3", "3_three");
+
+		Assert.assertEquals(resultExpected, result);
 	}
 
+
+	@SuppressWarnings("serial")
 	private static final class DuplicateElementException extends RuntimeException
 	{
-		public static <T> Consumer<T> throwExceptionConsumer()
+		public static final <T> Consumer<T> throwExceptionConsumer()
 		{
-			return (element1) -> {
-				throw new DuplicateElementException(element1);
+			final Consumer<T> duplicateConsumer = (element) -> {
+				throw new DuplicateElementException(element);
 			};
+			return duplicateConsumer;
 		}
 
 		private final Object element;
@@ -141,47 +183,10 @@ public class GuavaCollectorsTest
 
 		public <T> T getElement()
 		{
-			@SuppressWarnings("unchecked") final T elementCasted = (T)element;
+			@SuppressWarnings("unchecked")
+			final T elementCasted = (T)element;
 			return elementCasted;
 		}
 	}
 
-	@Nested
-	class uniqueElementOrThrow
-	{
-		@Test
-		void empty()
-		{
-			//noinspection ResultOfMethodCallIgnored
-			assertThatThrownBy(
-					() -> Stream.empty().collect(GuavaCollectors.uniqueElementOrThrow(set -> new RuntimeException("error: " + set)))
-			).hasMessageStartingWith("error: []");
-		}
-
-		@Test
-		void singleElement()
-		{
-			assertThat(
-					Stream.of("1").collect(GuavaCollectors.uniqueElementOrThrow(set -> new RuntimeException("error: " + set)))
-			).isEqualTo("1");
-		}
-
-		@Test
-		void singleElementButMoreTimes()
-		{
-			assertThat(
-					Stream.of("1", "1", "1").collect(GuavaCollectors.uniqueElementOrThrow(set -> new RuntimeException("error: " + set)))
-			).isEqualTo("1");
-		}
-
-		@Test
-		void multipleUniqueElements()
-		{
-			//noinspection ResultOfMethodCallIgnored
-			assertThatThrownBy(
-					() -> Stream.of("1", "2", "3", "2", "1").collect(GuavaCollectors.uniqueElementOrThrow(set -> new RuntimeException("error: " + set)))
-			).hasMessageStartingWith("error: [1, 2, 3]");
-		}
-
-	}
 }

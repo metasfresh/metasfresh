@@ -84,7 +84,9 @@ import org.apache.commons.lang.StringUtils;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;

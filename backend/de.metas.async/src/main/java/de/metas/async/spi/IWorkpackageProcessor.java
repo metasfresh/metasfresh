@@ -25,9 +25,6 @@ package de.metas.async.spi;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkpackageSkipRequest;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /**
  * Implementation responsible for processing given workPackage.
@@ -39,7 +36,7 @@ public interface IWorkpackageProcessor
 	String PARAMETERNAME_ElementsLockOwner = "ElementsLockOwner";
 
 	/**
-	 * The possible results of an {@link IWorkpackageProcessor#processWorkPackage(I_C_Queue_WorkPackage, String)}  invocation.
+	 * The possible results of an {@link IWorkpackageProcessor#processWorkPackage(I_C_Queue_WorkPackage)} invocation.
 	 * 
 	 * 
 	 */
@@ -57,12 +54,12 @@ public interface IWorkpackageProcessor
 	 * NOTE: never call this method directly, it will be called by API.
 	 * 
 	 * @param workpackage the package to be processed. Note that this package's context contains the <code>AD_Client_ID</code>, <code>AD_Org_ID</code> and <code>AD_User_ID</code> from the context in
-	 *            which the package record was created.
+	 *            which the package's <code>C_Queue_Block</code> record was created.
 	 * @param localTrxName transaction to be used while processing
 	 * @return the processing's outcome
 	 * @see Result
 	 * 
 	 * @throws IWorkpackageSkipRequest if we want to skip this workpackage. The request will contain more infos.
 	 */
-	Result processWorkPackage(@NonNull I_C_Queue_WorkPackage workpackage, @Nullable String localTrxName);
+	Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName);
 }

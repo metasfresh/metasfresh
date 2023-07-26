@@ -1,17 +1,17 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlDemand;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlInstruction;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlValidation;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /*
  * #%L
@@ -45,16 +45,13 @@ public class XmlProcessing
 
 	/** expecting default = false */
 	@NonNull
-	Boolean printCustomerCopy;
+	Boolean printPatientCopy;
 
 	@NonNull
 	XmlTransport transport;
 
 	@Singular
 	List<XmlValidation> validations;
-
-	@Singular
-	List<XmlInstruction> instructions;
 
 	@Nullable
 	XmlDemand demand;

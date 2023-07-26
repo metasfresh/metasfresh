@@ -4,9 +4,11 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.IWorkpackageParamDAO;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneQuery;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.service.AsyncBatchService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -21,6 +23,8 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * @author cg
  */
@@ -30,13 +34,13 @@ public class C_Queue_WorkPackage
 {
 	private static final Logger logger = LogManager.getLogger(C_Queue_WorkPackage.class);
 
-	private final AsyncBatchService asyncBatchService;
+	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	public C_Queue_WorkPackage(@NonNull final AsyncBatchService asyncBatchService)
+	public C_Queue_WorkPackage(@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService)
 	{
-		this.asyncBatchService = asyncBatchService;
+		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -65,11 +69,11 @@ public class C_Queue_WorkPackage
 		logsRepository.deleteLogsInTrx(workpackageId);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
 			I_C_Queue_WorkPackage.COLUMNNAME_Processed,
 			I_C_Queue_WorkPackage.COLUMNNAME_IsError
 	})
-	public void processBatchFromWP(@NonNull final I_C_Queue_WorkPackage wp)
+	public void processMilestoneFromWP(@NonNull final I_C_Queue_WorkPackage wp)
 	{
 		if (wp.getC_Async_Batch_ID() <= 0)
 		{
@@ -81,11 +85,25 @@ public class C_Queue_WorkPackage
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(wp.getC_Async_Batch_ID());
 		trxManager
 				.getTrxListenerManager(trxName)
-				.runAfterCommit(() -> processBatchInOwnTrx(asyncBatchId));
+				.runAfterCommit(() -> processMilestoneInOwnTrx(wp, asyncBatchId));
 	}
 
-	private void processBatchInOwnTrx(@NonNull final AsyncBatchId asyncBatchId)
+	private void processMilestoneInOwnTrx(
+			@NonNull final I_C_Queue_WorkPackage wp,
+			@NonNull final AsyncBatchId asyncBatchId)
 	{
-		trxManager.runInNewTrx(() -> asyncBatchService.checkProcessed(asyncBatchId, ITrx.TRXNAME_ThreadInherited));
+		trxManager.runInNewTrx(() -> {
+
+			final AsyncBatchMilestoneQuery query = AsyncBatchMilestoneQuery.builder()
+					.asyncBatchId(AsyncBatchId.ofRepoId(wp.getC_Async_Batch_ID()))
+					.processed(false)
+					.build();
+			final List<AsyncBatchMilestone> milestones = asyncBatchMilestoneService.getByQuery(query);
+
+			if (milestones.size() > 0)
+			{
+				asyncBatchMilestoneService.processAsyncBatchMilestone(asyncBatchId, milestones, ITrx.TRXNAME_ThreadInherited);
+			}
+		});
 	}
 }

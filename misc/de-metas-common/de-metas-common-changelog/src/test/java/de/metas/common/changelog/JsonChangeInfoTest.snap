@@ -1,23 +1,23 @@
 de.metas.common.changelog.JsonChangeInfoTest.test=[
   {
-    "createdBy": 10,
-    "createdMillis": 10,
-    "lastUpdatedBy": 20,
-    "lastUpdatedMillis": 20,
-    "changeLogs": [
+    "createdMillis" : 10,
+    "createdBy" : 10,
+    "lastUpdatedMillis" : 20,
+    "lastUpdatedBy" : 20,
+    "changeLogs" : [
       {
-        "fieldName": "fieldName_30",
-        "newValue": "newValue_30",
-        "oldValue": "oldValue_30",
-        "updatedBy": 30,
-        "updatedMillis": 30
+        "fieldName" : "fieldName_30",
+        "updatedMillis" : 30,
+        "updatedBy" : 30,
+        "oldValue" : "oldValue_30",
+        "newValue" : "newValue_30"
       },
       {
-        "fieldName": "fieldName_40",
-        "newValue": "newValue_40",
-        "oldValue": "oldValue_40",
-        "updatedBy": 40,
-        "updatedMillis": 40
+        "fieldName" : "fieldName_40",
+        "updatedMillis" : 40,
+        "updatedBy" : 40,
+        "oldValue" : "oldValue_40",
+        "newValue" : "newValue_40"
       }
     ]
   }

@@ -1,14 +1,16 @@
 package de.metas.currency;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /*
  * #%L
@@ -48,16 +50,15 @@ public final class CurrencyPrecision
 		}
 	}
 
-	public static final CurrencyPrecision ZERO;
-	public static final CurrencyPrecision TWO;
-	public static final CurrencyPrecision FOUR;
+	public static final CurrencyPrecision ZERO = new CurrencyPrecision(0);
+	public static final CurrencyPrecision TWO = new CurrencyPrecision(2);
 
 	private static final CurrencyPrecision[] CACHED_VALUES = new CurrencyPrecision[] {
-			ZERO = new CurrencyPrecision(0),
+			ZERO,
 			new CurrencyPrecision(1),
-			TWO = new CurrencyPrecision(2),
+			TWO,
 			new CurrencyPrecision(3),
-			FOUR = new CurrencyPrecision(4),
+			new CurrencyPrecision(4),
 			new CurrencyPrecision(5),
 			new CurrencyPrecision(6),
 			new CurrencyPrecision(7),

@@ -88,8 +88,6 @@ public enum PPOrderRoutingActivityStatus
 			.put(IN_PROGRESS, VOIDED)
 			// .put(COMPLETED, NOT_STARTED)
 			.put(COMPLETED, CLOSED)
-			.put(COMPLETED, IN_PROGRESS)
-			.put(COMPLETED, NOT_STARTED)
 			// .put(COMPLETED, VOIDED)
 			.put(CLOSED, IN_PROGRESS)
 			.build();

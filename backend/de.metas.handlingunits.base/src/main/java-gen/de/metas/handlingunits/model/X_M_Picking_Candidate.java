@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Candidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_Picking_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -947143956L;
+	private static final long serialVersionUID = -1275027448L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (final Properties ctx, final int M_Picking_Candidate_ID, @Nullable final String trxName)
@@ -173,21 +173,6 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setPackTo_HU_PI_Item_Product_ID (final int PackTo_HU_PI_Item_Product_ID)
-	{
-		if (PackTo_HU_PI_Item_Product_ID < 1) 
-			set_Value (COLUMNNAME_PackTo_HU_PI_Item_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_PackTo_HU_PI_Item_Product_ID, PackTo_HU_PI_Item_Product_ID);
-	}
-
-	@Override
-	public int getPackTo_HU_PI_Item_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PackTo_HU_PI_Item_Product_ID);
-	}
-
-	@Override
 	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
@@ -280,19 +265,6 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setQtyReject (final BigDecimal QtyReject)
-	{
-		set_Value (COLUMNNAME_QtyReject, QtyReject);
-	}
-
-	@Override
-	public BigDecimal getQtyReject() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReject);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setQtyReview (final @Nullable BigDecimal QtyReview)
 	{
 		set_Value (COLUMNNAME_QtyReview, QtyReview);
@@ -303,27 +275,6 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReview);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	/** 
-	 * RejectReason AD_Reference_ID=541422
-	 * Reference name: QtyNotPicked RejectReason
-	 */
-	public static final int REJECTREASON_AD_Reference_ID=541422;
-	/** NotFound = N */
-	public static final String REJECTREASON_NotFound = "N";
-	/** Damaged = D */
-	public static final String REJECTREASON_Damaged = "D";
-	@Override
-	public void setRejectReason (final @Nullable java.lang.String RejectReason)
-	{
-		set_Value (COLUMNNAME_RejectReason, RejectReason);
-	}
-
-	@Override
-	public java.lang.String getRejectReason() 
-	{
-		return get_ValueAsString(COLUMNNAME_RejectReason);
 	}
 
 	/** 

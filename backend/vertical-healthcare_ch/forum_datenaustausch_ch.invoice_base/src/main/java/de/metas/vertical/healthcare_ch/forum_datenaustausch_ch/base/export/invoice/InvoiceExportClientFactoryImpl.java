@@ -1,10 +1,10 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
 import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
+import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;

@@ -34,7 +34,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.NamePair;
 
-import javax.annotation.Nullable;
 import java.util.Set;
 
 public class PaymentRuleValidation extends AbstractJavaValidationRule
@@ -44,20 +43,20 @@ public class PaymentRuleValidation extends AbstractJavaValidationRule
 
 	private final CreditPassConfigRepository creditPassConfigRepository = Adempiere.getBean(CreditPassConfigRepository.class);
 
-	@Override public Set<String> getParameters(@Nullable final String contextTableName)
+	@Override public Set<String> getParameters()
 	{
 		return PARAMETERS;
 	}
 
-	@Override public boolean accept(final IValidationContext evalCtx, final NamePair item)
+	@Override public boolean accept(IValidationContext evalCtx, NamePair item)
 	{
 		boolean accept = false;
-		final int bPartnerId = evalCtx.get_ValueAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1);
+		int bPartnerId = evalCtx.get_ValueAsInt(I_C_BPartner.COLUMNNAME_C_BPartner_ID, -1);
 
 		if (bPartnerId > -1)
 		{
-			final CreditPassConfig config = creditPassConfigRepository.getConfigByBPartnerId(BPartnerId.ofRepoId(bPartnerId));
-			final boolean hasMatch = config.getCreditPassConfigPaymentRuleList().stream()
+			CreditPassConfig config = creditPassConfigRepository.getConfigByBPartnerId(BPartnerId.ofRepoId(bPartnerId));
+			boolean hasMatch = config.getCreditPassConfigPaymentRuleList().stream()
 					.map(CreditPassConfigPaymentRule::getPaymentRule)
 					.anyMatch(pr -> StringUtils.equals(pr, item.getID()));
 			if (hasMatch)

@@ -2,7 +2,7 @@ package de.metas.util;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.util.StringUtils.TruncateAt;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -132,7 +132,7 @@ public class StringUtilsTest
 	@Test
 	public void splitStreetAndHouseNumberOrNull()
 	{
-		final IPair<String, String> result = de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Carretera Nueva Jarilla");
+		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Carretera Nueva Jarilla");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Carretera Nueva Jarilla");
@@ -142,7 +142,7 @@ public class StringUtilsTest
 	@Test
 	public void splitStreetAndHouseNumberOrNull_2()
 	{
-		final IPair<String, String> result =  de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14");
+		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
@@ -152,7 +152,7 @@ public class StringUtilsTest
 	@Test
 	public void splitStreetAndHouseNumberOrNull_3()
 	{
-		final IPair<String, String> result =  de.metas.common.util.StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14-26c");
+		final IPair<String, String> result = StringUtils.splitStreetAndHouseNumberOrNull("Laternenstrasse 14-26c");
 
 		assertThat(result).isNotNull();
 		assertThat(result.getLeft()).isEqualTo("Laternenstrasse");
@@ -177,9 +177,9 @@ public class StringUtilsTest
 	@Test
 	public void test_cleanWhitespace()
 	{
-		assertThat(StringUtils.cleanWhitespace("")).isEmpty();
-		assertThat(StringUtils.cleanWhitespace(" ")).isEmpty();
-		assertThat(StringUtils.cleanWhitespace(" \t\n ")).isEmpty();
+		assertThat(StringUtils.cleanWhitespace("")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace(" ")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace(" \t\n ")).isEqualTo("");
 		assertThat(StringUtils.cleanWhitespace(" \taaaa\n ")).isEqualTo("aaaa");
 		assertThat(StringUtils.cleanWhitespace("CH34 8914 4463 3729 49 43 8")).isEqualTo("CH3489144463372949438");
 
@@ -208,33 +208,15 @@ public class StringUtilsTest
 	class trimBlankToOptional
 	{
 		@Test
-		void nullValue() {assertThat(StringUtils.trimBlankToOptional(null)).isEmpty();}
+		void nullValue() { assertThat(StringUtils.trimBlankToOptional(null)).isEmpty(); }
 
 		@Test
-		void empty() {assertThat(StringUtils.trimBlankToOptional("")).isEmpty();}
+		void empty() { assertThat(StringUtils.trimBlankToOptional("")).isEmpty(); }
 
 		@Test
-		void blank() {assertThat(StringUtils.trimBlankToOptional("   \t   ")).isEmpty();}
+		void blank() { assertThat(StringUtils.trimBlankToOptional("   \t   ")).isEmpty(); }
 
 		@Test
-		void nonBlank() {assertThat(StringUtils.trimBlankToOptional("   \taaa\r\n   ")).contains("aaa");}
-	}
-
-	@Nested
-	class trimBlankToNullAndMap
-	{
-		String append2(String s) {return s + "2";}
-
-		@Test
-		void nullValue() {assertThat(StringUtils.trimBlankToNullAndMap(null, this::append2)).isNull();}
-
-		@Test
-		void empty() {assertThat(StringUtils.trimBlankToNullAndMap("", this::append2)).isNull();}
-
-		@Test
-		void blank() {assertThat(StringUtils.trimBlankToNullAndMap("   \t   ", this::append2)).isNull();}
-
-		@Test
-		void nonBlank() {assertThat(StringUtils.trimBlankToNullAndMap("   \taaa\r\n   ", this::append2)).contains("aaa2");}
+		void nonBlank() { assertThat(StringUtils.trimBlankToOptional("   \taaa\r\n   ")).contains("aaa"); }
 	}
 }

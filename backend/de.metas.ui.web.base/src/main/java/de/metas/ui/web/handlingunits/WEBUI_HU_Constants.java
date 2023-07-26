@@ -4,8 +4,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.experimental.UtilityClass;
 
-import static de.metas.ui.web.handlingunits.HUEditorRow.SYSCFG_PREFIX;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -46,6 +44,4 @@ public final class WEBUI_HU_Constants
 	public static final AdMessageKey MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU = AdMessageKey.of("WEBUI_Picking_Select_Active_UnSelected_HUs");
 
 	public static final AdMessageKey MSG_WEBUI_ONLY_CU = AdMessageKey.of("WEBUI_Only_CU");
-
-	public static final String SYS_CONFIG_CLEARANCE = SYSCFG_PREFIX + ".ClearanceStatus.IsDisplayed";
 }

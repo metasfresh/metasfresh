@@ -1,19 +1,16 @@
 package de.metas.handlingunits.trace.interceptor;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
-import java.util.LinkedHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -38,10 +35,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Interceptor(I_M_ShipmentSchedule_QtyPicked.class)
 @Component
-class M_ShipmentSchedule_QtyPicked
+/* package */ class M_ShipmentSchedule_QtyPicked
 {
-	private final HUTraceEventsService huTraceEventsService;
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private HUTraceEventsService huTraceEventsService;
 
 	public M_ShipmentSchedule_QtyPicked(@NonNull final HUTraceEventsService huTraceEventsService)
 	{
@@ -55,55 +52,15 @@ class M_ShipmentSchedule_QtyPicked
 	})
 	public void addTraceEventForNewAndChange(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
-		deferredProcessor().schedule(shipmentScheduleQtyPicked);
-	}
-
-	private DeferredProcessor deferredProcessor()
-	{
-		return trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail) // at this point we always run in trx
-				.getPropertyAndProcessAfterCommit(
-						DeferredProcessor.class.getName(),
-						() -> new DeferredProcessor(huTraceEventsService),
-						DeferredProcessor::processNow);
+		Services.get(ITrxManager.class)
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> huTraceEventsService.createAndAddFor(shipmentScheduleQtyPicked));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void addTraceEventForDelete(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
 		huTraceEventsService.createAndAddFor(shipmentScheduleQtyPicked);
-	}
-
-	private static class DeferredProcessor
-	{
-		private final HUTraceEventsService huTraceEventsService;
-
-		private final AtomicBoolean processed = new AtomicBoolean(false);
-		private final LinkedHashMap<Integer, I_M_ShipmentSchedule_QtyPicked> records = new LinkedHashMap<>();
-
-		public DeferredProcessor(@NonNull final HUTraceEventsService huTraceEventsService)
-		{
-			this.huTraceEventsService = huTraceEventsService;
-		}
-
-		public void schedule(@NonNull final I_M_ShipmentSchedule_QtyPicked record)
-		{
-			if (processed.get())
-			{
-				throw new AdempiereException("already processed: " + this);
-			}
-
-			this.records.put(record.getM_ShipmentSchedule_QtyPicked_ID(), record);
-		}
-
-		public void processNow()
-		{
-			final boolean alreadyProcessed = processed.getAndSet(true);
-			if (alreadyProcessed)
-			{
-				throw new AdempiereException("already processed: " + this);
-			}
-
-			records.values().forEach(huTraceEventsService::createAndAddFor);
-		}
 	}
 }

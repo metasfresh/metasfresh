@@ -16,10 +16,16 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.images.Images;
@@ -37,6 +43,7 @@ import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
 import org.compiere.model.MCampaign;
 import org.compiere.model.MOrderLine;
+import org.compiere.model.MPayment;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRequest;
@@ -45,13 +52,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Request Button Action.
@@ -167,7 +171,7 @@ public class ARequest implements ActionListener
 		{
 			m_where.append(" OR C_Campaign_ID=").append(m_Record_ID);
 		}
-		else if (m_AD_Table_ID == getTableId(MAsset.class))
+		else if (m_AD_Table_ID == MAsset.Table_ID)
 		{
 			m_where.append(" OR A_Asset_ID=").append(m_Record_ID);
 		}
@@ -277,7 +281,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("C_Project_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == getTableId(MAsset.class))
+			else if (m_AD_Table_ID == MAsset.Table_ID)
 			{
 				tab.setValue("A_Asset_ID", new Integer(m_Record_ID));
 			}

@@ -1,9 +1,13 @@
 package de.metas.ui.web.document.filter.json;
 
+import java.util.Collection;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.datatypes.Values;
@@ -12,11 +16,8 @@ import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.GuavaCollectors;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.ToString;
-
-import java.util.Collection;
-import java.util.List;
 
 /*
  * #%L
@@ -90,7 +91,7 @@ import java.util.List;
 	@JsonProperty("readonly")
 	private final boolean readonly;
 
-	@Schema(minLength = 1)
+	@ApiModelProperty(allowEmptyValue = false)
 	@JsonProperty("type")
 	private final JSONLayoutType type;
 

@@ -1,7 +1,12 @@
 package de.metas.costing;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.costing.methods.CostAmountType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -10,12 +15,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
 
 /*
  * #%L
@@ -53,19 +52,16 @@ public class CostDetail
 	ProductId productId;
 	AttributeSetInstanceId attributeSetInstanceId;
 
-	@NonNull CostAmountType amtType;
 	CostAmount amt;
-	@With Quantity qty;
+	Quantity qty;
 
-	@With boolean changingCosts;
+	boolean changingCosts;
 
 	CostDetailPreviousAmounts previousAmounts;
 
 	CostingDocumentRef documentRef;
 
 	String description;
-
-	@With Instant dateAcct;
 
 	@Builder
 	private CostDetail(
@@ -76,14 +72,12 @@ public class CostDetail
 			@NonNull final CostElementId costElementId,
 			@NonNull final ProductId productId,
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
-			@NonNull final CostAmountType amtType,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			final boolean changingCosts,
 			final CostDetailPreviousAmounts previousAmounts,
 			@NonNull final CostingDocumentRef documentRef,
-			@Nullable final String description,
-			@NonNull Instant dateAcct)
+			@Nullable final String description)
 	{
 		this.id = id;
 		this.clientId = clientId;
@@ -92,14 +86,12 @@ public class CostDetail
 		this.costElementId = costElementId;
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
-		this.amtType = amtType;
 		this.amt = amt;
 		this.qty = qty;
 		this.changingCosts = changingCosts;
 		this.previousAmounts = previousAmounts;
 		this.documentRef = documentRef;
 		this.description = description;
-		this.dateAcct = dateAcct;
 
 		if (this.previousAmounts != null
 				&& !CurrencyId.equals(this.previousAmounts.getCurrencyId(), amt.getCurrencyId()))

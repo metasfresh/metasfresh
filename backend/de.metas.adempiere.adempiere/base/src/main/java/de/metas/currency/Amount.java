@@ -1,24 +1,31 @@
 package de.metas.currency;
 
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -139,30 +146,25 @@ public class Amount implements Comparable<Amount>
 		}
 	}
 
-	public static Optional<CurrencyCode> getCommonCurrencyCodeOfAll(@Nullable final Amount... amounts)
+	public static CurrencyCode getCommonCurrencyCodeOfAll(@NonNull final Amount... amounts)
 	{
-		if (amounts == null || amounts.length <= 0)
+		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
+
+		//noinspection ConstantConditions
+		final Iterator<Amount> moneysIterator = Stream.of(amounts)
+				.filter(Objects::nonNull)
+				.iterator();
+		final ImmutableListMultimap<CurrencyCode, Amount> amountsByCurrencyCode = Multimaps.index(moneysIterator, Amount::getCurrencyCode);
+		if (amountsByCurrencyCode.isEmpty())
 		{
 			throw new AdempiereException("The given moneys may not be empty");
 		}
 
-		final ImmutableList<CurrencyCode> currencies = Stream.of(amounts)
-				.filter(Objects::nonNull)
-				.map(Amount::getCurrencyCode)
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
-		if (currencies.isEmpty())
-		{
-			return Optional.empty();
-		}
-		else if (currencies.size() == 1)
-		{
-			return Optional.of(currencies.get(0));
-		}
-		else
-		{
-			throw new AdempiereException("At least two amounts have different currencies: " + Arrays.asList(amounts));
-		}
+		final ImmutableSet<CurrencyCode> currencyCodes = amountsByCurrencyCode.keySet();
+		Check.errorIf(currencyCodes.size() > 1,
+				"at least two money instances have different currencies: {}", amountsByCurrencyCode);
+
+		return CollectionUtils.singleElement(currencyCodes.asList());
 	}
 
 	@Override
@@ -267,7 +269,6 @@ public class Amount implements Comparable<Amount>
 				: this;
 	}
 
-	@NonNull
 	public Money toMoney(@NonNull final Function<CurrencyCode, CurrencyId> currencyIdMapper)
 	{
 		return Money.of(value, currencyIdMapper.apply(currencyCode));

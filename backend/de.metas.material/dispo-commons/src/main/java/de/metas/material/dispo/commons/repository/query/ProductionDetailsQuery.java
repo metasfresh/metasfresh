@@ -1,5 +1,10 @@
 package de.metas.material.dispo.commons.repository.query;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail.ProductionDetailBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -8,10 +13,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -60,7 +61,6 @@ public class ProductionDetailsQuery
 				.productBomLineId(productionDetail.getProductBomLineId())
 				.ppOrderId(productionDetail.getPpOrderId())
 				.ppOrderLineId(productionDetail.getPpOrderLineId())
-				.ppOrderCandidateId(productionDetail.getPpOrderCandidateId())
 				.build();
 	}
 
@@ -70,11 +70,7 @@ public class ProductionDetailsQuery
 
 	int ppOrderId;
 
-	int ppOrderCandidateId;
-
 	int ppOrderLineId;
-
-	int ppOrderCandidateLineId;
 
 	/**
 	 * Convenience method that uses this instance to kickstart an return a builder.
@@ -87,8 +83,7 @@ public class ProductionDetailsQuery
 				.productPlanningId(productPlanningId)
 				.productBomLineId(productBomLineId)
 				.ppOrderId(ppOrderId)
-				.ppOrderLineId(ppOrderLineId)
-				.ppOrderCandidateId(ppOrderCandidateId);
+				.ppOrderLineId(ppOrderLineId);
 	}
 
 	public void augmentQueryBuilder(@NonNull final IQueryBuilder<I_MD_Candidate> builder)
@@ -127,17 +122,6 @@ public class ProductionDetailsQuery
 			if (ppOrderLineId > 0)
 			{
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_BOMLine_ID, ppOrderLineId);
-				doFilter = true;
-			}
-
-			if (ppOrderCandidateId > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId);
-				doFilter = true;
-			}
-			if (ppOrderCandidateLineId > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMNNAME_PP_OrderLine_Candidate_ID, ppOrderCandidateLineId);
 				doFilter = true;
 			}
 			else if (ppOrderLineId == NO_PP_ORDER_LINE_ID)

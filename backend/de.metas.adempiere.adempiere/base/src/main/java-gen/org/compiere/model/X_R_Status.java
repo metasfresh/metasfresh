@@ -1,276 +1,426 @@
-// Generated Model - DO NOT CHANGE
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Model for R_Status
- *  @author metasfresh (generated) 
- */
-@SuppressWarnings("unused")
-public class X_R_Status extends org.compiere.model.PO implements I_R_Status, org.compiere.model.I_Persistent 
+ *  @author Adempiere (generated) 
+ *  @version Release 3.5.4a - $Id$ */
+public class X_R_Status extends PO implements I_R_Status, I_Persistent 
 {
 
-	private static final long serialVersionUID = -356716214L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 20090915L;
 
     /** Standard Constructor */
-    public X_R_Status (final Properties ctx, final int R_Status_ID, @Nullable final String trxName)
+    public X_R_Status (Properties ctx, int R_Status_ID, String trxName)
     {
       super (ctx, R_Status_ID, trxName);
+      /** if (R_Status_ID == 0)
+        {
+			setIsClosed (false);
+// N
+			setIsDefault (false);
+			setIsFinalClose (false);
+// N
+			setIsOpen (false);
+			setIsWebCanUpdate (false);
+			setName (null);
+			setR_StatusCategory_ID (0);
+			setR_Status_ID (0);
+			setSeqNo (0);
+			setValue (null);
+        } */
     }
 
     /** Load Constructor */
-    public X_R_Status (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_R_Status (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
+    /** AccessLevel
+      * @return 6 - System - Client 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    protected POInfo initPO (Properties ctx)
+    {
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      return poi;
+    }
 
-	@Override
-	public void setCalendarColor (final @Nullable java.lang.String CalendarColor)
-	{
-		set_Value (COLUMNNAME_CalendarColor, CalendarColor);
-	}
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_R_Status[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
 
-	@Override
-	public java.lang.String getCalendarColor() 
-	{
-		return get_ValueAsString(COLUMNNAME_CalendarColor);
-	}
-
-	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	@Override
-	public java.lang.String getDescription() 
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (String)get_Value(COLUMNNAME_Description);
 	}
 
-	@Override
-	public void setHelp (final @Nullable java.lang.String Help)
+	/** Set Comment/Help.
+		@param Help 
+		Comment or Hint
+	  */
+	public void setHelp (String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	@Override
-	public java.lang.String getHelp() 
+	/** Get Comment/Help.
+		@return Comment or Hint
+	  */
+	public String getHelp () 
 	{
-		return get_ValueAsString(COLUMNNAME_Help);
+		return (String)get_Value(COLUMNNAME_Help);
 	}
 
-	@Override
-	public void setIsClosed (final boolean IsClosed)
+	/** Set Closed Status.
+		@param IsClosed 
+		The status is closed
+	  */
+	public void setIsClosed (boolean IsClosed)
 	{
-		set_Value (COLUMNNAME_IsClosed, IsClosed);
+		set_Value (COLUMNNAME_IsClosed, Boolean.valueOf(IsClosed));
 	}
 
-	@Override
-	public boolean isClosed() 
+	/** Get Closed Status.
+		@return The status is closed
+	  */
+	public boolean isClosed () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+		Object oo = get_Value(COLUMNNAME_IsClosed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public void setIsDefault (final boolean IsDefault)
+	/** Set Default.
+		@param IsDefault 
+		Default value
+	  */
+	public void setIsDefault (boolean IsDefault)
 	{
-		set_Value (COLUMNNAME_IsDefault, IsDefault);
+		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
 	}
 
-	@Override
-	public boolean isDefault() 
+	/** Get Default.
+		@return Default value
+	  */
+	public boolean isDefault () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
+		Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public void setIsFinalClose (final boolean IsFinalClose)
+	/** Set Final Close.
+		@param IsFinalClose 
+		Entries with Final Close cannot be re-opened
+	  */
+	public void setIsFinalClose (boolean IsFinalClose)
 	{
-		set_Value (COLUMNNAME_IsFinalClose, IsFinalClose);
+		set_Value (COLUMNNAME_IsFinalClose, Boolean.valueOf(IsFinalClose));
 	}
 
-	@Override
-	public boolean isFinalClose() 
+	/** Get Final Close.
+		@return Entries with Final Close cannot be re-opened
+	  */
+	public boolean isFinalClose () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsFinalClose);
+		Object oo = get_Value(COLUMNNAME_IsFinalClose);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public void setIsOpen (final boolean IsOpen)
+	/** Set Open Status.
+		@param IsOpen 
+		The status is closed
+	  */
+	public void setIsOpen (boolean IsOpen)
 	{
-		set_Value (COLUMNNAME_IsOpen, IsOpen);
+		set_Value (COLUMNNAME_IsOpen, Boolean.valueOf(IsOpen));
 	}
 
-	@Override
-	public boolean isOpen() 
+	/** Get Open Status.
+		@return The status is closed
+	  */
+	public boolean isOpen () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsOpen);
+		Object oo = get_Value(COLUMNNAME_IsOpen);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public void setIsWebCanUpdate (final boolean IsWebCanUpdate)
+	/** Set Web Can Update.
+		@param IsWebCanUpdate 
+		Entry can be updated from the Web
+	  */
+	public void setIsWebCanUpdate (boolean IsWebCanUpdate)
 	{
-		set_Value (COLUMNNAME_IsWebCanUpdate, IsWebCanUpdate);
+		set_Value (COLUMNNAME_IsWebCanUpdate, Boolean.valueOf(IsWebCanUpdate));
 	}
 
-	@Override
-	public boolean isWebCanUpdate() 
+	/** Get Web Can Update.
+		@return Entry can be updated from the Web
+	  */
+	public boolean isWebCanUpdate () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsWebCanUpdate);
+		Object oo = get_Value(COLUMNNAME_IsWebCanUpdate);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public void setName (final java.lang.String Name)
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	@Override
-	public java.lang.String getName() 
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
+	public String getName () 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (String)get_Value(COLUMNNAME_Name);
 	}
 
-	@Override
-	public org.compiere.model.I_R_Status getNext_Status()
-	{
-		return get_ValueAsPO(COLUMNNAME_Next_Status_ID, org.compiere.model.I_R_Status.class);
-	}
+	public I_R_Status getNext_Status() throws RuntimeException
+    {
+		return (I_R_Status)MTable.get(getCtx(), I_R_Status.Table_Name)
+			.getPO(getNext_Status_ID(), get_TrxName());	}
 
-	@Override
-	public void setNext_Status(final org.compiere.model.I_R_Status Next_Status)
-	{
-		set_ValueFromPO(COLUMNNAME_Next_Status_ID, org.compiere.model.I_R_Status.class, Next_Status);
-	}
-
-	@Override
-	public void setNext_Status_ID (final int Next_Status_ID)
+	/** Set Next Status.
+		@param Next_Status_ID 
+		Move to next status automatically after timeout
+	  */
+	public void setNext_Status_ID (int Next_Status_ID)
 	{
 		if (Next_Status_ID < 1) 
 			set_Value (COLUMNNAME_Next_Status_ID, null);
 		else 
-			set_Value (COLUMNNAME_Next_Status_ID, Next_Status_ID);
+			set_Value (COLUMNNAME_Next_Status_ID, Integer.valueOf(Next_Status_ID));
 	}
 
-	@Override
-	public int getNext_Status_ID() 
+	/** Get Next Status.
+		@return Move to next status automatically after timeout
+	  */
+	public int getNext_Status_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_Next_Status_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Next_Status_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setR_Status_ID (final int R_Status_ID)
-	{
-		if (R_Status_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_R_Status_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_R_Status_ID, R_Status_ID);
-	}
+	public I_R_StatusCategory getR_StatusCategory() throws RuntimeException
+    {
+		return (I_R_StatusCategory)MTable.get(getCtx(), I_R_StatusCategory.Table_Name)
+			.getPO(getR_StatusCategory_ID(), get_TrxName());	}
 
-	@Override
-	public int getR_Status_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_R_Status_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_R_StatusCategory getR_StatusCategory()
-	{
-		return get_ValueAsPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class);
-	}
-
-	@Override
-	public void setR_StatusCategory(final org.compiere.model.I_R_StatusCategory R_StatusCategory)
-	{
-		set_ValueFromPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class, R_StatusCategory);
-	}
-
-	@Override
-	public void setR_StatusCategory_ID (final int R_StatusCategory_ID)
+	/** Set Status Category.
+		@param R_StatusCategory_ID 
+		Request Status Category
+	  */
+	public void setR_StatusCategory_ID (int R_StatusCategory_ID)
 	{
 		if (R_StatusCategory_ID < 1) 
 			set_Value (COLUMNNAME_R_StatusCategory_ID, null);
 		else 
-			set_Value (COLUMNNAME_R_StatusCategory_ID, R_StatusCategory_ID);
+			set_Value (COLUMNNAME_R_StatusCategory_ID, Integer.valueOf(R_StatusCategory_ID));
 	}
 
-	@Override
-	public int getR_StatusCategory_ID() 
+	/** Get Status Category.
+		@return Request Status Category
+	  */
+	public int getR_StatusCategory_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_R_StatusCategory_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_R_StatusCategory_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setSeqNo (final int SeqNo)
+	/** Set Status.
+		@param R_Status_ID 
+		Request Status
+	  */
+	public void setR_Status_ID (int R_Status_ID)
 	{
-		set_Value (COLUMNNAME_SeqNo, SeqNo);
+		if (R_Status_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_R_Status_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_R_Status_ID, Integer.valueOf(R_Status_ID));
 	}
 
-	@Override
-	public int getSeqNo() 
+	/** Get Status.
+		@return Request Status
+	  */
+	public int getR_Status_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_SeqNo);
+		Integer ii = (Integer)get_Value(COLUMNNAME_R_Status_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setTimeoutDays (final int TimeoutDays)
+	/** Set Sequence.
+		@param SeqNo 
+		Method of ordering records; lowest number comes first
+	  */
+	public void setSeqNo (int SeqNo)
 	{
-		set_Value (COLUMNNAME_TimeoutDays, TimeoutDays);
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
 	}
 
-	@Override
-	public int getTimeoutDays() 
+	/** Get Sequence.
+		@return Method of ordering records; lowest number comes first
+	  */
+	public int getSeqNo () 
 	{
-		return get_ValueAsInt(COLUMNNAME_TimeoutDays);
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_R_Status getUpdate_Status()
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public KeyNamePair getKeyNamePair() 
+    {
+        return new KeyNamePair(get_ID(), String.valueOf(getSeqNo()));
+    }
+
+	/** Set Timeout in Days.
+		@param TimeoutDays 
+		Timeout in Days to change Status automatically
+	  */
+	public void setTimeoutDays (int TimeoutDays)
 	{
-		return get_ValueAsPO(COLUMNNAME_Update_Status_ID, org.compiere.model.I_R_Status.class);
+		set_Value (COLUMNNAME_TimeoutDays, Integer.valueOf(TimeoutDays));
 	}
 
-	@Override
-	public void setUpdate_Status(final org.compiere.model.I_R_Status Update_Status)
+	/** Get Timeout in Days.
+		@return Timeout in Days to change Status automatically
+	  */
+	public int getTimeoutDays () 
 	{
-		set_ValueFromPO(COLUMNNAME_Update_Status_ID, org.compiere.model.I_R_Status.class, Update_Status);
+		Integer ii = (Integer)get_Value(COLUMNNAME_TimeoutDays);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setUpdate_Status_ID (final int Update_Status_ID)
+	public I_R_Status getUpdate_Status() throws RuntimeException
+    {
+		return (I_R_Status)MTable.get(getCtx(), I_R_Status.Table_Name)
+			.getPO(getUpdate_Status_ID(), get_TrxName());	}
+
+	/** Set Update Status.
+		@param Update_Status_ID 
+		Automatically change the status after entry from web
+	  */
+	public void setUpdate_Status_ID (int Update_Status_ID)
 	{
 		if (Update_Status_ID < 1) 
 			set_Value (COLUMNNAME_Update_Status_ID, null);
 		else 
-			set_Value (COLUMNNAME_Update_Status_ID, Update_Status_ID);
+			set_Value (COLUMNNAME_Update_Status_ID, Integer.valueOf(Update_Status_ID));
 	}
 
-	@Override
-	public int getUpdate_Status_ID() 
+	/** Get Update Status.
+		@return Automatically change the status after entry from web
+	  */
+	public int getUpdate_Status_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_Update_Status_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Update_Status_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setValue (final java.lang.String Value)
+	/** Set Search Key.
+		@param Value 
+		Search key for the record in the format required - must be unique
+	  */
+	public void setValue (String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	@Override
-	public java.lang.String getValue() 
+	/** Get Search Key.
+		@return Search key for the record in the format required - must be unique
+	  */
+	public String getValue () 
 	{
-		return get_ValueAsString(COLUMNNAME_Value);
+		return (String)get_Value(COLUMNNAME_Value);
 	}
 }

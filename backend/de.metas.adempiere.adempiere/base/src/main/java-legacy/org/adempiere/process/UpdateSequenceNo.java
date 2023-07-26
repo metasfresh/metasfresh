@@ -13,51 +13,45 @@
  *****************************************************************************/
 package org.adempiere.process;
 
-import de.metas.common.util.time.SystemTime;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import java.sql.PreparedStatement;
+
 import org.compiere.util.DB;
 
-import java.sql.PreparedStatement;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.JavaProcess;
 
 /**
  * Insert AD_Sequence records that restart sequence at every year into
  * AD_Sequence_No table if the record does not exists
- *
+ * 
  * @author Elaine
+ * 
  */
-public class UpdateSequenceNo extends JavaProcess
-{
+public class UpdateSequenceNo extends JavaProcess {
 
 	private String year;
 
 	@Override
-	protected void prepare()
-	{
-		final ProcessInfoParameter[] parameters = this.getParametersAsArray();
-		for (final ProcessInfoParameter p : parameters)
-		{
-			if (p.getParameterName().equals("CalendarYear"))
-			{
+	protected void prepare() {
+		ProcessInfoParameter[] parameters = this.getParametersAsArray();
+		for (ProcessInfoParameter p : parameters) {
+			if (p.getParameterName().equals("CalendarYear")) {
 				year = p.getParameter().toString();
-				return;
 			}
 		}
-		year = SystemTime.asZonedDateTime().getYear() + "";
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
 		PreparedStatement insertStmt = null;
-		try
-		{
+		try {
 			insertStmt = DB
 					.prepareStatement(
-							"INSERT INTO AD_Sequence_No(AD_SEQUENCE_ID, CALENDARYEAR,CALENDARMONTH, "
+							"INSERT INTO AD_Sequence_No(AD_SEQUENCE_ID, CALENDARYEAR, "
 									+ "AD_CLIENT_ID, AD_ORG_ID, ISACTIVE, CREATED, CREATEDBY, "
 									+ "UPDATED, UPDATEDBY, CURRENTNEXT) "
-									+ "(SELECT AD_Sequence_ID, ?, ?, "
+									+ "(SELECT AD_Sequence_ID, '" + year + "', "
 									+ "AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, "
 									+ "Updated, UpdatedBy, StartNo "
 									+ "FROM AD_Sequence a "
@@ -65,24 +59,14 @@ public class UpdateSequenceNo extends JavaProcess
 									+ "SELECT AD_Sequence_ID "
 									+ "FROM AD_Sequence_No b "
 									+ "WHERE a.AD_Sequence_ID = b.AD_Sequence_ID "
-									+ "AND CalendarYear = ?"
-									+ "AND CalendarMonth = ?)) ",
+									+ "AND CalendarYear = ?)) ",
 							get_TrxName());
 			insertStmt.setString(1, year);
-			insertStmt.setString(3, year);
-
-			for (int month = 1; month <= 12; month++)
-			{
-				final String monthAsString = month + "";
-				insertStmt.setString(2, monthAsString);
-				insertStmt.setString(4, monthAsString);
-				insertStmt.executeUpdate();
-			}
-		}
-		finally
-		{
+			insertStmt.executeUpdate();
+		} finally {
 			DB.close(insertStmt);
 		}
+
 		return "Sequence No updated successfully";
 	}
 }

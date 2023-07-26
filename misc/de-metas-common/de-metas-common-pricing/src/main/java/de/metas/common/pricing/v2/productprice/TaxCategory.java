@@ -24,20 +24,15 @@ package de.metas.common.pricing.v2.productprice;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.pentabyte.springfox.ApiEnum;
 import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.Arrays;
 
-@Schema(enumAsRef = true, description = "TaxCategory: \n" +
-		"* Specifies in which type the tax category is. The internal name translates `C_TaxCategory.InternalName`.\n" +
-		"* `NORMAL`\n" +
-		"* `REDUCED`\n" +
-		"* `TAXFREE`\n" +
-		"")
 public enum TaxCategory
 {
+	@ApiEnum("Specifies in which type the tax category is. The internal name translates `C_TaxCategory.InternalName`.")
 	NORMAL("Normal"),
 	REDUCED("Reduced"),
 	TAXFREE("TaxFree");

@@ -23,15 +23,10 @@
 
 package de.metas.vertical.creditscore.creditpass.process;
 
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.*;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
 import de.metas.vertical.creditscore.base.spi.model.ResultCode;
@@ -39,9 +34,9 @@ import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
 import de.metas.vertical.creditscore.base.spi.service.TransactionResultService;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
@@ -77,8 +72,7 @@ public class CS_Transaction_Result_ManualOverride extends JavaProcess implements
 			else
 			{
 				order.setCreditpassFlag(true);
-				final ADReferenceService adReferenceService = ADReferenceService.get();
-				final String paymentRuleName = adReferenceService.retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, transactionResult.getPaymentRule());
+				final String paymentRuleName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, transactionResult.getPaymentRule());
 				final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_FAILURE_MESSAGE_KEY, paymentRuleName);
 				order.setCreditpassStatus(message.translate(Env.getAD_Language()));
 			}

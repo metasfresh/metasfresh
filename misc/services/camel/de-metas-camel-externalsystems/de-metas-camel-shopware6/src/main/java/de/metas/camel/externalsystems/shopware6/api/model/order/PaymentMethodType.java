@@ -35,13 +35,7 @@ public enum PaymentMethodType
 	CASH_PAYMENT("cash_payment"),
 	PRE_PAYMENT("pre_payment"),
 	INVOICE_PAYMENT("invoice_payment"),
-	
-	/* "SEPA" */
 	DEBIT_PAYMENT("debit_payment"),
-	
-	/* "Kredit- oder Debitkarte | PayPal-Produkte für Shopware 6" */
-	CREDIT_OR_DEBIT_CARD("a_c_d_c_handler"),
-	
 	PAY_PAL_PAYMENT_HANDLER("pay_pal_payment_handler"),
 	PAY_PAL_PUI_PAYMENT_HANDLER("pay_pal_pui_payment_handler");
 

@@ -1,26 +1,5 @@
 package de.metas.process;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.reflect.FieldReference;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -28,6 +7,32 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.reflect.ClassReference;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -57,66 +62,80 @@ import java.time.ZonedDateTime;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Value
-public class ProcessClassParamInfo
+public final class ProcessClassParamInfo
 {
 	private static final Logger logger = LogManager.getLogger(ProcessClassParamInfo.class);
 
-	boolean parameterTo;
-	@NonNull String externalParameterName;
-	@NonNull String internalParameterName;
-	boolean mandatory;
+	static ArrayKey createFieldUniqueKey(final Field field)
+	{
+		// NOTE: when building the make, make sure we don't have any references to Class, Field or other java reflection classes
+		return ArrayKey.of(field.getType().getName(), field.getDeclaringClass().getName(), field.getName());
+	}
 
-	BarcodeScannerType barcodeScannerType;
+	static ArrayKey createParameterUniqueKey(final String parameterName, final boolean parameterTo)
+	{
+		return ArrayKey.of(parameterName, parameterTo);
+	}
+
+	private final boolean parameterTo;
+	private final String parameterName;
+	private final ArrayKey parameterKey;
+
+	private final boolean mandatory;
+
+	private final BarcodeScannerType barcodeScannerType;
 
 	// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
 	// Remember that we are caching this object.
-	@NonNull FieldReference fieldRef;
-	@Nullable FieldReference nestedParamsFieldRef;
+	private final ArrayKey fieldKey;
+	@Getter(AccessLevel.PRIVATE)
+	private final ClassReference<?> fieldTypeRef;
 
 	@Builder
 	private ProcessClassParamInfo(
-			@NonNull final String externalParameterName,
-			@NonNull final String internalParameterName,
+			@NonNull final String parameterName,
 			final boolean parameterTo,
 			@NonNull final Field field,
 			boolean mandatory,
-			@Nullable final BarcodeScannerType barcodeScannerType,
-			@Nullable Field nestedParamsField)
+			@Nullable final BarcodeScannerType barcodeScannerType)
 	{
-		Check.assumeNotEmpty(externalParameterName, "externalParameterName not empty");
-		Check.assumeNotEmpty(internalParameterName, "internalParameterName not empty");
+		Check.assumeNotEmpty(parameterName, "parameter name not empty");
 
-		this.externalParameterName = externalParameterName;
-		this.internalParameterName = internalParameterName;
+		this.parameterName = parameterName;
 		this.parameterTo = parameterTo;
+		this.parameterKey = createParameterUniqueKey(parameterName, parameterTo);
 
-		this.fieldRef = FieldReference.of(field);
+		this.fieldKey = createFieldUniqueKey(field);
+		this.fieldTypeRef = ClassReference.of(field.getType());
 
 		this.mandatory = mandatory;
 
 		this.barcodeScannerType = barcodeScannerType;
-
-		this.nestedParamsFieldRef = nestedParamsField != null ? FieldReference.of(nestedParamsField) : null;
 	}
 
-	public Field getField() {return fieldRef.getField();}
-
-	public Class<?> getFieldType() {return fieldRef.getField().getType();}
+	public Class<?> getFieldType()
+	{
+		return fieldTypeRef.getReferencedClass();
+	}
 
 	/**
 	 * Loads process instance's parameter value from source to <code>processField</code>
 	 *
 	 * @param processInstance the process object where we will set the annotated fields to be the loaded parameters. Note that it needs to be an {@link IContextAware}, because we might need to load
-	 *                        records from the given <code>source</code>
+	 *            records from the given <code>source</code>
+	 * @param processField
+	 * @param source
+	 * @param failIfNotValid
 	 */
 	public void loadParameterValue(
 			@NonNull final JavaProcess processInstance,
+			@NonNull final Field processField,
 			@NonNull final IRangeAwareParams source,
 			final boolean failIfNotValid)
 	{
 		//
 		// Get the parameter value from source
-		final Object value = extractParameterValue(processInstance, source);
+		final Object value = extractParameterValue(processInstance, processField, source);
 
 		//
 		// Handle the case when the value is null
@@ -126,7 +145,7 @@ public class ProcessClassParamInfo
 			{
 				if (failIfNotValid)
 				{
-					throw new FillMandatoryException(externalParameterName);
+					throw new FillMandatoryException(parameterName);
 				}
 				else
 				{
@@ -144,104 +163,133 @@ public class ProcessClassParamInfo
 
 		//
 		// Set the value to given process instance
-		setFieldValue(processInstance, value);
+		try
+		{
+			if (!processField.isAccessible())
+			{
+				processField.setAccessible(true);
+			}
+			processField.set(processInstance, value);
+		}
+		catch (final Throwable e)
+		{
+			throw new IllegalStateException("Failed setting the value of " + processField
+					+ "\n Parameter info: " + this
+					+ "\n Process instance: " + processInstance, e);
+		}
 	}
 
 	private Object extractParameterValue(
 			final JavaProcess processInstance,
+			final Field processField,
 			final IRangeAwareParams source)
 	{
-		if (!source.hasParameter(externalParameterName))
+		if (!source.hasParameter(parameterName))
 		{
-			logger.debug("Given source does not contain this instance's parameterName={}; -> return null", externalParameterName);
+			logger.debug("Given source does not contain this instance's parameterName={}; -> return null", parameterName);
 			return null;
 		}
 
 		//
 		// Get the parameter value from source
 		final Object value;
-		final Class<?> fieldType = getFieldType();
+		final Class<?> fieldType = processField.getType();
 		if (fieldType.isAssignableFrom(BigDecimal.class))
 		{
-			value = parameterTo ? source.getParameter_ToAsBigDecimal(externalParameterName) : source.getParameterAsBigDecimal(externalParameterName);
+			value = parameterTo ? source.getParameter_ToAsBigDecimal(parameterName) : source.getParameterAsBigDecimal(parameterName);
 		}
 		else if (fieldType.isAssignableFrom(int.class))
 		{
 			value = parameterTo
-					? source.getParameter_ToAsInt(externalParameterName, 0)
-					: source.getParameterAsInt(externalParameterName, 0);
+					? source.getParameter_ToAsInt(parameterName, 0)
+					: source.getParameterAsInt(parameterName, 0);
 		}
 		else if (boolean.class.equals(fieldType))
 		{
-			value = parameterTo ? source.getParameter_ToAsBool(externalParameterName) : source.getParameterAsBool(externalParameterName);
+			value = parameterTo ? source.getParameter_ToAsBool(parameterName) : source.getParameterAsBool(parameterName);
 		}
 		else if (Boolean.class.equals(fieldType))
 		{
-			final String valueStr = parameterTo ? source.getParameter_ToAsString(externalParameterName) : source.getParameterAsString(externalParameterName);
-			value = DisplayType.toBoolean(valueStr, null);
+			final String valueStr = parameterTo ? source.getParameter_ToAsString(parameterName) : source.getParameterAsString(parameterName);
+			value = DisplayType.toBoolean(valueStr, (Boolean)null);
 		}
 		//
 		// Dates
 		else if (java.util.Date.class.isAssignableFrom(fieldType))
 		{
 			// this catches both Date and Timestamp
-			value = parameterTo ? source.getParameter_ToAsTimestamp(externalParameterName) : source.getParameterAsTimestamp(externalParameterName);
+			value = parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName);
 		}
 		else if (LocalDate.class.equals(fieldType))
 		{
-			value = TimeUtil.asLocalDate(parameterTo ? source.getParameter_ToAsTimestamp(externalParameterName) : source.getParameterAsTimestamp(externalParameterName));
+			value = TimeUtil.asLocalDate(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
 		}
 		else if (LocalDateTime.class.equals(fieldType))
 		{
-			value = TimeUtil.asLocalDateTime(parameterTo ? source.getParameter_ToAsTimestamp(externalParameterName) : source.getParameterAsTimestamp(externalParameterName));
+			value = TimeUtil.asLocalDateTime(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
 		}
 		else if (LocalTime.class.equals(fieldType))
 		{
-			value = TimeUtil.asLocalTime(parameterTo ? source.getParameter_ToAsTimestamp(externalParameterName) : source.getParameterAsTimestamp(externalParameterName));
+			value = TimeUtil.asLocalTime(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
 		}
 		else if (ZonedDateTime.class.equals(fieldType))
 		{
-			value = TimeUtil.asZonedDateTime(parameterTo ? source.getParameter_ToAsTimestamp(externalParameterName) : source.getParameterAsTimestamp(externalParameterName));
+			value = TimeUtil.asZonedDateTime(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
 		}
 		else if (Instant.class.equals(fieldType))
 		{
-			value = TimeUtil.asInstant(parameterTo ? source.getParameter_ToAsTimestamp(externalParameterName) : source.getParameterAsTimestamp(externalParameterName));
+			value = TimeUtil.asInstant(parameterTo ? source.getParameter_ToAsTimestamp(parameterName) : source.getParameterAsTimestamp(parameterName));
 		}
 		else if (RepoIdAware.class.isAssignableFrom(fieldType))
 		{
 			final int valueInt = parameterTo
-					? source.getParameter_ToAsInt(externalParameterName, -1)
-					: source.getParameterAsInt(externalParameterName, -1);
+					? source.getParameter_ToAsInt(parameterName, -1)
+					: source.getParameterAsInt(parameterName, -1);
 
-			@SuppressWarnings("unchecked") final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)fieldType;
+			@SuppressWarnings("unchecked")
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)fieldType;
 			value = RepoIdAwares.ofRepoIdOrNull(valueInt, repoIdAwareType);
 		}
 		else if (ReferenceListAwareEnum.class.isAssignableFrom(fieldType))
 		{
 			final String valueStr = parameterTo
-					? source.getParameter_ToAsString(externalParameterName)
-					: source.getParameterAsString(externalParameterName);
+					? source.getParameter_ToAsString(parameterName)
+					: source.getParameterAsString(parameterName);
 
-			@SuppressWarnings("unchecked") final Class<? extends ReferenceListAwareEnum> referenceListAwareClass = (Class<? extends ReferenceListAwareEnum>)fieldType;
+			@SuppressWarnings("unchecked")
+			final Class<? extends ReferenceListAwareEnum> referenceListAwareClass = (Class<? extends ReferenceListAwareEnum>)fieldType;
 			value = ReferenceListAwareEnums.ofNullableCode(valueStr, referenceListAwareClass);
 		}
 		//
 		else if (fieldType.isAssignableFrom(String.class))
 		{
-			value = parameterTo ? source.getParameter_ToAsString(externalParameterName) : source.getParameterAsString(externalParameterName);
+			value = parameterTo ? source.getParameter_ToAsString(parameterName) : source.getParameterAsString(parameterName);
 		}
 		else if (InterfaceWrapperHelper.isModelInterface(fieldType))
 		{
 			final int id = parameterTo
-					? source.getParameter_ToAsInt(externalParameterName, -1)
-					: source.getParameterAsInt(externalParameterName, -1);
+					? source.getParameter_ToAsInt(parameterName, -1)
+					: source.getParameterAsInt(parameterName, -1);
 			if (id <= 0)
 			{
 				value = null;
 			}
 			else
 			{
-				final Object valueOld = getFieldValue(processInstance);
+				Object valueOld;
+				try
+				{
+					if (!processField.isAccessible())
+					{
+						processField.setAccessible(true);
+					}
+					valueOld = processField.get(processInstance);
+				}
+				catch (IllegalArgumentException | IllegalAccessException e)
+				{
+					// shall not happen
+					throw AdempiereException.wrapIfNeeded(e);
+				}
 
 				final int idOld = valueOld == null ? -1 : InterfaceWrapperHelper.getId(valueOld);
 				if (id != idOld)
@@ -260,86 +308,5 @@ public class ProcessClassParamInfo
 		}
 
 		return value;
-	}
-
-	private void setFieldValue(final @NonNull JavaProcess processInstance, final Object value)
-	{
-		setFieldValue(getField(), getParamsHolderInstance(processInstance), value);
-	}
-
-	@Nullable
-	public Object getFieldValue(final JavaProcess processInstance)
-	{
-		return getFieldValue(getField(), getParamsHolderInstance(processInstance));
-	}
-
-	private Object getParamsHolderInstance(@NonNull final JavaProcess processInstance)
-	{
-		if (nestedParamsFieldRef != null)
-		{
-			final Field nestedParamsField = nestedParamsFieldRef.getField();
-			Object nestedParamsInstance = getFieldValue(nestedParamsField, processInstance);
-			if (nestedParamsInstance == null)
-			{
-				nestedParamsInstance = createNewInstance(nestedParamsField.getType());
-				setFieldValue(nestedParamsField, processInstance, nestedParamsInstance);
-			}
-
-			return nestedParamsInstance;
-		}
-		else
-		{
-			return processInstance;
-		}
-	}
-
-	private static Object createNewInstance(final Class<?> clazz)
-	{
-		try
-		{
-			return clazz.newInstance();
-		}
-		catch (AdempiereException ex)
-		{
-			throw ex;
-		}
-		catch (Throwable ex)
-		{
-			throw new AdempiereException("Failed creating a new instance of " + clazz, ex);
-		}
-	}
-
-	@Nullable
-	private static Object getFieldValue(@NonNull final Field field, @NonNull final Object instance)
-	{
-		try
-		{
-			if (!field.isAccessible())
-			{
-				field.setAccessible(true);
-			}
-			return field.get(instance);
-		}
-		catch (Throwable e)
-		{
-			throw new IllegalStateException("Failed getting the value of " + field + " from " + instance, e);
-		}
-	}
-
-	private static void setFieldValue(@NonNull final Field field, @NonNull final Object instance, @Nullable Object fieldValue)
-	{
-		try
-		{
-			if (!field.isAccessible())
-			{
-				field.setAccessible(true);
-			}
-			field.set(instance, fieldValue);
-		}
-		catch (Throwable e)
-		{
-			throw new IllegalStateException("Failed setting the value `" + fieldValue + "` to " + field + " on " + instance, e);
-		}
-
 	}
 }

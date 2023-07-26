@@ -1,14 +1,12 @@
 package de.metas.product;
 
 import de.metas.organization.OrgId;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -75,23 +73,9 @@ public class CreateProductRequest
 	Boolean discontinued;
 
 	@Nullable
-	LocalDate discontinuedFrom;
-
-	@Nullable
 	Boolean active;
 
 	@Nullable
 	Boolean stocked;
 
-	@Nullable
-	SectionCodeId sectionCodeId;
-
-	@Nullable
-	String sapProductHierarchy;
-
-	@Nullable
-	String guaranteeMonths;
-
-	@Nullable
-	String warehouseTemperature;
 }

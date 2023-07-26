@@ -1,5 +1,6 @@
 package de.metas.report.jasper.client;
 
+import java.time.Duration;
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -27,8 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
-
-import java.time.Duration;
 
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static de.metas.util.Check.assumeNotEmpty;
@@ -119,11 +118,7 @@ public class RemoteServletInvoker implements IReportServer
 		catch (final RestClientResponseException ex)
 		{
 			final JsonReportError error = extractJsonReportError(ex);
-			throw new AdempiereException(error.getMessage(), ex)
-					//.appendParametersToMessage()
-					.setParameters(error.getParameters())
-					.setParameter("reportsUrl", reportsUrl)
-					.setParameter("reportsServer.stacktrace", error.getStackTrace());
+			throw new AdempiereException(error.getMessage());
 		}
 		catch (final Exception ex)
 		{
@@ -131,14 +126,12 @@ public class RemoteServletInvoker implements IReportServer
 
 			if (ex instanceof ResourceAccessException)
 			{
-				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-				final int retryInMillis = sysConfigBL.getIntValue(SYSCONFIG_JRServerRetryMS, -1);
+				final int retryInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_JRServerRetryMS, -1);
 				throw new ServiceConnectionException(reportsUrl, retryInMillis, ex);
 			}
 			else
 			{
 				throw AdempiereException.wrapIfNeeded(ex)
-						.appendParametersToMessage()
 						.setParameter("URL", reportsUrl);
 			}
 		}
@@ -156,19 +149,9 @@ public class RemoteServletInvoker implements IReportServer
 			logger.warn("Error while decoding response exception. Will return a generic error", ex2);
 			logger.warn("Original exception was... ", ex);
 
-			final int httpStatusCode = ex.getRawStatusCode();
-			if (httpStatusCode == 404)
-			{
-				return JsonReportError.builder()
-						.message("Got 404 when calling Report Servers API. Might be a config issue.")
-						.build();
-			}
-			else
-			{
-				return JsonReportError.builder()
-						.message("Internal error")
-						.build();
-			}
+			return JsonReportError.builder()
+					.message("Internal error")
+					.build();
 		}
 	}
 

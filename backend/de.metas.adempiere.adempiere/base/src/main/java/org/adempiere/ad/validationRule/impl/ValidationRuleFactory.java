@@ -1,14 +1,15 @@
 package org.adempiere.ad.validationRule.impl;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.validationRule.AdValRuleId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleDAO;
@@ -18,29 +19,29 @@ import org.adempiere.util.GridRowCtx;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.Lookup;
+import org.compiere.model.X_AD_Val_Rule;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ValidationRuleFactory implements IValidationRuleFactory
 {
 	private final Logger logger = LogManager.getLogger(getClass());
-	private final IValidationRuleDAO validationRuleDAO = Services.get(IValidationRuleDAO.class);
 
 	private static final int ROWINDEX_None = -1;
 
-	private final ConcurrentHashMap<String, CopyOnWriteArrayList<IValidationRule>> tableRulesMap = new ConcurrentHashMap<>();
+	private final Map<String, CopyOnWriteArrayList<IValidationRule>> tableRulesMap = new ConcurrentHashMap<>();
 
 	private final Map<String, IValidationRule> classname2rulesCache = new ConcurrentHashMap<>();
 
@@ -67,20 +68,16 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public IValidationRule create(
-			@NonNull final String tableName,
-			@Nullable final AdValRuleId adValRuleId,
-			@Nullable final String ctxTableName,
-			@Nullable final String ctxColumnName)
+	public IValidationRule create(final String tableName, final int adValRuleId, final String ctxTableName, final String ctxColumnName)
 	{
 		final CompositeValidationRule.Builder builder = CompositeValidationRule.builder();
 
 		//
 		// Add primary validation rule
-		if (adValRuleId != null)
+		if (adValRuleId > 0)
 		{
-			final ValidationRuleDescriptor valRuleDescriptor = validationRuleDAO.getById(adValRuleId);
-			final IValidationRule validationRule = create(tableName, valRuleDescriptor);
+			final I_AD_Val_Rule valRule = Services.get(IValidationRuleDAO.class).retriveValRule(adValRuleId);
+			final IValidationRule validationRule = create(tableName, valRule);
 			builder.addExploded(validationRule);
 		}
 
@@ -94,54 +91,56 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		return builder.build();
 	}
 
-	private IValidationRule create(@NonNull final String tableName, @Nullable final ValidationRuleDescriptor valRuleDescriptor)
+	private IValidationRule create(final String tableName, final I_AD_Val_Rule valRule)
 	{
-		if (valRuleDescriptor == null || !valRuleDescriptor.isActive())
+		if (valRule == null)
 		{
 			return NullValidationRule.instance;
 		}
 
-		final ValidationRuleType type = valRuleDescriptor.getType();
-		if (type == ValidationRuleType.SQL)
+		final String type = valRule.getType();
+		if (X_AD_Val_Rule.TYPE_SQL.equals(type))
 		{
-			return createSQLValidationRule(valRuleDescriptor);
+			return createSQLValidationRule(valRule);
 		}
-		else if (type == ValidationRuleType.JAVA)
+		else if (X_AD_Val_Rule.TYPE_Java.equals(type))
 		{
-			return createJavaValidationRule(valRuleDescriptor);
+			return createJavaValidationRule(valRule);
 		}
-		else if (type == ValidationRuleType.COMPOSITE)
+		else if (X_AD_Val_Rule.TYPE_Composite.equals(type))
 		{
-			return createCompositeValidationRule(tableName, valRuleDescriptor);
+			return createCompositeValidationRule(tableName, valRule.getAD_Val_Rule_ID());
 		}
 		else
 		{
-			throw new AdempiereException("@NotSupported@ @Type@:" + type + " (@AD_Val_Rule_ID@:" + valRuleDescriptor.getName() + ")");
+			throw new AdempiereException("@NotSupported@ @Type@:" + type + " (@AD_Val_Rule_ID@:" + valRule.getName() + ")");
 		}
 	}
 
-	private IValidationRule createSQLValidationRule(@NonNull final ValidationRuleDescriptor valRuleDescriptor)
+	private IValidationRule createSQLValidationRule(@NonNull final I_AD_Val_Rule valRule)
 	{
-		final IStringExpression sqlWhereClause = valRuleDescriptor.getSqlWhereClause();
-		if (sqlWhereClause == null || sqlWhereClause.isNullExpression()) // shall not happen
+		final String whereClause = valRule.getCode();
+		if (Check.isEmpty(whereClause, true)) // shall not happen
 		{
-			logger.warn("Validation rule {} has no WHERE clause. Returning null.", valRuleDescriptor);
+			logger.warn("Validation rule {} has no WHERE clause. Returning null.", valRule);
 			return NullValidationRule.instance;
 		}
 
+		final Set<String> dependsOnTableNames = Services.get(IValidationRuleDAO.class).retrieveValRuleDependsOnTableNames(valRule.getAD_Val_Rule_ID());
+
 		return SQLValidationRule.builder()
-				.name(valRuleDescriptor.getName())
-				.prefilterWhereClause(sqlWhereClause)
-				.dependsOnTableNames(valRuleDescriptor.getDependsOnTableNames())
+				.name(valRule.getName())
+				.prefilterWhereClause(whereClause)
+				.dependsOnTableNames(dependsOnTableNames)
 				.build();
 	}
 
-	private IValidationRule createJavaValidationRule(@NonNull final ValidationRuleDescriptor valRuleDescriptor)
+	private IValidationRule createJavaValidationRule(final I_AD_Val_Rule valRule)
 	{
-		final String classname = StringUtils.trimBlankToNull(valRuleDescriptor.getJavaClassname());
-		if (classname == null || Check.isBlank(classname))
+		final String classname = valRule.getClassname();
+		if (Check.isEmpty(classname, true))
 		{
-			logger.warn("No Classname found for {}", valRuleDescriptor);
+			logger.warn("No Classname found for {}", valRule.getName());
 			return NullValidationRule.instance;
 		}
 
@@ -149,28 +148,24 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public IValidationRule createSQLValidationRule(@Nullable final String whereClause)
+	public IValidationRule createSQLValidationRule(final String whereClause)
 	{
-		return SQLValidationRule.ofNullableSqlWhereClause(whereClause);
-	}
-
-	private IValidationRule createCompositeValidationRule(final String tableName, final ValidationRuleDescriptor valRuleDescriptor)
-	{
-		final ImmutableSet<AdValRuleId> includedValRuleIds = valRuleDescriptor.getIncludedValRuleIds();
-		if (includedValRuleIds == null || includedValRuleIds.isEmpty())
+		if (Check.isEmpty(whereClause, true))
 		{
 			return NullValidationRule.instance;
 		}
 
-		final CompositeValidationRule.Builder builder = CompositeValidationRule.builder();
-		for (final AdValRuleId childValRuleId : includedValRuleIds)
-		{
-			final ValidationRuleDescriptor childValRule = validationRuleDAO.getById(childValRuleId);
-			if (childValRule == null || !childValRule.isActive())
-			{
-				continue;
-			}
+		return SQLValidationRule.builder()
+				.prefilterWhereClause(whereClause)
+				.build();
 
+	}
+
+	private IValidationRule createCompositeValidationRule(final String tableName, final int valRuleId)
+	{
+		final CompositeValidationRule.Builder builder = CompositeValidationRule.builder();
+		for (final I_AD_Val_Rule childValRule : Services.get(IValidationRuleDAO.class).retrieveChildValRules(valRuleId))
+		{
 			final IValidationRule childRule = create(tableName, childValRule);
 			builder.addExploded(childRule);
 		}
@@ -178,10 +173,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		return builder.build();
 	}
 
-	private List<IValidationRule> retrieveTableValidationRules(
-			@NonNull final String tableName,
-			@Nullable final String ctxTableName,
-			@Nullable final String ctxColumnName)
+	private List<IValidationRule> retrieveTableValidationRules(final String tableName, final String ctxTableName, final String ctxColumnName)
 	{
 		final List<IValidationRule> rules = tableRulesMap.get(tableName);
 		if (rules == null || rules.isEmpty())
@@ -193,10 +185,8 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		{
 			return removeExceptionsFromRules(rules, ctxTableName, ctxColumnName);
 		}
-		else
-		{
-			return ImmutableList.copyOf(rules);
-		}
+
+		return ImmutableList.copyOf(rules);
 	}
 
 	private List<IValidationRule> removeExceptionsFromRules(final List<IValidationRule> rules, final String ctxTableName, final String ctxColumnName)
@@ -249,8 +239,10 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public IValidationContext createValidationContext(@NonNull final GridField gridField)
+	public IValidationContext createValidationContext(final GridField gridField)
 	{
+		Check.assumeNotNull(gridField, "gridField not null");
+
 		final GridTab gridTab = gridField.getGridTab();
 		// Check.assumeNotNull(gridTab, "gridTab not null");
 		if (gridTab == null)
@@ -298,13 +290,15 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		final GridFieldVO gridFieldVO = gridField.getVO();
 		if (gridFieldVO.isProcessParameter() || gridFieldVO.isFormField())
 		{
-			return createValidationContext(ctx, gridField.getWindowNo(), Env.TAB_None, tableName);
+			final IValidationContext evalCtx = createValidationContext(ctx, gridField.getWindowNo(), Env.TAB_None, tableName);
+			return evalCtx;
 		}
 
 		final GridTab gridTab = gridField.getGridTab();
 		if (gridTab != null)
 		{
-			return createValidationContext(ctx, tableName, gridTab, rowIndex);
+			final IValidationContext evalCtx = createValidationContext(ctx, tableName, gridTab, rowIndex);
+			return evalCtx;
 		}
 
 		return IValidationContext.NULL;

@@ -104,13 +104,14 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 					TableRecordReference.ofCollection(candidateRecords);
 
 			Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(C_PurchaseCandidates_GeneratePurchaseOrders.class)
-					.newWorkPackage()
+					.newBlock()
+					.newWorkpackage()
 					.setElementsLocker(elementsLocker)
 					.bindToThreadInheritedTrx()
 					.addElements(candidateRecordReferences)
 					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 					.parameter(DOC_TYPE_ID, docTypeId)
-					.buildAndEnqueue();
+					.build();
 		}
 	}
 
@@ -122,23 +123,19 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = //
 				PurchaseOrderFromItemsAggregator.newInstance(docTypeId);
 
-		final List<PurchaseCandidate> purchaseCandidates = getPurchaseCandidates();
-		if (!purchaseCandidates.isEmpty())
-		{
-			PurchaseCandidateToOrderWorkflow.builder()
-					.purchaseCandidateRepo(purchaseCandidateRepo)
-					.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
-					.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
-					.build()
-					.executeForPurchaseCandidates(purchaseCandidates);
+		PurchaseCandidateToOrderWorkflow.builder()
+				.purchaseCandidateRepo(purchaseCandidateRepo)
+				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
+				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
+				.build()
+				.executeForPurchaseCandidates(getPurchaseCandidates());
 
-		}
 		return Result.SUCCESS;
 	}
 
 	private List<PurchaseCandidate> getPurchaseCandidates()
 	{
-		final boolean skipAlreadyScheduledItems = false; // there is just one processor-thread, so there won't be any elements in not yet-processed preceding WPs
+		final boolean skipAlreadyScheduledItems = true;
 		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(skipAlreadyScheduledItems);
 
 		final Set<PurchaseCandidateId> purchaseCandidateIds = queueElements
@@ -152,10 +149,15 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 			throw new AdempiereException("No purchase candidates enqueued");
 		}
 
-		return purchaseCandidateRepo.streamAllByIds(purchaseCandidateIds)
+		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepo.streamAllByIds(purchaseCandidateIds)
 				// only those not processed; those locked are OK because *we* locked them
 				.filter(purchaseCandidate -> !purchaseCandidate.isProcessed())
 				.collect(ImmutableList.toImmutableList());
+		if (purchaseCandidates.isEmpty())
+		{
+			throw new AdempiereException("No eligible purchase candidates enqueued");
+		}
 
+		return purchaseCandidates;
 	}
 }

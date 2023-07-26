@@ -25,17 +25,11 @@ package de.metas.letters.report;
  * #L%
  */
 
-import de.metas.callcenter.model.MRGroupProspect;
-import de.metas.email.EMail;
-import de.metas.email.EMailAddress;
-import de.metas.email.EMailSentStatus;
-import de.metas.letters.model.IEMailEditor;
-import de.metas.letters.model.MADBoilerPlate;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
-import de.metas.logging.LogManager;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.RunOutOfTrx;
+
+import java.io.File;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_User;
@@ -44,10 +38,21 @@ import org.compiere.model.MGroup;
 import org.compiere.model.MUserMail;
 import org.compiere.model.Query;
 import org.compiere.model.X_R_Group;
+import org.compiere.print.ReportEngine;
 import org.compiere.util.Env;
 
-import java.util.List;
-import java.util.StringTokenizer;
+import de.metas.callcenter.model.MRGroupProspect;
+import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailSentStatus;
+import de.metas.letters.model.IEMailEditor;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.RunOutOfTrx;
 
 /**
  * Send BoilerPlate to Bundle (R_Group)
@@ -213,7 +218,15 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 	
 	private void notifyLetter(MADBoilerPlate text, MRGroupProspect prospect)
 	{
-		throw new UnsupportedOperationException();
+		final BoilerPlateContext attributes = MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(prospect));
+		final String html = text.getTextSnippetParsed(attributes);
+		final ReportEngine re = MADBoilerPlate.getReportEngine(html, attributes);
+		re.print();
+		File pdf = re.getPDF();
+		MADBoilerPlate.createRequest(pdf,
+				X_R_Group.Table_ID,
+				prospect.getR_Group_ID(),
+				attributes);
 	}
 
 	private List<MRGroupProspect> getProspects(int R_Group_ID)

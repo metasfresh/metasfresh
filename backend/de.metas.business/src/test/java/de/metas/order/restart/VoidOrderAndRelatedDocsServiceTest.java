@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Before;
 import org.junit.Test;

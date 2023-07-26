@@ -24,8 +24,8 @@ package de.metas.common.bpartner.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,27 +37,21 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIE
 
 @Value
 @Builder(toBuilder = true)
-@Schema(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestLocationUpsertItem
 {
-	@Schema(description = LOCATION_IDENTIFIER_DOC
+	@ApiModelProperty(allowEmptyValue = false, position = 10, //
+			value = LOCATION_IDENTIFIER_DOC
 					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created location.") //
 	@NonNull
 	String locationIdentifier;
 
-	@Schema(nullable = true, description = "The version of the business partner location." + EXTERNAL_VERSION_DOC)
+	@ApiModelProperty(position = 20, //
+			value = "The version of the business partner location." + EXTERNAL_VERSION_DOC)
 	@Nullable
 	String externalVersion;
 
-	@Schema(nullable = true, description = "ID of the external system config.")
-	@Nullable
-	JsonMetasfreshId externalSystemConfigId;
-
-	@Schema(nullable = true)
-	@Nullable
-	Boolean isReadOnlyInMetasfresh;
-
-	@Schema(description = "The location to upsert")
+	@ApiModelProperty(allowEmptyValue = false, position = 30, value = "The location to upsert")
 	@NonNull
 	JsonRequestLocation location;
 
@@ -65,14 +59,10 @@ public class JsonRequestLocationUpsertItem
 	public JsonRequestLocationUpsertItem(
 			@NonNull @JsonProperty("locationIdentifier") final String locationIdentifier,
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
-			@Nullable @JsonProperty("externalSystemId") final JsonMetasfreshId externalSystemConfigId,
-			@Nullable @JsonProperty("isReadOnlyInMetasfresh") final Boolean isReadOnlyInMetasfresh,
 			@NonNull @JsonProperty("location") final JsonRequestLocation location)
 	{
 		this.locationIdentifier = locationIdentifier;
 		this.externalVersion = externalVersion;
-		this.externalSystemConfigId = externalSystemConfigId;
-		this.isReadOnlyInMetasfresh = isReadOnlyInMetasfresh;
 		this.location = location;
 	}
 }

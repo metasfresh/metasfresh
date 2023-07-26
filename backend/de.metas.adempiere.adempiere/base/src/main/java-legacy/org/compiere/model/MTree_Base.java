@@ -16,13 +16,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.cache.CCache;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -36,14 +38,13 @@ import org.adempiere.model.tree.TreeListenerSupport;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import de.metas.cache.CCache;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Base Tree Model. (see also MTree in project base)
@@ -62,10 +63,10 @@ public class MTree_Base extends X_AD_Tree
 	/**
 	 * Add Node to correct tree
 	 *
-	 * @param ctx       cpntext
-	 * @param treeType  tree type
+	 * @param ctx cpntext
+	 * @param treeType tree type
 	 * @param Record_ID id
-	 * @param trxName   transaction
+	 * @param trxName transaction
 	 * @return true if node added
 	 */
 	public static boolean addNode(Properties ctx, String treeType, int Record_ID, String trxName)
@@ -128,7 +129,7 @@ public class MTree_Base extends X_AD_Tree
 			saved = node.save();
 		}
 		return saved;
-	}    // addNode
+	}	// addNode
 
 	/**************************************************************************
 	 * Get Node TableName
@@ -145,8 +146,8 @@ public class MTree_Base extends X_AD_Tree
 			nodeTableName += "BP";
 		else if (TREETYPE_Product.equals(treeType))
 			nodeTableName += "PR";
-			// else if (TREETYPE_ProductCategory.equals(treeType))
-			// nodeTableName += TREETYPE_ProductCategory;
+		// else if (TREETYPE_ProductCategory.equals(treeType))
+		// nodeTableName += TREETYPE_ProductCategory;
 
 		else if (TREETYPE_CMContainer.equals(treeType))
 			nodeTableName += "CMC";
@@ -156,7 +157,7 @@ public class MTree_Base extends X_AD_Tree
 			nodeTableName += "CMM";
 		else if (TREETYPE_CMTemplate.equals(treeType))
 			nodeTableName += "CMT";
-			//
+		//
 		else if (TREETYPE_User1.equals(treeType))
 			nodeTableName += "U1";
 		else if (TREETYPE_User2.equals(treeType))
@@ -166,11 +167,11 @@ public class MTree_Base extends X_AD_Tree
 		else if (TREETYPE_User4.equals(treeType))
 			nodeTableName += "U4";
 		return nodeTableName;
-	}    // getNodeTableName
+	}	// getNodeTableName
 
 	/**
 	 * Get Source TableName
-	 *
+	 * 
 	 * @param treeType tree type
 	 * @return source table name, e.g. AD_Org or null
 	 */
@@ -181,8 +182,8 @@ public class MTree_Base extends X_AD_Tree
 
 	/**
 	 * Get Source TableName
-	 *
-	 * @param treeType    tree type
+	 * 
+	 * @param treeType tree type
 	 * @param AD_Table_ID
 	 * @return source table name, e.g. AD_Org or null
 	 */
@@ -213,7 +214,7 @@ public class MTree_Base extends X_AD_Tree
 			sourceTable = "C_Activity";
 		else if (treeType.equals(TREETYPE_SalesRegion))
 			sourceTable = "C_SalesRegion";
-			//
+		//
 		else if (treeType.equals(TREETYPE_CMContainer))
 			sourceTable = "CM_Container";
 		else if (treeType.equals(TREETYPE_CMContainerStage))
@@ -222,15 +223,15 @@ public class MTree_Base extends X_AD_Tree
 			sourceTable = "CM_Media";
 		else if (treeType.equals(TREETYPE_CMTemplate))
 			sourceTable = "CM_Template";
-			// User Trees
-			// afalcone [Bugs #1837219]
+		// User Trees
+		// afalcone [Bugs #1837219]
 		else if (treeType.equals(TREETYPE_User1) ||
 				treeType.equals(TREETYPE_User2) ||
 				treeType.equals(TREETYPE_User3) ||
 				treeType.equals(TREETYPE_User4))
 			sourceTable = "C_ElementValue";
-			//
-			// General Table
+		//
+		// General Table
 		else if (treeType.equals(TREETYPE_Other) && AD_Table_ID > 0)
 		{
 			sourceTable = Services.get(IADTableDAO.class).retrieveTableName(AD_Table_ID);
@@ -241,14 +242,14 @@ public class MTree_Base extends X_AD_Tree
 		// end afalcone
 
 		return sourceTable;
-	}    // getSourceTableName
+	}	// getSourceTableName
 
 	/**
 	 * Get MTree_Base from Cache
 	 *
-	 * @param ctx        context
+	 * @param ctx context
 	 * @param AD_Tree_ID id
-	 * @param trxName    transaction
+	 * @param trxName transaction
 	 * @return MTree_Base
 	 */
 	public static MTree_Base get(Properties ctx, int AD_Tree_ID, String trxName)
@@ -261,16 +262,14 @@ public class MTree_Base extends X_AD_Tree
 		if (retValue.get_ID() != 0)
 			s_cache.put(key, retValue);
 		return retValue;
-	}    // get
+	}	// get
 
 	public static MTree_Base getById(@NonNull final AdTreeId adTreeId)
 	{
 		return get(Env.getCtx(), adTreeId.getRepoId(), ITrx.TRXNAME_None);
 	}
 
-	/**
-	 * Cache
-	 */
+	/** Cache */
 	private static CCache<Integer, MTree_Base> s_cache = new CCache<Integer, MTree_Base>("AD_Tree", 10);
 
 	/**************************************************************************
@@ -287,28 +286,28 @@ public class MTree_Base extends X_AD_Tree
 		{
 			// setName (null);
 			// setTreeType (null);
-			setIsAllNodes(true);    // complete tree
+			setIsAllNodes(true);	// complete tree
 			setIsDefault(false);
 		}
-	}    // MTree_Base
+	}	// MTree_Base
 
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx     context
-	 * @param rs      result set
+	 * @param ctx context
+	 * @param rs result set
 	 * @param trxName transaction
 	 */
 	public MTree_Base(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}    // MTree_Base
+	}	// MTree_Base
 
 	/**
 	 * Parent Constructor
 	 *
-	 * @param client   client
-	 * @param name     name
+	 * @param client client
+	 * @param name name
 	 * @param treeType
 	 */
 	public MTree_Base(MClient client, String name, String treeType)
@@ -317,25 +316,25 @@ public class MTree_Base extends X_AD_Tree
 		setClientOrg(client);
 		setName(name);
 		setTreeType(treeType);
-	}    // MTree_Base
+	}	// MTree_Base
 
 	/**
 	 * Full Constructor
 	 *
-	 * @param ctx      context
-	 * @param Name     name
+	 * @param ctx context
+	 * @param Name name
 	 * @param TreeType tree type
-	 * @param trxName  transaction
+	 * @param trxName transaction
 	 */
 	public MTree_Base(Properties ctx, String Name, String TreeType,
-					  String trxName)
+			String trxName)
 	{
 		super(ctx, 0, trxName);
 		setName(Name);
 		setTreeType(TreeType);
-		setIsAllNodes(true);    // complete tree
+		setIsAllNodes(true);	// complete tree
 		setIsDefault(false);
-	}    // MTree_Base
+	}	// MTree_Base
 
 	/**
 	 * Get Node TableName
@@ -345,11 +344,11 @@ public class MTree_Base extends X_AD_Tree
 	public String getNodeTableName()
 	{
 		return getNodeTableName(getTreeType());
-	}    // getNodeTableName
+	}	// getNodeTableName
 
 	/**
 	 * Get Source TableName (i.e. where to get the name and color)
-	 *
+	 * 
 	 * @return source table name, e.g. AD_Org or null
 	 */
 	public String getSourceTableName()
@@ -375,7 +374,7 @@ public class MTree_Base extends X_AD_Tree
 		if (tableName != null)
 			tableName += " t";
 		return tableName;
-	}    // getSourceTableName
+	}	// getSourceTableName
 
 	public String getSourceKeyColumnName()
 	{
@@ -403,7 +402,7 @@ public class MTree_Base extends X_AD_Tree
 				|| "AD_Org".equals(tableName) || "C_Campaign".equals(tableName))
 			return "x.AD_PrintColor_ID";
 		return "NULL";
-	}    // getSourceTableName
+	}	// getSourceTableName
 
 	/**
 	 * Before Save
@@ -427,7 +426,7 @@ public class MTree_Base extends X_AD_Tree
 			else
 			{
 				final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-
+				
 				final String tableName = getDefaultTableNameByTreeType(getTreeType());
 				final int AD_Table_ID = adTableDAO.retrieveTableId(tableName);
 				if (AD_Table_ID <= 0)
@@ -438,64 +437,69 @@ public class MTree_Base extends X_AD_Tree
 			}
 		}
 		return true;
-	}    // beforeSabe
+	}	// beforeSabe
 
 	/**
 	 * After Save
 	 *
 	 * @param newRecord new
-	 * @param success   success
+	 * @param success success
 	 * @return success
 	 */
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
-		if (newRecord)    // Base Node
+		if (newRecord)	// Base Node
 		{
 			verifyTree();
 		}
 
 		return success;
-	}    // afterSave
+	}	// afterSave
 
 	/**
 	 * Move node from parent to another
-	 *
+	 * 
 	 * @throws AdempiereException if an exception occurs
 	 */
 	public void updateNodeChildren(final MTreeNode parent, final List<MTreeNode> children)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.runInNewTrx(() -> updateNodeChildrenInTrx(parent, children));
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
+		{
+			@Override
+			public void run(String trxName)
+			{
+				updateNodeChildren(parent, children, trxName);
+			}
+		});
 	}
 
-	private void updateNodeChildrenInTrx(final MTreeNode parent, final List<MTreeNode> children)
+	private void updateNodeChildren(MTreeNode parent, List<MTreeNode> children, String trxName)
 	{
-		MigrationScriptFileLoggerHolder.logComment("Reordering children of `" + parent.getName() + "`");
-
 		int seqNo = 0;
-		for (final MTreeNode nd : children)
+		for (int i = 0; i < children.size(); i++)
 		{
+			final MTreeNode nd = children.get(i);
 			if (nd.isPlaceholder())
 			{
 				for (final MTreeNode nd2 : nd.getPlaceholderNodes())
 				{
-					updateNode(nd2, parent.getNode_ID(), seqNo++);
+					updateNode(nd2, parent.getNode_ID(), seqNo++, trxName);
 				}
 			}
 			else
 			{
-				updateNode(nd, parent.getNode_ID(), seqNo++);
+				updateNode(nd, parent.getNode_ID(), seqNo++, trxName);
 			}
 		}
 	}
 
-	private void updateNode(MTreeNode node, int parentId, int seqNo)
+	private void updateNode(MTreeNode node, int parentId, int seqNo, String trxName)
 	{
 		//
 		// services
 		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
-
+		
 		final int AD_Tree_ID = this.getAD_Tree_ID();
 		if (node.getAD_Tree_ID() < 0) // TODO: workaround, we should instantiate the MTreeNode by giving the tree
 		{
@@ -509,34 +513,33 @@ public class MTree_Base extends X_AD_Tree
 		final int nodeId = node.getNode_ID();
 		final int oldParentId = node.getParent_ID();
 
-		MigrationScriptFileLoggerHolder.logComment("Node name: `" + node.getName() + "`");
 		updateNode(null, this.getAD_Tree_ID(), this.getTreeType(),
 				this.getAD_Table_ID(),
 				nodeId,
 				parentId, oldParentId,
 				seqNo,
-				ITrx.TRXNAME_ThreadInherited);
+				trxName);
 
 		node.setParent_ID(parentId);
 		node.setSeqNo(seqNo);
-
-		treeSupportFactory.get(getSourceTableName()).setParent_ID(this, node.getNode_ID(), parentId, ITrx.TRXNAME_ThreadInherited);
-		listeners.onParentChanged(node.getAD_Table_ID(), nodeId, parentId, oldParentId, ITrx.TRXNAME_ThreadInherited);
+		
+		treeSupportFactory.get(getSourceTableName()).setParent_ID(this, node.getNode_ID(), parentId, trxName);
+		listeners.onParentChanged(node.getAD_Table_ID(), nodeId, parentId, oldParentId, trxName);
 	}
 
 	private static void updateNode(PO contextPO, int AD_Tree_ID, String treeType, int AD_Table_ID, int nodeId, int parentId, int oldParentId, int seqNo, String trxName)
 	{
 		final String nodeTableName = getNodeTableName(treeType);
 
-		StringBuilder sql = new StringBuilder("UPDATE ").append(nodeTableName)
+		StringBuffer sql = new StringBuffer("UPDATE ").append(nodeTableName)
 				.append(" SET ").append("Parent_ID").append("=").append(parentId);
 		if (seqNo >= 0)
 		{
-			sql.append(", SeqNo=").append(seqNo);
+			sql.append(", SeqNo=" + seqNo);
 		}
 		else
 		{
-			sql.append(", SeqNo=(SELECT COALESCE(MAX(SeqNo),0)+1 FROM ").append(nodeTableName).append(" n2 WHERE n2.Parent_ID=").append(parentId).append(")");
+			sql.append(", SeqNo=(SELECT COALESCE(MAX(SeqNo),0)+1 FROM " + nodeTableName + " n2 WHERE n2.Parent_ID=" + parentId + ")");
 		}
 		sql.append(", Updated=now()")
 				.append(", UpdatedBy=").append(Env.getAD_User_ID(Env.getCtx()))
@@ -568,7 +571,7 @@ public class MTree_Base extends X_AD_Tree
 
 	/**************************************************************************
 	 * Insert id data into Tree
-	 *
+	 * 
 	 * @return true if inserted
 	 */
 	protected static boolean insertTreeNode(PO po)
@@ -576,7 +579,7 @@ public class MTree_Base extends X_AD_Tree
 		//
 		// services 
 		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
-
+		
 		// TODO: check self contained tree
 		final int AD_Table_ID = po.get_Table_ID();
 		if (!MTree.hasTree(AD_Table_ID))
@@ -588,6 +591,7 @@ public class MTree_Base extends X_AD_Tree
 		final String treeTableName = MTree.getNodeTableName(AD_Table_ID);
 		final String trxName = po.get_TrxName();
 
+		
 		final IPOTreeSupport treeSupport = treeSupportFactory.get(po.get_TableName());
 		final int AD_Tree_ID = treeSupport.getAD_Tree_ID(po);
 		int parentId = treeSupport.getParent_ID(po);
@@ -597,7 +601,7 @@ public class MTree_Base extends X_AD_Tree
 		}
 		//
 		// Insert
-		final StringBuilder sb = new StringBuilder("INSERT INTO ")
+		final StringBuilder sb = new StringBuilder("INSERT  INTO ")
 				.append(treeTableName)
 				.append(" (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, ")
 				.append("AD_Tree_ID, Node_ID, Parent_ID, SeqNo) ")
@@ -619,18 +623,23 @@ public class MTree_Base extends X_AD_Tree
 		sb.append(" AND NOT EXISTS (SELECT * FROM ").append(treeTableName).append(" e ")
 				.append("WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=").append(id).append(")");
 		//
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), trxName);
-		log.debug("Inserted into {} {} rows (AD_Table_ID={}, id={})", treeTableName, no, AD_Table_ID, id);
+		int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), trxName);
+		if (no < 0)
+		{
+			log.warn("#" + no + " - AD_Table_ID=" + AD_Table_ID);
+			return false;
+		}
+		log.debug("#" + no + " - AD_Table_ID=" + AD_Table_ID);
 		// MigrationLogger.instance.logMigrationSQL(po, sb.toString()); // metas: not needed because it's called directly from PO
 
 		listeners.onNodeInserted(po);
 
 		return true;
-	}    // insert_Tree
+	}	// insert_Tree
 
 	/**
 	 * Delete ID Tree Nodes
-	 *
+	 * 
 	 * @return true if actually deleted (could be non existing)
 	 */
 	protected static boolean deleteTreeNode(PO po)
@@ -664,7 +673,12 @@ public class MTree_Base extends X_AD_Tree
 				.append(AD_Table_ID).append(")");
 		//
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), trxName);
-		log.debug("Deleted from {} {} rows (AD_Table_ID={}, id={})", treeTableName, no, AD_Table_ID, id);
+		if (no <= 0)
+		{
+			log.warn("#" + no + " - AD_Table_ID=" + AD_Table_ID);
+			return false;
+		}
+		log.debug("#" + no + " - AD_Table_ID=" + AD_Table_ID);
 		// MigrationLogger.instance.logMigrationSQL(po, sb.toString()); // metas: not needed because it's called directly from PO
 		listeners.onNodeDeleted(po);
 
@@ -672,7 +686,7 @@ public class MTree_Base extends X_AD_Tree
 		// TODO Update children
 
 		return true;
-	}    // delete_Tree
+	}	// delete_Tree
 
 	public static void updateTreeNode(PO po)
 	{
@@ -691,11 +705,11 @@ public class MTree_Base extends X_AD_Tree
 		{
 			return;
 		}
-
+		
 		//
 		// services 
 		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
-
+		
 		final String trxName = po.get_TrxName();
 		final IPOTreeSupport treeSupport = treeSupportFactory.get(po.get_TableName());
 
@@ -792,7 +806,7 @@ public class MTree_Base extends X_AD_Tree
 	public void verifyTree()
 	{
 		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
-
+		
 		final String nodeTableName = getNodeTableName();
 		final String sourceTableName = getSourceTableName();
 		final String sourceTableKey = getSourceKeyColumnName();
@@ -814,10 +828,10 @@ public class MTree_Base extends X_AD_Tree
 			sql.append(" AND (").append(sourceTableWhereClause).append(")");
 		}
 		sql.append(")");
-		log.trace("SQL: {}", sql);
+		log.trace(sql.toString());
 		//
 		final int deletes = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), get_TrxName());
-		log.debug("{}: Deleted {} rows", getName(), deletes);
+		log.info(getName() + " Deleted #" + deletes);
 
 		// Check and create root node
 		{
@@ -826,7 +840,7 @@ public class MTree_Base extends X_AD_Tree
 			if (!query.anyMatch())
 			{
 				createNode(ROOT_Node_ID, ROOT_Node_ID);
-				log.debug("{} Root Node Created", getName());
+				log.info(getName() + " Root Node Created");
 			}
 		}
 
@@ -891,7 +905,7 @@ public class MTree_Base extends X_AD_Tree
 		{
 			// TODO: implement update parents logic
 		}
-		log.debug("{} Inserted {} rows", getName(), inserted);
+		log.info(getName() + " Inserted #" + inserted);
 	}
 
 	private PO createNode(int nodeId, int parentId)
@@ -947,4 +961,6 @@ public class MTree_Base extends X_AD_Tree
 		listeners.removeTreeListener(listener);
 	}
 
-}    // MTree_Base
+	
+
+}	// MTree_Base

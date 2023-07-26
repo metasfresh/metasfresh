@@ -2,7 +2,6 @@
 
 CREATE OR REPLACE FUNCTION paymentavailable(p_c_payment_id numeric)
     RETURNS numeric
-    STABLE
     LANGUAGE plpgsql
 AS
 $$

@@ -5,6 +5,7 @@
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
 import de.metas.jenkins.DockerConf
+import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
 Map build(final MvnConf mvnConf,
@@ -20,8 +21,8 @@ Map build(final MvnConf mvnConf,
       currentBuild.description = """${currentBuild.description}<p/>
             Forced to skip.
             """
-      echo "forced to skip frontend"
-      return
+      echo "forced to skip frontend";
+      return;
     }
 
     def anyFileChanged
@@ -41,12 +42,12 @@ Map build(final MvnConf mvnConf,
 			currentBuild.description= """${currentBuild.description}<p/>
 					No changes happened in frontend.
 					"""
-			echo "no changes happened in frontend; skip building frontend"
-			return
+			echo "no changes happened in frontend; skip building frontend";
+			return;
 		}
 
 		// set nodejs version defined in tool name of NodeJS installations located in Jenkins global plugins
-		final NODEJS_TOOL_NAME="nodejs-16"
+		final NODEJS_TOOL_NAME="nodejs-14"
 		echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
 		
 		String BUILD_ARTIFACT_URL
@@ -86,8 +87,8 @@ Map build(final MvnConf mvnConf,
     \"jenkinsBuildTag\": \"${env.BUILD_TAG}\"
     \"gitSHA1\": \"${scmVars.GIT_COMMIT}\"
   }
-}""" 
-		writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json
+}""";
+		writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
 
 		sh "tar cvzf webui-dist-${env.MF_VERSION}.tar.gz dist"
 
@@ -103,7 +104,7 @@ Map build(final MvnConf mvnConf,
 			env.BRANCH_NAME, // branchName
 			env.MF_VERSION, // versionSuffix
 			'docker/nginx' // workDir
-		)
+		);
 		final String publishedDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
 
 		currentBuild.description="""${currentBuild.description}<br/>
@@ -115,4 +116,4 @@ Map build(final MvnConf mvnConf,
 	}
 }
 
-return this
+return this;

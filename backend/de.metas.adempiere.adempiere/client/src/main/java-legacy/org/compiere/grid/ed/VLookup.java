@@ -16,14 +16,42 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.ad.service.impl.LookupDisplayColumn;
-import org.adempiere.ad.table.api.TableName;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
@@ -40,6 +68,7 @@ import org.compiere.apps.search.InfoFactory;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
@@ -62,26 +91,12 @@ import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Lookup Visual Field.
@@ -103,7 +118,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  *         <li>BF [ 2552901 ] VLookup: TAB is not working OK
  * @author Michael Judd (MultiSelect)
  *
- * @author hengsin, hengsin.low@idalica.com - FR [2887701] https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2887701&group_id=176962 - sponsor www.metas.de
+ * @author hengsin, hengsin.low@idalica.com
+ * @see FR [2887701] https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2887701&group_id=176962
+ * @sponsor www.metas.de
  */
 public class VLookup extends JComponent
 		implements VEditor, ActionListener, FocusListener, IRefreshableEditor // metas
@@ -150,7 +167,7 @@ public class VLookup extends JComponent
 		int AD_Column_ID = 3499;    // C_Invoice.C_BPartner_ID
 		try
 		{
-			Lookup lookup = MLookupFactory.newInstance().get(Env.getCtx(), WindowNo,
+			Lookup lookup = MLookupFactory.get(Env.getCtx(), WindowNo,
 					0, AD_Column_ID, DisplayType.Search);
 			return new VLookup("C_BPartner_ID", false, false, true, lookup);
 		}
@@ -172,7 +189,7 @@ public class VLookup extends JComponent
 		int AD_Column_ID = 3840;    // C_InvoiceLine.M_Product_ID
 		try
 		{
-			Lookup lookup = MLookupFactory.newInstance().get(Env.getCtx(), WindowNo, 0,
+			Lookup lookup = MLookupFactory.get(Env.getCtx(), WindowNo, 0,
 					AD_Column_ID, DisplayType.Search);
 			return new VLookup("M_Product_ID", false, false, true, lookup);
 		}
@@ -194,7 +211,7 @@ public class VLookup extends JComponent
 		int AD_Column_ID = 10443;    // AD_WF_Activity.AD_User_UD
 		try
 		{
-			Lookup lookup = MLookupFactory.newInstance().get(Env.getCtx(), WindowNo, 0,
+			Lookup lookup = MLookupFactory.get(Env.getCtx(), WindowNo, 0,
 					AD_Column_ID, DisplayType.Search);
 			return new VLookup("AD_User_ID", false, false, true, lookup);
 		}
@@ -1582,14 +1599,12 @@ public class VLookup extends JComponent
 			// NOTE: lookup was disposed
 			return null;
 		}
-		final List<LookupDisplayColumn> displayColumns = lookupInfo.getDisplayColumns();
+		final List<ILookupDisplayColumn> displayColumns = lookupInfo.getDisplayColumns();
 		if (displayColumns.isEmpty())
 		{
 			// no display columns found
 			return null;
 		}
-
-		final MLookupInfo.SqlQuery lookupInfoSqlQuery = lookupInfo.getSqlQuery();
 
 		final String preparedSearchText = DB.TO_STRING(FindHelper.prepareSearchString(text));
 		final String upperPreparedSearchText = "UPPER(" + preparedSearchText + ")"; // metas: cg: task: 02491
@@ -1597,7 +1612,7 @@ public class VLookup extends JComponent
 
 		final StringBuilder sqlFullMatch = new StringBuilder();
 		final StringBuilder sqlWhereClause = new StringBuilder();
-		for (final LookupDisplayColumn ldc : displayColumns)
+		for (final ILookupDisplayColumn ldc : displayColumns)
 		{
 			if (!DisplayType.isText(ldc.getDisplayType()))
 			{
@@ -1625,10 +1640,10 @@ public class VLookup extends JComponent
 		}
 		sqlFullMatch.insert(0, "(CASE WHEN ").append(" THEN 'Y' ELSE 'N' END)");
 
-		final TableName refTableName = lookupInfoSqlQuery.getTableName();
+		final String refTableName = lookupInfo.getTableName();
 		final StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ")
-				.append(lookupInfoSqlQuery.getKeyColumn().getColumnName()) // 1
+				.append(lookupInfo.getKeyColumn()) // 1
 				.append(", ").append(sqlFullMatch) // 2
 				.append(" FROM ").append(refTableName)
 				.append(" WHERE ")
@@ -1641,7 +1656,7 @@ public class VLookup extends JComponent
 			sql.append(" AND (").append(sqlWhereClauseLookup).append(")");
 		}
 
-		String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(), refTableName.getAsString(), IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
+		String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(), refTableName, IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		finalSql = finalSql + " ORDER BY " + sqlFullMatch + " DESC";
 		return finalSql;
 	}
@@ -1985,6 +2000,8 @@ public class VLookup extends JComponent
 
 	/**
 	 * Reset Env.TAB_INFO context variables
+	 *
+	 * @param columnName
 	 */
 	private void resetTabInfo()
 	{

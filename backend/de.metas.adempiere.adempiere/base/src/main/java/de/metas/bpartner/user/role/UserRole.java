@@ -24,23 +24,20 @@ package de.metas.bpartner.user.role;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
-/**
- * "UserRole" is basically a multi-purpose class to maintain "labels" about users. 
- * The predominant use is maintaining the "roles" that metasfresh-users have assigned to them in external systems.
- */
 @Data
-@Builder
 public class UserRole
 {
-	@Nullable
 	private String name;
 
 	private boolean uniquePerBpartner;
 
-	@NonNull
-	private UserAssignedRoleId userAssignedRoleId;
+	@Builder
+	private UserRole(final String name,
+			final boolean uniquePerBpartner)
+	{
+		this.name = name;
+		this.uniquePerBpartner = uniquePerBpartner;
+	}
+
 }

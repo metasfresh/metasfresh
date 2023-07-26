@@ -34,8 +34,6 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
-import de.metas.pricing.tax.LookupTaxCategoryRequest;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -47,7 +45,6 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
-import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -63,7 +60,6 @@ import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
@@ -74,12 +70,10 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -117,10 +111,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
-	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
-
-	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
-
 	@Override
 	public void setTaxAmtInfo(final Properties ctx, final I_C_InvoiceLine il, final String getTrxName)
 	{
@@ -131,7 +121,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(il);
 
 		final I_C_Tax tax = MTax.get(ctx, taxId);
-		final BigDecimal taxAmtInfo = taxBL.calculateTaxAmt(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
 
 		il.setTaxAmtInfo(taxAmtInfo);
 	}
@@ -212,7 +202,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 					.dateOfInterest(taxDate)
 					.taxCategoryId(taxCategoryId)
 					.soTrx(SOTrx.ofBoolean(isSOTrx))
-					.vatCodeId(VatCodeId.ofRepoIdOrNull(il.getC_VAT_Code_ID()))
 					.build());
 
 			if (tax == null)
@@ -299,32 +288,28 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
 
-		final ZonedDateTime priceDate = TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone);
+		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
+				priceListId,
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone),
+				processedPLVFiltering);
+		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 		Check.assumeNotNull(productId, "M_Product_ID > 0 for {}", invoiceLine);
 
-		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceListId, priceDate, processedPLVFiltering);
+		final I_M_ProductPrice productPrice = Optional
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
+				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 
-		return Optional.ofNullable(priceListVersion)
-				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
-				.map(productTaxCategoryService::getTaxCategoryId)
-				.orElseGet(() -> {
-					final LookupTaxCategoryRequest lookupTaxCategoryRequest = LookupTaxCategoryRequest.builder()
-							.productId(productId)
-							.targetDate(priceDate.toInstant())
-							.countryId(getCountryIdOrNull(invoiceLine))
-							.build();
-
-					return productTaxCategoryService.findTaxCategoryId(lookupTaxCategoryRequest)
-							.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
-				});
+		return TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
 	}
 
 	private TaxCategoryId getTaxCategoryFromOrder(
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
@@ -333,31 +318,21 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
 
 		final I_M_PriceList priceList = priceListDAO.getById(order.getM_PriceList_ID());
-		Check.assumeNotNull(priceList, "Price list exists for id {}", order.getM_PriceList_ID());
-
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
-		final ZonedDateTime priceDate = TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone);
+		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
+				priceList,
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone),
+				processedPLVFiltering);
+		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 		Check.assumeNotNull(productId, "M_Product_ID > 0 for {}", invoiceLine);
 
-		final I_M_PriceList_Version priceListVersion = priceListDAO
-				.retrievePriceListVersionOrNull(priceList, priceDate, processedPLVFiltering);
-
-		return Optional.ofNullable(priceListVersion)
-				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
-				.map(productTaxCategoryService::getTaxCategoryId)
-				.orElseGet(() -> {
-					final LookupTaxCategoryRequest lookupTaxCategoryRequest = LookupTaxCategoryRequest.builder()
-							.productId(productId)
-							.targetDate(priceDate.toInstant())
-							.countryId(getCountryIdOrNull(order))
-							.build();
-
-					return productTaxCategoryService.findTaxCategoryId(lookupTaxCategoryRequest)
-							.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
-				});
+		final I_M_ProductPrice productPrice = Optional
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
+				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
+		return TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
 	}
 
 	@Override
@@ -465,7 +440,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		return pricingCtx;
 	}
 
-	@Nullable
 	private CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
@@ -475,8 +449,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			return null;
 		}
 
+		if (invoice.getC_BPartner_Location_ID() <= 0)
+		{
+			return null;
+		}
 		final BPartnerLocationAndCaptureId bpartnerLocationId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
-		return partnerBL.getCountryId(bpartnerLocationId);
+		return Services.get(IBPartnerBL.class).getCountryId(bpartnerLocationId);
 	}
 
 	@Override
@@ -573,27 +551,5 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				qtyEntered,
 				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
 				stockUOMId);
-	}
-
-	@NonNull
-	@Override
-	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
-	{
-		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
-
-		final I_C_UOM stockUOM = productBL.getStockUOM(invoiceLine.getM_Product_ID());
-
-		return Quantity.of(qtyInvoiced, stockUOM);
-	}
-
-	@Nullable
-	private CountryId getCountryIdOrNull(@NonNull final I_C_Order order)
-	{
-		final BPartnerLocationAndCaptureId bpartnerAndLocation = BPartnerLocationAndCaptureId
-				.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID());
-
-		Check.assumeNotNull(bpartnerAndLocation, "Order {} has no C_BPartner_ID", order);
-
-		return partnerBL.getCountryId(bpartnerAndLocation);
 	}
 }

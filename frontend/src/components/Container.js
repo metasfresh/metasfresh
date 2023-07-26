@@ -34,7 +34,7 @@ class Container extends PureComponent {
       showSidelist,
       siteName,
       showSpinner, // indicator flag to show spinner while fetching data for the advanced search
-      connectionErrorType,
+      connectionError,
       noMargin,
       entity,
       children,
@@ -108,8 +108,7 @@ class Container extends PureComponent {
           />
         )}
 
-        {/* error type display */}
-        {connectionErrorType && <ErrorScreen errorType={connectionErrorType} />}
+        {connectionError && <ErrorScreen />}
 
         {showSpinner && <SpinnerOverlay iconSize={100} spinnerType="modal" />}
 
@@ -224,7 +223,7 @@ class Container extends PureComponent {
  * @prop {*} attachments
  * @prop {*} breadcrumb
  * @prop {*} children
- * @prop {string} connectionErrorType
+ * @prop {bool} connectionError
  * @prop {*} closeModalCallback
  * @prop {string} dataId
  * @prop {*} docNoData
@@ -264,7 +263,7 @@ Container.propTypes = {
   breadcrumb: PropTypes.any,
   children: PropTypes.any,
   closeModalCallback: PropTypes.any,
-  connectionErrorType: PropTypes.string,
+  connectionError: PropTypes.bool,
   dataId: PropTypes.any,
   docId: PropTypes.any,
   docNoData: PropTypes.any,
@@ -312,7 +311,7 @@ const mapStateToProps = (state, { windowId }) => {
 
   return {
     notFound: master.notFound,
-    connectionErrorType: state.appHandler.connectionErrorType || '',
+    connectionError: state.windowHandler.connectionError || false,
     showSpinner: state.windowHandler.showSpinner || false,
     pluginComponents: state.pluginsHandler.components,
     pluginModal: state.windowHandler.pluginModal,

@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
 
@@ -51,11 +50,9 @@ public class Database
 
 	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
-		final long microseconds = zdt.getNano() / 1000;
-
 		return "'"
 				+ zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth()
-				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond() + "." + microseconds
+				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond()
 				+ " " + zdt.getZone().getId()
 				+ "'::timestamptz";
 	}
@@ -64,6 +61,7 @@ public class Database
 	{
 		return TO_DATE(instant.atZone(SystemTime.zoneId()));
 	}
+
 
 	/**
 	 * Create SQL TO Date String from LocalDate (without time zone)
@@ -102,7 +100,7 @@ public class Database
 		}
 
 		final StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
-		// YYYY-MM-DD HH24:MI:SS.US JDBC Timestamp format; note that "US" means "Microsecond (000000-999999)"
+		// YYYY-MM-DD HH24:MI:SS.mmmm JDBC Timestamp format
 		final String myDate = time.toString();
 		if (dayOnly)
 		{
@@ -111,14 +109,8 @@ public class Database
 		}
 		else
 		{
-			final String[] parts = myDate.split("\\.");
-			final String dateWithoutMicroseconds = parts[0];
-			final String microseconds = parts[1];
-			dateString
-					.append(dateWithoutMicroseconds)
-					.append(".")
-					.append(StringUtils.trunc(microseconds, 6))
-					.append("','YYYY-MM-DD HH24:MI:SS.US')");
+			dateString.append(myDate.substring(0, myDate.indexOf('.')));    // cut off miliseconds
+			dateString.append("','YYYY-MM-DD HH24:MI:SS')");
 		}
 		return dateString.toString();
 	}   // TO_DATE
@@ -176,7 +168,7 @@ public class Database
 
 	/**
 	 * Convert {@link DecimalFormat} pattern to PostgreSQL's number formatting pattern
-	 * <p>
+	 *
 	 * See http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE.
 	 *
 	 * @param formatPattern

@@ -152,7 +152,7 @@ public class BPRelation
 		}
 
 		@Nullable
-		public static BPRelationRole ofNullableCode(@Nullable final String code)
+		public static BPRelationRole ofNullableCode(final String code)
 		{
 			return code != null ? ofCode(code) : null;
 		}

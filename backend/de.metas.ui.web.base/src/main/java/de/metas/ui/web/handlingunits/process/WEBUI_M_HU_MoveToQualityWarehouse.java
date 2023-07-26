@@ -2,13 +2,13 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 
-import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.movement.api.HUMovementResult;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessPrecondition;
@@ -18,7 +18,6 @@ import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.util.Services;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import org.adempiere.warehouse.WarehouseId;
 
 /*
  * #%L
@@ -55,7 +54,7 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
 	private I_M_Warehouse warehouse;
 
-	private HUMovementGeneratorResult movementResult = null;
+	private HUMovementResult movementResult = null;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -84,7 +83,7 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		movementResult = huMovementBL.moveHUsToWarehouse(selectedTopLevelHUs, WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		movementResult = huMovementBL.moveHUsToWarehouse(selectedTopLevelHUs, warehouse);
 
 		return MSG_OK;
 	}

@@ -1,24 +1,28 @@
 import PropTypes from 'prop-types';
-import React, { useEffect } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
-import { toOrderBysCommaSeparatedString } from '../../utils/windowHelpers';
 
-const Tab = ({
-  children,
-  onChange,
-  singleRowView,
-  windowId,
-  tabId,
-  docId,
-  queryOnActivate,
-  orderBy,
-  fetchTab,
-}) => {
-  useEffect(() => {
+class Tab extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    const {
+      fetchTab,
+      tabId,
+      windowId,
+      onChange,
+      queryOnActivate,
+      singleRowView,
+      docId,
+      orderBy,
+    } = this.props;
+
     if (docId && queryOnActivate) {
-      const query = toOrderBysCommaSeparatedString(orderBy);
+      const query = orderBy
+        ? (orderBy[0].ascending ? '+' : '-') + orderBy[0].fieldName
+        : '';
 
       if (singleRowView) {
         fetchTab({ tabId, windowId, docId, query }).then((res) => {
@@ -32,18 +36,14 @@ const Tab = ({
         });
       }
     }
-  }, [
-    docId,
-    queryOnActivate,
-    singleRowView,
-    windowId,
-    tabId,
-    orderBy,
-    onChange,
-  ]);
+  }
 
-  return <div className="row table-wrapper">{children}</div>;
-};
+  render() {
+    const { children } = this.props;
+
+    return <div className="row table-wrapper">{children}</div>;
+  }
+}
 
 Tab.propTypes = {
   children: PropTypes.any,

@@ -1,11 +1,12 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr;
 
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlEsr;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlEsr;
 
 /*
  * #%L
@@ -47,6 +48,6 @@ public class XmlEsr5 implements XmlEsr
 	String codingLine;
 
 	@Nullable
-	XmlAddress bank;
+	XmlBank bank;
 
 }

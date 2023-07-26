@@ -10,6 +10,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.IProductCostingBL;
+import org.eevolution.api.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -32,7 +33,6 @@ import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCostId;
 import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_Cost;
 
 import javax.annotation.Nullable;
@@ -170,13 +170,13 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		record.setM_CostElement_ID(costSegmentAndElement.getCostElementId().getRepoId());
 
 		final CostPrice price = from.getPrice();
-		record.setCurrentCostPrice(price.getOwnCostPrice().toBigDecimal());
-		record.setCurrentCostPriceLL(price.getComponentsCostPrice().toBigDecimal());
+		record.setCurrentCostPrice(price.getOwnCostPrice().getValue());
+		record.setCurrentCostPriceLL(price.getComponentsCostPrice().getValue());
 
-		record.setCumulatedAmt(from.getAccumulatedAmount().toBigDecimal());
+		record.setCumulatedAmt(from.getAccumulatedAmount().getValue());
 		record.setC_UOM_ID(from.getAccumulatedQty().getUomId().getRepoId());
 		record.setCumulatedQty(from.getAccumulatedQty().toBigDecimal());
-		record.setPostCalculationAmt(from.getPostCalculationAmount().toBigDecimal());
+		record.setPostCalculationAmt(from.getPostCalculationAmount().getValue());
 
 		if (from.getTrxType().isCoProduct() && from.getCoProductCostDistributionPercent() != null)
 		{

@@ -18,11 +18,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.ad.table.api.ColumnNameFQ;
-import org.compiere.model.I_AD_Ref_List;
-import org.compiere.model.MLookupInfo;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
@@ -61,102 +57,49 @@ import java.util.Optional;
 @ToString
 public class SqlForFetchingLookupById
 {
-	private static final int INDEX_Name = 2; // in SQL indices are 1-based
-
-	private final ColumnNameFQ keyColumnNameFQ;
-	@Getter private final boolean numericKey;
+	private final String keyColumnNameFQ;
+	private final boolean numericKey;
 	private final String additionalWhereClause;
 
 	private final IStringExpression sqlSelectFrom;
-	private final IStringExpression sqlOrderBySelectFrom;
-	@Getter private final ImmutableSet<CtxName> parameters;
+	@Getter
+	private final ImmutableSet<CtxName> parameters;
+
 	private static final ConstantStringExpression SQL_NULL = ConstantStringExpression.of("NULL");
 
 	@Builder
 	private SqlForFetchingLookupById(
-			@NonNull final ColumnNameFQ keyColumnNameFQ,
+			@NonNull final String keyColumnNameFQ,
 			@NonNull final Boolean numericKey,
 			@NonNull final IStringExpression displayColumn,
 			@Nullable final IStringExpression descriptionColumn,
-			@Nullable final ColumnNameFQ activeColumn,
+			@Nullable final String activeColumn,
 			@Nullable final IStringExpression validationMsgColumn,
 			@NonNull final IStringExpression sqlFrom,
 			@Nullable final String additionalWhereClause)
 	{
 		this.keyColumnNameFQ = keyColumnNameFQ;
 		this.numericKey = numericKey;
-		this.additionalWhereClause = StringUtils.trimBlankToNull(additionalWhereClause);
+		this.additionalWhereClause = additionalWhereClause;
 		this.sqlSelectFrom = IStringExpression
 				.composer()
 				.append("SELECT ")
 				.append("\n ARRAY[")
-				.append(keyColumnNameFQ.getAsString()).append("::text") // 1
-				.append(", ").append(displayColumn) // 2 = INDEX_Name
-				.append(", ").append(descriptionColumn != null ? descriptionColumn : SQL_NULL) // 3
-				.append(",").append(activeColumn != null ? activeColumn.getAsString() : "NULL") // 4
-				.append(", ").append(validationMsgColumn != null ? validationMsgColumn : SQL_NULL) // 5
-				.append("] ")
-				.append("\n FROM ").append(sqlFrom)
-				.build();
-		this.sqlOrderBySelectFrom = IStringExpression
-				.composer()
-				.append("SELECT \n ")
-				.append(displayColumn)
+				.append(keyColumnNameFQ).append("::text") // 0
+				.append(", ").append(displayColumn) // 1
+				.append(", ").append(descriptionColumn != null ? descriptionColumn : SQL_NULL) // 2
+				.append(",").append(activeColumn != null ? activeColumn : "NULL") // 3
+				.append(", ").append(validationMsgColumn != null ? validationMsgColumn : SQL_NULL) // 4
+				.append("]")
 				.append("\n FROM ").append(sqlFrom)
 				.build();
 
-		this.parameters = ImmutableSet.copyOf(sqlSelectFrom.getParameters());
-	}
-
-	public static SqlForFetchingLookupById ofLookupInfoSqlFrom(@NonNull final MLookupInfo.SqlQuery lookupInfoSqlQuery)
-	{
-		final IStringExpression displayColumnSQL = TranslatableParameterizedStringExpression.of(lookupInfoSqlQuery.getDisplayColumnSql());
-
-		final IStringExpression descriptionColumnSqlOrNull = TranslatableParameterizedStringExpression.of(lookupInfoSqlQuery.getDescriptionColumnSql());
-		final IStringExpression descriptionColumnSQL;
-		if (descriptionColumnSqlOrNull == null || descriptionColumnSqlOrNull.isNullExpression())
-		{
-			descriptionColumnSQL = ConstantStringExpression.of("NULL");
-		}
-		else
-		{
-			descriptionColumnSQL = descriptionColumnSqlOrNull;
-		}
-
-		final IStringExpression validationMsgColumnSQL = StringUtils.trimBlankToOptional(lookupInfoSqlQuery.getValidationMsgColumnSQL())
-				.map(ConstantStringExpression::of)
-				.orElseGet(() -> ConstantStringExpression.of("NULL"));
-
-		final IStringExpression fromSqlPart = lookupInfoSqlQuery.getSqlFromPart().toStringExpression();
-		final ColumnNameFQ keyColumnFQ = lookupInfoSqlQuery.getKeyColumn();
-		final boolean isRefList = lookupInfoSqlQuery.getTableName().equalsIgnoreCase(I_AD_Ref_List.Table_Name);
-
-		return builder()
-				.keyColumnNameFQ(keyColumnFQ)
-				.numericKey(lookupInfoSqlQuery.isNumericKey())
-				.displayColumn(displayColumnSQL)
-				.descriptionColumn(descriptionColumnSQL)
-				.activeColumn(lookupInfoSqlQuery.getActiveColumnSQL())
-				.validationMsgColumn(validationMsgColumnSQL)
-				.sqlFrom(fromSqlPart)
-				.additionalWhereClause(isRefList ? lookupInfoSqlQuery.getSqlWhereClauseStatic() : null) // this is actually adding the AD_Ref_List.AD_Reference_ID=....
-				.build();
-	}
-
-
-	public int getNameSqlArrayIndex()
-	{
-		return INDEX_Name;
+		parameters = ImmutableSet.copyOf(sqlSelectFrom.getParameters());
 	}
 
 	public IStringExpression toStringExpression(@NonNull final String joinOnColumnNameFQ)
 	{
 		return buildSql(keyColumnNameFQ + "=" + joinOnColumnNameFQ);
-	}
-
-	public IStringExpression toOrderByStringExpression(@NonNull final String joinOnColumnNameFQ)
-	{
-		return buildOrderBySql(keyColumnNameFQ + "=" + joinOnColumnNameFQ);
 	}
 
 	public boolean requiresParameter(@NonNull final String parameterName)
@@ -188,24 +131,12 @@ public class SqlForFetchingLookupById
 			else
 			{
 				final ArrayList<Object> sqlParams = new ArrayList<>();
-				final String keyColumnWhereClause = DB.buildSqlList(keyColumnNameFQ.getAsString(), multipleIds, sqlParams);
+				final String keyColumnWhereClause = DB.buildSqlList(keyColumnNameFQ, multipleIds, sqlParams);
 				final String sql = buildSql(keyColumnWhereClause).evaluate(evalCtx, OnVariableNotFound.Fail);
 
 				return Optional.of(SqlAndParams.of(sql, sqlParams));
 			}
 		}
-	}
-
-	private IStringExpression buildOrderBySql(final String keyColumnWhereClause)
-	{
-		return IStringExpression.composer()
-				.append(sqlOrderBySelectFrom)
-				.append("\n WHERE ")
-				.append(keyColumnWhereClause)
-				.append(additionalWhereClause != null && !Check.isBlank(additionalWhereClause)
-						? " AND " + additionalWhereClause
-						: "")
-				.build();
 	}
 
 	private IStringExpression buildSql(final String keyColumnWhereClause)

@@ -21,8 +21,6 @@ import {
 import FiltersNotIcluded from './FiltersNotIncluded';
 import FiltersIncluded from './FiltersIncluded';
 
-const EMPTY_ARRAY = [];
-
 /**
  * @file Class based component.
  * @module Filters
@@ -122,15 +120,12 @@ class Filters extends PureComponent {
    */
   checkClearedFilters = ({ activeFilterId, filtersActive, filterType }) => {
     if (!filtersActive || filtersActive.length === 0) return false;
-
     let mainFilter = filtersActive.filter(
       (item) => item.filterId === activeFilterId
     );
-
     if (mainFilter.length) {
       const { parameters } = mainFilter[0];
-
-      if (parameters && parameters.length) {
+      if (parameters) {
         return parameters.every((filterItem) => {
           return filterType === FILTERS_TYPE_NOT_INCLUDED &&
             filterItem.value &&
@@ -296,12 +291,12 @@ const mapStateToProps = (state, ownProps) => {
           unannotatedFilters: stateFilter.filterData,
           filtersActive: stateFilter.filtersActive,
         })
-      : EMPTY_ARRAY;
+      : [];
 
   const flatActiveFilterIds =
     stateFilter && stateFilter.filtersActive
       ? stateFilter.filtersActive.map((item) => item.filterId)
-      : EMPTY_ARRAY;
+      : [];
 
   return {
     allowOutsideClick,

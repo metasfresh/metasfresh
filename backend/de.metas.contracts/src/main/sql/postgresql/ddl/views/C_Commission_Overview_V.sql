@@ -44,8 +44,6 @@ SELECT
     cs.C_Flatrate_Term_ID,
     cs.C_CommissionSettingsLine_ID,
     cs.C_MediatedCommissionSettingsLine_ID,
-    cs.C_Customer_Trade_Margin_Line_ID,
-    cs.C_LicenseFeeSettingsLine_ID,
     cs.PointsSum_ToSettle,
     cs.PointsSum_Settled,
     cs.IsSimulation,

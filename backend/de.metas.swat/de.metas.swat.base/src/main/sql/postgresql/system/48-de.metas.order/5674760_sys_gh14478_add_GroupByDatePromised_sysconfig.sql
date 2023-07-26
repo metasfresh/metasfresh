@@ -1,3 +1,0 @@
-INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel, Created, CreatedBy, Description, EntityType, IsActive, Name, Updated, UpdatedBy, Value)
-VALUES (1000000, 0, 541594, 'S', TO_TIMESTAMP('2023-02-01 10:32:54', 'YYYY-MM-DD HH24:MI:SS'), 100, 'If set to Y, when creating purchase orders from sales orders, order lines will also be grouped by Date. Also, the SO''s DatePromised will be propagated to the respective PO', 'D', 'Y', 'de.metas.order.C_Order_CreatePOFromSOs.GroupLinesByPromisedDate', TO_TIMESTAMP('2020-06-23 08:21:09', 'YYYY-MM-DD HH24:MI:SS'), 100, 'N')
-;

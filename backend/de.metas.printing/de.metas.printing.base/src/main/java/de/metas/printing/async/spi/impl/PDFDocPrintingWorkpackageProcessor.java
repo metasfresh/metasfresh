@@ -80,7 +80,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		this.asyncBatch = workpackage.getC_Async_Batch();
 		Check.assumeNotNull(asyncBatch, "Async batch is not null");
 
-		final List<I_C_Print_Job_Instructions> list = queueDAO.retrieveAllItems(workpackage, I_C_Print_Job_Instructions.class);
+		final List<I_C_Print_Job_Instructions> list = queueDAO.retrieveItems(workpackage, I_C_Print_Job_Instructions.class, ITrx.TRXNAME_ThreadInherited);
 		for (final I_C_Print_Job_Instructions printjobInstructions : list)
 		{
 			InterfaceWrapperHelper.refresh(printjobInstructions, ITrx.TRXNAME_ThreadInherited);
@@ -96,7 +96,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 			}
 			catch (Exception e)
 			{
-				throw AdempiereException.wrapIfNeeded(e);
+				throw new AdempiereException(e.getMessage());
 			}
 		}
 		return Result.SUCCESS;

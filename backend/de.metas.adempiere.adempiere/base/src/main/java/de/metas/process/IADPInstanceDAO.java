@@ -97,8 +97,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	 */
 	I_AD_PInstance getById(PInstanceId pinstanceId);
 
-	I_AD_PInstance getByIdOrNull(@NonNull final PInstanceId pinstanceId);
-
 	Set<TableRecordReference> retrieveSelectedIncludedRecords(PInstanceId pinstanceId);
 
 	void saveSelectedIncludedRecords(PInstanceId pinstanceId, Set<TableRecordReference> recordRefs);

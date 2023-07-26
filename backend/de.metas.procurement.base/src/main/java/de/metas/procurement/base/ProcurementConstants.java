@@ -37,7 +37,7 @@ public final class ProcurementConstants
 
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.procurement.UserNotifications")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	private ProcurementConstants()

@@ -1,13 +1,13 @@
 package de.metas.security;
 
-import de.metas.adempiere.model.I_AD_Role;
-import de.metas.user.UserId;
-import de.metas.util.ISingletonService;
-
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import de.metas.adempiere.model.I_AD_Role;
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
 
 /**
  * {@link I_AD_Role} related DAO.
@@ -49,6 +49,4 @@ public interface IRoleDAO extends ISingletonService
 	RoleId retrieveFirstRoleIdForUserId(UserId adUserId);
 
 	void createUserRoleAssignmentIfMissing(UserId adUserId, RoleId adRoleId);
-
-	void deleteUserRolesByUserId(final UserId userId);
 }

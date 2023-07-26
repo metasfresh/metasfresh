@@ -1,412 +1,266 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 package org.compiere.model;
 
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for AD_MigrationScript
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
+ *  @version Release 3.7.0LTS
  */
-@SuppressWarnings("unused")
 public interface I_AD_MigrationScript 
 {
 
-	String Table_Name = "AD_MigrationScript";
+    /** TableName=AD_MigrationScript */
+    public static final String Table_Name = "AD_MigrationScript";
 
-//	/** AD_Table_ID=53064 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=53064 */
+    public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
+    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Client_ID();
+    /** AccessLevel = 4 - System 
+     */
+    BigDecimal accessLevel = BigDecimal.valueOf(4);
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Load Meta Data */
 
-	/**
-	 * Set Migration Script.
-	 * Table to check whether the migration script has been applied
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_MigrationScript_ID (int AD_MigrationScript_ID);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/**
-	 * Get Migration Script.
-	 * Table to check whether the migration script has been applied
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_MigrationScript_ID();
+	/** Get Client.
+	  * Client/Tenant for this installation.
+	  */
+	public int getAD_Client_ID();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_AD_MigrationScript_ID = new ModelColumn<>(I_AD_MigrationScript.class, "AD_MigrationScript_ID", null);
-	String COLUMNNAME_AD_MigrationScript_ID = "AD_MigrationScript_ID";
+    /** Column name AD_MigrationScript_ID */
+    public static final String COLUMNNAME_AD_MigrationScript_ID = "AD_MigrationScript_ID";
 
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	/** Set Migration Script.
+	  * Table to check whether the migration script has been applied
+	  */
+	public void setAD_MigrationScript_ID (int AD_MigrationScript_ID);
 
-	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
+	/** Get Migration Script.
+	  * Table to check whether the migration script has been applied
+	  */
+	public int getAD_MigrationScript_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
+	/** Set Organization.
+	  * Organizational entity within client
+	  */
+	public void setAD_Org_ID (int AD_Org_ID);
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_Created = new ModelColumn<>(I_AD_MigrationScript.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+	/** Get Organization.
+	  * Organizational entity within client
+	  */
+	public int getAD_Org_ID();
 
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+	/** Get Created.
+	  * Date this record was created
+	  */
+	public Timestamp getCreated();
 
-	/**
-	 * Set Description.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDescription (@Nullable java.lang.String Description);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/**
-	 * Get Description.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getDescription();
+	/** Get Created By.
+	  * User who created this records
+	  */
+	public int getCreatedBy();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_Description = new ModelColumn<>(I_AD_MigrationScript.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
-	/**
-	 * Set Developer Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDeveloperName (@Nullable java.lang.String DeveloperName);
+	/** Set Description.
+	  * Optional short description of the record
+	  */
+	public void setDescription (String Description);
 
-	/**
-	 * Get Developer Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getDeveloperName();
+	/** Get Description.
+	  * Optional short description of the record
+	  */
+	public String getDescription();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_DeveloperName = new ModelColumn<>(I_AD_MigrationScript.class, "DeveloperName", null);
-	String COLUMNNAME_DeveloperName = "DeveloperName";
+    /** Column name DeveloperName */
+    public static final String COLUMNNAME_DeveloperName = "DeveloperName";
 
-	/**
-	 * Set File Name.
-	 * Name of the local file or URL
-	 *
-	 * <br>Type: FileName
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setFileName (java.lang.String FileName);
+	/** Set Developer Name	  */
+	public void setDeveloperName (String DeveloperName);
 
-	/**
-	 * Get File Name.
-	 * Name of the local file or URL
-	 *
-	 * <br>Type: FileName
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getFileName();
+	/** Get Developer Name	  */
+	public String getDeveloperName();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_FileName = new ModelColumn<>(I_AD_MigrationScript.class, "FileName", null);
-	String COLUMNNAME_FileName = "FileName";
+    /** Column name FileName */
+    public static final String COLUMNNAME_FileName = "FileName";
 
-	/**
-	 * Set Active.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsActive (boolean IsActive);
+	/** Set File Name.
+	  * Name of the local file or URL
+	  */
+	public void setFileName (String FileName);
 
-	/**
-	 * Get Active.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isActive();
+	/** Get File Name.
+	  * Name of the local file or URL
+	  */
+	public String getFileName();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_MigrationScript.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/**
-	 * Set Apply Script.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsApply (boolean IsApply);
+	/** Set Active.
+	  * The record is active in the system
+	  */
+	public void setIsActive (boolean IsActive);
 
-	/**
-	 * Get Apply Script.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isApply();
+	/** Get Active.
+	  * The record is active in the system
+	  */
+	public boolean isActive();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_IsApply = new ModelColumn<>(I_AD_MigrationScript.class, "IsApply", null);
-	String COLUMNNAME_IsApply = "IsApply";
+    /** Column name IsApply */
+    public static final String COLUMNNAME_IsApply = "IsApply";
 
-	/**
-	 * Set Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setName (java.lang.String Name);
+	/** Set Apply Script	  */
+	public void setIsApply (boolean IsApply);
 
-	/**
-	 * Get Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getName();
+	/** Get Apply Script	  */
+	public boolean isApply();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_Name = new ModelColumn<>(I_AD_MigrationScript.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
-	/**
-	 * Set Project.
-	 * Name of the Project
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setProjectName (java.lang.String ProjectName);
+	/** Set Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name);
 
-	/**
-	 * Get Project.
-	 * Name of the Project
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getProjectName();
+	/** Get Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public String getName();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_ProjectName = new ModelColumn<>(I_AD_MigrationScript.class, "ProjectName", null);
-	String COLUMNNAME_ProjectName = "ProjectName";
+    /** Column name ProjectName */
+    public static final String COLUMNNAME_ProjectName = "ProjectName";
 
-	/**
-	 * Set Reference.
-	 * Reference for this record
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setReference (@Nullable java.lang.String Reference);
+	/** Set Project.
+	  * Name of the Project
+	  */
+	public void setProjectName (String ProjectName);
 
-	/**
-	 * Get Reference.
-	 * Reference for this record
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getReference();
+	/** Get Project.
+	  * Name of the Project
+	  */
+	public String getProjectName();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_Reference = new ModelColumn<>(I_AD_MigrationScript.class, "Reference", null);
-	String COLUMNNAME_Reference = "Reference";
+    /** Column name Reference */
+    public static final String COLUMNNAME_Reference = "Reference";
 
-	/**
-	 * Set Release No.
-	 * Internal Release Number
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setReleaseNo (java.lang.String ReleaseNo);
+	/** Set Reference.
+	  * Reference for this record
+	  */
+	public void setReference (String Reference);
 
-	/**
-	 * Get Release No.
-	 * Internal Release Number
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getReleaseNo();
+	/** Get Reference.
+	  * Reference for this record
+	  */
+	public String getReference();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_ReleaseNo = new ModelColumn<>(I_AD_MigrationScript.class, "ReleaseNo", null);
-	String COLUMNNAME_ReleaseNo = "ReleaseNo";
+    /** Column name ReleaseNo */
+    public static final String COLUMNNAME_ReleaseNo = "ReleaseNo";
 
-	/**
-	 * Set Script.
-	 * Dynamic Java Language Script to calculate result
-	 *
-	 * <br>Type: Binary
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setScript (@Nullable byte[] Script);
+	/** Set Release No.
+	  * Internal Release Number
+	  */
+	public void setReleaseNo (String ReleaseNo);
 
-	/**
-	 * Get Script.
-	 * Dynamic Java Language Script to calculate result
-	 *
-	 * <br>Type: Binary
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable byte[] getScript();
+	/** Get Release No.
+	  * Internal Release Number
+	  */
+	public String getReleaseNo();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_Script = new ModelColumn<>(I_AD_MigrationScript.class, "Script", null);
-	String COLUMNNAME_Script = "Script";
+    /** Column name Script */
+    public static final String COLUMNNAME_Script = "Script";
 
-	/**
-	 * Set Apply Migration Scripts.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setScriptRoll (@Nullable java.lang.String ScriptRoll);
+	/** Set Script.
+	  * Dynamic Java Language Script to calculate result
+	  */
+	public void setScript (byte[] Script);
 
-	/**
-	 * Get Apply Migration Scripts.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getScriptRoll();
+	/** Get Script.
+	  * Dynamic Java Language Script to calculate result
+	  */
+	public byte[] getScript();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_ScriptRoll = new ModelColumn<>(I_AD_MigrationScript.class, "ScriptRoll", null);
-	String COLUMNNAME_ScriptRoll = "ScriptRoll";
+    /** Column name ScriptRoll */
+    public static final String COLUMNNAME_ScriptRoll = "ScriptRoll";
 
-	/**
-	 * Set Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setStatus (java.lang.String Status);
+	/** Set Roll the Script	  */
+	public void setScriptRoll (String ScriptRoll);
 
-	/**
-	 * Get Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getStatus();
+	/** Get Roll the Script	  */
+	public String getScriptRoll();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_Status = new ModelColumn<>(I_AD_MigrationScript.class, "Status", null);
-	String COLUMNNAME_Status = "Status";
+    /** Column name Status */
+    public static final String COLUMNNAME_Status = "Status";
 
-	/**
-	 * Get Updated.
-	 * Date this record was updated
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getUpdated();
+	/** Set Status.
+	  * Status of the currently running check
+	  */
+	public void setStatus (String Status);
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_Updated = new ModelColumn<>(I_AD_MigrationScript.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+	/** Get Status.
+	  * Status of the currently running check
+	  */
+	public String getStatus();
 
-	/**
-	 * Get Updated By.
-	 * User who updated this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getUpdatedBy();
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/** Get Updated.
+	  * Date this record was updated
+	  */
+	public Timestamp getUpdated();
 
-	/**
-	 * Set URL.
-	 * Full URL address - e.g. https://www.metasfresh.com
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setURL (@Nullable java.lang.String URL);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	/**
-	 * Get URL.
-	 * Full URL address - e.g. https://www.metasfresh.com
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getURL();
+	/** Get Updated By.
+	  * User who updated this records
+	  */
+	public int getUpdatedBy();
 
-	ModelColumn<I_AD_MigrationScript, Object> COLUMN_URL = new ModelColumn<>(I_AD_MigrationScript.class, "URL", null);
-	String COLUMNNAME_URL = "URL";
+    /** Column name URL */
+    public static final String COLUMNNAME_URL = "URL";
+
+	/** Set URL.
+	  * Full URL address - e.g. http://www.adempiere.org
+	  */
+	public void setURL (String URL);
+
+	/** Get URL.
+	  * Full URL address - e.g. http://www.adempiere.org
+	  */
+	public String getURL();
 }

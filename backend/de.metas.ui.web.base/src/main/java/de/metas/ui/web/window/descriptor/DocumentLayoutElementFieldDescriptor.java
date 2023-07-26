@@ -5,7 +5,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
+import de.metas.ui.web.devices.DeviceDescriptorsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.util.Check;
@@ -41,7 +41,7 @@ import java.util.Optional;
  * #L%
  */
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings("serial")
 public final class DocumentLayoutElementFieldDescriptor implements Serializable
 {
 	public static Builder builder(final String fieldName)
@@ -108,9 +108,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	@Getter
 	private final boolean supportZoomInto;
-	
-	@Getter
-	private final boolean forbidNewRecordCreation;
 
 	private DocumentLayoutElementFieldDescriptor(@NonNull final Builder builder)
 	{
@@ -137,7 +134,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		lookupSearchStartDelay = builder.lookupSearchStartDelay;
 
 		supportZoomInto = builder.isSupportZoomInto();
-		forbidNewRecordCreation = builder.isForbidNewRecordCreation();
 	}
 
 	@Override
@@ -182,7 +178,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		return emptyFieldText.translate(adLanguage);
 	}
 
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementFieldDescriptor.Builder.class);
@@ -213,8 +208,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private DocumentFieldDescriptor.Builder documentFieldBuilder;
 
 		private boolean supportZoomInto;
-		
-		private boolean forbidNewRecordCreation;
 
 		private Builder(final String fieldName)
 		{
@@ -390,17 +383,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private boolean isSupportZoomInto()
 		{
 			return supportZoomInto;
-		}
-
-		public Builder setForbidNewRecordCreation(final boolean forbidNewRecordCreation)
-		{
-			this.forbidNewRecordCreation = forbidNewRecordCreation;
-			return this;
-		}
-
-		private boolean isForbidNewRecordCreation()
-		{
-			return forbidNewRecordCreation;
 		}
 	}
 }

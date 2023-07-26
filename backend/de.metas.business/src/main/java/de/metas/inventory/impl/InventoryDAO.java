@@ -1,27 +1,20 @@
 package de.metas.inventory.impl;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.inventory.IInventoryDAO;
-import de.metas.inventory.InventoryId;
-import de.metas.inventory.InventoryLineId;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
-import org.compiere.model.I_M_Product;
 
-import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
+import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,8 +40,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class InventoryDAO implements IInventoryDAO
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	@Override
 	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
 	{
@@ -81,7 +72,7 @@ public class InventoryDAO implements IInventoryDAO
 
 	private IQueryBuilder<I_M_InventoryLine> queryLinesForInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		return queryBL
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
@@ -92,7 +83,7 @@ public class InventoryDAO implements IInventoryDAO
 	@Override
 	public void setInventoryLinesProcessed(@NonNull final InventoryId inventoryId, final boolean processed)
 	{
-		queryBL.createQueryBuilder(I_M_InventoryLine.class)
+		Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
 				.addNotEqualsFilter(I_M_InventoryLine.COLUMNNAME_Processed, processed)
@@ -103,44 +94,9 @@ public class InventoryDAO implements IInventoryDAO
 	}
 
 	@Override
-	public Set<ProductId> retrieveUsedProductsByInventoryIds(@NonNull final Collection<InventoryId> inventoryIds)
-	{
-		if (inventoryIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		final List<ProductId> productIds = queryBL.createQueryBuilder(I_M_InventoryLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_InventoryLine.COLUMN_M_Inventory_ID, inventoryIds)
-				.create()
-				.listDistinct(I_M_Product.COLUMNNAME_M_Product_ID, ProductId.class);
-
-		return ImmutableSet.copyOf(productIds);
-	}
-
-	@Override
-	public Optional<Instant> getMinInventoryDate(@NonNull final Collection<InventoryId> inventoryIds)
-	{
-		if (inventoryIds.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		return queryBL.createQueryBuilder(I_M_Inventory.class)
-				.addInArrayFilter(I_M_Inventory.COLUMN_M_Inventory_ID, inventoryIds)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_M_Inventory.COLUMN_MovementDate)
-				.create()
-				.stream()
-				.limit(1)
-				.map(inventory -> inventory.getMovementDate().toInstant())
-				.findFirst();
-	}
-
-	@Override
 	public void save(I_M_InventoryLine inventoryLine)
 	{
 		saveRecord(inventoryLine);
 	}
+
 }

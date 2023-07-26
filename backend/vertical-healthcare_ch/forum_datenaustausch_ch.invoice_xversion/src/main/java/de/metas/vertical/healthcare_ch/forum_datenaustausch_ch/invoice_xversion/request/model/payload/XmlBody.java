@@ -1,25 +1,28 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlBalance;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlBalance.BalanceMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlDocument;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlEsr;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlLaw;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlProlog;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlProlog.PrologMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTiers;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTreatment;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+
 import java.util.List;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlBalance;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlDocument;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlEsr;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlLaw;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlProlog;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTiers;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTreatment;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlBalance.BalanceMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlProlog.PrologMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector;
 
 /*
  * #%L
@@ -62,7 +65,7 @@ public class XmlBody
 	@Nullable
 	String remark;
 
-	@Nullable
+	@NonNull
 	XmlBalance balance;
 
 	@NonNull
@@ -96,15 +99,9 @@ public class XmlBody
 			builder.esr(bodyMod.getEsr());
 		}
 
-		builder.prolog(prolog.withMod(bodyMod.getPrologMod()));
-		if (balance != null)
-		{
-			builder.balance(balance.withMod(bodyMod.getBalanceMod()));
-		}
-		else if (tiers.getBalance() != null)
-		{
-			tiers.getBalance().withMod(bodyMod.getBalanceMod());
-		}
+		builder
+				.prolog(prolog.withMod(bodyMod.getPrologMod()))
+				.balance(balance.withMod(bodyMod.getBalanceMod()));
 
 		if (bodyMod.getServiceModsWithSelectors() != null)
 		{
@@ -145,9 +142,7 @@ public class XmlBody
 		@Nullable
 		List<ServiceModWithSelector> serviceModsWithSelectors;
 
-		/**
-		 * if not null, it will completely replace the body's former documents.
-		 */
+		/** if not null, it will completely replace the body's former documents. */
 		List<XmlDocument> documents;
 	}
 

@@ -118,26 +118,6 @@ public interface I_M_InOutLine
 	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
-	 * Set Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner2_ID (int C_BPartner2_ID);
-
-	/**
-	 * Get Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner2_ID();
-
-	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
-
-	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
@@ -165,7 +145,8 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Costs.
+	 * Set Kosten.
+	 * Additional document charges
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -174,7 +155,8 @@ public interface I_M_InOutLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Costs.
+	 * Get Kosten.
+	 * Additional document charges
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -185,28 +167,8 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Flatrate Term.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
-
-	/**
-	 * Get Flatrate Term.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Flatrate_Term_ID();
-
-	ModelColumn<I_M_InOutLine, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_M_InOutLine.class, "C_Flatrate_Term_ID", null);
-	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
-
-	/**
-	 * Set Qty Confirmed.
+	 * Set Bestätigte Menge.
+	 * Confirmation of a received quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -215,7 +177,8 @@ public interface I_M_InOutLine
 	void setConfirmedQty (@Nullable BigDecimal ConfirmedQty);
 
 	/**
-	 * Get Qty Confirmed.
+	 * Get Bestätigte Menge.
+	 * Confirmation of a received quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -225,33 +188,6 @@ public interface I_M_InOutLine
 
 	ModelColumn<I_M_InOutLine, Object> COLUMN_ConfirmedQty = new ModelColumn<>(I_M_InOutLine.class, "ConfirmedQty", null);
 	String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
-
-	/**
-	 * Set Sales order.
-	 * Order
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Order_ID (int C_Order_ID);
-
-	/**
-	 * Get Sales order.
-	 * Order
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Order_ID();
-
-	@Nullable org.compiere.model.I_C_Order getC_Order();
-
-	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
-
-	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_InOutLine.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Orderline.
@@ -277,31 +213,6 @@ public interface I_M_InOutLine
 
 	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_InOutLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
-
-	/**
-	 * Set Sales Order.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_OrderSO_ID (int C_OrderSO_ID);
-
-	/**
-	 * Get Sales Order.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_OrderSO_ID();
-
-	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
-
-	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
-
-	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_M_InOutLine.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
 	 * Set Project.
@@ -494,7 +405,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_IsDescription = "IsDescription";
 
 	/**
-	 * Set Invoiced.
+	 * Set Berechnete Menge.
 	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
@@ -504,7 +415,7 @@ public interface I_M_InOutLine
 	void setIsInvoiced (boolean IsInvoiced);
 
 	/**
-	 * Get Invoiced.
+	 * Get Berechnete Menge.
 	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
@@ -701,7 +612,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set RMA Line.
+	 * Set RMA-Position.
 	 * Return Material Authorization Line
 	 *
 	 * <br>Type: TableDir
@@ -711,7 +622,7 @@ public interface I_M_InOutLine
 	void setM_RMALine_ID (int M_RMALine_ID);
 
 	/**
-	 * Get RMA Line.
+	 * Get RMA-Position.
 	 * Return Material Authorization Line
 	 *
 	 * <br>Type: TableDir
@@ -726,31 +637,6 @@ public interface I_M_InOutLine
 
 	ModelColumn<I_M_InOutLine, org.compiere.model.I_M_RMALine> COLUMN_M_RMALine_ID = new ModelColumn<>(I_M_InOutLine.class, "M_RMALine_ID", org.compiere.model.I_M_RMALine.class);
 	String COLUMNNAME_M_RMALine_ID = "M_RMALine_ID";
-
-	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
-
-	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	ModelColumn<I_M_InOutLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_InOutLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Picked Quantity.
@@ -795,8 +681,8 @@ public interface I_M_InOutLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Product Description.
-	 * Product Description
+	 * Set Produktbeschreibung.
+	 * Produktbeschreibung
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -805,8 +691,8 @@ public interface I_M_InOutLine
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
-	 * Get Product Description.
-	 * Product Description
+	 * Get Produktbeschreibung.
+	 * Produktbeschreibung
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -883,7 +769,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_Ref_InOutLine_ID = "Ref_InOutLine_ID";
 
 	/**
-	 * Set Reverse Line.
+	 * Set Storno-Zeile.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -892,7 +778,7 @@ public interface I_M_InOutLine
 	void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Reverse Line.
+	 * Get Storno-Zeile.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -908,7 +794,8 @@ public interface I_M_InOutLine
 	String COLUMNNAME_ReversalLine_ID = "ReversalLine_ID";
 
 	/**
-	 * Set Qty Scrapped.
+	 * Set Verworfene Menge.
+	 * The Quantity scrapped due to QA issues
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -917,7 +804,8 @@ public interface I_M_InOutLine
 	void setScrappedQty (@Nullable BigDecimal ScrappedQty);
 
 	/**
-	 * Get Qty Scrapped.
+	 * Get Verworfene Menge.
+	 * The Quantity scrapped due to QA issues
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -929,7 +817,8 @@ public interface I_M_InOutLine
 	String COLUMNNAME_ScrappedQty = "ScrappedQty";
 
 	/**
-	 * Set Target Qty.
+	 * Set Zielmenge.
+	 * Target Movement Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -938,7 +827,8 @@ public interface I_M_InOutLine
 	void setTargetQty (@Nullable BigDecimal TargetQty);
 
 	/**
-	 * Get Target Qty.
+	 * Get Zielmenge.
+	 * Target Movement Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -994,6 +884,11 @@ public interface I_M_InOutLine
 	 */
 	int getUser1_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser1();
+
+	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
+
+	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_M_InOutLine.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -1014,6 +909,11 @@ public interface I_M_InOutLine
 	 */
 	int getUser2_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser2();
+
+	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
+
+	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_M_InOutLine.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**

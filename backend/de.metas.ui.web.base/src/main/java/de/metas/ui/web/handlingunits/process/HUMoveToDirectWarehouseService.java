@@ -22,13 +22,13 @@
 
 package de.metas.ui.web.handlingunits.process;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
-import de.metas.handlingunits.movement.generate.HUMovementGenerator;
-import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
+import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
+import de.metas.interfaces.I_M_Movement;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -38,12 +38,13 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import java.time.Instant;
+import java.sql.Timestamp;
 import java.util.Iterator;
 
 /**
@@ -64,7 +65,7 @@ public class HUMoveToDirectWarehouseService
 	private DocumentCollection documentsCollection; // to be configured
 
 	// parameters
-	private Instant _movementDate = null;
+	private Timestamp _movementDate = null;
 	private String _description = null;
 	private boolean _failOnFirstError = false;
 	private boolean _failIfNoHUs = false; // default false for backward compatibility
@@ -72,7 +73,7 @@ public class HUMoveToDirectWarehouseService
 	private HUEditorView huView;
 
 	// state
-	private transient LocatorId _targetLocatorId;
+	private transient I_M_Warehouse _targetWarehouse;
 
 	private HUMoveToDirectWarehouseService()
 	{
@@ -114,32 +115,32 @@ public class HUMoveToDirectWarehouseService
 
 	private void checkPreconditions()
 	{
-		getTargetLocatorId(); // will fail if direct warehouse is not configured or found
+		getTargetWarehouse(); // will fail if direct warehouse is not configured or found
 	}
 
+	/**
+	 * Generate a movement which will move given HU to {@link #getTargetWarehouse()}.
+	 */
 	private void generateMovement(@NonNull final I_M_HU hu)
 	{
+		final I_M_Warehouse targetWarehouse = getTargetWarehouse();
+
 		try
 		{
 			//
 			// Move the HU
-			final HUMovementGenerateRequest request = HUMovementGenerateRequest.builder()
-					.fromLocatorId(IHandlingUnitsBL.extractLocatorId(hu))
-					.toLocatorId(getTargetLocatorId())
-					.huIdToMove(HuId.ofRepoId(hu.getM_HU_ID()))
-					//
-					.movementDate(getMovementDate())
-					.description(getDescription())
-					//
-					.build();
-			final HUMovementGeneratorResult result = new HUMovementGenerator(request)
-					.considerPreloadedHU(hu)
+			final I_M_Movement movement = new HUMovementBuilder()
+					.setContextInitial(PlainContextAware.newWithThreadInheritedTrx())
+					.setLocatorFrom(IHandlingUnitsBL.extractLocator(hu))
+					.setWarehouseTo(targetWarehouse)
+					.setMovementDate(getMovementDate())
+					.setDescription(getDescription())
+					.addHU(hu)
 					.createMovement();
-			if (result.isEmpty())
+			if (movement == null)
 			{
 				throw new AdempiereException("No Movement created");
 			}
-			final I_M_Movement movement = result.getSingleMovement();
 
 			//
 			// Notify listeners/handlers
@@ -162,13 +163,13 @@ public class HUMoveToDirectWarehouseService
 		}
 	}
 
-	public HUMoveToDirectWarehouseService setMovementDate(final Instant movementDate)
+	public HUMoveToDirectWarehouseService setMovementDate(final Timestamp movementDate)
 	{
 		_movementDate = movementDate;
 		return this;
 	}
 
-	private Instant getMovementDate()
+	private Timestamp getMovementDate()
 	{
 		return _movementDate;
 	}
@@ -257,12 +258,13 @@ public class HUMoveToDirectWarehouseService
 	 * @return target warehouse where the HUs will be moved to.
 	 */
 	@NonNull
-	private LocatorId getTargetLocatorId()
+	private I_M_Warehouse getTargetWarehouse()
 	{
-		if (_targetLocatorId == null)
+		if (_targetWarehouse == null)
 		{
-			_targetLocatorId = huMovementBL.getDirectMoveLocatorId();
+			final boolean exceptionIfNull = true;
+			_targetWarehouse = huMovementBL.getDirectMove_Warehouse(Env.getCtx(), exceptionIfNull);
 		}
-		return _targetLocatorId;
+		return _targetWarehouse;
 	}
 }

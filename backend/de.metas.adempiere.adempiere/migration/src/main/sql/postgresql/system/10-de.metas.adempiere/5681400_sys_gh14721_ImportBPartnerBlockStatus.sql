@@ -1,1 +1,0 @@
-delete from ad_table_process where ad_process_id = 585228;

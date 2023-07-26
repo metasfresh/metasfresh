@@ -38,7 +38,6 @@ import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaBPartner;
 import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContact;
 import de.metas.common.bpartner.v2.request.alberta.JsonBPartnerRole;
 import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
-import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
@@ -610,19 +609,5 @@ public class DataMapper
 		}
 
 		return contactToBPartnerUpsert(usersUpsert, bPartnerId, orgCode);
-	}
-
-	@NonNull
-	public static Optional<JsonRequestBPartnerLocationAndContact> pharmacyToDropShipBPartner(@Nullable final String pharmacyId)
-	{
-		if(Check.isBlank(pharmacyId))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(JsonRequestBPartnerLocationAndContact.builder()
-				.bPartnerIdentifier(formatExternalId(pharmacyId))
-				.bPartnerLocationIdentifier(formatExternalId(pharmacyId))
-				.build());
 	}
 }

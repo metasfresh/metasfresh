@@ -1,10 +1,10 @@
 package de.metas.edi.process;
 
-import com.google.common.collect.ImmutableSet;
+import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
-import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -61,15 +61,13 @@ public class EDI_Desadv_PrintSSCCLabels extends JavaProcess implements IProcessP
 		final IQueryFilter<I_EDI_Desadv> selectedRecordsFilter = getProcessInfo()
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		final Set<EDIDesadvPackId> list = queryBL
+		final Set<EDIDesadvLinePackId> list = queryBL
 				.createQueryBuilder(I_EDI_Desadv.class)
 				.filter(selectedRecordsFilter)
-				.andCollectChildren(I_EDI_Desadv_Pack.COLUMN_EDI_Desadv_ID)
+				.andCollectChildren(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID)
+				.andCollectChildren(I_EDI_DesadvLine_Pack.COLUMN_EDI_DesadvLine_ID)
 				.create()
-				.stream()
-				.map(I_EDI_Desadv_Pack::getEDI_Desadv_Pack_ID)
-				.map(EDIDesadvPackId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+				.listIds(EDIDesadvLinePackId::ofRepoId);
 
 		final ReportResultData reportResult = desadvBL.printSSCC18_Labels(getCtx(), list);
 

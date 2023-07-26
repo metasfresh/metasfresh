@@ -87,7 +87,8 @@ public interface IESRImportDAO extends ISingletonService
 
 	List<I_ESR_Import> getByIds(@NonNull Set<ESRImportId> esrImportIds);
 
-	List<I_ESR_ImportLine> fetchSimilarESRLine(I_ESR_ImportLine esrImportLine);
+	List<I_ESR_ImportLine> fetchESRLinesForESRLineText(String esrImportLineText,
+			int excludeESRImportLineID);
 
 	ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull Set<ESRImportId> esrImportIds);
 
@@ -104,6 +105,4 @@ public interface IESRImportDAO extends ISingletonService
 	I_ESR_ImportFile getImportFileById(int esr_importFile_id);
 
 	void validateEsrImport(I_ESR_Import esrImport);
-
-	I_ESR_Import getById(ESRImportId esrImportId);
 }

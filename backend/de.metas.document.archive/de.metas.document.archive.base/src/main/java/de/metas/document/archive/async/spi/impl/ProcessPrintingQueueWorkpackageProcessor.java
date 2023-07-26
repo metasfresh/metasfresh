@@ -1,18 +1,19 @@
 package de.metas.document.archive.async.spi.impl;
 
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Properties;
+
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 
-import java.util.List;
-import java.util.Properties;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Iterates the workpackage's POs and for each po retrieves the referencing {@code AD_Archive} records
@@ -28,7 +29,7 @@ public class ProcessPrintingQueueWorkpackageProcessor implements IWorkpackagePro
 	{
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
-		final List<PO> list = queueDAO.retrieveAllItems(workpackage, PO.class);
+		final List<PO> list = queueDAO.retrieveItems(workpackage, PO.class, localTrxName);
 		for (final PO po : list)
 		{
 			fireVoidDocumentForArchive(po);

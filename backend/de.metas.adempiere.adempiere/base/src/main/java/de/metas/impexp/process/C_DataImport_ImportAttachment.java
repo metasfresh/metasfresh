@@ -1,9 +1,15 @@
 package de.metas.impexp.process;
 
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_AttachmentEntry;
+
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
+import de.metas.impexp.DataImportService;
 import de.metas.impexp.InsertIntoImportTableResult;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.process.IProcessPrecondition;
@@ -12,8 +18,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_AttachmentEntry;
 
 /*
  * #%L
@@ -40,6 +44,7 @@ import org.compiere.model.I_AD_AttachmentEntry;
 public class C_DataImport_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
 
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
 	private AttachmentEntryId p_AD_AttachmentEntry_ID;
@@ -63,15 +68,16 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@RunOutOfTrx // dataImportService comes with its own trx-management
 	protected String doIt()
 	{
-		final DataImportResult result = AttachmentImportCommand.builder()
-				.attachmentEntryId(getAttachmentEntryId())
+		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
+
+		final DataImportResult result = dataImportService.importDataFromResource(DataImportRequest.builder()
+				.data(data)
 				.dataImportConfigId(getDataImportConfigId())
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.userId(getUserId())
 				.additionalParameters(getParameterAsIParams())
-				.build()
-				.execute();
+				.build());
 
 		deleteAttachmentEntry();
 

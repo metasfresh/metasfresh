@@ -25,14 +25,14 @@ package de.metas.payment.esr.processor.impl;
  * #L%
  */
 
+import java.util.List;
+
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
-
-import java.util.List;
 
 /**
  * Import the esr from the file which is stored in attachment
@@ -40,7 +40,7 @@ import java.util.List;
  * @author cg
  *
  */
-public class LoadESRImportFileWorkpackageProcessor extends WorkpackageProcessorAdapter
+public class LoadESRImportFileWorkpackageProcessor implements IWorkpackageProcessor
 {
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
@@ -48,7 +48,7 @@ public class LoadESRImportFileWorkpackageProcessor extends WorkpackageProcessorA
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 
-		final List<I_ESR_Import> records = queueDAO.retrieveAllItems(workpackage, I_ESR_Import.class);
+		final List<I_ESR_Import> records = queueDAO.retrieveItems(workpackage, I_ESR_Import.class, localTrxName);
 
 		for (final I_ESR_Import esrImport : records)
 		{
@@ -75,11 +75,5 @@ public class LoadESRImportFileWorkpackageProcessor extends WorkpackageProcessorA
 	{
 		Services.get(IESRImportBL.class).process(esrImport);
 
-	}
-
-	@Override
-	public boolean isRunInTransaction()
-	{
-		return false;
 	}
 }

@@ -78,7 +78,7 @@ public class HUException extends AdempiereException
 	}
 
 	@Override
-	public final @NonNull HUException appendParametersToMessage()
+	public final HUException appendParametersToMessage()
 	{
 		super.appendParametersToMessage();
 		return this;

@@ -21,28 +21,27 @@ package de.metas.quantity;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import de.metas.uom.UomId;
-import de.metas.uom.impl.UOMTestHelper;
-import de.metas.util.JSONObjectMapper;
-import de.metas.util.lang.Percent;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.assertj.core.data.Offset;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import static java.math.BigDecimal.ONE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
+import org.hamcrest.number.BigDecimalCloseTo;
+import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import de.metas.uom.impl.UOMTestHelper;
+import de.metas.util.JSONObjectMapper;
+import de.metas.util.lang.Percent;
 
 public class QuantityTest
 {
@@ -102,9 +101,10 @@ public class QuantityTest
 
 			//
 			// Assume their are equal
-			assertThat(quantity.toBigDecimal())
-					.overridingErrorMessage("Invalid Quantity.weightedAverage result (count=" + count + ")")
-					.isCloseTo(currentQtyAvg, Offset.offset(comparationError));
+			Assert.assertThat("Invalid Quantity.weightedAverage result (count=" + count + ")",
+					quantity.toBigDecimal(), // Actual
+					BigDecimalCloseTo.closeTo(currentQtyAvg, comparationError) // expectation
+			);
 		}
 	}
 
@@ -118,10 +118,10 @@ public class QuantityTest
 		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
 
 		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
-		Assertions.assertSame(qty, quantity.toBigDecimal(), "Invalid Qty");
-		Assertions.assertSame(uom, quantity.getUOM(), "Invalid UOM");
-		Assertions.assertSame(sourceQty, quantity.getSourceQty(), "Invalid Source Qty");
-		Assertions.assertSame(sourceUOM, quantity.getSourceUOM(), "Invalid Source UOM");
+		Assert.assertSame("Invalid Qty", qty, quantity.toBigDecimal());
+		Assert.assertSame("Invalid UOM", uom, quantity.getUOM());
+		Assert.assertSame("Invalid Source Qty", sourceQty, quantity.getSourceQty());
+		Assert.assertSame("Invalid Source UOM", sourceUOM, quantity.getSourceUOM());
 
 		final Quantity quantitySource = quantity.switchToSource();
 		new QuantityExpectation()
@@ -196,7 +196,7 @@ public class QuantityTest
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
 		final Quantity qtyToAdd = new Quantity(new BigDecimal("0"), qtyToAdd_uom, new BigDecimal("0"), qtyToAdd_sourceUom);
 		final Quantity qtyNew = qty.add(qtyToAdd);
-		Assertions.assertSame(qty, qtyNew, "Invalid QtyNew");
+		Assert.assertSame("Invalid QtyNew", qty, qtyNew);
 	}
 
 	@Test
@@ -204,7 +204,6 @@ public class QuantityTest
 	{
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
 		final I_C_UOM qty_sourceUom = uomHelper.createUOM("qty_sourceUom", 2);
-		//noinspection UnnecessaryLocalVariable
 		final I_C_UOM qtyToAdd_uom = qty_uom;
 		final I_C_UOM qtyToAdd_sourceUom = uomHelper.createUOM("qtyToAdd_sourceUom", 2);
 
@@ -224,9 +223,7 @@ public class QuantityTest
 	{
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
 		final I_C_UOM qty_sourceUom = uomHelper.createUOM("qty_sourceUom", 2);
-		//noinspection UnnecessaryLocalVariable
 		final I_C_UOM qtyToAdd_uom = qty_uom;
-		//noinspection UnnecessaryLocalVariable
 		final I_C_UOM qtyToAdd_sourceUom = qty_sourceUom;
 
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
@@ -247,7 +244,6 @@ public class QuantityTest
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
 		final I_C_UOM qty_sourceUom = uomHelper.createUOM("qty_sourceUom", 2);
 		final I_C_UOM qtyToAdd_uom = uomHelper.createUOM("qtyToAdd_Uom", 2);
-		//noinspection UnnecessaryLocalVariable
 		final I_C_UOM qtyToAdd_sourceUom = qty_sourceUom;
 
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
@@ -276,12 +272,26 @@ public class QuantityTest
 	}
 
 	@Test
+	public void compare_same_uom_different_amout()
+	{
+		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
+		final BigDecimal qtyAmount = new BigDecimal("123");
+
+		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity qtyToCompare = Quantity.of(qtyAmount.add(ONE), qty_uom);
+
+		assertThat(qtyToCompare).isGreaterThan(qty);
+		assertThat(qty).isLessThan(qtyToCompare);
+	}
+
+	@Test
 	public void min()
 	{
-		final I_C_UOM uom = uomHelper.createUOM("uom", 2);
+		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
+		final BigDecimal qtyAmount = new BigDecimal("123");
 
-		final Quantity qty = Quantity.of("123", uom);
-		final Quantity qtyPlusOne = Quantity.of("124", uom);
+		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
 
 		assertThat(qty.min(qtyPlusOne)).isSameAs(qty);
 		assertThat(qtyPlusOne.min(qty)).isSameAs(qty);
@@ -290,67 +300,41 @@ public class QuantityTest
 	@Test
 	public void max()
 	{
-		final I_C_UOM uom = uomHelper.createUOM("uom", 2);
+		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
+		final BigDecimal qtyAmount = new BigDecimal("123");
 
-		final Quantity qty = Quantity.of("123", uom);
-		final Quantity qtyPlusOne = Quantity.of("124", uom);
+		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
 
 		assertThat(qty.max(qtyPlusOne)).isSameAs(qtyPlusOne);
 		assertThat(qtyPlusOne.max(qty)).isSameAs(qtyPlusOne);
 	}
 
-	@Nested
-	class compare
+	@Test
+	public void compare()
 	{
-		@Test
-		public void misc()
-		{
-			final I_C_UOM uom = uomHelper.createUOM("uom", 2);
+		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
+		final BigDecimal qtyAmount = new BigDecimal("123");
 
-			assertThat(Quantity.of("123", uom)).isLessThan(Quantity.of("124", uom));
-			assertThat(Quantity.of("124", uom)).isGreaterThan(Quantity.of("123", uom));
-			assertThat(Quantity.of("123", uom)).isEqualByComparingTo(Quantity.of("123", uom));
-		}
+		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity otherQty = Quantity.of(qtyAmount, qty_uom);
+		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
+
+		assertThat(qty.compareTo(qtyPlusOne)).isLessThan(0);
+		assertThat(qtyPlusOne.compareTo(qty)).isGreaterThan(0);
+		assertThat(otherQty.compareTo(qty)).isEqualTo(0);
 	}
 
-	@Nested
-	class addPercent
+	@Test
+	public void addPercent_100_plus_30perc()
 	{
-		@Test
-		public void qty100_plus_33perc_uomPrecision2()
-		{
-			final I_C_UOM uom2 = uomHelper.createUOM("uom2", 2);
-			assertThat(Quantity.of(100, uom2).add(Percent.of(33)).toBigDecimal())
-					.isEqualTo("133.00");
-		}
+		final I_C_UOM uom2 = uomHelper.createUOM("uom2", 2);
+		assertThat(Quantity.of(100, uom2).add(Percent.of(33)).toBigDecimal())
+				.isEqualTo("133.00");
 
-		@Test
-		public void qty100_plus_33perc_uomPrecision5()
-		{
-			final I_C_UOM uom5 = uomHelper.createUOM("uom5", 5);
-			assertThat(Quantity.of(100, uom5).add(Percent.of(33)).toBigDecimal())
-					.isEqualTo("133.00000");
-		}
-	}
-
-	@Nested
-	class subtractPercent
-	{
-		@Test
-		public void qty100_subtract_33perc_uomPrecision2()
-		{
-			final I_C_UOM uom2 = uomHelper.createUOM("uom2", 2);
-			assertThat(Quantity.of(100, uom2).subtract(Percent.of(33)).toBigDecimal())
-					.isEqualTo("67.00");
-		}
-
-		@Test
-		public void qty100_subtract_33perc_uomPrecision5()
-		{
-			final I_C_UOM uom5 = uomHelper.createUOM("uom5", 5);
-			assertThat(Quantity.of(100, uom5).subtract(Percent.of(33)).toBigDecimal())
-					.isEqualTo("67.00000");
-		}
+		final I_C_UOM uom5 = uomHelper.createUOM("uom5", 5);
+		assertThat(Quantity.of(100, uom5).add(Percent.of(33)).toBigDecimal())
+				.isEqualTo("133.00000");
 	}
 
 	@Test
@@ -367,7 +351,7 @@ public class QuantityTest
 	public void test_ToString_SameUOMs()
 	{
 		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
-		assertThat(Quantity.of(5, uom)).hasToString("5 UOM");
+		assertThat(Quantity.of(5, uom).toString()).isEqualTo("5 UOM");
 	}
 
 	@Test
@@ -376,7 +360,7 @@ public class QuantityTest
 		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
 		final I_C_UOM sourceUOM = uomHelper.createUOM("SOURCE_UOM", 2);
 		final Quantity qty = new Quantity(BigDecimal.valueOf(5), uom, BigDecimal.valueOf(4), sourceUOM);
-		assertThat(qty).hasToString("5 UOM (source: 4 SOURCE_UOM)");
+		assertThat(qty.toString()).isEqualTo("5 UOM (source: 4 SOURCE_UOM)");
 	}
 
 	@Test
@@ -476,76 +460,5 @@ public class QuantityTest
 			final Quantity qty = Quantity.of("100", uom);
 			assertThat(qty.multiply(Percent.of(100))).isSameAs(qty);
 		}
-	}
-
-	@Nested
-	public class getCommonUomIdOfAll
-	{
-		@Test
-		void withSomeNullQtys()
-		{
-			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
-
-			final UomId commonUomId = Quantity.getCommonUomIdOfAll(Quantity.of(1, uom), null, Quantity.of(2, uom), null);
-			assertThat(commonUomId.getRepoId()).isEqualTo(uom.getC_UOM_ID());
-		}
-	}
-
-	@Nested
-	public class assertSameUOM
-	{
-		@Test
-		void empty()
-		{
-			Quantity.assertSameUOM();
-		}
-
-		@Test
-		void nullArray()
-		{
-			Quantity.assertSameUOM((Quantity[])null);
-		}
-
-		@Test
-		void nullQty()
-		{
-			Quantity.assertSameUOM((Quantity)null);
-		}
-
-		@Test
-		void singleQty()
-		{
-			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
-			Quantity.assertSameUOM(Quantity.of(1, uom));
-		}
-
-		@Test
-		void singleQty_withSomeNullQtys()
-		{
-			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
-			Quantity.assertSameUOM(null, Quantity.of(1, uom), null);
-		}
-
-		@Test
-		void sameUOM_withSomeNullQtys()
-		{
-			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
-
-			Quantity.assertSameUOM(Quantity.of(1, uom), null, Quantity.of(2, uom), null);
-		}
-
-		@Test
-		void distinctUOMs_withSomeNullQtys()
-		{
-			final I_C_UOM uom1 = uomHelper.createUOM("UOM1", 2);
-			final I_C_UOM uom2 = uomHelper.createUOM("UOM2", 2);
-
-			assertThatThrownBy(
-					() -> Quantity.assertSameUOM(Quantity.of(1, uom1), null, Quantity.of(2, uom2), null)
-			)
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("at least two quantity instances have different UOMs");
-		}
-
 	}
 }

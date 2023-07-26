@@ -26,25 +26,19 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
-import de.metas.currency.CurrencyRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
-import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.junit.Test;
 
@@ -61,6 +55,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * This abstract class implements one generic test-scenario (see method {@link #testStandardScenario()}) and declared a number of methods that need to be implemented by the actual test cases.
+ *
  * Tests from {@link I_C_Invoice_Candidate}s to {@link IInvoiceHeader}s.
  */
 public abstract class AbstractNewAggregationEngineTests extends AbstractAggregationEngineTestBase
@@ -83,7 +78,6 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	@Override
 	public void init()
 	{
-		super.init();
 		registerModelInterceptors();
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
@@ -91,11 +85,6 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
-
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
-		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
-		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 	}
 
 	@Test
@@ -114,11 +103,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 		step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
-		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
-				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
-				.build();
-
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
 			engine.addInvoiceCandidate(ic);
@@ -142,14 +127,20 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 	/**
 	 * Does nothing; override if you need to do something with the ICs after the inoutLines were created. Afterwards, the ICs will be updated/revalidated once again.
+	 *
+	 * @param invoiceCandidates
+	 * @param inOutLines
 	 */
-	protected void step_updateInvoiceCandidates(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines)
+	protected void step_updateInvoiceCandidates(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines)
 	{
 		// nothing; override if you need to do something with the ICs after the inoutLines were created
 	}
 
 	/**
 	 * PErform guard tests before the actual call to the aggregation engine under test is made.
+	 *
+	 * @param invoiceCandidates
+	 * @param inOutLines
 	 */
 	protected abstract void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines);
 
@@ -159,6 +150,11 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	 * Helper method, to be called from the {@link #step_validate_after_aggregation(List, List, List)} methods of our subclasses. <br>
 	 * Validate the IC<->IL qty allocation, This is relevant because aggregate.getAllocatedQty() is used to create the C_Invoice_Line_allocation records which in turn are used to compute the invoice
 	 * candidate's QtyInvoiced value. And this QtyInvoiced decides if and when the IC is flagged as processed (fully invoiced).
+	 *
+	 * @param ic
+	 * @param invoice
+	 * @param invoiceLine
+	 * @param expectedAllocatedQty
 	 */
 	protected final void validateIcIlAllocationQty(
 			final I_C_Invoice_Candidate ic,
@@ -174,7 +170,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 			if (aggregate.getLinesFor(ic).contains(invoiceLine))
 			{
 				assertThat("This verification code can handle only one aggregate for ic=" + ic + " and invoiceLine=" + invoiceLine,
-						   aggregateForLine, nullValue());
+						aggregateForLine, nullValue());
 				aggregateForLine = aggregate;
 			}
 		}

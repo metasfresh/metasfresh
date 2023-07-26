@@ -30,9 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.metas.quantity.Quantitys;
 import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -68,7 +66,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class HUItemStorage implements IHUItemStorage
 {
@@ -221,15 +218,6 @@ public class HUItemStorage implements IHUItemStorage
 		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, extractUOM(storageLine), uom);
 
 		return qtyConv;
-	}
-
-	@Override
-	public Optional<Quantity> getQuantity(final ProductId productId)
-	{
-		final I_M_HU_Item_Storage storage = dao.retrieveItemStorage(item, productId);
-		return storage != null
-				? Optional.of(Quantitys.create(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
-				: Optional.empty();
 	}
 
 	@Override

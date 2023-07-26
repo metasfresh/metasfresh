@@ -1,5 +1,0 @@
-# ignore everything
-*
-
-# but this
-!.gitignore

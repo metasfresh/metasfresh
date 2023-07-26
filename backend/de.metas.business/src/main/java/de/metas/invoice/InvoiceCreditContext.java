@@ -3,7 +3,6 @@ package de.metas.invoice;
 import javax.annotation.Nullable;
 
 import de.metas.document.DocTypeId;
-import de.metas.document.engine.IDocument;
 import lombok.Builder;
 import lombok.Value;
 
@@ -44,9 +43,4 @@ public class InvoiceCreditContext
 	 *         the credited quantities to be invoiced once more. Note that if the invoice's grand total is already partially allocated, this value will be override with <code>false</code>.
 	 */
 	boolean creditedInvoiceReinvoicable;
-
-	/**
-	 * @return if <code>true</code>, this means that this invoice can't be reversed, reactivated or voided after creation. In this case the invoice should also be completed.
-	 */
-	boolean fixedInvoice;
 }

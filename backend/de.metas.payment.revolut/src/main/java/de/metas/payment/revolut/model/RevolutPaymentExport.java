@@ -64,7 +64,7 @@ public class RevolutPaymentExport
 	String IBAN;
 
 	@Nullable
-	String SwiftCode;
+	String BIC;
 
 	@Nullable
 	String paymentReference;
@@ -103,7 +103,7 @@ public class RevolutPaymentExport
 			@Nullable final String accountNo,
 			@Nullable final String routingNo,
 			@Nullable final String IBAN,
-			@Nullable final String SwiftCode,
+			@Nullable final String BIC,
 			@Nullable final String paymentReference,
 			@Nullable final String regionName,
 			@Nullable final String addressLine1,
@@ -127,7 +127,7 @@ public class RevolutPaymentExport
 		this.accountNo = accountNo;
 		this.routingNo = routingNo;
 		this.IBAN = IBAN;
-		this.SwiftCode = SwiftCode;
+		this.BIC = BIC;
 		this.paymentReference = paymentReference;
 		this.regionName = regionName;
 		this.addressLine1 = addressLine1;

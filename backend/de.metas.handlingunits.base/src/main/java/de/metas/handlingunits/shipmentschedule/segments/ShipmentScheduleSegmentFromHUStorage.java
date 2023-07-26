@@ -22,7 +22,15 @@ package de.metas.handlingunits.shipmentschedule.segments;
  * #L%
  */
 
+import java.util.Collections;
+import java.util.Set;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -32,12 +40,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
-import java.util.Collections;
-import java.util.Set;
 
 @ToString(exclude = "huStorage")
 public class ShipmentScheduleSegmentFromHUStorage implements IShipmentScheduleSegment
@@ -54,7 +56,7 @@ public class ShipmentScheduleSegmentFromHUStorage implements IShipmentScheduleSe
 		this.huStorage = huStorage;
 	}
 
-	private void loadIfNeeded()
+	private final void loadIfNeeded()
 	{
 		if (loaded)
 		{
@@ -66,7 +68,7 @@ public class ShipmentScheduleSegmentFromHUStorage implements IShipmentScheduleSe
 		loaded = true;
 	}
 
-	private void load()
+	private final void load()
 	{
 		//
 		// Load the HU

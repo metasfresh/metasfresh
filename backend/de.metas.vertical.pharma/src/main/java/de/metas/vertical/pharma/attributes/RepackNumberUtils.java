@@ -1,10 +1,8 @@
 package de.metas.vertical.pharma.attributes;
 
-import lombok.experimental.UtilityClass;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 
-import javax.annotation.Nullable;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -35,7 +33,7 @@ class RepackNumberUtils
 	private static final String ATTRVALUE_IsRepackNumberRequired_Yes = "Y";
 	// private static final String ATTRVALUE_IsRepackNumberRequired_No = "N";
 
-	public static final String ATTR_RepackNumber = AttributeConstants.ATTR_RepackNumber_String;
+	public static final String ATTR_RepackNumber = "RepackNumber";
 
 	public static boolean isRepackNumberRequired(final IAttributeSet attributeSet)
 	{
@@ -47,7 +45,6 @@ class RepackNumberUtils
 		return ATTRVALUE_IsRepackNumberRequired_Yes.equals(attributeSet.getValueAsString(ATTR_IsRepackNumberRequired));
 	}
 
-	@Nullable
 	public static String getRepackNumber(final IAttributeSet attributeSet)
 	{
 		if (!attributeSet.hasAttribute(ATTR_RepackNumber))

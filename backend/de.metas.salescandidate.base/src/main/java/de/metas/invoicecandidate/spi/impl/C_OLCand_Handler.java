@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.common.util.CoalesceUtil;
@@ -16,24 +17,20 @@ import de.metas.lang.SOTrx;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
@@ -42,7 +39,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -64,22 +60,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final C_OLCand_HandlerDAO dao = new C_OLCand_HandlerDAO();
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
-	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
+	public boolean isCreateMissingCandidatesAutomatically()
 	{
-		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
+		return true;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
 		final I_C_OLCand olCandRecord = create(model, I_C_OLCand.class);
 
-		return isEligibleForInvoiceCandidateCreate(olCandRecord) 
-				? CandidatesAutoCreateMode.CREATE_CANDIDATES 
-				: CandidatesAutoCreateMode.DONT;
+		return isEligibleForInvoiceCandidateCreate(olCandRecord);
 	}
 
 	@Override
@@ -89,7 +82,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
+	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return dao.retrieveMissingCandidatesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setLimit(limit)
@@ -144,6 +137,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setRecord_ID(olcRecord.getC_OLCand_ID());
 
 		ic.setPOReference(olcRecord.getPOReference());
+
 		// product
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olcRecord);
 		ic.setM_Product_ID(ProductId.toRepoId(productId));
@@ -193,7 +187,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		}
 		
 		// 07442 activity and tax
-		final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(olcRecord.getAD_Client_ID()),
 				OrgId.ofRepoId(olcRecord.getAD_Org_ID()),
 				productId);
@@ -202,10 +196,10 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
 				.getDropShipPartnerInfo(olcRecord)
 				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olcRecord));
-		final VatCodeId vatCodeId = null;
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final TaxId taxId = taxBL.getTaxNotNull(
+				ctx,
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olcRecord.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
@@ -213,17 +207,12 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				(WarehouseId)null,
 				shipToPartnerInfo.toBPartnerLocationAndCaptureId(),
-				SOTrx.SALES,
-				vatCodeId);
+				SOTrx.SALES);
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		ic.setExternalLineId(olcRecord.getExternalLineId());
 		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());
 		ic.setC_Async_Batch_ID(olcRecord.getC_Async_Batch_ID());
-
-		ic.setAD_InputDataSource_ID(olcRecord.getAD_InputDataSource_ID());
-
-		ic.setM_SectionCode_ID(olcRecord.getM_SectionCode_ID());
 
 		olcRecord.setProcessed(true);
 		saveRecord(olcRecord);
@@ -283,7 +272,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		return TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
+		final I_C_OLCand olc = TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
+		return olc;
 	}
 
 	/**
@@ -307,13 +297,12 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID()));
 		final I_C_OLCand olc = getOLCand(ic);
 		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(
 				olc,
 				null,
 				PricingSystemId.NULL,
-				TimeUtil.asLocalDate(olc.getDateCandidate(), timeZone));
+				TimeUtil.asLocalDate(olc.getDateCandidate()));
 
 		return PriceAndTax.builder()
 				.priceUOMId(pricingResult.getPriceUomId())

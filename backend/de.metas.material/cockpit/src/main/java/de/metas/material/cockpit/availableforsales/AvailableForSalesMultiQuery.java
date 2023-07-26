@@ -1,12 +1,10 @@
 package de.metas.material.cockpit.availableforsales;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
+
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import java.util.List;
 
 /*
  * #%L
@@ -34,12 +32,6 @@ import java.util.List;
 @Builder
 public class AvailableForSalesMultiQuery
 {
-	@NonNull
-	public static AvailableForSalesMultiQuery of(@NonNull final AvailableForSalesQuery availableForSalesQuery)
-	{
-		return new AvailableForSalesMultiQuery(ImmutableList.of(availableForSalesQuery));
-	}
-
 	@Singular
 	List<AvailableForSalesQuery> availableForSalesQueries;
 }

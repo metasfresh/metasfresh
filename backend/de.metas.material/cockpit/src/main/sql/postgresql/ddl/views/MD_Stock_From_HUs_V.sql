@@ -34,12 +34,11 @@ FROM MD_Stock s
                  JOIN M_HU_Storage hus ON hus.M_HU_ID = hu.M_HU_ID
                  JOIN M_Locator l ON l.M_Locator_ID = hu.M_Locator_ID
                  LEFT JOIN M_Product p ON p.M_Product_ID = hus.M_Product_ID /*needed for its C_UOM_ID*/
-        WHERE -- hu.isactive = 'Y' AND -- hu may be inactive due to a bug in material return, and technically we don't need to check for IsActive, because we have the HuStatus to check for
-           M_HU_Item_Parent_ID IS NULL
+        WHERE hu.isactive = 'Y'
+          AND M_HU_Item_Parent_ID IS NULL
 
             /*please keep in sync with de.metas.handlingunits.IHUStatusBL.isPhysicalHU(I_M_HU)*/
           AND hu.HuStatus NOT IN ('P'/*Planning*/, 'D'/*Destroyed*/, 'E'/*Shipped*/)
-        AND hu.isExternalProperty='N'
         GROUP BY hu.AD_Client_ID,
                  hu.AD_Org_ID,
                  l.M_Warehouse_ID,

@@ -5,7 +5,6 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryAreaBL;
@@ -13,7 +12,6 @@ import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -21,7 +19,6 @@ import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.TaxUtils;
-import de.metas.tax.api.VatCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -52,8 +49,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 {
 	private static final Logger log = LogManager.getLogger(TaxBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public Tax getTaxById(final TaxId taxId)
@@ -71,22 +66,16 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 */
 	@Override
 	@NonNull
-	public TaxId getTaxNotNull(
+	public TaxId getTaxNotNull(final Properties ctx,
 			@Nullable final Object model,
 			@Nullable final TaxCategoryId taxCategoryId,
 			final int productId,
 			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
-			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
-			@NonNull final SOTrx soTrx,
-			@Nullable final VatCodeId vatCodeId)
+			final BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			@NonNull final SOTrx soTrx)
 	{
-		final Tax taxFromVatCode = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
-		if (taxFromVatCode != null)
-		{
-			return taxFromVatCode.getTaxId();
-		}
 		if (taxCategoryId != null)
 		{
 			final CountryId countryFromId;
@@ -145,18 +134,18 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	}
 
 	private int getGermanTax(final Properties ctx,
-							 @Nullable final ProductId productId,
-							 final int chargeId,
-							 final Timestamp billDate,
-							 final Timestamp shipDate,
-							 @NonNull final OrgId orgId,
-							 @Nullable final WarehouseId warehouseId,
-							 final BPartnerLocationAndCaptureId shipBPLocationId,
-							 final boolean isSOTrx)
+			final ProductId productId,
+			final int chargeId,
+			final Timestamp billDate,
+			final Timestamp shipDate,
+			@NonNull final OrgId orgId,
+			final WarehouseId warehouseId,
+			final BPartnerLocationAndCaptureId shipBPLocationId,
+			final boolean isSOTrx)
 	{
 		//
 		// If organization is tax exempted then we will return the Tax Exempt for that organization (03871)
-		final I_C_BPartner orgBPartner = bPartnerDAO.retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
+		final I_C_BPartner orgBPartner = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		log.debug("Org BP: {}", orgBPartner);
 
 		final ICountryAreaBL countryAreaBL = Services.get(ICountryAreaBL.class);
@@ -176,9 +165,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		final CountryId shipToCountryId = Services.get(IBPartnerBL.class).getCountryId(shipBPLocationId);
 		final String shipToCountryCode = Services.get(ICountryDAO.class).retrieveCountryCode2ByCountryId(shipToCountryId);
 		final boolean isEULocation = countryAreaBL.isMemberOf(ctx,
-				ICountryAreaBL.COUNTRYAREAKEY_EU,
-				shipToCountryCode,
-				billDate);
+															  ICountryAreaBL.COUNTRYAREAKEY_EU,
+															  shipToCountryCode,
+															  billDate);
 
 		final CountryId shipFromCountryId;
 		if (warehouseId != null)
@@ -200,9 +189,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 
 		// bp has tax certificate?
-		final String bpVATaxID = bpartnerBL.getVATTaxId(shipBPLocationId.getBpartnerLocationId()).orElse(null);
-
-		final boolean hasTaxCertificate = Check.isNotBlank(bpVATaxID);
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(shipBPLocationId.getBpartnerId());
+		final boolean hasTaxCertificate = !Check.isEmpty(bp.getVATaxID(), true);
 
 		// String sql = "SELECT DISTINCT t.C_Tax_ID,t.validFrom, t.To_Country_ID FROM C_Tax t,M_Product pr,C_Charge c " +
 		// " WHERE t.validFrom < ? AND t.isActive='Y' AND t.C_Country_ID = 101";
@@ -324,31 +312,28 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 */
 	@Override
 	public int get(final Properties ctx,
-				   final int M_Product_ID,
-				   final int C_Charge_ID,
-				   final Timestamp billDate,
-				   final Timestamp shipDate,
-				   final int AD_Org_ID,
-				   final int M_Warehouse_ID,
-				   final BPartnerLocationAndCaptureId billBPLocationId,
-				   final BPartnerLocationAndCaptureId shipBPLocationId,
-				   final boolean IsSOTrx,
-				   final @Nullable VatCodeId vatCodeId)
+			final int M_Product_ID,
+			final int C_Charge_ID,
+			final Timestamp billDate,
+			final Timestamp shipDate,
+			final int AD_Org_ID,
+			final int M_Warehouse_ID,
+			final BPartnerLocationAndCaptureId billBPLocationId,
+			final BPartnerLocationAndCaptureId shipBPLocationId,
+			final boolean IsSOTrx)
 	{
 		if (M_Product_ID > 0 || C_Charge_ID > 0)
 		{
-			return CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
-					() -> this.getTaxFromVatCodeIdIfManualOrNull(vatCodeId),
-					() -> getGermanTax(
-							ctx,
-							ProductId.ofRepoIdOrNull(M_Product_ID),
-							C_Charge_ID,
-							billDate,
-							shipDate,
-							OrgId.ofRepoId(AD_Org_ID),
-							WarehouseId.ofRepoIdOrNull(M_Warehouse_ID),
-							shipBPLocationId,
-							IsSOTrx));
+			return getGermanTax(
+					ctx,
+					ProductId.ofRepoIdOrNull(M_Product_ID),
+					C_Charge_ID,
+					billDate,
+					shipDate,
+					OrgId.ofRepoId(AD_Org_ID),
+					WarehouseId.ofRepoIdOrNull(M_Warehouse_ID),
+					shipBPLocationId,
+					IsSOTrx);
 		}
 		else
 		{
@@ -356,21 +341,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 	}
 
-	@Nullable
-	private int getTaxFromVatCodeIdIfManualOrNull(final @Nullable VatCodeId vatCodeId)
-	{
-		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
-		return TaxId.toRepoId(tax != null ? tax.getTaxId() : null);
-	}
-
-	public CalculateTaxResult calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
+	public BigDecimal calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
 		return TaxUtils.from(tax).calculateTax(amount, taxIncluded, scale);
-	}
-
-	public BigDecimal calculateTaxAmt(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
-	{
-		return calculateTax(tax, amount, taxIncluded, scale).getTaxAmount();
 	}
 
 	@Override

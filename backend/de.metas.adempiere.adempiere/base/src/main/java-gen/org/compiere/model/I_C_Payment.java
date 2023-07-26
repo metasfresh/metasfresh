@@ -1,25 +1,24 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /** Generated Interface for C_Payment
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Payment
+public interface I_C_Payment 
 {
 
 	String Table_Name = "C_Payment";
 
-	//	/** AD_Table_ID=335 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=335 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
-	 * Set Account City.
+	 * Set Ort.
 	 * City or the Credit Card or Account Holder
 	 *
 	 * <br>Type: String
@@ -29,7 +28,7 @@ public interface I_C_Payment
 	void setA_City (@Nullable java.lang.String A_City);
 
 	/**
-	 * Get Account City.
+	 * Get Ort.
 	 * City or the Credit Card or Account Holder
 	 *
 	 * <br>Type: String
@@ -42,7 +41,7 @@ public interface I_C_Payment
 	String COLUMNNAME_A_City = "A_City";
 
 	/**
-	 * Set Account Country.
+	 * Set Land.
 	 * Country
 	 *
 	 * <br>Type: String
@@ -52,7 +51,7 @@ public interface I_C_Payment
 	void setA_Country (@Nullable java.lang.String A_Country);
 
 	/**
-	 * Get Account Country.
+	 * Get Land.
 	 * Country
 	 *
 	 * <br>Type: String
@@ -65,7 +64,7 @@ public interface I_C_Payment
 	String COLUMNNAME_A_Country = "A_Country";
 
 	/**
-	 * Set Account EMail.
+	 * Set EMail.
 	 * Email Address
 	 *
 	 * <br>Type: String
@@ -75,7 +74,7 @@ public interface I_C_Payment
 	void setA_EMail (@Nullable java.lang.String A_EMail);
 
 	/**
-	 * Get Account EMail.
+	 * Get EMail.
 	 * Email Address
 	 *
 	 * <br>Type: String
@@ -88,7 +87,7 @@ public interface I_C_Payment
 	String COLUMNNAME_A_EMail = "A_EMail";
 
 	/**
-	 * Set Driver License.
+	 * Set Führerschein-Nr..
 	 * Payment Identification - Driver License
 	 *
 	 * <br>Type: String
@@ -98,7 +97,7 @@ public interface I_C_Payment
 	void setA_Ident_DL (@Nullable java.lang.String A_Ident_DL);
 
 	/**
-	 * Get Driver License.
+	 * Get Führerschein-Nr..
 	 * Payment Identification - Driver License
 	 *
 	 * <br>Type: String
@@ -111,7 +110,7 @@ public interface I_C_Payment
 	String COLUMNNAME_A_Ident_DL = "A_Ident_DL";
 
 	/**
-	 * Set Social Security No.
+	 * Set Ausweis-Nr..
 	 * Payment Identification - Social Security No
 	 *
 	 * <br>Type: String
@@ -121,7 +120,7 @@ public interface I_C_Payment
 	void setA_Ident_SSN (@Nullable java.lang.String A_Ident_SSN);
 
 	/**
-	 * Get Social Security No.
+	 * Get Ausweis-Nr..
 	 * Payment Identification - Social Security No
 	 *
 	 * <br>Type: String
@@ -134,8 +133,8 @@ public interface I_C_Payment
 	String COLUMNNAME_A_Ident_SSN = "A_Ident_SSN";
 
 	/**
-	 * Set Account Name.
-	 * Name on Credit Card or Account holder
+	 * Set Name.
+	 * Name auf Kreditkarte oder des Kontoeigners
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -144,8 +143,8 @@ public interface I_C_Payment
 	void setA_Name (@Nullable java.lang.String A_Name);
 
 	/**
-	 * Get Account Name.
-	 * Name on Credit Card or Account holder
+	 * Get Name.
+	 * Name auf Kreditkarte oder des Kontoeigners
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -157,7 +156,7 @@ public interface I_C_Payment
 	String COLUMNNAME_A_Name = "A_Name";
 
 	/**
-	 * Set Account State.
+	 * Set Bundesstaat / -land.
 	 * State of the Credit Card or Account holder
 	 *
 	 * <br>Type: String
@@ -167,7 +166,7 @@ public interface I_C_Payment
 	void setA_State (@Nullable java.lang.String A_State);
 
 	/**
-	 * Get Account State.
+	 * Get Bundesstaat / -land.
 	 * State of the Credit Card or Account holder
 	 *
 	 * <br>Type: String
@@ -180,7 +179,7 @@ public interface I_C_Payment
 	String COLUMNNAME_A_State = "A_State";
 
 	/**
-	 * Set Account Street.
+	 * Set Straße.
 	 * Street address of the Credit Card or Account holder
 	 *
 	 * <br>Type: String
@@ -190,7 +189,7 @@ public interface I_C_Payment
 	void setA_Street (@Nullable java.lang.String A_Street);
 
 	/**
-	 * Get Account Street.
+	 * Get Straße.
 	 * Street address of the Credit Card or Account holder
 	 *
 	 * <br>Type: String
@@ -203,7 +202,7 @@ public interface I_C_Payment
 	String COLUMNNAME_A_Street = "A_Street";
 
 	/**
-	 * Set Account Zip/Postal.
+	 * Set Postleitzahl.
 	 * Zip Code of the Credit Card or Account Holder
 	 *
 	 * <br>Type: String
@@ -213,7 +212,7 @@ public interface I_C_Payment
 	void setA_Zip (@Nullable java.lang.String A_Zip);
 
 	/**
-	 * Get Account Zip/Postal.
+	 * Get Postleitzahl.
 	 * Zip Code of the Credit Card or Account Holder
 	 *
 	 * <br>Type: String
@@ -226,7 +225,7 @@ public interface I_C_Payment
 	String COLUMNNAME_A_Zip = "A_Zip";
 
 	/**
-	 * Set Account No.
+	 * Set Konto-Nr..
 	 * Account Number
 	 *
 	 * <br>Type: String
@@ -236,7 +235,7 @@ public interface I_C_Payment
 	void setAccountNo (@Nullable java.lang.String AccountNo);
 
 	/**
-	 * Get Account No.
+	 * Get Konto-Nr..
 	 * Account Number
 	 *
 	 * <br>Type: String
@@ -432,26 +431,6 @@ public interface I_C_Payment
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
-
-	/**
-	 * Get Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_Location_ID();
-
-	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
@@ -479,7 +458,7 @@ public interface I_C_Payment
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Cash Book.
+	 * Set Kassenbuch.
 	 * Cash Book for recording petty cash transactions
 	 *
 	 * <br>Type: TableDir
@@ -489,7 +468,7 @@ public interface I_C_Payment
 	void setC_CashBook_ID (int C_CashBook_ID);
 
 	/**
-	 * Get Cash Book.
+	 * Get Kassenbuch.
 	 * Cash Book for recording petty cash transactions
 	 *
 	 * <br>Type: TableDir
@@ -506,7 +485,8 @@ public interface I_C_Payment
 	String COLUMNNAME_C_CashBook_ID = "C_CashBook_ID";
 
 	/**
-	 * Set Costs.
+	 * Set Kosten.
+	 * Additional document charges
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -515,7 +495,8 @@ public interface I_C_Payment
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Costs.
+	 * Get Kosten.
+	 * Additional document charges
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -526,7 +507,8 @@ public interface I_C_Payment
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Conversiontype.
+	 * Set Kursart.
+	 * Currency Conversion Rate Type
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -535,7 +517,8 @@ public interface I_C_Payment
 	void setC_ConversionType_ID (int C_ConversionType_ID);
 
 	/**
-	 * Get Conversiontype.
+	 * Get Kursart.
+	 * Currency Conversion Rate Type
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -667,7 +650,7 @@ public interface I_C_Payment
 	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
-	 * Set Payment Batch.
+	 * Set Zahlungslauf.
 	 * Payment batch for EFT
 	 *
 	 * <br>Type: TableDir
@@ -677,7 +660,7 @@ public interface I_C_Payment
 	void setC_PaymentBatch_ID (int C_PaymentBatch_ID);
 
 	/**
-	 * Get Payment Batch.
+	 * Get Zahlungslauf.
 	 * Payment batch for EFT
 	 *
 	 * <br>Type: TableDir
@@ -716,8 +699,7 @@ public interface I_C_Payment
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Charge amount.
-	 * Charge Amount
+	 * Set Gebühr.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -726,8 +708,7 @@ public interface I_C_Payment
 	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
 
 	/**
-	 * Get Charge amount.
-	 * Charge Amount
+	 * Get Gebühr.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -787,7 +768,7 @@ public interface I_C_Payment
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Exp. Month.
+	 * Set Exp. Monat.
 	 * Expiry Month
 	 *
 	 * <br>Type: Integer
@@ -797,7 +778,7 @@ public interface I_C_Payment
 	void setCreditCardExpMM (int CreditCardExpMM);
 
 	/**
-	 * Get Exp. Month.
+	 * Get Exp. Monat.
 	 * Expiry Month
 	 *
 	 * <br>Type: Integer
@@ -810,7 +791,7 @@ public interface I_C_Payment
 	String COLUMNNAME_CreditCardExpMM = "CreditCardExpMM";
 
 	/**
-	 * Set Exp. Year.
+	 * Set Exp. Jahr.
 	 * Expiry Year
 	 *
 	 * <br>Type: Integer
@@ -820,7 +801,7 @@ public interface I_C_Payment
 	void setCreditCardExpYY (int CreditCardExpYY);
 
 	/**
-	 * Get Exp. Year.
+	 * Get Exp. Jahr.
 	 * Expiry Year
 	 *
 	 * <br>Type: Integer
@@ -833,8 +814,8 @@ public interface I_C_Payment
 	String COLUMNNAME_CreditCardExpYY = "CreditCardExpYY";
 
 	/**
-	 * Set Number.
-	 * Credit Card Number
+	 * Set Kreditkarten-Nummer.
+	 * Kreditkarten-Nummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -843,8 +824,8 @@ public interface I_C_Payment
 	void setCreditCardNumber (@Nullable java.lang.String CreditCardNumber);
 
 	/**
-	 * Get Number.
-	 * Credit Card Number
+	 * Get Kreditkarten-Nummer.
+	 * Kreditkarten-Nummer
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -856,7 +837,7 @@ public interface I_C_Payment
 	String COLUMNNAME_CreditCardNumber = "CreditCardNumber";
 
 	/**
-	 * Set Credit Card.
+	 * Set Kreditkarte.
 	 * Credit Card (Visa, MC, AmEx)
 	 *
 	 * <br>Type: List
@@ -866,7 +847,7 @@ public interface I_C_Payment
 	void setCreditCardType (@Nullable java.lang.String CreditCardType);
 
 	/**
-	 * Get Credit Card.
+	 * Get Kreditkarte.
 	 * Credit Card (Visa, MC, AmEx)
 	 *
 	 * <br>Type: List
@@ -879,7 +860,7 @@ public interface I_C_Payment
 	String COLUMNNAME_CreditCardType = "CreditCardType";
 
 	/**
-	 * Set Verification Code.
+	 * Set Verifizierungs-Code.
 	 * Credit Card Verification code on credit card
 	 *
 	 * <br>Type: String
@@ -889,7 +870,7 @@ public interface I_C_Payment
 	void setCreditCardVV (@Nullable java.lang.String CreditCardVV);
 
 	/**
-	 * Get Verification Code.
+	 * Get Verifizierungs-Code.
 	 * Credit Card Verification code on credit card
 	 *
 	 * <br>Type: String
@@ -990,7 +971,7 @@ public interface I_C_Payment
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Discount.
+	 * Set Discount Amount.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -1000,7 +981,7 @@ public interface I_C_Payment
 	void setDiscountAmt (@Nullable BigDecimal DiscountAmt);
 
 	/**
-	 * Get Discount.
+	 * Get Discount Amount.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -1014,7 +995,7 @@ public interface I_C_Payment
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1024,7 +1005,7 @@ public interface I_C_Payment
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1146,7 +1127,7 @@ public interface I_C_Payment
 
 	/**
 	 * Set Allocated.
-	 * Indicates if the payment has been allocated
+	 * Zeigt an ob eine Zahlung bereits zugeordnet wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1156,7 +1137,7 @@ public interface I_C_Payment
 
 	/**
 	 * Get Allocated.
-	 * Indicates if the payment has been allocated
+	 * Zeigt an ob eine Zahlung bereits zugeordnet wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1191,7 +1172,7 @@ public interface I_C_Payment
 	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Auto Allocate Available Amt.
+	 * Set isAutoAllocateAvailableAmt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1200,7 +1181,7 @@ public interface I_C_Payment
 	void setIsAutoAllocateAvailableAmt (boolean IsAutoAllocateAvailableAmt);
 
 	/**
-	 * Get Auto Allocate Available Amt.
+	 * Get isAutoAllocateAvailableAmt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1282,7 +1263,7 @@ public interface I_C_Payment
 
 	/**
 	 * Set Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment)
+	 * Überzahlung (nicht zugewiesen) oder Unterzahlung (Teilzahlung)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1292,7 +1273,7 @@ public interface I_C_Payment
 
 	/**
 	 * Get Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment)
+	 * Überzahlung (nicht zugewiesen) oder Unterzahlung (Teilzahlung)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1305,7 +1286,7 @@ public interface I_C_Payment
 
 	/**
 	 * Set Prepayment.
-	 * The Payment/Receipt is a Prepayment
+	 * Die Zahlung ist eine Vorauszahlung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1315,7 +1296,7 @@ public interface I_C_Payment
 
 	/**
 	 * Get Prepayment.
-	 * The Payment/Receipt is a Prepayment
+	 * Die Zahlung ist eine Vorauszahlung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1327,7 +1308,7 @@ public interface I_C_Payment
 	String COLUMNNAME_IsPrepayment = "IsPrepayment";
 
 	/**
-	 * Set Receipt.
+	 * Set Zahlungseingang.
 	 * This is a sales transaction (receipt)
 	 *
 	 * <br>Type: YesNo
@@ -1337,7 +1318,7 @@ public interface I_C_Payment
 	void setIsReceipt (boolean IsReceipt);
 
 	/**
-	 * Get Receipt.
+	 * Get Zahlungseingang.
 	 * This is a sales transaction (receipt)
 	 *
 	 * <br>Type: YesNo
@@ -1373,7 +1354,7 @@ public interface I_C_Payment
 	String COLUMNNAME_IsReconciled = "IsReconciled";
 
 	/**
-	 * Set Self-Service.
+	 * Set Selbstbedienung.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
 	 * <br>Type: YesNo
@@ -1383,7 +1364,7 @@ public interface I_C_Payment
 	void setIsSelfService (boolean IsSelfService);
 
 	/**
-	 * Get Self-Service.
+	 * Get Selbstbedienung.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
 	 * <br>Type: YesNo
@@ -1394,31 +1375,6 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_IsSelfService = new ModelColumn<>(I_C_Payment.class, "IsSelfService", null);
 	String COLUMNNAME_IsSelfService = "IsSelfService";
-
-	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
-
-	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	ModelColumn<I_C_Payment, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_Payment.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Micr.
@@ -1467,7 +1423,7 @@ public interface I_C_Payment
 	String COLUMNNAME_Orig_TrxID = "Orig_TrxID";
 
 	/**
-	 * Set Over/Under Payment Amount.
+	 * Set Over/Under Payment.
 	 * Over-Payment (unallocated) or Under-Payment (partial payment) Amount
 	 *
 	 * <br>Type: Amount
@@ -1477,7 +1433,7 @@ public interface I_C_Payment
 	void setOverUnderAmt (@Nullable BigDecimal OverUnderAmt);
 
 	/**
-	 * Get Over/Under Payment Amount.
+	 * Get Over/Under Payment.
 	 * Over-Payment (unallocated) or Under-Payment (partial payment) Amount
 	 *
 	 * <br>Type: Amount
@@ -1490,7 +1446,7 @@ public interface I_C_Payment
 	String COLUMNNAME_OverUnderAmt = "OverUnderAmt";
 
 	/**
-	 * Set Payment amount.
+	 * Set Zahlungsbetrag.
 	 * Amount being paid
 	 *
 	 * <br>Type: Amount
@@ -1500,7 +1456,7 @@ public interface I_C_Payment
 	void setPayAmt (BigDecimal PayAmt);
 
 	/**
-	 * Get Payment amount.
+	 * Get Zahlungsbetrag.
 	 * Amount being paid
 	 *
 	 * <br>Type: Amount
@@ -1667,7 +1623,7 @@ public interface I_C_Payment
 	String COLUMNNAME_R_AuthCode_DC = "R_AuthCode_DC";
 
 	/**
-	 * Set Address verified.
+	 * Set Addresse verifiziert.
 	 * This address has been verified
 	 *
 	 * <br>Type: List
@@ -1677,7 +1633,7 @@ public interface I_C_Payment
 	void setR_AvsAddr (@Nullable java.lang.String R_AvsAddr);
 
 	/**
-	 * Get Address verified.
+	 * Get Addresse verifiziert.
 	 * This address has been verified
 	 *
 	 * <br>Type: List
@@ -1690,7 +1646,7 @@ public interface I_C_Payment
 	String COLUMNNAME_R_AvsAddr = "R_AvsAddr";
 
 	/**
-	 * Set Zip verified.
+	 * Set Postleitzahl verifiziert.
 	 * The Zip Code has been verified
 	 *
 	 * <br>Type: List
@@ -1700,7 +1656,7 @@ public interface I_C_Payment
 	void setR_AvsZip (@Nullable java.lang.String R_AvsZip);
 
 	/**
-	 * Get Zip verified.
+	 * Get Postleitzahl verifiziert.
 	 * The Zip Code has been verified
 	 *
 	 * <br>Type: List
@@ -1759,7 +1715,7 @@ public interface I_C_Payment
 	String COLUMNNAME_R_Info = "R_Info";
 
 	/**
-	 * Set Reference.
+	 * Set Referenz.
 	 * Payment reference
 	 *
 	 * <br>Type: String
@@ -1769,7 +1725,7 @@ public interface I_C_Payment
 	void setR_PnRef (@Nullable java.lang.String R_PnRef);
 
 	/**
-	 * Get Reference.
+	 * Get Referenz.
 	 * Payment reference
 	 *
 	 * <br>Type: String
@@ -1828,7 +1784,7 @@ public interface I_C_Payment
 	String COLUMNNAME_R_RespMsg = "R_RespMsg";
 
 	/**
-	 * Set Result.
+	 * Set Ergebnis.
 	 * Result of transmission
 	 *
 	 * <br>Type: String
@@ -1838,7 +1794,7 @@ public interface I_C_Payment
 	void setR_Result (@Nullable java.lang.String R_Result);
 
 	/**
-	 * Get Result.
+	 * Get Ergebnis.
 	 * Result of transmission
 	 *
 	 * <br>Type: String
@@ -1893,29 +1849,6 @@ public interface I_C_Payment
 	String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
-	 * Set IBAN.
-	 * International Bank Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIBAN (@Nullable java.lang.String IBAN);
-
-	/**
-	 * Get IBAN.
-	 * International Bank Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIBAN();
-
-	ModelColumn<I_C_Payment, Object> COLUMN_IBAN = new ModelColumn<>(I_C_Payment.class, "IBAN", null);
-	String COLUMNNAME_IBAN = "IBAN";
-
-	/**
 	 * Set BLZ.
 	 * Bank Routing Number
 	 *
@@ -1926,7 +1859,7 @@ public interface I_C_Payment
 	void setRoutingNo (@Nullable java.lang.String RoutingNo);
 
 	/**
-	 * Get Routing No.
+	 * Get BLZ.
 	 * Bank Routing Number
 	 *
 	 * <br>Type: String
@@ -1982,8 +1915,8 @@ public interface I_C_Payment
 	String COLUMNNAME_Swipe = "Swipe";
 
 	/**
-	 * Set Tax Amount.
-	 * Tax Amount for Credit Card transaction
+	 * Set Steuerbetrag.
+	 * Tax Amount for a document
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -1992,8 +1925,8 @@ public interface I_C_Payment
 	void setTaxAmt (@Nullable BigDecimal TaxAmt);
 
 	/**
-	 * Get Tax Amount.
-	 * Tax Amount for Credit Card transaction
+	 * Get Steuerbetrag.
+	 * Tax Amount for a document
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2005,7 +1938,7 @@ public interface I_C_Payment
 	String COLUMNNAME_TaxAmt = "TaxAmt";
 
 	/**
-	 * Set Tender type.
+	 * Set Zahlmittel.
 	 * Method of Payment
 	 *
 	 * <br>Type: List
@@ -2015,7 +1948,7 @@ public interface I_C_Payment
 	void setTenderType (java.lang.String TenderType);
 
 	/**
-	 * Get Tender type.
+	 * Get Zahlmittel.
 	 * Method of Payment
 	 *
 	 * <br>Type: List
@@ -2095,6 +2028,11 @@ public interface I_C_Payment
 	 */
 	int getUser1_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser1();
+
+	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
+
+	ModelColumn<I_C_Payment, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_Payment.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -2115,10 +2053,15 @@ public interface I_C_Payment
 	 */
 	int getUser2_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser2();
+
+	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
+
+	ModelColumn<I_C_Payment, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_Payment.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
-	 * Set Voice authorization code.
+	 * Set Prüfziffer.
 	 * Voice Authorization Code from credit card company
 	 *
 	 * <br>Type: String
@@ -2128,7 +2071,7 @@ public interface I_C_Payment
 	void setVoiceAuthCode (@Nullable java.lang.String VoiceAuthCode);
 
 	/**
-	 * Get Voice authorization code.
+	 * Get Prüfziffer.
 	 * Voice Authorization Code from credit card company
 	 *
 	 * <br>Type: String
@@ -2141,8 +2084,8 @@ public interface I_C_Payment
 	String COLUMNNAME_VoiceAuthCode = "VoiceAuthCode";
 
 	/**
-	 * Set Invoice Writeoff.
-	 * Invoice Writeoff
+	 * Set Write-off Amount.
+	 * Amount to write-off
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2151,8 +2094,8 @@ public interface I_C_Payment
 	void setWriteOffAmt (@Nullable BigDecimal WriteOffAmt);
 
 	/**
-	 * Get Invoice Writeoff.
-	 * Invoice Writeoff
+	 * Get Write-off Amount.
+	 * Amount to write-off
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false

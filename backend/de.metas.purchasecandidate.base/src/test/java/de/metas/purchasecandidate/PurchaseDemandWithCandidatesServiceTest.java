@@ -3,6 +3,8 @@ package de.metas.purchasecandidate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
@@ -37,6 +39,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -47,11 +50,13 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -63,7 +68,7 @@ import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -87,6 +92,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PaymentTermService.class })
 public class PurchaseDemandWithCandidatesServiceTest
 {
 	private static final BigDecimal NINE = new BigDecimal("9");
@@ -117,11 +124,10 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 	private I_C_PaymentTerm paymentTermRecord;
 
-	@BeforeEach
-	public void beforeEach()
+	@Before
+	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new PaymentTermService());
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
@@ -155,10 +161,6 @@ public class PurchaseDemandWithCandidatesServiceTest
 		saveRecord(discountSchemaRecord);
 
 		paymentTermRecord = newInstance(I_C_PaymentTerm.class);
-		paymentTermRecord.setValue("test payment term");
-		paymentTermRecord.setName("test payment term");
-		paymentTermRecord.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
-		paymentTermRecord.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
 		saveRecord(paymentTermRecord);
 
 		discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
@@ -177,8 +179,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		orgId = OrgId.ofRepoId(1000000);
 		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-				.orgId(orgId)
-				.build());
+																  .orgId(orgId)
+																  .build());
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		purchaseCandidateRecord.setAD_Org_ID(orgId.getRepoId());

@@ -15,7 +15,7 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilters;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
-import de.metas.ui.web.handlingunits.filter.HUIdsFilterData;
+import de.metas.ui.web.handlingunits.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;

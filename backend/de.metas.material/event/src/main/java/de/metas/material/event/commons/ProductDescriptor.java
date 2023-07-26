@@ -1,17 +1,19 @@
 package de.metas.material.event.commons;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
+
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 /*
  * #%L
@@ -43,12 +45,12 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 		@JsonSubTypes.Type(name = "MaterialDescriptor", value = MaterialDescriptor.class) })
 public class ProductDescriptor
 {
-	public static ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
+	public static final ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
 		return new ProductDescriptor(productId, AttributesKey.NONE, AttributeSetInstanceId.NONE.getRepoId());
 	}
 
-	public static ProductDescriptor forProductAndAttributes(
+	public static final ProductDescriptor forProductAndAttributes(
 			final int productId,
 			@NonNull final AttributesKey attributesKey,
 			final int attributeSetInstanceId)
@@ -56,7 +58,7 @@ public class ProductDescriptor
 		return new ProductDescriptor(productId, attributesKey, attributeSetInstanceId);
 	}
 
-	public static ProductDescriptor forProductAndAttributes(
+	public static final ProductDescriptor forProductAndAttributes(
 			final int productId,
 			@NonNull final AttributesKey attributesKey)
 	{

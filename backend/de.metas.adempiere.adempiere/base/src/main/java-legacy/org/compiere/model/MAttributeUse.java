@@ -16,11 +16,11 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
-
 import java.sql.ResultSet;
 import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
 
 /**
  * Attribute Use Model
@@ -57,7 +57,8 @@ public class MAttributeUse extends X_M_AttributeUse
 					+ " SET IsInstanceAttribute='Y' "
 					+ "WHERE M_AttributeSet_ID=" + attributeSetId
 					+ " AND IsInstanceAttribute='N'"
-					+ " AND (EXISTS (SELECT * FROM M_AttributeUse mau"
+					+ " AND (IsSerNo='Y' OR IsLot='Y' OR IsGuaranteeDate='Y'"
+					+ " OR EXISTS (SELECT * FROM M_AttributeUse mau"
 					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
@@ -72,6 +73,7 @@ public class MAttributeUse extends X_M_AttributeUse
 					+ " SET IsInstanceAttribute='N' "
 					+ "WHERE M_AttributeSet_ID=" + attributeSetId
 					+ " AND IsInstanceAttribute='Y'"
+					+ "	AND IsSerNo='N' AND IsLot='N' AND IsGuaranteeDate='N'"
 					+ " AND NOT EXISTS (SELECT * FROM M_AttributeUse mau"
 					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"

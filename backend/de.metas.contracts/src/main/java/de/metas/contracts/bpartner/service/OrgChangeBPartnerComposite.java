@@ -29,7 +29,6 @@ import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.util.Check;
@@ -157,11 +156,5 @@ public class OrgChangeBPartnerComposite
 	public List<BPartnerBankAccount> getBankAccounts()
 	{
 		return getBPartnerComposite().getBankAccounts();
-	}
-
-	@NonNull
-	public List<BPartnerCreditLimit> getCreditLimits()
-	{
-		return getBPartnerComposite().getCreditLimits();
 	}
 }

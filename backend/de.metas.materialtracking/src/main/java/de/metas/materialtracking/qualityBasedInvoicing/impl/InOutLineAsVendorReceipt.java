@@ -22,6 +22,16 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
+
 import ch.qos.logback.classic.Level;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
@@ -40,15 +50,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * {@link IVendorReceipt} implementation which takes the values from the wrapped {@link I_M_InOutLine}.
@@ -197,8 +198,8 @@ import java.util.List;
 
 			// task 09117: we only may count iol that are not reversed, in progress of otherwise "not relevant"
 			final I_M_InOut inout = inoutLine.getM_InOut();
-			final DocStatus docStatus = DocStatus.ofCode(inout.getDocStatus());
-			if (!docStatus.isCompletedOrClosed())
+			final DocStatus inoutDocStatus = DocStatus.ofCode(inout.getDocStatus());
+			if (!inoutDocStatus.isCompletedOrClosed())
 			{
 				loggable.addLog("Not counting {} because its M_InOut has docstatus {}", inoutLine, inOutRecord.getDocStatus());
 				continue;

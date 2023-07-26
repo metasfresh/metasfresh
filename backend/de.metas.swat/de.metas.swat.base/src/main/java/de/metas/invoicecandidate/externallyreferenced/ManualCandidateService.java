@@ -1,8 +1,36 @@
+package de.metas.invoicecandidate.externallyreferenced;
+
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.money.Money;
+import de.metas.order.InvoiceRule;
+import de.metas.organization.IOrgDAO;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductPrice;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,39 +48,6 @@
  * #L%
  */
 
-package de.metas.invoicecandidate.externallyreferenced;
-
-import de.metas.bpartner.composite.BPartner;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-import de.metas.money.Money;
-import de.metas.order.InvoiceRule;
-import de.metas.organization.IOrgDAO;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductPrice;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.util.Optional;
-
 @Service
 public class ManualCandidateService
 {
@@ -65,15 +60,10 @@ public class ManualCandidateService
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 	}
 
-	/**
-	 * Invokes different metasfresh services to complement additional fields such as the price.
-	 */
+	/** Invokes different metasfresh services to complement additional fields such as the price. */
 	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
 	{
-		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
-
-		final ProductPrice priceEnteredOverride = newIC.getPriceEnteredOverride();
-		final Percent discountOverride = newIC.getDiscountOverride();
+		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
 
 		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
@@ -105,10 +95,6 @@ public class ManualCandidateService
 		candidate.priceEntered(priceEntered);
 		candidate.discount(pricingResult.getDiscount());
 
-		candidate.priceEnteredOverride(priceEnteredOverride);
-		candidate.discountOverride(discountOverride);
-
-
 		final BigDecimal priceActualBD = pricingResult.getDiscount()
 				.subtractFromBase(
 						pricingResult.getPriceStd(),
@@ -121,9 +107,9 @@ public class ManualCandidateService
 		candidate.priceActual(priceActual);
 
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
-		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
+				Env.getCtx(),
 				newIC,
 				pricingResult.getTaxCategoryId(),
 				newIC.getProductId().getRepoId(),
@@ -131,33 +117,13 @@ public class ManualCandidateService
 				newIC.getOrgId(),
 				newIC.getSoTrx().isSales() ? orgDAO.getOrgWarehouseId(newIC.getOrgId()) : orgDAO.getOrgPOWarehouseId(newIC.getOrgId()),
 				newIC.getBillPartnerInfo().toBPartnerLocationAndCaptureId(), // ship location id
-				newIC.getSoTrx(),
-				vatCodeId);
+				newIC.getSoTrx());
 		candidate.taxId(taxId);
 
-		final BPartner bpartner = bpartnerComp.getBpartner();
-
-		final InvoiceRule newICInvoiceRule = Optional.ofNullable(newIC.getInvoiceRule())
-				.orElseGet(() -> newIC.getSoTrx().isSales() ?
-						bpartner.getCustomerInvoiceRule() :
-						bpartner.getVendorInvoiceRule());
-
-		candidate.invoiceRule(CoalesceUtil.coalesceNotNull(newICInvoiceRule, InvoiceRule.Immediate));
-		candidate.recordReference(newIC.getRecordReference());
-
-		candidate.descriptionBottom(newIC.getDescriptionBottom());
-		candidate.userInChargeId(newIC.getUserInChargeId());
-
-		// payment term
-		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(newIC.getBillPartnerInfo().getBpartnerId(), newIC.getSoTrx());
-
-		final PaymentTermId paymentTermId = Services.get(IPaymentTermRepository.class)
-				.retrievePaymentTermId(paymentTermQuery)
-				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
-						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
-						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
-		candidate.paymentTermId(paymentTermId);
+		final InvoiceRule invoiceRule = coalesce(
+				bpartnerComp.getBpartner().getInvoiceRule(),
+				InvoiceRule.Immediate);
+		candidate.invoiceRule(invoiceRule);
 
 		return candidate.build();
 

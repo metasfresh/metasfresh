@@ -32,7 +32,7 @@ We are allowed to use it for metasfresh under the GPL version two, three, or any
 
 The process of creating and maintaning a fork with git and github is explained in [this article](https://help.github.com/articles/fork-a-repo/). Note that at the article's end, there is also a link to [this article](https://help.github.com/articles/using-pull-requests/) about pull requests.
 
-If you need help, don't hesitate to contact us, for example on our [metasfresh forum](https://forum.metasfresh.org/).
+If you need help, don't hesitate to contact us, for example on our [metasfresh gitter chat](https://gitter.im/metasfresh/metasfresh).
 
 We know that our documentation is still patchy and are keen to improve it!
 
@@ -40,5 +40,5 @@ We know that our documentation is still patchy and are keen to improve it!
 
 * Here is our current developer's documentation, about how to get the code to compile etc: http://docs.metasfresh.org/pages/developers/index_en
  - Just like with the metasfresh code, we are also grateful for contributions to this documentation
-* We have a forum dedicated to this repository. You can enter it at https://forum.metasfresh.org/
+* We have a gitter chat dedicated to this repository. You can enter it at https://gitter.im/metasfresh/metasfresh
 

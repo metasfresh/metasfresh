@@ -9,7 +9,6 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.column.ColumnSql;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -17,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 /*
  * #%L
@@ -41,7 +39,6 @@ import java.util.OptionalInt;
  * #L%
  */
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataBindingDescriptor, SqlEntityFieldBinding
 {
 	public static Builder builder()
@@ -92,8 +89,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	@Getter
 	private final DocumentFieldWidgetType widgetType;
 	@Getter
-	private final OptionalInt minPrecision;
-	@Getter
 	private final Class<?> valueClass;
 	@Getter
 	@Nullable final LookupDescriptor lookupDescriptor;
@@ -121,12 +116,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		sqlColumnName = builder.getColumnName();
 		sqlValueClass = builder.getSqlValueClass();
-		virtualColumn = builder.getVirtualColumnSql() != null;
+		virtualColumn = builder.isVirtualColumn();
 		mandatory = builder.mandatory;
 		keyColumn = builder.keyColumn;
 
 		widgetType = builder.getWidgetType();
-		minPrecision = builder.getMinPrecision();
 		valueClass = builder.getValueClass();
 		lookupDescriptor = builder._lookupDescriptor;
 
@@ -155,12 +149,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	}
 
 	@Override
-	public String getColumnName() {return getSqlColumnName();}
+	public String getColumnName() { return getSqlColumnName(); }
 
-	public boolean isNumericKey() {return numericKey != null && numericKey;}
+	public boolean isNumericKey() { return numericKey != null && numericKey; }
 
 	@Override
-	public boolean isDefaultOrderBy() {return defaultOrderByPriority != 0;}
+	public boolean isDefaultOrderBy() { return defaultOrderByPriority != 0; }
 
 	@Override
 	public SqlOrderByValue getSqlOrderBy()
@@ -183,14 +177,14 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private String _sqlTableName;
 		private String _sqlTableAlias;
 		private String _sqlColumnName;
-		private ColumnSql _virtualColumnSql;
+		private String _sqlColumnSql;
 		private Class<?> _sqlValueClass;
 
+		private Boolean _virtualColumn;
 		private Boolean mandatory;
 
 		private Class<?> _valueClass;
 		private DocumentFieldWidgetType _widgetType;
-		private OptionalInt minPrecision = OptionalInt.empty();
 		@Nullable private LookupDescriptor _lookupDescriptor;
 		private boolean keyColumn = false;
 		private boolean encrypted = false;
@@ -242,8 +236,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private SqlSelectValue buildSqlSelectValue()
 		{
+			final String columnSql = getColumnSql();
 			final String columnName = getColumnName();
-			final ColumnSql virtualColumnSql = getVirtualColumnSql();
 
 			//
 			// Case: the SQL binding doesn't have any column set.
@@ -251,17 +245,16 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			if (Check.isBlank(columnName))
 			{
 				return SqlSelectValue.builder()
-						.virtualColumnSql(ColumnSql.SQL_NULL)
+						.virtualColumnSql("NULL")
 						.columnNameAlias(getFieldName())
 						.build();
 			}
 			//
 			// Virtual column
-			else if (virtualColumnSql != null)
+			else if (isVirtualColumn())
 			{
 				return SqlSelectValue.builder()
-						.tableNameOrAlias(getTableName())
-						.virtualColumnSql(virtualColumnSql)
+						.virtualColumnSql(columnSql)
 						.columnNameAlias(columnName)
 						.build();
 			}
@@ -271,7 +264,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			{
 				return SqlSelectValue.builder()
 						.tableNameOrAlias(getTableName())
-						.columnName(columnName)
+						.columnName(columnSql)
 						.columnNameAlias(columnName)
 						.build();
 			}
@@ -289,7 +282,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 						getColumnName(),
 						displayColumnName,
 						getValueClass(),
-						getMinPrecision(),
+						getWidgetType(),
 						encrypted,
 						getNumericKey());
 			}
@@ -307,7 +300,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				final String sqlColumnName,
 				final String sqlDisplayColumnName,
 				final Class<?> valueClass,
-				final OptionalInt minPrecision,
+				final DocumentFieldWidgetType widgetType,
 				final boolean encrypted,
 				final Boolean numericKey)
 		{
@@ -329,7 +322,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			}
 			else if (java.math.BigDecimal.class == valueClass)
 			{
-				return DocumentFieldValueLoaders.toBigDecimal(sqlColumnName, encrypted, minPrecision);
+				final Integer precision = widgetType.getStandardNumberPrecision();
+				return DocumentFieldValueLoaders.toBigDecimal(sqlColumnName, encrypted, precision);
 			}
 			//
 			// Date & times
@@ -422,16 +416,26 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return _sqlColumnName;
 		}
 
-		public Builder setVirtualColumnSql(@Nullable final ColumnSql virtualColumnSql)
+		public Builder setColumnSql(final String columnSql)
 		{
-			this._virtualColumnSql = virtualColumnSql;
+			this._sqlColumnSql = columnSql;
 			return this;
 		}
 
-		@Nullable
-		private ColumnSql getVirtualColumnSql()
+		private String getColumnSql()
 		{
-			return _virtualColumnSql;
+			return _sqlColumnSql;
+		}
+
+		public Builder setVirtualColumn(final boolean virtualColumn)
+		{
+			this._virtualColumn = virtualColumn;
+			return this;
+		}
+
+		private boolean isVirtualColumn()
+		{
+			return _virtualColumn;
 		}
 
 		public Builder setMandatory(final boolean mandatory)
@@ -466,17 +470,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		{
 			Check.assumeNotNull(_widgetType, "Parameter widgetType is not null");
 			return _widgetType;
-		}
-
-		public Builder setMinPrecision(@NonNull final OptionalInt minPrecision)
-		{
-			this.minPrecision = minPrecision;
-			return this;
-		}
-
-		private OptionalInt getMinPrecision()
-		{
-			return minPrecision;
 		}
 
 		public Builder setSqlValueClass(final Class<?> sqlValueClass)

@@ -27,7 +27,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
-import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -54,8 +53,6 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleFromSubscriptionOrderLineVetoer.class);
 
-	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-
 	/**
 	 * @param model
 	 *            the object for which we want to create a shipment schedule. The method
@@ -67,7 +64,7 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 	{
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 
-		final boolean subscription = subscriptionBL.isSubscription(ol);
+		final boolean subscription = isSubscription(ol);
 		final boolean hasAtLeastOneFlatrateContract = hasAtLeastOneFlatrateContract(ol);
 		final boolean veto = subscription || hasAtLeastOneFlatrateContract;
 

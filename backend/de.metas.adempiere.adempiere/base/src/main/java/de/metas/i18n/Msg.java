@@ -1,33 +1,5 @@
 package de.metas.i18n;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.ad_reference.ADRefListItem;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.cache.CCache;
-import de.metas.currency.Amount;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.NonNull;
-import lombok.Singular;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Element;
-import org.compiere.model.I_AD_Message;
-import org.compiere.util.AmtInWords;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
 import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,33 +12,56 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
+import de.metas.util.Services;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_Message;
+import org.compiere.util.AmtInWords;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.cache.CCache;
+import de.metas.currency.Amount;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
+import lombok.Singular;
+
 /**
  * Reads all Messages and stores them in a HashMap
  *
  * @author metas-dev <dev@metasfresh.com>
  * @author based on initial version of Jorg Janke
+ *
  * @deprecated Please use {@link IMsgBL}
  */
 @Deprecated
 public final class Msg
 {
-	/**
-	 * Initial size of HashMap
-	 */
+	/** Initial size of HashMap */
 	private static final int MAP_SIZE = 2200;
-	/**
-	 * Separator between Msg and optional Tip
-	 */
+	/** Separator between Msg and optional Tip */
 	private static final String SEPARATOR = Env.NL + Env.NL;
 
-	/**
-	 * Singleton
-	 */
+	/** Singleton */
 	private static final Msg instance = new Msg();
 
-	/**
-	 * Logger
-	 */
+	/** Logger */
 	private static final Logger s_log = LogManager.getLogger(Msg.class);
 
 	/**
@@ -75,7 +70,7 @@ public final class Msg
 	private static Msg get()
 	{
 		return instance;
-	}    // get
+	}	// get
 
 	/**************************************************************************
 	 * Constructor
@@ -84,9 +79,7 @@ public final class Msg
 	{
 	}
 
-	/**
-	 * Messages cache: AD_Language to MessageValue to Translated message text
-	 */
+	/** Messages cache: AD_Language to MessageValue to Translated message text */
 	private final CCache<String, CCache<String, Message>> adLanguage2messages = CCache.newCache(I_AD_Message.Table_Name + "#by#ADLanguage", 10, CCache.EXPIREMINUTES_Never);
 	private final CCache<String, Element> elementsByElementName = CCache.newLRUCache(I_AD_Element.Table_Name, 500, CCache.EXPIREMINUTES_Never);
 
@@ -103,9 +96,7 @@ public final class Msg
 		return adLanguage2messages.getOrLoad(adLanguageToUse, () -> retrieveMessagesCache(adLanguageToUse));
 	}
 
-	/**
-	 * @return given adLanguage if not null or base language
-	 */
+	/** @return given adLanguage if not null or base language */
 	private static String notNullOrBaseLanguage(@Nullable final String adLanguage)
 	{
 		return Check.isEmpty(adLanguage, true) ? Language.getBaseAD_Language() : adLanguage;
@@ -151,9 +142,9 @@ public final class Msg
 			else
 			{
 				pstmt = DB.prepareStatement("SELECT m.Value, t.MsgText, t.MsgTip "
-													+ "FROM AD_Message_Trl t, AD_Message m "
-													+ "WHERE m.AD_Message_ID=t.AD_Message_ID"
-													+ " AND t.AD_Language=?", ITrx.TRXNAME_None);
+						+ "FROM AD_Message_Trl t, AD_Message m "
+						+ "WHERE m.AD_Message_ID=t.AD_Message_ID"
+						+ " AND t.AD_Language=?", ITrx.TRXNAME_None);
 				pstmt.setString(1, adLanguage);
 			}
 			rs = pstmt.executeQuery();
@@ -189,7 +180,7 @@ public final class Msg
 
 		s_log.debug("Loaded {} for '{}' language", msg.size(), adLanguage);
 		return msg;
-	}    // initMsg
+	}	// initMsg
 
 	/**
 	 * Reset Message cache
@@ -212,7 +203,7 @@ public final class Msg
 	 * Lookup term
 	 *
 	 * @param adLanguage language
-	 * @param text       text
+	 * @param text text
 	 * @return translated term or <code>null</code> if message term could not be found
 	 */
 	private Message lookup(final String adLanguage, final String text)
@@ -311,12 +302,12 @@ public final class Msg
 		}
 
 		return message;
-	}    // getMsg
+	}	// getMsg
 
 	/**
 	 * Get translated text message for AD_Message
 	 *
-	 * @param ctx        Context to retrieve language
+	 * @param ctx Context to retrieve language
 	 * @param AD_Message - Message Key
 	 * @return translated text
 	 */
@@ -328,7 +319,7 @@ public final class Msg
 	/**
 	 * Get translated text message for AD_Message
 	 *
-	 * @param language   Language
+	 * @param language Language
 	 * @param AD_Message - Message Key
 	 * @return translated text
 	 */
@@ -341,8 +332,8 @@ public final class Msg
 	 * Get translated text message for AD_Message
 	 *
 	 * @param adLanguage - Language
-	 * @param adMessage  - Message Key
-	 * @param getText    if true only return Text, if false only return Tip
+	 * @param adMessage - Message Key
+	 * @param getText if true only return Text, if false only return Tip
 	 * @return translated text
 	 */
 	private static String getMsg(final String adLanguage, final String adMessage, final boolean getText)
@@ -354,9 +345,9 @@ public final class Msg
 	/**
 	 * Get translated text message for AD_Message
 	 *
-	 * @param ctx       Context to retrieve language
+	 * @param ctx Context to retrieve language
 	 * @param adMessage Message Key
-	 * @param getText   if true only return Text, if false only return Tip
+	 * @param getText if true only return Text, if false only return Tip
 	 * @return translated text
 	 */
 	public static String getMsg(final Properties ctx, final String adMessage, final boolean getText)
@@ -367,37 +358,37 @@ public final class Msg
 	/**
 	 * Get clear text for AD_Message with parameters
 	 *
-	 * @param ctx        Context to retrieve language
+	 * @param ctx Context to retrieve language
 	 * @param AD_Message Message key
-	 * @param args       MessageFormat arguments
+	 * @param args MessageFormat arguments
 	 * @return translated text
 	 * @see java.text.MessageFormat for formatting options
 	 */
 	public static String getMsg(final Properties ctx, final String AD_Message, final Object[] args)
 	{
 		return getMsg(Env.getAD_Language(ctx), AD_Message, args);
-	}    // getMsg
+	}	// getMsg
 
 	/**
 	 * Get clear text for AD_Message with parameters
 	 *
-	 * @param language   Language
+	 * @param language Language
 	 * @param AD_Message Message key
-	 * @param args       MessageFormat arguments
+	 * @param args MessageFormat arguments
 	 * @return translated text
 	 * @see java.text.MessageFormat for formatting options
 	 */
 	public static String getMsg(final Language language, final String AD_Message, final Object[] args)
 	{
 		return getMsg(language.getAD_Language(), AD_Message, args);
-	}    // getMsg
+	}	// getMsg
 
 	/**
 	 * Get clear text for AD_Message with parameters
 	 *
 	 * @param adLanguage Language
-	 * @param adMessage  Message key
-	 * @param args       MessageFormat arguments
+	 * @param adMessage Message key
+	 * @param args MessageFormat arguments
 	 * @return translated text
 	 * @see java.text.MessageFormat for formatting options
 	 */
@@ -406,7 +397,7 @@ public final class Msg
 		final String adLanguageToUse = notNullOrBaseLanguage(adLanguage);
 		final Message message = getMessage(adLanguageToUse, adMessage);
 		return format(adLanguageToUse, message, args);
-	}    // getMsg
+	}	// getMsg
 
 	private static String format(@NonNull final String adLanguage, @NonNull final Message message, @Nullable final Object[] args)
 	{
@@ -420,7 +411,7 @@ public final class Msg
 		try
 		{
 			normalizeArgsBeforeFormat(args, adLanguage);
-			retStr = MessageFormat.format(messageStr, args);    // format string
+			retStr = MessageFormat.format(messageStr, args);	// format string
 		}
 		catch (final Exception e)
 		{
@@ -439,53 +430,40 @@ public final class Msg
 		for (int i = 0; i < args.length; i++)
 		{
 			final Object arg = args[i];
-			final Object argNorm = normalizeSingleArgumentBeforeFormat(arg, adLanguage);
+			final Object argNorm;
+			if (arg instanceof ITranslatableString)
+			{
+				argNorm = ((ITranslatableString)arg).translate(adLanguage);
+			}
+			else if (arg instanceof Amount)
+			{
+				final Amount amount = (Amount)arg;
+				argNorm = TranslatableStrings.amount(amount).translate(adLanguage);
+			}
+			else if(arg instanceof ReferenceListAwareEnum)
+			{
+				final ReferenceListAwareEnum referenceListAwareEnum = (ReferenceListAwareEnum)arg;
+				argNorm = normalizeArgBeforeFormat_ReferenceListAwareEnum(referenceListAwareEnum, adLanguage);
+			}
+			else
+			{
+				argNorm = arg;
+			}
+
 			args[i] = argNorm;
 		}
 	}
 
-	private static Object normalizeSingleArgumentBeforeFormat(@Nullable final Object arg, final String adLanguage)
-	{
-		if (arg == null)
-		{
-			return null;
-		}
-		else if (arg instanceof ITranslatableString)
-		{
-			return ((ITranslatableString)arg).translate(adLanguage);
-		}
-		else if (arg instanceof Amount)
-		{
-			final Amount amount = (Amount)arg;
-			return TranslatableStrings.amount(amount).translate(adLanguage);
-		}
-		else if (arg instanceof ReferenceListAwareEnum)
-		{
-			final ReferenceListAwareEnum referenceListAwareEnum = (ReferenceListAwareEnum)arg;
-			return normalizeSingleArgumentBeforeFormat_ReferenceListAwareEnum(referenceListAwareEnum, adLanguage);
-		}
-		else if (arg instanceof Iterable)
-		{
-			@SuppressWarnings("unchecked")
-			final Iterable<Object> iterable = (Iterable<Object>)arg;
-			return normalizeSingleArgumentBeforeFormat_Iterable(iterable, adLanguage);
-		}
-		else
-		{
-			return arg;
-		}
-	}
-
-	private static Object normalizeSingleArgumentBeforeFormat_ReferenceListAwareEnum(
+	private static Object normalizeArgBeforeFormat_ReferenceListAwareEnum(
 			@NonNull final ReferenceListAwareEnum referenceListAwareEnum,
 			final String adLanguage)
 	{
 		final int adReferenceId = ReferenceListAwareEnums.getAD_Reference_ID(referenceListAwareEnum);
-		if (adReferenceId > 0)
+		if(adReferenceId > 0)
 		{
-			final ADReferenceService adReferenceService = ADReferenceService.get();
-			final ADRefListItem adRefListItem = adReferenceService.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
-			if (adRefListItem != null)
+			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+			final IADReferenceDAO.ADRefListItem adRefListItem = adReferenceDAO.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
+			if(adRefListItem != null)
 			{
 				return adRefListItem.getName().translate(adLanguage);
 			}
@@ -493,37 +471,6 @@ public final class Msg
 
 		// Fallback
 		return referenceListAwareEnum.toString();
-	}
-
-	private static String normalizeSingleArgumentBeforeFormat_Iterable(
-			@NonNull final Iterable<Object> iterable,
-			final String adLanguage)
-	{
-		final StringBuilder result = new StringBuilder();
-
-		for (final Object item : iterable)
-		{
-			String itemNormStr = null;
-			try
-			{
-				final Object itemNormObj = normalizeSingleArgumentBeforeFormat(item, adLanguage);
-				itemNormStr = itemNormObj != null ? itemNormObj.toString() : "-";
-			}
-			catch (Exception ex)
-			{
-				s_log.warn("Failed normalizing argument `{}`. Using toString().", item, ex);
-				itemNormStr = item.toString();
-			}
-
-			if (result.length() > 0)
-			{
-				result.append(", ");
-			}
-			result.append(itemNormStr);
-		}
-
-		return result.toString();
-
 	}
 
 	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, boolean removePrefix)
@@ -584,7 +531,7 @@ public final class Msg
 		}
 		for (int i = 0; i < amount.length(); i++)
 		{
-			if (pos == i)    // we are done
+			if (pos == i)	// we are done
 			{
 				final String cents = amount.substring(i + 1);
 				sb.append(' ').append(cents).append("/100");
@@ -605,7 +552,7 @@ public final class Msg
 			}
 		}
 		return sb.toString();
-	}    // getAmtInWords
+	}	// getAmtInWords
 
 	/**************************************************************************
 	 * Get Translation for Element
@@ -735,7 +682,7 @@ public final class Msg
 	/**
 	 * Get Translation for Element using Sales terminology
 	 *
-	 * @param ctx        context
+	 * @param ctx context
 	 * @param ColumnName column name
 	 * @return Name of the Column or "" if not found
 	 */
@@ -747,9 +694,9 @@ public final class Msg
 	/**
 	 * Get Translation for Element
 	 *
-	 * @param ctx        context
+	 * @param ctx context
 	 * @param ColumnName column name
-	 * @param isSOTrx    sales transaction
+	 * @param isSOTrx sales transaction
 	 * @return Name of the Column or "" if not found
 	 */
 	public static String getElement(final Properties ctx, final String ColumnName, final boolean isSOTrx)
@@ -812,7 +759,7 @@ public final class Msg
 			s_log.warn("NOT found: {}", text);
 		}
 		return text;
-	}    // translate
+	}	// translate
 
 	/***
 	 * "Translate" text (SO Context).
@@ -831,17 +778,17 @@ public final class Msg
 	public static String translate(final String adLanguage, final String text)
 	{
 		return translate(adLanguage, true, text);
-	}    // translate
+	}	// translate
 
 	/**
 	 * "Translate" text.
 	 *
 	 * <pre>
-	 * 		- Check AD_Message.AD_Message 	->	MsgText
-	 * 		- Check AD_Element.ColumnName	->	Name
+	 *		- Check AD_Message.AD_Message 	->	MsgText
+	 *		- Check AD_Element.ColumnName	->	Name
 	 * </pre>
 	 *
-	 * @param ctx  Context
+	 * @param ctx Context
 	 * @param text Text - MsgText or Element Name
 	 * @return translated text or original text if not found
 	 */
@@ -869,12 +816,12 @@ public final class Msg
 	 * "Translate" text.
 	 *
 	 * <pre>
-	 * 		- Check AD_Message.AD_Message 	->	MsgText
-	 * 		- Check AD_Element.ColumnName	->	Name
+	 *		- Check AD_Message.AD_Message 	->	MsgText
+	 *		- Check AD_Element.ColumnName	->	Name
 	 * </pre>
 	 *
 	 * @param language Language
-	 * @param text     Text
+	 * @param text Text
 	 * @return translated text or original text if not found
 	 */
 	public static String translate(final Language language, final String text)
@@ -886,7 +833,7 @@ public final class Msg
 	/**
 	 * Translate elements enclosed in "@" (at sign)
 	 *
-	 * @param ctx  Context
+	 * @param ctx Context
 	 * @param text Text
 	 * @return translated text or original text if not found
 	 */
@@ -915,11 +862,11 @@ public final class Msg
 		int i = inStr.indexOf('@');
 		while (i != -1)
 		{
-			outStr.append(inStr.substring(0, i));            // up to @
-			inStr = inStr.substring(i + 1, inStr.length());    // from first @
+			outStr.append(inStr.substring(0, i));			// up to @
+			inStr = inStr.substring(i + 1, inStr.length());	// from first @
 
-			final int j = inStr.indexOf('@');                        // next @
-			if (j < 0)                                        // no second tag
+			final int j = inStr.indexOf('@');						// next @
+			if (j < 0)										// no second tag
 			{
 				inStr = "@" + inStr;
 				break;
@@ -934,74 +881,31 @@ public final class Msg
 			else
 			{
 				// metas: end
-				outStr.append(translate(adLanguage, token));            // replace context
+				outStr.append(translate(adLanguage, token));			// replace context
 			}
 
-			inStr = inStr.substring(j + 1, inStr.length());    // from second @
+			inStr = inStr.substring(j + 1, inStr.length());	// from second @
 			i = inStr.indexOf('@');
 		}
 
-		outStr.append(inStr);                            // add remainder
+		outStr.append(inStr);           					// add remainder
 		return outStr.toString();
 	}   // parseTranslation
 
-	@VisibleForTesting
-	static String normalizeToJavaMessageFormat(@NonNull final String text)
-	{
-		if (text.isEmpty())
-		{
-			return text;
-		}
-
-		int firstIdx = text.indexOf("{}");
-		if (firstIdx < 0)
-		{
-			return text;
-		}
-
-		String inStr = text;
-		int idx = firstIdx;
-		final StringBuilder outStr = new StringBuilder();
-		int nextPlaceholderIndex = 0;
-		while (idx != -1)
-		{
-			outStr.append(inStr, 0, idx);            // up to {}
-			inStr = inStr.substring(idx + 2);    // continue after current {}
-
-			final int placeholderIndex = nextPlaceholderIndex;
-			nextPlaceholderIndex++;
-			outStr.append("{").append(placeholderIndex).append("}");
-
-			idx = inStr.indexOf("{}");
-		}
-
-		outStr.append(inStr);                            // add remainder
-		return outStr.toString();
-	}
-
-	/**
-	 *
-	 * Internal translated message representation (immutable)
-	 */
+	/** Internal translated message representation (immutable) */
 	private static final class Message
 	{
-		/**
-		 * Empty message
-		 */
+		/** Empty message */
 		public static final Message EMPTY = ofMissingADMessage("");
 
-		/**
-		 * @return instance for given message text and tip
-		 */
+		/** @return instance for given message text and tip */
 		public static Message ofTextAndTip(final String adMessage, final String msgText, final String msgTip)
 		{
 			final boolean missing = false;
 			return new Message(adMessage, msgText, msgTip, missing);
 		}
 
-		/**
-		 * @return instance of given missing adMessage
-		 */
+		/** @return instance of given missing adMessage */
 		public static Message ofMissingADMessage(final String adMessage)
 		{
 			final String msgText = adMessage;
@@ -1018,13 +922,14 @@ public final class Msg
 
 		private Message(@NonNull final String adMessage, final String msgText, final String msgTip, final boolean missing)
 		{
+			super();
 			this.adMessage = adMessage;
-			this.msgText = normalizeToJavaMessageFormat(msgText == null ? "" : msgText);
-			this.msgTip = normalizeToJavaMessageFormat(msgTip == null ? "" : msgTip);
+			this.msgText = msgText == null ? "" : msgText;
+			this.msgTip = msgTip == null ? "" : msgTip;
 
 			final StringBuilder msgTextAndTip = new StringBuilder();
 			msgTextAndTip.append(this.msgText);
-			if (!Check.isBlank(this.msgTip))            // messageTip on next line, if exists
+			if (!Check.isEmpty(this.msgTip, true))			// messageTip on next line, if exists
 			{
 				msgTextAndTip.append(" ").append(SEPARATOR).append(this.msgTip);
 			}
@@ -1071,7 +976,7 @@ public final class Msg
 	}
 
 	@lombok.Value
-	private static class Element
+	private static final class Element
 	{
 		public static String DEFAULT_LANG = "";
 
@@ -1108,7 +1013,7 @@ public final class Msg
 		{
 			final String defaultValue = normalizeString(map.get(DEFAULT_LANG), fallback.getDefaultValue());
 
-			final Set<String> adLanguages = ImmutableSet.<String>builder()
+			final Set<String> adLanguages = ImmutableSet.<String> builder()
 					.addAll(map.keySet())
 					.addAll(fallback.getAD_Languages())
 					.build();
@@ -1150,4 +1055,4 @@ public final class Msg
 			}
 		}
 	}
-}    // Msg
+}	// Msg

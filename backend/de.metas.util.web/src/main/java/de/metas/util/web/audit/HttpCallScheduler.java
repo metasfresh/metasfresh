@@ -22,7 +22,6 @@
 
 package de.metas.util.web.audit;
 
-import de.metas.util.web.audit.dto.ApiResponse;
 import lombok.EqualsAndHashCode;
 
 import java.util.concurrent.CompletableFuture;

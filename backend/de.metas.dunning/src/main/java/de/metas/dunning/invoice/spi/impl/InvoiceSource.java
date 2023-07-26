@@ -22,6 +22,15 @@ package de.metas.dunning.invoice.spi.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Iterator;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_InvoicePaySchedule;
+import org.compiere.util.TimeUtil;
+
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningContext;
@@ -33,14 +42,6 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_InvoicePaySchedule;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Iterator;
 
 public class InvoiceSource extends AbstractDunnableSource
 {
@@ -70,7 +71,6 @@ public class InvoiceSource extends AbstractDunnableSource
 		final Date dunningGrace = candidate.getDunningGrace();
 		final int paymentTermId = candidate.getC_PaymentTerm_ID();
 		final boolean isInDispute = candidate.isInDispute();
-		final int sectionCodeId = candidate.getM_SectionCode_ID();
 
 		final String documentNo; // FRESH-504
 
@@ -118,7 +118,10 @@ public class InvoiceSource extends AbstractDunnableSource
 		{
 			final IInvoiceSourceDAO invoiceSourceDAO = Services.get(IInvoiceSourceDAO.class);
 
-			daysDue = invoiceSourceDAO.computeDueDays(dueDate,	context.getDunningDate());
+			daysDue = invoiceSourceDAO.retrieveDueDays(
+					PaymentTermId.ofRepoId(paymentTermId),
+					dateInvoiced,
+					context.getDunningDate());
 		}
 
 		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName,
@@ -135,7 +138,6 @@ public class InvoiceSource extends AbstractDunnableSource
 				dueDate,
 				dunningGrace,
 				daysDue,
-				sectionCodeId,
 				isInDispute);
 
 		return dunnableDoc;

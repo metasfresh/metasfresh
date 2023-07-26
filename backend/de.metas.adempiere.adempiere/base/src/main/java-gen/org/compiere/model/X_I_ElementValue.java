@@ -1,38 +1,46 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for I_ElementValue
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_I_ElementValue extends org.compiere.model.PO implements I_I_ElementValue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1988684738L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 837100963L;
 
     /** Standard Constructor */
-    public X_I_ElementValue (final Properties ctx, final int I_ElementValue_ID, @Nullable final String trxName)
+    public X_I_ElementValue (Properties ctx, int I_ElementValue_ID, String trxName)
     {
       super (ctx, I_ElementValue_ID, trxName);
+      /** if (I_ElementValue_ID == 0)
+        {
+			setI_ElementValue_ID (0);
+			setI_IsImported (false);
+        } */
     }
 
     /** Load Constructor */
-    public X_I_ElementValue (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_I_ElementValue (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
 
 	/** 
 	 * AccountSign AD_Reference_ID=118
@@ -45,16 +53,24 @@ public class X_I_ElementValue extends org.compiere.model.PO implements I_I_Eleme
 	public static final String ACCOUNTSIGN_Debit = "D";
 	/** Credit = C */
 	public static final String ACCOUNTSIGN_Credit = "C";
+	/** Set Kontovorzeichen.
+		@param AccountSign 
+		Indicates the Natural Sign of the Account as a Debit or Credit
+	  */
 	@Override
-	public void setAccountSign (final @Nullable java.lang.String AccountSign)
+	public void setAccountSign (java.lang.String AccountSign)
 	{
+
 		set_Value (COLUMNNAME_AccountSign, AccountSign);
 	}
 
+	/** Get Kontovorzeichen.
+		@return Indicates the Natural Sign of the Account as a Debit or Credit
+	  */
 	@Override
-	public java.lang.String getAccountSign() 
+	public java.lang.String getAccountSign () 
 	{
-		return get_ValueAsString(COLUMNNAME_AccountSign);
+		return (java.lang.String)get_Value(COLUMNNAME_AccountSign);
 	}
 
 	/** 
@@ -74,411 +90,557 @@ public class X_I_ElementValue extends org.compiere.model.PO implements I_I_Eleme
 	public static final String ACCOUNTTYPE_OwnerSEquity = "O";
 	/** Memo = M */
 	public static final String ACCOUNTTYPE_Memo = "M";
+	/** Set Kontenart.
+		@param AccountType 
+		Indicates the type of account
+	  */
 	@Override
-	public void setAccountType (final @Nullable java.lang.String AccountType)
+	public void setAccountType (java.lang.String AccountType)
 	{
+
 		set_Value (COLUMNNAME_AccountType, AccountType);
 	}
 
+	/** Get Kontenart.
+		@return Indicates the type of account
+	  */
 	@Override
-	public java.lang.String getAccountType() 
+	public java.lang.String getAccountType () 
 	{
-		return get_ValueAsString(COLUMNNAME_AccountType);
+		return (java.lang.String)get_Value(COLUMNNAME_AccountType);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_Column()
+	public org.compiere.model.I_AD_Column getAD_Column() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
 	}
 
 	@Override
-	public void setAD_Column(final org.compiere.model.I_AD_Column AD_Column)
+	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
 	}
 
+	/** Set Spalte.
+		@param AD_Column_ID 
+		Column in the table
+	  */
 	@Override
-	public void setAD_Column_ID (final int AD_Column_ID)
+	public void setAD_Column_ID (int AD_Column_ID)
 	{
 		if (AD_Column_ID < 1) 
 			set_Value (COLUMNNAME_AD_Column_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Column_ID, AD_Column_ID);
+			set_Value (COLUMNNAME_AD_Column_ID, Integer.valueOf(AD_Column_ID));
 	}
 
+	/** Get Spalte.
+		@return Column in the table
+	  */
 	@Override
-	public int getAD_Column_ID() 
+	public int getAD_Column_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setAD_Issue_ID (final int AD_Issue_ID)
+	public org.compiere.model.I_C_Element getC_Element() throws RuntimeException
 	{
-		if (AD_Issue_ID < 1) 
-			set_Value (COLUMNNAME_AD_Issue_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Issue_ID, AD_Issue_ID);
+		return get_ValueAsPO(COLUMNNAME_C_Element_ID, org.compiere.model.I_C_Element.class);
 	}
 
 	@Override
-	public int getAD_Issue_ID() 
+	public void setC_Element(org.compiere.model.I_C_Element C_Element)
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
+		set_ValueFromPO(COLUMNNAME_C_Element_ID, org.compiere.model.I_C_Element.class, C_Element);
 	}
 
+	/** Set Element.
+		@param C_Element_ID 
+		Accounting Element
+	  */
 	@Override
-	public org.compiere.model.I_C_DataImport getC_DataImport()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class);
-	}
-
-	@Override
-	public void setC_DataImport(final org.compiere.model.I_C_DataImport C_DataImport)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DataImport_ID, org.compiere.model.I_C_DataImport.class, C_DataImport);
-	}
-
-	@Override
-	public void setC_DataImport_ID (final int C_DataImport_ID)
-	{
-		if (C_DataImport_ID < 1) 
-			set_Value (COLUMNNAME_C_DataImport_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_DataImport_ID, C_DataImport_ID);
-	}
-
-	@Override
-	public int getC_DataImport_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_DataImport_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_DataImport_Run getC_DataImport_Run()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DataImport_Run_ID, org.compiere.model.I_C_DataImport_Run.class);
-	}
-
-	@Override
-	public void setC_DataImport_Run(final org.compiere.model.I_C_DataImport_Run C_DataImport_Run)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DataImport_Run_ID, org.compiere.model.I_C_DataImport_Run.class, C_DataImport_Run);
-	}
-
-	@Override
-	public void setC_DataImport_Run_ID (final int C_DataImport_Run_ID)
-	{
-		if (C_DataImport_Run_ID < 1) 
-			set_Value (COLUMNNAME_C_DataImport_Run_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_DataImport_Run_ID, C_DataImport_Run_ID);
-	}
-
-	@Override
-	public int getC_DataImport_Run_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_DataImport_Run_ID);
-	}
-
-	@Override
-	public void setC_Element_ID (final int C_Element_ID)
+	public void setC_Element_ID (int C_Element_ID)
 	{
 		if (C_Element_ID < 1) 
 			set_Value (COLUMNNAME_C_Element_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Element_ID, C_Element_ID);
+			set_Value (COLUMNNAME_C_Element_ID, Integer.valueOf(C_Element_ID));
 	}
 
+	/** Get Element.
+		@return Accounting Element
+	  */
 	@Override
-	public int getC_Element_ID() 
+	public int getC_Element_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Element_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Element_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getC_ElementValue()
+	public org.compiere.model.I_C_ElementValue getC_ElementValue() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_ElementValue_ID, org.compiere.model.I_C_ElementValue.class);
 	}
 
 	@Override
-	public void setC_ElementValue(final org.compiere.model.I_C_ElementValue C_ElementValue)
+	public void setC_ElementValue(org.compiere.model.I_C_ElementValue C_ElementValue)
 	{
 		set_ValueFromPO(COLUMNNAME_C_ElementValue_ID, org.compiere.model.I_C_ElementValue.class, C_ElementValue);
 	}
 
+	/** Set Kontenart.
+		@param C_ElementValue_ID 
+		Account Element
+	  */
 	@Override
-	public void setC_ElementValue_ID (final int C_ElementValue_ID)
+	public void setC_ElementValue_ID (int C_ElementValue_ID)
 	{
 		if (C_ElementValue_ID < 1) 
 			set_Value (COLUMNNAME_C_ElementValue_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_ElementValue_ID, C_ElementValue_ID);
+			set_Value (COLUMNNAME_C_ElementValue_ID, Integer.valueOf(C_ElementValue_ID));
 	}
 
+	/** Get Kontenart.
+		@return Account Element
+	  */
 	@Override
-	public int getC_ElementValue_ID() 
+	public int getC_ElementValue_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_ElementValue_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_ElementValue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Standard-Konto.
+		@param Default_Account 
+		Name of the Default Account Column
+	  */
 	@Override
-	public void setDefault_Account (final @Nullable java.lang.String Default_Account)
+	public void setDefault_Account (java.lang.String Default_Account)
 	{
 		set_Value (COLUMNNAME_Default_Account, Default_Account);
 	}
 
+	/** Get Standard-Konto.
+		@return Name of the Default Account Column
+	  */
 	@Override
-	public java.lang.String getDefault_Account() 
+	public java.lang.String getDefault_Account () 
 	{
-		return get_ValueAsString(COLUMNNAME_Default_Account);
+		return (java.lang.String)get_Value(COLUMNNAME_Default_Account);
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Element Name.
+		@param ElementName 
+		Name of the Element
+	  */
 	@Override
-	public void setElementName (final @Nullable java.lang.String ElementName)
+	public void setElementName (java.lang.String ElementName)
 	{
 		set_Value (COLUMNNAME_ElementName, ElementName);
 	}
 
+	/** Get Element Name.
+		@return Name of the Element
+	  */
 	@Override
-	public java.lang.String getElementName() 
+	public java.lang.String getElementName () 
 	{
-		return get_ValueAsString(COLUMNNAME_ElementName);
+		return (java.lang.String)get_Value(COLUMNNAME_ElementName);
 	}
 
+	/** Set Import - Kontendefinition.
+		@param I_ElementValue_ID 
+		Import Account Value
+	  */
 	@Override
-	public void setI_ElementValue_ID (final int I_ElementValue_ID)
+	public void setI_ElementValue_ID (int I_ElementValue_ID)
 	{
 		if (I_ElementValue_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_I_ElementValue_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_I_ElementValue_ID, I_ElementValue_ID);
+			set_ValueNoCheck (COLUMNNAME_I_ElementValue_ID, Integer.valueOf(I_ElementValue_ID));
 	}
 
+	/** Get Import - Kontendefinition.
+		@return Import Account Value
+	  */
 	@Override
-	public int getI_ElementValue_ID() 
+	public int getI_ElementValue_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_I_ElementValue_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_I_ElementValue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Import-Fehlermeldung.
+		@param I_ErrorMsg 
+		Messages generated from import process
+	  */
 	@Override
-	public void setI_ErrorMsg (final @Nullable java.lang.String I_ErrorMsg)
+	public void setI_ErrorMsg (java.lang.String I_ErrorMsg)
 	{
 		set_Value (COLUMNNAME_I_ErrorMsg, I_ErrorMsg);
 	}
 
+	/** Get Import-Fehlermeldung.
+		@return Messages generated from import process
+	  */
 	@Override
-	public java.lang.String getI_ErrorMsg() 
+	public java.lang.String getI_ErrorMsg () 
 	{
-		return get_ValueAsString(COLUMNNAME_I_ErrorMsg);
+		return (java.lang.String)get_Value(COLUMNNAME_I_ErrorMsg);
 	}
 
+	/** Set Importiert.
+		@param I_IsImported 
+		Has this import been processed
+	  */
 	@Override
-	public void setI_IsImported (final boolean I_IsImported)
+	public void setI_IsImported (boolean I_IsImported)
 	{
-		set_Value (COLUMNNAME_I_IsImported, I_IsImported);
+		set_Value (COLUMNNAME_I_IsImported, Boolean.valueOf(I_IsImported));
 	}
 
+	/** Get Importiert.
+		@return Has this import been processed
+	  */
 	@Override
-	public boolean isI_IsImported() 
+	public boolean isI_IsImported () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_I_IsImported);
+		Object oo = get_Value(COLUMNNAME_I_IsImported);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Belegartgesteuert.
+		@param IsDocControlled 
+		Control account - If an account is controlled by a document, you cannot post manually to it
+	  */
 	@Override
-	public void setI_LineContent (final @Nullable java.lang.String I_LineContent)
+	public void setIsDocControlled (boolean IsDocControlled)
 	{
-		set_Value (COLUMNNAME_I_LineContent, I_LineContent);
+		set_Value (COLUMNNAME_IsDocControlled, Boolean.valueOf(IsDocControlled));
 	}
 
+	/** Get Belegartgesteuert.
+		@return Control account - If an account is controlled by a document, you cannot post manually to it
+	  */
 	@Override
-	public java.lang.String getI_LineContent() 
+	public boolean isDocControlled () 
 	{
-		return get_ValueAsString(COLUMNNAME_I_LineContent);
+		Object oo = get_Value(COLUMNNAME_IsDocControlled);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Zusammenfassungseintrag.
+		@param IsSummary 
+		This is a summary entity
+	  */
 	@Override
-	public void setI_LineNo (final int I_LineNo)
+	public void setIsSummary (boolean IsSummary)
 	{
-		set_Value (COLUMNNAME_I_LineNo, I_LineNo);
+		set_Value (COLUMNNAME_IsSummary, Boolean.valueOf(IsSummary));
 	}
 
+	/** Get Zusammenfassungseintrag.
+		@return This is a summary entity
+	  */
 	@Override
-	public int getI_LineNo() 
+	public boolean isSummary () 
 	{
-		return get_ValueAsInt(COLUMNNAME_I_LineNo);
+		Object oo = get_Value(COLUMNNAME_IsSummary);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
 	@Override
-	public void setIsDocControlled (final boolean IsDocControlled)
-	{
-		set_Value (COLUMNNAME_IsDocControlled, IsDocControlled);
-	}
-
-	@Override
-	public boolean isDocControlled() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDocControlled);
-	}
-
-	@Override
-	public void setIsSummary (final boolean IsSummary)
-	{
-		set_Value (COLUMNNAME_IsSummary, IsSummary);
-	}
-
-	@Override
-	public boolean isSummary() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSummary);
-	}
-
-	@Override
-	public void setName (final @Nullable java.lang.String Name)
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
 	@Override
-	public java.lang.String getName() 
+	public java.lang.String getName () 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getParentElementValue()
+	public org.compiere.model.I_C_ElementValue getParentElementValue() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_ParentElementValue_ID, org.compiere.model.I_C_ElementValue.class);
 	}
 
 	@Override
-	public void setParentElementValue(final org.compiere.model.I_C_ElementValue ParentElementValue)
+	public void setParentElementValue(org.compiere.model.I_C_ElementValue ParentElementValue)
 	{
 		set_ValueFromPO(COLUMNNAME_ParentElementValue_ID, org.compiere.model.I_C_ElementValue.class, ParentElementValue);
 	}
 
+	/** Set Übergeordnetes Konto.
+		@param ParentElementValue_ID 
+		The parent (summary) account
+	  */
 	@Override
-	public void setParentElementValue_ID (final int ParentElementValue_ID)
+	public void setParentElementValue_ID (int ParentElementValue_ID)
 	{
 		if (ParentElementValue_ID < 1) 
 			set_Value (COLUMNNAME_ParentElementValue_ID, null);
 		else 
-			set_Value (COLUMNNAME_ParentElementValue_ID, ParentElementValue_ID);
+			set_Value (COLUMNNAME_ParentElementValue_ID, Integer.valueOf(ParentElementValue_ID));
 	}
 
+	/** Get Übergeordnetes Konto.
+		@return The parent (summary) account
+	  */
 	@Override
-	public int getParentElementValue_ID() 
+	public int getParentElementValue_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_ParentElementValue_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_ParentElementValue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Schlüssel Übergeordnetes Konto .
+		@param ParentValue 
+		Key if the Parent
+	  */
 	@Override
-	public void setParentValue (final @Nullable java.lang.String ParentValue)
+	public void setParentValue (java.lang.String ParentValue)
 	{
 		set_Value (COLUMNNAME_ParentValue, ParentValue);
 	}
 
+	/** Get Schlüssel Übergeordnetes Konto .
+		@return Key if the Parent
+	  */
 	@Override
-	public java.lang.String getParentValue() 
+	public java.lang.String getParentValue () 
 	{
-		return get_ValueAsString(COLUMNNAME_ParentValue);
+		return (java.lang.String)get_Value(COLUMNNAME_ParentValue);
 	}
 
+	/** Set Buchen "Ist".
+		@param PostActual 
+		Actual Values can be posted
+	  */
 	@Override
-	public void setPostActual (final boolean PostActual)
+	public void setPostActual (boolean PostActual)
 	{
-		set_Value (COLUMNNAME_PostActual, PostActual);
+		set_Value (COLUMNNAME_PostActual, Boolean.valueOf(PostActual));
 	}
 
+	/** Get Buchen "Ist".
+		@return Actual Values can be posted
+	  */
 	@Override
-	public boolean isPostActual() 
+	public boolean isPostActual () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_PostActual);
+		Object oo = get_Value(COLUMNNAME_PostActual);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Buchen "Budget".
+		@param PostBudget 
+		Budget values can be posted
+	  */
 	@Override
-	public void setPostBudget (final boolean PostBudget)
+	public void setPostBudget (boolean PostBudget)
 	{
-		set_Value (COLUMNNAME_PostBudget, PostBudget);
+		set_Value (COLUMNNAME_PostBudget, Boolean.valueOf(PostBudget));
 	}
 
+	/** Get Buchen "Budget".
+		@return Budget values can be posted
+	  */
 	@Override
-	public boolean isPostBudget() 
+	public boolean isPostBudget () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_PostBudget);
+		Object oo = get_Value(COLUMNNAME_PostBudget);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Buchen "Reservierung".
+		@param PostEncumbrance 
+		Post commitments to this account
+	  */
 	@Override
-	public void setPostEncumbrance (final boolean PostEncumbrance)
+	public void setPostEncumbrance (boolean PostEncumbrance)
 	{
-		set_Value (COLUMNNAME_PostEncumbrance, PostEncumbrance);
+		set_Value (COLUMNNAME_PostEncumbrance, Boolean.valueOf(PostEncumbrance));
 	}
 
+	/** Get Buchen "Reservierung".
+		@return Post commitments to this account
+	  */
 	@Override
-	public boolean isPostEncumbrance() 
+	public boolean isPostEncumbrance () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_PostEncumbrance);
+		Object oo = get_Value(COLUMNNAME_PostEncumbrance);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Buchen "statistisch".
+		@param PostStatistical 
+		Post statistical quantities to this account?
+	  */
 	@Override
-	public void setPostStatistical (final boolean PostStatistical)
+	public void setPostStatistical (boolean PostStatistical)
 	{
-		set_Value (COLUMNNAME_PostStatistical, PostStatistical);
+		set_Value (COLUMNNAME_PostStatistical, Boolean.valueOf(PostStatistical));
 	}
 
+	/** Get Buchen "statistisch".
+		@return Post statistical quantities to this account?
+	  */
 	@Override
-	public boolean isPostStatistical() 
+	public boolean isPostStatistical () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_PostStatistical);
+		Object oo = get_Value(COLUMNNAME_PostStatistical);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public void setProcessed (final boolean Processed)
+	public void setProcessed (boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Processed);
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Processed);
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Verarbeiten.
+		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (final boolean Processing)
+	public void setProcessing (boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Processing);
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
+	/** Get Verarbeiten.
+		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing() 
+	public boolean isProcessing () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Processing);
+		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Suchschlüssel.
+		@param Value 
+		Search key for the record in the format required - must be unique
+	  */
 	@Override
-	public void setValue (final @Nullable java.lang.String Value)
+	public void setValue (java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
+	/** Get Suchschlüssel.
+		@return Search key for the record in the format required - must be unique
+	  */
 	@Override
-	public java.lang.String getValue() 
+	public java.lang.String getValue () 
 	{
-		return get_ValueAsString(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 }

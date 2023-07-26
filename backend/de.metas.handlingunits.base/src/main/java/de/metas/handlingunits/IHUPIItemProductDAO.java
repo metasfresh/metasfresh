@@ -35,6 +35,7 @@ import org.compiere.model.I_M_Product;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -52,7 +53,7 @@ import java.util.Properties;
  */
 public interface IHUPIItemProductDAO extends ISingletonService
 {
-	@NonNull I_M_HU_PI_Item_Product getById(@NonNull HUPIItemProductId id);
+	I_M_HU_PI_Item_Product getById(HUPIItemProductId id);
 
 	IHUPIItemProductQuery createHUPIItemProductQuery();
 

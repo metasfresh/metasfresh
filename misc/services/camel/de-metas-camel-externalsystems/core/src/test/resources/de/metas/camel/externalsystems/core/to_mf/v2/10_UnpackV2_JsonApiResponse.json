@@ -1,8 +1,0 @@
-{
-  "requestId": 123,
-  "endpointResponse": {
-    "response": {
-      "test": "mock response"
-    }
-  }
-}

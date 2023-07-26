@@ -11,7 +11,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Order;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -36,7 +35,6 @@ import java.util.Set;
  * #L%
  */
 
-@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public enum DocStatus implements ReferenceListAwareEnum
 {
 	Drafted(IDocument.STATUS_Drafted), //
@@ -63,12 +61,6 @@ public enum DocStatus implements ReferenceListAwareEnum
 	DocStatus(final String code)
 	{
 		this.code = code;
-	}
-
-	@NonNull
-	public static Optional<DocStatus> ofCodeOptional(@Nullable final String code)
-	{
-		return Optional.ofNullable(ofNullableCode(code));
 	}
 
 	@Nullable
@@ -201,8 +193,6 @@ public enum DocStatus implements ReferenceListAwareEnum
 				|| this == Approved
 				|| this == NotApproved;
 	}
-
-	public boolean isVoided() {return this == Voided;}
 
 	public boolean isAccountable()
 	{

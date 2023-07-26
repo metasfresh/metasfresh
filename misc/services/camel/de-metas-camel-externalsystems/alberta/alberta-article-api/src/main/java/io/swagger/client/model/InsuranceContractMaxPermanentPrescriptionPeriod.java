@@ -1,4 +1,26 @@
 /*
+ * #%L
+ * alberta-article-api
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/*
  * Artikel - Warenwirtschaft (Basis)
  * Synchronisation der Artikel mit Kumavision
  *
@@ -21,7 +43,7 @@ import java.util.Objects;
  * maximales Intervall für die Dauerverordung
  */
 @Schema(description = "maximales Intervall für die Dauerverordung")
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2022-02-18T14:17:41.660Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-03-11T10:09:42.333Z[GMT]")
 public class InsuranceContractMaxPermanentPrescriptionPeriod {
   @SerializedName("amount")
   private BigDecimal amount = null;
@@ -67,7 +89,7 @@ public class InsuranceContractMaxPermanentPrescriptionPeriod {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -100,7 +122,7 @@ public class InsuranceContractMaxPermanentPrescriptionPeriod {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

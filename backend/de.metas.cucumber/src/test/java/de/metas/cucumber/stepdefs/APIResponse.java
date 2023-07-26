@@ -29,7 +29,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class APIResponse
 {
 	@Nullable

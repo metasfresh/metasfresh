@@ -24,11 +24,12 @@ package de.metas.common.ordercandidates.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -36,27 +37,22 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @Value
 public class JsonOrderLineGroup
 {
-	@Schema(description = "All JsonOLCandCreateRequests with the same ExternalHeaderId and the same groupId shall belong to the same bundle (compensation-group)")
+	@ApiModelProperty(value = "All JsonOLCandCreateRequests with the same ExternalHeaderId and the same groupId shall belong to the same bundle (compensation-group)")
 	@JsonInclude(NON_NULL)
 	String groupKey;
-	@Schema(description = "If true, marks the associated as the \"main\" product. Should only be set to true for non-stocked products.")
+	@ApiModelProperty(value = "If true, marks the associated as the \"main\" product. Should only be set to true for non-stocked products.")
 	@JsonInclude(NON_NULL)
 	boolean isGroupMainItem;
 
-	@Schema(description = "Translates to C_OLCand.GroupCompensationDiscountPercentage")
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.GroupCompensationDiscountPercentage")
 	@JsonInclude(NON_NULL)
 	BigDecimal discount;
 
-	@Schema(description = "It is taken into consideration when C_OLCand.Line is renumbered. Translates to C_OLCand.CompensationGroupOrderBy")
-	@JsonInclude(NON_NULL)
-	JsonGroupCompensationOrderBy ordering;
-
 	@Builder
-	public JsonOrderLineGroup(
-			@JsonProperty("groupKey") final @Nullable String groupKey,
+	public JsonOrderLineGroup(@JsonProperty("groupKey") final @Nullable String groupKey,
 			@JsonProperty("groupMainItem") final boolean isGroupMainItem,
-			@JsonProperty("discount") final @Nullable BigDecimal discount,
-			@JsonProperty("ordering") final @Nullable JsonGroupCompensationOrderBy ordering)
+			@JsonProperty("discount") final @Nullable BigDecimal discount)
 	{
 
 		if (!isGroupMainItem && discount != null)
@@ -67,6 +63,5 @@ public class JsonOrderLineGroup
 		this.groupKey = groupKey;
 		this.isGroupMainItem = isGroupMainItem;
 		this.discount = discount;
-		this.ordering = ordering;
 	}
 }

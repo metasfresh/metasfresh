@@ -1,8 +1,7 @@
 package de.metas.invoicecandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_ILCandHandler
  *  @author metasfresh (generated) 
@@ -52,7 +51,8 @@ public interface I_C_ILCandHandler
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Responsible.
+	 * Set Betreuer.
+	 * Person, die bei einem fachlichen Problem vom System informiert wird.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -61,7 +61,8 @@ public interface I_C_ILCandHandler
 	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
 	/**
-	 * Get Responsible.
+	 * Get Betreuer.
+	 * Person, die bei einem fachlichen Problem vom System informiert wird.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -72,7 +73,7 @@ public interface I_C_ILCandHandler
 	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
-	 * Set Invoicecandidate Controller.
+	 * Set Rechnungskandidaten-Controller.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -81,7 +82,7 @@ public interface I_C_ILCandHandler
 	void setC_ILCandHandler_ID (int C_ILCandHandler_ID);
 
 	/**
-	 * Get Invoicecandidate Controller.
+	 * Get Rechnungskandidaten-Controller.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -93,7 +94,7 @@ public interface I_C_ILCandHandler
 	String COLUMNNAME_C_ILCandHandler_ID = "C_ILCandHandler_ID";
 
 	/**
-	 * Set Java Class.
+	 * Set Java-Klasse.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -102,7 +103,7 @@ public interface I_C_ILCandHandler
 	void setClassname (java.lang.String Classname);
 
 	/**
-	 * Get Java Class.
+	 * Get Java-Klasse.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -160,8 +161,9 @@ public interface I_C_ILCandHandler
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entity Type.
-	 * Entity Type
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -170,8 +172,9 @@ public interface I_C_ILCandHandler
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entity Type.
-	 * Entity Type
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -181,6 +184,29 @@ public interface I_C_ILCandHandler
 
 	ModelColumn<I_C_ILCandHandler, Object> COLUMN_EntityType = new ModelColumn<>(I_C_ILCandHandler.class, "EntityType", null);
 	String COLUMNNAME_EntityType = "EntityType";
+
+	/**
+	 * Set Betreuer ist Benutzer-Editierbar.
+	 * Sagt aus, ob der Berteuer durch den Benutzer eingestelltwerden soll oder nicht
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIs_AD_User_InCharge_UI_Setting (boolean Is_AD_User_InCharge_UI_Setting);
+
+	/**
+	 * Get Betreuer ist Benutzer-Editierbar.
+	 * Sagt aus, ob der Berteuer durch den Benutzer eingestelltwerden soll oder nicht
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean is_AD_User_InCharge_UI_Setting();
+
+	ModelColumn<I_C_ILCandHandler, Object> COLUMN_Is_AD_User_InCharge_UI_Setting = new ModelColumn<>(I_C_ILCandHandler.class, "Is_AD_User_InCharge_UI_Setting", null);
+	String COLUMNNAME_Is_AD_User_InCharge_UI_Setting = "Is_AD_User_InCharge_UI_Setting";
 
 	/**
 	 * Set Active.
@@ -206,27 +232,6 @@ public interface I_C_ILCandHandler
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set User in Charge editable.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIs_AD_User_InCharge_UI_Setting (boolean Is_AD_User_InCharge_UI_Setting);
-
-	/**
-	 * Get User in Charge editable.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean is_AD_User_InCharge_UI_Setting();
-
-	ModelColumn<I_C_ILCandHandler, Object> COLUMN_Is_AD_User_InCharge_UI_Setting = new ModelColumn<>(I_C_ILCandHandler.class, "Is_AD_User_InCharge_UI_Setting", null);
-	String COLUMNNAME_Is_AD_User_InCharge_UI_Setting = "Is_AD_User_InCharge_UI_Setting";
-
-	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -248,7 +253,7 @@ public interface I_C_ILCandHandler
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Tablename.
+	 * Set Name der DB-Tabelle.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -257,7 +262,7 @@ public interface I_C_ILCandHandler
 	void setTableName (java.lang.String TableName);
 
 	/**
-	 * Get Tablename.
+	 * Get Name der DB-Tabelle.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

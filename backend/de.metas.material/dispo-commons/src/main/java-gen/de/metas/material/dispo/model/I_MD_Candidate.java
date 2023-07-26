@@ -1,20 +1,21 @@
 package de.metas.material.dispo.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 /** Generated Interface for MD_Candidate
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_MD_Candidate 
+public interface I_MD_Candidate
 {
 
 	String Table_Name = "MD_Candidate";
 
-//	/** AD_Table_ID=540808 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=540808 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -241,29 +242,6 @@ public interface I_MD_Candidate
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lot for Lot.
-	 * Forces quantity to be equal to ordered quantity.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsLotForLot (@Nullable java.lang.String IsLotForLot);
-
-	/**
-	 * Get Lot for Lot.
-	 * Forces quantity to be equal to ordered quantity.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsLotForLot();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_IsLotForLot = new ModelColumn<>(I_MD_Candidate.class, "IsLotForLot", null);
-	String COLUMNNAME_IsLotForLot = "IsLotForLot";
-
-	/**
 	 * Set ATP reserved for customer.
 	 *
 	 * <br>Type: YesNo
@@ -310,6 +288,98 @@ public interface I_MD_Candidate
 
 	ModelColumn<I_MD_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_MD_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Forecast.
+	 * Material Forecast
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Forecast_ID (int M_Forecast_ID);
+
+	/**
+	 * Get Forecast.
+	 * Material Forecast
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Forecast_ID();
+
+	@Nullable org.compiere.model.I_M_Forecast getM_Forecast();
+
+	void setM_Forecast(@Nullable org.compiere.model.I_M_Forecast M_Forecast);
+
+	ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new ModelColumn<>(I_MD_Candidate.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
+	String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_MD_Candidate.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Business case.
@@ -421,7 +491,7 @@ public interface I_MD_Candidate
 	String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
 
 	/**
-	 * Set Type.
+	 * Set Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -430,7 +500,7 @@ public interface I_MD_Candidate
 	void setMD_Candidate_Type (java.lang.String MD_Candidate_Type);
 
 	/**
-	 * Get Type.
+	 * Get Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -440,98 +510,6 @@ public interface I_MD_Candidate
 
 	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Type", null);
 	String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
-
-	/**
-	 * Set Forecast.
-	 * Material Forecast
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Forecast_ID (int M_Forecast_ID);
-
-	/**
-	 * Get Forecast.
-	 * Material Forecast
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Forecast_ID();
-
-	@Nullable org.compiere.model.I_M_Forecast getM_Forecast();
-
-	void setM_Forecast(@Nullable org.compiere.model.I_M_Forecast M_Forecast);
-
-	ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new ModelColumn<>(I_MD_Candidate.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
-	String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
-
-	/**
-	 * Set Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Product_ID();
-
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Shipment Candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
-	 */
-	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Shipment Candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
-	 */
-	int getM_ShipmentSchedule_ID();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_MD_Candidate.class, "M_ShipmentSchedule_ID", null);
-	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Warehouse_ID();
-
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Quantity.
@@ -605,6 +583,31 @@ public interface I_MD_Candidate
 	String COLUMNNAME_Qty_Display = "Qty_Display";
 
 	/**
+	 * Set Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQty_Planned_Display (@Nullable BigDecimal Qty_Planned_Display);
+
+	/**
+	 * Get Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getQty_Planned_Display();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new ModelColumn<>(I_MD_Candidate.class, "Qty_Planned_Display", null);
+	String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
+
+	/**
 	 * Set Fulfilled quantity.
 	 * Summe der bereits eingetretenden Materialbewegungen
 	 *
@@ -653,31 +656,6 @@ public interface I_MD_Candidate
 	String COLUMNNAME_QtyFulfilled_Display = "QtyFulfilled_Display";
 
 	/**
-	 * Set Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setQty_Planned_Display (@Nullable BigDecimal Qty_Planned_Display);
-
-	/**
-	 * Get Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	BigDecimal getQty_Planned_Display();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new ModelColumn<>(I_MD_Candidate.class, "Qty_Planned_Display", null);
-	String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
-
-	/**
 	 * Set Höchstmenge.
 	 * Maximaler ATP. Wenn die Material-Dispo eine Aufstockung veranlasst, dann auf diese Menge.
 	 *
@@ -724,7 +702,7 @@ public interface I_MD_Candidate
 	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -735,7 +713,7 @@ public interface I_MD_Candidate
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

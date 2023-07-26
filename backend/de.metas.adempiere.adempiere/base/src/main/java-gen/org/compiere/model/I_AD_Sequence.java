@@ -1,126 +1,152 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Sequence
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_AD_Sequence 
 {
 
-	String Table_Name = "AD_Sequence";
+    /** TableName=AD_Sequence */
+    public static final String Table_Name = "AD_Sequence";
 
-//	/** AD_Table_ID=115 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=115 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 6 - System - Client
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Sequence, org.compiere.model.I_AD_Client>(I_AD_Sequence.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Sequence, org.compiere.model.I_AD_Org>(I_AD_Sequence.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Sequence.
+	 * Set Reihenfolge.
 	 * Document Sequence
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Sequence_ID (int AD_Sequence_ID);
+	public void setAD_Sequence_ID (int AD_Sequence_ID);
 
 	/**
-	 * Get Sequence.
+	 * Get Reihenfolge.
 	 * Document Sequence
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Sequence_ID();
+	public int getAD_Sequence_ID();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_AD_Sequence_ID = new ModelColumn<>(I_AD_Sequence.class, "AD_Sequence_ID", null);
-	String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
+    /** Column definition for AD_Sequence_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_AD_Sequence_ID = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "AD_Sequence_ID", null);
+    /** Column name AD_Sequence_ID */
+    public static final String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_Created = new ModelColumn<>(I_AD_Sequence.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Sequence, org.compiere.model.I_AD_User>(I_AD_Sequence.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Current Next.
+	 * Set Aktuell nächster Wert.
 	 * The next number to be used
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCurrentNext (int CurrentNext);
+	public void setCurrentNext (int CurrentNext);
 
 	/**
-	 * Get Current Next.
+	 * Get Aktuell nächster Wert.
 	 * The next number to be used
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCurrentNext();
+	public int getCurrentNext();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_CurrentNext = new ModelColumn<>(I_AD_Sequence.class, "CurrentNext", null);
-	String COLUMNNAME_CurrentNext = "CurrentNext";
+    /** Column definition for CurrentNext */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_CurrentNext = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "CurrentNext", null);
+    /** Column name CurrentNext */
+    public static final String COLUMNNAME_CurrentNext = "CurrentNext";
 
 	/**
 	 * Set Current Next (System).
@@ -130,7 +156,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCurrentNextSys (int CurrentNextSys);
+	public void setCurrentNextSys (int CurrentNextSys);
 
 	/**
 	 * Get Current Next (System).
@@ -140,31 +166,35 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCurrentNextSys();
+	public int getCurrentNextSys();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_CurrentNextSys = new ModelColumn<>(I_AD_Sequence.class, "CurrentNextSys", null);
-	String COLUMNNAME_CurrentNextSys = "CurrentNextSys";
+    /** Column definition for CurrentNextSys */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_CurrentNextSys = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "CurrentNextSys", null);
+    /** Column name CurrentNextSys */
+    public static final String COLUMNNAME_CurrentNextSys = "CurrentNextSys";
 
 	/**
-	 * Set Custom sequence number provider.
+	 * Set Abw. Sequenznummer-Implementierung.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCustomSequenceNoProvider_JavaClass_ID (int CustomSequenceNoProvider_JavaClass_ID);
+	public void setCustomSequenceNoProvider_JavaClass_ID (int CustomSequenceNoProvider_JavaClass_ID);
 
 	/**
-	 * Get Custom sequence number provider.
+	 * Get Abw. Sequenznummer-Implementierung.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getCustomSequenceNoProvider_JavaClass_ID();
+	public int getCustomSequenceNoProvider_JavaClass_ID();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_CustomSequenceNoProvider_JavaClass_ID = new ModelColumn<>(I_AD_Sequence.class, "CustomSequenceNoProvider_JavaClass_ID", null);
-	String COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID = "CustomSequenceNoProvider_JavaClass_ID";
+    /** Column definition for CustomSequenceNoProvider_JavaClass_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_CustomSequenceNoProvider_JavaClass_ID = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "CustomSequenceNoProvider_JavaClass_ID", null);
+    /** Column name CustomSequenceNoProvider_JavaClass_ID */
+    public static final String COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID = "CustomSequenceNoProvider_JavaClass_ID";
 
 	/**
 	 * Set Date Column.
@@ -174,7 +204,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDateColumn (@Nullable java.lang.String DateColumn);
+	public void setDateColumn (java.lang.String DateColumn);
 
 	/**
 	 * Get Date Column.
@@ -184,10 +214,12 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDateColumn();
+	public java.lang.String getDateColumn();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_DateColumn = new ModelColumn<>(I_AD_Sequence.class, "DateColumn", null);
-	String COLUMNNAME_DateColumn = "DateColumn";
+    /** Column definition for DateColumn */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_DateColumn = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "DateColumn", null);
+    /** Column name DateColumn */
+    public static final String COLUMNNAME_DateColumn = "DateColumn";
 
 	/**
 	 * Set Decimal Pattern.
@@ -197,7 +229,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDecimalPattern (@Nullable java.lang.String DecimalPattern);
+	public void setDecimalPattern (java.lang.String DecimalPattern);
 
 	/**
 	 * Get Decimal Pattern.
@@ -207,31 +239,35 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDecimalPattern();
+	public java.lang.String getDecimalPattern();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_DecimalPattern = new ModelColumn<>(I_AD_Sequence.class, "DecimalPattern", null);
-	String COLUMNNAME_DecimalPattern = "DecimalPattern";
+    /** Column definition for DecimalPattern */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_DecimalPattern = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "DecimalPattern", null);
+    /** Column name DecimalPattern */
+    public static final String COLUMNNAME_DecimalPattern = "DecimalPattern";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_Description = new ModelColumn<>(I_AD_Sequence.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Increment.
@@ -241,7 +277,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIncrementNo (int IncrementNo);
+	public void setIncrementNo (int IncrementNo);
 
 	/**
 	 * Get Increment.
@@ -251,33 +287,37 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getIncrementNo();
+	public int getIncrementNo();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_IncrementNo = new ModelColumn<>(I_AD_Sequence.class, "IncrementNo", null);
-	String COLUMNNAME_IncrementNo = "IncrementNo";
+    /** Column definition for IncrementNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_IncrementNo = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "IncrementNo", null);
+    /** Column name IncrementNo */
+    public static final String COLUMNNAME_IncrementNo = "IncrementNo";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Sequence.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Activate Audit.
@@ -287,7 +327,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsAudited (boolean IsAudited);
+	public void setIsAudited (boolean IsAudited);
 
 	/**
 	 * Get Activate Audit.
@@ -297,33 +337,37 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isAudited();
+	public boolean isAudited();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_IsAudited = new ModelColumn<>(I_AD_Sequence.class, "IsAudited", null);
-	String COLUMNNAME_IsAudited = "IsAudited";
+    /** Column definition for IsAudited */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_IsAudited = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "IsAudited", null);
+    /** Column name IsAudited */
+    public static final String COLUMNNAME_IsAudited = "IsAudited";
 
 	/**
-	 * Set Auto numbering.
+	 * Set Automatische Nummerierung.
 	 * Automatically assign the next number
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsAutoSequence (boolean IsAutoSequence);
+	public void setIsAutoSequence (boolean IsAutoSequence);
 
 	/**
-	 * Get Auto numbering.
+	 * Get Automatische Nummerierung.
 	 * Automatically assign the next number
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAutoSequence();
+	public boolean isAutoSequence();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_IsAutoSequence = new ModelColumn<>(I_AD_Sequence.class, "IsAutoSequence", null);
-	String COLUMNNAME_IsAutoSequence = "IsAutoSequence";
+    /** Column definition for IsAutoSequence */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_IsAutoSequence = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "IsAutoSequence", null);
+    /** Column name IsAutoSequence */
+    public static final String COLUMNNAME_IsAutoSequence = "IsAutoSequence";
 
 	/**
 	 * Set Used for Record ID.
@@ -333,7 +377,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsTableID (boolean IsTableID);
+	public void setIsTableID (boolean IsTableID);
 
 	/**
 	 * Get Used for Record ID.
@@ -343,31 +387,37 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isTableID();
+	public boolean isTableID();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_IsTableID = new ModelColumn<>(I_AD_Sequence.class, "IsTableID", null);
-	String COLUMNNAME_IsTableID = "IsTableID";
+    /** Column definition for IsTableID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_IsTableID = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "IsTableID", null);
+    /** Column name IsTableID */
+    public static final String COLUMNNAME_IsTableID = "IsTableID";
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_Name = new ModelColumn<>(I_AD_Sequence.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Prefix.
@@ -377,7 +427,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPrefix (@Nullable java.lang.String Prefix);
+	public void setPrefix (java.lang.String Prefix);
 
 	/**
 	 * Get Prefix.
@@ -387,56 +437,37 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPrefix();
+	public java.lang.String getPrefix();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_Prefix = new ModelColumn<>(I_AD_Sequence.class, "Prefix", null);
-	String COLUMNNAME_Prefix = "Prefix";
-
-	/**
-	 * Set Restart sequence every Month.
-	 * Restart the sequence with Start on every 1st of the month
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setStartNewMonth (boolean StartNewMonth);
+    /** Column definition for Prefix */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_Prefix = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "Prefix", null);
+    /** Column name Prefix */
+    public static final String COLUMNNAME_Prefix = "Prefix";
 
 	/**
-	 * Get Restart sequence every Month.
-	 * Restart the sequence with Start on every 1st of the month
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isStartNewMonth();
-
-	ModelColumn<I_AD_Sequence, Object> COLUMN_StartNewMonth = new ModelColumn<>(I_AD_Sequence.class, "StartNewMonth", null);
-	String COLUMNNAME_StartNewMonth = "StartNewMonth";
-
-	/**
-	 * Set Restart sequence every Year.
+	 * Set Nummernfolge jedes Jahr neu beginnen.
 	 * Restart the sequence with Start on every 1/1
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setStartNewYear (boolean StartNewYear);
+	public void setStartNewYear (boolean StartNewYear);
 
 	/**
-	 * Get Restart sequence every Year.
+	 * Get Nummernfolge jedes Jahr neu beginnen.
 	 * Restart the sequence with Start on every 1/1
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isStartNewYear();
+	public boolean isStartNewYear();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_StartNewYear = new ModelColumn<>(I_AD_Sequence.class, "StartNewYear", null);
-	String COLUMNNAME_StartNewYear = "StartNewYear";
+    /** Column definition for StartNewYear */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_StartNewYear = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "StartNewYear", null);
+    /** Column name StartNewYear */
+    public static final String COLUMNNAME_StartNewYear = "StartNewYear";
 
 	/**
 	 * Set Start No.
@@ -446,7 +477,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setStartNo (int StartNo);
+	public void setStartNo (int StartNo);
 
 	/**
 	 * Get Start No.
@@ -456,10 +487,12 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getStartNo();
+	public int getStartNo();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_StartNo = new ModelColumn<>(I_AD_Sequence.class, "StartNo", null);
-	String COLUMNNAME_StartNo = "StartNo";
+    /** Column definition for StartNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_StartNo = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "StartNo", null);
+    /** Column name StartNo */
+    public static final String COLUMNNAME_StartNo = "StartNo";
 
 	/**
 	 * Set Suffix.
@@ -469,7 +502,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSuffix (@Nullable java.lang.String Suffix);
+	public void setSuffix (java.lang.String Suffix);
 
 	/**
 	 * Get Suffix.
@@ -479,35 +512,42 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getSuffix();
+	public java.lang.String getSuffix();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_Suffix = new ModelColumn<>(I_AD_Sequence.class, "Suffix", null);
-	String COLUMNNAME_Suffix = "Suffix";
+    /** Column definition for Suffix */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_Suffix = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "Suffix", null);
+    /** Column name Suffix */
+    public static final String COLUMNNAME_Suffix = "Suffix";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Sequence.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Sequence, org.compiere.model.I_AD_User>(I_AD_Sequence.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Value Format.
@@ -518,7 +558,7 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setVFormat (@Nullable java.lang.String VFormat);
+	public void setVFormat (java.lang.String VFormat);
 
 	/**
 	 * Get Value Format.
@@ -529,8 +569,10 @@ public interface I_AD_Sequence
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getVFormat();
+	public java.lang.String getVFormat();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_VFormat = new ModelColumn<>(I_AD_Sequence.class, "VFormat", null);
-	String COLUMNNAME_VFormat = "VFormat";
+    /** Column definition for VFormat */
+    public static final org.adempiere.model.ModelColumn<I_AD_Sequence, Object> COLUMN_VFormat = new org.adempiere.model.ModelColumn<I_AD_Sequence, Object>(I_AD_Sequence.class, "VFormat", null);
+    /** Column name VFormat */
+    public static final String COLUMNNAME_VFormat = "VFormat";
 }

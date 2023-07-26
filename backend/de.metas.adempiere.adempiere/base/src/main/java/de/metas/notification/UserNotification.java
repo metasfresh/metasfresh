@@ -1,11 +1,21 @@
 package de.metas.notification;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -16,16 +26,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /*
  * #%L
@@ -77,7 +77,7 @@ public class UserNotification
 	@JsonProperty("targetRecord")
 	private final TableRecordReference targetRecord;
 	@JsonProperty("targetWindowId")
-	private final AdWindowId targetWindowId;
+	private final int targetWindowId;
 	@JsonProperty("targetViewId")
 	private final String targetViewId;
 
@@ -105,7 +105,7 @@ public class UserNotification
 			// Target action
 			@JsonProperty("targetType") @NonNull final UserNotificationTargetType targetType,
 			@JsonProperty("targetRecord") final TableRecordReference targetRecord,
-			@JsonProperty("targetWindowId") final AdWindowId targetWindowId,
+			@JsonProperty("targetWindowId") final int targetWindowId,
 			@JsonProperty("targetViewId") final String targetViewId)
 	{
 		Check.assumeGreaterThanZero(id, "id");
@@ -125,13 +125,13 @@ public class UserNotification
 		{
 			Check.assumeNotNull(targetRecord, "Parameter targetRecord is not null");
 			this.targetRecord = targetRecord;
-			this.targetWindowId = targetWindowId;
+			this.targetWindowId = targetWindowId > 0 ? targetWindowId : 0;
 			this.targetViewId = null;
 		}
 		else if (targetType == UserNotificationTargetType.View)
 		{
 			Check.assumeNotEmpty(targetViewId, "targetViewId is not empty");
-			Check.assumeNotNull(targetWindowId, "targetWindowId");
+			Check.assumeGreaterThanZero(targetWindowId, "targetWindowId");
 			this.targetRecord = null;
 			this.targetWindowId = targetWindowId;
 			this.targetViewId = targetViewId;
@@ -139,7 +139,7 @@ public class UserNotification
 		else
 		{
 			this.targetRecord = null;
-			this.targetWindowId = null;
+			this.targetWindowId = 0;
 			this.targetViewId = targetViewId;
 		}
 	}
@@ -154,7 +154,7 @@ public class UserNotification
 		return adLanguage2message.computeIfAbsent(adLanguage, this::buildMessage);
 	}
 
-	private String buildMessage(final String adLanguage)
+	private final String buildMessage(final String adLanguage)
 	{
 		//
 		// Build detail message
@@ -209,10 +209,9 @@ public class UserNotification
 		return readOld;
 	}
 
-	@Nullable
-	public String getTargetWindowIdAsString()
+	public String getTargetDocumentType()
 	{
-		return targetWindowId != null ? String.valueOf(targetWindowId.getRepoId()) : null;
+		return targetWindowId > 0 ? String.valueOf(targetWindowId) : null;
 	}
 
 	public String getTargetDocumentId()

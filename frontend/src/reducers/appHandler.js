@@ -3,7 +3,6 @@ import update from 'immutability-helper';
 import * as types from '../constants/ActionTypes';
 
 export const initialState = {
-  connectionErrorType: '',
   notifications: {},
   me: {},
   isLogged: false,
@@ -16,16 +15,10 @@ export const initialState = {
   },
   keymap: {},
   hotkeys: {},
-  lastBackPage: '',
 };
 
 export default function appHandler(state = initialState, action) {
   switch (action.type) {
-    case types.CONNECTION_ERROR:
-      return {
-        ...state,
-        connectionErrorType: action.errorType,
-      };
     case types.USER_SESSION_INIT:
       return {
         ...state,
@@ -39,12 +32,6 @@ export default function appHandler(state = initialState, action) {
           ...state.me,
           ...action.me,
         },
-      };
-
-    case types.UPDATE_LAST_BACK_PAGE:
-      return {
-        ...state,
-        lastBackPage: action.lastBackPage,
       };
 
     case types.SET_LANGUAGES:

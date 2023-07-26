@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.util.Check;
-import org.adempiere.ad.element.api.AdFieldId;
 
 /**
  * Window Tab Customization
@@ -42,21 +41,19 @@ public class MUserDefTab extends X_AD_UserDef_Tab
 	 */
 	private static final long serialVersionUID = -1211944378938157092L;
 
-	@SuppressWarnings("unused")
 	public MUserDefTab(Properties ctx, int AD_UserDef_Tab_ID, String trxName)
 	{
 		super(ctx, AD_UserDef_Tab_ID, trxName);
 	}
 
-	@SuppressWarnings("unused")
 	public MUserDefTab(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
 	
-	private MUserDefField[] getFields()
+	private MUserDefField[] getFields(boolean reload)
 	{
-		if (m_fields != null)
+		if (!reload && m_fields != null)
 		{
 			return m_fields;
 		}
@@ -67,20 +64,20 @@ public class MUserDefTab extends X_AD_UserDef_Tab
 								.setOrderBy(MUserDefField.COLUMNNAME_AD_Field_ID)
 								.list(MUserDefField.class);
 		//
-		m_fields = list.toArray(new MUserDefField[0]);
+		m_fields = list.toArray(new MUserDefField[list.size()]);
 		return m_fields;
 	}
 	private MUserDefField[] m_fields = null;
 	
-	public MUserDefField getField(AdFieldId AD_Field_ID)
+	public MUserDefField getField(int AD_Field_ID)
 	{
-		if (AD_Field_ID == null)
+		if (AD_Field_ID <= 0)
 		{
 			return null;
 		}
-		for (MUserDefField field : getFields())
+		for (MUserDefField field : getFields(false))
 		{
-			if (AD_Field_ID.getRepoId() == field.getAD_Field_ID())
+			if (AD_Field_ID == field.getAD_Field_ID())
 			{
 				return field;
 			}

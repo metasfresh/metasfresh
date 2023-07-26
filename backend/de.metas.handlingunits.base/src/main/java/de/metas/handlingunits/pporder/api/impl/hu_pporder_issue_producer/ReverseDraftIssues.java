@@ -72,9 +72,7 @@ public class ReverseDraftIssues
 		huPPOrderQtyDAO.delete(candidate);
 
 		// Make sure the HU is marked as source
-		final HuId huId = HuId.ofRepoId(huToIssue.getM_HU_ID());
-		if (!SourceHUsService.get().isHuOrAnyParentSourceHu(huId))
-			sourceHuService.addSourceHuMarker(huId);
+		sourceHuService.addSourceHuMarker(HuId.ofRepoId(huToIssue.getM_HU_ID()));
 	}
 
 }

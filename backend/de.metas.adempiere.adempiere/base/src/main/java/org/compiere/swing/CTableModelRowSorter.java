@@ -505,7 +505,7 @@ public class CTableModelRowSorter
 			}
 
 			// Prepare sorting
-			final Vector<?> modelDataVector = table.getModelDataVector();
+			final Vector<Object> modelDataVector = table.getModelDataVector();
 			for (final Entry<Integer, Boolean> columnIndexInfo : sortIndexes2Direction.entrySet())
 			{
 				final int columnIndex = columnIndexInfo.getKey();

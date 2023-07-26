@@ -128,12 +128,6 @@ public class ExternalIdentifier
 			return new ExternalIdentifier(Type.VALUE, identifier, null);
 		}
 
-		final Matcher internalNameMatcher = Type.INTERNAL_NAME.pattern.matcher(identifier);
-		if (internalNameMatcher.matches())
-		{
-			return new ExternalIdentifier(Type.INTERNAL_NAME, identifier, null);
-		}
-
 		throw new AdempiereException("Unknown externalId type!")
 				.appendParametersToMessage()
 				.setParameter("externalId", identifier);
@@ -192,22 +186,6 @@ public class ExternalIdentifier
 		return valueMatcher.group(1);
 	}
 
-	@NonNull
-	public String asInternalName()
-	{
-		Check.assume(Type.INTERNAL_NAME.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.INTERNAL_NAME, this);
-
-		final Matcher valueMatcher = Type.INTERNAL_NAME.pattern.matcher(rawValue);
-
-		if (!valueMatcher.matches())
-		{
-			throw new AdempiereException("External identifier of InternalName parsing failed. External Identifier:" + rawValue);
-		}
-
-		return valueMatcher.group(1);
-	}
-
 	@AllArgsConstructor
 	@Getter
 	public enum Type
@@ -215,8 +193,7 @@ public class ExternalIdentifier
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
 		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
 		GLN(Pattern.compile("(?:^gln)-(.+)")),
-		VALUE(Pattern.compile("(?:^val)-(.+)")),
-		INTERNAL_NAME(Pattern.compile("(?:^int)-(.+)"));
+		VALUE(Pattern.compile("(?:^val)-(.+)"));
 
 		private final Pattern pattern;
 	}

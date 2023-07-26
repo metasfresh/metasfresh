@@ -1,40 +1,32 @@
-// noinspection JSUnresolvedFunction
-
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
+import produce from 'immer';
 import { merge } from 'merge-anything';
 import { combineReducers } from 'redux';
 import nock from 'nock';
 
-import tablesHandler, {
-  getTableId,
-  initialTableState
-} from '../../reducers/tables';
-import viewHandler, {
-  initialState as initialViewsState
-} from '../../reducers/viewHandler';
+import tablesHandler, { initialTableState, getTableId } from '../../reducers/tables';
+import viewHandler, { initialState as initialViewsState } from '../../reducers/viewHandler';
+import { getQuickActionsId } from '../../reducers/actionsHandler';
 
 import {
-  createGridTable,
   createTableData,
+  createGridTable,
   createTabTable,
-  deleteTable,
-  deselectTableRows,
-  setActiveSort,
   updateGridTable,
-  updateTableSelection,
   updateTabTable,
+  deleteTable,
+  setActiveSort,
+  updateTableSelection,
+  deselectTableRows,
 } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { flattenRows } from '../../utils/documentListHelper';
 
 import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
-import masterDataFixtures
-  from '../../../test_setup/fixtures/master_window/data.json';
-import masterLayoutFixtures
-  from '../../../test_setup/fixtures/master_window/layout.json';
-import masterRowFixtures
-  from '../../../test_setup/fixtures/master_window/row_data.json';
+import masterDataFixtures from '../../../test_setup/fixtures/master_window/data.json';
+import masterLayoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
+import masterRowFixtures from '../../../test_setup/fixtures/master_window/row_data.json';
 
 import gridProps from '../../../test_setup/fixtures/grid.json';
 import gridDataFixtures from '../../../test_setup/fixtures/grid/data.json';
@@ -45,17 +37,19 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createState = function(state = {}) {
-  return merge(
+  const res = merge(
     {
       viewHandler: initialViewsState,
       tables: { ...tablesHandler(undefined, {}) },
     },
     state
   );
+
+  return res;
 };
 
 describe('TableActions general', () => {
-  it('should call DELETE_TABLE action with correct payload', async () => {
+  it('should call DELETE_TABLE action with correct payload', () => {
     const { windowType, viewId } = gridProps.props1;
     const id = getTableId({ windowId: windowType, viewId });
     const payload = { id };
@@ -67,15 +61,16 @@ describe('TableActions general', () => {
       },
     });
     const store = mockStore(initialState);
-
-    await store.dispatch(deleteTable(id));
-    expect(store.getActions()).toEqual([
+    const expectedActions = [
       { type: ACTION_TYPES.DELETE_ATTRIBUTES },
       { type: ACTION_TYPES.DELETE_TABLE, payload }
-    ]);
+    ];
+
+    store.dispatch(deleteTable(id));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it(`dispatches 'SET_ACTIVE_SORT' action when setting active sort`, async () => {
+  it(`dispatches 'SET_ACTIVE_SORT' action when setting active sort`, () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const id = getTableId({ windowId: windowType, viewId });
@@ -93,12 +88,13 @@ describe('TableActions general', () => {
       id,
       active: true,
     };
+    const expectedActions = [{ type: ACTION_TYPES.SET_ACTIVE_SORT, payload }];
 
-    await store.dispatch(setActiveSort(id, payload.active));
-    expect(store.getActions()).toEqual([{ type: ACTION_TYPES.SET_ACTIVE_SORT, payload }]);
+    store.dispatch(setActiveSort(id, payload.active));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
-  it('should call UPDATE_TABLE_SELECTION action with correct payload', async () => {
+  it('should call UPDATE_TABLE_SELECTION action with correct payload', () => {
     const { windowId, tabId, id, rowId } = masterRowFixtures.row_data1[0];
     const tableId = getTableId({ windowId, tabId, docId: id });
     const keyProperty = 'rowId';
@@ -108,26 +104,29 @@ describe('TableActions general', () => {
       keyProperty,
     }
     const store = mockStore();
+    const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload }];
+    const params = { id: tableId, selection: [rowId], keyProperty };
 
-    await store.dispatch(updateTableSelection({
-      id: tableId,
-      selection: [rowId],
-      keyProperty }));
-    expect(store.getActions()).toEqual([{ type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload }]);
+    return store.dispatch(updateTableSelection(params)).then(
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+    );
   });
 
-  it('should call DESELECT_TABLE_ROWS action with correct payload', async () => {
-    const { windowId, tabId, id } = masterRowFixtures.row_data1[0];
+  it('should call DESELECT_TABLE_ROWS action with correct payload', () => {
+    const { windowId, tabId, id, rowId } = masterRowFixtures.row_data1[0];
     const tableId = getTableId({ windowId, tabId, docId: id });
     const payload = {
       id: tableId,
       selection: [],
     }
     const store = mockStore();
+    const expectedActions = [{ type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload }];
+    const params = { id: tableId, selection: [] };
 
-    await store.dispatch(deselectTableRows({ id: tableId, selection: [] }));
-    expect(store.getActions()).toEqual([{ type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload }]);
-  });
+    return store.dispatch(deselectTableRows(params)).then(
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+    );
+  }); 
 });
 
 describe('TableActions grid', () => {
@@ -135,7 +134,7 @@ describe('TableActions grid', () => {
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .persist()
-      .post(uri => uri.includes('quickActions'))
+      .get(uri => uri.includes('quickActions'))
       .reply(200, { data: { actions: [] } });
   });
 
@@ -143,7 +142,7 @@ describe('TableActions grid', () => {
     nock.cleanAll();
   });
 
-  it(`dispatches 'CREATE_TABLE' action when creating a new view`, async () => {
+  it(`dispatches 'CREATE_TABLE' action when creating a new view`, () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
@@ -158,25 +157,36 @@ describe('TableActions grid', () => {
       },
     });
     const store = mockStore(initialState);
+    const tableData = createTableData({ ...dataResponse, ...layoutResponse });
+    const payload = {
+      id,
+      data: tableData,
+    };
+    const expectedActions = [{ type: ACTION_TYPES.CREATE_TABLE, payload }];
 
-    await store.dispatch(createGridTable(id, dataResponse));
-    expect(store.getActions()).toEqual([
-      {
-        type: ACTION_TYPES.CREATE_TABLE,
-        payload: {
-          id,
-          data: createTableData({ ...dataResponse, ...layoutResponse }),
-        }
-      }
-    ]);
+    return store.dispatch(createGridTable(id, dataResponse)).then(() => {
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining(expectedActions)
+      );
+    });
   });
 
-  it(`dispatches 'UPDATE_TABLE' action after loading data to the view`, async () => {
+  it(`dispatches 'UPDATE_TABLE' action after loading data to the view`, () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
     const rowResponse = gridRowFixtures.data1;
     const id = getTableId({ windowId: windowType, viewId });
+    const tableData_create = createTableData({
+      ...dataResponse,
+      ...layoutResponse,
+    });
+    const tableData_update = createTableData({
+      ...rowResponse,
+      ...layoutResponse,
+      headerElements: rowResponse.columnsByFieldName,
+      keyProperty: 'id',
+    });
     const initialState = createState({
       viewHandler: {
         views: {
@@ -189,39 +199,45 @@ describe('TableActions grid', () => {
         length: 1,
         [id]: {
           ...initialTableState,
-          ...createTableData({ ...dataResponse, ...layoutResponse }),
+          ...tableData_create,
         },
       },
     });
 
     const store = mockStore(initialState);
+    const payload = {
+      id,
+      data: tableData_update,
+    };
+    const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE, payload }];
 
-    await store.dispatch(updateGridTable(id, rowResponse));
-    expect(store.getActions()).toContainEqual(
-      {
-        type: ACTION_TYPES.UPDATE_TABLE,
-        payload: {
-          id,
-          data: createTableData({
-            ...rowResponse,
-            ...layoutResponse,
-            headerElements: rowResponse.columnsByFieldName,
-            keyProperty: 'id',
-          }),
-        }
-      }
-    );
+    return store.dispatch(updateGridTable(id, rowResponse)).then(() => {
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining(expectedActions)
+      );
+    });
   });
 
   it.todo(
     `dispatches 'UPDATE_TABLE' action after loading collapsible data to the view`
   );
 
-  it(`dispatches 'CREATE_TABLE' action when browsing an existing view but table is not yet created`, async () => {
+  it(`dispatches 'CREATE_TABLE' action when browsing an existing view but table is not yet created`, () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
+    const dataResponse = gridDataFixtures.data1;
     const rowResponse = gridRowFixtures.data1;
     const id = getTableId({ windowId: windowType, viewId });
+    const tableData_create = createTableData({
+      ...dataResponse,
+      ...layoutResponse,
+    });
+    const tableData_update = createTableData({
+      ...rowResponse,
+      ...layoutResponse,
+      headerElements: rowResponse.columnsByFieldName,
+      keyProperty: 'id',
+    });
     const initialState = createState({
       viewHandler: {
         views: {
@@ -233,25 +249,20 @@ describe('TableActions grid', () => {
     });
 
     const store = mockStore(initialState);
+    const payload = {
+      id,
+      data: tableData_update,
+    };
+    const expectedActions = [{ type: ACTION_TYPES.CREATE_TABLE, payload }];
 
-    await store.dispatch(updateGridTable(id, rowResponse));
-    expect(store.getActions()).toContainEqual(
-      {
-        type: ACTION_TYPES.CREATE_TABLE,
-        payload: {
-          id,
-          data: createTableData({
-            ...rowResponse,
-            ...layoutResponse,
-            headerElements: rowResponse.columnsByFieldName,
-            keyProperty: 'id',
-          }),
-        }
-      }
-    );
+    return store.dispatch(updateGridTable(id, rowResponse)).then(() => {
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining(expectedActions)
+      );
+    });
   });
 
-  it(`should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, async () => {
+  it(`should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const rowResponse = gridRowFixtures.data3_parent;
     const { windowId, viewId , result} = rowResponse;
@@ -281,32 +292,38 @@ describe('TableActions grid', () => {
     });
     const store = mockStore(initialState);
 
-    await store.dispatch(updateTableSelection({
+    const params = {
       id: tableId,
       selection: [rowId],
       windowId,
       viewId,
       isModal: true,
-    }));
+    };
+    const payload1 = { id: tableId, selection: [rowId], keyProperty: 'id' };
+    const payload3 = {
+      id: windowId,
+      showIncludedView: true,
+      isModal: true,
+    };
+    const payload4 = {
+      id: includedView.windowId,
+      viewId: includedView.viewId,
+      viewProfileId: null,
+      parentId: windowId,      
+    };
 
-    // noinspection JSVoidFunctionReturnValueUsed
-    expect(store.getActions()).toEqual(expect.arrayContaining([
-      {
-        type: ACTION_TYPES.UPDATE_TABLE_SELECTION,
-        payload: { id: tableId, selection: [rowId], keyProperty: 'id' }
-      },
-      {
-        type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW,
-        payload: { id: windowId, showIncludedView: true, isModal: true, }
-      },
-      {
-        type: ACTION_TYPES.SET_INCLUDED_VIEW,
-        payload: { id: includedView.windowId, viewId: includedView.viewId, viewProfileId: null, parentId: windowId, }
-      },
-    ]));
+    const expectedActions = [
+      { type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload: payload1 },
+      { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload3 },
+      { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload4 },
+    ];
+
+    return store.dispatch(updateTableSelection(params)).then(
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+    );
   });
 
-  it(`should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows`, async () => {
+  it(`should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows`, () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const childLayoutResponse = gridLayoutFixtures.layout2_child;
     const parentRowResponse = gridRowFixtures.data3_parent;
@@ -365,34 +382,39 @@ describe('TableActions grid', () => {
     const initialState = reduceState(initialStateData);
     const store = mockStore(initialState);
 
-    await store.dispatch(deselectTableRows({
+    const params = {
       id: parentTableId,
       selection: [parentRowId],
       windowId: parentWindowId,
       viewId: parentViewId,
       isModal: true,
-    }));
+    };
+    const payload1 = { id: parentTableId, selection: [parentRowId] };
+    const payload3 = {
+      id: parentWindowId,
+      showIncludedView: false,
+      isModal: true,
+    };
+    const payload4 = {
+      id: windowId,
+      viewId,
+      forceClose: true,
+    };
 
-    // noinspection JSVoidFunctionReturnValueUsed
-    expect(store.getActions()).toEqual(expect.arrayContaining([
-      {
-        type: ACTION_TYPES.DESELECT_TABLE_ROWS,
-        payload: { id: parentTableId, selection: [parentRowId] }
-      },
-      {
-        type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW,
-        payload: { id: parentWindowId, showIncludedView: false, isModal: true, }
-      },
-      {
-        type: ACTION_TYPES.UNSET_INCLUDED_VIEW,
-        payload: { id: windowId, viewId, forceClose: true, }
-      },
-    ]));
+    const expectedActions = [
+      { type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload: payload1 },
+      { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload3 },
+      { type: ACTION_TYPES.UNSET_INCLUDED_VIEW, payload: payload4 },
+    ];
+
+    return store.dispatch(deselectTableRows(params)).then(
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+    );
   });
 });
 
 describe('TableActions tab', () => {
-  it(`dispatches 'CREATE_TABLE' action when creating a new tab`, async () => {
+  it(`dispatches 'CREATE_TABLE' action when creating a new tab`, () => {
     const {
       params: { windowType, docId },
     } = masterWindowProps.props1;
@@ -413,23 +435,26 @@ describe('TableActions tab', () => {
         tableId,
         ...tab,
       };
+      const tableData = createTableData(dataResponse);
+      const payload = {
+        id: tableId,
+        data: tableData,
+      };
 
-      dispatchedActions.push(store.dispatch(createTabTable(tableId, dataResponse)));
-      expectedActions.push({
-        type: ACTION_TYPES.CREATE_TABLE,
-        payload: {
-          id: tableId,
-          data: createTableData(dataResponse),
-        }
-      });
+      dispatchedActions.push(
+        store.dispatch(createTabTable(tableId, dataResponse))
+      );
+      expectedActions.push({ type: ACTION_TYPES.CREATE_TABLE, payload });
     });
 
-    await Promise.all(dispatchedActions);
-    // noinspection JSVoidFunctionReturnValueUsed
-    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    return Promise.all(dispatchedActions).then(() => {
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining(expectedActions)
+      );
+    });
   });
 
-  it(`dispatches 'UPDATE_TABLE' action when loading details view layout`, async () => {
+  it(`dispatches 'UPDATE_TABLE' action when loading details view layout`, () => {
     const {
       params: { windowType, docId },
     } = masterWindowProps.props1;
@@ -443,12 +468,14 @@ describe('TableActions tab', () => {
         docId,
         tabId: tab.tabId,
       });
-      initialStateTables[tableId] = {
+      const initialStateData = {
         windowType,
         docId,
         tableId,
         ...tab,
       };
+
+      initialStateTables[tableId] = initialStateData;
     });
 
     const initialState = createState({
@@ -481,23 +508,29 @@ describe('TableActions tab', () => {
         tableId,
         ...tab,
       };
-
-      dispatchedActions.push(store.dispatch(updateTabTable({ tableId, tableResponse: dataResponse, pending: true })));
-      expectedActions.push({
-        type: ACTION_TYPES.UPDATE_TABLE,
-        payload: {
-          id: tableId,
-          data: createTableData({ ...dataResponse, keyProperty: 'rowId', pending: true }),
-        }
+      const tableData = createTableData({
+        ...dataResponse,
+        keyProperty: 'rowId',
       });
+      const payload = {
+        id: tableId,
+        data: tableData,
+      };
+
+      dispatchedActions.push(
+        store.dispatch(updateTabTable(tableId, dataResponse))
+      );
+      expectedActions.push({ type: ACTION_TYPES.UPDATE_TABLE, payload });
     });
 
-    await Promise.all(dispatchedActions);
-    // noinspection JSVoidFunctionReturnValueUsed
-    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    return Promise.all(dispatchedActions).then(() => {
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining(expectedActions)
+      );
+    });
   });
 
-  it(`dispatches 'UPDATE_TABLE' action when populating table with rows data`, async () => {
+  it(`dispatches 'UPDATE_TABLE' action when populating table with rows data`, () => {
     const {
       params: { windowType, docId },
     } = masterWindowProps.props1;
@@ -517,12 +550,14 @@ describe('TableActions tab', () => {
         ...tab,
         ...layoutResponse.tabs[tab.tabId],
       };
-      initialStateTables[tableId] = {
+      const initialStateData = {
         windowType,
         docId,
         tableId,
         ...fullTab,
       };
+
+      initialStateTables[tableId] = initialStateData;
     });
 
     const initialState = createState({
@@ -545,19 +580,21 @@ describe('TableActions tab', () => {
     const tableData = createTableData({
       result: rowDataResponse,
       keyProperty: 'rowId',
-      pending: true,
     });
     tableData.rows = flattenRows(tableData.rows);
+    const payload = {
+      id: tableId,
+      data: { ...tableData },
+    };
 
-    await store.dispatch(updateTabTable({ tableId, tableResponse: { result: rowDataResponse }, pending: true }));
-    expect(store.getActions()).toContainEqual(
-      {
-        type: ACTION_TYPES.UPDATE_TABLE,
-        payload: {
-          id: tableId,
-          data: { ...tableData },
-        }
-      }
-    );
+    const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE, payload }];
+
+    return store
+      .dispatch(updateTabTable(tableId, { result: rowDataResponse }))
+      .then(() => {
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
+      });
   });
 });

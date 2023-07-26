@@ -12,7 +12,6 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,13 +50,11 @@ public class ShipmentCandidatesViewFactory implements IViewFactory
 	private final ShipmentCandidateRowsRepository rowsRepo;
 
 	public ShipmentCandidatesViewFactory(
-			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.shipmentScheduleBL = shipmentScheduleBL;
 		this.rowsRepo = ShipmentCandidateRowsRepository.builder()
 				.shipmentScheduleBL(shipmentScheduleBL)
-				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.build();
 	}
 

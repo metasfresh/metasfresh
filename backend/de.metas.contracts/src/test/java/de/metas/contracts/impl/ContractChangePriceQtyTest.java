@@ -1,8 +1,5 @@
 package de.metas.contracts.impl;
 
-import de.metas.acct.GLCategoryRepository;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.interceptor.M_ShipmentSchedule;
@@ -11,14 +8,11 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.ContractOrderService;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.tax.api.Tax;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -28,6 +22,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Tax;
 import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -44,28 +39,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 {
 	private ContractChangePriceQtyService contractsRepository;
-	private IContractsDAO contractsDAO;
+	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 	private final static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 
-	@Override
-	protected void afterInit()
+	@BeforeEach
+	public void before()
 	{
-		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
 
 		contractsRepository = new ContractChangePriceQtyService();
-		contractsDAO = Services.get(IContractsDAO.class);
-
-		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
+		final ContractOrderService contractOrderService = new ContractOrderService();
 
 		final IModelInterceptorRegistry interceptorRegistry = Services.get(IModelInterceptorRegistry.class);
-		interceptorRegistry.addModelInterceptor(
-				new C_Flatrate_Term(
-						new ContractOrderService(),
-						documentLocationBL,
-						ADReferenceService.newMocked(),
-						new GLCategoryRepository()));
+		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService));
 		interceptorRegistry.addModelInterceptor(M_ShipmentSchedule.INSTANCE);
 
 		final I_C_Tax taxNotFoundRecord = newInstance(I_C_Tax.class);
@@ -124,7 +111,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		save(shipmentSchedule);
 
 		InterfaceWrapperHelper.refresh(firstSubscription);
-		firstSubscription.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
+		firstSubscription.setM_ShipmentSchedule(shipmentSchedule);
 		save(firstSubscription);
 	}
 
@@ -135,7 +122,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		candidates.forEach(invoiceCand -> assertInvoiceCandidate(invoiceCand, flatrateTerm));
 	}
 
-	private void assertInvoiceCandidate(final I_C_Invoice_Candidate invoiceCand, final I_C_Flatrate_Term flatrateTerm)
+	private void assertInvoiceCandidate(I_C_Invoice_Candidate invoiceCand, final I_C_Flatrate_Term flatrateTerm)
 	{
 		assertThat(invoiceCand.getQtyEntered()).isEqualTo(flatrateTerm.getPlannedQtyPerUnit());
 		assertThat(invoiceCand.getPriceActual()).isEqualTo(flatrateTerm.getPriceActual());

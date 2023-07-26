@@ -6,8 +6,6 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.FixedConversionRate;
-import de.metas.document.DocBaseType;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -22,9 +20,11 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MPeriod;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.List;
 
 class DocLine_BankStatement extends DocLine<Doc_BankStatement>
@@ -78,16 +78,13 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 		fixedCurrencyRate = line.getCurrencyRate();
 		//
-		setDateDoc(LocalDateAndOrgId.ofTimestamp(
-				line.getValutaDate(),
-				OrgId.ofRepoId(line.getAD_Org_ID()),
-				services::getTimeZone));
+		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
 		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
 
 		//
 		// Period
 		final MPeriod period = MPeriod.get(Env.getCtx(), line.getDateAcct(), line.getAD_Org_ID());
-		if (period != null && period.isOpen(DocBaseType.BankStatement, line.getDateAcct(), line.getAD_Org_ID()))
+		if (period != null && period.isOpen(Doc.DOCTYPE_BankStatement, line.getDateAcct(), line.getAD_Org_ID()))
 		{
 			setC_Period_ID(period.getC_Period_ID());
 		}
@@ -154,15 +151,17 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		final I_C_BankStatementLine line = getC_BankStatementLine();
 
 		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
+		final ZoneId timeZone = services.getTimeZone(orgId);
 
 		// IMPORTANT for Bank Asset Account booking,
 		// * we shall NOT consider the fixed Currency Rate because we want to compute currency gain/loss
 		// * use default conversion types
 
 		return services.createCurrencyConversionContext(
-				LocalDateAndOrgId.ofTimestamp(line.getDateAcct(), orgId, services::getTimeZone),
+				TimeUtil.asLocalDate(line.getDateAcct(), timeZone),
 				null,
-				ClientId.ofRepoId(line.getAD_Client_ID()));
+				ClientId.ofRepoId(line.getAD_Client_ID()),
+				orgId);
 	}
 
 	CurrencyConversionContext getCurrencyConversionCtxForBankInTransit()
@@ -189,11 +188,13 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 			final PaymentCurrencyContext paymentCurrencyContext = bankStatementBL.getPaymentCurrencyContext(line);
 
 			final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
+			final ZoneId timeZone = services.getTimeZone(orgId);
 
 			CurrencyConversionContext conversionCtx = services.createCurrencyConversionContext(
-					LocalDateAndOrgId.ofTimestamp(line.getDateAcct(), orgId, services::getTimeZone),
+					TimeUtil.asLocalDate(line.getDateAcct(), timeZone),
 					paymentCurrencyContext.getCurrencyConversionTypeId(),
-					ClientId.ofRepoId(line.getAD_Client_ID()));
+					ClientId.ofRepoId(line.getAD_Client_ID()),
+					orgId);
 
 			final FixedConversionRate fixedCurrencyRate = paymentCurrencyContext.toFixedConversionRateOrNull();
 			if (fixedCurrencyRate != null)

@@ -10,21 +10,24 @@ package org.compiere.apps.search;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import de.metas.ad_reference.ReferenceId;
-import de.metas.util.Check;
-import org.adempiere.ad.validationRule.AdValRuleId;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.util.Properties;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.grid.ed.VCheckBox;
@@ -39,13 +42,11 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.swing.CEditor;
 import org.compiere.util.DisplayType;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.util.Properties;
+import de.metas.util.Check;
 
 /**
  * @author tsa
+ * 
  */
 public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 {
@@ -76,7 +77,7 @@ public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 		final int windowNo = parent.getWindowNo();
 		final int displayType = infoColumn.getAD_Reference_ID();
 		final String columnName = infoColumn.getAD_Element().getColumnName();
-
+		
 		Check.assumeNotNull(columnName, "The element {} does not have a column name set", infoColumn.getAD_Element());
 
 		if (DisplayType.YesNo == displayType)
@@ -99,16 +100,16 @@ public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 			final MLookup lookup;
 			try
 			{
-				lookup = MLookupFactory.newInstance().get(ctx,
+				lookup = MLookupFactory.get(ctx,
 						windowNo,
 						0, // Column_ID,
 						infoColumn.getAD_Reference_ID(),
 						null, // tableName
 						columnName,
-						ReferenceId.ofRepoIdOrNull(infoColumn.getAD_Reference_Value_ID()),
+						infoColumn.getAD_Reference_Value_ID(),
 						false, // IsParent
-						AdValRuleId.ofRepoIdOrNull(infoColumn.getAD_Val_Rule_ID())
-				);
+						infoColumn.getAD_Val_Rule_ID()
+						);
 			}
 			catch (Exception e)
 			{
@@ -185,7 +186,7 @@ public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 	}
 
 	@Override
-	protected CEditor createCheckboxEditor(final String label)
+	protected CEditor createCheckboxEditor( final String label)
 	{
 		final VCheckBox cb = new VCheckBox();
 		cb.setText(label);

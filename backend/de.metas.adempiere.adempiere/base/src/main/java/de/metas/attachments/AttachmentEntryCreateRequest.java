@@ -1,22 +1,23 @@
 package de.metas.attachments;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.report.server.ReportResult;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Collection;
+
+import javax.activation.DataSource;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
-import javax.activation.DataSource;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Objects;
+import com.google.common.collect.ImmutableList;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -41,35 +42,37 @@ import java.util.Objects;
  */
 
 @Value
-@Builder(toBuilder = true)
-@ToString(exclude = "data")
+@Builder
+@ToString(exclude="data")
 public class AttachmentEntryCreateRequest
 {
 	public static AttachmentEntryCreateRequest fromURI(
 			@NonNull final String fileName,
 			@NonNull final URI uri)
 	{
-		return AttachmentEntryCreateRequest.builder()
-				.type(AttachmentEntryType.URL)
+		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
+				.type(AttachmentEntry.Type.URL)
 				.filename(fileName)
 				.contentType(MimeType.getMimeType(fileName))
 				.url(uri)
 				.build();
+		return request;
 	}
 
 	public static AttachmentEntryCreateRequest fromByteArray(
 			@NonNull final String fileName,
-			final byte[] data)
+			@NonNull final byte[] data)
 	{
-		return builderFromByteArray(fileName, data).build();
+		final AttachmentEntryCreateRequest request = builderFromByteArray(fileName, data).build();
+		return request;
 	}
 
-	public static AttachmentEntryCreateRequest.AttachmentEntryCreateRequestBuilder builderFromByteArray(
+	public static AttachmentEntryCreateRequestBuilder builderFromByteArray(
 			@NonNull final String fileName,
-			final byte[] data)
+			@NonNull final byte[] data)
 	{
 		return AttachmentEntryCreateRequest.builder()
-				.type(AttachmentEntryType.Data)
+				.type(AttachmentEntry.Type.Data)
 				.filename(fileName)
 				.contentType(MimeType.getMimeType(fileName))
 				.data(data);
@@ -86,11 +89,11 @@ public class AttachmentEntryCreateRequest
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Failed reading data from " + dataSource, e);
+			throw new AdempiereException("Failed reading data from " + dataSource);
 		}
 
 		return builder()
-				.type(AttachmentEntryType.Data)
+				.type(AttachmentEntry.Type.Data)
 				.filename(filename)
 				.contentType(contentType)
 				.data(data)
@@ -116,11 +119,11 @@ public class AttachmentEntryCreateRequest
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Failed reading data from " + resource, e);
+			throw new AdempiereException("Failed reading data from " + resource);
 		}
 
 		return builder()
-				.type(AttachmentEntryType.Data)
+				.type(AttachmentEntry.Type.Data)
 				.filename(filename)
 				.contentType(contentType)
 				.data(data)
@@ -142,25 +145,15 @@ public class AttachmentEntryCreateRequest
 		final byte[] data = Util.readBytes(file);
 
 		return builder()
-				.type(AttachmentEntryType.Data)
+				.type(AttachmentEntry.Type.Data)
 				.filename(filename)
 				.contentType(contentType)
 				.data(data)
 				.build();
 	}
 
-	public static AttachmentEntryCreateRequest fromReport(@NonNull final ReportResult report)
-	{
-		return builder()
-				.type(AttachmentEntryType.Data)
-				.filename(report.getReportFilename())
-				.contentType(report.getOutputType().getContentType())
-				.data(report.getReportContent())
-				.build();
-	}
-
 	@NonNull
-	AttachmentEntryType type;
+	AttachmentEntry.Type type;
 
 	String filename;
 	String contentType;
@@ -169,17 +162,4 @@ public class AttachmentEntryCreateRequest
 	URI url;
 
 	AttachmentTags tags;
-
-	public AttachmentEntryCreateRequest withFilename(@NonNull final String filename)
-	{
-		if (Objects.equals(this.filename, filename))
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.filename(filename)
-				.contentType(MimeType.getMimeType(filename))
-				.build();
-	}
 }

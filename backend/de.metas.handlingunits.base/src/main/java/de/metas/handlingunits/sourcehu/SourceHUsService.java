@@ -26,7 +26,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.api.IProductBOMDAO;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -69,7 +68,6 @@ public class SourceHUsService
 
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 
 	public static SourceHUsService get()
 	{
@@ -234,8 +232,10 @@ public class SourceHUsService
 		}
 
 		final I_M_Product product = productDAO.getById(productId);
-		final boolean referencedInComponentOrVariant = productBOMDAO.isComponent(productId);
-		if (!referencedInComponentOrVariant)
+
+		final boolean notAComponentProduct = product.isBOM();
+
+		if (notAComponentProduct)
 		{
 			return;
 		}
@@ -257,8 +257,7 @@ public class SourceHUsService
 		@Singular
 		ImmutableSet<ProductId> productIds;
 
-		@Singular
-		ImmutableSet<WarehouseId> warehouseIds;
+		WarehouseId warehouseId;
 
 		public static MatchingSourceHusQuery fromHuId(final HuId huId)
 		{
@@ -272,7 +271,7 @@ public class SourceHUsService
 					.collect(ImmutableSet.toImmutableSet());
 
 			final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
-			return new MatchingSourceHusQuery(productIds, ImmutableSet.of(warehouseId));
+			return new MatchingSourceHusQuery(productIds, warehouseId);
 		}
 	}
 }

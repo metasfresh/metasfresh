@@ -25,7 +25,6 @@ package de.metas.acct.gljournal.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.gljournal.IGLJournalBL;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -39,6 +38,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_GL_Journal;
 
 import java.util.List;
@@ -79,7 +79,7 @@ public class GLJournalBL implements IGLJournalBL
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
-				.docBaseType(DocBaseType.GLJournal)
+				.docBaseType(X_C_DocType.DOCBASETYPE_GLJournal)
 				.build();
 
 		return docTypeDAO

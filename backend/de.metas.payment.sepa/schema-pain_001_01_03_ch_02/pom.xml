@@ -1,25 +1,3 @@
-<!--
-  ~ #%L
-  ~ de.metas.payment.sepa.schema.pain_001_01_03_ch_02
-  ~ %%
-  ~ Copyright (C) 2022 metas GmbH
-  ~ %%
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as
-  ~ published by the Free Software Foundation, either version 2 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public
-  ~ License along with this program. If not, see
-  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
-  ~ #L%
-  -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
@@ -34,28 +12,11 @@
 	<packaging>jar</packaging>
 
 	<description>SEPA Payments - schema - pain_001_01_03_ch_02 (Direct Credit)</description>
+
 	<properties>
-		<migration-sql-basedir/>
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
-<dependencies>
-	<dependency>
-		<groupId>org.xmlunit</groupId>
-		<artifactId>xmlunit-core</artifactId>
-		<version>2.6.2</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.projectlombok</groupId>
-		<artifactId>lombok</artifactId>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.assertj</groupId>
-		<artifactId>assertj-core</artifactId>
-		<scope>test</scope>
-	</dependency>
-</dependencies>
 
 	<build>
 		<plugins>
@@ -76,14 +37,6 @@
 						</configuration>
 					</execution>
 				</executions>
-				<dependencies>
-					<!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
-					<dependency>
-						<groupId>org.glassfish.jaxb</groupId>
-						<artifactId>jaxb-runtime</artifactId>
-						<version>2.3.3</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

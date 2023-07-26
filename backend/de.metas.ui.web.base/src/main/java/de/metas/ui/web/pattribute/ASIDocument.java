@@ -1,18 +1,29 @@
 package de.metas.ui.web.pattribute;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
+
 import de.metas.logging.LogManager;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
-import de.metas.ui.web.pattribute.json.JSONASIDocument;
-import de.metas.ui.web.pattribute.json.JSONASILayout;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
@@ -23,18 +34,6 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.slf4j.Logger;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 /*
  * #%L
@@ -80,9 +79,7 @@ public class ASIDocument
 		completed = false;
 	}
 
-	/**
-	 * copy constructor
-	 */
+	/** copy constructor */
 	private ASIDocument(final ASIDocument asiDocument, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		descriptor = asiDocument.descriptor;
@@ -186,15 +183,9 @@ public class ASIDocument
 		return data.getFieldViews();
 	}
 
-	public JSONASIDocument toJSONASIDocument(
-			final JSONDocumentOptions docOpts,
-			final JSONDocumentLayoutOptions layoutOpts)
+	public JSONDocument toJSONDocument(final JSONDocumentOptions options)
 	{
-		return JSONASIDocument.builder()
-				.id(data.getDocumentId())
-				.layout(JSONASILayout.of(getLayout(), layoutOpts))
-				.fieldsByName(JSONDocument.ofDocument(data, docOpts).getFieldsByName())
-				.build();
+		return JSONDocument.ofDocument(data, options);
 	}
 
 	public LookupValuesPage getFieldLookupValuesForQuery(final String attributeName, final String query)
@@ -230,6 +221,7 @@ public class ASIDocument
 
 		final I_M_AttributeSetInstance asiRecord = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
 		asiRecord.setM_AttributeSet_ID(attributeSetId.getRepoId());
+		// TODO: set Lot, GuaranteeDate etc
 		InterfaceWrapperHelper.save(asiRecord);
 
 		//

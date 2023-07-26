@@ -1,11 +1,9 @@
 package de.metas.process.processtools;
 
-import de.metas.process.IADProcessDAO;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessClassInfo;
-import de.metas.process.ProcessClassParamInfo;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Map;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -14,9 +12,12 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.M_Element;
 import org.compiere.util.DisplayType;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Map;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessClassParamInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -57,11 +58,10 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 		final I_AD_Process process = getRecord(I_AD_Process.class);
 		final Map<String, I_AD_Process_Para> processParams = retriveProcessParams(process);
 
-		ProcessClassInfo.resetCache();
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.ofClassname(process.getClassname());
 		for (final ProcessClassParamInfo paramInfo : processClassInfo.getParameterInfos())
 		{
-			final String parameterName = paramInfo.getExternalParameterName();
+			final String parameterName = paramInfo.getParameterName();
 			final I_AD_Process_Para processParamModel = processParams.get(parameterName);
 			createUpdateProcessParam(process, processParamModel, paramInfo);
 		}
@@ -89,10 +89,10 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 			final int lastSeqNo = Services.get(IADProcessDAO.class).retrieveProcessParaLastSeqNo(process);
 			processParamModel.setSeqNo(lastSeqNo + 10);
 
-			final M_Element adElement = M_Element.get(getCtx(), paramInfo.getExternalParameterName());
-			Check.assumeNotNull(adElement, "adElement not null for ColumnName={}", paramInfo.getExternalParameterName());
+			final M_Element adElement = M_Element.get(getCtx(), paramInfo.getParameterName());
+			Check.assumeNotNull(adElement, "adElement not null for ColumnName={}", paramInfo.getParameterName());
 			processParamModel.setAD_Element(adElement);
-			processParamModel.setColumnName(paramInfo.getExternalParameterName());
+			processParamModel.setColumnName(paramInfo.getParameterName());
 			processParamModel.setName(adElement.getName());
 			processParamModel.setDescription(adElement.getDescription());
 			processParamModel.setHelp(adElement.getHelp());
@@ -114,7 +114,7 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 
 	private static int getDisplayType(final ProcessClassParamInfo paramInfo)
 	{
-		final String parameterName = paramInfo.getExternalParameterName();
+		final String parameterName = paramInfo.getParameterName();
 		final Class<?> type = paramInfo.getFieldType();
 		if (parameterName.endsWith("_ID"))
 		{

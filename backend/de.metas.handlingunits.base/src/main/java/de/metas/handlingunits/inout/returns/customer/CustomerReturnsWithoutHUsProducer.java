@@ -25,7 +25,6 @@ package de.metas.handlingunits.inout.returns.customer;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -185,7 +184,7 @@ public class CustomerReturnsWithoutHUsProducer
 		return customerReturnRepository.createReturnLine(request);
 	}
 
-	private int getReturnsDocTypeId(final DocBaseType docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
+	private int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(docBaseType)
@@ -345,7 +344,7 @@ public class CustomerReturnsWithoutHUsProducer
 		switch (warehouseType)
 		{
 			case QUARANTINE:
-				targetWarehouseId = warehousesRepo.retrieveQuarantineWarehouseId();
+				targetWarehouseId = huWarehouseDAO.retrieveQuarantineWarehouseId();
 				break;
 			case QUALITY_ISSUE:
 				targetWarehouseId = huWarehouseDAO.retrieveQualityReturnWarehouseIds().iterator().next();

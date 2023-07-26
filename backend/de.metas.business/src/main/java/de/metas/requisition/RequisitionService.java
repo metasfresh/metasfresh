@@ -1,3 +1,16 @@
+package de.metas.requisition;
+
+import java.math.BigDecimal;
+
+import org.compiere.model.I_M_Requisition;
+import org.compiere.model.I_M_RequisitionLine;
+import org.compiere.model.MCharge;
+import org.compiere.model.MProductPricing;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import de.metas.lang.SOTrx;
+
 /*
  * #%L
  * de.metas.business
@@ -8,45 +21,21 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-package de.metas.requisition;
-
-import de.metas.lang.SOTrx;
-import de.metas.organization.OrgId;
-import lombok.NonNull;
-import org.compiere.model.I_M_Requisition;
-import org.compiere.model.I_M_RequisitionLine;
-import org.compiere.model.MCharge;
-import org.compiere.model.MProductPricing;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.List;
-
 @Service
 public class RequisitionService
 {
-	private final RequisitionRepository requisitionRepository;
-
-	public RequisitionService(@NonNull final RequisitionRepository requisitionRepository)
-	{
-		this.requisitionRepository = requisitionRepository;
-	}
-
-	@Nullable
 	public BigDecimal computePrice(final I_M_Requisition requisition, final I_M_RequisitionLine line)
 	{
 		if (line.getC_Charge_ID() > 0)
@@ -66,10 +55,8 @@ public class RequisitionService
 			else
 			{
 				final MProductPricing pp = new MProductPricing(
-						OrgId.ofRepoId(requisition.getAD_Org_ID()),
 						line.getM_Product_ID(),
 						line.getC_BPartner_ID(),
-						null,
 						line.getQty(),
 						SOTrx.PURCHASE.toBoolean());
 				pp.setM_PriceList_ID(priceListId);
@@ -86,23 +73,7 @@ public class RequisitionService
 
 	public void updateLineNetAmt(final I_M_RequisitionLine line)
 	{
-		final BigDecimal lineNetAmt = line.getQty().multiply(line.getPriceActual());
+		BigDecimal lineNetAmt = line.getQty().multiply(line.getPriceActual());
 		line.setLineNetAmt(lineNetAmt);
-	}
-
-	public void updateTotalAmtFromLines( final RequisitionId requisitionId)
-	{
-		final List<I_M_RequisitionLine> lines = requisitionRepository.getLinesByRequisitionId(requisitionId);
-
-		BigDecimal calculatedTotalAmt = BigDecimal.ZERO;
-		for (final I_M_RequisitionLine line : lines)
-		{
-			calculatedTotalAmt = calculatedTotalAmt.add(line.getLineNetAmt());
-		}
-
-		final I_M_Requisition requisition = requisitionRepository.getById(requisitionId);
-		requisition.setTotalLines(calculatedTotalAmt);
-
-		requisitionRepository.save(requisition);
 	}
 }

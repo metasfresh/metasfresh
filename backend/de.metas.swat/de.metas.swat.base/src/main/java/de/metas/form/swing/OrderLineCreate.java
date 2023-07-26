@@ -44,8 +44,6 @@ import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.JTextComponent;
 
-import de.metas.ad_reference.ReferenceId;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ADialog;
@@ -133,14 +131,12 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 			final MColumn c = MTable
 					.get(Env.getCtx(), I_C_OrderLine.Table_Name).getColumn(
 							I_C_OrderLine.COLUMNNAME_M_Product_ID);
-			fProductLookup = MLookupFactory.newInstance().get(Env.getCtx(), windowNo, c
+			fProductLookup = MLookupFactory.get(Env.getCtx(), windowNo, c
 					.getAD_Column_ID(), DisplayType.Search,
 					c.get_TableName(),
 					c.getColumnName(),
-					ReferenceId.ofRepoIdOrNull(c.getAD_Reference_Value_ID()),
-					c.isParent(),
-					AdValRuleId.ofRepoIdOrNull(c.getAD_Val_Rule_ID())
-			);
+					c.getAD_Reference_Value_ID(), c.isParent(),
+					c.getAD_Val_Rule_ID());
 			fProduct = new VLookup(c.getColumnName(), false, true, false,
 					fProductLookup);
 			fProduct.setEnabled(true);

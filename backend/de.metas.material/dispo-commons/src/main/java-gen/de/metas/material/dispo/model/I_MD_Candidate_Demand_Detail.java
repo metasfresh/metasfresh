@@ -1,6 +1,5 @@
 package de.metas.material.dispo.model;
 
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Candidate_Demand_Detail
  *  @author metasfresh (generated) 
@@ -330,27 +329,4 @@ public interface I_MD_Candidate_Demand_Detail
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Receipt Line.
-	 * Line on Receipt document
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_InOutLine_ID (int M_InOutLine_ID);
-
-	/**
-	 * Get Receipt Line.
-	 * Line on Receipt document
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_InOutLine_ID();
-
-	ModelColumn<I_MD_Candidate_Demand_Detail, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_MD_Candidate_Demand_Detail.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 }

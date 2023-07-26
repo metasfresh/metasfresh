@@ -79,6 +79,11 @@ final class UserRolePermissionsSqlHelpers
 		return _role.getRoleId();
 	}
 
+	private boolean hasAccessAllOrgs()
+	{
+		return _role.isAccessAllOrgs();
+	}
+
 	private Set<UserGroupId> getUserGroupIds()
 	{
 		Set<UserGroupId> userGroupIds = this._userGroupIds;
@@ -104,7 +109,7 @@ final class UserRolePermissionsSqlHelpers
 		return _role.getClientWhere(tableName, tableAlias, access);
 	}
 
-	private Optional<String> getOrgWhere(@Nullable final String tableName, final Access access)
+	private String getOrgWhere(final String tableName, final Access access)
 	{
 		return _role.getOrgWhere(tableName, access);
 	}
@@ -179,11 +184,11 @@ final class UserRolePermissionsSqlHelpers
 		final ParsedSql parsedSql = ParsedSql.parse(sqlSelectFromWhere);
 		final SqlSelect mainSqlSelect = parsedSql.getMainSqlSelect();
 
-		String mainTableNameOrAlias = mainSqlSelect.getFirstTableAliasOrTableName();
-		if (!mainTableNameOrAlias.equals(tableNameIn))
+		String mainTableName = mainSqlSelect.getFirstTableAliasOrTableName();
+		if (!mainTableName.equals(tableNameIn))
 		{
 			logger.warn("First tableName/alias is not matching TableNameIn={}. Considering the TableNameIn. \nmainSqlSelect: {}", tableNameIn, mainSqlSelect);
-			mainTableNameOrAlias = tableNameIn;
+			mainTableName = tableNameIn;
 		}
 
 		final StringBuilder sqlAcessSqlWhereClause = new StringBuilder();
@@ -200,25 +205,23 @@ final class UserRolePermissionsSqlHelpers
 
 		//
 		// Client/Org Access
-		if (isApplyClientAndOrgAccess(mainTableNameOrAlias))
+		if (isApplyClientAndOrgAccess(mainTableName))
 		{
 			// Client Access
-			final String tableAlias = fullyQualified ? mainTableNameOrAlias : null;
+			final String tableAlias = fullyQualified ? mainTableName : null;
 			sqlAcessSqlWhereClause.append("\n /* security-client */ ");
-			sqlAcessSqlWhereClause.append(getClientWhere(mainTableNameOrAlias, tableAlias, access));
+			sqlAcessSqlWhereClause.append(getClientWhere(mainTableName, tableAlias, access));
 
 			// Org Access
-			final String mainTableName = mainSqlSelect.getFirstTableNameOrEmpty();
-			final String orgWhereClause = getOrgWhere(mainTableName, access).orElse(null);
-			if(orgWhereClause != null && !Check.isBlank(orgWhereClause))
+			if (!hasAccessAllOrgs())
 			{
-				sqlAcessSqlWhereClause.append("\n /* security-org */ AND ");
+				sqlAcessSqlWhereClause.append("\n /* security-org */ ");
+				sqlAcessSqlWhereClause.append(" AND ");
 				if (fullyQualified)
 				{
-					sqlAcessSqlWhereClause.append(mainTableNameOrAlias).append(".");
+					sqlAcessSqlWhereClause.append(mainTableName).append(".");
 				}
-
-				sqlAcessSqlWhereClause.append(orgWhereClause);
+				sqlAcessSqlWhereClause.append(getOrgWhere(mainTableName, access));
 			}
 		}
 		else
@@ -243,8 +246,7 @@ final class UserRolePermissionsSqlHelpers
 			// Data Table Access
 			// We apply it only if the table was found in out application dictionary.
 			// If no `adTableId` was found it means that is some "external" table on which we have no control anyways (e.g. some temporary table like T_ES_FTS_Search_Result).
-			@Nullable
-			final AdTableId adTableId = getAdTableId(tableNameAndAlias).orElse(null);
+			@Nullable final AdTableId adTableId = getAdTableId(tableNameAndAlias).orElse(null);
 			if (adTableId != null && !hasTableAccess(adTableId, access))
 			{
 				sqlAcessSqlWhereClause.append("\n /* security-tableAccess-NO */ AND 1=3"); // prevent access at all
@@ -269,7 +271,7 @@ final class UserRolePermissionsSqlHelpers
 				keyColumnNameFQ = keyColumnName;
 			}
 
-			if (adTableId != null)
+			if(adTableId != null)
 			{
 				final String recordWhere = getRecordWhere(tableNameAndAlias, adTableId, keyColumnNameFQ, access);
 				if (!recordWhere.isEmpty())
@@ -346,10 +348,10 @@ final class UserRolePermissionsSqlHelpers
 			@NonNull final UserId userId)
 	{
 		final StringBuilder sql = new StringBuilder(" NOT EXISTS ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
-															+ " WHERE"
-															+ " IsActive='Y'"
-															+ " AND AD_Table_ID=" + adTableId.getRepoId()
-															+ " AND Record_ID=" + keyColumnNameFQ);
+				+ " WHERE"
+				+ " IsActive='Y'"
+				+ " AND AD_Table_ID=" + adTableId.getRepoId()
+				+ " AND Record_ID=" + keyColumnNameFQ);
 
 		//
 		// User

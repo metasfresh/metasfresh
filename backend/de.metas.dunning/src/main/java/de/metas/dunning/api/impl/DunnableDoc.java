@@ -25,11 +25,11 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import de.metas.dunning.api.IDunnableDoc;
-import de.metas.util.Check;
-
 import java.math.BigDecimal;
 import java.util.Date;
+
+import de.metas.dunning.api.IDunnableDoc;
+import de.metas.util.Check;
 
 /**
  * Immutable plain {@link IDunnableDoc}
@@ -55,7 +55,6 @@ public class DunnableDoc implements IDunnableDoc
 	private final Date graceDate;
 	private final int daysDue;
 	private final boolean inDispute;
-	private final int M_SectionCode_ID;
 
 	/**
 	 * create a dunnable doc
@@ -81,8 +80,8 @@ public class DunnableDoc implements IDunnableDoc
 			final BigDecimal totalAmt, final BigDecimal openAmt,
 			final Date dueDate, final Date graceDate,
 			final int daysDue,
-			final int M_SectionCode_ID,
-			boolean isInDispute)
+			boolean isInDispute
+			)
 	{
 		Check.assume(!Check.isEmpty(tableName, true), "tableName not empty");
 		Check.assume(record_id > 0, "record_id > 0");
@@ -111,7 +110,6 @@ public class DunnableDoc implements IDunnableDoc
 		this.graceDate = graceDate;
 		this.daysDue = daysDue;
 		this.inDispute = isInDispute;
-		this.M_SectionCode_ID = M_SectionCode_ID;
 	
 	}
 
@@ -204,22 +202,17 @@ public class DunnableDoc implements IDunnableDoc
 	}
 
 	@Override
+	public String toString()
+	{
+		return "DunnableDoc [tableName=" + tableName + ", record_id=" + record_id + ", C_BPartner_ID=" + C_BPartner_ID + ", C_BPatner_Location_ID=" + C_BPatner_Location_ID + ", Contact_ID="
+				+ Contact_ID + ", C_Currency_ID=" + C_Currency_ID + ", totalAmt=" + totalAmt + ", openAmt=" + openAmt + ", dueDate=" + dueDate + ", graceDate=" + graceDate + ", daysDue=" + daysDue
+				+ ", inDispute=" + inDispute + "]";
+	}
+
+	@Override
 	public String getDocumentNo()
 	{
 		return documentNo;
 	}
 
-	@Override
-	public int getM_SectionCode_ID()
-	{
-		return M_SectionCode_ID;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "DunnableDoc [tableName=" + tableName + ", record_id=" + record_id + ", C_BPartner_ID=" + C_BPartner_ID + ", C_BPatner_Location_ID=" + C_BPatner_Location_ID + ", Contact_ID="
-				+ Contact_ID + ", C_Currency_ID=" + C_Currency_ID + ", totalAmt=" + totalAmt + ", openAmt=" + openAmt + ", dueDate=" + dueDate + ", graceDate=" + graceDate + ", daysDue=" + daysDue
-				+ ", inDispute=" + inDispute + ", M_SectionCode_ID=" + M_SectionCode_ID + "]";
-	}
 }

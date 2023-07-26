@@ -22,16 +22,13 @@
 
 package de.metas.camel.externalsystems.alberta.product;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.alberta.product.processor.AlbertaProductApi;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.common.externalreference.v1.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.model.Article;
 import io.swagger.client.model.ArticleMapping;
@@ -44,7 +41,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.threeten.bp.LocalDate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -115,7 +111,7 @@ public class PushProductsRouteTests extends CamelTestSupport
 		context.start();
 
 		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule().addDeserializer(LocalDate.class, new LocalDateDeserializer()));
+		objectMapper.registerModule(new JavaTimeModule());
 
 		//validate get products request
 		final InputStream getProductsRequest = this.getClass().getResourceAsStream(JSON_MF_GET_PRODUCTS_REQUEST);
@@ -149,30 +145,30 @@ public class PushProductsRouteTests extends CamelTestSupport
 			final MockSuccessfullyCalledEndpoint successfullySentExternalReferenceRequest) throws Exception
 	{
 		AdviceWith.adviceWith(context, PUSH_PRODUCTS,
-							  advice -> {
-								  advice.weaveById(RETRIEVE_PRODUCTS_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_GET_PRODUCTS_REQUEST);
+										  advice -> {
+											  advice.weaveById(RETRIEVE_PRODUCTS_PROCESSOR_ID)
+													  .after()
+													  .to(MOCK_GET_PRODUCTS_REQUEST);
 
-								  advice.interceptSendToEndpoint("direct:" + MF_GET_PRODUCTS_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .process(new MockGetProductsFromMetasfreshProcessor());
-							  });
+											  advice.interceptSendToEndpoint("direct:" + MF_GET_PRODUCTS_ROUTE_ID)
+													  .skipSendToOriginalEndpoint()
+													  .process(new MockGetProductsFromMetasfreshProcessor());
+										  });
 
 		AdviceWith.adviceWith(context, PROCESS_PRODUCT_ROUTE_ID,
-							  advice -> {
-								  advice.weaveById(PREPARE_ARTICLE_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_UPSERT_ARTICLE_REQUEST);
+										  advice -> {
+											  advice.weaveById(PREPARE_ARTICLE_PROCESSOR_ID)
+													  .after()
+													  .to(MOCK_UPSERT_ARTICLE_REQUEST);
 
-								  advice.weaveById(PUSH_ARTICLE_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_REPORT_ARTICLE_ID_IN_METASFRESH);
+											  advice.weaveById(PUSH_ARTICLE_PROCESSOR_ID)
+													  .after()
+													  .to(MOCK_REPORT_ARTICLE_ID_IN_METASFRESH);
 
-								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
-										  .skipSendToOriginalEndpoint()
-										  .process(successfullySentExternalReferenceRequest);
-							  });
+											  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
+													  .skipSendToOriginalEndpoint()
+													  .process(successfullySentExternalReferenceRequest);
+										  });
 	}
 
 	private static class MockSuccessfullyCalledEndpoint implements Processor
@@ -221,15 +217,6 @@ public class PushProductsRouteTests extends CamelTestSupport
 					.thenReturn(articleMapping);
 
 			return albertaProductApi;
-		}
-	}
-
-	private static class LocalDateDeserializer extends JsonDeserializer<LocalDate>
-	{
-		@Override
-		public LocalDate deserialize(final JsonParser arg0, final DeserializationContext arg1) throws IOException
-		{
-			return LocalDate.parse(arg0.getText());
 		}
 	}
 }

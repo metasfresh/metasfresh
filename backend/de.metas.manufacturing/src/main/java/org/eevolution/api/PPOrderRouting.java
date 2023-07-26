@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.product.ProductId;
 import de.metas.workflow.WFDurationUnit;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -55,16 +54,13 @@ public class PPOrderRouting
 	//
 	// Activities
 	@Getter(AccessLevel.NONE)
-	@NonNull ImmutableList<PPOrderRoutingActivity> activities;
-	@Getter(AccessLevel.NONE)
 	ImmutableMap<PPOrderRoutingActivityCode, PPOrderRoutingActivity> activitiesByCode;
 	@Getter(AccessLevel.NONE)
 	PPOrderRoutingActivityCode firstActivityCode;
 	@Getter(AccessLevel.NONE)
 	ImmutableSetMultimap<PPOrderRoutingActivityCode, PPOrderRoutingActivityCode> codeToNextCodeMap;
 	ImmutableList<PPOrderRoutingProduct> products;
-
-	@Builder(toBuilder = true)
+	@Builder
 	private PPOrderRouting(
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final PPRoutingId routingId,
@@ -80,27 +76,9 @@ public class PPOrderRouting
 		this.durationUnit = durationUnit;
 		this.qtyPerBatch = qtyPerBatch != null ? qtyPerBatch : BigDecimal.ONE;
 		this.firstActivityCode = firstActivityCode;
-		this.activities = activities;
-		this.activitiesByCode = Maps.uniqueIndex(activities, PPOrderRoutingActivity::getCode);
+		activitiesByCode = Maps.uniqueIndex(activities, PPOrderRoutingActivity::getCode);
 		this.codeToNextCodeMap = codeToNextCodeMap;
 		this.products = products;
-	}
-
-	public PPOrderRouting copy()
-	{
-		return toBuilder()
-				.activities(this.activities.stream()
-						.map(PPOrderRoutingActivity::copy)
-						.collect(ImmutableList.toImmutableList()))
-				.products(this.products.stream()
-						.map(PPOrderRoutingProduct::copy)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-	}
-
-	public static boolean equals(@Nullable PPOrderRouting o1, @Nullable PPOrderRouting o2)
-	{
-		return Objects.equals(o1, o2);
 	}
 
 	public ImmutableCollection<PPOrderRoutingActivity> getActivities()
@@ -203,15 +181,6 @@ public class PPOrderRouting
 		return getNextActivityCodes(activity).isEmpty();
 	}
 
-	public ImmutableSet<ProductId> getProductIdsByActivityId(@NonNull final PPOrderRoutingActivityId activityId)
-	{
-		return getProducts()
-				.stream()
-				.filter(activityProduct -> activityProduct.getId() != null && PPOrderRoutingActivityId.equals(activityProduct.getId().getActivityId(), activityId))
-				.map(PPOrderRoutingProduct::getProductId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	public void voidIt()
 	{
 		getActivities().forEach(PPOrderRoutingActivity::voidIt);
@@ -220,11 +189,6 @@ public class PPOrderRouting
 	public void reportProgress(final PPOrderActivityProcessReport report)
 	{
 		getActivityById(report.getActivityId()).reportProgress(report);
-	}
-
-	public void completeActivity(final PPOrderRoutingActivityId activityId)
-	{
-		getActivityById(activityId).completeIt();
 	}
 
 	public void closeActivity(final PPOrderRoutingActivityId activityId)

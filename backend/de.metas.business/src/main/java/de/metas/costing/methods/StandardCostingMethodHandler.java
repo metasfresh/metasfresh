@@ -1,5 +1,10 @@
 package de.metas.costing.methods;
 
+import java.util.Objects;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Component;
+
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -15,10 +20,6 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 /*
  * #%L
@@ -57,7 +58,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -81,7 +82,6 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId());
 		final CostAmount amt = currentCosts.getCostPrice().multiply(qty);
-
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmountAndQty(amt, qty),
 				previousCosts);

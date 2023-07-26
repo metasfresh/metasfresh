@@ -36,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -146,7 +145,7 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public Set<String> getParameters(@Nullable final String contextTableName)
+	public Set<String> getParameters()
 	{
 		return PARAMETERS;
 	}

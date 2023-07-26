@@ -74,7 +74,6 @@ public class TableMViewBL implements ITableMViewBL
 
 	private static class MViewPartition
 	{
-		@SuppressWarnings("StringOperationCanBeSimplified")
 		public static final String TABLENAME_Source = new String();
 
 		private final String sourceTableName;
@@ -119,7 +118,7 @@ public class TableMViewBL implements ITableMViewBL
 		{
 			return "MViewSeqment [sourceTableName=" + sourceTableName + ", sourceWhere=" + sourceWhere + "]";
 		}
-	}
+	};
 
 	public TableMViewBL()
 	{
@@ -159,7 +158,7 @@ public class TableMViewBL implements ITableMViewBL
 	@Override
 	public List<I_AD_Table_MView> fetchForSourceTableName(Properties ctx, String sourceTableName)
 	{
-		List<I_AD_Table_MView> list = new ArrayList<>(fetchAll(ctx));
+		List<I_AD_Table_MView> list = new ArrayList<I_AD_Table_MView>(fetchAll(ctx));
 		Iterator<I_AD_Table_MView> it = list.iterator();
 		while (it.hasNext())
 		{
@@ -179,7 +178,7 @@ public class TableMViewBL implements ITableMViewBL
 		return list;
 	}
 
-	private final Map<Integer, MViewMetadata> metadata = new HashMap<>();
+	private final Map<Integer, MViewMetadata> metadata = new HashMap<Integer, MViewMetadata>();
 
 	@Override
 	public MViewMetadata getMetadata(I_AD_Table_MView mview)
@@ -310,7 +309,7 @@ public class TableMViewBL implements ITableMViewBL
 					{
 						final Query query = new Query(ctx, targetTableName, sqlMviewWhere.toString(), trxName)
 								.setParameters(getKeys(mdata, po));
-						final PO targetPO = query.firstOnly(PO.class);
+						final PO targetPO = query.firstOnly();
 						if (targetPO == null)
 						{
 							throw new AdempiereException("Target po not found for update on " + getSummary(mview) + ", " + query);
@@ -398,7 +397,7 @@ public class TableMViewBL implements ITableMViewBL
 
 	private List<Object> getKeys(MViewMetadata mdata, PO po)
 	{
-		List<Object> keys = new ArrayList<>();
+		List<Object> keys = new ArrayList<Object>();
 		for (String columnName : mdata.getTargetKeyColumns())
 		{
 			keys.add(po.get_Value(columnName));
@@ -431,7 +430,7 @@ public class TableMViewBL implements ITableMViewBL
 
 	private List<MViewPartition> createMViewSegments(MViewMetadata mdata, List<PO> sourcePOs)
 	{
-		List<MViewPartition> list = new ArrayList<>();
+		List<MViewPartition> list = new ArrayList<MViewPartition>();
 		if (sourcePOs == null || sourcePOs.isEmpty())
 			return list;
 
@@ -553,6 +552,9 @@ public class TableMViewBL implements ITableMViewBL
 	 * return false. This is useful because we don't want to condition the update of triggering PO to updating the
 	 * MView. That can be solved later
 	 * 
+	 * @param mview
+	 * @param po
+	 * @param trxName
 	 * @return true if updated, false if failed
 	 */
 	@Override
@@ -569,7 +571,7 @@ public class TableMViewBL implements ITableMViewBL
 			}
 
 			@Override
-			public boolean doCatch(Throwable e)
+			public boolean doCatch(Throwable e) throws Exception
 			{
 				// log the error, return true to rollback the transaction but don't throw it forward
 				log.error(e.getLocalizedMessage() + ", mview=" + mview + ", sourcePO=" + sourcePO + ", trxName=" + trxName, e);

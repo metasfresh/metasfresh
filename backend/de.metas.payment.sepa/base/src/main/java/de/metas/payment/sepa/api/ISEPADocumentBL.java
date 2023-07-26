@@ -22,12 +22,12 @@ package de.metas.payment.sepa.api;
  * #L%
  */
 
+import java.util.Date;
+import org.compiere.model.I_C_PaySelection;
+
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.ISingletonService;
-import org.compiere.model.I_C_PaySelection;
-
-import java.util.Date;
 
 public interface ISEPADocumentBL extends ISingletonService
 {
@@ -38,6 +38,6 @@ public interface ISEPADocumentBL extends ISingletonService
 	/**
 	 * Generates the SEPA Credit Transfer xml from the given export header.
 	 */
-	SEPACreditTransferXML exportCreditTransferXML(I_SEPA_Export sepaExport, SEPAExportContext exportContext);
+	SEPACreditTransferXML exportCreditTransferXML(I_SEPA_Export sepaExport);
 
 }

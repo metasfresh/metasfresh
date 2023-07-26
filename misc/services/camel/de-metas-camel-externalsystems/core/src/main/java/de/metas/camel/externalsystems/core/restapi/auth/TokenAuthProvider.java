@@ -33,9 +33,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class TokenAuthProvider implements AuthenticationProvider
 {
-	private final TokenBasedAuthService tokenService;
+	private final TokenService tokenService;
 
-	public TokenAuthProvider(@NonNull final TokenBasedAuthService tokenService)
+	public TokenAuthProvider(@NonNull final TokenService tokenService)
 	{
 		this.tokenService = tokenService;
 	}

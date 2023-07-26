@@ -22,6 +22,13 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationFactory;
@@ -35,27 +42,16 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
 
 /**
  * Aggregation Key Builder for {@link I_C_Invoice_Candidate}s.
- * <p>
+ *
  * This implementation gets the actual {@link IAggregationKeyBuilder} from {@link IAggregationFactory} using the settings from {@link I_C_Invoice_Candidate}, and delegates all the work to it.
  */
 public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBuilder<I_C_Invoice_Candidate>
 {
 	// services
 	protected final transient IInvoiceAggregationFactory invoiceAggregationFactory = Services.get(IInvoiceAggregationFactory.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final String aggregationUsageLevel;
 
@@ -98,6 +94,9 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 	 */
 	protected IAggregationKeyBuilder<I_C_Invoice_Candidate> getDelegate(final I_C_Invoice_Candidate ic)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+
 		final I_C_BPartner bpartner = bpartnerDAO.getById(ic.getBill_BPartner_ID(), I_C_BPartner.class);
 		if (bpartner == null)
 		{
@@ -106,16 +105,9 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
-		final Optional<IAggregationKeyBuilder<I_C_Invoice_Candidate>> customAggregationOpt = getCustomAggregationIfAny(ic, ctx);
-
-		if (customAggregationOpt.isPresent())
-		{
-			return customAggregationOpt.get();
-		}
-
 		final OrderId prepayOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
-		if (prepayOrderId != null
-				&& orderBL.isPrepay(prepayOrderId)
+		if (prepayOrderId !=null
+				&& Services.get(IOrderBL.class).isPrepay(prepayOrderId)
 				&& X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header.equals(aggregationUsageLevel))
 		{
 			return invoiceAggregationFactory.getPrepayOrderAggregationKeyBuilder(ctx);
@@ -142,28 +134,5 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 
 		final boolean same = Objects.equals(aggregationKey1, aggregationKey2);
 		return same;
-	}
-
-	@NonNull
-	private Optional<IAggregationKeyBuilder<I_C_Invoice_Candidate>> getCustomAggregationIfAny(
-			@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final Properties ctx)
-	{
-		final AdTableId tableId = AdTableId.ofRepoIdOrNull(ic.getAD_Table_ID());
-
-		if(tableId == null)
-		{
-			return Optional.empty();
-		}
-
-		final TableRecordReference icReferencedRecord = TableRecordReference.of(ic.getAD_Table_ID(), ic.getRecord_ID());
-
-		//dev-note: ugly workaround to avoid circular dependency for I_S_Issue
-		if (icReferencedRecord.getTableName().equals("S_Issue"))
-		{
-			return Optional.of(invoiceAggregationFactory.getIssueAggregationKeyBuilder(ctx, aggregationUsageLevel));
-		}
-
-		return Optional.empty();
 	}
 }

@@ -25,7 +25,6 @@ package de.metas.inoutcandidate.api;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -53,8 +52,6 @@ import java.util.Properties;
 public interface IReceiptScheduleBL extends ISingletonService
 {
 	void addReceiptScheduleListener(IReceiptScheduleListener listener);
-
-	<T extends I_M_ReceiptSchedule> T getById(@NonNull ReceiptScheduleId id, @NonNull Class<T> modelClass);
 
 	/**
 	 * Create {@link IInOutProducer} instance for given initial result

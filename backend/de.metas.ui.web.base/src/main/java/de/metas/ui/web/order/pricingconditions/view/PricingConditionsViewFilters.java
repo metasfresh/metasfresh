@@ -81,9 +81,9 @@ class PricingConditionsViewFilters
 				.setFilterId(FILTERID_IsCustomer)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.fieldName(PARAM_IsCustomer)
-						.displayName(Services.get(IMsgBL.class).translatable(PARAM_IsCustomer))
-						.widgetType(DocumentFieldWidgetType.YesNo))
+						.setFieldName(PARAM_IsCustomer)
+						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_IsCustomer))
+						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				.build();
 	}
 
@@ -93,9 +93,9 @@ class PricingConditionsViewFilters
 				.setFilterId(FILTERID_IsVendor)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.fieldName(PARAM_IsVendor)
-						.displayName(Services.get(IMsgBL.class).translatable(PARAM_IsVendor))
-						.widgetType(DocumentFieldWidgetType.YesNo))
+						.setFieldName(PARAM_IsVendor)
+						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_IsVendor))
+						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				.build();
 	}
 

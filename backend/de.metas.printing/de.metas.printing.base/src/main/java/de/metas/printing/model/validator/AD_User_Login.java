@@ -22,28 +22,26 @@ package de.metas.printing.model.validator;
  * #L%
  */
 
-import de.metas.hostkey.api.IHostKeyBL;
-import de.metas.organization.OrgId;
-import de.metas.printing.model.I_AD_User_Login;
-import de.metas.security.Role;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.hash.HashableString;
+
+import java.util.Properties;
+import java.util.Set;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import de.metas.hostkey.api.IHostKeyBL;
+import de.metas.printing.model.I_AD_User_Login;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
 
 @Interceptor(I_AD_User_Login.class)
 public class AD_User_Login
@@ -60,7 +58,8 @@ public class AD_User_Login
 	 * 
 	 * TODO: the exceptions don't make it to the client; instead of throwing exceptions, define a "loginResult" column, set its value an return it to the printing clients via export format.
 	 * 
-	 * Task http://dewiki908/mediawiki/index.php/08283_Provide_Host_Independent_Print_Client
+	 * @param loginRequest
+	 * @task http://dewiki908/mediawiki/index.php/08283_Provide_Host_Independent_Print_Client
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void processLoginRequest(final I_AD_User_Login loginRequest)
@@ -96,7 +95,7 @@ public class AD_User_Login
 		final String loginUsername = loginRequest.getUserName();
 		final HashableString loginPassword = HashableString.ofPlainValue(loginRequest.getPassword());
 		final Login login = new Login(loginCtx);
-		final List<Role> userRoles = login.authenticate(loginUsername, loginPassword).getAvailableRoles();
+		final Set<KeyNamePair> userRoles = login.authenticate(loginUsername, loginPassword);
 		if (userRoles.isEmpty())
 		{
 			throw new AdempiereException("User has no roles assigned: " + loginUsername);
@@ -106,7 +105,8 @@ public class AD_User_Login
 			// NOTE: don't show which roles are there because this message goes to client and it could be a security issue.
 			throw new AdempiereException("User has more than one role assigned.");
 		}
-		final Role userRole = userRoles.iterator().next();
+		final KeyNamePair userRole = userRoles.iterator().next();
+		Check.assume(userRole != null && userRole.getKey() > 0, "Role shall exist: {}", userRole);
 		final int adSessionId = Env.getAD_Session_ID(loginCtx);
 		if (adSessionId <= 0)
 		{
@@ -126,42 +126,42 @@ public class AD_User_Login
 		//
 		// 2. Get AD_Clients
 		// => Context update: AD_Role_ID
-		final Set<ClientId> clientIds = login.setRoleAndGetClients(userRole.getId());
-		if (clientIds == null || clientIds.isEmpty())
+		final Set<KeyNamePair> userADClients = login.setRoleAndGetClients(userRole);
+		if (userADClients == null || userADClients.isEmpty())
 		{
 			throw new AdempiereException("User is not assigned to an AD_Client");
 		}
-		else if (clientIds.size() != 1)
+		else if (userADClients.size() != 1)
 		{
 			throw new AdempiereException("User is assigned to more than one AD_Client");
 		}
-		final ClientId clientId = clientIds.iterator().next();
-		final String clientName = Services.get(IClientDAO.class).getClientNameById(clientId);
+		final KeyNamePair userADClient = userADClients.iterator().next();
+		Check.assumeNotNull(userADClient, "userADClient not null");
 
 		//
 		// 3. Get AD_Orgs
 		// => Context update: AD_Client_ID
-		final Set<OrgId> orgIds = login.setClientAndGetOrgs(clientId, clientName);
-		final OrgId orgId;
-		if (orgIds == null || orgIds.isEmpty())
+		final Set<KeyNamePair> userOrgs = login.setClientAndGetOrgs(userADClient);
+		final KeyNamePair userOrg;
+		if (userOrgs == null || userOrgs.isEmpty())
 		{
 			throw new AdempiereException("User is not assigned to an AD_Org");
 		}
-		else if (orgIds.size() != 1)
+		else if (userOrgs.size() != 1)
 		{
 			// if there are more then Orgs, we are going with organization "*"
-			orgId = OrgId.ANY;
+			userOrg = new KeyNamePair(0, "*");
 		}
 		else
 		{
-			orgId = orgIds.iterator().next();
+			userOrg = userOrgs.iterator().next();
 		}
 
 		//
 		// 4. Perform login
 		// => AD_Session will get updated
 		final boolean fireLoginComplete = false; // we don't need to because we are just doing a quick-login, server side. Before activating this, pls test and check the implications.
-		final String loginError = login.validateLogin(orgId, fireLoginComplete);
+		final String loginError = login.validateLogin(userOrg, fireLoginComplete);
 		if (!Check.isEmpty(loginError, true))
 		{
 			throw new AdempiereException("Login refused: " + loginError);

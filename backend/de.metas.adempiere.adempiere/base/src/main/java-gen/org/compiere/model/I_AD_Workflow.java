@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Workflow
  *  @author metasfresh (generated) 
@@ -98,7 +97,8 @@ public interface I_AD_Workflow
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Responsible.
+	 * Set Betreuer.
+	 * Person, die bei einem fachlichen Problem vom System informiert wird.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -107,7 +107,8 @@ public interface I_AD_Workflow
 	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
 	/**
-	 * Get Responsible.
+	 * Get Betreuer.
+	 * Person, die bei einem fachlichen Problem vom System informiert wird.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

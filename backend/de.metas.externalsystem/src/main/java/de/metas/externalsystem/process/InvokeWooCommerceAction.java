@@ -29,7 +29,6 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
-import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
@@ -44,7 +43,7 @@ import java.util.Map;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
 
-public class InvokeWooCommerceAction extends AlterExternalSystemServiceStatusAction
+public class InvokeWooCommerceAction extends InvokeExternalSystemProcess
 {
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 

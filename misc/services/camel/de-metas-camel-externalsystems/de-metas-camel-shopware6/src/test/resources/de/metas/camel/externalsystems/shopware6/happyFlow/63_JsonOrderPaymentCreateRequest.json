@@ -1,6 +1,6 @@
 {
   "amount": 100,
-  "bpartnerIdentifier": "customerId",
+  "bpartnerIdentifier": "ext-Shopware6-customerId",
   "currencyCode": "EUR",
   "discountAmt": null,
   "writeOffAmt": null,

@@ -1,15 +1,15 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import org.compiere.util.TimeUtil;
+
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -50,16 +50,6 @@ public class MainRowBucketId
 	{
 		return new MainRowBucketId(
 				ProductId.ofRepoId(stockRecord.getM_Product_ID()),
-				date);
-	}
-
-	@NonNull
-	public static MainRowBucketId createInstanceForQuantitiesRecord(
-			@NonNull final I_QtyDemand_QtySupply_V qtyRecord,
-			@NonNull final LocalDate date)
-	{
-		return new MainRowBucketId(
-				ProductId.ofRepoId(qtyRecord.getM_Product_ID()),
 				date);
 	}
 

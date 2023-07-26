@@ -25,7 +25,7 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 	@Param(parameterName = PARAM_ApprovedBy_ID, mandatory = true)
 	private int approvedByUserRepoId = -1;
 
-	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.distributed("de.metas.bpartner.UserNotifications.CreditLimit");
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.bpartner.UserNotifications.CreditLimit");
 
 	private static final AdMessageKey MSG_Event_RequestApproval = AdMessageKey.of("org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval");
 

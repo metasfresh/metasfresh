@@ -36,11 +36,9 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.service.ReconcileAsBankTransferRequest;
 import de.metas.currency.Amount;
-import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
@@ -58,9 +56,9 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,7 +132,7 @@ public class BankStatementBL implements IBankStatementBL
 		if (bankStatement.isPosted())
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
-			MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+			MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
 			factAcctDAO.deleteForDocumentModel(bankStatement);
 
@@ -346,14 +344,11 @@ public class BankStatementBL implements IBankStatementBL
 		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoiceId);
 
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
 
-		if (bankStatementLine.isUpdateAmountsFromInvoice())
-		{
-			bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
-			bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
-			bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
-		}
+		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
+		bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
+		bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
+		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
 	}
 
 	@Override
@@ -370,7 +365,7 @@ public class BankStatementBL implements IBankStatementBL
 	public PaymentCurrencyContext getPaymentCurrencyContext(@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
 		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
-				.currencyConversionTypeId(getPaymentCurrencyConversionTypeId(bankStatementLine));
+				.currencyConversionTypeId(null);
 
 		final BigDecimal fixedCurrencyRate = bankStatementLine.getCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
@@ -422,16 +417,4 @@ public class BankStatementBL implements IBankStatementBL
 		return moneyService.getBaseCurrencyId(clientAndOrgId);
 	}
 
-	@Nullable
-	private CurrencyConversionTypeId getPaymentCurrencyConversionTypeId(@NonNull final I_C_BankStatementLine bankStatementLine)
-	{
-		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
-
-		if (paymentId == null)
-		{
-			return null;
-		}
-
-		return paymentBL.getCurrencyConversionTypeId(paymentId).orElse(null);
-	}
 }

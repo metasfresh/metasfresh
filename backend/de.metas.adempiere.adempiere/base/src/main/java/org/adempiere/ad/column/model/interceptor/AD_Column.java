@@ -1,22 +1,17 @@
 package org.adempiere.ad.column.model.interceptor;
 
-import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.security.impl.ParsedSql;
 import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
@@ -29,9 +24,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /*
  * #%L
@@ -66,67 +58,30 @@ public class AD_Column
 			ifColumnsChanged = I_AD_Column.COLUMNNAME_ColumnSQL)
 	public void onBeforeSave_lowerCaseWhereClause(final I_AD_Column column)
 	{
-		final String columnSql = StringUtils.trimBlankToNull(column.getColumnSQL());
-		if (columnSql == null)
+		final String columnSQL = column.getColumnSQL();
+		if (Check.isEmpty(columnSQL, true))
 		{
 			// nothing to do
 			return;
 		}
 
-		final String columnSqlFixed = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(columnSql);
-		column.setColumnSQL(columnSqlFixed);
+		final String adaptedWhereClause = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
 
-		validateColumnSql(getTableName(column), columnSqlFixed);
-	}
-
-	private void validateColumnSql(
-			@NonNull final String ctxTableName,
-			@NonNull final String columnSqlString)
-	{
-		final String columnSqlStringAdapted = ColumnSql.ofSql(columnSqlString, ctxTableName)
-				.withJoinOnTableNameOrAlias("master")
-				.toSqlStringWrappedInBracketsIfNeeded();
-
-		final String sql = "SELECT"
-				+ " " + columnSqlStringAdapted
-				+ " FROM " + ctxTableName + " master"
-				+ " LIMIT 1";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			rs = pstmt.executeQuery();
-		}
-		catch (final SQLException ex)
-		{
-			throw new AdempiereException("Invalid Column SQL. Hints:"
-					+ "\n 1. To reference context table name, always use the right case, e.g. C_Invoice instead of c_invoice"
-					+ "\n 2. If in your sub-query you need to join again the context table name, consider using @JoinTableNameOrAliasIncludingDot@ to reference the context table name. Pls search for examples."
-					+ "\n 3. If you think this validation is not correct, feel free to temporary deactivate this check.", ex)
-					.setParameter("Test SQL", sql)
-					.appendParametersToMessage();
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+		column.setColumnSQL(adaptedWhereClause);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_AD_Column.COLUMNNAME_MandatoryLogic, I_AD_Column.COLUMNNAME_ReadOnlyLogic })
 	public void onBeforeSave_ValidateLogicExpressions(final I_AD_Column column)
 	{
-		final String readOnlyLogic = StringUtils.trimBlankToNull(column.getReadOnlyLogic());
-		if (readOnlyLogic != null)
+		if (!Check.isEmpty(column.getReadOnlyLogic(), true))
 		{
-			LogicExpressionCompiler.instance.compile(readOnlyLogic);
+			LogicExpressionCompiler.instance.compile(column.getReadOnlyLogic());
 		}
 
-		final String mandatoryLogic = StringUtils.trimBlankToNull(column.getMandatoryLogic());
-		if (mandatoryLogic != null)
+		if (!Check.isEmpty(column.getMandatoryLogic(), true))
 		{
-			LogicExpressionCompiler.instance.compile(mandatoryLogic);
+			LogicExpressionCompiler.instance.compile(column.getMandatoryLogic());
 		}
 	}
 
@@ -143,19 +98,20 @@ public class AD_Column
 			final MLookupInfo lookupInfo;
 			try
 			{
-				final String ctxTableName = getTableName(column);
-				lookupInfo = MLookupFactory.newInstance().getLookupInfo(
+				final String ctxTableName = tableDAO.retrieveTableName(column.getAD_Table_ID());
+				lookupInfo = MLookupFactory.getLookupInfo(
 						Integer.MAX_VALUE, // WindowNo
 						adReferenceId,
 						ctxTableName, // ctxTableName
 						column.getColumnName(), // ctxColumnName
-						ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID()),
+						column.getAD_Reference_Value_ID(),
 						column.isParent(), // IsParent,
-						AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()) //AD_Val_Rule_ID
+						column.getAD_Val_Rule_ID() //AD_Val_Rule_ID
 				);
 			}
 			catch (final Exception ex)
 			{
+				//noinspection ThrowableNotThrown
 				fireExceptionInvalidLookup(logger, ex);
 				return;
 			}
@@ -212,12 +168,13 @@ public class AD_Column
 			throw new AdempiereException("Only text columns are translatable");
 		}
 
-		if (tableDAO.isVirtualColumn(adColumn))
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+		if (adTablesRepo.isVirtualColumn(adColumn))
 		{
 			throw new AdempiereException("Virtual columns are not translatable");
 		}
 
-		final String tableName = getTableName(adColumn);
+		final String tableName = adTablesRepo.retrieveTableName(adColumn.getAD_Table_ID());
 		final String trlTableName = POTrlRepository.toTrlTableName(tableName);
 		final String columnName = adColumn.getColumnName();
 
@@ -227,53 +184,4 @@ public class AD_Column
 					+ "\n If not, please manually create the table and/or column.");
 		}
 	}
-
-	private String getTableName(final I_AD_Column adColumn)
-	{
-		return tableDAO.retrieveTableName(AdTableId.ofRepoId(adColumn.getAD_Table_ID()));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = { I_AD_Column.COLUMNNAME_ColumnName, I_AD_Column.COLUMNNAME_AD_Reference_ID })
-	public void onBeforeSave_assertColumnNameValid(final I_AD_Column adColumn)
-	{
-		assertColumnNameValid(adColumn.getColumnName(), adColumn.getAD_Reference_ID());
-	}
-
-	private void assertColumnNameValid(@NonNull final String columnName, final int displayType)
-	{
-		if (DisplayType.isID(displayType) && displayType != DisplayType.Account)
-		{
-			if (!columnName.endsWith("_ID")
-					&& !columnName.equals("CreatedBy")
-					&& !columnName.equals("UpdatedBy"))
-			{
-				throw new AdempiereException("Lookup or ID columns shall have the name ending with `_ID`");
-			}
-
-			if (displayType == DisplayType.Locator && !columnName.contains("Locator"))
-			{
-				throw new AdempiereException("A Locator column name must contain the term `Locator`.");
-			}
-		}
-		else if (displayType == DisplayType.Account)
-		{
-			if (!columnName.endsWith("_Acct"))
-			{
-				throw new AdempiereException("Account columns shall have the name ending with `_Acct`");
-			}
-		}
-		else
-		{
-			if (columnName.endsWith("_ID"))
-			{
-				throw new AdempiereException("Ending a non lookup column wiht `_ID` is might be misleading");
-			}
-			if (columnName.endsWith("_Acct"))
-			{
-				throw new AdempiereException("Ending a non Account column wiht `_Acct` is might be misleading");
-			}
-		}
-	}
-
 }

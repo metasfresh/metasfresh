@@ -30,7 +30,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -80,12 +79,6 @@ public class AlbertaPatient
 
 	@Nullable
 	String deactivationComment;
-
-	@Nullable
-	String classification;
-
-	@Nullable
-	BigDecimal careDegree;
 
 	@Nullable
 	Instant createdAt;

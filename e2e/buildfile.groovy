@@ -6,9 +6,7 @@
 @Library('misc')
 import de.metas.jenkins.DockerConf
 
-def build(final Map scmVars, 
-          final boolean forceBuild=false,
-          final boolean forceSkip=false)
+def build(final Map scmVars, final boolean forceBuild=false)
 {
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 	//final String MF_VERSION = retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)
@@ -19,14 +17,6 @@ def build(final Map scmVars,
 				<h2>e2e</h2>
 			"""
 
-    if (forceSkip) {
-      currentBuild.description = """${currentBuild.description}<p/>
-            Forced to skip.
-            """
-      echo "forced to skip e2e"
-      return
-    }
-    
     def anyFileChanged
     try {
       def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
@@ -44,8 +34,8 @@ def build(final Map scmVars,
       currentBuild.description= """${currentBuild.description}<p/>
 					No changes happened in e2e.
 					"""
-      echo "no changes happened in e2e; skip building e2e"
-      return
+      echo "no changes happened in e2e; skip building e2e";
+      return;
     }
 
 		final def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
@@ -58,15 +48,15 @@ def build(final Map scmVars,
 			env.MF_VERSION, // versionSuffix
 			'.', // workDir
 			additionalBuildArgs
-		)
-		final String publishedE2eDockerImageName
+		);
+		final String publishedE2eDockerImageName;
 		// stage('Build and push e2e docker image')
 		// {
 			// echo "e2eDockerConf=${e2eDockerConf.toString()}"
 			publishedE2eDockerImageName = dockerBuildAndPush(e2eDockerConf)
 		// }
 
-		final String e2eDockerImageNameNoRegistry=publishedE2eDockerImageName.substring("${e2eDockerConf.pushRegistry}/".length())
+		final String e2eDockerImageNameNoRegistry=publishedE2eDockerImageName.substring("${e2eDockerConf.pushRegistry}/".length());
 
 		currentBuild.description="""${currentBuild.description}<br/>
 		This build's main artifact (if not yet cleaned up) is
@@ -106,4 +96,4 @@ def build(final Map scmVars,
 	} // stage
 }
 
-return this
+return this;

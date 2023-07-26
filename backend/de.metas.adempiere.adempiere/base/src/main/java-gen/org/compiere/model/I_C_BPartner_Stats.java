@@ -1,98 +1,126 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_Stats
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_BPartner_Stats 
 {
 
-	String Table_Name = "C_BPartner_Stats";
+    /** TableName=C_BPartner_Stats */
+    public static final String Table_Name = "C_BPartner_Stats";
 
-//	/** AD_Table_ID=540763 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540763 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Set Actual Life Time Value.
-	 * Actual Life Time Revenue
+	 * Set Aktueller Gesamtertrag.
+	 * Aktueller Gesamtertrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setActualLifeTimeValue (@Nullable BigDecimal ActualLifeTimeValue);
+	public void setActualLifeTimeValue (java.math.BigDecimal ActualLifeTimeValue);
 
 	/**
-	 * Get Actual Life Time Value.
-	 * Actual Life Time Revenue
+	 * Get Aktueller Gesamtertrag.
+	 * Aktueller Gesamtertrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getActualLifeTimeValue();
+	public java.math.BigDecimal getActualLifeTimeValue();
 
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_ActualLifeTimeValue = new ModelColumn<>(I_C_BPartner_Stats.class, "ActualLifeTimeValue", null);
-	String COLUMNNAME_ActualLifeTimeValue = "ActualLifeTimeValue";
+    /** Column definition for ActualLifeTimeValue */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_ActualLifeTimeValue = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "ActualLifeTimeValue", null);
+    /** Column name ActualLifeTimeValue */
+    public static final String COLUMNNAME_ActualLifeTimeValue = "ActualLifeTimeValue";
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
 
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Org_ID (int AD_Org_ID);
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_AD_Client>(I_C_BPartner_Stats.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
-
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Business Partner.
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Business Partner.
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_AD_Org>(I_C_BPartner_Stats.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_C_BPartner>(I_C_BPartner_Stats.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set C_BPartner_Stats.
@@ -101,7 +129,7 @@ public interface I_C_BPartner_Stats
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_Stats_ID (int C_BPartner_Stats_ID);
+	public void setC_BPartner_Stats_ID (int C_BPartner_Stats_ID);
 
 	/**
 	 * Get C_BPartner_Stats.
@@ -110,14 +138,16 @@ public interface I_C_BPartner_Stats
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_Stats_ID();
+	public int getC_BPartner_Stats_ID();
 
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_C_BPartner_Stats_ID = new ModelColumn<>(I_C_BPartner_Stats.class, "C_BPartner_Stats_ID", null);
-	String COLUMNNAME_C_BPartner_Stats_ID = "C_BPartner_Stats_ID";
+    /** Column definition for C_BPartner_Stats_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_C_BPartner_Stats_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "C_BPartner_Stats_ID", null);
+    /** Column name C_BPartner_Stats_ID */
+    public static final String COLUMNNAME_C_BPartner_Stats_ID = "C_BPartner_Stats_ID";
 
 	/**
-	 * Set Currency.
-	 * The Currency for this record
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -125,272 +155,208 @@ public interface I_C_BPartner_Stats
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setC_Currency_ID (int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Currency.
-	 * The Currency for this record
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	int getC_Currency_ID();
+	public int getC_Currency_ID();
 
-	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	@Deprecated
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_C_Currency>(I_C_BPartner_Stats.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Created = new ModelColumn<>(I_C_BPartner_Stats.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_AD_User>(I_C_BPartner_Stats.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Credit limit Usage.
+	 * Set Credit limit indicator %.
 	 * Percent of Credit used from the limit
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCreditLimitIndicator (@Nullable java.lang.String CreditLimitIndicator);
+	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator);
 
 	/**
-	 * Get Credit limit Usage.
+	 * Get Credit limit indicator %.
 	 * Percent of Credit used from the limit
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCreditLimitIndicator();
+	public java.lang.String getCreditLimitIndicator();
 
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_CreditLimitIndicator = new ModelColumn<>(I_C_BPartner_Stats.class, "CreditLimitIndicator", null);
-	String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
-
-	/**
-	 * Set Delivery credit limit indicator %.
-	 * Percent of Credit used from the limit
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDeliveryCreditLimitIndicator (@Nullable java.lang.String DeliveryCreditLimitIndicator);
+    /** Column definition for CreditLimitIndicator */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_CreditLimitIndicator = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "CreditLimitIndicator", null);
+    /** Column name CreditLimitIndicator */
+    public static final String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
 
 	/**
-	 * Get Delivery credit limit indicator %.
-	 * Percent of Credit used from the limit
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getDeliveryCreditLimitIndicator();
-
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_DeliveryCreditLimitIndicator = new ModelColumn<>(I_C_BPartner_Stats.class, "DeliveryCreditLimitIndicator", null);
-	String COLUMNNAME_DeliveryCreditLimitIndicator = "DeliveryCreditLimitIndicator";
-
-	/**
-	 * Set Delivery Credit Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDelivery_CreditStatus (@Nullable java.lang.String Delivery_CreditStatus);
-
-	/**
-	 * Get Delivery Credit Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getDelivery_CreditStatus();
-
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Delivery_CreditStatus = new ModelColumn<>(I_C_BPartner_Stats.class, "Delivery_CreditStatus", null);
-	String COLUMNNAME_Delivery_CreditStatus = "Delivery_CreditStatus";
-
-	/**
-	 * Set Delivery Credit Used.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDelivery_CreditUsed (@Nullable BigDecimal Delivery_CreditUsed);
-
-	/**
-	 * Get Delivery Credit Used.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getDelivery_CreditUsed();
-
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Delivery_CreditUsed = new ModelColumn<>(I_C_BPartner_Stats.class, "Delivery_CreditUsed", null);
-	String COLUMNNAME_Delivery_CreditUsed = "Delivery_CreditUsed";
-
-	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BPartner_Stats.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_BPartner_Stats.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
-
-	/**
-	 * Set Open Balance.
-	 * Total Open Balance Amount in primary Accounting Currency
+	 * Set Offene Posten.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOpenItems (@Nullable BigDecimal OpenItems);
+	public void setOpenItems (java.math.BigDecimal OpenItems);
 
 	/**
-	 * Get Open Balance.
-	 * Total Open Balance Amount in primary Accounting Currency
+	 * Get Offene Posten.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getOpenItems();
+	public java.math.BigDecimal getOpenItems();
 
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_OpenItems = new ModelColumn<>(I_C_BPartner_Stats.class, "OpenItems", null);
-	String COLUMNNAME_OpenItems = "OpenItems";
+    /** Column definition for OpenItems */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_OpenItems = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "OpenItems", null);
+    /** Column name OpenItems */
+    public static final String COLUMNNAME_OpenItems = "OpenItems";
 
 	/**
-	 * Set Credit Status.
-	 * Business Partner Credit Status
+	 * Set Kredit gewährt.
+	 * Gegenwärtiger Aussenstand
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSO_CreditUsed (java.math.BigDecimal SO_CreditUsed);
+
+	/**
+	 * Get Kredit gewährt.
+	 * Gegenwärtiger Aussenstand
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getSO_CreditUsed();
+
+    /** Column definition for SO_CreditUsed */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SO_CreditUsed = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "SO_CreditUsed", null);
+    /** Column name SO_CreditUsed */
+    public static final String COLUMNNAME_SO_CreditUsed = "SO_CreditUsed";
+
+	/**
+	 * Set Kreditstatus.
+	 * Kreditstatus des Geschäftspartners
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSOCreditStatus (@Nullable java.lang.String SOCreditStatus);
+	public void setSOCreditStatus (java.lang.String SOCreditStatus);
 
 	/**
-	 * Get Credit Status.
-	 * Business Partner Credit Status
+	 * Get Kreditstatus.
+	 * Kreditstatus des Geschäftspartners
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getSOCreditStatus();
+	public java.lang.String getSOCreditStatus();
 
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SOCreditStatus = new ModelColumn<>(I_C_BPartner_Stats.class, "SOCreditStatus", null);
-	String COLUMNNAME_SOCreditStatus = "SOCreditStatus";
-
-	/**
-	 * Set Credit Used.
-	 * Current open balance
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSO_CreditUsed (@Nullable BigDecimal SO_CreditUsed);
+    /** Column definition for SOCreditStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SOCreditStatus = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "SOCreditStatus", null);
+    /** Column name SOCreditStatus */
+    public static final String COLUMNNAME_SOCreditStatus = "SOCreditStatus";
 
 	/**
-	 * Get Credit Used.
-	 * Current open balance
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getSO_CreditUsed();
-
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_SO_CreditUsed = new ModelColumn<>(I_C_BPartner_Stats.class, "SO_CreditUsed", null);
-	String COLUMNNAME_SO_CreditUsed = "SO_CreditUsed";
-
-	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Updated = new ModelColumn<>(I_C_BPartner_Stats.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, org.compiere.model.I_AD_User>(I_C_BPartner_Stats.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -1,10 +1,9 @@
 package de.metas.ui.web.debug;
 
-import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.device.rest.DummyDevicesRestControllerTemplate;
+import de.metas.device.pool.dummy.DummyDevicesRestControllerTemplate;
 import de.metas.ui.web.session.UserSession;
 import lombok.NonNull;
 
@@ -38,11 +37,8 @@ public class DebugDummyDevicesRestController extends DummyDevicesRestControllerT
 
 	private final UserSession userSession;
 
-	public DebugDummyDevicesRestController(
-			final @NonNull UserSession userSession,
-			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory)
+	public DebugDummyDevicesRestController(@NonNull final UserSession userSession)
 	{
-		super(deviceAccessorsHubFactory);
 		this.userSession = userSession;
 	}
 

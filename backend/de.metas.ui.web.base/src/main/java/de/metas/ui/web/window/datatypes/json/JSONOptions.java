@@ -1,25 +1,26 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.time.ZoneId;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
+
 import de.metas.common.util.time.SystemTime;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
-import java.time.ZoneId;
 
 /*
  * #%L
@@ -47,6 +48,7 @@ import java.time.ZoneId;
  * JSON context: provide different options and filters to be used when the API responses are converted to/from JSON.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @ToString(doNotUseGetters = true)
 @EqualsAndHashCode(doNotUseGetters = true)
@@ -55,13 +57,8 @@ public class JSONOptions
 {
 	public static JSONOptionsBuilder prepareFrom(@NonNull final UserSession userSession)
 	{
-		final JSONDocumentPermissions documentPermissions = userSession.isLoggedIn()
-				? new JSONDocumentPermissions(userSession.getUserRolePermissions())
-				: null;
-
 		return builder()
 				.adLanguage(extractAdLanguageFromUserSession(userSession))
-				.documentPermissions(documentPermissions)
 				.zoneId(userSession.getTimeZone());
 	}
 
@@ -87,17 +84,14 @@ public class JSONOptions
 
 	private final String adLanguage;
 	private final ZoneId zoneId;
-	@Nullable private final JSONDocumentPermissions documentPermissions;
 
 	@Builder(toBuilder = true)
 	private JSONOptions(
 			@NonNull final String adLanguage,
-			@Nullable final ZoneId zoneId,
-			@Nullable final JSONDocumentPermissions documentPermissions)
+			@Nullable final ZoneId zoneId)
 	{
 		this.adLanguage = adLanguage;
 		this.zoneId = zoneId != null ? zoneId : SystemTime.zoneId();
-		this.documentPermissions = documentPermissions;
 	}
 
 	public JSONOptions withAdLanguage(@NonNull final String adLanguage)
@@ -155,12 +149,7 @@ public class JSONOptions
 			return null;
 		}
 
-		return ((ServletRequestAttributes)requestAttributes).getRequest();
+		final HttpServletRequest servletRequest = ((ServletRequestAttributes)requestAttributes).getRequest();
+		return servletRequest;
 	}
-
-	public DocumentFieldLogicExpressionResultRevaluator getLogicExpressionResultRevaluator()
-	{
-		return documentPermissions != null ? documentPermissions.getLogicExpressionResultRevaluator() : DocumentFieldLogicExpressionResultRevaluator.DEFAULT;
-	}
-
 }

@@ -27,6 +27,11 @@ import java.math.BigDecimal;
 
 public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
 {
+	// @formatter:off
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+	int getAD_InputDataSource_ID();
+	void setAD_InputDataSource_ID(int AD_InputDataSource_ID);
+
 	String COLUMNNAME_InvoiceStatus = "InvoiceStatus";
 	String getInvoiceStatus();
 	void setInvoiceStatus(String InvoiceStatus);

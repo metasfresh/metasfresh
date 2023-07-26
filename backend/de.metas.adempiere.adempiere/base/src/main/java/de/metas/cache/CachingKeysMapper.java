@@ -1,9 +1,10 @@
 package de.metas.cache;
 
-import de.metas.cache.model.CacheInvalidateRequest;
+import java.util.Collection;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import java.util.Collection;
+import de.metas.cache.model.CacheInvalidateRequest;
 
 /*
  * #%L
@@ -46,13 +47,8 @@ public interface CachingKeysMapper<CK>
 	 */
 	Collection<CK> computeCachingKeys(TableRecordReference recordRef);
 
-	/** 
-	 * If this method returns <code>true</code>, then the whole cache needs resetting.
-	 * 
-	 * IMPORTANT: make sure to return true if the caching-key to reset can't be extracted by {@link #computeCachingKeys(TableRecordReference)}.
-	 * This might be the case if the record in question was deleted.
-	 */
-	default boolean isResetAll(final TableRecordReference recordRef)
+	/** If this method returns <code>true</code>, then the whole cache needs resetting. */
+	default boolean isResetAll(TableRecordReference recordRef)
 	{
 		return false;
 	}

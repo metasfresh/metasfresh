@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1478315210L;
+	private static final long serialVersionUID = 342384539L;
 
     /** Standard Constructor */
     public X_C_OrderTax (final Properties ctx, final int C_OrderTax_ID, @Nullable final String trxName)
@@ -105,18 +105,6 @@ public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax,
 	}
 
 	@Override
-	public void setIsReverseCharge (final boolean IsReverseCharge)
-	{
-		set_Value (COLUMNNAME_IsReverseCharge, IsReverseCharge);
-	}
-
-	@Override
-	public boolean isReverseCharge() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsReverseCharge);
-	}
-
-	@Override
 	public void setIsTaxIncluded (final boolean IsTaxIncluded)
 	{
 		set_Value (COLUMNNAME_IsTaxIncluded, IsTaxIncluded);
@@ -150,19 +138,6 @@ public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax,
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
-	}
-
-	@Override
-	public void setReverseChargeTaxAmt (final BigDecimal ReverseChargeTaxAmt)
-	{
-		set_Value (COLUMNNAME_ReverseChargeTaxAmt, ReverseChargeTaxAmt);
-	}
-
-	@Override
-	public BigDecimal getReverseChargeTaxAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ReverseChargeTaxAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

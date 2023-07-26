@@ -1,14 +1,16 @@
 package de.metas.acct.api;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.Arrays;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.X_C_AcctSchema_Element;
 
-import java.util.Arrays;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,10 +59,6 @@ public enum AcctSchemaElementType
 	UserElementString5(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString5, I_C_ValidCombination.COLUMNNAME_UserElementString5),//
 	UserElementString6(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString6, I_C_ValidCombination.COLUMNNAME_UserElementString6),//
 	UserElementString7(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString7, I_C_ValidCombination.COLUMNNAME_UserElementString7),//
-	SalesOrder(X_C_AcctSchema_Element.ELEMENTTYPE_SalesOrder, I_C_ValidCombination.COLUMNNAME_C_OrderSO_ID),//
-	SectionCode(X_C_AcctSchema_Element.ELEMENTTYPE_SectionCode, I_C_ValidCombination.COLUMNNAME_M_SectionCode_ID),
-	UserElementDate1(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementDate1, I_C_ValidCombination.COLUMNNAME_UserElementDate1),//
-	UserElementDate2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementDate2, I_C_ValidCombination.COLUMNNAME_UserElementDate2)//
 
 	;
 
@@ -98,7 +96,6 @@ public enum AcctSchemaElementType
 
 	private static final ImmutableMap<String, AcctSchemaElementType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), AcctSchemaElementType::getCode);
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isDeletable()
 	{
 		// Acct Schema Elements "Account" and "Org" should be mandatory - teo_sarca BF [ 1795817 ]

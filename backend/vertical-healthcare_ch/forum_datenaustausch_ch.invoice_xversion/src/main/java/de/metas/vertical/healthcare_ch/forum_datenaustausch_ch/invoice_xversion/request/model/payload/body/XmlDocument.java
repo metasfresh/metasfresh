@@ -42,9 +42,6 @@ public class XmlDocument
 	String viewer;
 
 	@Nullable
-	String title;
-
-	@Nullable
 	String url;
 
 	@Nullable

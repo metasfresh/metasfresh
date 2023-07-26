@@ -1,15 +1,16 @@
 package de.metas.freighcost;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.Arrays;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Order;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,27 +46,25 @@ public enum FreightCostRule implements ReferenceListAwareEnum
 	@Getter
 	private final String code;
 
-	FreightCostRule(@NonNull final String code)
+	private FreightCostRule(@NonNull final String code)
 	{
 		this.code = code;
 	}
 
-	@Nullable
-	public static FreightCostRule ofNullableCode(@Nullable final String code)
+	public static FreightCostRule ofNullableCode(final String code)
 	{
 		final FreightCostRule defaultWhenNull = null;
 		return ofNullableCodeOr(code, defaultWhenNull);
 	}
 
-	@Nullable
-	public static FreightCostRule ofNullableCodeOr(@Nullable final String code, @Nullable final FreightCostRule defaultWhenNull)
+	public static FreightCostRule ofNullableCodeOr(final String code, final FreightCostRule defaultWhenNull)
 	{
 		return code != null ? ofCode(code) : defaultWhenNull;
 	}
 
 	public static FreightCostRule ofCode(@NonNull final String code)
 	{
-		final FreightCostRule type = typesByCode.get(code);
+		FreightCostRule type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + FreightCostRule.class + " found for code: " + code);
@@ -85,7 +84,6 @@ public enum FreightCostRule implements ReferenceListAwareEnum
 		return !isFixPrice();
 	}
 
-	@Nullable
 	public static String toCodeOrNull(final FreightCostRule type)
 	{
 		return type != null ? type.getCode() : null;

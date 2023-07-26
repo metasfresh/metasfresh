@@ -1,220 +1,150 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for AD_Sequence_No
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
+ *  @version Release 3.5.4a
  */
-@SuppressWarnings("unused")
 public interface I_AD_Sequence_No 
 {
 
-	String Table_Name = "AD_Sequence_No";
+    /** TableName=AD_Sequence_No */
+    public static final String Table_Name = "AD_Sequence_No";
 
-//	/** AD_Table_ID=122 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=122 */
+    public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
+    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Client_ID();
+    /** AccessLevel = 6 - System - Client 
+     */
+    BigDecimal accessLevel = BigDecimal.valueOf(6);
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Load Meta Data */
 
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Org_ID (int AD_Org_ID);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
+	/** Get Client.
+	  * Client/Tenant for this installation.
+	  */
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/**
-	 * Set Sequence.
-	 * Document Sequence
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Sequence_ID (int AD_Sequence_ID);
+	/** Set Organization.
+	  * Organizational entity within client
+	  */
+	public void setAD_Org_ID (int AD_Org_ID);
 
-	/**
-	 * Get Sequence.
-	 * Document Sequence
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Sequence_ID();
+	/** Get Organization.
+	  * Organizational entity within client
+	  */
+	public int getAD_Org_ID();
 
-	org.compiere.model.I_AD_Sequence getAD_Sequence();
+    /** Column name AD_Sequence_ID */
+    public static final String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
 
-	void setAD_Sequence(org.compiere.model.I_AD_Sequence AD_Sequence);
+	/** Set Sequence.
+	  * Document Sequence
+	  */
+	public void setAD_Sequence_ID (int AD_Sequence_ID);
 
-	ModelColumn<I_AD_Sequence_No, org.compiere.model.I_AD_Sequence> COLUMN_AD_Sequence_ID = new ModelColumn<>(I_AD_Sequence_No.class, "AD_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
-	String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
+	/** Get Sequence.
+	  * Document Sequence
+	  */
+	public int getAD_Sequence_ID();
 
-	/**
-	 * Set Month.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCalendarMonth (@Nullable java.lang.String CalendarMonth);
+	public I_AD_Sequence getAD_Sequence() throws RuntimeException;
 
-	/**
-	 * Get Month.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCalendarMonth();
+    /** Column name CalendarYear */
+    public static final String COLUMNNAME_CalendarYear = "CalendarYear";
 
-	ModelColumn<I_AD_Sequence_No, Object> COLUMN_CalendarMonth = new ModelColumn<>(I_AD_Sequence_No.class, "CalendarMonth", null);
-	String COLUMNNAME_CalendarMonth = "CalendarMonth";
+	/** Set Year.
+	  * Calendar Year
+	  */
+	public void setCalendarYear (String CalendarYear);
 
-	/**
-	 * Set Year.
-	 * Calendar Year
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCalendarYear (java.lang.String CalendarYear);
+	/** Get Year.
+	  * Calendar Year
+	  */
+	public String getCalendarYear();
 
-	/**
-	 * Get Year.
-	 * Calendar Year
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getCalendarYear();
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
-	ModelColumn<I_AD_Sequence_No, Object> COLUMN_CalendarYear = new ModelColumn<>(I_AD_Sequence_No.class, "CalendarYear", null);
-	String COLUMNNAME_CalendarYear = "CalendarYear";
+	/** Get Created.
+	  * Date this record was created
+	  */
+	public Timestamp getCreated();
 
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	ModelColumn<I_AD_Sequence_No, Object> COLUMN_Created = new ModelColumn<>(I_AD_Sequence_No.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+	/** Get Created By.
+	  * User who created this records
+	  */
+	public int getCreatedBy();
 
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
+    /** Column name CurrentNext */
+    public static final String COLUMNNAME_CurrentNext = "CurrentNext";
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+	/** Set Current Next.
+	  * The next number to be used
+	  */
+	public void setCurrentNext (int CurrentNext);
 
-	/**
-	 * Set Current Next.
-	 * The next number to be used
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCurrentNext (int CurrentNext);
+	/** Get Current Next.
+	  * The next number to be used
+	  */
+	public int getCurrentNext();
 
-	/**
-	 * Get Current Next.
-	 * The next number to be used
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCurrentNext();
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
-	ModelColumn<I_AD_Sequence_No, Object> COLUMN_CurrentNext = new ModelColumn<>(I_AD_Sequence_No.class, "CurrentNext", null);
-	String COLUMNNAME_CurrentNext = "CurrentNext";
+	/** Set Active.
+	  * The record is active in the system
+	  */
+	public void setIsActive (boolean IsActive);
 
-	/**
-	 * Set Active.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsActive (boolean IsActive);
+	/** Get Active.
+	  * The record is active in the system
+	  */
+	public boolean isActive();
 
-	/**
-	 * Get Active.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isActive();
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
-	ModelColumn<I_AD_Sequence_No, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Sequence_No.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+	/** Get Updated.
+	  * Date this record was updated
+	  */
+	public Timestamp getUpdated();
 
-	/**
-	 * Get Updated.
-	 * Date this record was updated
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getUpdated();
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	ModelColumn<I_AD_Sequence_No, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Sequence_No.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
-
-	/**
-	 * Get Updated By.
-	 * User who updated this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getUpdatedBy();
-
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/** Get Updated By.
+	  * User who updated this records
+	  */
+	public int getUpdatedBy();
 }

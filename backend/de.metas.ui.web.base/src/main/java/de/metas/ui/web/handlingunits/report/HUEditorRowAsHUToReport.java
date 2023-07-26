@@ -1,17 +1,17 @@
 package de.metas.ui.web.handlingunits.report;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-
-import java.util.List;
-import java.util.Objects;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 
 	private final HuId huId;
 	private final BPartnerId partnerId;
-	private final HuUnitType huUnitType;
+	private final String huUnitType;
 	private final boolean topLevel;
 
 	private HUEditorRowAsHUToReport(@NonNull final HUEditorRow row)
@@ -74,7 +74,7 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 	}
 
 	@Override
-	public HuUnitType getHUUnitType()
+	public String getHUUnitType()
 	{
 		return huUnitType;
 	}

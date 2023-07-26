@@ -1,7 +1,14 @@
 package de.metas.purchasecandidate.process;
 
+import static com.google.common.base.Predicates.not;
+
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.Adempiere;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -12,11 +19,6 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.Adempiere;
-
-import static com.google.common.base.Predicates.not;
 
 /*
  * #%L
@@ -50,12 +52,12 @@ public class C_PurchaseCandiate_Mark_Processed
 	{
 		if (!I_C_PurchaseCandidate.Table_Name.equals(context.getTableName()))
 		{
-			return ProcessPreconditionsResolution.reject();
+			ProcessPreconditionsResolution.reject();
 		}
 
-		final boolean containsEligibleRecords = context
-				.streamSelectedModels(I_C_PurchaseCandidate.class)
-				.anyMatch(not(I_C_PurchaseCandidate::isProcessed));
+		final boolean containsEligibleRecords = context.getSelectedModels(I_C_PurchaseCandidate.class).stream()
+					.filter(not(I_C_PurchaseCandidate::isProcessed))
+				.findAny().isPresent();
 
 		return ProcessPreconditionsResolution.acceptIf(containsEligibleRecords);
 	}

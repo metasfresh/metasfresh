@@ -5,15 +5,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_User_Assigned_Role;
-import org.compiere.model.I_C_User_Role;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -26,8 +21,6 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -53,24 +46,18 @@ import javax.annotation.Nullable;
 @ToString
 final class BPartnerCompositeCacheById
 {
-	private final CCache<BPartnerId, BPartnerComposite> cache;
+	private static final Logger logger = LogManager.getLogger(BPartnerCompositeCacheById.class);
 
-	BPartnerCompositeCacheById(@NonNull final IUserDAO userDAO)
-	{
-		cache = CCache
-				.<BPartnerId, BPartnerComposite>builder()
-				.cacheName("BPartnerComposite_by_Id")
-				.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
-				.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
-				.additionalTableNameToResetFor(I_AD_User.Table_Name)
-				.additionalTableNameToResetFor(I_C_User_Assigned_Role.Table_Name)
-				.additionalTableNameToResetFor(I_C_User_Role.Table_Name)
-				.cacheMapType(CacheMapType.LRU)
-				.initialCapacity(500)
-				.invalidationKeysMapper(new BPartnerCompositeCachingKeysMapper(userDAO))
-				.build();
-		
-	}
+	private final CCache<BPartnerId, BPartnerComposite> cache = CCache
+			.<BPartnerId, BPartnerComposite> builder()
+			.cacheName("BPartnerComposite_by_Id")
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
+			.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
+			.additionalTableNameToResetFor(I_AD_User.Table_Name)
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(500)
+			.invalidationKeysMapper(this::extractBPartnerIds)
+			.build();
 
 	public Collection<BPartnerComposite> getAllOrLoad(
 			@NonNull final Collection<BPartnerId> bpartnerIds,
@@ -78,4 +65,46 @@ final class BPartnerCompositeCacheById
 	{
 		return cache.getAllOrLoad(bpartnerIds, loader);
 	}
+
+	private Collection<BPartnerId> extractBPartnerIds(@NonNull final TableRecordReference recordRef)
+	{
+		final ImmutableList<BPartnerId> result;
+		if (I_C_BPartner.Table_Name.equals(recordRef.getTableName()))
+		{
+			result = ImmutableList.of(BPartnerId.ofRepoId(recordRef.getRecord_ID()));
+		}
+		else if (I_C_BPartner_Location.Table_Name.equals(recordRef.getTableName()))
+		{
+			final I_C_BPartner_Location bpartnerLocationRecord = recordRef.getModel(I_C_BPartner_Location.class);
+			if (bpartnerLocationRecord == null) // can happen while we are in the process of storing a bpartner with locations and contacts
+			{
+				result = ImmutableList.of();
+			}
+			else
+			{
+				result = ImmutableList.of(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()));
+			}
+		}
+		else if (I_AD_User.Table_Name.equals(recordRef.getTableName()))
+		{
+			final I_AD_User userRecord = recordRef.getModel(I_AD_User.class);
+			if (userRecord == null) // can happen while we are in the process of storing a bpartner with locations and contacts
+			{
+				result = ImmutableList.of();
+			}
+			else
+			{
+				final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+				result = bpartnerId != null ? ImmutableList.of(bpartnerId) : ImmutableList.of();
+			}
+		}
+		else
+		{
+			throw new AdempiereException("Given recordRef has unexpected tableName=" + recordRef.getTableName() + "; recordRef=" + recordRef);
+		}
+
+		logger.debug("extractBPartnerIds for recordRef={} returns result={}", recordRef, result);
+		return result;
+	}
+
 }

@@ -22,17 +22,9 @@
 
 package de.metas.common.util;
 
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @UtilityClass
 public class FileUtil
@@ -71,90 +63,5 @@ public class FileUtil
 		}
 
 		return sb.toString();
-	}
-
-	@NonNull
-	public Path getFilePath(@NonNull final URL url)
-	{
-		final boolean isWindowsLocalPath = Check.isEmpty(url.getHost())
-				? url.getPath().contains(":")
-				: url.getAuthority().contains(":");
-
-		final Path path = isWindowsLocalPath
-				? parseWindowsLocalPath(url)
-				: parseNonLocalWindowsFileURL(url);
-
-		if (path == null)
-		{
-			throw new RuntimeException("Couldn't parse path from:" + url);
-		}
-
-		return path;
-	}
-
-	@NonNull
-	public String normalizeAndValidateFilePath(@NonNull final String filePath)
-	{
-		final File file = new File(filePath);
-
-		if (file.isAbsolute())
-		{
-			throw new RuntimeException("Absolute path not allowed! filePath:" + filePath);
-		}
-
-		try
-		{
-			final String pathUsingCanonical = file.getCanonicalPath();
-			final String pathUsingAbsolute = file.getAbsolutePath();
-
-			// avoid attacks, e.g. "1/../2/"
-			if (!pathUsingCanonical.equals(pathUsingAbsolute))
-			{
-				throw new RuntimeException("Absolute path and canonical path for filePath must be equal! filePath: " + filePath);
-			}
-
-			return Paths.get(file.getPath())
-					.normalize()
-					.toString();
-
-		}
-		catch (final Exception e)
-		{
-			throw new RuntimeException("Error caught: ", e);
-		}
-	}
-
-	@Nullable
-	private Path parseWindowsLocalPath(@NonNull final URL url)
-	{
-		try
-		{
-			final String normalizedPath = Stream.concat(Stream.of(url.getAuthority()), Arrays.stream(url.getPath().split("/")))
-					.filter(Check::isNotBlank)
-					.collect(Collectors.joining("/"));
-
-			return Paths.get(normalizedPath);
-		}
-		catch (final Throwable throwable)
-		{
-			return null;
-		}
-	}
-
-	@Nullable
-	private Path parseNonLocalWindowsFileURL(@NonNull final URL url)
-	{
-		try
-		{
-			final String normalizedPath = Stream.of(url.getAuthority(), url.getPath())
-					.filter(Check::isNotBlank)
-					.collect(Collectors.joining());
-
-			return Paths.get("//" + normalizedPath);
-		}
-		catch (final Throwable throwable)
-		{
-			return null;
-		}
 	}
 }

@@ -23,8 +23,7 @@
 package de.metas.contracts.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -61,12 +60,6 @@ public class FlatrateTermCreator
 
 	Properties ctx;
 
-	/** 
-	 * If not given, then the {@link #conditions}'s orgId is used.
-	 */
-	@Nullable
-	OrgId orgId;
-
 	Timestamp startDate;
 	Timestamp endDate;
 	I_C_Flatrate_Conditions conditions;
@@ -92,7 +85,7 @@ public class FlatrateTermCreator
 
 		for (final I_C_BPartner partner : bPartners)
 		{
-			try (MDCCloseable ignored = TableRecordMDC.putTableRecordReference(partner))
+			try (MDCCloseable partnerMDC = TableRecordMDC.putTableRecordReference(partner))
 			{
 				// create each term in its own transaction
 				trxManager.runInNewTrx(new TrxRunnableAdapter()
@@ -109,7 +102,7 @@ public class FlatrateTermCreator
 					// Please consult with mark or torby if we want to swallow or throw.
 					// Please remember that this can be run for 10000 Partners when proposing this idea.
 					@Override
-					public boolean doCatch(final Throwable ex)
+					public boolean doCatch(Throwable ex)
 					{
 						Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
 						logger.debug("Failed creating contract for {}", partner, ex);
@@ -128,31 +121,27 @@ public class FlatrateTermCreator
 
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(ctx);
 
-		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> this.orgId,
-				() -> OrgId.ofRepoId(conditions.getAD_Org_ID()));
-		
 		for (final I_M_Product product : products)
 		{
 			final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
-				.orgId(orgIdToUse)
-				.context(context)
-				.bPartner(partner)
-				.conditions(conditions)
-				.startDate(startDate)
-				.endDate(endDate)
-				.userInCharge(userInCharge)
-				.productAndCategoryId(createProductAndCategoryId(product))
-				.isSimulation(isSimulation)
-				.completeIt(isCompleteDocument)
-				.build();
+					.orgId(OrgId.ofRepoId(conditions.getAD_Org_ID()))
+					.context(context)
+					.bPartner(partner)
+					.conditions(conditions)
+					.startDate(startDate)
+					.endDate(endDate)
+					.userInCharge(userInCharge)
+					.productAndCategoryId(createProductAndCategoryId(product))
+					.isSimulation(isSimulation)
+					.completeIt(isCompleteDocument)
+					.build();
 
 			flatrateTermCollector.add(flatrateBL.createTerm(createFlatrateTermRequest));
 		}
 	}
 
 	@Nullable
-	private ProductAndCategoryId createProductAndCategoryId(@Nullable final I_M_Product productRecord)
+	public ProductAndCategoryId createProductAndCategoryId(@Nullable final I_M_Product productRecord)
 	{
 		if (productRecord == null)
 		{

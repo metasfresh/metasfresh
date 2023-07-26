@@ -16,22 +16,15 @@
  *****************************************************************************/
 package de.metas.email;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.sun.mail.smtp.SMTPMessage;
-import de.metas.common.util.EmptyUtil;
-import de.metas.email.mailboxes.Mailbox;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.NonNull;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-import org.springframework.core.io.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -49,15 +42,26 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
+
+import de.metas.common.util.EmptyUtil;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.sun.mail.smtp.SMTPMessage;
+
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * EMail builder and sender.
@@ -124,9 +128,6 @@ public final class EMail implements Serializable
 	private transient boolean _valid = false;
 	@JsonIgnore
 	private transient EMailSentStatus _status = EMailSentStatus.NOT_SENT;
-
-	@JsonIgnore
-	private boolean _forceRealEmailRecipients = false;
 
 	EMail(
 			@NonNull final Mailbox mailbox,
@@ -418,9 +419,17 @@ public final class EMail implements Serializable
 		}
 
 		final InternetAddress debugMailTo = getDebugMailToAddress();
-		if (!_forceRealEmailRecipients && debugMailTo != null)
+		if (debugMailTo != null)
 		{
-			overrideRecipients(message, type, addresses, debugMailTo);
+			if (Message.RecipientType.TO.equals(type))
+			{
+				message.setRecipient(Message.RecipientType.TO, debugMailTo);
+			}
+
+			for (final Address address : addresses)
+			{
+				message.addHeader("X-metasfreshDebug-Original-Address" + type.toString(), address.toString());
+			}
 		}
 		else
 		{
@@ -848,19 +857,14 @@ public final class EMail implements Serializable
 		addAttachment(EMailAttachment.of(uri));
 	}
 
-	public boolean addAttachment(final String filename, final byte[] content)
+	public void addAttachment(final String filename, final byte[] content)
 	{
 		if (content == null || content.length == 0)
 		{
 			logger.warn("Skip adding byte attachment because the content is empty for {}", filename);
-			return false;
+			return;
 		}
-
-		final EMailAttachment attachment = EMailAttachment.of(filename, content);
-
-		addAttachment(attachment);
-
-		return true;
+		addAttachment(EMailAttachment.of(filename, content));
 	}
 
 	public void addAttachment(@NonNull final EMailAttachment emailAttachment)
@@ -1104,32 +1108,6 @@ public final class EMail implements Serializable
 	public List<EMailAttachment> getAttachments()
 	{
 		return ImmutableList.copyOf(_attachments);
-	}
-
-	/**
-	   *  Do send the mail to the respective mail address, even if the {@code DebugMailTo} SysConfig is set.
-	   */
-	public void forceRealEmailRecipients()
-	{
-		_forceRealEmailRecipients = true;
-	}
-
-	private void overrideRecipients(
-			final SMTPMessage message,
-			final RecipientType type,
-			final List<? extends Address> addresses,
-			final InternetAddress debugMailTo
-	) throws MessagingException
-	{
-		if (Message.RecipientType.TO.equals(type))
-		{
-			message.setRecipient(Message.RecipientType.TO, debugMailTo);
-		}
-
-		for (final Address address : addresses)
-		{
-			message.addHeader("X-metasfreshDebug-Original-Address" + type.toString(), address.toString());
-		}
 	}
 
 	@Override

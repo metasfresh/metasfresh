@@ -44,8 +44,8 @@ import de.metas.common.ordercandidates.v1.request.JsonRequestBPartnerLocationAnd
 import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.ordercandidates.v1.response.JsonOLCand;
 import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.organization.OrgId;

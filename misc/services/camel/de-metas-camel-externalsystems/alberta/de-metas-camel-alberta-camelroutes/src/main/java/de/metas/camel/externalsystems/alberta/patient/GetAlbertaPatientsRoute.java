@@ -22,13 +22,13 @@
 
 package de.metas.camel.externalsystems.alberta.patient;
 
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.processor.CreateBPRelationReqProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.CreateBPartnerReqProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.PatientsRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.PrepareApiClientsProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.RetrievePatientsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -101,7 +101,7 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 				.process(new CreateBPRelationReqProcessor()).id(CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID)
 
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPRelations: ${body}")
-				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_V2_CAMEL_URI + "}}")
+				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_CAMEL_URI + "}}")
 				.process(this::cleanupResponseItems);
 
 		from(direct(IMPORT_BPARTNER_ROUTE_ID))

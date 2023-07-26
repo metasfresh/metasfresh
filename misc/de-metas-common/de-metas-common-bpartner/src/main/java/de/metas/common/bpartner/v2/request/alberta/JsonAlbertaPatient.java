@@ -22,13 +22,12 @@
 
 package de.metas.common.bpartner.v2.request.alberta;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -37,137 +36,123 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public class JsonAlbertaPatient
 {
-	@Schema
+	@ApiModelProperty(position = 10)
 	@Nullable
 	private String hospitalIdentifier;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean hospitalIdentifierSet;
 
-	@Schema
+	@ApiModelProperty(position = 20)
 	@Nullable
 	private LocalDate dischargeDate;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean dischargeDateSet;
 
-	@Schema
+	@ApiModelProperty(position = 30)
 	@Nullable
 	private String payerIdentifier;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean payerIdentifierSet;
 
-	@Schema
+	@ApiModelProperty(position = 40)
 	@Nullable
 	private String payerType;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean payerTypeSet;
 
-	@Schema
+	@ApiModelProperty(position = 50)
 	@Nullable
 	private String numberOfInsured;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean numberOfInsuredSet;
 
-	@Schema
+	@ApiModelProperty(position = 60)
 	@Nullable
 	private LocalDate copaymentFrom;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean copaymentFromSet;
 
-	@Schema
+	@ApiModelProperty(position = 70)
 	@Nullable
 	private LocalDate copaymentTo;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean copaymentToSet;
 
-	@Schema
+	@ApiModelProperty(position = 80)
 	@Nullable
 	private Boolean isTransferPatient;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean transferPatientSet;
 
-	@Schema
+	@ApiModelProperty(position = 90)
 	@Nullable
 	private Boolean isIVTherapy;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean ivTherapySet;
 
-	@Schema
+	@ApiModelProperty(position = 100)
 	@Nullable
 	private String fieldNurseIdentifier;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean fieldNurseIdentifierSet;
 
-	@Schema
+	@ApiModelProperty(position = 110)
 	@Nullable
 	private String deactivationReason;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean deactivationReasonSet;
 
-	@Schema
+	@ApiModelProperty(position = 120)
 	@Nullable
 	private LocalDate deactivationDate;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean deactivationDateSet;
 
-	@Schema
+	@ApiModelProperty(position = 130)
 	@Nullable
 	private String deactivationComment;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean deactivationCommentSet;
 
-	@Schema
-	@Nullable
-	private String classification;
-
-	@Schema(hidden = true)
-	private boolean classificationSet;
-
-	@Schema
-	@Nullable
-	private BigDecimal careDegree;
-
-	@Schema(hidden = true)
-	private boolean careDegreeSet;
-
-	@Schema
+	@ApiModelProperty(position = 140)
 	@Nullable
 	private Instant createdAt;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean createdAtSet;
 
-	@Schema
+	@ApiModelProperty(position = 150)
 	@Nullable
 	private String createdByIdentifier;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean createdByIdentifierSet;
 
-	@Schema
+	@ApiModelProperty(position = 160)
 	@Nullable
 	private Instant updatedAt;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean updatedAtSet;
 
-	@Schema
+	@ApiModelProperty(position = 170)
 	@Nullable
 	private String updateByIdentifier;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean updateByIdentifierSet;
 
 	public void setHospitalIdentifier(@Nullable final String hospitalIdentifier)
@@ -246,18 +231,6 @@ public class JsonAlbertaPatient
 	{
 		this.deactivationComment = deactivationComment;
 		this.deactivationCommentSet = true;
-	}
-
-	public void setClassification(@Nullable final String classification)
-	{
-		this.classification = classification;
-		this.classificationSet = true;
-	}
-
-	public void setCareDegree(@Nullable final BigDecimal careDegree)
-	{
-		this.careDegree = careDegree;
-		this.careDegreeSet = true;
 	}
 
 	public void setCreatedAt(@Nullable final Instant createdAt)

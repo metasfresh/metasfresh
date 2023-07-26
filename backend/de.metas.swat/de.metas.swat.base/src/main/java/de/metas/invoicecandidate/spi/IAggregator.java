@@ -22,20 +22,20 @@ package de.metas.invoicecandidate.spi;
  * #L%
  */
 
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
+
+import java.util.List;
+import java.util.Properties;
+
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 
-import java.util.List;
-import java.util.Properties;
-
 /**
  * Implementors of this interface are called to aggregate invoice candidates.<br>
  * They are registered in the table <code>C_Invoice_Candidate_Agg</code>.
- * <p>
+ * 
  * Input/Output:
  * <ul>
  * <li>INPUT: invoice candidates ({@link I_C_Invoice_Candidate})
@@ -53,15 +53,17 @@ public interface IAggregator
 	/**
 	 * Set the context and trxName that the implementor can use.<br>
 	 * Implementors can assume that this method is called right after the implementors default constructor has been invoked.
+	 * 
+	 * @param ctx
+	 * @param trxName
 	 */
 	void setContext(Properties ctx, String trxName);
-
-	default void setMatchInvoiceService(MatchInvoiceService matchInvoiceService){}
-
 
 	/**
 	 * Adds another invoice candidate to this aggregator.<br>
 	 * It is assumed that all invoice candidates added to a single aggregator instance have the same "invoice-header-properties" (e.g. C_Currency_ID, C_BPartner_ID).
+	 * 
+	 * @param request
 	 */
 	void addInvoiceCandidate(IInvoiceLineAggregationRequest request);
 

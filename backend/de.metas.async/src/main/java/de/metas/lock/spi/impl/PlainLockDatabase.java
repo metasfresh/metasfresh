@@ -22,23 +22,16 @@ package de.metas.lock.spi.impl;
  * #L%
  */
 
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockCommand;
-import de.metas.lock.api.IUnlockCommand;
-import de.metas.lock.api.LockOwner;
-import de.metas.lock.api.impl.AbstractLockDatabase;
-import de.metas.lock.exceptions.LockFailedException;
-import de.metas.lock.spi.ExistingLockInfo;
-import de.metas.logging.LogManager;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.ToIntFunction;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.POJOInSelectionQueryFilter;
 import org.adempiere.ad.dao.impl.POJOQuery;
@@ -50,17 +43,22 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.ToIntFunction;
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockCommand;
+import de.metas.lock.api.IUnlockCommand;
+import de.metas.lock.api.LockOwner;
+import de.metas.lock.api.impl.AbstractLockDatabase;
+import de.metas.lock.exceptions.LockFailedException;
+import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * In-memory locks database
@@ -460,8 +458,8 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 			if (existingLockInfo == null && !isAllowMultipleOwners() && !locksByLockOwner.isEmpty())
 			{
-				logger.warn("Locked by a different owner: {} with allowMultipleOwner={}, see lockCandidateInfo={}",lockOwner, isAllowMultipleOwners(), lockInfo);
-				return false;
+				// development error
+				throw new LockFailedException("Cannot create lock " + lockInfo + " because we found a lockInfo which has allowMultipleOwners set: " + this);
 			}
 
 			if (existingLockInfo != null)
@@ -560,8 +558,6 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		private LockOwner _lockOwner;
 		private boolean autoCleanup;
 		private final boolean allowMultipleOwners;
-		@Getter
-		private final Instant acquiredAt;
 
 		//
 		// Debugging info:
@@ -577,7 +573,6 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			aquiredStackTrace = new Exception("Aquired stack trace");
 			aquiredThreadName = Thread.currentThread().getName();
 			allowMultipleOwners = AbstractLockDatabase.isAllowMultipleOwners(lockCommand.getAllowAdditionalLocks());
-			acquiredAt = Instant.now();
 
 			setLockOwner(lockCommand.getOwner());
 			setAutoCleanup(lockCommand.isAutoCleanup());
@@ -671,40 +666,6 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			}
 
 			return newLock(lockOwner, lockInfo.isAutoCleanup(), 1);
-		}
-	}
-
-	@Override
-	@Nullable
-	public ExistingLockInfo getLockInfo(@NonNull final TableRecordReference tableRecordReference,@Nullable final LockOwner lockOwner)
-	{
-		try (final CloseableReentrantLock lock = mainLock.open())
-		{
-			final LockKey lockKey = LockKey.of(tableRecordReference.getAD_Table_ID(), tableRecordReference.getRecord_ID());
-
-			final RecordLocks recordLocks = locks.get(lockKey);
-			if (recordLocks == null)
-			{
-				return null;
-			}
-
-			final LockOwner lockOwnerToUse = lockOwner == null ? LockOwner.NONE : lockOwner;
-
-			final LockInfo lockInfo = recordLocks.getLockByOwner(lockOwnerToUse);
-
-			if (lockInfo == null)
-			{
-				return null;
-			}
-
-			return ExistingLockInfo
-					.builder()
-					.ownerName(lockInfo.getLockOwner().getOwnerName())
-					.lockedRecord(tableRecordReference)
-					.allowMultipleOwners(lockInfo.isAllowMultipleOwners())
-					.autoCleanup(lockInfo.isAutoCleanup())
-					.created(lockInfo.getAcquiredAt())
-					.build();
 		}
 	}
 

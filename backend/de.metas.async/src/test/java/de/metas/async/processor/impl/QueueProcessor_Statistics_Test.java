@@ -22,6 +22,14 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
+
+import java.util.List;
+
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
@@ -31,16 +39,8 @@ import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.processor.QueueProcessorId;
-import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.util.Services;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.List;
 
 /**
  * Test Queue Processor and Workpackage Processor counters/statistics
@@ -95,14 +95,14 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 		workpackageProcessorDef = helper.assignPackageProcessor(processorDef, StaticMockedWorkpackageProcessor.class);
 
 		processorsExecutor = new QueueProcessorsExecutor();
-		processorsExecutor.addQueueProcessor(QueueProcessorDescriptorRepository.mapToQueueProcessor(processorDef));
-		processor = processorsExecutor.getQueueProcessor(QueueProcessorId.ofRepoId(processorDef.getC_Queue_Processor_ID()));
+		processorsExecutor.addQueueProcessor(processorDef);
+		processor = processorsExecutor.getQueueProcessor(processorDef.getC_Queue_Processor_ID());
 
 		//
 		// Create Queue
 		workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
-		workpackageProcessorStatistics = processor.getActualWorkpackageProcessorFactory().getWorkpackageProcessorStatistics(QueueProcessorDescriptorRepository.mapToPackageProcessor(workpackageProcessorDef));
+		workpackageProcessorStatistics = processor.getActualWorkpackageProcessorFactory().getWorkpackageProcessorStatistics(workpackageProcessorDef);
 	}
 
 	@Test

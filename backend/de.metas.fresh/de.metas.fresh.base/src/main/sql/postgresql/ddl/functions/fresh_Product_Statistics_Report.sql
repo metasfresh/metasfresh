@@ -92,8 +92,7 @@ CREATE OR REPLACE FUNCTION report.fresh_product_statistics_report
   RETURNS SETOF report.fresh_product_statistics_report AS
 $BODY$
 	SELECT 
-		*, 1 AS UnionOrder,
-        (SELECT name from ad_org where ad_org.ad_org_id = $8)::varchar AS ad_org_name
+		*, 1 AS UnionOrder
 	FROM 	
 		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 UNION ALL
@@ -106,8 +105,7 @@ UNION ALL
 		SUM( Period10Sum ) AS Period10Sum, SUM( Period11Sum ) AS Period11Sum, SUM( Period12Sum ) AS Period12Sum,
 		SUM( TotalSum ) AS TotalSum, SUM( TotalAmt ) AS TotalAmt,
 		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id, iso_code,
-		2 AS UnionOrder,
-        (SELECT name from ad_org where ad_org.ad_org_id = $8)::varchar AS ad_org_name
+		2 AS UnionOrder
 	FROM 	
 		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	GROUP BY

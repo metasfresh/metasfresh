@@ -24,7 +24,6 @@ package de.metas.handlingunits.allocation.impl;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
@@ -58,8 +57,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IAutoCloseable;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -70,9 +68,6 @@ import java.util.List;
 @ToString(of = { "source", "destination", "allowPartialUnloads", "allowPartialLoads", "forceLoad", "skipAttributesTransfer" })
 public class HULoader
 {
-
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 	public static HULoader of(@NonNull final IAllocationSource source, @NonNull final IAllocationDestination destination)
 	{
 		return HULoader.builder()
@@ -183,19 +178,16 @@ public class HULoader
 			return AllocationUtils.nullResult();
 		}
 
-		try (final IAutoCloseable ignore = handlingUnitsBL.huLoaderInProgress())
-		{
-			final IHUContext huContextInitial = request.getHuContext();
-			return processInHUContext(huContextInitial, huContext -> {
-				//
-				// Create the new allocation request, identical with given one, but the concept is with given transaction
-				final IAllocationRequest unloadRequestInLocalTrx = AllocationUtils.derive(request)
-						.setHUContext(huContext)
-						.create();
+		final IHUContext huContextInitial = request.getHUContext();
+		return processInHUContext(huContextInitial, huContext -> {
+			//
+			// Create the new allocation request, identical with given one, but the concept is with given transaction
+			final IAllocationRequest unloadRequestInLocalTrx = AllocationUtils.derive(request)
+					.setHUContext(huContext)
+					.create();
 
-				return unloadSourceThenLoadDestination(unloadRequestInLocalTrx);
-			});
-		}
+			return unloadSourceThenLoadDestination(unloadRequestInLocalTrx);
+		});
 	}
 
 	/**
@@ -263,7 +255,7 @@ public class HULoader
 	{
 		//
 		// HU Context to use
-		final IHUContext huContext = unloadRequest.getHuContext();
+		final IHUContext huContext = unloadRequest.getHUContext();
 		assertValidProcessingContext(huContext);
 
 		//

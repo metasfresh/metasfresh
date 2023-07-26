@@ -2,20 +2,22 @@ package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
-import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
-import de.metas.handlingunits.picking.config.PickingConfigV2;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
+import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -57,20 +59,23 @@ import java.util.stream.Stream;
 public class ProductsToPickRowsService
 {
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
+	private final IBPartnerBL bpartnersService;
+	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
-	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	private static final AdMessageKey MSG_TYPE_UNALLOCATED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.UnAllocated_Type_Error");
 	private static final AdMessageKey MSG_TYPE_NOT_SUPPORTED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.TypeRow_NotSupported");
 
 	public ProductsToPickRowsService(
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
-			@NonNull final PickingCandidateService pickingCandidateService,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final IBPartnerBL bpartnersService,
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.pickingConfigRepo = pickingConfigRepo;
+		this.bpartnersService = bpartnersService;
+		this.huReservationService = huReservationService;
 		this.pickingCandidateService = pickingCandidateService;
-		this.lookupDataSourceFactory = lookupDataSourceFactory;
 	}
 
 	public ProductsToPickRowsData createProductsToPickRowsData(final PackageableRow packageableRow)
@@ -84,13 +89,17 @@ public class ProductsToPickRowsService
 		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
 
 		return ProductsToPickRowsDataFactory.builder()
+				.bpartnersService(bpartnersService)
+				.huReservationService(huReservationService)
 				.pickingCandidateService(pickingCandidateService)
-				.locatorLookup(lookupDataSourceFactory.searchInTableLookup(I_M_Locator.Table_Name))
+				.locatorLookup(LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name))
+				//
 				.considerAttributes(pickingConfig.isConsiderAttributes())
+				//
 				.build();
 	}
 
-	public PickRequest createPickRequest(@NonNull final ProductsToPickRow row, final boolean isPickingReviewRequired)
+	public PickRequest createPickRequest(@NonNull final ProductsToPickRow row, boolean isPickingReviewRequired)
 	{
 		final ProductsToPickRowType rowType = row.getType();
 		if (ProductsToPickRowType.PICK_FROM_HU.equals(rowType))
@@ -106,7 +115,7 @@ public class ProductsToPickRowsService
 		{
 			final ImmutableList<IssueToPickingOrderRequest> issues = row.getIncludedRows()
 					.stream()
-					.map(ProductsToPickRowsService::toIssueToPickingOrderRequest)
+					.map(issueRow -> toIssueToPickingOrderRequest(issueRow))
 					.collect(ImmutableList.toImmutableList());
 
 			return PickRequest.builder()
@@ -147,17 +156,13 @@ public class ProductsToPickRowsService
 				.build();
 	}
 
-	public void createPickingCandidates(@NonNull final PackageableRow packageableRow)
+	public List<PickingCandidate> createPickingCandidates(@NonNull final PackageableRow packageableRow)
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
-		productsToPickRowsData
-				.getAllRows()
-				.forEach(this::createAndSavePickingCandidates);
-	}
-
-	private void createAndSavePickingCandidates(final ProductsToPickRow productsToPickRow)
-	{
-		pickingCandidateService.createAndSavePickingCandidates(createPickRequest(productsToPickRow, false));
+		return productsToPickRowsData.getAllRows().stream()
+				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickRequest(productsToPickRow, false/* isPickingReviewRequired */)))
+				.map(pickHUResult -> pickHUResult.getPickingCandidate())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -171,13 +176,13 @@ public class ProductsToPickRowsService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableList<WebuiPickHUResult> setPackingInstruction(final List<ProductsToPickRow> selectedRows, final PackToSpec packToSpec)
+	public ImmutableList<WebuiPickHUResult> setPackingInstruction(final List<ProductsToPickRow> selectedRows, final HuPackingInstructionsId huPackingInstructionsId)
 	{
 		final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = streamRowsEligibleForPacking(selectedRows)
 				.collect(ImmutableMap.toImmutableMap(ProductsToPickRow::getPickingCandidateId, ProductsToPickRow::getId));
 
 		final Set<PickingCandidateId> pickingCandidateIds = rowIdsByPickingCandidateId.keySet();
-		final List<PickingCandidate> pickingCandidates = pickingCandidateService.setHuPackingInstructionId(pickingCandidateIds, packToSpec);
+		final List<PickingCandidate> pickingCandidates = pickingCandidateService.setHuPackingInstructionId(pickingCandidateIds, huPackingInstructionsId);
 
 		return pickingCandidates.stream()
 				.map(cand -> WebuiPickHUResult.of(rowIdsByPickingCandidateId.get(cand.getId()), cand))
@@ -197,9 +202,9 @@ public class ProductsToPickRowsService
 				.filter(ProductsToPickRow::isEligibleForPacking);
 	}
 
-	public boolean noRowsEligibleForPicking(final List<ProductsToPickRow> selectedRows)
+	public boolean anyRowsEligibleForPicking(final List<ProductsToPickRow> selectedRows)
 	{
-		return !streamRowsEligibleForPicking(selectedRows).findAny().isPresent();
+		return streamRowsEligibleForPicking(selectedRows).findAny().isPresent();
 	}
 
 	@NonNull

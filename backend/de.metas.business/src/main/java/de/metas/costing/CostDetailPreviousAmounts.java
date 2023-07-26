@@ -33,6 +33,16 @@ import org.adempiere.exceptions.AdempiereException;
 @Value
 public class CostDetailPreviousAmounts
 {
+	public static CostDetailPreviousAmounts of(@NonNull final CurrentCost currentCost)
+	{
+		return builder()
+				.costPrice(currentCost.getCostPrice())
+				.qty(currentCost.getCurrentQty())
+				.cumulatedAmt(currentCost.getCumulatedAmt())
+				.cumulatedQty(currentCost.getCumulatedQty())
+				.build();
+	}
+
 	@NonNull UomId uomId;
 	@NonNull CurrencyId currencyId;
 
@@ -61,16 +71,6 @@ public class CostDetailPreviousAmounts
 		this.qty = qty;
 		this.cumulatedAmt = cumulatedAmt;
 		this.cumulatedQty = cumulatedQty;
-	}
-
-	public static CostDetailPreviousAmounts of(@NonNull final CurrentCost currentCost)
-	{
-		return builder()
-				.costPrice(currentCost.getCostPrice())
-				.qty(currentCost.getCurrentQty())
-				.cumulatedAmt(currentCost.getCumulatedAmt())
-				.cumulatedQty(currentCost.getCumulatedQty())
-				.build();
 	}
 }
 

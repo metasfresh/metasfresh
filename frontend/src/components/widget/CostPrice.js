@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { fieldValueToString } from '../../utils/tableHelpers';
+import { createAmount } from '../../utils/tableHelpers';
 
 export default class CostPrice extends PureComponent {
   constructor(props) {
@@ -35,7 +35,7 @@ export default class CostPrice extends PureComponent {
         {!editMode && (
           <input
             className="input-field js-input-field"
-            value={fieldValueToString({ fieldValue: value, precision })}
+            value={createAmount(value, precision)}
             type="text"
             onChange={() => false}
             onFocus={this.focus}

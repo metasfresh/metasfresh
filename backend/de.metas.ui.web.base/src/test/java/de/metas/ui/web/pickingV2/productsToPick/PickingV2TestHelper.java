@@ -1,6 +1,23 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
-import de.metas.ad_reference.ADReferenceService;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.TimeUtil;
+
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -34,22 +51,6 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.TimeUtil;
-
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -61,12 +62,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -100,7 +101,7 @@ final class PickingV2TestHelper
 
 	public I_C_UOM createUOM(final String symbol)
 	{
-		final I_C_UOM record = newInstance(I_C_UOM.class);
+		I_C_UOM record = newInstance(I_C_UOM.class);
 		record.setUOMSymbol(symbol);
 		saveRecord(record);
 		return record;
@@ -108,7 +109,7 @@ final class PickingV2TestHelper
 
 	public ProductId createProduct(final String code)
 	{
-		final I_M_Product record = newInstance(I_M_Product.class);
+		I_M_Product record = newInstance(I_M_Product.class);
 		record.setValue(code);
 		record.setName(code);
 		saveRecord(record);
@@ -117,14 +118,14 @@ final class PickingV2TestHelper
 
 	public WarehouseId createWarehouse()
 	{
-		final I_M_Warehouse record = newInstance(I_M_Warehouse.class);
+		I_M_Warehouse record = newInstance(I_M_Warehouse.class);
 		saveRecord(record);
 		return WarehouseId.ofRepoId(record.getM_Warehouse_ID());
 	}
 
 	public LocatorId createLocator(final WarehouseId warehouseId)
 	{
-		final I_M_Locator record = newInstance(I_M_Locator.class);
+		I_M_Locator record = newInstance(I_M_Locator.class);
 		record.setM_Warehouse_ID(warehouseId.getRepoId());
 		saveRecord(record);
 		return LocatorId.ofRecord(record);
@@ -196,18 +197,16 @@ final class PickingV2TestHelper
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
 				new PickingConfigRepository(),
 				pickingCandidateRepository,
-				sourceHUsRepository,
-				huReservationService,
-				bpartnersService,
-				ADReferenceService.newMocked());
+				sourceHUsRepository);
 
 		return ProductsToPickRowsDataFactory.builder()
+				.bpartnersService(bpartnersService)
+				.huReservationService(huReservationService)
 				.pickingCandidateService(pickingCandidateService)
 				.locatorLookup(this::generateLocatorLookupById)
-				.considerAttributes(false)
 				.build();
 	}
-
+	
 	private BPartnerBL createAndRegisterBPartnerBL()
 	{
 		final UserRepository userRepository = new UserRepository();
@@ -215,8 +214,7 @@ final class PickingV2TestHelper
 		Services.registerService(IBPartnerBL.class, bpartnersService);
 		return bpartnersService;
 	}
-
-	@Nullable
+	
 	private IntegerLookupValue generateLocatorLookupById(final Object idObj)
 	{
 		if (idObj == null)
@@ -226,5 +224,6 @@ final class PickingV2TestHelper
 		final int id = NumberUtils.asIntegerOrNull(idObj);
 		return IntegerLookupValue.of(id, "locator-" + id);
 	}
+
 
 }

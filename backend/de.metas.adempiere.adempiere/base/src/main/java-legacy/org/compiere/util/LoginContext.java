@@ -172,9 +172,7 @@ public class LoginContext
 		setProperty("#SysAdmin", sysAdmin);
 	}
 
-	public void setRole(
-			final RoleId roleId, 
-			final String roleName)
+	public void setRole(final RoleId roleId, final String roleName)
 	{
 		setProperty(Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId));
 		setProperty(Env.CTXNAME_AD_Role_Name, roleName);

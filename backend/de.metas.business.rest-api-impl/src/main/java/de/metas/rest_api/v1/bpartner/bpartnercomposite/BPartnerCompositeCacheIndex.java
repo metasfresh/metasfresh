@@ -29,32 +29,24 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.user.role.UserAssignedRoleId;
-import de.metas.bpartner.user.role.UserRole;
 import de.metas.cache.CacheIndexDataAdapter;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
-import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
-import de.metas.util.Check;
+import de.metas.rest_api.utils.JsonConverters;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_User_Assigned_Role;
-import org.compiere.model.I_C_User_Role;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 import static de.metas.util.Check.isEmpty;
 
@@ -91,8 +83,6 @@ final class BPartnerCompositeCacheIndex
 			for (final BPartnerContact contact : dataItem.getContacts())
 			{
 				recordRefs.add(TableRecordReference.of(I_AD_User.Table_Name, contact.getId()));
-
-				recordRefs.addAll(getRecordRefsRoles(contact.getRoles()));
 			}
 
 			final ImmutableSet<TableRecordReference> result = recordRefs.build();
@@ -147,37 +137,5 @@ final class BPartnerCompositeCacheIndex
 			logger.debug("extractCacheKeys - extracted cache keys for given bpartnerComposite: {}", result);
 			return result;
 		}
-	}
-
-	/**
-	  * @return true if the given recordRef is a C_User_Assigned_Role or C_User_Role.
-	  *    background: in case of new role being assigned, that new assigned_role_id will not be part of the cached key (as it wasn't there before) thus the cache is not refreshed.
-	  */
-	@Override
-	public boolean isResetAll(@NonNull final TableRecordReference recordRef)
-	{
-		return recordRef.getTableName().equals(I_C_User_Assigned_Role.Table_Name)
-				|| recordRef.getTableName().equals(I_C_User_Role.Table_Name);
-	}
-
-	@NonNull
-	private static Set<TableRecordReference> getRecordRefsRoles(@Nullable final List<UserRole> roles)
-	{
-		if (Check.isEmpty(roles))
-		{
-			return ImmutableSet.of();
-		}
-
-		final ImmutableSet.Builder<TableRecordReference> recordRefsBuilder = ImmutableSet.builder();
-
-		for (final UserRole role : roles)
-		{
-			final UserAssignedRoleId assignedRoleId = role.getUserAssignedRoleId();
-
-			recordRefsBuilder.add(TableRecordReference.of(I_C_User_Assigned_Role.Table_Name, assignedRoleId.getRepoId()));
-			recordRefsBuilder.add(TableRecordReference.of(I_C_User_Role.Table_Name, assignedRoleId.getUserRoleId().getRepoId()));
-		}
-
-		return recordRefsBuilder.build();
 	}
 }

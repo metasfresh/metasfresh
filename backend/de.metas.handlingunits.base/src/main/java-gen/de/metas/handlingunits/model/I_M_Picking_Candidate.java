@@ -1,9 +1,8 @@
 package de.metas.handlingunits.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Candidate
  *  @author metasfresh (generated) 
@@ -257,26 +256,6 @@ public interface I_M_Picking_Candidate
 	String COLUMNNAME_PackTo_HU_PI_ID = "PackTo_HU_PI_ID";
 
 	/**
-	 * Set Pick To Packing Instructions.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPackTo_HU_PI_Item_Product_ID (int PackTo_HU_PI_Item_Product_ID);
-
-	/**
-	 * Get Pick To Packing Instructions.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPackTo_HU_PI_Item_Product_ID();
-
-	String COLUMNNAME_PackTo_HU_PI_Item_Product_ID = "PackTo_HU_PI_Item_Product_ID";
-
-	/**
 	 * Set Pick From HU.
 	 *
 	 * <br>Type: Search
@@ -369,27 +348,6 @@ public interface I_M_Picking_Candidate
 	String COLUMNNAME_QtyPicked = "QtyPicked";
 
 	/**
-	 * Set Qty Reject.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setQtyReject (BigDecimal QtyReject);
-
-	/**
-	 * Get Qty Reject.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyReject();
-
-	ModelColumn<I_M_Picking_Candidate, Object> COLUMN_QtyReject = new ModelColumn<>(I_M_Picking_Candidate.class, "QtyReject", null);
-	String COLUMNNAME_QtyReject = "QtyReject";
-
-	/**
 	 * Set Qty Review.
 	 *
 	 * <br>Type: Quantity
@@ -409,27 +367,6 @@ public interface I_M_Picking_Candidate
 
 	ModelColumn<I_M_Picking_Candidate, Object> COLUMN_QtyReview = new ModelColumn<>(I_M_Picking_Candidate.class, "QtyReview", null);
 	String COLUMNNAME_QtyReview = "QtyReview";
-
-	/**
-	 * Set Reject Reason.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setRejectReason (@Nullable java.lang.String RejectReason);
-
-	/**
-	 * Get Reject Reason.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getRejectReason();
-
-	ModelColumn<I_M_Picking_Candidate, Object> COLUMN_RejectReason = new ModelColumn<>(I_M_Picking_Candidate.class, "RejectReason", null);
-	String COLUMNNAME_RejectReason = "RejectReason";
 
 	/**
 	 * Set Status.

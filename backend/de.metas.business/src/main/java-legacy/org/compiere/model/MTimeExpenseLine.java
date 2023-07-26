@@ -16,52 +16,49 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.currency.ICurrencyBL;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.resource.ResourceAssignmentId;
-import de.metas.resource.ResourceService;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+
 /**
- * Time + Expense Line Model
+ * 	Time + Expense Line Model
  *
- * @author Jorg Janke
- * @version $Id: MTimeExpenseLine.java,v 1.4 2006/09/25 00:59:41 jjanke Exp $
+ *	@author Jorg Janke
+ *	@version $Id: MTimeExpenseLine.java,v 1.4 2006/09/25 00:59:41 jjanke Exp $
  */
 public class MTimeExpenseLine extends X_S_TimeExpenseLine
 {
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = -815975460880303779L;
 
 	/**
-	 * Standard Constructor
-	 *
-	 * @param ctx                  context
-	 * @param S_TimeExpenseLine_ID id
-	 * @param trxName              transaction
+	 * 	Standard Constructor
+	 *	@param ctx context
+	 *	@param S_TimeExpenseLine_ID id
+	 *	@param trxName transaction
 	 */
-	public MTimeExpenseLine(Properties ctx, int S_TimeExpenseLine_ID, String trxName)
+	public MTimeExpenseLine (Properties ctx, int S_TimeExpenseLine_ID, String trxName)
 	{
-		super(ctx, S_TimeExpenseLine_ID, trxName);
+		super (ctx, S_TimeExpenseLine_ID, trxName);
 		if (S_TimeExpenseLine_ID == 0)
 		{
-			//	setS_TimeExpenseLine_ID (0);		//	PK
-			//	setS_TimeExpense_ID (0);			//	Parent
+		//	setS_TimeExpenseLine_ID (0);		//	PK
+		//	setS_TimeExpense_ID (0);			//	Parent
 			setQty(Env.ONE);
 			setQtyInvoiced(BigDecimal.ZERO);
 			setQtyReimbursed(BigDecimal.ZERO);
@@ -72,128 +69,120 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 			setInvoicePrice(BigDecimal.ZERO);
 			setPriceInvoiced(BigDecimal.ZERO);
 			//
-			setDateExpense(new Timestamp(System.currentTimeMillis()));
-			setIsInvoiced(false);
-			setIsTimeReport(false);
-			setLine(10);
+			setDateExpense (new Timestamp(System.currentTimeMillis()));
+			setIsInvoiced (false);
+			setIsTimeReport (false);
+			setLine (10);
 			setProcessed(false);
 		}
-	}    //	MTimeExpenseLine
+	}	//	MTimeExpenseLine
 
 	/**
-	 * Load Constructor
-	 *
-	 * @param ctx     context
-	 * @param rs      result set
-	 * @param trxName transaction
+	 * 	Load Constructor
+	 *	@param ctx context
+	 *	@param rs result set
+	 *	@param trxName transaction
 	 */
-	public MTimeExpenseLine(Properties ctx, ResultSet rs, String trxName)
+	public MTimeExpenseLine (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}    //	MTimeExpenseLine
+	}	//	MTimeExpenseLine
 
+	/** Parent					*/
+	private MTimeExpense			m_parent = null;
+	
 	/**
-	 * Parent
-	 */
-	private MTimeExpense m_parent = null;
-
-	/**
-	 * Get Parent
-	 *
-	 * @return parent
+	 * 	Get Parent
+	 *	@return parent
 	 */
 	public MTimeExpense getParent()
 	{
 		if (m_parent == null)
 		{
-			m_parent = new MTimeExpense(getCtx(), getS_TimeExpense_ID(), get_TrxName());
+			m_parent = new MTimeExpense (getCtx(), getS_TimeExpense_ID(), get_TrxName());
 		}
 		return m_parent;
-	}    //	getParent
+	}	//	getParent
 
-	/**
-	 * Currency of Report
-	 */
+	/**	Currency of Report			*/
 	private int m_C_Currency_Report_ID = 0;
 
+	
 	/**
-	 * Get Qty Invoiced
-	 *
-	 * @return entered or qty
+	 * 	Get Qty Invoiced
+	 *	@return entered or qty
 	 */
 	@Override
-	public BigDecimal getQtyInvoiced()
+	public BigDecimal getQtyInvoiced ()
 	{
-		BigDecimal bd = super.getQtyInvoiced();
+		BigDecimal bd = super.getQtyInvoiced ();
 		if (BigDecimal.ZERO.compareTo(bd) == 0)
 		{
 			return getQty();
 		}
 		return bd;
-	}    //	getQtyInvoiced
+	}	//	getQtyInvoiced
 
 	/**
-	 * Get Qty Reimbursed
-	 *
-	 * @return entered or qty
+	 * 	Get Qty Reimbursed
+	 *	@return entered or qty
 	 */
 	@Override
-	public BigDecimal getQtyReimbursed()
+	public BigDecimal getQtyReimbursed ()
 	{
-		BigDecimal bd = super.getQtyReimbursed();
+		BigDecimal bd = super.getQtyReimbursed ();
 		if (BigDecimal.ZERO.compareTo(bd) == 0)
 		{
 			return getQty();
 		}
 		return bd;
-	}    //	getQtyReimbursed
-
+	}	//	getQtyReimbursed
+	
+	
 	/**
-	 * Get Price Invoiced
-	 *
-	 * @return entered or invoice price
+	 * 	Get Price Invoiced
+	 *	@return entered or invoice price
 	 */
 	@Override
-	public BigDecimal getPriceInvoiced()
+	public BigDecimal getPriceInvoiced ()
 	{
-		BigDecimal bd = super.getPriceInvoiced();
+		BigDecimal bd = super.getPriceInvoiced ();
 		if (BigDecimal.ZERO.compareTo(bd) == 0)
 		{
 			return getInvoicePrice();
 		}
 		return bd;
-	}    //	getPriceInvoiced
-
+	}	//	getPriceInvoiced
+	
 	/**
-	 * Get Price Reimbursed
-	 *
-	 * @return entered or converted amt
+	 * 	Get Price Reimbursed
+	 *	@return entered or converted amt
 	 */
 	@Override
-	public BigDecimal getPriceReimbursed()
+	public BigDecimal getPriceReimbursed ()
 	{
-		BigDecimal bd = super.getPriceReimbursed();
+		BigDecimal bd = super.getPriceReimbursed ();
 		if (BigDecimal.ZERO.compareTo(bd) == 0)
 		{
 			return getConvertedAmt();
 		}
 		return bd;
-	}    //	getPriceReimbursed
-
+	}	//	getPriceReimbursed
+	
+	
 	/**
-	 * Get Approval Amt
-	 *
-	 * @return qty * converted amt
+	 * 	Get Approval Amt
+	 *	@return qty * converted amt
 	 */
 	public BigDecimal getApprovalAmt()
 	{
 		return getQty().multiply(getConvertedAmt());
-	}    //	getApprovalAmt
-
+	}	//	getApprovalAmt
+	
+	
 	/**
-	 * Get C_Currency_ID of Report (Price List)
-	 *
-	 * @return currency
+	 * 	Get C_Currency_ID of Report (Price List)
+	 *	@return currency
 	 */
 	public int getC_Currency_Report_ID()
 	{
@@ -202,30 +191,29 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 			return m_C_Currency_Report_ID;
 		}
 		//	Get it from header
-		MTimeExpense te = new MTimeExpense(getCtx(), getS_TimeExpense_ID(), get_TrxName());
+		MTimeExpense te = new MTimeExpense (getCtx(), getS_TimeExpense_ID(), get_TrxName());
 		m_C_Currency_Report_ID = te.getC_Currency_ID();
 		return m_C_Currency_Report_ID;
-	}    //	getC_Currency_Report_ID
+	}	//	getC_Currency_Report_ID
 
 	/**
-	 * Set C_Currency_ID of Report (Price List)
-	 *
-	 * @param C_Currency_ID currency
+	 * 	Set C_Currency_ID of Report (Price List)
+	 *	@param C_Currency_ID currency
 	 */
-	protected void setC_Currency_Report_ID(int C_Currency_ID)
+	protected void setC_Currency_Report_ID (int C_Currency_ID)
 	{
 		m_C_Currency_Report_ID = C_Currency_ID;
-	}    //	getC_Currency_Report_ID
+	}	//	getC_Currency_Report_ID
 
+	
 	/**
-	 * Before Save.
-	 * Calculate converted amt
-	 *
-	 * @param newRecord new
-	 * @return true
+	 * 	Before Save.
+	 * 	Calculate converted amt
+	 *	@param newRecord new
+	 *	@return true
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave (boolean newRecord)
 	{
 		if (newRecord && getParent().isComplete())
 		{
@@ -244,7 +232,7 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 						getExpenseAmt(),
 						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(getC_Currency_Report_ID()),
-						getDateExpense().toInstant(),
+						TimeUtil.asLocalDate(getDateExpense()),
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID())));
@@ -256,86 +244,101 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 			setConvertedAmt(BigDecimal.ZERO);
 		}
 		return true;
-	}    //	beforeSave
-
+	}	//	beforeSave
+	
 	/**
-	 * After Save
-	 *
-	 * @param newRecord new
-	 * @param success   success
-	 * @return success
+	 * 	After Save
+	 *	@param newRecord new
+	 *	@param success success
+	 *	@return success
 	 */
 	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (success)
 		{
 			updateHeader();
-			if (newRecord || is_ValueChanged(COLUMNNAME_S_ResourceAssignment_ID))
+			if (newRecord || is_ValueChanged("S_ResourceAssignment_ID"))
 			{
-				final ResourceAssignmentId S_ResourceAssignment_ID = ResourceAssignmentId.ofRepoIdOrNull(getS_ResourceAssignment_ID());
-				ResourceAssignmentId old_S_ResourceAssignment_ID = null;
+				int S_ResourceAssignment_ID = getS_ResourceAssignment_ID();
+				int old_S_ResourceAssignment_ID = 0;
 				if (!newRecord)
 				{
-					old_S_ResourceAssignment_ID = ResourceAssignmentId.ofRepoIdOrNull(get_ValueOldAsInt(COLUMNNAME_S_ResourceAssignment_ID));
-					//	Changed Assignment
-					if (!ResourceAssignmentId.equals(old_S_ResourceAssignment_ID, S_ResourceAssignment_ID) && old_S_ResourceAssignment_ID != null)
+					Object ii = get_ValueOld("S_ResourceAssignment_ID");
+					if (ii instanceof Integer)
 					{
-						final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
-						resourceService.deleteResourceAssignment(old_S_ResourceAssignment_ID);
+						old_S_ResourceAssignment_ID = ((Integer)ii).intValue();
+						//	Changed Assignment
+						if (old_S_ResourceAssignment_ID != S_ResourceAssignment_ID
+							&& old_S_ResourceAssignment_ID != 0)
+						{
+							MResourceAssignment ra = new MResourceAssignment (getCtx(), 
+								old_S_ResourceAssignment_ID, get_TrxName());
+							ra.delete(false);
+						}
 					}
 				}
 				//	Sync Assignment
-				if (S_ResourceAssignment_ID != null)
+				if (S_ResourceAssignment_ID != 0)
 				{
-					final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
-					resourceService.changeResourceAssignment(
-							S_ResourceAssignment_ID,
-							resourceAssignment -> resourceAssignment.toBuilder()
-									.description(StringUtils.trimBlankToOptional(getDescription()).orElse(resourceAssignment.getDescription()))
-									.build());
+					MResourceAssignment ra = new MResourceAssignment (getCtx(), 
+						S_ResourceAssignment_ID, get_TrxName());
+					if (getQty().compareTo(ra.getQty()) != 0)
+					{
+						ra.setQty(getQty());
+						if (getDescription() != null && getDescription().length() > 0)
+						{
+							ra.setDescription(getDescription());
+						}
+						ra.save();
+					}
 				}
 			}
 		}
 		return success;
-	}    //	afterSave
-
+	}	//	afterSave
+	
+	
 	/**
-	 * After Delete
-	 *
-	 * @param success success
-	 * @return success
+	 * 	After Delete
+	 *	@param success success
+	 *	@return success
 	 */
 	@Override
-	protected boolean afterDelete(boolean success)
+	protected boolean afterDelete (boolean success)
 	{
 		if (success)
 		{
 			updateHeader();
 			//
-			final ResourceAssignmentId old_S_ResourceAssignment_ID = ResourceAssignmentId.ofRepoIdOrNull(get_ValueOldAsInt(COLUMNNAME_S_ResourceAssignment_ID));
-			//	Deleted Assignment
-			if (old_S_ResourceAssignment_ID != null)
+			Object ii = get_ValueOld("S_ResourceAssignment_ID");
+			if (ii instanceof Integer)
 			{
-				final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
-				resourceService.deleteResourceAssignment(old_S_ResourceAssignment_ID);
+				int old_S_ResourceAssignment_ID = ((Integer)ii).intValue();
+				//	Deleted Assignment
+				if (old_S_ResourceAssignment_ID != 0)
+				{
+					MResourceAssignment ra = new MResourceAssignment (getCtx(), 
+						old_S_ResourceAssignment_ID, get_TrxName());
+					ra.delete(false);
+				}
 			}
 		}
 		return success;
-	}
-
+	}	//	afterDelete
+	
 	/**
-	 * Update Header.
-	 * Set Approved Amount
+	 * 	Update Header.
+	 * 	Set Approved Amount
 	 */
 	private void updateHeader()
 	{
 		String sql = "UPDATE S_TimeExpense te"
-				+ " SET ApprovalAmt = "
+			+ " SET ApprovalAmt = "
 				+ "(SELECT SUM(Qty*ConvertedAmt) FROM S_TimeExpenseLine tel "
 				+ "WHERE te.S_TimeExpense_ID=tel.S_TimeExpense_ID) "
-				+ "WHERE S_TimeExpense_ID=" + getS_TimeExpense_ID();
+			+ "WHERE S_TimeExpense_ID=" + getS_TimeExpense_ID();
 		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
-	}
-
-}
+	}	//	updateHeader
+	
+}	//	MTimeExpenseLine

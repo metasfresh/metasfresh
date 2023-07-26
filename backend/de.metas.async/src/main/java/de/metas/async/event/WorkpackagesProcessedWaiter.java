@@ -88,9 +88,8 @@ public class WorkpackagesProcessedWaiter
 	{
 		this.isNoopConsumer = false;
 
-		final String topicName = eventBus.getTopic().getName();
-		Check.errorUnless(WORKPACKAGE_LIFECYCLE_TOPIC.getName().equals(topicName),
-				"The given eventbus needs to have topic.name={}, but instead has topic.name={}", WORKPACKAGE_LIFECYCLE_TOPIC.getName(), topicName);
+		Check.errorUnless(WORKPACKAGE_LIFECYCLE_TOPIC.getName().equals(eventBus.getTopicName()),
+				"The given eventbus needs to have topic.name={}, but instead has topic.name={}", WORKPACKAGE_LIFECYCLE_TOPIC.getName(), eventBus.getTopicName());
 
 		this.correlationId = correlationId;
 		this.eventBus = eventBus;

@@ -69,7 +69,6 @@ import java.util.ArrayList;
 public class WebRestApiApplication
 {
 	private static final String SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE = "de.metas.ui.web.spring.profiles.active";
-	private static final String SYSTEM_PROPERTY_APP_NAME = "spring.application.name";
 
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -82,7 +81,13 @@ public class WebRestApiApplication
 
 	public static void main(final String[] args)
 	{
-		setDefaultProperties();
+		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
+		{
+			System.setProperty("PropertyFile", "./metasfresh.properties");
+		}
+
+		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
+		//ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 
 		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
@@ -165,18 +170,5 @@ public class WebRestApiApplication
 		taskScheduler.setDaemon(true);
 		taskScheduler.setPoolSize(10);
 		return taskScheduler;
-	}
-
-	private static void setDefaultProperties()
-	{
-		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
-		{
-			System.setProperty("PropertyFile", "./metasfresh.properties");
-		}
-
-		if (Check.isBlank(System.getProperty(SYSTEM_PROPERTY_APP_NAME)))
-		{
-			System.setProperty(SYSTEM_PROPERTY_APP_NAME, WebRestApiApplication.class.getSimpleName());
-		}
 	}
 }

@@ -39,7 +39,7 @@ public final class ModelChangeUtil
 		{
 			return false;
 		}
-		final IIsActiveAware oldActiveAware = InterfaceWrapperHelper.createOld(activeAware, IIsActiveAware.class);
+		final IIsActiveAware oldActiveAware = InterfaceWrapperHelper.createOld(model, IIsActiveAware.class);
 		return !oldActiveAware.isActive();
 	}
 
@@ -50,14 +50,14 @@ public final class ModelChangeUtil
 		{
 			return false;
 		}
-		final IIsActiveAware oldActiveAware = InterfaceWrapperHelper.createOld(activeAware, IIsActiveAware.class);
+		final IIsActiveAware oldActiveAware = InterfaceWrapperHelper.createOld(model, IIsActiveAware.class);
 		return oldActiveAware.isActive();
 	}
 
 	public static boolean isJustDeactivatedOrUnProcessed(@NonNull final Object model)
 	{
 		final IActiveAndProcessedAware newAware = InterfaceWrapperHelper.create(model, IActiveAndProcessedAware.class);
-		final IActiveAndProcessedAware oldAware = InterfaceWrapperHelper.createOld(newAware, IActiveAndProcessedAware.class);
+		final IActiveAndProcessedAware oldAware = InterfaceWrapperHelper.createOld(model, IActiveAndProcessedAware.class);
 
 		final boolean deactivated = oldAware.isActive() && !newAware.isActive();
 		final boolean unprocessed = oldAware.isProcessed() && !newAware.isProcessed();
@@ -68,7 +68,7 @@ public final class ModelChangeUtil
 	public static boolean isJustActivatedOrProcessed(@NonNull final Object model)
 	{
 		final IActiveAndProcessedAware newAware = InterfaceWrapperHelper.create(model, IActiveAndProcessedAware.class);
-		final IActiveAndProcessedAware oldAware = InterfaceWrapperHelper.createOld(newAware, IActiveAndProcessedAware.class);
+		final IActiveAndProcessedAware oldAware = InterfaceWrapperHelper.createOld(model, IActiveAndProcessedAware.class);
 
 		final boolean activated = !oldAware.isActive() && newAware.isActive();
 		final boolean processed = !oldAware.isProcessed() && newAware.isProcessed();

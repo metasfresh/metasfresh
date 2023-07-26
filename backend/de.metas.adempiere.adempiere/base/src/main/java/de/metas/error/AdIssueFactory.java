@@ -23,18 +23,19 @@
 package de.metas.error;
 
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.service.ADSystemInfo;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.model.X_AD_Issue;
+import org.compiere.model.I_AD_System;
 import org.compiere.util.DB;
 
 import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 @UtilityClass
@@ -49,20 +50,31 @@ public class AdIssueFactory
 	public I_AD_Issue prepareNewIssueRecord(@NonNull final Properties ctx, @NonNull final I_AD_Issue issue)
 	{
 		final ISystemBL systemBL = Services.get(ISystemBL.class);
-		final ADSystemInfo system = systemBL.get();
+		final I_AD_System system = systemBL.get(ctx);
 
-		issue.setName("-");
-		issue.setUserName("?");
-		issue.setDBAddress("-");
-		issue.setSystemStatus(X_AD_Issue.SYSTEMSTATUS_Implementation);
-		issue.setReleaseNo("-");
-		issue.setVersion(system.getDbVersion());
+		issue.setName(system.getName());
+		issue.setUserName(system.getUserName());
+		issue.setDBAddress(system.getDBAddress());
+		issue.setSystemStatus(system.getSystemStatus());
+		issue.setReleaseNo(system.getReleaseNo());    // DB
+
+		final String version = StringUtils.trimBlankToOptional(Adempiere.getDateVersion()).orElse("?");
+		issue.setVersion(version);
+
 		issue.setDatabaseInfo(DB.getDatabaseInfo());
 		issue.setOperatingSystemInfo(Adempiere.getOSInfo());
 		issue.setJavaInfo(Adempiere.getJavaInfo());
 		issue.setReleaseTag(Adempiere.getImplementationVersion());
 		issue.setLocal_Host(NetUtils.getLocalHost().toString());
-
+		if (system.isAllowStatistics())
+		{
+			// NOTE: there is no need to recalculate how many tenants, bpartners, invoices etc are in the system.
+			// An aproximative information is also acceptable.
+			// Also counting all those infos could be quite expensive.
+			final boolean recalc = false;
+			issue.setStatisticsInfo(systemBL.getStatisticsInfo(recalc));
+			issue.setProfileInfo(systemBL.getProfileInfo(recalc));
+		}
 		return issue;
 	}
 

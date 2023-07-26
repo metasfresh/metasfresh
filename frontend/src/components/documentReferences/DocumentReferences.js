@@ -10,7 +10,7 @@ import {
   buildRelatedDocumentsViewUrl,
   mergePartialGroupToGroupsArray,
 } from '../../utils/documentReferencesHelper';
-import SpinnerOverlay from '../app/SpinnerOverlay';
+import Loader from '../app/Loader';
 import DocumentReferenceGroup from './DocumentReferenceGroup';
 
 /**
@@ -146,11 +146,7 @@ class DocumentReferences extends Component {
         tabIndex={0}
       >
         {this.renderData()}
-        {loading ? (
-          <div className="docref-spinner-wrapper">
-            <SpinnerOverlay iconSize={50} />
-          </div>
-        ) : null}
+        {loading ? <Loader key="loader" /> : null}
       </div>
     );
   }

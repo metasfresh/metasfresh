@@ -24,7 +24,7 @@ package de.metas.contracts.bpartner.repository;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -35,7 +35,6 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
-import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
@@ -44,6 +43,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -51,6 +51,8 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -73,15 +75,12 @@ public class OrgChangeRepository
 
 	private final BPartnerCompositeRepository bPartnerCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
-	private final MembershipContractRepository membershipContractRepo;
 
 	public OrgChangeRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
-			@NonNull final OrgMappingRepository orgMappingRepo,
-			@NonNull final MembershipContractRepository membershipContractRepo)
+			@NonNull final OrgMappingRepository orgMappingRepo)
 	{
 		this.bPartnerCompositeRepo = bPartnerCompositeRepo;
 		this.orgMappingRepo = orgMappingRepo;
-		this.membershipContractRepo = membershipContractRepo;
 	}
 
 	public OrgChangeBPartnerComposite getByIdAndOrgChangeDate(
@@ -102,7 +101,7 @@ public class OrgChangeRepository
 
 	private Optional<GroupCategoryId> getGroupCategoryId(@NonNull final BPartnerId bpartnerId, final Instant orgChangeDate, final OrgId orgId)
 	{
-		return membershipContractRepo.queryMembershipRunningSubscription(bpartnerId, orgChangeDate, orgId)
+		return queryMembershipRunningSubscription(bpartnerId, orgChangeDate, orgId)
 				.stream()
 				.map(term -> productDAO.getById(term.getM_Product_ID()))
 				.filter(product -> product.getC_CompensationGroup_Schema_Category_ID() > 0)
@@ -115,7 +114,7 @@ public class OrgChangeRepository
 			@NonNull final Instant orgChangeDate,
 			@NonNull final OrgId orgId)
 	{
-		final Set<FlatrateTermId> flatrateTermIds = flatrateDAO.retrieveAllRunningSubscriptionIds(bpartnerId, orgChangeDate, orgId);
+		final Set<FlatrateTermId> flatrateTermIds = retrieveAllRunningSubscriptionIds(bpartnerId, orgChangeDate, orgId);
 		return flatrateTermIds.stream()
 				.map(this::createFlatrateTerm)
 				.collect(ImmutableList.toImmutableList());
@@ -123,7 +122,7 @@ public class OrgChangeRepository
 
 	private List<FlatrateTerm> getMembershipSubscriptions(final BPartnerId bpartnerId, final Instant orgChangeDate, final OrgId orgId)
 	{
-		final Set<FlatrateTermId> membershipFlatrateTermIds = membershipContractRepo.retrieveMembershipSubscriptionIds(bpartnerId, orgChangeDate, orgId);
+		final Set<FlatrateTermId> membershipFlatrateTermIds = retrieveMembershipSubscriptionIds(bpartnerId, orgChangeDate, orgId);
 		return membershipFlatrateTermIds.stream()
 				.map(this::createFlatrateTerm)
 				.collect(ImmutableList.toImmutableList());
@@ -138,14 +137,13 @@ public class OrgChangeRepository
 		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
 		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesce(UomId.ofRepoIdOrNull(term.getC_UOM_ID()), productBL.getStockUOMId(productId)));
 
-		final BPartnerLocationAndCaptureId billPartnerLocationAndCaptureId = ContractLocationHelper.extractBillToLocationId(term);
-		final BPartnerLocationAndCaptureId dropshipLPartnerLocationAndCaptureId = ContractLocationHelper.extractDropshipLocationId(term);
-
 		return FlatrateTerm.builder()
 				.flatrateTermId(flatrateTermId)
 				.orgId(orgId)
-				.billPartnerLocationAndCaptureId(billPartnerLocationAndCaptureId)
-				.dropshipPartnerLocationAndCaptureId(dropshipLPartnerLocationAndCaptureId)
+				.billPartnerID(BPartnerId.ofRepoId(term.getBill_BPartner_ID()))
+				.billLocationId(BPartnerLocationId.ofRepoId(term.getBill_BPartner_ID(), term.getBill_Location_ID()))
+				.shipToBPartnerId(BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID()))
+				.shipToLocationId(BPartnerLocationId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()))
 				.productId(productId)
 				.flatrateConditionsId(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
 				.isSimulation(term.isSimulation())
@@ -164,10 +162,58 @@ public class OrgChangeRepository
 
 	public boolean hasAnyMembershipProduct(@NonNull final OrgId orgId)
 	{
-		return membershipContractRepo.queryMembershipProducts(orgId).anyMatch();
+		return queryMembershipProducts(orgId).anyMatch();
 	}
 
+	private IQuery<I_M_Product> queryMembershipProducts(@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
+				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID, null)
+				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_Category_ID, null)
+				.create();
+	}
 
+	private IQuery<I_C_Flatrate_Term> queryMembershipRunningSubscription(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final Instant orgChangeDate,
+			@NonNull final OrgId orgId)
+	{
+		final IQuery<I_M_Product> membershipProductQuery = queryMembershipProducts(orgId);
 
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
+									 I_M_Product.COLUMNNAME_M_Product_ID,
+									 membershipProductQuery)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
+				.create();
+	}
+
+	private Set<FlatrateTermId> retrieveMembershipSubscriptionIds(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final Instant orgChangeDate,
+			@NonNull final OrgId orgId)
+	{
+		return queryMembershipRunningSubscription(bpartnerId, orgChangeDate, orgId)
+				.listIds(FlatrateTermId::ofRepoId);
+	}
+
+	private Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final Instant orgChangeDate,
+			@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
+				.create()
+				.listIds(FlatrateTermId::ofRepoId);
+	}
 
 }

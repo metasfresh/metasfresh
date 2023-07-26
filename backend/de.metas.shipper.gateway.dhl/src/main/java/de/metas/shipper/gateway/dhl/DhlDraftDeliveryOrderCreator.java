@@ -24,7 +24,6 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.customs.CustomsInvoiceRepository;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
@@ -47,6 +46,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,7 +58,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -111,7 +110,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		final BigDecimal grossWeightInKg = CoalesceUtil.firstGreaterThanZero(request.getAllPackagesGrossWeightInKg(), BigDecimal.ONE);
+		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
@@ -173,7 +172,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				pickupFromLocation,
 				pickupDate,
 				deliverToBPartner,
-				//deliverToBPartnerLocationId,
+				deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,
@@ -193,11 +192,11 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_Location pickupFromLocation,
 			@NonNull final LocalDate pickupDate,
 			@NonNull final I_C_BPartner deliverToBPartner,
-			//final int deliverToBPartnerLocationId,
+			final int deliverToBPartnerLocationId,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final DhlShipperProduct serviceType,
-			final BigDecimal grossWeightKg,
+			final int grossWeightKg,
 			final ShipperId shipperId,
 			final String customerReference,
 			final ShipperTransportationId shipperTransportationId,
@@ -263,7 +262,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		if (packingMaterial == null)
 		{
-			throw new AdempiereException("There is no packing material for M_Package_HU_ID=" + packageId.getRepoId() + ". Please create a packing material and set its correct dimensions.");
+			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its correct dimensions.");
 		}
 
 		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);

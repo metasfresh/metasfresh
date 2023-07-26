@@ -1,20 +1,18 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for C_Bank
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_Bank 
 {
 
-	String Table_Name = "C_Bank";
+    /** TableName=C_Bank */
+    public static final String Table_Name = "C_Bank";
 
-//	/** AD_Table_ID=296 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=296 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -25,9 +23,10 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -37,7 +36,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -47,9 +46,10 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Bank.
@@ -59,7 +59,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Bank_ID (int C_Bank_ID);
+	public void setC_Bank_ID (int C_Bank_ID);
 
 	/**
 	 * Get Bank.
@@ -69,35 +69,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Bank_ID();
+	public int getC_Bank_ID();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_C_Bank_ID = new ModelColumn<>(I_C_Bank.class, "C_Bank_ID", null);
-	String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
-
-	/**
-	 * Set Data import.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DataImport_ID (int C_DataImport_ID);
-
-	/**
-	 * Get Data import.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DataImport_ID();
-
-	@Nullable org.compiere.model.I_C_DataImport getC_DataImport();
-
-	void setC_DataImport(@Nullable org.compiere.model.I_C_DataImport C_DataImport);
-
-	ModelColumn<I_C_Bank, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new ModelColumn<>(I_C_Bank.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
-	String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+    /** Column definition for C_Bank_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_C_Bank_ID = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "C_Bank_ID", null);
+    /** Column name C_Bank_ID */
+    public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
 
 	/**
 	 * Set Location.
@@ -107,7 +84,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Location_ID (int C_Location_ID);
+	public void setC_Location_ID (int C_Location_ID);
 
 	/**
 	 * Get Location.
@@ -117,14 +94,16 @@ public interface I_C_Bank
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Location_ID();
+	public int getC_Location_ID();
 
-	@Nullable org.compiere.model.I_C_Location getC_Location();
+	public org.compiere.model.I_C_Location getC_Location();
 
-	void setC_Location(@Nullable org.compiere.model.I_C_Location C_Location);
+	public void setC_Location(org.compiere.model.I_C_Location C_Location);
 
-	ModelColumn<I_C_Bank, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new ModelColumn<>(I_C_Bank.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
-	String COLUMNNAME_C_Location_ID = "C_Location_ID";
+    /** Column definition for C_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new org.adempiere.model.ModelColumn<I_C_Bank, org.compiere.model.I_C_Location>(I_C_Bank.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
+    /** Column name C_Location_ID */
+    public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
 
 	/**
 	 * Get Created.
@@ -134,10 +113,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_Created = new ModelColumn<>(I_C_Bank.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -147,9 +128,10 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
@@ -158,7 +140,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -167,10 +149,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_Description = new ModelColumn<>(I_C_Bank.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Bank ist die Postfinance-Bank.
@@ -180,7 +164,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setESR_PostBank (boolean ESR_PostBank);
+	public void setESR_PostBank (boolean ESR_PostBank);
 
 	/**
 	 * Get Bank ist die Postfinance-Bank.
@@ -190,10 +174,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isESR_PostBank();
+	public boolean isESR_PostBank();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_ESR_PostBank = new ModelColumn<>(I_C_Bank.class, "ESR_PostBank", null);
-	String COLUMNNAME_ESR_PostBank = "ESR_PostBank";
+    /** Column definition for ESR_PostBank */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_ESR_PostBank = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "ESR_PostBank", null);
+    /** Column name ESR_PostBank */
+    public static final String COLUMNNAME_ESR_PostBank = "ESR_PostBank";
 
 	/**
 	 * Set Active.
@@ -203,7 +189,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -213,10 +199,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Bank.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Cash Bank.
@@ -225,7 +213,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCashBank (boolean IsCashBank);
+	public void setIsCashBank (boolean IsCashBank);
 
 	/**
 	 * Get Cash Bank.
@@ -234,10 +222,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isCashBank();
+	public boolean isCashBank();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_IsCashBank = new ModelColumn<>(I_C_Bank.class, "IsCashBank", null);
-	String COLUMNNAME_IsCashBank = "IsCashBank";
+    /** Column definition for IsCashBank */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_IsCashBank = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "IsCashBank", null);
+    /** Column name IsCashBank */
+    public static final String COLUMNNAME_IsCashBank = "IsCashBank";
 
 	/**
 	 * Set Own Bank.
@@ -247,7 +237,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsOwnBank (boolean IsOwnBank);
+	public void setIsOwnBank (boolean IsOwnBank);
 
 	/**
 	 * Get Own Bank.
@@ -257,10 +247,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isOwnBank();
+	public boolean isOwnBank();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_IsOwnBank = new ModelColumn<>(I_C_Bank.class, "IsOwnBank", null);
-	String COLUMNNAME_IsOwnBank = "IsOwnBank";
+    /** Column definition for IsOwnBank */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_IsOwnBank = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "IsOwnBank", null);
+    /** Column name IsOwnBank */
+    public static final String COLUMNNAME_IsOwnBank = "IsOwnBank";
 
 	/**
 	 * Set Name.
@@ -269,7 +261,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -278,33 +270,37 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_Name = new ModelColumn<>(I_C_Bank.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Routing No.
+	 * Set BLZ.
 	 * Bank Routing Number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setRoutingNo (java.lang.String RoutingNo);
+	public void setRoutingNo (java.lang.String RoutingNo);
 
 	/**
-	 * Get Routing No.
+	 * Get BLZ.
 	 * Bank Routing Number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getRoutingNo();
+	public java.lang.String getRoutingNo();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_RoutingNo = new ModelColumn<>(I_C_Bank.class, "RoutingNo", null);
-	String COLUMNNAME_RoutingNo = "RoutingNo";
+    /** Column definition for RoutingNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_RoutingNo = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "RoutingNo", null);
+    /** Column name RoutingNo */
+    public static final String COLUMNNAME_RoutingNo = "RoutingNo";
 
 	/**
 	 * Set Swift code.
@@ -314,7 +310,7 @@ public interface I_C_Bank
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSwiftCode (@Nullable java.lang.String SwiftCode);
+	public void setSwiftCode (java.lang.String SwiftCode);
 
 	/**
 	 * Get Swift code.
@@ -324,10 +320,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getSwiftCode();
+	public java.lang.String getSwiftCode();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_SwiftCode = new ModelColumn<>(I_C_Bank.class, "SwiftCode", null);
-	String COLUMNNAME_SwiftCode = "SwiftCode";
+    /** Column definition for SwiftCode */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_SwiftCode = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "SwiftCode", null);
+    /** Column name SwiftCode */
+    public static final String COLUMNNAME_SwiftCode = "SwiftCode";
 
 	/**
 	 * Get Updated.
@@ -337,10 +335,12 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Bank, Object> COLUMN_Updated = new ModelColumn<>(I_C_Bank.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -350,7 +350,8 @@ public interface I_C_Bank
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

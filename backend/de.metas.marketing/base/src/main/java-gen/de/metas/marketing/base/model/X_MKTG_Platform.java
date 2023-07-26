@@ -97,8 +97,6 @@ public class X_MKTG_Platform extends org.compiere.model.PO implements I_MKTG_Pla
 	public static final int MARKETINGPLATFORMGATEWAYID_AD_Reference_ID=540858;
 	/** CleverReach = CleverReach */
 	public static final String MARKETINGPLATFORMGATEWAYID_CleverReach = "CleverReach";
-	/** ActiveCampaign = ActiveCampaign */
-	public static final String MARKETINGPLATFORMGATEWAYID_ActiveCampaign = "ActiveCampaign";
 	/** Set Marketing Platform GatewayId.
 		@param MarketingPlatformGatewayId Marketing Platform GatewayId	  */
 	@Override

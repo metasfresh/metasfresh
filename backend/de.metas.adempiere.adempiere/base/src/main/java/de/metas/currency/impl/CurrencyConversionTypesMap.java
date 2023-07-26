@@ -1,19 +1,21 @@
 package de.metas.currency.impl;
 
+import java.time.LocalDate;
+import java.util.Collection;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionType;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-
-import java.time.Instant;
-import java.util.Collection;
 
 /*
  * #%L
@@ -77,7 +79,7 @@ final class CurrencyConversionTypesMap
 	public CurrencyConversionType getDefaultConversionType(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
-			@NonNull final Instant date)
+			@NonNull final LocalDate date)
 	{
 		final CurrencyConversionTypeRouting bestMatchingRouting = routings.stream()
 				.filter(routing -> routing.isMatching(adClientId, adOrgId, date))

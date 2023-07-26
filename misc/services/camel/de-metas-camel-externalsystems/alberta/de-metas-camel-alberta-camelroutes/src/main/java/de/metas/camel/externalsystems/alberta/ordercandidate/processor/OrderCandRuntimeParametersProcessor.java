@@ -1,9 +1,9 @@
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
 import de.metas.camel.externalsystems.alberta.ordercandidate.NextImportSinceTimestamp;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;

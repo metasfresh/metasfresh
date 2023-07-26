@@ -22,64 +22,52 @@
 
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder;
 
-import au.com.origin.snapshots.Expect;
-
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
-import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 import static org.mockito.ArgumentMatchers.eq;
 
-@ExtendWith(SnapshotExtension.class)
 public class MediatedOrderFactoryTest
 {
 	private MediatedOrderFactory mediatedOrderFactory;
 	private CommissionProductService commissionProductServiceMock;
 
-	private Expect expect;
-
 	@BeforeEach
 	public void beforeEach()
 	{
-		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
-
 		commissionProductServiceMock = Mockito.mock(CommissionProductService.class);
 		mediatedOrderFactory = new MediatedOrderFactory(commissionProductServiceMock);
 	}
@@ -87,6 +75,7 @@ public class MediatedOrderFactoryTest
 	@BeforeAll
 	static void init()
 	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -118,7 +107,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	@Test
@@ -148,7 +137,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	@Test
@@ -197,7 +186,7 @@ public class MediatedOrderFactoryTest
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
-
+		;
 		orgInfo.setAD_Org_ID(orgId.getRepoId());
 		orgInfo.setStoreCreditCardData(STORECREDITCARDDATA_Speichern);
 		InterfaceWrapperHelper.save(orgInfo);
@@ -239,19 +228,6 @@ public class MediatedOrderFactoryTest
 		priceListVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		saveRecord(priceListVersion);
 
-		//uom
-		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("uom");
-
-		//product
-		final I_M_Product trxProduct = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-		trxProduct.setM_Product_ID(transactionProductId.getRepoId());
-		trxProduct.setC_UOM_ID(uomRecord.getC_UOM_ID());
-		InterfaceWrapperHelper.saveRecord(trxProduct);
-
-		//currency
-		final I_C_Currency currency = newInstance(I_C_Currency.class);
-		saveRecord(currency);
-
 		//order
 		final I_C_Order mediatedOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class);
 		mediatedOrder.setDocStatus(DocStatus.Completed.getCode());
@@ -260,10 +236,13 @@ public class MediatedOrderFactoryTest
 		mediatedOrder.setC_BPartner_ID(vendorBPartner.getC_BPartner_ID());
 		mediatedOrder.setDateAcct(TimeUtil.asTimestamp(LocalDate.of(2021, 3, 18)));
 		mediatedOrder.setIsTaxIncluded(taxIncluded);
-		mediatedOrder.setC_Currency_ID(currency.getC_Currency_ID());
 		InterfaceWrapperHelper.saveRecord(mediatedOrder);
 
 		//line
+		final I_C_UOM lineUOM = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		lineUOM.setC_UOM_ID(1);
+		InterfaceWrapperHelper.saveRecord(lineUOM);
+
 		final I_C_OrderLine mediatedLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
 		mediatedLine.setC_Order_ID(mediatedOrder.getC_Order_ID());
 		mediatedLine.setM_Product_ID(transactionProductId.getRepoId());
@@ -271,9 +250,9 @@ public class MediatedOrderFactoryTest
 		mediatedLine.setAD_Org_ID(orgId.getRepoId());
 		mediatedLine.setPriceActual(priceActual);
 		mediatedLine.setQtyOrdered(qtyOrdered);
-		mediatedLine.setQtyEntered(qtyOrdered);
+		mediatedLine.setC_UOM_ID(1);
+		mediatedLine.setPrice_UOM_ID(1);
 		mediatedLine.setC_Tax_ID(taxRecord.getC_Tax_ID());
-		mediatedLine.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		InterfaceWrapperHelper.saveRecord(mediatedLine);
 
 		return mediatedOrder;

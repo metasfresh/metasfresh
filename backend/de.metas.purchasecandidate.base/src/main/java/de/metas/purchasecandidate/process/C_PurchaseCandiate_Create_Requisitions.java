@@ -1,13 +1,14 @@
 package de.metas.purchasecandidate.process;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
@@ -39,7 +40,7 @@ public class C_PurchaseCandiate_Create_Requisitions
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final DocTypeId reqDocTypeId = docTypeDAO.getDocTypeId(
 			DocTypeQuery.builder()
-					.docBaseType(DocBaseType.PurchaseOrder)
+					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
 					.docSubType(X_C_DocType.DOCSUBTYPE_Requisition)
 					.adClientId(Env.getClientId().getRepoId())
 					.build());

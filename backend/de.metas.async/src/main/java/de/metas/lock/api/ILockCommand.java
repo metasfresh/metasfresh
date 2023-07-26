@@ -22,13 +22,14 @@ package de.metas.lock.api;
  * #L%
  */
 
-import de.metas.process.PInstanceId;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.Future;
+
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import de.metas.process.PInstanceId;
 
 /**
  * Lock acquire/Lock change command.
@@ -83,7 +84,7 @@ public interface ILockCommand
 	/**
 	 * Sets owner/new owner of the lock which will be acquired.
 	 * <p>
-	 * <b>IMPORTANT: </b> the lock owner's name is part of the <code>T_Lock</code> record, so don't use {@link LockOwner#ANY} or {@link LockOwner#NONE} if you are going to invoke {@link ILockManager#getLockedByFilter(Class, ILock)} or {@link ILockManager#getLockedRecordsQueryBuilder(Class, Object)}.
+	 * <b>IMPORTANT: </b> the lock owner's name is part of the <code>T_Lock</code> record, so don't use {@link LockOwner#ANY} or {@link LockOwner#NONE} if you are going to invoke {@link ILockManager#getLockedByFilter(Class, ILock)}, {@link ILockManager#getLockedRecordsQueryBuilder(Class, Object)} or {@link ILockManager#getLockedWhereClause(Class, String, ILock)}.
 	 */
 	ILockCommand setOwner(LockOwner owner);
 
@@ -106,6 +107,8 @@ public interface ILockCommand
 
 	/**
 	 * See {@link #setAllowAdditionalLocks(AllowAdditionalLocks)}.
+	 *
+	 * @return
 	 */
 	AllowAdditionalLocks getAllowAdditionalLocks();
 

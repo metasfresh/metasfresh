@@ -35,7 +35,6 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -44,9 +43,10 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
-import de.metas.common.util.pair.IPair;
-import org.adempiere.warehouse.LocatorId;
+import org.adempiere.util.lang.IPair;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -83,10 +83,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	I_M_HU getById(HuId huId);
-
-	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
-
-	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
 
 	ClientAndOrgId getClientAndOrgId(@NonNull HuId huId);
 
@@ -173,7 +169,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	// Handling Unit PI Retrieval
 
-	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
+	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnitPI, final BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
@@ -197,8 +193,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
 
-	I_M_HU_PI_Version retrievePICurrentVersion(HuPackingInstructionsId piId);
-
 	/**
 	 * @return current PI Version or null
 	 */
@@ -218,18 +212,13 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_HU_PI_Version> retrieveAllPIVersions(I_M_HU_PI pi);
 
-	Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final LocatorId locatorId);
+	Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final I_M_Locator locator);
 
 	/**
 	 * @param huUnitType optional, may be {@code null} or empty. If given, then only return items whose {@link I_M_HU_PI_Version} has the given {@link I_M_HU_PI_Version#COLUMN_HU_UnitType}.
 	 * @return unique {@link I_M_HU_PI_Item}s of the selected {@link I_M_HU_PI}'s parent PI
 	 */
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
-
-	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
-			@NonNull HuPackingInstructionsId packingInstructionsId,
-			@Nullable String huUnitType,
-			@Nullable BPartnerId bpartnerId);
 
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
@@ -256,8 +245,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, BPartnerId bpartnerId);
-
-	I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(@NonNull HuPackingInstructionsVersionId versionId, @Nullable BPartnerId bpartnerId);
 
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
 
@@ -312,13 +299,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
 
-	Set<LocatorId> getLocatorIds(List<I_M_HU> hus);
+	/**
+	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
+	 */
+	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
 
-	// TODO: replace it by getByIds
-	@Deprecated
 	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
 
-	void setReservedByHUIds(final Set<HuId> huIds, boolean reserved);
+	void setReservedByHUIds(final Collection<HuId> huIds, boolean reserved);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);

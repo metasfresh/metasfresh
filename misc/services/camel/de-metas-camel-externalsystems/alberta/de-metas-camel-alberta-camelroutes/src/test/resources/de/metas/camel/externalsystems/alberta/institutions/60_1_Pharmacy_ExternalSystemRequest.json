@@ -5,7 +5,6 @@
   "adPInstanceId": 10009936,
   "externalSystemConfigId": 1,
   "traceId": "traceId",
-  "externalSystemChildConfigValue": "ChildConfigValue",
   "parameters": {
     "APIKey": "APIKey",
     "Tenant": "Tenant",

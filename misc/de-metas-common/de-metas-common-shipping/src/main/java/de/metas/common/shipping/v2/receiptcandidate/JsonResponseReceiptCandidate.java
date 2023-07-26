@@ -25,11 +25,12 @@ package de.metas.common.shipping.v2.receiptcandidate;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.shipping.v2.JsonProduct;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -39,43 +40,45 @@ import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Schema(description = "Single receipt candidate; basically this tells the logistics provider to expect a particular delivery item from a vendor.\n"
+@ApiModel(description = "Single receipt candidate; basically this tells the logistics provider to expect a particular delivery item from a vendor.\n"
 		+ "It translates to a particular `M_ReceiptSchedule` record in metasfresh.")
 @Value
 public class JsonResponseReceiptCandidate
 {
-	@Schema(required = true)
+	@ApiModelProperty(position = 10, required = true)
 	JsonMetasfreshId id;
 
-	@Schema(required = true)
+	@ApiModelProperty(position = 30, required = true)
 	String orgCode;
 
-	@Schema(description = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
+	@ApiModelProperty(position = 40,
+			value = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String orderDocumentNo;
 
-	@Schema
+	@ApiModelProperty(position = 50)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String poReference;
 
-	@Schema(description = "If there is a purchase order, then this is the number of overall exportable items from that order.\n"
+	@ApiModelProperty(position = 60,
+			value = "If there is a purchase order, then this is the number of overall exportable items from that order.\n"
 					+ "Useful if due to `limit`, not all items of one order are exported in one invocation.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Integer numberOfItemsWithSameOrderId;
 
-	@Schema
+	@ApiModelProperty(position = 70)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	LocalDateTime dateOrdered;
 
-	@Schema(required = true)
+	@ApiModelProperty(position = 80, required = true)
 	JsonProduct product;
 
-	@Schema
+	@ApiModelProperty(position = 90)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@Schema(required = true,
-			description = "The shipment schedule's quantity to deliver, possibly in different UOMs")
+	@ApiModelProperty(position = 100, required = true,
+			value = "The shipment schedule's quantity to deliver, possibly in different UOMs")
 	List<JsonQuantity> quantities;
 
 	@JsonCreator

@@ -247,7 +247,7 @@ public class InventoryService
 	@NonNull
 	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req)
 	{
-		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(req.getWarehouseId());
+		final LocatorId locatorId = warehouseBL.getDefaultLocatorId(req.getWarehouseId());
 
 		final InventoryHeaderCreateRequest createHeaderRequest = InventoryHeaderCreateRequest
 				.builder()

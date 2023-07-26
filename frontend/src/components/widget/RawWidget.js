@@ -3,21 +3,13 @@ import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 
-import { getWidgetField, shouldPatch } from '../../utils/widgetHelpers';
+import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
+import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
-import PropTypes from 'prop-types';
-
-const computeWidgetTypeClass = (widgetType, fieldsCount) => {
-  if (fieldsCount > 1) {
-    return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
-  } else {
-    return 'widgetType-' + widgetType;
-  }
-};
 
 /**
  * @file Class based component.
@@ -25,8 +17,6 @@ const computeWidgetTypeClass = (widgetType, fieldsCount) => {
  * @extends Component
  */
 export class RawWidget extends PureComponent {
-  mounted = false;
-
   constructor(props) {
     super(props);
 
@@ -47,33 +37,35 @@ export class RawWidget extends PureComponent {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
 
-    if (autoFocus) {
-      this.focus();
+    if (rawWidget.current && autoFocus) {
+      try {
+        rawWidget.current.focus();
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
     }
 
     if (textSelected) {
       rawWidget.current.select();
     }
-
-    this.mounted = true;
   }
 
-  componentWillUnmount() {
-    this.mounted = false;
-  }
+  // in some cases we initially have no widgetData when RawWidgets are created
+  // (Selection attributes) so we have to update the `cachedValue` to the
+  // value from widgetData, once it's available
+  static getDerivedStateFromProps(props, state) {
+    if (typeof state.cachedValue === 'undefined') {
+      const cachedValue = RawWidget.getCachedValue(props);
 
-  focus = () => {
-    const { rawWidget } = this;
-
-    if (rawWidget.current) {
-      try {
-        rawWidget.current.focus();
-        this.setState({ isFocused: true });
-      } catch (e) {
-        console.error(`Custom widget doesn't have 'focus' function defined`);
+      if (cachedValue) {
+        return {
+          cachedValue,
+        };
       }
     }
-  };
+
+    return null;
+  }
 
   /**
    * @method getCachedValue
@@ -116,7 +108,7 @@ export class RawWidget extends PureComponent {
    *
    * @param {string} type - toggles between text/password
    */
-  setWidgetType = (type) => (this.rawWidget.current.type = type);
+  setWidgetType = (type) => (this.rawWidget.type = type);
 
   /**
    * @method showErrorPopup
@@ -186,9 +178,14 @@ export class RawWidget extends PureComponent {
     listenOnKeysFalse && listenOnKeysFalse();
 
     setTimeout(() => {
-      if (this.mounted) {
-        this.setState({ isFocused: true }, () => handleFocus && handleFocus());
-      }
+      this.setState(
+        {
+          isFocused: true,
+        },
+        () => {
+          handleFocus && handleFocus();
+        }
+      );
     }, 0);
   };
 
@@ -241,7 +238,7 @@ export class RawWidget extends PureComponent {
   /**
    * @method updateTypedCharacters
    * @summary updates in the state the number of charactes typed
-   * @param {string} typedText
+   * @param {typedText} string
    */
   updateTypedCharacters = (typedText) => {
     const { fieldName } = this.props;
@@ -258,13 +255,8 @@ export class RawWidget extends PureComponent {
    * @param {*} e - DOM event
    */
   handleKeyDown = (e) => {
-    const {
-      propagateEnterKeyEvent,
-      widgetType,
-      filterWidget,
-      fields,
-      closeTableField,
-    } = this.props;
+    const { lastFormField, widgetType, filterWidget, fields, closeTableField } =
+      this.props;
     const value = e.target.value;
     const { key } = e;
     const widgetField = getWidgetField({ filterWidget, fields });
@@ -283,14 +275,14 @@ export class RawWidget extends PureComponent {
       (key === 'ArrowUp' || key === 'ArrowDown') &&
       NumberWidgets.includes(widgetType)
     ) {
-      closeTableField?.();
+      closeTableField();
       e.preventDefault();
 
       return this.handlePatch(widgetField, value, null, null, true);
     }
 
     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
-      if (key === 'Enter' && !propagateEnterKeyEvent) {
+      if (key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
 
@@ -412,7 +404,8 @@ export class RawWidget extends PureComponent {
       fieldName,
       maxLength,
       isFilterActive,
-      suppressChange,
+
+      isEdited,
     } = this.props;
     let tabIndex = this.props.tabIndex;
     const { isFocused, charsTyped } = this.state;
@@ -435,13 +428,10 @@ export class RawWidget extends PureComponent {
     }
 
     // TODO: this logic should be removed and adapted below after widgetType === 'MultiListValue' is added
-    const isMultiselect = !!(
+    const isMultiselect =
       widgetData[0].widgetType === 'List' && widgetData[0].multiListValue
-    );
-
-    // dev-note: avoid displaying value when hovering over password widget
-    const widgetTitle =
-      widgetData[0].widgetType === 'Password' ? null : widgetValue;
+        ? true
+        : false;
 
     const widgetProperties = {
       //autocomplete=new-password did not work in chrome for non password fields anymore,
@@ -457,7 +447,7 @@ export class RawWidget extends PureComponent {
       onChange: this.handleChange,
       onBlur: this.handleBlur,
       onKeyDown: this.handleKeyDown,
-      title: widgetTitle,
+      title: widgetValue,
       id,
     };
     const showErrorBorder = charsTyped && charsTyped[fieldName] > maxLength;
@@ -474,7 +464,7 @@ export class RawWidget extends PureComponent {
           showErrorBorder,
           isFocused,
           isFilterActive,
-          suppressChange,
+          isEdited,
         }}
         ref={this.rawWidget}
         charsTyped={charsTypedCount}
@@ -493,7 +483,9 @@ export class RawWidget extends PureComponent {
    */
   isScanQRbuttonPanel = () => {
     const { barcodeScannerType, layoutType } = this.props;
-    return barcodeScannerType === 'qrCode' && layoutType === 'panel';
+    return barcodeScannerType === 'qrCode' && layoutType === 'panel'
+      ? true
+      : false;
   };
 
   /**
@@ -526,10 +518,12 @@ export class RawWidget extends PureComponent {
       isModal,
       handlePatch,
       widgetType,
-      widgetSize,
       handleZoomInto,
       dataEntry,
       subentity,
+      fieldFormGroupClass,
+      fieldLabelClass,
+      fieldInputClass,
     } = this.props;
 
     const fieldColSize = this.getAdaptedFieldColSize();
@@ -570,30 +564,39 @@ export class RawWidget extends PureComponent {
       .map((field) => 'form-field-' + field.field)
       .join(' ');
 
-    let labelClass = '';
-    let fieldClass = '';
-    if (quickInput) {
-      labelClass = '';
-      fieldClass = '';
-    } else if (dataEntry) {
-      labelClass = 'col-sm-5';
-      fieldClass = 'col-sm-7';
-    } else if ((type === 'primary' || noLabel) && !oneLineException) {
-      labelClass = !noLabel ? 'col-sm-12 panel-title' : '';
-      fieldClass = 'col-sm-12';
-    } else if (type === 'primaryLongLabels') {
-      labelClass = 'col-sm-6';
-      fieldClass = 'col-sm-6';
-    } else {
-      labelClass = 'col-sm-3';
-      fieldClass = fieldColSize;
-    }
+    let labelClass;
+    let fieldClass;
+    let formGroupClass = '';
 
-    if (fields[0].devices) {
-      fieldClass += ' form-group-flex';
+    if (quickInput) {
+      labelClass = fieldLabelClass;
+      fieldClass = fieldInputClass;
+      formGroupClass = fieldFormGroupClass;
+    } else {
+      labelClass = dataEntry ? 'col-sm-5' : '';
+      if (!labelClass) {
+        labelClass =
+          type === 'primary' && !oneLineException
+            ? 'col-sm-12 panel-title'
+            : type === 'primaryLongLabels'
+            ? 'col-sm-6'
+            : 'col-sm-3';
+      }
+
+      fieldClass = dataEntry ? 'col-sm-7' : '';
+      if (!fieldClass) {
+        fieldClass =
+          ((type === 'primary' || noLabel) && !oneLineException
+            ? 'col-sm-12 '
+            : type === 'primaryLongLabels'
+            ? 'col-sm-6'
+            : fieldColSize + ' ') +
+          (fields[0].devices ? 'form-group-flex' : '');
+      }
     }
 
     const labelProps = {};
+
     if (!noLabel && caption && fields[0].supportZoomInto) {
       labelProps.onClick = () => handleZoomInto(fields[0].field);
     }
@@ -602,169 +605,98 @@ export class RawWidget extends PureComponent {
       <div
         className={classnames(
           'form-group',
+          formGroupClass,
           {
-            row: !quickInput,
             'form-group-table': rowId && !isModal,
           },
-          computeWidgetTypeClass(widgetType, fields.length),
-          widgetSize ? 'widgetSize-' + widgetSize : '',
           widgetFieldsName
         )}
       >
-        {captionElement || null}
-        {!noLabel && caption && (
-          <label
-            className={classnames('form-control-label', labelClass, {
-              'zoom-into': fields[0].supportZoomInto,
-            })}
-            title={description || caption}
-            {...labelProps}
-          >
-            {caption}
-          </label>
-        )}
-        <div
-          className={fieldClass}
-          onMouseEnter={
-            validStatus && !validStatus.valid ? this.showErrorPopup : undefined
-          }
-          onMouseLeave={this.hideErrorPopup}
-        >
-          {!clearedFieldWarning && warning && (
-            <div
-              className={classnames('field-warning', {
-                'field-warning-message': warning,
-                'field-error-message': warning && warning.error,
+        <div className="row">
+          {captionElement || null}
+          {!noLabel && caption && (
+            <label
+              className={classnames('form-control-label', labelClass, {
+                'input-zoom': quickInput && fields[0].supportZoomInto,
+                'zoom-into': fields[0].supportZoomInto,
               })}
-              onMouseEnter={() => this.toggleTooltip(true)}
-              onMouseLeave={() => this.toggleTooltip(false)}
+              title={description || caption}
+              {...labelProps}
             >
-              <span>{warning.caption}</span>
-              <i
-                className="meta-icon-close-alt"
-                onClick={() => this.clearFieldWarning(warning)}
-              />
-              {warning.message && tooltipToggled && (
-                <Tooltips action={warning.message} type="" />
-              )}
-            </div>
+              {caption}
+            </label>
           )}
-
           <div
-            className={classnames('input-body-container', {
-              focused: isFocused,
-            })}
-            title={valueDescription}
+            className={fieldClass}
+            onMouseEnter={
+              validStatus && !validStatus.valid
+                ? this.showErrorPopup
+                : undefined
+            }
+            onMouseLeave={this.hideErrorPopup}
           >
-            <CSSTransition
-              key={`trans_${fields[0].fieldName}`}
-              className="fade"
-              timeout={{ enter: 200, exit: 200 }}
-            >
-              <div>
-                {errorPopup &&
-                  validStatus &&
-                  !validStatus.valid &&
-                  !validStatus.initialValue &&
-                  this.renderErrorPopup(validStatus.reason)}
+            {!clearedFieldWarning && warning && (
+              <div
+                className={classnames('field-warning', {
+                  'field-warning-message': warning,
+                  'field-error-message': warning && warning.error,
+                })}
+                onMouseEnter={() => this.toggleTooltip(true)}
+                onMouseLeave={() => this.toggleTooltip(false)}
+              >
+                <span>{warning.caption}</span>
+                <i
+                  className="meta-icon-close-alt"
+                  onClick={() => this.clearFieldWarning(warning)}
+                />
+                {warning.message && tooltipToggled && (
+                  <Tooltips action={warning.message} type="" />
+                )}
               </div>
-            </CSSTransition>
-            {widgetBody}
+            )}
+
+            <div
+              className={classnames('input-body-container', {
+                focused: isFocused,
+              })}
+              title={valueDescription}
+            >
+              <CSSTransition
+                key={`trans_${fields[0].fieldName}`}
+                className="fade"
+                timeout={{ enter: 200, exit: 200 }}
+              >
+                <div>
+                  {errorPopup &&
+                    validStatus &&
+                    !validStatus.valid &&
+                    !validStatus.initialValue &&
+                    this.renderErrorPopup(validStatus.reason)}
+                </div>
+              </CSSTransition>
+              {widgetBody}
+            </div>
+            {fields[0].devices && !widgetData[0].readonly && (
+              <DevicesWidget
+                devices={fields[0].devices}
+                tabIndex={1}
+                handleChange={(value) =>
+                  handlePatch && handlePatch(fields[0].field, value)
+                }
+              />
+            )}
           </div>
-          {fields[0].devices && !widgetData[0].readonly && (
-            <DevicesWidget
-              devices={fields[0].devices}
-              tabIndex={1}
-              handleChange={(value) =>
-                handlePatch && handlePatch(fields[0].field, value)
-              }
-            />
+          {/* this is a special case for displaying the scan button on the right side of the field */}
+          {this.isScanQRbuttonPanel() && (
+            <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
           )}
         </div>
-        {/* this is a special case for displaying the scan button on the right side of the field */}
-        {this.isScanQRbuttonPanel() && (
-          <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
-        )}
       </div>
     );
   }
 }
 
-RawWidget.propTypes = {
-  inProgress: PropTypes.bool,
-  autoFocus: PropTypes.bool,
-  textSelected: PropTypes.bool,
-  listenOnKeys: PropTypes.bool,
-  widgetData: PropTypes.array,
-  tabId: PropTypes.string,
-  viewId: PropTypes.string,
-  rowId: PropTypes.string,
-  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  windowType: PropTypes.string,
-  fieldName: PropTypes.string,
-  widgetField: PropTypes.string,
-  caption: PropTypes.string,
-  gridAlign: PropTypes.string,
-  type: PropTypes.string,
-  updated: PropTypes.bool,
-  isModal: PropTypes.bool,
-  modalVisible: PropTypes.bool.isRequired,
-  filterWidget: PropTypes.bool,
-  filterId: PropTypes.string,
-  id: PropTypes.number,
-  range: PropTypes.bool,
-  subentity: PropTypes.string,
-  subentityId: PropTypes.string,
-  tabIndex: PropTypes.number,
-  fullScreen: PropTypes.bool,
-  widgetType: PropTypes.string,
-  widgetSize: PropTypes.string,
-  fields: PropTypes.array,
-  icon: PropTypes.string,
-  entity: PropTypes.string,
-  data: PropTypes.any,
-  attribute: PropTypes.bool,
-  allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
-  buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
-  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-  noLabel: PropTypes.bool,
-  isOpenDatePicker: PropTypes.bool,
-  forceHeight: PropTypes.number,
-  dataEntry: PropTypes.bool,
-  propagateEnterKeyEvent: PropTypes.bool,
-  maxLength: PropTypes.number,
-  isFilterActive: PropTypes.bool,
-  isEdited: PropTypes.bool,
-  barcodeScannerType: PropTypes.string,
-  layoutType: PropTypes.string,
-  description: PropTypes.string,
-  captionElement: PropTypes.string,
-  //
-  // Callbacks and other functions:
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
-  listenOnKeysFalse: PropTypes.func,
-  listenOnKeysTrue: PropTypes.func,
-  enableOnClickOutside: PropTypes.func,
-  disableOnClickOutside: PropTypes.func,
-  handleFocus: PropTypes.func,
-  handlePatch: PropTypes.func,
-  handleBlur: PropTypes.func,
-  onBlurWidget: PropTypes.func,
-  handleProcess: PropTypes.func,
-  handleChange: PropTypes.func,
-  handleBackdropLock: PropTypes.func,
-  handleZoomInto: PropTypes.func,
-  onShow: PropTypes.func,
-  onHide: PropTypes.func,
-  dropdownOpenCallback: PropTypes.func,
-  closeTableField: PropTypes.func,
-  typeaheadSupplier: PropTypes.func,
-  dropdownValuesSupplier: PropTypes.func,
-};
-RawWidget.defaultProps = {
-  tabIndex: 0,
-  handleZoomInto: () => {},
-};
+RawWidget.propTypes = RawWidgetPropTypes;
+RawWidget.defaultProps = RawWidgetDefaultProps;
 
 export default RawWidget;

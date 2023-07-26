@@ -13,42 +13,42 @@
  *****************************************************************************/
 package de.metas.material.planning.exception;
 
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 
-import javax.annotation.Nullable;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Thrown when no Plant was found for given Warehouse
  *
  * @author Teo Sarca
  */
+@SuppressWarnings("serial")
 public class NoPlantForWarehouseException extends MrpException
 {
-	public NoPlantForWarehouseException(@Nullable final OrgId adOrgId, @Nullable final WarehouseId warehouseId, @Nullable final ProductId productId)
+	public NoPlantForWarehouseException(final OrgId adOrgId, final WarehouseId warehouseId, final ProductId productId)
 	{
 		super(buildMsg(adOrgId, warehouseId, productId));
 	}
 
-	private static String buildMsg(@Nullable final OrgId adOrgId, @Nullable final WarehouseId warehouseId, @Nullable final ProductId productId)
+	private static String buildMsg(final OrgId adOrgId, final WarehouseId warehouseId, final ProductId productId)
 	{
 		final StringBuilder sb = new StringBuilder("@NoPlantForWarehouseException@");
 
 		if (warehouseId != null)
 		{
 			final String warehouseName = Services.get(IWarehouseDAO.class).getWarehouseName(warehouseId);
-			sb.append("\n @M_Warehouse_ID@ : ").append(warehouseName);
+			sb.append("\n @M_Warehouse_ID@ : " + warehouseName);
 		}
 		if (adOrgId != null)
 		{
-			sb.append("\n @AD_Org_ID@: ").append(adOrgId);
+			sb.append("\n @AD_Org_ID@: " + adOrgId);
 		}
 		if (productId != null)
 		{
-			sb.append("\n @M_Product_ID@: ").append(productId);
+			sb.append("\n @M_Product_ID@: " + productId);
 		}
 
 		return sb.toString();

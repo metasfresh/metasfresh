@@ -1,9 +1,22 @@
 package de.metas.dataentry.data;
 
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.CreatedUpdatedInfo;
+
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.user.UserId;
@@ -14,17 +27,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Value;
 import lombok.experimental.NonFinal;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 /*
  * #%L
@@ -51,12 +53,12 @@ import java.util.Optional;
 @Value
 public class DataEntryRecord
 {
-	DataEntrySubTabId dataEntrySubTabId;
-	TableRecordReference mainRecord;
+	final DataEntrySubTabId dataEntrySubTabId;
+	final TableRecordReference mainRecord;
 
 	@Getter(AccessLevel.NONE)
-	Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
-	boolean readOnly;
+	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
+	final boolean readOnly;
 
 	/** May be empty if not yet persisted */
 	@Setter(AccessLevel.NONE)
@@ -169,10 +171,10 @@ public class DataEntryRecord
 		}
 
 		final ZonedDateTime updated = ZonedDateTime.now();
-		final CreatedUpdatedInfo createdUpdatedInfo;
+		final DataEntryCreatedUpdatedInfo createdUpdatedInfo;
 		if (previousFieldVersion == null)
 		{
-			createdUpdatedInfo = CreatedUpdatedInfo.createNew(updatedBy, updated);
+			createdUpdatedInfo = DataEntryCreatedUpdatedInfo.createNew(updatedBy, updated);
 		}
 		else
 		{
@@ -200,28 +202,28 @@ public class DataEntryRecord
 	public Optional<ZonedDateTime> getCreatedValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(CreatedUpdatedInfo::getCreated);
+				.map(DataEntryCreatedUpdatedInfo::getCreated);
 	}
 
 	public Optional<UserId> getCreatedByValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(CreatedUpdatedInfo::getCreatedBy);
+				.map(DataEntryCreatedUpdatedInfo::getCreatedBy);
 	}
 
 	public Optional<ZonedDateTime> getUpdatedValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(CreatedUpdatedInfo::getUpdated);
+				.map(DataEntryCreatedUpdatedInfo::getUpdated);
 	}
 
 	public Optional<UserId> getUpdatedByValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(CreatedUpdatedInfo::getUpdatedBy);
+				.map(DataEntryCreatedUpdatedInfo::getUpdatedBy);
 	}
 
-	public Optional<CreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId fieldId)
+	public Optional<DataEntryCreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getOptional(fieldId)
 				.map(DataEntryRecordField::getCreatedUpdatedInfo);

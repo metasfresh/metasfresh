@@ -1,6 +1,11 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -20,10 +25,6 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Value;
-import org.adempiere.mm.attributes.api.AttributeSourceDocument;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -49,37 +50,30 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
-	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-
 	private final boolean readonly;
 
-	private final boolean serialNoFromSequence;
-	private final AttributeSourceDocument attributeSourceDocument;
-
-	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(this::createAttributeStorageFactory);
+	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(() -> createAttributeStorageFactory());
 	private final ConcurrentHashMap<ViewRowAttributesKey, HUEditorRowAttributes> rowAttributesByKey = new ConcurrentHashMap<>();
 
 	@Value
-	private static class ViewRowAttributesKey
+	private static final class ViewRowAttributesKey
 	{
-		DocumentId huEditorRowId;
-		DocumentId huId;
+		private DocumentId huEditorRowId;
+		private DocumentId huId;
 	}
 
 	@Builder
-	private HUEditorRowAttributesProvider(
-			final boolean readonly,
-			final boolean serialNoFromSequence,
-			final AttributeSourceDocument attributeSourceDocument)
+	private HUEditorRowAttributesProvider(final boolean readonly)
 	{
 		this.readonly = readonly;
-		this.serialNoFromSequence = serialNoFromSequence;
-		this.attributeSourceDocument = attributeSourceDocument;
 	}
 
-	DocumentId createAttributeKey(final HuId huId)
+	private boolean isReadonly()
+	{
+		return readonly;
+	}
+
+	public DocumentId createAttributeKey(final HuId huId)
 	{
 		return DocumentId.of(huId);
 	}
@@ -97,35 +91,27 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 		final IAttributeStorage attributesStorage = getAttributeStorageFactory().getAttributeStorage(hu);
 		attributesStorage.setSaveOnChange(true);
 
-		final boolean rowAttributesReadonly = readonly // readonly if the provider shall provide readonly attributes
+		final boolean rowAttributesReadonly = isReadonly() // readonly if the provider shall provide readonly attributes
 				|| !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // or, readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
 
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final IHUStorage storage = storageFactory.getStorage(hu);
 
-		return HUEditorRowAttributes.builder()
-				.documentPath(toDocumentPath(key))
-				.attributesStorage(attributesStorage)
-				.productIds(extractProductIds(storage))
-				.hu(hu)
-				.readonly(rowAttributesReadonly)
-				.attributeSourceDocument(attributeSourceDocument)
-				.serialNoFromSequence(serialNoFromSequence)
-				.build();
-	}
-
-	private ImmutableSet<ProductId> extractProductIds(final IHUStorage storage)
-	{
-		return storage.getProductStorages()
+		final ImmutableSet<ProductId> productIDs = storage.getProductStorages()
 				.stream()
 				.map(IHUProductStorage::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
+
+		final DocumentPath documentPath = createDocumentPath(key);
+		return new HUEditorRowAttributes(documentPath, attributesStorage, productIDs, rowAttributesReadonly);
 	}
 
 	private I_M_HU extractHU(final ViewRowAttributesKey key)
 	{
 		final HuId huId = HuId.ofRepoId(key.getHuId().toInt());
 
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		final I_M_HU hu = handlingUnitsRepo.getByIdOutOfTrx(huId);
 		if (hu == null)
 		{
@@ -135,7 +121,7 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 		return hu;
 	}
 
-	private static DocumentPath toDocumentPath(final ViewRowAttributesKey key)
+	private static DocumentPath createDocumentPath(final ViewRowAttributesKey key)
 	{
 		final DocumentId documentTypeId = key.getHuId();
 		final DocumentId huEditorRowId = key.getHuEditorRowId();
@@ -147,10 +133,16 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 		return _attributeStorageFactory.get();
 	}
 
-	private IAttributeStorageFactory createAttributeStorageFactory()
+	private final IAttributeStorageFactory createAttributeStorageFactory()
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		return attributeStorageFactoryService.createHUAttributeStorageFactory(storageFactory);
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService
+				.createHUAttributeStorageFactory(storageFactory);
+
+		return huAttributeStorageFactory;
 	}
 
 	@Override

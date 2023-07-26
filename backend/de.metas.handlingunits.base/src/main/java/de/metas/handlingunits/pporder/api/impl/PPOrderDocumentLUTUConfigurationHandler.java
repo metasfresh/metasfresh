@@ -1,7 +1,6 @@
 package de.metas.handlingunits.pporder.api.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -18,6 +17,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 
@@ -97,7 +97,7 @@ import java.util.Properties;
 		}
 
 		// Update LU/TU configuration
-		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, ppOrder);
+		updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrder);
 
 		return lutuConfiguration;
 	}
@@ -117,12 +117,6 @@ import java.util.Properties;
 			{
 				return pip;
 			}
-		}
-
-		final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(ppOrder.getM_HU_PI_Item_Product_ID());
-		if (packingMaterialId != null)
-		{
-			return hupiItemProductDAO.getById(packingMaterialId);
 		}
 
 		//
@@ -160,7 +154,7 @@ import java.util.Properties;
 	}
 
 	@Override
-	public void updateLUTUConfigurationFromDocumentLine(
+	public void updateLUTUConfigurationFromPPOrder(
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
 			@NonNull final I_PP_Order ppOrder)
 	{

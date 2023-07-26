@@ -7,15 +7,15 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
+import lombok.Setter;
 import lombok.Value;
-import lombok.experimental.Delegate;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 
 /*
  * #%L
@@ -177,22 +177,5 @@ public class ProcessInstanceResult
 	public static class DisplayQRCodeAction implements ResultAction
 	{
 		@NonNull String code;
-	}
-
-	@lombok.Value(staticConstructor = "of")
-	public static class OpenCalendarAction implements ResultAction
-	{
-		@Delegate
-		@NonNull ProcessExecutionResult.CalendarToOpen delegate;
-	}
-
-
-	@lombok.Value
-	@lombok.Builder
-	public static class NewRecordAction implements ResultAction
-	{
-		@NonNull String windowId;
-		@NonNull @Singular Map<String, String> fieldValues;
-		@NonNull @Builder.Default ProcessExecutionResult.WebuiNewRecord.TargetTab targetTab = ProcessExecutionResult.WebuiNewRecord.TargetTab.SAME_TAB;
 	}
 }

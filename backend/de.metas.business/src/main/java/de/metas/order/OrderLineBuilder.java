@@ -1,7 +1,5 @@
 package de.metas.order;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.interfaces.I_C_OrderLine;
@@ -10,10 +8,8 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.money.Money;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
-import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -31,7 +27,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -75,21 +70,13 @@ public class OrderLineBuilder
 	private boolean built = false;
 
 	private ProductId productId;
-
 	private AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
-
 	private Quantity qty;
 
-	@Nullable
-	private BigDecimal manualPrice;
-
-	@Nullable
-	private UomId priceUomId;
-
+	@Nullable private BigDecimal manualPrice;
 	private BigDecimal manualDiscount;
 
-	@Nullable
-	private String description;
+	@Nullable private String description;
 
 	private boolean hideWhenPrinting;
 
@@ -99,24 +86,12 @@ public class OrderLineBuilder
 
 	private Dimension dimension;
 
-	@Nullable
-	private String productDescription;
-
-	@Nullable
-	private ActivityId activityId;
-
-	@Nullable
-	private ImmutableList<Consumer<I_C_OrderLine>> afterSaveHooks;
-
-	@Nullable
-	private PricingSystemId overridingPricingSystemId;
-
 	/* package */ OrderLineBuilder(@NonNull final OrderFactory parent)
 	{
 		this.parent = parent;
 	}
 
-	/* package */ void build()
+	/* package */void build()
 	{
 		assertNotBuilt();
 		built = true;
@@ -139,7 +114,6 @@ public class OrderLineBuilder
 		{
 			orderLine.setIsManualPrice(true);
 			orderLine.setPriceEntered(manualPrice);
-			orderLine.setPrice_UOM_ID(UomId.toRepoId(priceUomId));
 		}
 
 		if (manualDiscount != null)
@@ -153,7 +127,7 @@ public class OrderLineBuilder
 			dimensionService.updateRecord(orderLine, dimension);
 		}
 
-		orderLineBL.updatePrices(getUpdatePriceRequest(orderLine));
+		orderLineBL.updatePrices(orderLine);
 
 		if (!Check.isBlank(description))
 		{
@@ -161,8 +135,6 @@ public class OrderLineBuilder
 		}
 
 		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
-		orderLine.setProductDescription(productDescription);
-		orderLine.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		saveRecord(orderLine);
 
@@ -184,8 +156,6 @@ public class OrderLineBuilder
 		}
 
 		this.createdOrderLine = orderLine;
-
-		getAfterSaveHooks().forEach(hook -> hook.accept(createdOrderLine));
 	}
 
 	private void assertNotBuilt()
@@ -196,20 +166,11 @@ public class OrderLineBuilder
 		}
 	}
 
-	private OrderFactory getParent()
-	{
-		return parent;
-	}
+	private OrderFactory getParent() { return parent; }
 
-	public OrderFactory endOrderLine()
-	{
-		return getParent();
-	}
+	public OrderFactory endOrderLine() { return getParent(); }
 
-	public OrderAndLineId getCreatedOrderAndLineId()
-	{
-		return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());
-	}
+	public OrderAndLineId getCreatedOrderAndLineId() { return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID()); }
 
 	public OrderLineBuilder productId(final ProductId productId)
 	{
@@ -261,13 +222,6 @@ public class OrderLineBuilder
 		return qty != null ? qty.getUomId() : null;
 	}
 
-	public OrderLineBuilder priceUomId(@Nullable final UomId priceUomId)
-	{
-		assertNotBuilt();
-		this.priceUomId = priceUomId;
-		return this;
-	}
-
 	public OrderLineBuilder manualPrice(@Nullable final BigDecimal manualPrice)
 	{
 		assertNotBuilt();
@@ -296,13 +250,9 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public boolean isProductAndUomMatching(
-			@Nullable final ProductId productId,
-			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
-			@Nullable final UomId uomId)
+	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
 	{
-		return ProductId.equals(this.productId, productId)
-				&& AttributeSetInstanceId.equals(asiId, attributeSetInstanceId)
+		return ProductId.equals(getProductId(), productId)
 				&& UomId.equals(getUomId(), uomId);
 	}
 
@@ -332,61 +282,4 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public OrderLineBuilder productDescription(@Nullable final String productDescription)
-	{
-		this.productDescription = productDescription;
-		return this;
-	}
-
-	public OrderLineBuilder activityId(@Nullable final ActivityId activityId)
-	{
-		this.activityId = activityId;
-		return this;
-	}
-
-	@NonNull
-	public OrderLineBuilder afterSaveHook(@NonNull final Consumer<I_C_OrderLine> afterSaveHook)
-	{
-		assertNotBuilt();
-
-		final ImmutableList.Builder<Consumer<I_C_OrderLine>> hooksBuilder = ImmutableList.builder();
-
-		this.afterSaveHooks = hooksBuilder
-				.addAll(getAfterSaveHooks())
-				.add(afterSaveHook)
-				.build();
-
-		return this;
-	}
-
-	@NonNull
-	public OrderLineBuilder overridingPricingSystemId(@Nullable final PricingSystemId overridingPricingSystemId)
-	{
-		assertNotBuilt();
-
-		this.overridingPricingSystemId = overridingPricingSystemId;
-
-		return this;
-	}
-
-	@NonNull
-	private ImmutableList<Consumer<I_C_OrderLine>> getAfterSaveHooks()
-	{
-		return CoalesceUtil.coalesceNotNull(afterSaveHooks, ImmutableList.of());
-	}
-
-	@NonNull
-	private OrderLinePriceUpdateRequest getUpdatePriceRequest(@NonNull final I_C_OrderLine orderLine)
-	{
-		OrderLinePriceUpdateRequest request = OrderLinePriceUpdateRequest.ofOrderLine(orderLine);
-
-		if (overridingPricingSystemId != null)
-		{
-			request = request.toBuilder()
-					.pricingSystemIdOverride(overridingPricingSystemId)
-					.build();
-		}
-
-		return request;
-	}
 }

@@ -24,7 +24,6 @@ package de.metas.handlingunits.material.interceptor.transactionevent;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -59,7 +58,6 @@ public final class TransactionEventFactory
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IMovementDAO movementsRepo = Services.get(IMovementDAO.class);
-	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
 	private final TransactionEventFactoryForInOutLine inOutLineEventCreator;
@@ -244,16 +242,8 @@ public final class TransactionEventFactory
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
 		final I_M_InventoryLine inventoryLineRecord = inventoryDAO.getLineById(transaction.getInventoryLineId());
-		final boolean internalUseInventory = inventoryBL.isInternalUseInventory(inventoryLineRecord);
-		final BigDecimal deltaQty;
-		if (internalUseInventory)
-		{
-			deltaQty = inventoryLineRecord.getQtyInternalUse().negate();
-		}
-		else
-		{
-			deltaQty = inventoryLineRecord.getQtyCount().subtract(inventoryLineRecord.getQtyBook());
-		}
+
+		final BigDecimal deltaQty = inventoryLineRecord.getQtyCount().subtract(inventoryLineRecord.getQtyBook());
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(modelProductDescriptorExtractor.createProductDescriptor(inventoryLineRecord))

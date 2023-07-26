@@ -6,7 +6,6 @@ import de.metas.cache.ICacheResetListener;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -55,24 +54,14 @@ public class LookupCacheInvalidationDispatcher implements ICacheResetListener
 {
 	private static final String TRXPROP_TableNamesToInvalidate = LookupCacheInvalidationDispatcher.class + ".TableNamesToInvalidate";
 
-	private final LookupDataSourceFactory lookupDataSourceFactory;
 	private final Executor async;
 
-	public LookupCacheInvalidationDispatcher(
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
-	{
-		this.lookupDataSourceFactory = lookupDataSourceFactory;
-
-		async = createAsyncExecutor();
-	}
-
-	@NonNull
-	private static Executor createAsyncExecutor()
+	public LookupCacheInvalidationDispatcher()
 	{
 		final CustomizableThreadFactory asyncThreadFactory = new CustomizableThreadFactory(LookupCacheInvalidationDispatcher.class.getSimpleName());
 		asyncThreadFactory.setDaemon(true);
 
-		return Executors.newSingleThreadExecutor(asyncThreadFactory);
+		async = Executors.newSingleThreadExecutor(asyncThreadFactory);
 	}
 
 	@PostConstruct
@@ -137,7 +126,7 @@ public class LookupCacheInvalidationDispatcher implements ICacheResetListener
 			return;
 		}
 
-		lookupDataSourceFactory.cacheInvalidateOnRecordsChanged(tableNames);
+		LookupDataSourceFactory.instance.cacheInvalidateOnRecordsChanged(tableNames);
 	}
 
 	private static final class TableNamesToResetCollector

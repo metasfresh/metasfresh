@@ -28,7 +28,6 @@ import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
-import lombok.NonNull;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -46,7 +45,8 @@ import java.text.NumberFormat;
 import java.time.Instant;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.contentOf;
 
 class CompudataDesadvRouteTest extends CamelTestSupport
 {
@@ -87,35 +87,10 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 	@Test
 	void desadv_as_ordered() throws Exception
 	{
-		testAndValidateResult(
-				"/de/metas/edi/esb/desadvexport/compudata/DESADV_as_ordered.xml",
-				"./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_as_ordered_expected_output.txt");
-	}
-
-	@Test
-	void desadv_as_differing_qties() throws Exception
-	{
-		testAndValidateResult(
-				"/de/metas/edi/esb/desadvexport/compudata/DESADV_differing_qties.xml",
-				"./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_differing_qties_expected_output.txt");
-	}
-
-	@Test
-	void desadv_noPacks() throws Exception
-	{
-		testAndValidateResult(
-				"/de/metas/edi/esb/desadvexport/compudata/DESADV_noPacks.xml",
-				"./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_noPacks_expected_output.txt");
-	}
-
-	private void testAndValidateResult(
-			@NonNull final String inputStrPath,
-			@NonNull final String expectedOutputPath) throws Exception
-	{
 		// given
 		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
 
-		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream(inputStrPath);
+		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/compudata/DESADV_as_ordered.xml");
 		assertThat(inputStr).isNotNull();
 
 		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
@@ -141,6 +116,41 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 		fileOutputEndpoint.assertIsSatisfied(1000);
 		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 		assertThat(desadvOutput)
-				.isEqualTo(contentOf(new File(expectedOutputPath)));
+				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_as_ordered_expected_output.txt")));
+	}
+
+	@Test
+	void desadv_as_differing_qties() throws Exception
+	{
+		// given
+		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
+
+		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/compudata/DESADV_differing_qties.xml");
+		assertThat(inputStr).isNotNull();
+
+		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+		final JAXBElement<EDIExpDesadvType> inputXml = (JAXBElement)unmarshaller.unmarshal(inputStr);
+
+		final Exchange exchange = new DefaultExchange(template.getCamelContext());
+
+		final var numberFormat = NumberFormat.getInstance();
+		numberFormat.setGroupingUsed(false);
+
+		exchange.setProperty(Constants.DECIMAL_FORMAT, numberFormat);
+		exchange.getIn().setBody(inputXml.getValue());
+		exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, inputXml.getValue());
+
+		// when
+		template.send(
+				CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER /*endpoint-URI*/,
+				exchange);
+
+		// then
+		fileOutputEndpoint.expectedMessageCount(1);
+		fileOutputEndpoint.assertIsSatisfied(1000);
+		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(desadvOutput)
+				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_differing_qties_expected_output.txt")));
 	}
 }

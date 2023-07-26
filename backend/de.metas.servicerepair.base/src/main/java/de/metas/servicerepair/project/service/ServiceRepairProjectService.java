@@ -41,7 +41,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
-import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
+import de.metas.project.service.CreateProjectRequest;
 import de.metas.project.service.ProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
@@ -131,9 +131,9 @@ public class ServiceRepairProjectService
 				.orElseThrow(() -> new AdempiereException("Not a Service/Repair project: " + projectId));
 	}
 
-	public Optional<ServiceRepairProjectInfo> getByIdIfRepairProject(@NonNull final ProjectId projectId)
+	private Optional<ServiceRepairProjectInfo> getByIdIfRepairProject(@NonNull final ProjectId projectId)
 	{
-		return toServiceRepairProjectInfo(projectService.getRecordById(projectId));
+		return toServiceRepairProjectInfo(projectService.getById(projectId));
 	}
 
 	private static Optional<ServiceRepairProjectInfo> toServiceRepairProjectInfo(@NonNull final I_C_Project record)
@@ -147,7 +147,6 @@ public class ServiceRepairProjectService
 		return Optional.of(ServiceRepairProjectInfo.builder()
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
-				.active(record.isActive())
 				.dateContract(TimeUtil.asLocalDate(record.getDateContract()))
 				.dateFinish(TimeUtil.asZonedDateTime(record.getDateFinish()))
 				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
@@ -181,7 +180,7 @@ public class ServiceRepairProjectService
 		return getByIdIfRepairProject(projectId).isPresent();
 	}
 
-	public ProjectId createProjectHeader(@NonNull final CreateServiceOrRepairProjectRequest request)
+	public ProjectId createProjectHeader(@NonNull final CreateProjectRequest request)
 	{
 		return projectService.createProject(request);
 	}
@@ -205,12 +204,12 @@ public class ServiceRepairProjectService
 
 		final ProjectId projectId = taskId.getProjectId();
 		huReservationService.makeReservation(ReserveHUsRequest.builder()
-						.documentRef(HUReservationDocRef.ofProjectId(projectId))
-						.productId(request.getProductId())
-						.qtyToReserve(request.getQtyRequired())
-						.customerId(getProjectBPartnerId(projectId))
-						.huId(request.getRepairVhuId())
-						.build())
+				.documentRef(HUReservationDocRef.ofProjectId(projectId))
+				.productId(request.getProductId())
+				.qtyToReserve(request.getQtyRequired())
+				.customerId(getProjectBPartnerId(projectId))
+				.huId(request.getRepairVhuId())
+				.build())
 				.orElseThrow(() -> new AdempiereException("Cannot make reservation"));
 	}
 
@@ -277,12 +276,12 @@ public class ServiceRepairProjectService
 	{
 		final ProjectId projectId = task.getId().getProjectId();
 		final HUReservation huReservation = huReservationService.makeReservation(ReserveHUsRequest.builder()
-						.documentRef(HUReservationDocRef.ofProjectId(projectId))
-						.productId(task.getProductId())
-						.qtyToReserve(qtyToReserve)
-						.customerId(getProjectBPartnerId(projectId))
-						.huIds(fromHUIds)
-						.build())
+				.documentRef(HUReservationDocRef.ofProjectId(projectId))
+				.productId(task.getProductId())
+				.qtyToReserve(qtyToReserve)
+				.customerId(getProjectBPartnerId(projectId))
+				.huIds(fromHUIds)
+				.build())
 				.orElseThrow(() -> new AdempiereException("Cannot make reservation"));
 
 		for (final HuId vhuId : huReservation.getVhuIds())
@@ -463,7 +462,7 @@ public class ServiceRepairProjectService
 			costCollectorIdsToDelete.add(costCollector.getId());
 		}
 
-		huReservationService.deleteReservationsByVHUIds(reservedVHUIds);
+		huReservationService.deleteReservations(reservedVHUIds);
 		projectCostCollectorRepository.deleteByIds(costCollectorIdsToDelete);
 		addQtyToProjectTaskRequests.forEach(this::addQtyToProjectTask);
 	}

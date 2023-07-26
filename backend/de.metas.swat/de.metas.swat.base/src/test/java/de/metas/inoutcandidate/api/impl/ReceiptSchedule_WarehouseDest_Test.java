@@ -1,7 +1,31 @@
 package de.metas.inoutcandidate.api.impl;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.ProductActivityProvider;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mmovement.api.IMovementDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.model.I_M_Warehouse;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.I_M_Product;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
@@ -9,33 +33,12 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_M_Movement;
-import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
-import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.impl.SysConfigBL;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.List;
 
 public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 {
@@ -43,19 +46,14 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 	@Override
 	public void setup()
 	{
-		final I_M_Warehouse warehouseForIssues = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Warehouse.class);
+		final I_M_Warehouse warehouseForIssues = InterfaceWrapperHelper.create(ctx, I_M_Warehouse.class, ITrx.TRXNAME_None);
 		warehouseForIssues.setIsIssueWarehouse(true);
 		warehouseForIssues.setName("Warehouse for Issues");
 		warehouseForIssues.setValue("Warehouse for Issues");
 		InterfaceWrapperHelper.save(warehouseForIssues);
 		createLocator(warehouseForIssues);
 
-		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
-		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
-
-		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
-		final SysConfigBL sysConfigBL = new SysConfigBL();
-		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 	}
 
 	/**
@@ -86,26 +84,27 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 		//
 		// Check produced schedules count: it shall be only one
-		Assertions.assertEquals(1, schedules.size(), "Only one receipt schedule shall be produced");
+		Assert.assertEquals("Only one receipt schedule shall be produced", 1, schedules.size());
 		final I_M_ReceiptSchedule schedule = schedules.get(0);
 
 		//
 		// Check Schedule's Warehouses
-		Assertions.assertEquals(
-				order1.getM_Warehouse_ID(),
-				schedule.getM_Warehouse_ID(), "Invalid M_ReceiptSchedule.M_Warehouse_ID");
-		Assertions.assertEquals(
-				order1_line1_product1_wh1.getC_BPartner_ID(),
-				schedule.getC_BPartner_ID(), "Invalid M_ReceiptSchedule.C_BPartner");
-		Assertions.assertEquals(
-				0, // shall not be set
-				schedule.getM_Warehouse_Override_ID(), "Invalid M_ReceiptSchedule.M_Warehouse_Override_ID");
+		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_ID",
+							order1.getM_Warehouse_ID(),
+							schedule.getM_Warehouse_ID());
+		Assert.assertEquals("Invalid M_ReceiptSchedule.C_BPartner",
+							order1_line1_product1_wh1.getC_BPartner_ID(),
+							schedule.getC_BPartner_ID());
+		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Override_ID",
+							0, // shall not be set
+							schedule.getM_Warehouse_Override_ID());
 
-		Assertions.assertEquals(
-				extractProductWarehouseId(order1_line1_product1_wh1),
-				WarehouseId.ofRepoIdOrNull(schedule.getM_Warehouse_Dest_ID()), "Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID");
+		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID",
+							extractProductWarehouseId(order1_line1_product1_wh1),
+							WarehouseId.ofRepoIdOrNull(schedule.getM_Warehouse_Dest_ID()));
 		// Guard agaist testing error
-		Assertions.assertNotEquals(schedule.getM_Warehouse_ID(), schedule.getM_Warehouse_Dest_ID(), "M_ReceiptSchedule M_Warehouse_ID != M_Warehouse_Dest_ID: " + schedule);
+		Assert.assertFalse("M_ReceiptSchedule M_Warehouse_ID != M_Warehouse_Dest_ID: " + schedule,
+						   schedule.getM_Warehouse_ID() == schedule.getM_Warehouse_Dest_ID());
 
 		//
 		// Generate Receipt
@@ -116,41 +115,41 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		//
 		// Check generated receipts count: it shall be only one
 		final List<I_M_InOut> receipts = receiptGenerateResult.getInOuts();
-		Assertions.assertEquals(1, receipts.size(), "Only one receipt shall be produced");
+		Assert.assertEquals("Only one receipt shall be produced", 1, receipts.size());
 		final I_M_InOut receipt = receipts.get(0);
 		List<I_M_InOutLine> receiptLines = Services.get(IInOutDAO.class).retrieveLines(receipt, I_M_InOutLine.class);
 
 		// Check receipt's warehouse
-		Assertions.assertEquals(
-				order1.getM_Warehouse_ID(),
-				receipt.getM_Warehouse_ID(), "Invalid M_InOut.M_Warehouse_ID");
+		Assert.assertEquals("Invalid M_InOut.M_Warehouse_ID",
+							order1.getM_Warehouse_ID(),
+							receipt.getM_Warehouse_ID());
 
 		//
 		// Generate Movement from receipt
 		final List<I_M_Movement> movements = Services.get(IInOutMovementBL.class).generateMovementFromReceiptLines(receiptLines, null);
-		Assertions.assertNotNull(movements, "Movement shall be generated");
-		Assertions.assertEquals(1, movements.size(), "Only one movement shall be generated");
+		Assert.assertNotNull("Movement shall be generated", movements);
+		Assert.assertEquals("Only one movement shall be generated", 1, movements.size());
 		final I_M_Movement movement = movements.get(0);
 
 		//
 		// Check Movement Line
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movement);
-		Assertions.assertEquals(1, movementLines.size(), "Movement shall have only one line");
+		Assert.assertEquals("Movement shall have only one line", 1, movementLines.size());
 		final I_M_MovementLine movementLine = movementLines.get(0);
 		// Check Movement Line warehouses
-		Assertions.assertEquals(
-				receipt.getM_Warehouse_ID(),
-				movementLine.getM_Locator().getM_Warehouse_ID(), "Invalid movement line Locator (from)");
-		Assertions.assertEquals(
-				schedule.getM_Warehouse_Dest_ID(),
-				movementLine.getM_LocatorTo().getM_Warehouse_ID(), "Invalid movement line Locator (to)");
+		Assert.assertEquals("Invalid movement line Locator (from)",
+							receipt.getM_Warehouse_ID(),
+							movementLine.getM_Locator().getM_Warehouse_ID());
+		Assert.assertEquals("Invalid movement line Locator (to)",
+							schedule.getM_Warehouse_Dest_ID(),
+							movementLine.getM_LocatorTo().getM_Warehouse_ID());
 		// Check Movement Line product & qty
-		Assertions.assertEquals(
-				order1_line1_product1_wh1.getM_Product_ID(),
-				movementLine.getM_Product_ID(), "Invalid movement line product (compared with order line's product)");
-		MatcherAssert.assertThat("Invalid movement line Qty (compared with order line's qty)",
-				movementLine.getMovementQty(), // actual
-				Matchers.comparesEqualTo(order1_line1_product1_wh1.getQtyOrdered()));
+		Assert.assertEquals("Invalid movement line product (compared with order line's product)",
+							order1_line1_product1_wh1.getM_Product_ID(),
+							movementLine.getM_Product_ID());
+		Assert.assertThat("Invalid movement line Qty (compared with order line's qty)",
+						  movementLine.getMovementQty(), // actual
+						  Matchers.comparesEqualTo(order1_line1_product1_wh1.getQtyOrdered()));
 	}
 
 	private WarehouseId extractProductWarehouseId(final I_C_OrderLine orderLine)

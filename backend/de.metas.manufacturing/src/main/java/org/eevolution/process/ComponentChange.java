@@ -46,16 +46,17 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.ad_reference.ADReferenceService;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.Query;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
+
 
 /**
  *	Component Change into BOM
@@ -67,8 +68,6 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class ComponentChange extends JavaProcess
 {
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
-
 	private static final int	ACTION_AD_Reference_ID	= 53227;
 	private static final String ACTION_Add				= "A";
 	private static final String ACTION_Deactivate		= "D";
@@ -173,8 +172,7 @@ public class ComponentChange extends JavaProcess
 			{
 				throw new LiberoException("Action not supported - "+p_Action);
 			}
-
-			addLog(adReferenceService.retrieveListNameTrl(getCtx(), ACTION_AD_Reference_ID, p_Action));
+			addLog(Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), ACTION_AD_Reference_ID, p_Action));
 		}                    
 		return "@OK@";
 	}	//	doIt

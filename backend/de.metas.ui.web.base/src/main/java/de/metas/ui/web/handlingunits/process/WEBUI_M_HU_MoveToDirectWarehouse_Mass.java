@@ -1,7 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Iterator;
 
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -59,7 +58,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse_Mass extends HUEditorProcessTempla
 	// parameters
 	private int p_M_Warehouse_ID = -1; // the source warehouse
 	private String p_huWhereClause = null;
-	private Instant p_MovementDate = null;
+	private Timestamp p_MovementDate = null;
 	private String p_Description = null;
 
 	@Override
@@ -68,7 +67,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse_Mass extends HUEditorProcessTempla
 		final IRangeAwareParams parameterAsIParams = getParameterAsIParams();
 		p_M_Warehouse_ID = parameterAsIParams.getParameterAsInt("M_Warehouse_ID", -1);
 		p_huWhereClause = parameterAsIParams.getParameterAsString("WhereClause");
-		p_MovementDate = parameterAsIParams.getParameterAsInstant("MovementDate");
+		p_MovementDate = parameterAsIParams.getParameterAsTimestamp("MovementDate");
 		p_Description = parameterAsIParams.getParameterAsString("Description");
 	}
 

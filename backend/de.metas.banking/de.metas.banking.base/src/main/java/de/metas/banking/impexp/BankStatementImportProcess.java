@@ -202,12 +202,11 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.valutaDate(TimeUtil.asLocalDate(importRecord.getValutaDate()))
 						//
 						.statementAmt(Money.of(importRecord.getStmtAmt(), currencyId))
-						.bankFeeAmt(Money.of(importRecord.getBankFeeAmt(),currencyId))
 						.trxAmt(Money.of(importRecord.getTrxAmt(), currencyId))
 						.chargeAmt(Money.of(importRecord.getChargeAmt(), currencyId))
 						.interestAmt(Money.of(importRecord.getInterestAmt(), currencyId))
 						.chargeId(ChargeId.ofRepoIdOrNull(importRecord.getC_Charge_ID()))
-						.debtorOrCreditorId(importRecord.getDebitorOrCreditorId())
+						.debitorOrCreditorId(importRecord.getDebitorOrCreditorId())
 						//
 						.eft(ElectronicFundsTransfer.builder()
 									 .trxId(importRecord.getEftTrxID())
@@ -265,7 +264,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 				}
 
 				importRecord.setTrxAmt(trxAmt);
-				final BigDecimal stmtAmt = trxAmt.add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt()).subtract(importRecord.getBankFeeAmt());
+				final BigDecimal stmtAmt = trxAmt.add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
 				importRecord.setStmtAmt(stmtAmt);
 				break;
 			}
@@ -273,20 +272,20 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 			{
 				final BigDecimal stmtAmt = importRecord.getCreditStmtAmt().subtract(importRecord.getDebitStmtAmt());
 				importRecord.setStmtAmt(stmtAmt);
-				final BigDecimal trxAmt = stmtAmt.subtract(importRecord.getChargeAmt()).subtract(importRecord.getInterestAmt()).add(importRecord.getBankFeeAmt());
+				final BigDecimal trxAmt = stmtAmt.subtract(importRecord.getChargeAmt()).subtract(importRecord.getInterestAmt());
 				importRecord.setTrxAmt(trxAmt);
 				break;
 			}
 			case X_I_BankStatement.AMTFORMAT_Straight:
 			{
-				final BigDecimal stmtAmt = importRecord.getTrxAmt().add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt()).subtract(importRecord.getBankFeeAmt());
+				final BigDecimal stmtAmt = importRecord.getTrxAmt().add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
 				importRecord.setStmtAmt(stmtAmt);
 				break;
 			}
 		}
 
 		{
-			final BigDecimal sum = importRecord.getTrxAmt().add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt()).subtract(importRecord.getBankFeeAmt());
+			final BigDecimal sum = importRecord.getTrxAmt().add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
 			if (importRecord.getStmtAmt().compareTo(sum) != 0)
 			{
 				throw new AdempiereException("Invalid amount");

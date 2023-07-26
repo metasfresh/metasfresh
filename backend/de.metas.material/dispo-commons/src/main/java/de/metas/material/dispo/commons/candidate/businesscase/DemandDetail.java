@@ -1,21 +1,21 @@
 package de.metas.material.dispo.commons.candidate.businesscase;
 
+import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toUnspecifiedIfZero;
+
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
-import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.common.util.IdConstants.toUnspecifiedIfZero;
 
 /*
  * #%L
@@ -42,7 +42,6 @@ import static de.metas.common.util.IdConstants.toUnspecifiedIfZero;
 @Builder(toBuilder = true)
 public class DemandDetail implements BusinessCaseDetail
 {
-	@NonNull
 	public static DemandDetail forDocumentLine(
 			final int shipmentScheduleId,
 			@NonNull final DocumentLineDescriptor documentDescriptor,
@@ -68,9 +67,9 @@ public class DemandDetail implements BusinessCaseDetail
 		}
 		else
 		{
-			throw new AdempiereException("The given documentDescriptor has an unexpected type")
-					.appendParametersToMessage()
-					.setParameter("documentDescriptor", documentDescriptor);
+			Check.errorIf(true,
+					"The given documentDescriptor has an unexpected type; documentDescriptor={}", documentDescriptor);
+			return null;
 		}
 
 		return DemandDetail.builder()
@@ -117,17 +116,6 @@ public class DemandDetail implements BusinessCaseDetail
 				.qty(qty).build();
 	}
 
-	@NonNull
-	public static DemandDetail forShipmentLineId(
-			final int inOutLineId,
-			@NonNull final BigDecimal qty)
-	{
-		return DemandDetail.builder()
-				.inOutLineId(inOutLineId)
-				.qty(qty)
-				.build();
-	}
-
 	public static DemandDetail forForecastLineId(
 			final int forecastLineId,
 			final int forecastId,
@@ -151,8 +139,6 @@ public class DemandDetail implements BusinessCaseDetail
 
 	int subscriptionProgressId;
 
-	int inOutLineId;
-
 	BigDecimal qty;
 
 	/**
@@ -160,13 +146,6 @@ public class DemandDetail implements BusinessCaseDetail
 	 * When a demand detail is loaded from DB, this field is always <= 0.
 	 */
 	int demandCandidateId;
-
-	/**
-	 *  dev-note: it's about an {@link de.metas.material.event.MaterialEvent} traceId, currently used when posting SupplyRequiredEvents
-	 */
-	@With
-	@Nullable
-	String traceId;
 
 	@Override
 	public CandidateBusinessCase getCandidateBusinessCase()

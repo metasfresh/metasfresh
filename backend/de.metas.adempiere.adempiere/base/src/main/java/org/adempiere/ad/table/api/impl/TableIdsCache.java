@@ -98,20 +98,6 @@ public class TableIdsCache
 	}
 
 	@NonNull
-	public Optional<String> getTableNameIfPresent(@NonNull final AdTableId adTableId)
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return Optional.of(junitGeneratedTableInfoMap.getTableName(adTableId));
-		}
-		else
-		{
-			final TableInfo tableInfo = getTableInfoMap().getTableInfoOrNull(adTableId);
-			return tableInfo != null ? Optional.of(tableInfo.getTableName()) : Optional.empty();
-		}
-	}
-
-	@NonNull
 	public String getEntityType(@NonNull final String tableName)
 	{
 		if (Adempiere.isUnitTestMode())

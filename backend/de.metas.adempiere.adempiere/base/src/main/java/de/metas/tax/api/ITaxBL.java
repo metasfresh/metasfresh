@@ -49,7 +49,7 @@ public interface ITaxBL extends ISingletonService
 	 * 07739: If that's not available, then throw an exception; don't attempt to retrieve the German tax because that method proved to return a wrong result
 	 */
 	@NonNull
-	TaxId getTaxNotNull(
+	TaxId getTaxNotNull(Properties ctx,
 			@Nullable Object model,
 			@Nullable TaxCategoryId taxCategoryId,
 			int productId,
@@ -57,18 +57,15 @@ public interface ITaxBL extends ISingletonService
 			@NonNull OrgId orgId,
 			@Nullable WarehouseId warehouseId,
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
-			SOTrx soTrx,
-			@Nullable VatCodeId vatCodeId);
+			SOTrx soTrx);
 
 	/**
-	 * @param taxIncluded if true tax is included in given amount
+	 * Calculate Tax - no rounding
+	 *
+	 * @param taxIncluded if true tax is calculated from gross otherwise from net
+	 * @return tax amount
 	 */
-	CalculateTaxResult calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
-
-	/**
-	 * @return tax amount (only actual tax amount, NOT reverse charge tax amt)
-	 */
-	BigDecimal calculateTaxAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+	BigDecimal calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
 	/**
 	 * Calculate base amount, excluding tax
@@ -101,8 +98,7 @@ public interface ITaxBL extends ISingletonService
 			int AD_Org_ID, int M_Warehouse_ID,
 			BPartnerLocationAndCaptureId billC_BPartner_Location_ID,
 			BPartnerLocationAndCaptureId shipC_BPartner_Location_ID,
-			boolean IsSOTrx,
-			@Nullable VatCodeId vatCodeId);
+			boolean IsSOTrx);
 
 	/**
 	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.

@@ -1,21 +1,23 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy;
 
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import de.metas.contracts.commission.Beneficiary;
-import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+
+import javax.annotation.concurrent.Immutable;
+
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.contracts.commission.Beneficiary;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -43,8 +45,6 @@ import java.util.Optional;
 @ToString
 public class Hierarchy
 {
-	public static final Hierarchy EMPTY_HIERARCHY = builder().build();
-
 	private final ImmutableMap<HierarchyNode, HierarchyNode> child2Parent;
 	private final ImmutableListMultimap<HierarchyNode, HierarchyNode> parent2Children;
 	private final ImmutableMap<Beneficiary, HierarchyNode> beneficiary2Node;

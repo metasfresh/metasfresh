@@ -2,10 +2,10 @@ package de.metas.handlingunits.picking;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
+import org.eevolution.api.PPOrderBOMLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.api.PPOrderBOMLineId;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ import org.eevolution.api.PPOrderBOMLineId;
 
 @Value
 @Builder
-class PickingCandidateIssueToBOMLineKey
+final class PickingCandidateIssueToBOMLineKey
 {
 	public static PickingCandidateIssueToBOMLineKey of(final PickingCandidateIssueToBOMLine issue)
 	{

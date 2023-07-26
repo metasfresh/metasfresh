@@ -21,24 +21,21 @@
  */
 package org.adempiere.ad.dao.impl;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.dao.selection.pagination.PaginationService;
-import de.metas.dao.selection.pagination.QueryResultPage;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
 import de.metas.dao.sql.SqlParamsInliner;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -52,28 +49,34 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
-import org.compiere.SpringContextHolder;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.util.DB;
-import org.compiere.util.DB.ResultSetRowLoader;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.common.util.CoalesceUtil;
+import de.metas.dao.selection.pagination.PaginationService;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 
 /**
  * @author Low Heng Sin
@@ -89,7 +92,9 @@ import java.util.Properties;
  *         2546052 ] Introduce Query aggregate methods
  *         <li>FR [ 2726447 ] Query aggregate methods for all return types
  *         <li>FR [ 2818547 ] Implement Query.setOnlySelection
+ *         https://sourceforge.net/tracker/?func=detail&aid=2818547&group_id=176962&atid=879335
  *         <li>FR [ 2818646 ] Implement Query.firstId/firstIdOnly
+ *         https://sourceforge.net/tracker/?func=detail&aid=2818646&group_id=176962&atid=879335
  * @author Redhuan D. Oon
  *         <li>FR: [ 2214883 ] Remove SQL code and Replace for Query // introducing SQL String prompt in log.info
  *         <li>FR: [ 2214883 ] - to introduce .setClient_ID
@@ -111,10 +116,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private final String trxName;
 
 	private IQueryOrderBy queryOrderBy = null;
-	@Nullable
 	private List<Object> parameters = null;
 	private IQueryFilter<T> postQueryFilter;
-	@Nullable
 	private Access requiredAccess;
 	private boolean onlyActiveRecords = false;
 	private boolean onlyClient_ID = false;
@@ -124,13 +127,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private QueryLimit limit = QueryLimit.NO_LIMIT;
 	private int offset = NO_LIMIT;
 
-	@Nullable
 	private List<SqlQueryUnion<T>> unions;
 
 	protected TypedSqlQuery(
 			@NonNull final Properties ctx,
 			final Class<T> modelClass,
-			@Nullable final String tableName,
+			final String tableName,
 			final String whereClause,
 			@Nullable final String trxName)
 	{
@@ -150,16 +152,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			@Nullable final String trxName)
 	{
 		this(ctx,
-			 modelClass,
-			 null, // tableName
-			 whereClause,
-			 trxName);
+				modelClass,
+				(String)null, // tableName
+				whereClause,
+				trxName);
 	}
 
 	/**
 	 * @return {@link POInfo}; never returns null
 	 */
-	private POInfo getPOInfo()
+	private final POInfo getPOInfo()
 	{
 		if (this._poInfo == null)
 		{
@@ -189,7 +191,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 *
 	 * @return SQL to be used in FROM clause; it returns the custom SQL FROM set by {@link #setSqlFrom(String)} or {@link #getTableName()}.
 	 */
-	private String getSqlFrom()
+	private final String getSqlFrom()
 	{
 		if (sqlFrom == null || sqlFrom.isEmpty())
 		{
@@ -200,6 +202,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Set query parameters
+	 *
+	 * @param parameters
 	 */
 	public TypedSqlQuery<T> setParameters(final Object... parameters)
 	{
@@ -278,6 +282,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	/**
 	 * Return a list of all po that match the query criteria.
+	 *
+	 * @return List
+	 * @throws DBException
 	 */
 	@Override
 	public List<T> list() throws DBException
@@ -310,7 +317,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 			final boolean readOnly = isReadOnlyRecords();
 
-			ET model;
+			ET model = null;
 			while ((model = retrieveNextModel(rs, clazz)) != null)
 			{
 				InterfaceWrapperHelper.setSaveDeleteDisabled(model, readOnly);
@@ -330,6 +337,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 		return list;
 	}
@@ -339,10 +348,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * <p>
 	 * If we have a post-filter (see {@link #setPostQueryFilter(IQueryFilter)}), the model will be validated againt it and if not matched next row will be checked.
 	 *
+	 * @param rs
+	 * @param clazz
 	 * @return model or null if we reached the and of the cursor
+	 * @throws SQLException
 	 */
-	@Nullable
-	private <ET extends T> ET retrieveNextModel(@NonNull final ResultSet rs, @Nullable final Class<ET> clazz) throws SQLException
+	private final <ET extends T> ET retrieveNextModel(final ResultSet rs, final Class<ET> clazz) throws SQLException
 	{
 		while (rs.next())
 		{
@@ -358,6 +369,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			else
 			{
 				// model was not accepted by our post-filter, skip it
+				continue;
 			}
 		}
 
@@ -367,20 +379,24 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Retrieve model from given {@link ResultSet}.
 	 *
+	 * @param rs
+	 * @param clazz
 	 * @return next model
 	 */
-	private <ET extends T> ET retrieveModel(final ResultSet rs, @Nullable final Class<ET> clazz)
+	private final <ET extends T> ET retrieveModel(final ResultSet rs, final Class<ET> clazz)
 	{
 		final String tableName = getTableName();
 
 		final Class<?> modelClassToUse = clazz != null ? clazz : this.modelClass;
-		return TableModelLoader.instance.retrieveModel(ctx, tableName, modelClassToUse, rs, trxName);
+		final ET model = TableModelLoader.instance.retrieveModel(ctx, tableName, modelClassToUse, rs, trxName);
+		return model;
 	}
 
 	/**
 	 * Return first PO that match query criteria
 	 *
 	 * @return first PO
+	 * @throws DBException
 	 */
 	@Override
 	public <ET extends T> ET first() throws DBException
@@ -389,9 +405,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <ET extends T> ET first(@Nullable final Class<ET> clazz) throws DBException
+	public <ET extends T> ET first(final Class<ET> clazz) throws DBException
 	{
-		ET model;
+		ET model = null;
 
 		// metas: begin: not using ORDER BY clause can be a developer error
 		final String orderBy = getOrderBy();
@@ -399,7 +415,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			final AdempiereException ex = new AdempiereException("Using first() without an ORDER BY clause can be a developer error."
 					+ " Please specify ORDER BY clause or in case you know that only one result shall be returned then use firstOnly()."
-					+ " Query: " + this);
+					+ " Query: " + toString());
 			log.warn(ex.getLocalizedMessage(), ex);
 		}
 		// metas: end
@@ -429,9 +445,26 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		return model;
+	}
+
+	/**
+	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be throwed
+	 *
+	 * @return first PO
+	 * @throws DBException
+	 * @see {@link #first()}
+	 */
+	@Nullable
+	public <ET extends T> ET firstOnly() throws DBException
+	{
+		final Class<ET> clazz = null;
+		final boolean throwExIfMoreThenOneFound = true;
+		return firstOnly(clazz, throwExIfMoreThenOneFound);
 	}
 
 	/**
@@ -440,11 +473,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 */
 	@Override
 	@Nullable
-	protected final <ET extends T> ET firstOnly(
-			@Nullable final Class<ET> clazz,
-			final boolean throwExIfMoreThenOneFound) throws DBException
+	protected final <ET extends T> ET firstOnly(final Class<ET> clazz, final boolean throwExIfMoreThenOneFound) throws DBException
 	{
-		ET model;
+		ET model = null;
 		final String sql = buildSQL(
 				null,    // selectClause: use default (i.e. all columns)
 				null, // fromClause
@@ -534,6 +565,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 		//
 		return id;
@@ -562,7 +595,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Aggregate given expression on this criteria
 	 */
-	@Nullable
 	@Override
 	public <AT> AT aggregate(
 			final String columnName,
@@ -593,14 +625,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				Aggregate.SUM,
 				ImmutableList.of(currencyIdColumnName),
 				rs -> {
-					final BigDecimal value = CoalesceUtil.coalesceNotNull(rs.getBigDecimal(1), BigDecimal.ZERO);
+					final BigDecimal value = CoalesceUtil.coalesce(rs.getBigDecimal(1), BigDecimal.ZERO);
 					final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(currencyIdColumnName));
 					return Money.of(value, currencyId);
 				});
 	}
 
-	public <AT> ImmutableList<AT> aggregateList(
-			@NonNull final String sqlExpression,
+	public <AT> List<AT> aggregateList(
+			@NonNull String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@NonNull final Class<AT> returnType)
 	{
@@ -610,11 +642,17 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				rs -> DB.retrieveValueOrDefault(rs, 1, returnType));
 	}
 
-	public <AT> ImmutableList<AT> aggregateList(
+	@FunctionalInterface
+	private interface ValueFetcher<T>
+	{
+		T retrieveValue(ResultSet rs) throws SQLException;
+	}
+
+	public <AT> List<AT> aggregateList(
 			@NonNull String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@Nullable final List<String> groupBys,
-			@NonNull final ResultSetRowLoader<AT> valueFetcher)
+			@NonNull final ValueFetcher<AT> valueFetcher)
 	{
 		// NOTE: it's OK to have the sqlFunction null. Methods like first(columnName, valueClass) are relying on this.
 		// if (Check.isEmpty(aggregateType.sqlFunction, true)) throw new DBException("No Aggregate Function defined");
@@ -644,6 +682,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
+		final List<AT> result = new ArrayList<>();
+
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
 		if (Check.isEmpty(aggregateType.getSqlFunction(), true))
 		{
@@ -661,7 +701,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String groupBysClause;
 		if (groupBys != null && !groupBys.isEmpty())
 		{
-			groupBysClause = Joiner.on(", ").join(groupBys);
+			groupBysClause = groupBys != null && !groupBys.isEmpty()
+					? Joiner.on(", ").join(groupBys)
+					: null;
+
 			sqlSelect.append("\n, ").append(groupBysClause);
 		}
 		else
@@ -677,19 +720,15 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			pstmt = DB.prepareStatement(sql, this.trxName);
 			rs = createResultSet(pstmt);
-
-			final ImmutableList.Builder<AT> result = ImmutableList.builder();
 			while (rs.next())
 			{
-				final AT value = valueFetcher.retrieveRowOrNull(rs);
+				final AT value = valueFetcher.retrieveValue(rs);
 				if (value == null)
 				{
 					continue; // Skip null values
 				}
 				result.add(value);
 			}
-
-			return result.build();
 		}
 		catch (final SQLException e)
 		{
@@ -698,11 +737,15 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
+		//
+		return result;
 	}
 
 	@Override
-	public final <AT> ImmutableList<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
 		return aggregateList(columnName, Aggregate.DISTINCT, valueType);
 	}
@@ -787,6 +830,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 		//
 		return result;
@@ -801,6 +846,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * SUM sqlExpression for items that match query criteria
 	 *
+	 * @param sqlExpression
 	 * @return sum
 	 */
 	public BigDecimal sum(final String sqlExpression)
@@ -864,21 +910,22 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * fetch the next PO. This minimize memory usage but it is slower than the list method.
 	 *
 	 * @return Iterator
+	 * @throws DBException
 	 */
 	public <ET extends T> Iterator<ET> iterate() throws DBException
 	{
-		return iterate(null/*clazz*/);
+		return iterate((Class<ET>)null);
 	}
 
 	@Override
-	public <ET extends T> Iterator<ET> iterate(@Nullable final Class<ET> clazz) throws DBException
+	public <ET extends T> Iterator<ET> iterate(final Class<ET> clazz) throws DBException
 	{
 		final boolean guaranteed;
 
 		final Boolean guaranteedIteratorRequired = getOption(OPTION_GuaranteedIteratorRequired);
 		if (guaranteedIteratorRequired != null)
 		{
-			guaranteed = guaranteedIteratorRequired;
+			guaranteed = guaranteedIteratorRequired.booleanValue();
 		}
 		else if (getKeyColumnNames().size() != 1)
 		{
@@ -894,9 +941,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <ET extends T> QueryResultPage<ET> paginate(@Nullable final Class<ET> clazz, final int pageSize) throws DBException
+	public <ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException
 	{
-		return SpringContextHolder.instance
+		return Adempiere
 				.getBean(PaginationService.class)
 				.loadFirstPage(clazz, this, pageSize);
 	}
@@ -934,10 +981,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * Return a simple wrapper over a JDBC {@link ResultSet}. It is the caller responsibility to call the close method to release the underlying database resources.
 	 *
 	 * @return POResultSet
+	 * @throws DBException
 	 */
 	public <ET extends PO> POResultSet<ET> scroll() throws DBException
 	{
-		return scroll(null/*clazz*/);
+		return scroll((Class<ET>)null);
 	}
 
 	public <ET> POResultSet<ET> scroll(final Class<ET> clazz) throws DBException
@@ -966,12 +1014,17 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			if (rsPO == null)
 			{
 				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
 			}
 		}
 	}
 
 	/**
 	 * Create a new {@link TypedSqlQuery} object and set it's whereClause
+	 *
+	 * @param whereClause
+	 * @return
 	 */
 	public TypedSqlQuery<T> setWhereClause(final String whereClause)
 	{
@@ -993,6 +1046,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * If the given <code>whereClause</code> is not empty, then it is <code>AND</code>ed or <code>OR</code>ed to the copy's current where clause. appended.
 	 *
 	 * @param joinByAnd if <code>true</code>, then the given <code>whereClause</code> (unless empty) is <code>AND</code>ed, otherwise it's <code>OR</code>ed to the new query's where clause.
+	 * @param whereClause
 	 * @return a copy of this instance
 	 */
 	public TypedSqlQuery<T> addWhereClause(final boolean joinByAnd, final String whereClause)
@@ -1003,7 +1057,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		final String whereClauseFinal;
-		if (Check.isNotBlank(getWhereClause()))
+		if (!Check.isEmpty(getWhereClause(), true))
 		{
 			whereClauseFinal = new StringBuilder()
 					.append("(").append(getWhereClause()).append(")")
@@ -1027,7 +1081,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	protected final String getWhereClauseEffective()
 	{
 		final StringBuilder whereBuffer = new StringBuilder();
-		if (Check.isNotBlank(this.whereClause))
+		if (!Check.isEmpty(this.whereClause, true))
 		{
 			if (whereBuffer.length() > 0)
 			{
@@ -1081,7 +1135,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return whereBuffer.toString();
 	}
 
-	@NonNull
 	public final List<Object> getParametersEffective()
 	{
 		final List<Object> parametersEffective = new ArrayList<>();
@@ -1168,8 +1221,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// Build and add UNION SQL queries
 		if (unions != null)
 		{
-			final boolean useOrderByClauseInUnions = Check.isBlank(getOrderBy());
-
 			for (final SqlQueryUnion<T> union : unions)
 			{
 				final TypedSqlQuery<T> unionQuery = TypedSqlQuery.cast(union.getQuery());
@@ -1180,7 +1231,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 						selectClause,
 						null/* don't assume the union-query's from-clause is identical! */,
 						null/* groupByClause */,
-						useOrderByClauseInUnions);
+						false/* useOrderByClause */);
 				sqlBuffer.append("\nUNION ").append(unionDistinct ? "DISTINCT" : "ALL");
 				sqlBuffer.append("\n(\n").append(unionSql).append("\n)\n");
 			}
@@ -1214,7 +1265,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			{
 				Check.assumeNull(postQueryFilter, "No post-filter shall be defined when using LIMIT/OFFSET"); // FIXME: implement
 
-				final int offsetFixed = Math.max(offset, 0);
+				final int offsetFixed = offset > 0 ? offset : 0;
 				final int start = offsetFixed + 1;
 				final int end = limit.toIntOrZero() + offsetFixed;
 				sql = DB.getDatabase().addPagingSQL(sql, start, end);
@@ -1233,7 +1284,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return sql;
 	}
 
-	private ResultSet createResultSet(final PreparedStatement pstmt) throws SQLException
+	private final ResultSet createResultSet(final PreparedStatement pstmt) throws SQLException
 	{
 		final List<Object> parametersEffective = getParametersEffective();
 		DB.setParameters(pstmt, parametersEffective);
@@ -1243,8 +1294,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		final long durationMillis = System.currentTimeMillis() - ts;
 		final int duarationMaxMinutes = 5;
-		final long durationMaxMillis = 1000 * 60 * duarationMaxMinutes; // durationMillis is always >0
-		if (durationMillis > durationMaxMillis)
+		final long durationMaxMillis = 1000 * 60 * duarationMaxMinutes;
+		if (durationMaxMillis > 0 && durationMillis > durationMaxMillis)
 		{
 			log.warn(
 					"Query " + this + " took " + durationMillis + " millis (longer than " + duarationMaxMinutes + " minutes) to create the ResultSet",
@@ -1301,6 +1352,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		return list;
@@ -1325,7 +1378,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			sql = inlineSqlParams(sql, sqlParams);
 		}
 
-		return sql;
+		return MoreObjects.toStringHelper(this)
+				.addValue(sql)
+				.toString();
 	}
 
 	@VisibleForTesting
@@ -1370,7 +1425,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return trxName;
 	}
 
-	@Nullable
 	public String getOrderBy()
 	{
 		if (queryOrderBy == null)
@@ -1411,7 +1465,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// No single primary key was found.
 		// Build a nice error message and throw it.
 		final List<String> keys = poInfo.getKeyColumnNames();
-		if (keys.isEmpty())
+		if (keys == null || keys.isEmpty())
 		{
 			throw new DBException("Table " + getTableName() + " has no key columns");
 		}
@@ -1428,7 +1482,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	}
 
-	@Nullable
 	private Map<String, Object> options = null;
 
 	@Override
@@ -1463,7 +1516,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return this;
 	}
 
-	@Nullable
 	@Override
 	public <OT> OT getOption(final String name)
 	{
@@ -1527,6 +1579,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Inserts the query result into a <code>T_Selection</code> for the given AD_PInstance_ID
 	 *
+	 * @param pinstanceId
 	 * @return number of records inserted in selection
 	 */
 	@Override
@@ -1545,10 +1598,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(selectClause, fromClause, groupByClause, false);
 		final Object[] params = getParametersEffective().toArray();
 
-		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
+		return no;
 	}
 
-	@Nullable
 	@Override
 	public PInstanceId createSelection()
 	{
@@ -1568,26 +1621,47 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int deleteDirectly()
 	{
-		// NOTE: avoid leading/trailing "spaces" in sqlDeleteFrom and fromClause,
-		// in order to be matched by our migration scripts "dontLog" matcher.
-		// In case of fromClause we need a trailing space.
-		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE");
-		final StringBuilder fromClause = new StringBuilder("FROM ").append(getTableName()).append(" ");
+		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE ");
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getTableName());
 		final String groupByClause = null;
 		final String sql = buildSQL(sqlDeleteFrom, fromClause, groupByClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
-		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
+		return no;
+	}
+
+	@Override
+	public int delete(final boolean failIfProcessed)
+	{
+		final List<T> records = list(modelClass);
+		if (records.isEmpty())
+		{
+			return 0;
+		}
+
+		int countDeleted = 0;
+		for (final Object record : records)
+		{
+			InterfaceWrapperHelper.delete(record, failIfProcessed);
+			countDeleted++;
+		}
+
+		return countDeleted;
 	}
 
 	/**
 	 * Casts given {@link IQuery} object to {@link TypedSqlQuery}.
 	 * <p>
 	 * We use this method to track where we do "interface casted to native implementation". This information is useful if we decide to refactor this class in future.
+	 *
+	 * @param query
+	 * @return
 	 */
 	public static <T> TypedSqlQuery<T> cast(final IQuery<T> query)
 	{
-		return (TypedSqlQuery<T>)query;
+		final TypedSqlQuery<T> typedSqlQuery = (TypedSqlQuery<T>)query;
+		return typedSqlQuery;
 	}
 
 	@Override
@@ -1634,7 +1708,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	}
 
-	private int updateSql(final ISqlQueryUpdater<T> sqlQueryUpdater)
+	private final int updateSql(final ISqlQueryUpdater<T> sqlQueryUpdater)
 	{
 		// In case we have LIMIT/OFFSET clauses, we shall update the records differently
 		// (i.e. by having a UPDATE FROM (sub select) ).
@@ -1669,9 +1743,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * UPDATE t .. FROM (SELECT subquery) f WHERE t.rowid = f.rowid
 	 * </pre>
 	 *
+	 * @param sqlQueryUpdater
 	 * @return how many rows were updated
 	 */
-	private int updateSql_UsingSelectFromSubQuery(final ISqlQueryUpdater<T> sqlQueryUpdater)
+	private final int updateSql_UsingSelectFromSubQuery(final ISqlQueryUpdater<T> sqlQueryUpdater)
 	{
 		//
 		// Get the key column name / row id

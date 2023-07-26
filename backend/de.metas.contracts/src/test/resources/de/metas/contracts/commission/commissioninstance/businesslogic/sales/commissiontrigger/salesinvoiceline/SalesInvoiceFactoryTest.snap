@@ -1,28 +1,21 @@
-de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactoryTest.forRecord=[
-  {
-    "commissionDate": "2020-03-21",
-    "currencyId": 1000000,
-    "customerBPartnerId": 30,
-    "id": 1000000,
-    "invoiceLines": [
-      {
-        "currencyId": 1000000,
-        "id": {
-          "invoiceId": 1000000,
-          "repoId": 1000000
-        },
-        "invoicedCommissionPoints": -100,
-        "invoicedQty": {
-          "qty": "0",
-          "uomId": 1000000
-        },
-        "productId": 1000000,
-        "updated": "2020-03-03T08:23:00.929Z"
-      }
-    ],
-    "orgId": 10,
-    "salesRepBPartnerId": 20,
-    "triggerType": "SalesCreditmemo",
-    "updated": "2020-03-03T08:23:00.929Z"
-  }
-]
+de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactoryTest.forRecord=[ {
+  "orgId" : 10,
+  "id" : 100010,
+  "salesRepBPartnerId" : 20,
+  "customerBPartnerId" : 30,
+  "commissionDate" : "2020-03-21",
+  "updated" : "2020-03-03T08:23:00.929Z",
+  "triggerType" : "SalesCreditmemo",
+  "invoiceLines" : [ {
+    "id" : {
+      "repoId" : 100011,
+      "invoiceId" : 100010
+    },
+    "productId" : 100009,
+    "forecastCommissionPoints" : 0,
+    "commissionPointsToInvoice" : 0,
+    "invoicedCommissionPoints" : -100,
+    "tradedCommissionPercent" : 0,
+    "updated" : "2020-03-03T08:23:00.929Z"
+  } ]
+} ]

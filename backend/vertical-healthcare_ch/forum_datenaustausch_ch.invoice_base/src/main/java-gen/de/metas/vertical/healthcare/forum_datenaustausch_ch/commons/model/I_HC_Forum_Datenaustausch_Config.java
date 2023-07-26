@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 /** Generated Interface for HC_Forum_Datenaustausch_Config
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_HC_Forum_Datenaustausch_Config 
 {
 

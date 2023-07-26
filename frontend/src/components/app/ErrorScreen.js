@@ -1,58 +1,34 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { checkLoginRequest } from '../../api/login';
-import { CONNECTION_ERROR_RETRY_INTERVAL_MILLIS } from '../../constants/Constants';
-import { getCurrentActiveLanguage } from '../../utils/locale';
+
+const OFFLINE_MESSAGE_LINE1 = 'Connection lost.';
+const OFFLINE_MESSAGE_LINE2 =
+  'There are some connection issues. ' +
+  'Check connection and try to refresh the page.';
+
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
-    this.intervalId = null;
-    this.activeLang = getCurrentActiveLanguage();
   }
-
-  pingServer = async () => {
-    checkLoginRequest()
-      .then((response) => {
-        if (response && response.status === 200) {
-          window.location.reload();
-        }
-      })
-      .catch((e) => console.error('checkLoginRequest error:', e));
-  };
-
-  componentDidMount() {
-    const { errorType } = this.props;
-    if (errorType) {
-      this.intervalId = setInterval(
-        this.pingServer,
-        CONNECTION_ERROR_RETRY_INTERVAL_MILLIS
-      );
-    }
-  }
-
-  componentWillUnmount() {
-    this.intervalId && clearInterval(this.intervalId);
-  }
-
   render() {
-    const { errorType } = this.props;
-    const title = counterpart.translate(`window.error.${errorType}.title`);
-    const description = counterpart.translate(
-      `window.error.${errorType}.description`
-    );
+    let line1 = counterpart.translate('window.error.noStatus.title');
+    let line2 = counterpart.translate('window.error.noStatus.description');
+
+    if (!line1) {
+      line1 = OFFLINE_MESSAGE_LINE1;
+    }
+
+    if (!line2) {
+      line2 = OFFLINE_MESSAGE_LINE2;
+    }
 
     return (
       <div className="screen-freeze">
-        <h3>{title}</h3>
-        <p>{description}</p>
+        <h3>{line1}</h3>
+        <p>{line2}</p>
       </div>
     );
   }
 }
-
-ErrorScreen.propTypes = {
-  errorType: PropTypes.string,
-};
 
 export default ErrorScreen;

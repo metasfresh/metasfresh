@@ -77,19 +77,17 @@ class SysConfigLoggerCustomizer implements ILoggerCustomizer
 		{
 			return; // was already handled
 		}
-
-		// mainly we don't customize log level in unit test mode, because it might be trouble and currently we don't need to.
-		if (Adempiere.isUnitTestMode())
-		{
-			return;
-		}
-
 		withinCustomizeLogLevel.set(true);
 		try
 		{
 			if (!Env.isCtxAvailable())
 			{
 				// if not even the Ctx is there yet, we are too early in the startup do do any stuff with services etc.
+				return;
+			}
+			if (Adempiere.isUnitTestMode())
+			{
+				// mainly we don't customize log level in unit test mode, because it might be trouble and currently we don't need to.
 				return;
 			}
 

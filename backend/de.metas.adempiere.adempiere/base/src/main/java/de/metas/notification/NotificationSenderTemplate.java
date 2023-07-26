@@ -1,8 +1,32 @@
 package de.metas.notification;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ecs.ClearElement;
+import org.apache.ecs.xhtml.body;
+import org.apache.ecs.xhtml.br;
+import org.apache.ecs.xhtml.html;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
@@ -24,38 +48,11 @@ import de.metas.process.AdProcessId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.ui.web.WebuiURLs;
-import de.metas.user.UserGroupId;
-import de.metas.user.UserGroupRepository;
-import de.metas.user.UserGroupUserAssignment;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ecs.ClearElement;
-import org.apache.ecs.xhtml.body;
-import org.apache.ecs.xhtml.br;
-import org.apache.ecs.xhtml.html;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -94,7 +91,6 @@ public class NotificationSenderTemplate
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
-	private final UserGroupRepository userGroupRepository = SpringContextHolder.instance.getBean(UserGroupRepository.class);
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 
@@ -131,17 +127,10 @@ public class NotificationSenderTemplate
 	public void send(@NonNull final UserNotificationRequest request)
 	{
 		logger.trace("Prepare sending notification: {}", request);
-		try
-		{
-			Stream.of(resolve(request))
-					.flatMap(this::explodeByUser)
-					.flatMap(this::explodeByEffectiveNotificationsConfigs)
-					.forEach(this::send0);
-		}
-		catch(Exception ex)
-		{
-			logger.error("Failed to send notification: {}", request, ex);
-		}
+		Stream.of(resolve(request))
+				.flatMap(this::explodeByUser)
+				.flatMap(this::explodeByEffectiveNotificationsConfigs)
+				.forEach(this::send0);
 	}
 
 	private void send0(final UserNotificationRequest request)
@@ -210,14 +199,6 @@ public class NotificationSenderTemplate
 					.flatMap(roleId -> rolesRepo.retrieveUserIdsForRoleId(roleId)
 							.stream()
 							.map(userId -> Recipient.userAndRole(userId, roleId)));
-		}
-		else if (recipient.isGroup())
-		{
-			final UserGroupId groupId = recipient.getGroupId();
-			return userGroupRepository.getByUserGroupId(groupId)
-					.streamAssignmentsFor(groupId, Instant.now())
-					.map(UserGroupUserAssignment::getUserId)
-					.map(Recipient::user);
 		}
 		else
 		{
@@ -423,11 +404,11 @@ public class NotificationSenderTemplate
 		{
 			final UserNotification notification = notificationsRepo.save(request);
 
-			final Topic topic = Topic.distributed(request.getNotificationGroupName().getValueAsString());
+			final Topic topic = Topic.remote(request.getNotificationGroupName().getValueAsString());
 
 			eventBusFactory
 					.getEventBus(topic)
-					.enqueueEvent(UserNotificationUtils.toEvent(notification));
+					.postEvent(UserNotificationUtils.toEvent(notification));
 		}
 		catch (final Exception ex)
 		{
@@ -442,7 +423,12 @@ public class NotificationSenderTemplate
 
 		final boolean html = true;
 		final String content = extractMailContent(request);
-		final String subject = extractMailSubject(request);
+
+		String subject = extractSubjectText(request);
+		if (Check.isEmpty(subject, true))
+		{
+			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
+		}
 
 		final EMail mail = mailService.createEMail(
 				mailbox,
@@ -465,21 +451,7 @@ public class NotificationSenderTemplate
 				(EMailCustomType)null);  // customType
 	}
 
-	@VisibleForTesting
-	String extractMailSubject(final UserNotificationRequest request)
-	{
-		final String subject = extractSubjectText(request);
-
-		if (Check.isEmpty(subject, true))
-		{
-			return extractSubjectFromContent(extractContentText(request, /* html */false));
-		}
-
-		return subject;
-	}
-
-	@VisibleForTesting
-	String extractMailContent(final UserNotificationRequest request)
+	private String extractMailContent(final UserNotificationRequest request)
 	{
 		final body htmlBody = new body();
 		final String htmlBodyString = extractContentText(request, /* html */true);

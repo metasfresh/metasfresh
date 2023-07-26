@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.util.Check;
@@ -23,9 +23,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_GL_Category;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
@@ -61,15 +63,15 @@ public class DocTypeDAO implements IDocTypeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>>builder()
+	private CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>>builder()
 			.tableName(I_C_DocType.Table_Name)
 			.build();
 
-	private final CCache<DocTypeInvoicingPoolId, ImmutableSet<DocTypeId>> docTypeIdsByInvoicingPoolId = CCache.<DocTypeInvoicingPoolId, ImmutableSet<DocTypeId>>builder()
+	private CCache<DocTypeInvoicingPoolId, ImmutableSet<DocTypeId>> docTypeIdsByInvoicingPoolId = CCache.<DocTypeInvoicingPoolId, ImmutableSet<DocTypeId>>builder()
 			.tableName(I_C_DocType.Table_Name)
 			.build();
 
-	private final CCache<Integer, DocBaseTypeCountersMap> docBaseTypeCountersMapCache = CCache.<Integer, DocBaseTypeCountersMap>builder()
+	private CCache<Integer, DocBaseTypeCountersMap> docBaseTypeCountersMapCache = CCache.<Integer, DocBaseTypeCountersMap>builder()
 			.tableName(I_C_DocBaseType_Counter.Table_Name)
 			.build();
 
@@ -86,14 +88,14 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
-
+		
 		if (docTypeRecord == null)
 		{
 			throw new AdempiereException("No C_DocType record found for ID!")
 					.appendParametersToMessage()
 					.setParameter("DocTypeId", docTypeId);
 		}
-
+		
 		return docTypeRecord;
 	}
 
@@ -162,10 +164,11 @@ public class DocTypeDAO implements IDocTypeDAO
 			@NonNull final DocTypeQuery docTypeQuery,
 			final int docTypeId)
 	{
-		return createDocTypeByBaseTypeQuery(docTypeQuery)
+		final boolean queryMatchesDocTypeId = createDocTypeByBaseTypeQuery(docTypeQuery)
 				.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTypeId)
 				.create()
 				.anyMatch();
+		return queryMatchesDocTypeId;
 	}
 
 	private IQueryBuilder<I_C_DocType> createDocTypeByBaseTypeQuery(@NonNull final DocTypeQuery query)
@@ -220,7 +223,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
-	public Optional<DocBaseType> getDocBaseTypeCounter(final DocBaseType docBaseType)
+	public Optional<String> getDocBaseTypeCounter(final String docBaseType)
 	{
 		final DocBaseTypeCountersMap map = this.docBaseTypeCountersMapCache.getOrLoad(0, this::retrieveDocBaseTypeCountersMap);
 		return map.getCounterDocBaseTypeByDocBaseType(docBaseType);
@@ -230,7 +233,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	private DocBaseTypeCountersMap retrieveDocBaseTypeCountersMap()
 	{
 		// load the existing info from the table C_DocBaseType_Counter in an immutable map
-		ImmutableMap.Builder<DocBaseType, DocBaseType> docBaseTypeCounters = ImmutableMap.builder();
+		ImmutableMap.Builder<String, String> docBaseTypeCounters = ImmutableMap.builder();
 
 		final IQueryBuilder<I_C_DocBaseType_Counter> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_DocBaseType_Counter.class);
 
@@ -241,7 +244,7 @@ public class DocTypeDAO implements IDocTypeDAO
 
 		for (final I_C_DocBaseType_Counter docBaseTypeCounter : docBaseTypeCountersList)
 		{
-			docBaseTypeCounters.put(DocBaseType.ofCode(docBaseTypeCounter.getDocBaseType()), DocBaseType.ofCode(docBaseTypeCounter.getCounter_DocBaseType()));
+			docBaseTypeCounters.put(docBaseTypeCounter.getDocBaseType(), docBaseTypeCounter.getCounter_DocBaseType());
 		}
 
 		return DocBaseTypeCountersMap.ofMap(docBaseTypeCounters.build());
@@ -272,10 +275,10 @@ public class DocTypeDAO implements IDocTypeDAO
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setAD_Org_ID(0);
-		dt.setDocBaseType(request.getDocBaseType().getCode());
+		dt.setDocBaseType(request.getDocBaseType());
 		dt.setName(name);
 		dt.setPrintName(name);
-		dt.setGL_Category_ID(request.getGlCategoryId().getRepoId());
+		dt.setGL_Category_ID(retrieveDefaultGL_Category_ID());
 
 		//		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
 		dt.setEntityType(request.getEntityType());
@@ -299,6 +302,10 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			dt.setC_DocTypeInvoice_ID(request.getDocTypeInvoiceId());
 		}
+		if (request.getGlCategoryId() > 0)
+		{
+			dt.setGL_Category_ID(request.getGlCategoryId());
+		}
 
 		if (docNoSequenceId <= 0)
 		{
@@ -321,17 +328,34 @@ public class DocTypeDAO implements IDocTypeDAO
 		}
 		else
 		{
-			dt.setIsSOTrx(request.getDocBaseType().isSOTrx());
+			final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+			final boolean isSOTrx = docTypeBL.isSOTrx(request.getDocBaseType());
+			dt.setIsSOTrx(isSOTrx);
 		}
 
 		InterfaceWrapperHelper.save(dt);
 		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
 	}
-
+	
 	@Override
 	public void save(@NonNull final I_C_DocType docTypeRecord)
 	{
 		InterfaceWrapperHelper.saveRecord(docTypeRecord);
+	}
+
+	/**
+	 * Set Default GL Category
+	 */
+	private int retrieveDefaultGL_Category_ID()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_GL_Category.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_GL_Category.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId())
+				.orderByDescending(I_GL_Category.COLUMNNAME_IsDefault)
+				.orderBy(I_GL_Category.COLUMNNAME_GL_Category_ID)
+				.create()
+				.firstId();
 	}
 
 	@Override
@@ -345,7 +369,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	@ToString
 	private static class DocBaseTypeCountersMap
 	{
-		public static DocBaseTypeCountersMap ofMap(@NonNull final ImmutableMap<DocBaseType, DocBaseType> map)
+		public static DocBaseTypeCountersMap ofMap(@NonNull final ImmutableMap<String, String> map)
 		{
 			return !map.isEmpty()
 					? new DocBaseTypeCountersMap(map)
@@ -354,14 +378,14 @@ public class DocTypeDAO implements IDocTypeDAO
 
 		private static final DocBaseTypeCountersMap EMPTY = new DocBaseTypeCountersMap(ImmutableMap.of());
 
-		private final ImmutableMap<DocBaseType, DocBaseType> counterDocBaseTypeByDocBaseType;
+		private ImmutableMap<String, String> counterDocBaseTypeByDocBaseType;
 
-		private DocBaseTypeCountersMap(@NonNull final ImmutableMap<DocBaseType, DocBaseType> map)
+		private DocBaseTypeCountersMap(@NonNull final ImmutableMap<String, String> map)
 		{
 			this.counterDocBaseTypeByDocBaseType = map;
 		}
 
-		public Optional<DocBaseType> getCounterDocBaseTypeByDocBaseType(@NonNull final DocBaseType docBaseType)
+		public Optional<String> getCounterDocBaseTypeByDocBaseType(@NonNull final String docBaseType)
 		{
 			return Optional.ofNullable(counterDocBaseTypeByDocBaseType.get(docBaseType));
 		}

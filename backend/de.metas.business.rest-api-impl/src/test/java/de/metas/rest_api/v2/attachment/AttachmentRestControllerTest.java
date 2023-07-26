@@ -22,8 +22,6 @@
 
 package de.metas.rest_api.v2.attachment;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
@@ -32,13 +30,14 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
 import de.metas.common.rest_api.v2.attachment.JsonTag;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,20 +45,33 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class })
+@ExtendWith(AdempiereTestWatcher.class)
 public class AttachmentRestControllerTest
 {
 	private IQueryBL queryBL;
 	private AttachmentRestController attachmentRestController;
-	private Expect expect;
+
+	@BeforeAll
+	static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
+	}
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
-		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, 10); // will be in the attachment-entry's CreatedUpdatedInfo
 
 		queryBL = Services.get(IQueryBL.class);
 
@@ -111,7 +123,7 @@ public class AttachmentRestControllerTest
 		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonAttachmentResponse resultBody = responseEntity.getBody();
 
-		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
+		expect(resultBody).toMatchSnapshot();
 
 		assertThat(resultBody).isNotNull();
 

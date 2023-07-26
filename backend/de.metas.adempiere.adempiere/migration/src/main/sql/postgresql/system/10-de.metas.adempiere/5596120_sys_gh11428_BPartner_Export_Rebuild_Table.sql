@@ -46,7 +46,7 @@ CREATE TABLE public.C_BPartner_Export
     MasterEndDate                 TIMESTAMP WITH TIME ZONE,
     MasterStartDate               TIMESTAMP WITH TIME ZONE,
     MKTG_Campaign_ID              NUMERIC(10),
-    Postal                        VARCHAR(50),
+    Postal                        VARCHAR(10),
     TerminationReason             VARCHAR(3),
     Updated                       TIMESTAMP WITH TIME ZONE                                          NOT NULL,
     UpdatedBy                     NUMERIC(10)                                                       NOT NULL,

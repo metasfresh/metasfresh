@@ -1,8 +1,6 @@
 package de.metas.location.impl;
 
-import de.metas.location.CountryCode;
 import de.metas.location.CountryId;
-import de.metas.location.ICountryCodeFactory;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
 import de.metas.location.ILocationDAO;
@@ -22,12 +20,13 @@ import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import java.util.Properties;
+
 public class LocationBL implements ILocationBL
 {
 	private static final Logger logger = LogManager.getLogger(LocationBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -161,14 +160,6 @@ public class LocationBL implements ILocationBL
 		InterfaceWrapperHelper.copyValues(location, locationNew);
 		InterfaceWrapperHelper.save(locationNew);
 		return locationNew;
-	}
-
-	@Override
-	public CountryCode getCountryCodeByLocationId(@NonNull final LocationId id)
-	{
-		final CountryId countryId = locationDAO.getCountryIdByLocationId(id);
-		final String countryCode2 = countryDAO.retrieveCountryCode2ByCountryId(countryId);
-		return countryCodeFactory.getCountryCodeByAlpha2(countryCode2);
 	}
 
 }

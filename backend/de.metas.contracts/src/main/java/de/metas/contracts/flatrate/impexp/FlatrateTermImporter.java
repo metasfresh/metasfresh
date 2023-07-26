@@ -3,12 +3,10 @@
  */
 package de.metas.contracts.flatrate.impexp;
 
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -171,18 +169,12 @@ import java.util.Properties;
 	{
 		int dropShipBPartnerId = contract.getDropShip_BPartner_ID();
 		final I_C_BPartner_Location dropShipBPLocation = FlatrateTermImportFinder.findBPartnerShipToLocation(ctx, dropShipBPartnerId);
-
 		if (dropShipBPLocation != null)
 		{
-			final BPartnerLocationAndCaptureId dropshipLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
-					dropShipBPartnerId,
-					dropShipBPLocation.getC_BPartner_Location_ID(),
-					dropShipBPLocation.getC_Location_ID());
-
-			ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(contract)
-					.setFrom(dropshipLocationId);
+			contract.setDropShip_Location_ID(dropShipBPLocation.getC_BPartner_Location_ID());
 		}
 	}
+
 
 	private void setUOM(@NonNull final I_C_Flatrate_Term contract, @NonNull final ProductId productId)
 	{

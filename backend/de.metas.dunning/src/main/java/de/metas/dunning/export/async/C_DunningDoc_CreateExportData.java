@@ -1,7 +1,13 @@
 package de.metas.dunning.export.async;
 
-import ch.qos.logback.classic.Level;
+import java.util.List;
+
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
+
+import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
@@ -13,11 +19,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 public class C_DunningDoc_CreateExportData implements IWorkpackageProcessor
 {
@@ -28,7 +29,7 @@ public class C_DunningDoc_CreateExportData implements IWorkpackageProcessor
 			.newModelScheduler(C_DunningDoc_CreateExportData.class, I_C_DunningDoc.class)
 			.setCreateOneWorkpackagePerModel(true);
 
-	public static void scheduleOnTrxCommit(final I_C_DunningDoc dunningDocRecord)
+	public static final void scheduleOnTrxCommit(final I_C_DunningDoc dunningDocRecord)
 	{
 		SCHEDULER.schedule(dunningDocRecord);
 	}
@@ -40,9 +41,9 @@ public class C_DunningDoc_CreateExportData implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(
 			@NonNull final I_C_Queue_WorkPackage workpackage,
-			@Nullable final String localTrxName)
+			@NonNull final String localTrxName)
 	{
-		final List<I_C_DunningDoc> dunningDocRecords = queueDAO.retrieveAllItemsSkipMissing(workpackage, I_C_DunningDoc.class);
+		final List<I_C_DunningDoc> dunningDocRecords = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_DunningDoc.class, localTrxName);
 		for (final I_C_DunningDoc dunningDocRecord : dunningDocRecords)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Going to export data for dunningDocRecord={}", dunningDocRecord);

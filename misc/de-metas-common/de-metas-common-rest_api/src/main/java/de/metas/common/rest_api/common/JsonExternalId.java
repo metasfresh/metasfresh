@@ -25,11 +25,8 @@ package de.metas.common.rest_api.common;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.common.util.EmptyUtil;
-import io.swagger.v3.oas.models.media.IntegerSchema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import lombok.NonNull;
 import lombok.Value;
-import org.springdoc.core.SpringDocUtils;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -38,10 +35,6 @@ import java.util.Objects;
 public class JsonExternalId
 {
 	String value;
-
-	static {
-		SpringDocUtils.getConfig().replaceWithSchema(JsonExternalId.class, new StringSchema());
-	}
 
 	@JsonCreator
 	public static JsonExternalId of(@NonNull final String value)
@@ -79,7 +72,6 @@ public class JsonExternalId
 		return Objects.equals(id1, id2);
 	}
 
-	@Nullable
 	public static String toValue(@Nullable final JsonExternalId externalId)
 	{
 		if (externalId == null)

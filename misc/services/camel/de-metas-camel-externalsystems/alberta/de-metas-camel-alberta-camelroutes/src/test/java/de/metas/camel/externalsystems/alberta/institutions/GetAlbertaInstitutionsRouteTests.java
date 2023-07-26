@@ -376,7 +376,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		final String jsonString = loadAsString(JSON_ALBERTA_GET_DOCTOR_RESPONSE);
 		final Doctor doctor = json.deserialize(jsonString, Doctor.class);
 
-		Mockito.when(albertaDoctorApi.getDoctor(any(String.class), any(String.class)))
+		Mockito.when(albertaDoctorApi.getDoctor(any(String.class), any(String.class), any(String.class)))
 				.thenReturn(doctor);
 
 		return albertaDoctorApi;
@@ -389,7 +389,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		final String jsonString = loadAsString(JSON_ALBERTA_GET_NURINGHOME_RESPONSE);
 		final NursingHome nursingHome = json.deserialize(jsonString, NursingHome.class);
 
-		Mockito.when(nursingHomeApi.geNursingHome(any(String.class), any(String.class)))
+		Mockito.when(nursingHomeApi.geNursingHome(any(String.class), any(String.class), any(String.class)))
 				.thenReturn(nursingHome);
 
 		return nursingHomeApi;
@@ -402,7 +402,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		final String jsonString = loadAsString(JSON_ALBERTA_GET_NURINGSERVICE_RESPONSE);
 		final NursingService nursingService = json.deserialize(jsonString, NursingService.class);
 
-		Mockito.when(nursingServiceApi.getNursingService(any(String.class), any(String.class)))
+		Mockito.when(nursingServiceApi.getNursingService(any(String.class), any(String.class), any(String.class)))
 				.thenReturn(nursingService);
 
 		return nursingServiceApi;
@@ -415,7 +415,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		final String jsonString = loadAsString(JSON_ALBERTA_GET_HOSPITAL_RESPONSE);
 		final Hospital hospital = json.deserialize(jsonString, Hospital.class);
 
-		Mockito.when(hospitalApi.getHospital(any(String.class), any(String.class)))
+		Mockito.when(hospitalApi.getHospital(any(String.class), any(String.class), any(String.class)))
 				.thenReturn(hospital);
 
 		return hospitalApi;
@@ -428,7 +428,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		final String jsonString = loadAsString(JSON_ALBERTA_GET_PAYER_RESPONSE);
 		final Payer payer = json.deserialize(jsonString, Payer.class);
 
-		Mockito.when(payerApi.getPayer(any(String.class), any(String.class)))
+		Mockito.when(payerApi.getPayer(any(String.class), any(String.class), any(String.class)))
 				.thenReturn(payer);
 
 		return payerApi;
@@ -441,7 +441,7 @@ public class GetAlbertaInstitutionsRouteTests extends CamelTestSupport
 		final String jsonString = loadAsString(JSON_ALBERTA_GET_PHARMACY_RESPONSE);
 		final Pharmacy pharmacy = json.deserialize(jsonString, Pharmacy.class);
 
-		Mockito.when(pharmacyApi.getPharmacy(any(String.class), any(String.class)))
+		Mockito.when(pharmacyApi.getPharmacy(any(String.class), any(String.class), any(String.class)))
 				.thenReturn(pharmacy);
 
 		return pharmacyApi;

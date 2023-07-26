@@ -1,49 +1,13 @@
 package de.metas.invoice.export;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
-import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRepository;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
-import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
-import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
-import de.metas.invoice_gateway.spi.model.BPartner;
-import de.metas.invoice_gateway.spi.model.GLN;
-import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
-import de.metas.invoice_gateway.spi.model.InvoiceLine;
-import de.metas.invoice_gateway.spi.model.InvoiceTax;
-import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
-import de.metas.invoice_gateway.spi.model.Money;
-import de.metas.invoice_gateway.spi.model.ProductId;
-import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
-import de.metas.lang.ExternalIdsUtil;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.Tax;
-import de.metas.util.Check;
-import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.lang.SoftwareVersion;
-import lombok.NonNull;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.math.BigDecimal;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Optional;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -53,13 +17,49 @@ import org.compiere.model.I_C_InvoiceTax;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Optional;
+import com.google.common.collect.ImmutableList;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.ExternalIdsUtil;
+import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
+import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
+import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
+import de.metas.invoice_gateway.spi.model.BPartner;
+import de.metas.invoice_gateway.spi.model.BPartnerId;
+import de.metas.invoice_gateway.spi.model.GLN;
+import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
+import de.metas.invoice_gateway.spi.model.InvoiceLine;
+import de.metas.invoice_gateway.spi.model.InvoiceTax;
+import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
+import de.metas.invoice_gateway.spi.model.Money;
+import de.metas.invoice_gateway.spi.model.ProductId;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.util.Check;
+import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.lang.SoftwareVersion;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -87,14 +87,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class InvoiceToExportFactory
 {
 	private static final Logger logger = LogManager.getLogger(InvoiceToExportFactory.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final AttachmentEntryService attachmentEntryService;
 	private final ESRPaymentInfoProvider esrPaymentInfoProvider;
@@ -127,6 +119,9 @@ public class InvoiceToExportFactory
 	{
 		final I_C_Invoice invoiceRecord = load(id, I_C_Invoice.class);
 
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
 		final boolean reversal = invoiceBL.isReversal(invoiceRecord);
 
 		final CurrencyCode currencyCode = extractCurrencyCode(invoiceRecord);
@@ -135,7 +130,7 @@ public class InvoiceToExportFactory
 		final BigDecimal allocatedAmt = CoalesceUtil.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
 		final Money allocatedMoney = Money.of(allocatedAmt, currencyCode.toThreeLetterCode());
 
-		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
+		final DocBaseAndSubType docBaseAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
 
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
 				.builder()
@@ -182,6 +177,7 @@ public class InvoiceToExportFactory
 			@NonNull final I_C_Invoice invoiceRecord,
 			@NonNull final CurrencyCode currentyCode)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final ImmutableList.Builder<InvoiceLine> invoiceLines = ImmutableList.builder();
 		final List<I_C_InvoiceLine> invoiceLineRecords = invoiceDAO.retrieveLines(invoiceRecord);
 
@@ -202,15 +198,13 @@ public class InvoiceToExportFactory
 	private ImmutableList<InvoiceTax> createInvoiceTax(final I_C_Invoice invoiceRecord)
 	{
 		final ImmutableList.Builder<InvoiceTax> invoiceTaxes = ImmutableList.builder();
-		final List<I_C_InvoiceTax> invoiceTaxRecords = invoiceDAO.retrieveTaxes(invoiceRecord);
+		final List<I_C_InvoiceTax> invoiceTaxRecords = Services.get(IInvoiceDAO.class).retrieveTaxes(invoiceRecord);
 
 		for (final I_C_InvoiceTax invoiceTaxRecord : invoiceTaxRecords)
 		{
-			final Tax taxById = taxDAO.getTaxById(invoiceTaxRecord.getC_Tax_ID());
-
 			final InvoiceTax invoiceTax = InvoiceTax.builder()
 					.baseAmount(invoiceTaxRecord.getTaxBaseAmt())
-					.ratePercent(taxById.getRate())
+					.ratePercent(invoiceTaxRecord.getC_Tax().getRate())
 					.vatAmount(invoiceTaxRecord.getTaxAmt())
 					.build();
 			invoiceTaxes.add(invoiceTax);
@@ -264,6 +258,8 @@ public class InvoiceToExportFactory
 
 	private BPartner createRecipient(@NonNull final I_C_Invoice invoiceRecord)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoiceRecord.getC_BPartner_ID(), invoiceRecord.getC_BPartner_Location_ID()));
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
@@ -288,12 +284,13 @@ public class InvoiceToExportFactory
 
 	private BPartner createBiller(@NonNull final I_C_Invoice invoiceRecord)
 	{
-
+		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(invoiceRecord.getAD_Org_ID());
 
 		Check.assumeNotNull(orgBPartner, InvoiceToExportFactoryException.class,
 				"The given invoice's org needs to have a linked bPartner; AD_Org_ID={}; invoiceRecord={};", invoiceRecord.getAD_Org_ID(), invoiceRecord);
 
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
 				.type(Type.REMIT_TO)

@@ -28,6 +28,5 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons;
  */
 public enum XmlVersion
 {
-	v440,
-	v450
+	v440;
 }

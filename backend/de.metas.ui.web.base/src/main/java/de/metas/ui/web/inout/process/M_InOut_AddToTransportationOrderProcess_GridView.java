@@ -22,10 +22,15 @@
 
 package de.metas.ui.web.inout.process;
 
+import java.util.List;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.model.I_M_InOut;
-import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
@@ -38,10 +43,6 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-
-import java.util.List;
 
 @SuppressWarnings("NullableProblems")
 public class M_InOut_AddToTransportationOrderProcess_GridView extends ViewBasedProcessTemplate implements IProcessPrecondition

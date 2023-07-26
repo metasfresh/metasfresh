@@ -38,19 +38,15 @@ public class TokenCredentials
 	String externalSystemValue;
 	@Nullable
 	String auditTrailEndpoint;
-	@NonNull
-	String orgCode;
 
 	@Builder
 	TokenCredentials(
 			@NonNull final JsonMetasfreshId pInstance,
 			@Nullable final String externalSystemValue,
-			@Nullable final String auditTrailEndpoint,
-			@NonNull final String orgCode)
+			@Nullable final String auditTrailEndpoint)
 	{
 		this.pInstance = pInstance;
 		this.externalSystemValue = externalSystemValue;
 		this.auditTrailEndpoint = auditTrailEndpoint;
-		this.orgCode = orgCode;
 	}
 }

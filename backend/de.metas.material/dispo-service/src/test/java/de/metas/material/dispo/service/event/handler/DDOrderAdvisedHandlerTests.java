@@ -27,7 +27,6 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.order.OrderLineRepository;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -130,7 +129,7 @@ public class DDOrderAdvisedHandlerTests
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		final AvailableToPromiseRepository availableToPromiseRepository = new AvailableToPromiseRepository();
@@ -156,7 +155,7 @@ public class DDOrderAdvisedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, postMaterialEventService, new OrderLineRepository()),
+				new RequestMaterialOrderService(candidateRepository, postMaterialEventService),
 				new DDOrderDetailRequestHandler(),
 				new MainDataRequestHandler());
 	}

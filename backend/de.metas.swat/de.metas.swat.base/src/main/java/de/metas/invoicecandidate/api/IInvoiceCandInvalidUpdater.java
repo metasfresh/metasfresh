@@ -22,15 +22,17 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
-import java.util.Properties;
 
 /**
  * Updates {@link I_C_Invoice_Candidate}s which are scheduled to be recomputed.
@@ -43,7 +45,7 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Updates invoice candidates (which were scheduled to be recomputed)
-	 * <p>
+	 *
 	 * NOTEs:
 	 * <ul>
 	 * <li>only those candidates will be updated that were previously invalidated
@@ -73,7 +75,7 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Consider any invalid invoice candidate, no matter if they are tagged or not.
-	 * <p>
+	 *
 	 * NOTE:
 	 * <ul>
 	 * <li>this is the default behavior if no setTaggedWith methods are called.
@@ -83,15 +85,21 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Sets maximum number of invoice candidates to update.
+	 *
+	 * @param limit
 	 */
 	IInvoiceCandInvalidUpdater setLimit(int limit);
 
 	/**
 	 * Sets the tag to be used when tagging the invoice candidates.
+	 *
+	 * @param tag
 	 */
 	IInvoiceCandInvalidUpdater setRecomputeTagToUse(InvoiceCandRecomputeTag tag);
 
-	IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(@NonNull InvoiceCandidateIdsSelection onlyInvoiceCandidateIds);
+	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates);
+
+	IInvoiceCandInvalidUpdater setOnlyC_Invoice_Candidates(Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates);
 
 	// TODO: find a better place for this method
 	static void updatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic, @NonNull final PriceAndTax priceAndTax)
@@ -127,7 +135,7 @@ public interface IInvoiceCandInvalidUpdater
 		}
 		if (priceAndTax.getDiscount() != null)
 		{
-			ic.setDiscount(Percent.toBigDecimalOrZero(priceAndTax.getDiscount()));
+			ic.setDiscount(Percent.toBigDecimalOrNull(priceAndTax.getDiscount()));
 		}
 		if (priceAndTax.getInvoicableQtyBasedOn() != null)
 		{
@@ -139,11 +147,7 @@ public interface IInvoiceCandInvalidUpdater
 		{
 			ic.setIsTaxIncluded(priceAndTax.getTaxIncluded());
 		}
-		if (priceAndTax.getTaxId() != null)
-		{
-			ic.setC_Tax_ID(priceAndTax.getTaxId().getRepoId());
-		}
-		
+
 		//
 		// Compensation group
 		if (priceAndTax.getCompensationGroupBaseAmt() != null)
@@ -151,4 +155,5 @@ public interface IInvoiceCandInvalidUpdater
 			ic.setGroupCompensationBaseAmt(priceAndTax.getCompensationGroupBaseAmt());
 		}
 	}
+
 }

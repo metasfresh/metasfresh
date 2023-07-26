@@ -45,7 +45,7 @@ public class RevolutExportCsvRow
 						 RevolutExportCSVColumn.AccountNo,
 						 RevolutExportCSVColumn.RoutingNo,
 						 RevolutExportCSVColumn.IBAN,
-						 RevolutExportCSVColumn.SwiftCode,
+						 RevolutExportCSVColumn.BIC,
 						 RevolutExportCSVColumn.RecipientBankCountryName,
 						 RevolutExportCSVColumn.Currency,
 						 RevolutExportCSVColumn.Amount,
@@ -63,12 +63,12 @@ public class RevolutExportCsvRow
 	@NonNull
 	public String toCSVRow(@NonNull final ICountryDAO countryDAO)
 	{
-		final String recipientBankCountryCode = row.getRecipientBankCountryId() != null
-				? countryDAO.getById(row.getRecipientBankCountryId()).getCountryCode()
+		final String recipientBankCountryName = row.getRecipientBankCountryId() != null
+				? countryDAO.getById(row.getRecipientBankCountryId()).getName()
 				: null;
 
-		final String recipientCountryCode = row.getRecipientCountryId() != null
-				? countryDAO.getById(row.getRecipientCountryId()).getCountryCode()
+		final String recipientCountryName = row.getRecipientCountryId() != null
+				? countryDAO.getById(row.getRecipientCountryId()).getName()
 				: null;
 
 		return Stream.of(row.getName(),
@@ -76,12 +76,12 @@ public class RevolutExportCsvRow
 						 row.getAccountNo(),
 						 row.getRoutingNo(),
 						 row.getIBAN(),
-						 row.getSwiftCode(),
-						 recipientBankCountryCode,
+						 row.getBIC(),
+						 recipientBankCountryName,
 						 row.getAmount().getCurrencyCode().toThreeLetterCode(),
 						 String.valueOf(row.getAmount().getAsBigDecimal()),
 						 row.getPaymentReference(),
-						 recipientCountryCode,
+						 recipientCountryName,
 						 row.getRegionName(),
 						 row.getAddressLine1(),
 						 row.getAddressLine2(),

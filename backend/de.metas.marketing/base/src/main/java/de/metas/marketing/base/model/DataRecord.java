@@ -22,15 +22,7 @@ package de.metas.marketing.base.model;
  * #L%
  */
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 public interface DataRecord
 {
-	@NonNull
 	PlatformId getPlatformId();
-
-	@Nullable
-	String getRemoteId();
 }

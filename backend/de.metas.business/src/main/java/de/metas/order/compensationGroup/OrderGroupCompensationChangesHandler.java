@@ -48,11 +48,6 @@ public class OrderGroupCompensationChangesHandler
 		this.flatrateConditionsExcludedProductsRepo = flatrateConditionsExcludedProductsRepo;
 	}
 
-	public void renumberOrderLinesForOrderId(@NonNull final OrderId orderId)
-	{
-		groupsRepo.renumberOrderLinesForOrderId(orderId);
-	}
-
 	public void onOrderLineChanged(final I_C_OrderLine orderLine)
 	{
 		if (!isEligible(orderLine))

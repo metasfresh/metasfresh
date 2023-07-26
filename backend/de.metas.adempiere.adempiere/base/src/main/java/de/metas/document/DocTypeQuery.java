@@ -38,7 +38,7 @@ public class DocTypeQuery
 	public static final String DOCSUBTYPE_NONE = null;
 
 	@NonNull
-	DocBaseType docBaseType;
+	String docBaseType;
 
 	@Nullable
 	@Default

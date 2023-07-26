@@ -1,24 +1,25 @@
 package de.metas.contracts.subscription.impl.subscriptioncommands;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.jgoodies.common.base.Objects;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.impl.SubscriptionService;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.Timestamp;
 import java.util.List;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.jgoodies.common.base.Objects;
+
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.subscription.impl.SubscriptionService;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -115,7 +116,7 @@ public class InsertPause
 
 			if (sp.getM_ShipmentSchedule_ID() > 0)
 			{
-				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(ShipmentScheduleId.ofRepoId(sp.getM_ShipmentSchedule_ID()));
+				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(sp.getM_ShipmentSchedule());
 			}
 
 			final boolean notYetDone = !Objects.equals(sp.getStatus(), X_C_SubscriptionProgress.STATUS_Done);
@@ -149,7 +150,7 @@ public class InsertPause
 		save(pauseEnd);
 	}
 
-	private ImmutableList<I_C_SubscriptionProgress> collectSpsAfterEndOfPause(final List<I_C_SubscriptionProgress> sps, final Timestamp pauseUntil)
+	private ImmutableList<I_C_SubscriptionProgress> collectSpsAfterEndOfPause(final List<I_C_SubscriptionProgress> sps, Timestamp pauseUntil)
 	{
 		final ImmutableList<I_C_SubscriptionProgress> spsAfterPause = sps.stream()
 				.filter(sp -> sp.getEventDate().after(pauseUntil))

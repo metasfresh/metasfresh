@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.2418426461183105"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -19,25 +19,12 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT 	*
-FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout_id}, $P{ad_language} )
-where IsPrintWhenPackingMaterial='Y'
-;]]>
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout_id}, $P{ad_language} )]]>
 	</queryString>
-	<field name="movementqty" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="movementqty"/>
-	</field>
-	<field name="name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="name"/>
-	</field>
-	<field name="uomsymbol" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
-	</field>
-	<field name="description" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="description"/>
-	</field>
-	<field name="isprintwhenpackingmaterial" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="isprintwhenpackingmaterial"/>
-	</field>
+	<field name="movementqty" class="java.math.BigDecimal"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="description" class="java.lang.String"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -53,21 +40,21 @@ where IsPrintWhenPackingMaterial='Y'
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="142bbe9f-777c-4879-ba97-2b347192bce4"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="417" y="0" width="40" height="12" forecolor="#000000" uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="369" y="0" width="46" height="12" forecolor="#000000" uuid="66821000-4e7b-4f69-b099-73eff29e9bd5"/>
 				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>

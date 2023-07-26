@@ -160,7 +160,8 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 
 		if (!validPickingCandidates.isEmpty())
 		{
-			deliverAndInvoice(validPickingCandidates);
+			final List<PickingCandidate> pickingCandidates = processAllPickingCandidates(validPickingCandidates);
+			deliverAndInvoice(pickingCandidates);
 		}
 
 		return MSG_OK;
@@ -176,10 +177,16 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void deliverAndInvoice(final ImmutableSet<PickingCandidateId> validPickingCandidates)
+	private ImmutableList<PickingCandidate> processAllPickingCandidates(final ImmutableSet<PickingCandidateId> pickingCandidateIdsToProcess)
 	{
-		final List<PickingCandidate> pickingCandidates = processAllPickingCandidates(validPickingCandidates);
 
+		return pickingCandidatesService
+				.process(pickingCandidateIdsToProcess)
+				.getPickingCandidates();
+	}
+
+	private void deliverAndInvoice(final List<PickingCandidate> pickingCandidates)
+	{
 		final Set<HuId> huIdsToDeliver = pickingCandidates
 				.stream()
 				.filter(PickingCandidate::isPacked)
@@ -209,12 +216,5 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 	private boolean isPartialDeliveryAllowed()
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_AllowPartialDelivery, false);
-	}
-
-	private ImmutableList<PickingCandidate> processAllPickingCandidates(final ImmutableSet<PickingCandidateId> pickingCandidateIdsToProcess)
-	{
-		return trxManager.callInNewTrx(() -> pickingCandidatesService
-				.process(pickingCandidateIdsToProcess)
-				.getPickingCandidates());
 	}
 }

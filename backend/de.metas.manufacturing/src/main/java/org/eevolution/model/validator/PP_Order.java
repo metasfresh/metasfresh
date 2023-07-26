@@ -3,7 +3,6 @@ package org.eevolution.model.validator;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.AdMessageKey;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -24,7 +23,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,12 +34,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
-import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
@@ -59,34 +53,28 @@ public class PP_Order
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
-	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
-	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final PostMaterialEventService materialEventService;
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final IPPOrderBOMBL ppOrderBOMBL;
-	private final ProductBOMVersionsDAO bomVersionsDAO;
 
 	public PP_Order(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
-			@NonNull final ProductBOMVersionsDAO bomVersionsDAO)
+			@NonNull final IPPOrderBOMBL ppOrderBOMBL)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.ppOrderBOMBL = ppOrderBOMBL;
-		this.bomVersionsDAO = bomVersionsDAO;
 	}
 
 	@Init
 	public void registerCallouts()
 	{
 		final IProgramaticCalloutProvider calloutsRegistry = Services.get(IProgramaticCalloutProvider.class);
-		calloutsRegistry.registerAnnotatedCallout(new org.eevolution.callout.PP_Order(documentNoBuilderFactory, bomVersionsDAO));
+		calloutsRegistry.registerAnnotatedCallout(new org.eevolution.callout.PP_Order(documentNoBuilderFactory));
 
 		final ITabCalloutFactory tabCalloutRegistry = Services.get(ITabCalloutFactory.class);
 		tabCalloutRegistry.registerTabCalloutForTable(I_PP_Order.Table_Name, org.eevolution.callout.PP_Order_TabCallout.class);
@@ -118,7 +106,7 @@ public class PP_Order
 		if (ppOrder.getM_Locator_ID() <= 0 || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID))
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-			final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+			final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
 			ppOrder.setM_Locator_ID(locatorId.getRepoId());
 		}
 
@@ -214,8 +202,7 @@ public class PP_Order
 		createWorkflowAndBOM(ppOrderRecord);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
-			ifColumnsChanged = { I_PP_Order.COLUMNNAME_QtyEntered, I_PP_Order.COLUMNNAME_AD_Workflow_ID, I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_PP_Order.COLUMNNAME_QtyEntered, I_PP_Order.COLUMNNAME_AD_Workflow_ID})
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
@@ -231,7 +218,7 @@ public class PP_Order
 
 		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
 
-		materialEventService.enqueueEventAfterNextCommit(event);
+		materialEventService.postEventAfterNextCommit(event);
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)
@@ -259,33 +246,6 @@ public class PP_Order
 
 			orderCostsService.deleteByOrderId(ppOrderId);
 			deleteWorkflowAndBOM(ppOrderId);
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
-			ifColumnsChanged = { I_PP_Order.COLUMNNAME_M_Product_ID, I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
-	public void validateBOMAndProduct(@NonNull final I_PP_Order ppOrder)
-	{
-		final ProductBOMId bomId = ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID());
-
-		final ProductId productIdOfBOM = productBOMDAO.getBOMProductId(bomId);
-
-		if (ppOrder.getM_Product_ID() != productIdOfBOM.getRepoId())
-		{
-			throw new AdempiereException(AdMessageKey.of("PP_Order_BOM_Doesnt_Match"))
-					.markAsUserValidationError()
-					.appendParametersToMessage()
-					.setParameter("PP_Order.M_Product_ID", ppOrder.getM_Product_ID())
-					.setParameter("PP_Order.PP_Product_BOM_ID.M_Product_ID", productIdOfBOM.getRepoId());
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void setSeqNo(final I_PP_Order ppOrder)
-	{
-		if (ppOrder.getSeqNo() <= 0)
-		{
-			ppOrder.setSeqNo(ppOrderDAO.getLastSeqNoPerOrderDate(ppOrder));
 		}
 	}
 }

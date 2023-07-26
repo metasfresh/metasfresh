@@ -1,9 +1,21 @@
 package de.metas.ui.web.address;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Location;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import de.metas.cache.CCache;
 import de.metas.location.ILocationBL;
 import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.address.AddressDescriptorFactory.AddressFieldBinding;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -15,24 +27,10 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Location;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * #%L
@@ -62,10 +60,8 @@ public class AddressRepository
 	//
 	// services
 	private static final Logger logger = LogManager.getLogger(AddressRepository.class);
-	private final ILocationBL locationBL = Services.get(ILocationBL.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final AddressDescriptorFactory descriptorsFactory;
+	@Autowired
+	private AddressDescriptorFactory descriptorsFactory;
 
 	//
 	private final AtomicInteger nextAddressDocId = new AtomicInteger(1);
@@ -74,13 +70,7 @@ public class AddressRepository
 	private static final String VERSION_DEFAULT = "0";
 	private static final ReasonSupplier REASON_ProcessAddressDocumentChanges = () -> "process Address document changes";
 
-	public AddressRepository(
-			@NonNull final AddressDescriptorFactory descriptorsFactory)
-	{
-		this.descriptorsFactory = descriptorsFactory;
-	}
-
-	public Document createNewFrom(@Nullable final LocationId fromC_Location_ID)
+	public Document createNewFrom(final int fromC_Location_ID)
 	{
 		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getAddressDescriptor()
 				.getEntityDescriptor();
@@ -88,10 +78,11 @@ public class AddressRepository
 		final Document addressDoc = Document.builder(entityDescriptor)
 				.initializeAsNewDocument(nextAddressDocId::getAndIncrement, VERSION_DEFAULT);
 
-		final I_C_Location fromLocation = fromC_Location_ID != null ? locationDAO.getById(fromC_Location_ID) : null;
+		final I_C_Location fromLocation = fromC_Location_ID <= 0 ? null : InterfaceWrapperHelper.create(Env.getCtx(), fromC_Location_ID, I_C_Location.class, ITrx.TRXNAME_ThreadInherited);
 		if (fromLocation != null)
 		{
 			addressDoc.getFieldViews()
+					.stream()
 					.forEach(field -> {
 						final Object value = field
 								.getDescriptor()
@@ -102,7 +93,7 @@ public class AddressRepository
 								field.getFieldName(),
 								value,
 								() -> "update from " + fromLocation,
-								DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE
+								true // ignoreReadonlyFlag
 						);
 
 					});
@@ -122,7 +113,7 @@ public class AddressRepository
 		return descriptorsFactory.getAddressDescriptor().getLayout();
 	}
 
-	private void putAddressDocument(final Document addressDoc)
+	private final void putAddressDocument(final Document addressDoc)
 	{
 		final Document addressDocReadonly = addressDoc.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 		id2addressDoc.put(addressDoc.getDocumentId(), addressDocReadonly);
@@ -130,7 +121,7 @@ public class AddressRepository
 		logger.trace("Added to repository: {}", addressDocReadonly);
 	}
 
-	private void removeAddressDocumentById(final DocumentId addressDocId)
+	private final void removeAddressDocumentById(final DocumentId addressDocId)
 	{
 		final Document addressDocRemoved = id2addressDoc.remove(addressDocId);
 
@@ -164,44 +155,40 @@ public class AddressRepository
 		final Document addressDoc = getAddressDocumentForWriting(addressDocId, changesCollector);
 		addressDoc.processValueChanges(events, REASON_ProcessAddressDocumentChanges);
 
-		trxManager
+		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.registerHandlingMethod(trx -> putAddressDocument(addressDoc));
 
 	}
 
-	public LookupValue complete(final int addressDocIdInt, @Nullable final List<JSONDocumentChangedEvent> events)
+	public LookupValue complete(final int addressDocIdInt)
 	{
 		final DocumentId addressDocId = DocumentId.of(addressDocIdInt);
 		final Document addressDoc = getAddressDocumentForWriting(addressDocId, NullDocumentChangesCollector.instance);
 
-		if (events != null && !events.isEmpty())
-		{
-			addressDoc.processValueChanges(events, REASON_ProcessAddressDocumentChanges);
-		}
-
 		final I_C_Location locationRecord = createC_Location(addressDoc);
 
-		trxManager
+		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.registerHandlingMethod(trx -> removeAddressDocumentById(addressDocId));
 
-		final String locationStr = locationBL.mkAddress(locationRecord);
+		final String locationStr = Services.get(ILocationBL.class).mkAddress(locationRecord);
 		return IntegerLookupValue.of(locationRecord.getC_Location_ID(), locationStr);
 	}
 
-	private I_C_Location createC_Location(final Document locationDoc)
+	private final I_C_Location createC_Location(final Document locationDoc)
 	{
 		final I_C_Location locationRecord = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Location.class, ITrx.TRXNAME_ThreadInherited);
 
 		locationDoc.getFieldViews()
+				.stream()
 				.forEach(locationField -> locationField
 						.getDescriptor()
 						.getDataBindingNotNull(AddressFieldBinding.class)
 						.writeValue(locationRecord, locationField));
 
-		locationDAO.save(locationRecord);
+		Services.get(ILocationDAO.class).save(locationRecord);
 
 		return locationRecord;
 	}

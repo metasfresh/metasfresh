@@ -1,78 +1,97 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for C_Contract_Change
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_Contract_Change 
 {
 
-	String Table_Name = "C_Contract_Change";
+    /** TableName=C_Contract_Change */
+    public static final String Table_Name = "C_Contract_Change";
 
-//	/** AD_Table_ID=540028 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540028 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Set Action.
+	 * Set Aktion.
 	 * Zeigt die durchzuführende Aktion an
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAction (java.lang.String Action);
+	public void setAction (java.lang.String Action);
 
 	/**
-	 * Get Action.
+	 * Get Aktion.
 	 * Zeigt die durchzuführende Aktion an
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getAction();
+	public java.lang.String getAction();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_Action = new ModelColumn<>(I_C_Contract_Change.class, "Action", null);
-	String COLUMNNAME_Action = "Action";
+    /** Column definition for Action */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_Action = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "Action", null);
+    /** Column name Action */
+    public static final String COLUMNNAME_Action = "Action";
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_AD_Client>(I_C_Contract_Change.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_AD_Org>(I_C_Contract_Change.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Abowechsel-Konditionen.
@@ -81,7 +100,7 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Contract_Change_ID (int C_Contract_Change_ID);
+	public void setC_Contract_Change_ID (int C_Contract_Change_ID);
 
 	/**
 	 * Get Abowechsel-Konditionen.
@@ -90,35 +109,39 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Contract_Change_ID();
+	public int getC_Contract_Change_ID();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_C_Contract_Change_ID = new ModelColumn<>(I_C_Contract_Change.class, "C_Contract_Change_ID", null);
-	String COLUMNNAME_C_Contract_Change_ID = "C_Contract_Change_ID";
+    /** Column definition for C_Contract_Change_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_C_Contract_Change_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "C_Contract_Change_ID", null);
+    /** Column name C_Contract_Change_ID */
+    public static final String COLUMNNAME_C_Contract_Change_ID = "C_Contract_Change_ID";
 
 	/**
-	 * Set Contract Terms.
+	 * Set Vertragsbedingungen.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
+	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
 
 	/**
-	 * Get Contract Terms.
+	 * Get Vertragsbedingungen.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Flatrate_Conditions_ID();
+	public int getC_Flatrate_Conditions_ID();
 
-	@Nullable de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions();
+	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions();
 
-	void setC_Flatrate_Conditions(@Nullable de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions);
+	public void setC_Flatrate_Conditions(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions);
 
-	ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_ID = new ModelColumn<>(I_C_Contract_Change.class, "C_Flatrate_Conditions_ID", de.metas.contracts.model.I_C_Flatrate_Conditions.class);
-	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
+    /** Column definition for C_Flatrate_Conditions_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Conditions>(I_C_Contract_Change.class, "C_Flatrate_Conditions_ID", de.metas.contracts.model.I_C_Flatrate_Conditions.class);
+    /** Column name C_Flatrate_Conditions_ID */
+    public static final String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
 	 * Set Nächste Vertragsbedingungen.
@@ -128,7 +151,7 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Flatrate_Conditions_Next_ID (int C_Flatrate_Conditions_Next_ID);
+	public void setC_Flatrate_Conditions_Next_ID (int C_Flatrate_Conditions_Next_ID);
 
 	/**
 	 * Get Nächste Vertragsbedingungen.
@@ -138,14 +161,16 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Flatrate_Conditions_Next_ID();
+	public int getC_Flatrate_Conditions_Next_ID();
 
-	@Nullable de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next();
+	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions_Next();
 
-	void setC_Flatrate_Conditions_Next(@Nullable de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next);
+	public void setC_Flatrate_Conditions_Next(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions_Next);
 
-	ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_Next_ID = new ModelColumn<>(I_C_Contract_Change.class, "C_Flatrate_Conditions_Next_ID", de.metas.contracts.model.I_C_Flatrate_Conditions.class);
-	String COLUMNNAME_C_Flatrate_Conditions_Next_ID = "C_Flatrate_Conditions_Next_ID";
+    /** Column definition for C_Flatrate_Conditions_Next_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_Next_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Conditions>(I_C_Contract_Change.class, "C_Flatrate_Conditions_Next_ID", de.metas.contracts.model.I_C_Flatrate_Conditions.class);
+    /** Column name C_Flatrate_Conditions_Next_ID */
+    public static final String COLUMNNAME_C_Flatrate_Conditions_Next_ID = "C_Flatrate_Conditions_Next_ID";
 
 	/**
 	 * Set Vertragsverlängerung/-übergang.
@@ -155,7 +180,7 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
+	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
 
 	/**
 	 * Get Vertragsverlängerung/-übergang.
@@ -165,60 +190,69 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Flatrate_Transition_ID();
+	public int getC_Flatrate_Transition_ID();
 
-	de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
+	public de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
 
-	void setC_Flatrate_Transition(de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition);
+	public void setC_Flatrate_Transition(de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition);
 
-	ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new ModelColumn<>(I_C_Contract_Change.class, "C_Flatrate_Transition_ID", de.metas.contracts.model.I_C_Flatrate_Transition.class);
-	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
+    /** Column definition for C_Flatrate_Transition_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Change, de.metas.contracts.model.I_C_Flatrate_Transition>(I_C_Contract_Change.class, "C_Flatrate_Transition_ID", de.metas.contracts.model.I_C_Flatrate_Transition.class);
+    /** Column name C_Flatrate_Transition_ID */
+    public static final String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
-	 * Set Contract Status.
+	 * Set Vertrags-Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setContractStatus (@Nullable java.lang.String ContractStatus);
+	public void setContractStatus (java.lang.String ContractStatus);
 
 	/**
-	 * Get Contract Status.
+	 * Get Vertrags-Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getContractStatus();
+	public java.lang.String getContractStatus();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_ContractStatus = new ModelColumn<>(I_C_Contract_Change.class, "ContractStatus", null);
-	String COLUMNNAME_ContractStatus = "ContractStatus";
+    /** Column definition for ContractStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_ContractStatus = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "ContractStatus", null);
+    /** Column name ContractStatus */
+    public static final String COLUMNNAME_ContractStatus = "ContractStatus";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_Created = new ModelColumn<>(I_C_Contract_Change.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_AD_User>(I_C_Contract_Change.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Gültigkeitsfrist.
@@ -228,7 +262,7 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDeadLine (int DeadLine);
+	public void setDeadLine (int DeadLine);
 
 	/**
 	 * Get Gültigkeitsfrist.
@@ -238,10 +272,12 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getDeadLine();
+	public int getDeadLine();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_DeadLine = new ModelColumn<>(I_C_Contract_Change.class, "DeadLine", null);
-	String COLUMNNAME_DeadLine = "DeadLine";
+    /** Column definition for DeadLine */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_DeadLine = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "DeadLine", null);
+    /** Column name DeadLine */
+    public static final String COLUMNNAME_DeadLine = "DeadLine";
 
 	/**
 	 * Set Einheit der Frist.
@@ -250,7 +286,7 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDeadLineUnit (java.lang.String DeadLineUnit);
+	public void setDeadLineUnit (java.lang.String DeadLineUnit);
 
 	/**
 	 * Get Einheit der Frist.
@@ -259,119 +295,146 @@ public interface I_C_Contract_Change
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDeadLineUnit();
+	public java.lang.String getDeadLineUnit();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_DeadLineUnit = new ModelColumn<>(I_C_Contract_Change.class, "DeadLineUnit", null);
-	String COLUMNNAME_DeadLineUnit = "DeadLineUnit";
+    /** Column definition for DeadLineUnit */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_DeadLineUnit = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "DeadLineUnit", null);
+    /** Column name DeadLineUnit */
+    public static final String COLUMNNAME_DeadLineUnit = "DeadLineUnit";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_Description = new ModelColumn<>(I_C_Contract_Change.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Contract_Change.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Pricing System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_PricingSystem_ID (int M_PricingSystem_ID);
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Pricing System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_PricingSystem_ID();
-
-	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
-
-	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID (int M_Product_ID);
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Product_ID();
+	public int getM_PricingSystem_ID();
 
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	public org.compiere.model.I_M_PricingSystem getM_PricingSystem();
+
+	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem);
+
+    /** Column definition for M_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_M_PricingSystem> COLUMN_M_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_M_PricingSystem>(I_C_Contract_Change.class, "M_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name M_PricingSystem_ID */
+    public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_M_Product>(I_C_Contract_Change.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Contract_Change, Object> COLUMN_Updated = new ModelColumn<>(I_C_Contract_Change.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Contract_Change, Object>(I_C_Contract_Change.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Contract_Change, org.compiere.model.I_AD_User>(I_C_Contract_Change.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

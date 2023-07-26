@@ -1,9 +1,11 @@
 package org.eevolution.api;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-
-import java.util.List;
 
 public interface IPPOrderRoutingRepository extends ISingletonService
 {
@@ -15,7 +17,12 @@ public interface IPPOrderRoutingRepository extends ISingletonService
 
 	void deleteByOrderId(PPOrderId orderId);
 
+	String retrieveResourceNameForFirstNode(PPOrderId orderId);
+
 	PPOrderRoutingActivity getFirstActivity(@NonNull PPOrderId orderId);
 
 	void changeActivitiesScheduling(PPOrderId orderId, List<PPOrderActivityScheduleChangeRequest> changeRequests);
+
+	List<PPOrderRoutingActivitySchedule> getActivitySchedulesByDateAndResource(LocalDateTime date, ResourceId resourceId);
+
 }

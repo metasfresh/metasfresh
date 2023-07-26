@@ -1,11 +1,32 @@
 package org.adempiere.service.impl;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.email.EMailAddress;
-import de.metas.email.mailboxes.ClientEMailConfig;
-import de.metas.email.templates.MailTemplateId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.List;
+import java.util.Properties;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -17,11 +38,12 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ClientDAO implements IClientDAO
 {
@@ -29,12 +51,6 @@ public class ClientDAO implements IClientDAO
 	public I_AD_Client getById(@NonNull final ClientId adClientId)
 	{
 		return loadOutOfTrx(adClientId, I_AD_Client.class);
-	}
-
-	@Override
-	public List<I_AD_Client> getByIds(@NonNull final Set<ClientId> adClientIds)
-	{
-		return InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx(adClientIds, I_AD_Client.class);
 	}
 
 	@Override
@@ -58,8 +74,8 @@ public class ClientDAO implements IClientDAO
 		final IQueryBuilder<I_AD_Client> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Client.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter() // metas-ts: only return active clients (note that we have an inactive "trash" client with AD_Client_ID=99)
-				// .addOnlyContextClient() // NO! we want all of them
-				;
+		// .addOnlyContextClient() // NO! we want all of them
+		;
 
 		queryBuilder.orderBy()
 				.addColumn(I_AD_Client.COLUMNNAME_AD_Client_ID) // to have a predictable order
@@ -77,14 +93,14 @@ public class ClientDAO implements IClientDAO
 				.addEqualsFilter(I_AD_ClientInfo.COLUMN_AD_Client_ID, adClientId)
 				.create()
 				.firstOnlyNotNull(I_AD_ClientInfo.class);
-	}    // get
+	}	// get
 
 	@Override
 	public I_AD_ClientInfo retrieveClientInfo(final Properties ctx)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		return retrieveClientInfo(ctx, adClientId);
-	}    // get
+	}	// get
 
 	@Override
 	public ClientEMailConfig getEMailConfigById(@NonNull final ClientId clientId)
@@ -119,9 +135,4 @@ public class ClientDAO implements IClientDAO
 		return client.isMultiLingualDocument();
 	}
 
-	@Override
-	public String getClientNameById(@NonNull final ClientId clientId)
-	{
-		return getById(clientId).getName();
-	}
 }

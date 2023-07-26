@@ -1,18 +1,19 @@
 package de.metas.bpartner.service;
 
+import static java.math.BigDecimal.ZERO;
+
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
+import org.compiere.model.X_C_BPartner_Stats;
+
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.impl.CreditStatus;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
-import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -46,33 +47,34 @@ public class BPartnerStats
 	BigDecimal openItems;
 	BigDecimal actualLifeTimeValue;
 	BigDecimal soCreditUsed;
-	BigDecimal deliveryCreditUsed;
-	CreditStatus soCreditStatus;
-	CreditStatus deliveryCreditStatus;
-	SectionCodeId sectionCodeId;
+	String soCreditStatus;
 
 	@Builder
 	public BPartnerStats(
 			final int repoId,
 			@NonNull final BPartnerId bpartnerId,
-			@Nullable final SectionCodeId sectionCodeId,
 			@Nullable final BigDecimal openItems,
 			@Nullable final BigDecimal actualLifeTimeValue,
 			@Nullable final BigDecimal soCreditUsed,
-			@Nullable final BigDecimal deliveryCreditUsed,
-			@Nullable final CreditStatus soCreditStatus,
-			@Nullable final CreditStatus deliveryCreditStatus)
+			@Nullable final String soCreditStatus)
 	{
 		Check.assume(repoId > 0, "Given parameter repoId is > 0");
 
 		this.repoId = repoId;
 		this.bpartnerId = bpartnerId;
-		this.sectionCodeId = sectionCodeId;
-		this.openItems = CoalesceUtil.coalesceNotNull(openItems, ZERO);
-		this.actualLifeTimeValue = CoalesceUtil.coalesceNotNull(actualLifeTimeValue, ZERO);
-		this.soCreditUsed = CoalesceUtil.coalesceNotNull(soCreditUsed, ZERO);
-		this.deliveryCreditUsed = CoalesceUtil.coalesceNotNull(deliveryCreditUsed, ZERO);
-		this.soCreditStatus = CoalesceUtil.coalesceNotNull(soCreditStatus, CreditStatus.NoCreditCheck);
-		this.deliveryCreditStatus = CoalesceUtil.coalesceNotNull(deliveryCreditStatus, CreditStatus.NoCreditCheck);
+		this.openItems = CoalesceUtil.coalesce(openItems, ZERO);
+		this.actualLifeTimeValue = CoalesceUtil.coalesce(actualLifeTimeValue, ZERO);
+		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);
+		this.soCreditStatus = CoalesceUtil.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
+	}
+
+	public BigDecimal getSOCreditUsed()
+	{
+		return soCreditUsed;
+	}
+
+	public String getSOCreditStatus()
+	{
+		return soCreditStatus;
 	}
 }

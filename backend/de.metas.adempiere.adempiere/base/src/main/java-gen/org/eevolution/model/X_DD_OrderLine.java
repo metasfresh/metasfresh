@@ -1,349 +1,625 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for DD_OrderLine
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -125206032L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -1094193134L;
 
     /** Standard Constructor */
-    public X_DD_OrderLine (final Properties ctx, final int DD_OrderLine_ID, @Nullable final String trxName)
+    public X_DD_OrderLine (Properties ctx, int DD_OrderLine_ID, String trxName)
     {
       super (ctx, DD_OrderLine_ID, trxName);
+      /** if (DD_OrderLine_ID == 0)
+        {
+			setC_UOM_ID (0);
+			setDD_AllowPush (false);
+// N
+			setDD_Order_ID (0);
+			setDD_OrderLine_ID (0);
+			setIsDelivered (false);
+// N
+			setIsDescription (false);
+// N
+			setIsInvoiced (false);
+// N
+			setIsKeepTargetPlant (false);
+// N
+			setLine (0);
+// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM DD_OrderLine WHERE DD_Order_ID=@DD_Order_ID@
+			setM_Locator_ID (0);
+// @M_Locator_ID@
+			setM_LocatorTo_ID (0);
+// @M_LocatorTo_ID@
+			setM_Product_ID (0);
+			setProcessed (false);
+// N
+			setQtyEntered (BigDecimal.ZERO);
+// 1
+			setQtyInTransit (BigDecimal.ZERO);
+// 0
+			setQtyOrdered (BigDecimal.ZERO);
+// 1
+        } */
     }
 
     /** Load Constructor */
-    public X_DD_OrderLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_DD_OrderLine (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
+
 	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
 	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
 	}
 
 	@Override
-	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
+	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
+	}
+
+	/** Set Buchende Organisation.
+		@param AD_OrgTrx_ID 
+		Performing or initiating organization
+	  */
+	@Override
+	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
 	{
 		if (AD_OrgTrx_ID < 1) 
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, AD_OrgTrx_ID);
+			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
 	}
 
+	/** Get Buchende Organisation.
+		@return Performing or initiating organization
+	  */
 	@Override
-	public int getAD_OrgTrx_ID() 
+	public int getAD_OrgTrx_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Activity_ID (final int C_Activity_ID)
+	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
+	}
+
+	@Override
+	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
+	}
+
+	/** Set Kostenstelle.
+		@param C_Activity_ID 
+		Kostenstelle
+	  */
+	@Override
+	public void setC_Activity_ID (int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
 			set_Value (COLUMNNAME_C_Activity_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Activity_ID, C_Activity_ID);
+			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
 	}
 
+	/** Get Kostenstelle.
+		@return Kostenstelle
+	  */
 	@Override
-	public int getC_Activity_ID() 
+	public int getC_Activity_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_BPartner_ID (final int C_BPartner_ID)
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
 	@Override
-	public int getC_BPartner_ID() 
+	public int getC_BPartner_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign()
+	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
 	}
 
 	@Override
-	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
+	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
 	}
 
+	/** Set Werbemassnahme.
+		@param C_Campaign_ID 
+		Marketing Campaign
+	  */
 	@Override
-	public void setC_Campaign_ID (final int C_Campaign_ID)
+	public void setC_Campaign_ID (int C_Campaign_ID)
 	{
 		if (C_Campaign_ID < 1) 
 			set_Value (COLUMNNAME_C_Campaign_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
+			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
 	}
 
+	/** Get Werbemassnahme.
+		@return Marketing Campaign
+	  */
 	@Override
-	public int getC_Campaign_ID() 
+	public int getC_Campaign_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Charge_ID (final int C_Charge_ID)
+	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
+	}
+
+	@Override
+	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class, C_Charge);
+	}
+
+	/** Set Kosten.
+		@param C_Charge_ID 
+		Additional document charges
+	  */
+	@Override
+	public void setC_Charge_ID (int C_Charge_ID)
 	{
 		if (C_Charge_ID < 1) 
 			set_Value (COLUMNNAME_C_Charge_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Charge_ID, C_Charge_ID);
+			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
 	}
 
+	/** Get Kosten.
+		@return Additional document charges
+	  */
 	@Override
-	public int getC_Charge_ID() 
+	public int getC_Charge_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Charge_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLineSO()
+	public org.compiere.model.I_C_OrderLine getC_OrderLineSO() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class);
 	}
 
 	@Override
-	public void setC_OrderLineSO(final org.compiere.model.I_C_OrderLine C_OrderLineSO)
+	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO)
 	{
 		set_ValueFromPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLineSO);
 	}
 
+	/** Set Auftragsposition.
+		@param C_OrderLineSO_ID 
+		Auftragsposition
+	  */
 	@Override
-	public void setC_OrderLineSO_ID (final int C_OrderLineSO_ID)
+	public void setC_OrderLineSO_ID (int C_OrderLineSO_ID)
 	{
 		if (C_OrderLineSO_ID < 1) 
 			set_Value (COLUMNNAME_C_OrderLineSO_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_OrderLineSO_ID, C_OrderLineSO_ID);
+			set_Value (COLUMNNAME_C_OrderLineSO_ID, Integer.valueOf(C_OrderLineSO_ID));
 	}
 
+	/** Get Auftragsposition.
+		@return Auftragsposition
+	  */
 	@Override
-	public int getC_OrderLineSO_ID() 
+	public int getC_OrderLineSO_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_OrderLineSO_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLineSO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Project_ID (final int C_Project_ID)
+	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
+	}
+
+	@Override
+	public void setC_Project(org.compiere.model.I_C_Project C_Project)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
+	}
+
+	/** Set Projekt.
+		@param C_Project_ID 
+		Financial Project
+	  */
+	@Override
+	public void setC_Project_ID (int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
 			set_Value (COLUMNNAME_C_Project_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
 	}
 
+	/** Get Projekt.
+		@return Financial Project
+	  */
 	@Override
-	public int getC_Project_ID() 
+	public int getC_Project_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Unit of Measure
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
+	/** Get Maßeinheit.
+		@return Unit of Measure
+	  */
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Bestätigte Menge.
+		@param ConfirmedQty 
+		Confirmation of a received quantity
+	  */
 	@Override
-	public void setConfirmedQty (final @Nullable BigDecimal ConfirmedQty)
+	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty)
 	{
 		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
 	}
 
+	/** Get Bestätigte Menge.
+		@return Confirmation of a received quantity
+	  */
 	@Override
-	public BigDecimal getConfirmedQty() 
+	public java.math.BigDecimal getConfirmedQty () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ConfirmedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Lieferdatum.
+		@param DateDelivered 
+		Date when the product was delivered
+	  */
 	@Override
-	public void setDateDelivered (final @Nullable java.sql.Timestamp DateDelivered)
+	public void setDateDelivered (java.sql.Timestamp DateDelivered)
 	{
 		set_Value (COLUMNNAME_DateDelivered, DateDelivered);
 	}
 
+	/** Get Lieferdatum.
+		@return Date when the product was delivered
+	  */
 	@Override
-	public java.sql.Timestamp getDateDelivered() 
+	public java.sql.Timestamp getDateDelivered () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateDelivered);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDelivered);
 	}
 
+	/** Set Auftragsdatum.
+		@param DateOrdered 
+		Date of Order
+	  */
 	@Override
-	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
+	public void setDateOrdered (java.sql.Timestamp DateOrdered)
 	{
 		set_Value (COLUMNNAME_DateOrdered, DateOrdered);
 	}
 
+	/** Get Auftragsdatum.
+		@return Date of Order
+	  */
 	@Override
-	public java.sql.Timestamp getDateOrdered() 
+	public java.sql.Timestamp getDateOrdered () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
 	}
 
+	/** Set Zugesagter Termin.
+		@param DatePromised 
+		Date Order was promised
+	  */
 	@Override
-	public void setDatePromised (final @Nullable java.sql.Timestamp DatePromised)
+	public void setDatePromised (java.sql.Timestamp DatePromised)
 	{
 		set_Value (COLUMNNAME_DatePromised, DatePromised);
 	}
 
+	/** Get Zugesagter Termin.
+		@return Date Order was promised
+	  */
 	@Override
-	public java.sql.Timestamp getDatePromised() 
+	public java.sql.Timestamp getDatePromised () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
+	}
+
+	/** Set Allow Push.
+		@param DD_AllowPush 
+		Allow pushing materials from suppliers through this path.
+	  */
+	@Override
+	public void setDD_AllowPush (boolean DD_AllowPush)
+	{
+		set_Value (COLUMNNAME_DD_AllowPush, Boolean.valueOf(DD_AllowPush));
+	}
+
+	/** Get Allow Push.
+		@return Allow pushing materials from suppliers through this path.
+	  */
+	@Override
+	public boolean isDD_AllowPush () 
+	{
+		Object oo = get_Value(COLUMNNAME_DD_AllowPush);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
-	public void setDD_AllowPush (final boolean DD_AllowPush)
-	{
-		set_Value (COLUMNNAME_DD_AllowPush, DD_AllowPush);
-	}
-
-	@Override
-	public boolean isDD_AllowPush() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_DD_AllowPush);
-	}
-
-	@Override
-	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine()
+	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistributionLine_ID, org.eevolution.model.I_DD_NetworkDistributionLine.class);
 	}
 
 	@Override
-	public void setDD_NetworkDistributionLine(final org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine)
+	public void setDD_NetworkDistributionLine(org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine)
 	{
 		set_ValueFromPO(COLUMNNAME_DD_NetworkDistributionLine_ID, org.eevolution.model.I_DD_NetworkDistributionLine.class, DD_NetworkDistributionLine);
 	}
 
+	/** Set Network Distribution Line.
+		@param DD_NetworkDistributionLine_ID Network Distribution Line	  */
 	@Override
-	public void setDD_NetworkDistributionLine_ID (final int DD_NetworkDistributionLine_ID)
+	public void setDD_NetworkDistributionLine_ID (int DD_NetworkDistributionLine_ID)
 	{
 		if (DD_NetworkDistributionLine_ID < 1) 
 			set_Value (COLUMNNAME_DD_NetworkDistributionLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_DD_NetworkDistributionLine_ID, DD_NetworkDistributionLine_ID);
+			set_Value (COLUMNNAME_DD_NetworkDistributionLine_ID, Integer.valueOf(DD_NetworkDistributionLine_ID));
 	}
 
+	/** Get Network Distribution Line.
+		@return Network Distribution Line	  */
 	@Override
-	public int getDD_NetworkDistributionLine_ID() 
+	public int getDD_NetworkDistributionLine_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_DD_NetworkDistributionLine_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DD_NetworkDistributionLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.eevolution.model.I_DD_Order getDD_Order()
+	public org.eevolution.model.I_DD_Order getDD_Order() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_Order_ID, org.eevolution.model.I_DD_Order.class);
 	}
 
 	@Override
-	public void setDD_Order(final org.eevolution.model.I_DD_Order DD_Order)
+	public void setDD_Order(org.eevolution.model.I_DD_Order DD_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_DD_Order_ID, org.eevolution.model.I_DD_Order.class, DD_Order);
 	}
 
+	/** Set Distribution Order.
+		@param DD_Order_ID Distribution Order	  */
 	@Override
-	public void setDD_Order_ID (final int DD_Order_ID)
+	public void setDD_Order_ID (int DD_Order_ID)
 	{
 		if (DD_Order_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_DD_Order_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DD_Order_ID, DD_Order_ID);
+			set_ValueNoCheck (COLUMNNAME_DD_Order_ID, Integer.valueOf(DD_Order_ID));
 	}
 
+	/** Get Distribution Order.
+		@return Distribution Order	  */
 	@Override
-	public int getDD_Order_ID() 
+	public int getDD_Order_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_DD_Order_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DD_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Distribution Order Line.
+		@param DD_OrderLine_ID Distribution Order Line	  */
 	@Override
-	public void setDD_OrderLine_ID (final int DD_OrderLine_ID)
+	public void setDD_OrderLine_ID (int DD_OrderLine_ID)
 	{
 		if (DD_OrderLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_ID, DD_OrderLine_ID);
+			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_ID, Integer.valueOf(DD_OrderLine_ID));
 	}
 
+	/** Get Distribution Order Line.
+		@return Distribution Order Line	  */
 	@Override
-	public int getDD_OrderLine_ID() 
+	public int getDD_OrderLine_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_DD_OrderLine_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DD_OrderLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	
+	/** Set Frachtbetrag.
+		@param FreightAmt 
+		Freight Amount 
+	  */
 	@Override
-	public void setFreightAmt (final @Nullable BigDecimal FreightAmt)
+	public void setFreightAmt (java.math.BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
 	}
 
+	/** Get Frachtbetrag.
+		@return Freight Amount 
+	  */
 	@Override
-	public BigDecimal getFreightAmt() 
+	public java.math.BigDecimal getFreightAmt () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FreightAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FreightAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Zugestellt.
+		@param IsDelivered Zugestellt	  */
 	@Override
-	public void setIsDelivered (final boolean IsDelivered)
+	public void setIsDelivered (boolean IsDelivered)
 	{
-		set_Value (COLUMNNAME_IsDelivered, IsDelivered);
+		set_Value (COLUMNNAME_IsDelivered, Boolean.valueOf(IsDelivered));
 	}
 
+	/** Get Zugestellt.
+		@return Zugestellt	  */
 	@Override
-	public boolean isDelivered() 
+	public boolean isDelivered () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDelivered);
+		Object oo = get_Value(COLUMNNAME_IsDelivered);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** 
@@ -355,394 +631,631 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	public static final String ISDELIVERED_OVERRIDE_Yes = "Y";
 	/** No = N */
 	public static final String ISDELIVERED_OVERRIDE_No = "N";
+	/** Set Zugestellt abw..
+		@param IsDelivered_Override Zugestellt abw.	  */
 	@Override
-	public void setIsDelivered_Override (final @Nullable java.lang.String IsDelivered_Override)
+	public void setIsDelivered_Override (java.lang.String IsDelivered_Override)
 	{
+
 		set_Value (COLUMNNAME_IsDelivered_Override, IsDelivered_Override);
 	}
 
+	/** Get Zugestellt abw..
+		@return Zugestellt abw.	  */
 	@Override
-	public java.lang.String getIsDelivered_Override() 
+	public java.lang.String getIsDelivered_Override () 
 	{
-		return get_ValueAsString(COLUMNNAME_IsDelivered_Override);
+		return (java.lang.String)get_Value(COLUMNNAME_IsDelivered_Override);
 	}
 
+	/** Set Description Only.
+		@param IsDescription 
+		if true, the line is just description and no transaction
+	  */
 	@Override
-	public void setIsDescription (final boolean IsDescription)
+	public void setIsDescription (boolean IsDescription)
 	{
-		set_Value (COLUMNNAME_IsDescription, IsDescription);
+		set_Value (COLUMNNAME_IsDescription, Boolean.valueOf(IsDescription));
 	}
 
+	/** Get Description Only.
+		@return if true, the line is just description and no transaction
+	  */
 	@Override
-	public boolean isDescription() 
+	public boolean isDescription () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDescription);
+		Object oo = get_Value(COLUMNNAME_IsDescription);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Berechnete Menge.
+		@param IsInvoiced 
+		Is this invoiced?
+	  */
 	@Override
-	public void setIsInvoiced (final boolean IsInvoiced)
+	public void setIsInvoiced (boolean IsInvoiced)
 	{
-		set_Value (COLUMNNAME_IsInvoiced, IsInvoiced);
+		set_Value (COLUMNNAME_IsInvoiced, Boolean.valueOf(IsInvoiced));
 	}
 
+	/** Get Berechnete Menge.
+		@return Is this invoiced?
+	  */
 	@Override
-	public boolean isInvoiced() 
+	public boolean isInvoiced () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsInvoiced);
+		Object oo = get_Value(COLUMNNAME_IsInvoiced);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Keep target plant.
+		@param IsKeepTargetPlant 
+		If set, the MRP demand of the distribution order which will be generated will have the same plant is target warehouse.
+	  */
 	@Override
-	public void setIsKeepTargetPlant (final boolean IsKeepTargetPlant)
+	public void setIsKeepTargetPlant (boolean IsKeepTargetPlant)
 	{
-		set_Value (COLUMNNAME_IsKeepTargetPlant, IsKeepTargetPlant);
+		set_Value (COLUMNNAME_IsKeepTargetPlant, Boolean.valueOf(IsKeepTargetPlant));
 	}
 
+	/** Get Keep target plant.
+		@return If set, the MRP demand of the distribution order which will be generated will have the same plant is target warehouse.
+	  */
 	@Override
-	public boolean isKeepTargetPlant() 
+	public boolean isKeepTargetPlant () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsKeepTargetPlant);
+		Object oo = get_Value(COLUMNNAME_IsKeepTargetPlant);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Zeile Nr..
+		@param Line 
+		Unique line for this document
+	  */
 	@Override
-	public void setLine (final int Line)
+	public void setLine (int Line)
 	{
-		set_Value (COLUMNNAME_Line, Line);
+		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
 	}
 
+	/** Get Zeile Nr..
+		@return Unique line for this document
+	  */
 	@Override
-	public int getLine() 
+	public int getLine () 
 	{
-		return get_ValueAsInt(COLUMNNAME_Line);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Zeilennetto.
+		@param LineNetAmt 
+		Line Extended Amount (Quantity * Actual Price) without Freight and Charges
+	  */
 	@Override
-	public void setLineNetAmt (final @Nullable BigDecimal LineNetAmt)
+	public void setLineNetAmt (java.math.BigDecimal LineNetAmt)
 	{
 		set_Value (COLUMNNAME_LineNetAmt, LineNetAmt);
 	}
 
+	/** Get Zeilennetto.
+		@return Line Extended Amount (Quantity * Actual Price) without Freight and Charges
+	  */
 	@Override
-	public BigDecimal getLineNetAmt() 
+	public java.math.BigDecimal getLineNetAmt () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_LineNetAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
+	/** Set Merkmale.
+		@param M_AttributeSetInstance_ID 
+		Merkmals Ausprägungen zum Produkt
+	  */
 	@Override
-	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
+	  */
 	@Override
-	public int getM_AttributeSetInstance_ID() 
+	public int getM_AttributeSetInstance_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstanceTo()
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstanceTo() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstanceTo_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
 
 	@Override
-	public void setM_AttributeSetInstanceTo(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstanceTo)
+	public void setM_AttributeSetInstanceTo(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstanceTo)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstanceTo_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstanceTo);
 	}
 
+	/** Set Attribute Set Instance To.
+		@param M_AttributeSetInstanceTo_ID 
+		Target Product Attribute Set Instance
+	  */
 	@Override
-	public void setM_AttributeSetInstanceTo_ID (final int M_AttributeSetInstanceTo_ID)
+	public void setM_AttributeSetInstanceTo_ID (int M_AttributeSetInstanceTo_ID)
 	{
 		if (M_AttributeSetInstanceTo_ID < 1) 
 			set_Value (COLUMNNAME_M_AttributeSetInstanceTo_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstanceTo_ID, M_AttributeSetInstanceTo_ID);
+			set_Value (COLUMNNAME_M_AttributeSetInstanceTo_ID, Integer.valueOf(M_AttributeSetInstanceTo_ID));
 	}
 
+	/** Get Attribute Set Instance To.
+		@return Target Product Attribute Set Instance
+	  */
 	@Override
-	public int getM_AttributeSetInstanceTo_ID() 
+	public int getM_AttributeSetInstanceTo_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstanceTo_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstanceTo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setM_Locator_ID (final int M_Locator_ID)
+	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
+	}
+
+	@Override
+	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
+	}
+
+	/** Set Lagerort.
+		@param M_Locator_ID 
+		Warehouse Locator
+	  */
+	@Override
+	public void setM_Locator_ID (int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
+			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
 	}
 
+	/** Get Lagerort.
+		@return Warehouse Locator
+	  */
 	@Override
-	public int getM_Locator_ID() 
+	public int getM_Locator_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setM_LocatorTo_ID (final int M_LocatorTo_ID)
+	public org.compiere.model.I_M_Locator getM_LocatorTo() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_LocatorTo_ID, org.compiere.model.I_M_Locator.class);
+	}
+
+	@Override
+	public void setM_LocatorTo(org.compiere.model.I_M_Locator M_LocatorTo)
+	{
+		set_ValueFromPO(COLUMNNAME_M_LocatorTo_ID, org.compiere.model.I_M_Locator.class, M_LocatorTo);
+	}
+
+	/** Set Lagerort An.
+		@param M_LocatorTo_ID 
+		Location inventory is moved to
+	  */
+	@Override
+	public void setM_LocatorTo_ID (int M_LocatorTo_ID)
 	{
 		if (M_LocatorTo_ID < 1) 
 			set_Value (COLUMNNAME_M_LocatorTo_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_LocatorTo_ID, M_LocatorTo_ID);
+			set_Value (COLUMNNAME_M_LocatorTo_ID, Integer.valueOf(M_LocatorTo_ID));
 	}
 
+	/** Get Lagerort An.
+		@return Location inventory is moved to
+	  */
 	@Override
-	public int getM_LocatorTo_ID() 
+	public int getM_LocatorTo_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_LocatorTo_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_LocatorTo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setM_Product_ID (final int M_Product_ID)
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
 	@Override
-	public int getM_Product_ID() 
+	public int getM_Product_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Picked Quantity.
+		@param PickedQty Picked Quantity	  */
 	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
-	{
-		throw new IllegalArgumentException ("M_Warehouse_ID is virtual column");	}
-
-	@Override
-	public int getM_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
-	public void setM_WarehouseTo_ID (final int M_WarehouseTo_ID)
-	{
-		throw new IllegalArgumentException ("M_WarehouseTo_ID is virtual column");	}
-
-	@Override
-	public int getM_WarehouseTo_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_WarehouseTo_ID);
-	}
-
-	@Override
-	public void setPickedQty (final @Nullable BigDecimal PickedQty)
+	public void setPickedQty (java.math.BigDecimal PickedQty)
 	{
 		set_Value (COLUMNNAME_PickedQty, PickedQty);
 	}
 
+	/** Get Picked Quantity.
+		@return Picked Quantity	  */
 	@Override
-	public BigDecimal getPickedQty() 
+	public java.math.BigDecimal getPickedQty () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PickedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PickedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getPP_Plant_From()
+	public org.compiere.model.I_S_Resource getPP_Plant_From() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Plant_From_ID, org.compiere.model.I_S_Resource.class);
 	}
 
 	@Override
-	public void setPP_Plant_From(final org.compiere.model.I_S_Resource PP_Plant_From)
+	public void setPP_Plant_From(org.compiere.model.I_S_Resource PP_Plant_From)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Plant_From_ID, org.compiere.model.I_S_Resource.class, PP_Plant_From);
 	}
 
+	/** Set Produktionsstätte ab.
+		@param PP_Plant_From_ID Produktionsstätte ab	  */
 	@Override
-	public void setPP_Plant_From_ID (final int PP_Plant_From_ID)
+	public void setPP_Plant_From_ID (int PP_Plant_From_ID)
 	{
 		if (PP_Plant_From_ID < 1) 
 			set_Value (COLUMNNAME_PP_Plant_From_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Plant_From_ID, PP_Plant_From_ID);
+			set_Value (COLUMNNAME_PP_Plant_From_ID, Integer.valueOf(PP_Plant_From_ID));
 	}
 
+	/** Get Produktionsstätte ab.
+		@return Produktionsstätte ab	  */
 	@Override
-	public int getPP_Plant_From_ID() 
+	public int getPP_Plant_From_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_PP_Plant_From_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Plant_From_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public void setProcessed (final boolean Processed)
+	public void setProcessed (boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Processed);
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Processed);
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Gelieferte Menge.
+		@param QtyDelivered 
+		Delivered Quantity
+	  */
 	@Override
-	public void setQtyDelivered (final @Nullable BigDecimal QtyDelivered)
+	public void setQtyDelivered (java.math.BigDecimal QtyDelivered)
 	{
 		set_Value (COLUMNNAME_QtyDelivered, QtyDelivered);
 	}
 
+	/** Get Gelieferte Menge.
+		@return Delivered Quantity
+	  */
 	@Override
-	public BigDecimal getQtyDelivered() 
+	public java.math.BigDecimal getQtyDelivered () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDelivered);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Menge.
+		@param QtyEntered 
+		The Quantity Entered is based on the selected UoM
+	  */
 	@Override
-	public void setQtyEntered (final BigDecimal QtyEntered)
+	public void setQtyEntered (java.math.BigDecimal QtyEntered)
 	{
 		set_Value (COLUMNNAME_QtyEntered, QtyEntered);
 	}
 
+	/** Get Menge.
+		@return The Quantity Entered is based on the selected UoM
+	  */
 	@Override
-	public BigDecimal getQtyEntered() 
+	public java.math.BigDecimal getQtyEntered () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Qty In Transit.
+		@param QtyInTransit Qty In Transit	  */
 	@Override
-	public void setQtyInTransit (final BigDecimal QtyInTransit)
+	public void setQtyInTransit (java.math.BigDecimal QtyInTransit)
 	{
 		set_Value (COLUMNNAME_QtyInTransit, QtyInTransit);
 	}
 
+	/** Get Qty In Transit.
+		@return Qty In Transit	  */
 	@Override
-	public BigDecimal getQtyInTransit() 
+	public java.math.BigDecimal getQtyInTransit () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInTransit);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInTransit);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Bestellte Menge.
+		@param QtyOrdered 
+		Ordered Quantity
+	  */
 	@Override
-	public void setQtyOrdered (final BigDecimal QtyOrdered)
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
 	{
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
+	/** Get Bestellte Menge.
+		@return Ordered Quantity
+	  */
 	@Override
-	public BigDecimal getQtyOrdered() 
+	public java.math.BigDecimal getQtyOrdered () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Reservierte Menge.
+		@param QtyReserved 
+		Reserved Quantity
+	  */
 	@Override
-	public void setQtyReserved (final @Nullable BigDecimal QtyReserved)
+	public void setQtyReserved (java.math.BigDecimal QtyReserved)
 	{
 		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
+	/** Get Reservierte Menge.
+		@return Reserved Quantity
+	  */
 	@Override
-	public BigDecimal getQtyReserved() 
+	public java.math.BigDecimal getQtyReserved () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReserved);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Verworfene Menge.
+		@param ScrappedQty 
+		The Quantity scrapped due to QA issues
+	  */
 	@Override
-	public void setScrappedQty (final @Nullable BigDecimal ScrappedQty)
+	public void setScrappedQty (java.math.BigDecimal ScrappedQty)
 	{
 		set_Value (COLUMNNAME_ScrappedQty, ScrappedQty);
 	}
 
+	/** Get Verworfene Menge.
+		@return The Quantity scrapped due to QA issues
+	  */
 	@Override
-	public BigDecimal getScrappedQty() 
+	public java.math.BigDecimal getScrappedQty () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ScrappedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ScrappedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Zielmenge.
+		@param TargetQty 
+		Target Movement Quantity
+	  */
 	@Override
-	public void setTargetQty (final @Nullable BigDecimal TargetQty)
+	public void setTargetQty (java.math.BigDecimal TargetQty)
 	{
 		set_Value (COLUMNNAME_TargetQty, TargetQty);
 	}
 
+	/** Get Zielmenge.
+		@return Target Movement Quantity
+	  */
 	@Override
-	public BigDecimal getTargetQty() 
+	public java.math.BigDecimal getTargetQty () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TargetQty);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TargetQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1()
+	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
 	}
 
 	@Override
-	public void setUser1(final org.compiere.model.I_C_ElementValue User1)
+	public void setUser1(org.compiere.model.I_C_ElementValue User1)
 	{
 		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
 	}
 
+	/** Set Nutzer 1.
+		@param User1_ID 
+		User defined list element #1
+	  */
 	@Override
-	public void setUser1_ID (final int User1_ID)
+	public void setUser1_ID (int User1_ID)
 	{
 		if (User1_ID < 1) 
 			set_Value (COLUMNNAME_User1_ID, null);
 		else 
-			set_Value (COLUMNNAME_User1_ID, User1_ID);
+			set_Value (COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
 	}
 
+	/** Get Nutzer 1.
+		@return User defined list element #1
+	  */
 	@Override
-	public int getUser1_ID() 
+	public int getUser1_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_User1_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_User1_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser2()
+	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
 	}
 
 	@Override
-	public void setUser2(final org.compiere.model.I_C_ElementValue User2)
+	public void setUser2(org.compiere.model.I_C_ElementValue User2)
 	{
 		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
 	}
 
+	/** Set Nutzer 2.
+		@param User2_ID 
+		User defined list element #2
+	  */
 	@Override
-	public void setUser2_ID (final int User2_ID)
+	public void setUser2_ID (int User2_ID)
 	{
 		if (User2_ID < 1) 
 			set_Value (COLUMNNAME_User2_ID, null);
 		else 
-			set_Value (COLUMNNAME_User2_ID, User2_ID);
+			set_Value (COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
 	}
 
+	/** Get Nutzer 2.
+		@return User defined list element #2
+	  */
 	@Override
-	public int getUser2_ID() 
+	public int getUser2_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_User2_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_User2_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

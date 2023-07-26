@@ -1,12 +1,15 @@
 package de.metas.process;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_Process;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -32,34 +35,53 @@ import org.compiere.model.X_AD_Process;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
-@AllArgsConstructor
 public enum ProcessType implements ReferenceListAwareEnum
 {
-	Java(X_AD_Process.TYPE_Java),
+	JasperReportsJSON(X_AD_Process.TYPE_JasperReportsJSON), //
+	JasperReportsSQL(X_AD_Process.TYPE_JasperReportsSQL), //
+	Excel(X_AD_Process.TYPE_Excel), //
+	Java(X_AD_Process.TYPE_Java), //
 	SQL(X_AD_Process.TYPE_SQL),
-	POSTGREST(X_AD_Process.TYPE_PostgREST),
-	JasperReportsJSON(X_AD_Process.TYPE_JasperReportsJSON),
-	JasperReportsSQL(X_AD_Process.TYPE_JasperReportsSQL),
-	Excel(X_AD_Process.TYPE_Excel),
+	POSTGREST(X_AD_Process.TYPE_PostgREST)
 	;
 
-	private static final ReferenceListAwareEnums.ValuesIndex<ProcessType> index = ReferenceListAwareEnums.index(values());
+	public static final int AD_REFERENCE_ID = X_AD_Process.TYPE_AD_Reference_ID;
 
 	@Getter
 	private final String code;
 
+
+	ProcessType(final String code)
+	{
+		this.code = code;
+	}
+
+	@Nullable
+	public static String toCodeOrNull(final ProcessType type)
+	{
+		return type != null ? type.getCode() : null;
+	}
+
 	public static ProcessType ofCode(@NonNull final String code)
 	{
-		return index.ofCode(code);
+		final ProcessType type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + ProcessType.class + " found for code: " + code);
+		}
+		return type;
 	}
+
+	private static final ImmutableMap<String, ProcessType> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
 	public boolean isJasper()
 	{
 		return this == JasperReportsJSON || this == JasperReportsSQL;
 	}
 
-	public boolean isJasperJSON()
+	public boolean isJasperJson()
 	{
 		return this == JasperReportsJSON;
 	}

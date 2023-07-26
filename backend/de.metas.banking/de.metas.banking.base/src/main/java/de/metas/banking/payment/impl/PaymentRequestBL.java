@@ -22,6 +22,15 @@ package de.metas.banking.payment.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelectionLine;
+
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_Payment_Request;
@@ -31,14 +40,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelectionLine;
-
-import java.math.BigDecimal;
 
 /**
  * @author al
@@ -109,7 +110,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		{
 			// task 09698: don't apply more than the amount which is actually still open, even if the paymentRequest's amount is bigger.
 			final boolean creditMemoAdjusted = true;
-			final BigDecimal openAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted).toBigDecimal();
+			final BigDecimal openAmt = allocationDAO.retrieveOpenAmt(invoice, creditMemoAdjusted);
 			final BigDecimal payAmt = requestAmount.min(openAmt);
 			paySelectionLine.setPayAmt(payAmt);
 

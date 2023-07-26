@@ -1,399 +1,352 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /** Generated Interface for M_Inventory
- *  @author metasfresh (generated)
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
-public interface I_M_Inventory
+@SuppressWarnings("javadoc")
+public interface I_M_Inventory 
 {
 
-	String Table_Name = "M_Inventory";
+    /** TableName=M_Inventory */
+    public static final String Table_Name = "M_Inventory";
 
-	//	/** AD_Table_ID=321 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=321 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 1 - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Client>(I_M_Inventory.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Org>(I_M_Inventory.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Trx Organization.
+	 * Set Buchende Organisation.
 	 * Performing or initiating organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
+	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
 
 	/**
-	 * Get Trx Organization.
+	 * Get Buchende Organisation.
 	 * Performing or initiating organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_OrgTrx_ID();
+	public int getAD_OrgTrx_ID();
 
-	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
+    /** Column definition for AD_OrgTrx_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Org>(I_M_Inventory.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_OrgTrx_ID */
+    public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
-	 * Set Approval Amount.
+	 * Set Freigabe-Betrag.
 	 * Document Approval Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setApprovalAmt (@Nullable BigDecimal ApprovalAmt);
+	public void setApprovalAmt (java.math.BigDecimal ApprovalAmt);
 
 	/**
-	 * Get Approval Amount.
+	 * Get Freigabe-Betrag.
 	 * Document Approval Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getApprovalAmt();
+	public java.math.BigDecimal getApprovalAmt();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_ApprovalAmt = new ModelColumn<>(I_M_Inventory.class, "ApprovalAmt", null);
-	String COLUMNNAME_ApprovalAmt = "ApprovalAmt";
+    /** Column definition for ApprovalAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_ApprovalAmt = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "ApprovalAmt", null);
+    /** Column name ApprovalAmt */
+    public static final String COLUMNNAME_ApprovalAmt = "ApprovalAmt";
 
 	/**
-	 * Set Activity.
-	 * Business Activity
+	 * Set Kostenstelle.
+	 * Kostenstelle
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Activity_ID (int C_Activity_ID);
+	public void setC_Activity_ID (int C_Activity_ID);
 
 	/**
-	 * Get Activity.
-	 * Business Activity
+	 * Get Kostenstelle.
+	 * Kostenstelle
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Activity_ID();
+	public int getC_Activity_ID();
 
-	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+	public org.compiere.model.I_C_Activity getC_Activity();
 
-	/**
-	 * Set Business Partner.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
+	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
+
+    /** Column definition for C_Activity_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_Activity>(I_M_Inventory.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
+    /** Column name C_Activity_ID */
+    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Get Business Partner.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_ID();
-
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
-	 * Set Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
-
-	/**
-	 * Get Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_Location_ID();
-
-	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
-	 * Set Campaign.
+	 * Set Werbemassnahme.
 	 * Marketing Campaign
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Campaign_ID (int C_Campaign_ID);
+	public void setC_Campaign_ID (int C_Campaign_ID);
 
 	/**
-	 * Get Campaign.
+	 * Get Werbemassnahme.
 	 * Marketing Campaign
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Campaign_ID();
+	public int getC_Campaign_ID();
 
-	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
+	public org.compiere.model.I_C_Campaign getC_Campaign();
 
-	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
+	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
 
-	ModelColumn<I_M_Inventory, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_M_Inventory.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
-	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+    /** Column definition for C_Campaign_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_Campaign>(I_M_Inventory.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+    /** Column name C_Campaign_ID */
+    public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Document Type.
+	 * Set Belegart.
 	 * Document type or rules
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_DocType_ID (int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Document Type.
+	 * Get Belegart.
 	 * Document type or rules
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_DocType_ID();
+	public int getC_DocType_ID();
 
-	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
-	/**
-	 * Set Purchase Order.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PO_Order_ID (int C_PO_Order_ID);
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_DocType>(I_M_Inventory.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Get Purchase Order.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PO_Order_ID();
-
-	@Nullable org.compiere.model.I_C_Order getC_PO_Order();
-
-	void setC_PO_Order(@Nullable org.compiere.model.I_C_Order C_PO_Order);
-
-	ModelColumn<I_M_Inventory, org.compiere.model.I_C_Order> COLUMN_C_PO_Order_ID = new ModelColumn<>(I_M_Inventory.class, "C_PO_Order_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_PO_Order_ID = "C_PO_Order_ID";
-
-	/**
-	 * Set Project.
+	 * Set Projekt.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Project_ID (int C_Project_ID);
+	public void setC_Project_ID (int C_Project_ID);
 
 	/**
-	 * Get Project.
+	 * Get Projekt.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Project_ID();
+	public int getC_Project_ID();
 
-	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+    /** Column definition for C_Project_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_Project>(I_M_Inventory.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
+    /** Column name C_Project_ID */
+    public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_Created = new ModelColumn<>(I_M_Inventory.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_User>(I_M_Inventory.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_Description = new ModelColumn<>(I_M_Inventory.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * Set Belegverarbeitung.
+	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocAction (java.lang.String DocAction);
+	public void setDocAction (java.lang.String DocAction);
 
 	/**
-	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * Get Belegverarbeitung.
+	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocAction();
+	public java.lang.String getDocAction();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_DocAction = new ModelColumn<>(I_M_Inventory.class, "DocAction", null);
-	String COLUMNNAME_DocAction = "DocAction";
+    /** Column definition for DocAction */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "DocAction", null);
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Status.
+	 * Set Belegstatus.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (java.lang.String DocStatus);
+	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Status.
+	 * Get Belegstatus.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocStatus();
+	public java.lang.String getDocStatus();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_DocStatus = new ModelColumn<>(I_M_Inventory.class, "DocStatus", null);
-	String COLUMNNAME_DocStatus = "DocStatus";
-
-	/**
-	 * Set Doc Sub Type.
-	 * Document Sub Type
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setDocSubType (@Nullable java.lang.String DocSubType);
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Get Doc Sub Type.
-	 * Document Sub Type
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getDocSubType();
-
-	ModelColumn<I_M_Inventory, Object> COLUMN_DocSubType = new ModelColumn<>(I_M_Inventory.class, "DocSubType", null);
-	String COLUMNNAME_DocSubType = "DocSubType";
-
-	/**
-	 * Set Document No.
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (java.lang.String DocumentNo);
+	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Document No.
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocumentNo();
+	public java.lang.String getDocumentNo();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_DocumentNo = new ModelColumn<>(I_M_Inventory.class, "DocumentNo", null);
-	String COLUMNNAME_DocumentNo = "DocumentNo";
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set External ID.
@@ -402,7 +355,7 @@ public interface I_M_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalId (@Nullable java.lang.String ExternalId);
+	public void setExternalId (java.lang.String ExternalId);
 
 	/**
 	 * Get External ID.
@@ -411,422 +364,429 @@ public interface I_M_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalId();
+	public java.lang.String getExternalId();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_ExternalId = new ModelColumn<>(I_M_Inventory.class, "ExternalId", null);
-	String COLUMNNAME_ExternalId = "ExternalId";
+    /** Column definition for ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "ExternalId", null);
+    /** Column name ExternalId */
+    public static final String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
-	 * Set Create Inventory Count List .
-	 * Create Inventory Count List
+	 * Set Generate List.
+	 * Generate List
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGenerateList (@Nullable java.lang.String GenerateList);
+	public void setGenerateList (java.lang.String GenerateList);
 
 	/**
-	 * Get Create Inventory Count List .
-	 * Create Inventory Count List
+	 * Get Generate List.
+	 * Generate List
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getGenerateList();
+	public java.lang.String getGenerateList();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_GenerateList = new ModelColumn<>(I_M_Inventory.class, "GenerateList", null);
-	String COLUMNNAME_GenerateList = "GenerateList";
+    /** Column definition for GenerateList */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_GenerateList = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "GenerateList", null);
+    /** Column name GenerateList */
+    public static final String COLUMNNAME_GenerateList = "GenerateList";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Inventory.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Approved.
+	 * Set Freigegeben.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsApproved (boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/**
-	 * Get Approved.
+	 * Get Freigegeben.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isApproved();
+	public boolean isApproved();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_Inventory.class, "IsApproved", null);
-	String COLUMNNAME_IsApproved = "IsApproved";
+    /** Column definition for IsApproved */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "IsApproved", null);
+    /** Column name IsApproved */
+    public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Phys. Inventory.
+	 * Set Inventur.
 	 * Parameters for a Physical Inventory
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Inventory_ID (int M_Inventory_ID);
+	public void setM_Inventory_ID (int M_Inventory_ID);
 
 	/**
-	 * Get Phys. Inventory.
+	 * Get Inventur.
 	 * Parameters for a Physical Inventory
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Inventory_ID();
+	public int getM_Inventory_ID();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_M_Inventory_ID = new ModelColumn<>(I_M_Inventory.class, "M_Inventory_ID", null);
-	String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
+    /** Column definition for M_Inventory_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_M_Inventory_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "M_Inventory_ID", null);
+    /** Column name M_Inventory_ID */
+    public static final String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
 
 	/**
-	 * Set Perpetual Inventory.
+	 * Set Permanente Stichtagsinventur
+.
 	 * Rules for generating physical inventory
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_PerpetualInv_ID (int M_PerpetualInv_ID);
+	public void setM_PerpetualInv_ID (int M_PerpetualInv_ID);
 
 	/**
-	 * Get Perpetual Inventory.
+	 * Get Permanente Stichtagsinventur
+.
 	 * Rules for generating physical inventory
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_PerpetualInv_ID();
+	public int getM_PerpetualInv_ID();
 
-	@Nullable org.compiere.model.I_M_PerpetualInv getM_PerpetualInv();
+	public org.compiere.model.I_M_PerpetualInv getM_PerpetualInv();
 
-	void setM_PerpetualInv(@Nullable org.compiere.model.I_M_PerpetualInv M_PerpetualInv);
+	public void setM_PerpetualInv(org.compiere.model.I_M_PerpetualInv M_PerpetualInv);
 
-	ModelColumn<I_M_Inventory, org.compiere.model.I_M_PerpetualInv> COLUMN_M_PerpetualInv_ID = new ModelColumn<>(I_M_Inventory.class, "M_PerpetualInv_ID", org.compiere.model.I_M_PerpetualInv.class);
-	String COLUMNNAME_M_PerpetualInv_ID = "M_PerpetualInv_ID";
-
-	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
+    /** Column definition for M_PerpetualInv_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_M_PerpetualInv> COLUMN_M_PerpetualInv_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_M_PerpetualInv>(I_M_Inventory.class, "M_PerpetualInv_ID", org.compiere.model.I_M_PerpetualInv.class);
+    /** Column name M_PerpetualInv_ID */
+    public static final String COLUMNNAME_M_PerpetualInv_ID = "M_PerpetualInv_ID";
 
 	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	ModelColumn<I_M_Inventory, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_Inventory.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
-
-	/**
-	 * Set Warehouse.
+	 * Set Lager.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
+	 * Get Lager.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Warehouse_ID();
+	public int getM_Warehouse_ID();
 
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+    /** Column definition for M_Warehouse_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_M_Warehouse>(I_M_Inventory.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Date.
-	 * Date a product was moved in or out of inventory
+	 * Set Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMovementDate (java.sql.Timestamp MovementDate);
+	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Date.
-	 * Date a product was moved in or out of inventory
+	 * Get Bewegungsdatum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getMovementDate();
+	public java.sql.Timestamp getMovementDate();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_MovementDate = new ModelColumn<>(I_M_Inventory.class, "MovementDate", null);
-	String COLUMNNAME_MovementDate = "MovementDate";
+    /** Column definition for MovementDate */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "MovementDate", null);
+    /** Column name MovementDate */
+    public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
-	 * Set Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 * Set Referenz.
+	 * Referenz-Nummer des Kunden
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPOReference (@Nullable java.lang.String POReference);
+	public void setPOReference (java.lang.String POReference);
 
 	/**
-	 * Get Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 * Get Referenz.
+	 * Referenz-Nummer des Kunden
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPOReference();
+	public java.lang.String getPOReference();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_POReference = new ModelColumn<>(I_M_Inventory.class, "POReference", null);
-	String COLUMNNAME_POReference = "POReference";
+    /** Column definition for POReference */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "POReference", null);
+    /** Column name POReference */
+    public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set Posting status.
+	 * Set Verbucht.
 	 * Posting status
 	 *
-	 * <br>Type: List
+	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPosted (boolean Posted);
+	public void setPosted (boolean Posted);
 
 	/**
-	 * Get Posting status.
+	 * Get Verbucht.
 	 * Posting status
 	 *
-	 * <br>Type: List
+	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isPosted();
+	public boolean isPosted();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_Posted = new ModelColumn<>(I_M_Inventory.class, "Posted", null);
-	String COLUMNNAME_Posted = "Posted";
-
-	/**
-	 * Set Posting Error.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPostingError_Issue_ID (int PostingError_Issue_ID);
+    /** Column definition for Posted */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_Posted = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "Posted", null);
+    /** Column name Posted */
+    public static final String COLUMNNAME_Posted = "Posted";
 
 	/**
-	 * Get Posting Error.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPostingError_Issue_ID();
-
-	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
-
-	/**
-	 * Set Processed.
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProcessed (boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessed();
+	public boolean isProcessed();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_Processed = new ModelColumn<>(I_M_Inventory.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Process Now.
+	 * Set Verarbeiten.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProcessing (boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Process Now.
+	 * Get Verarbeiten.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessing();
+	public boolean isProcessing();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_Processing = new ModelColumn<>(I_M_Inventory.class, "Processing", null);
-	String COLUMNNAME_Processing = "Processing";
+    /** Column definition for Processing */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "Processing", null);
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Reversal ID.
+	 * Set Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setReversal_ID (int Reversal_ID);
+	public void setReversal_ID (int Reversal_ID);
 
 	/**
-	 * Get Reversal ID.
+	 * Get Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getReversal_ID();
+	public int getReversal_ID();
 
-	@Nullable org.compiere.model.I_M_Inventory getReversal();
+	public org.compiere.model.I_M_Inventory getReversal();
 
-	void setReversal(@Nullable org.compiere.model.I_M_Inventory Reversal);
+	public void setReversal(org.compiere.model.I_M_Inventory Reversal);
 
-	ModelColumn<I_M_Inventory, org.compiere.model.I_M_Inventory> COLUMN_Reversal_ID = new ModelColumn<>(I_M_Inventory.class, "Reversal_ID", org.compiere.model.I_M_Inventory.class);
-	String COLUMNNAME_Reversal_ID = "Reversal_ID";
+    /** Column definition for Reversal_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_M_Inventory> COLUMN_Reversal_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_M_Inventory>(I_M_Inventory.class, "Reversal_ID", org.compiere.model.I_M_Inventory.class);
+    /** Column name Reversal_ID */
+    public static final String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_Updated = new ModelColumn<>(I_M_Inventory.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_User>(I_M_Inventory.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Update Quantity.
-	 * The Book Quantity is updated with current book quantity
+	 * Set Update Quantities.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUpdateQty (@Nullable java.lang.String UpdateQty);
+	public void setUpdateQty (java.lang.String UpdateQty);
 
 	/**
-	 * Get Update Quantity.
-	 * The Book Quantity is updated with current book quantity
+	 * Get Update Quantities.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUpdateQty();
+	public java.lang.String getUpdateQty();
 
-	ModelColumn<I_M_Inventory, Object> COLUMN_UpdateQty = new ModelColumn<>(I_M_Inventory.class, "UpdateQty", null);
-	String COLUMNNAME_UpdateQty = "UpdateQty";
+    /** Column definition for UpdateQty */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_UpdateQty = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "UpdateQty", null);
+    /** Column name UpdateQty */
+    public static final String COLUMNNAME_UpdateQty = "UpdateQty";
 
 	/**
-	 * Set User List 1.
+	 * Set Nutzer 1.
 	 * User defined list element #1
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUser1_ID (int User1_ID);
+	public void setUser1_ID (int User1_ID);
 
 	/**
-	 * Get User List 1.
+	 * Get Nutzer 1.
 	 * User defined list element #1
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getUser1_ID();
+	public int getUser1_ID();
 
-	String COLUMNNAME_User1_ID = "User1_ID";
+	public org.compiere.model.I_C_ElementValue getUser1();
+
+	public void setUser1(org.compiere.model.I_C_ElementValue User1);
+
+    /** Column definition for User1_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_ElementValue>(I_M_Inventory.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name User1_ID */
+    public static final String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
-	 * Set User 2.
+	 * Set Nutzer 2.
+	 * User defined list element #2
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUser2_ID (int User2_ID);
+	public void setUser2_ID (int User2_ID);
 
 	/**
-	 * Get User 2.
+	 * Get Nutzer 2.
+	 * User defined list element #2
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getUser2_ID();
+	public int getUser2_ID();
 
-	String COLUMNNAME_User2_ID = "User2_ID";
+	public org.compiere.model.I_C_ElementValue getUser2();
+
+	public void setUser2(org.compiere.model.I_C_ElementValue User2);
+
+    /** Column definition for User2_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_ElementValue>(I_M_Inventory.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name User2_ID */
+    public static final String COLUMNNAME_User2_ID = "User2_ID";
 }

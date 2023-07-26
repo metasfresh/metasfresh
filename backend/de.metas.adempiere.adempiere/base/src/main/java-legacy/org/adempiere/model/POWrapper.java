@@ -13,13 +13,15 @@
  *****************************************************************************/
 package org.adempiere.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
@@ -36,16 +38,14 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Wrap a PO object to a given bean interface. Example
@@ -156,11 +156,11 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	/**
 	 * Similar to {@link #create(Properties, String, int, Class, String)}, but attempts to get the table name from the given <code>modelClass</code>.
 	 *
-	 * @param <T>        model interface
-	 * @param ctx        context
-	 * @param id         record id
+	 * @param <T> model interface
+	 * @param ctx context
+	 * @param id record id
 	 * @param modelClass model interface class
-	 * @param trxName    db transaction name
+	 * @param trxName db transaction name
 	 */
 	public static <T> T create(final Properties ctx, final int id, @NonNull final Class<T> modelClass, final String trxName)
 	{
@@ -171,19 +171,19 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	/**
 	 * Loads the PO with the given <code>id</code> and returns an isntance.
 	 *
-	 * @param <T>        model interface
-	 * @param ctx        context
-	 * @param tableName  table name to be queried
-	 * @param id         record id
+	 * @param <T> model interface
+	 * @param ctx context
+	 * @param tableName table name to be queried
+	 * @param id record id
 	 * @param modelClass model interface class
-	 * @param trxName    db transaction name
+	 * @param trxName db transaction name
 	 * @return new instance or <code>null</code> if not found.
 	 */
 	public static <T> T create(final Properties ctx,
-							   @NonNull final String tableName,
-							   final int id,
-							   final Class<T> modelClass,
-							   final String trxName)
+			@NonNull final String tableName,
+			final int id,
+			final Class<T> modelClass,
+			final String trxName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not null");
 
@@ -270,8 +270,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param model
 	 * @return underlying {@link PO} or null
 	 */
-	/* package */
-	static <T extends PO> T getPO(final Object model)
+	/* package */ static <T extends PO> T getPO(final Object model)
 	{
 		final boolean checkOtherWrapper = true;
 		final T po = getPO(model, checkOtherWrapper);
@@ -297,8 +296,8 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 *
 	 * @param model
 	 * @param checkOtherWrapper if the given <code>model</code> is handled by a {@link GridTabWrapper} and this param is <code>true</code>, then this method <b>loads a new PO from DB</b>, only using
-	 *                          the given <code>model</code>'s table name and record ID. If this param is <code>false</code> and <code>model</code> is not handled by <code>POWrapper</code>, then this method returns
-	 *                          <code>null</code>.
+	 *            the given <code>model</code>'s table name and record ID. If this param is <code>false</code> and <code>model</code> is not handled by <code>POWrapper</code>, then this method returns
+	 *            <code>null</code>.
 	 * @return
 	 *         <ul>
 	 *         <li>PO
@@ -649,7 +648,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * A set of ColumNames on which ID=0 is accepted
 	 * FIXME: get rid of this hardcoded list
 	 */
-	private static final Set<String> _ColumnNamesWithFirstValidIdZERO = ImmutableSet.<String>builder()
+	private static final Set<String> _ColumnNamesWithFirstValidIdZERO = ImmutableSet.<String> builder()
 			.add("AD_Client_ID".toLowerCase())
 			.add("AD_Org_ID".toLowerCase())
 			.add("Record_ID".toLowerCase())
@@ -659,8 +658,6 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			.add("AD_Role_ID".toLowerCase())
 			.add("M_AttributeSet_ID".toLowerCase())
 			.add("M_AttributeSetInstance_ID".toLowerCase())
-			.add("AD_System_ID".toLowerCase())
-			.add("GL_Category_ID".toLowerCase())
 			.build();
 
 	protected Object invokeParent(final Method method, final Object[] args) throws Exception
@@ -668,7 +665,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return method.invoke(po, args);
 	}
 
-	private boolean invokeEquals(final Object[] args)
+	private final boolean invokeEquals(final Object[] args)
 	{
 		final Object otherModel = args[0];
 		final PO otherPO = getPO(otherModel);
@@ -702,8 +699,10 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * Load object that is referenced by given property. Example: getReferencedObject("M_Product_ID", method) should load the M_Product record with ID given by M_Product_ID property name;
 	 *
 	 * @param columnName value column name (e.g. M_Product_ID, AD_Client_ID etc)
+	 * @param method
+	 * @return model
 	 */
-	private Object getReferencedObject(final String columnName, final Method interfaceMethod) throws Exception
+	private final Object getReferencedObject(final String columnName, final Method interfaceMethod) throws Exception
 	{
 		final Class<?> columnModelType = interfaceMethod.getReturnType();
 
@@ -729,7 +728,8 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			}
 			else if (columnModelType.isAssignableFrom(retValueObj.getClass()))
 			{
-				@SuppressWarnings("unchecked") final ModelType retValue = (ModelType)retValueObj;
+				@SuppressWarnings("unchecked")
+				final ModelType retValue = (ModelType)retValueObj;
 				return retValue;
 			}
 			else
@@ -798,6 +798,10 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
+	/**
+	 * @param model
+	 * @param force if true then the Processed flag will be ignored
+	 */
 	public static void delete(@NonNull final Object model, final boolean failIfProcessed)
 	{
 		final PO po = getPO(model);
@@ -833,8 +837,12 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @throws IllegalArgumentException if model is null
 	 * @throws IllegalArgumentException if there is no underlying PO object (i.e. getPO(model) return null)
 	 */
-	public static void refresh(@NonNull final Object model)
+	public static void refresh(final Object model)
 	{
+		if (model == null)
+		{
+			throw new IllegalArgumentException("model is null");
+		}
 		final PO po = getStrictPO(model);
 		if (po == null)
 		{
@@ -883,17 +891,6 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	}
 
-	public static void setCtx(@NonNull final Object model, @NonNull final Properties ctx)
-	{
-		final PO po = getStrictPO(model);
-		if (po == null)
-		{
-			throw new ModelClassNotSupportedException(model);
-		}
-
-		po.setCtx(ctx);
-	}
-
 	/**
 	 * Check if given columnName's value is null
 	 *
@@ -917,23 +914,17 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return value == null;
 	}
 
-	@Nullable
-	public static Object setDynAttribute(@NonNull final Object model, @NonNull final String attributeName, final Object value)
+	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
 	{
 		final Object valueOld = getStrictPO(model).setDynAttribute(attributeName, value);
 		return valueOld;
 	}
 
-	@Nullable
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
-		@SuppressWarnings("unchecked") final T value = (T)getStrictPO(model).getDynAttribute(attributeName);
+		@SuppressWarnings("unchecked")
+		final T value = (T)getStrictPO(model).getDynAttribute(attributeName);
 		return value;
-	}
-
-	public static <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
-	{
-		return getStrictPO(model).computeDynAttributeIfAbsent(attributeName, supplier);
 	}
 
 	public static boolean hasModelColumnName(final Object model, final String columnName)
@@ -1029,15 +1020,16 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return po.is_Changed();
 	}
 
-	public static boolean isOldValues(final Object model)
+	public static final boolean isOldValues(final Object model)
 	{
 		final POWrapper wrapper = getPOWrapperOrNull(model);
-		return wrapper != null && wrapper.useOldValues;
+		return wrapper == null ? false : wrapper.useOldValues;
 	}
 
-	@Nullable
-	public static IModelInternalAccessor getModelInternalAccessor(@NonNull final Object model)
+	public static IModelInternalAccessor getModelInternalAccessor(final Object model)
 	{
+		Check.assumeNotNull(model, "model not null");
+
 		if (model instanceof PO)
 		{
 			final PO po = (PO)model;
@@ -1053,9 +1045,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return null;
 	}
 
-	/**
-	 * {@link POWrapper} internal accessor implementation
-	 */
+	/** {@link POWrapper} internal accessor implementation */
 	private final IModelInternalAccessor modelInternalAccessor = new IModelInternalAccessor()
 	{
 		@Override
@@ -1074,9 +1064,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		public boolean setValueNoCheck(final String columnName, final Object value)
 		{
 			return POWrapper.this.setValueNoCheck(columnName, value);
-		}
-
-		;
+		};
 
 		@Override
 		public Object invokeParent(final Method method, final Object[] methodArgs) throws Exception
@@ -1131,9 +1119,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		public boolean isKeyColumnName(final String columnName)
 		{
 			return POWrapper.this.isKeyColumnName(columnName);
-		}
-
-		;
+		};
 
 		@Override
 		public boolean isCalculated(final String columnName)

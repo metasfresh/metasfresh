@@ -1,14 +1,14 @@
 package de.metas.dataentry.data;
 
-import de.metas.CreatedUpdatedInfo;
+import java.time.ZonedDateTime;
+
+import javax.annotation.Nullable;
+
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ public class DataEntryRecordFieldDateTime extends DataEntryRecordField<ZonedDate
 
 	public static DataEntryRecordFieldDateTime of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final ZonedDateTime value)
 	{
 		return new DataEntryRecordFieldDateTime(
@@ -52,7 +52,7 @@ public class DataEntryRecordFieldDateTime extends DataEntryRecordField<ZonedDate
 
 	private DataEntryRecordFieldDateTime(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final ZonedDateTime value)
 	{
 		super(dataEntryFieldId, createdUpdatedInfo);

@@ -9,7 +9,7 @@ import classnames from 'classnames';
  * @module SelectionDropdown
  * @extends Component
  */
-class SelectionDropdown extends Component {
+export default class SelectionDropdown extends Component {
   /* Those are instance variables since no rendering needs to be done depending on
    * those properties. Additionally, setState can't be used with the callback in
    * an event listener since it needs to return synchronously */
@@ -129,7 +129,7 @@ class SelectionDropdown extends Component {
 
     const selectedIndex = items.indexOf(selected);
     const itemsSize = items.get ? items.size : items.length;
-    let selectedNew;
+    let selectedNew = null;
 
     if (selectedIndex > -1 && selectedIndex < itemsSize - 1) {
       selectedNew = this.get(items, selectedIndex + 1);
@@ -238,6 +238,11 @@ class SelectionDropdown extends Component {
     );
   };
 
+  /**
+   * @method renderOption
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   renderOption = (option, idx) => {
     const { selected } = this.props;
     const { key, caption, description } = option;
@@ -329,5 +334,3 @@ SelectionDropdown.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onCancel: PropTypes.func,
 };
-
-export default SelectionDropdown;

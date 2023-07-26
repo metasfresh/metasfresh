@@ -8,18 +8,15 @@ import classnames from 'classnames';
 
 import {
   getUserLang,
-  checkLoginRequest,
+  localLoginRequest,
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
 import { loginSuccess } from '../../actions/AppActions';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
-
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
-import { connectionError } from '../../actions/AppActions';
-import { BAD_GATEWAY_ERROR } from '../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -44,7 +41,13 @@ class LoginForm extends Component {
     const { path } = this.props;
 
     if (!path) {
-      this.login?.focus?.();
+      this.login.focus();
+    }
+  }
+
+  UNSAFE_componentWillUpdate(nextProps, nextState) {
+    if (this.roleSelector && nextState.roleSelect) {
+      this.roleSelector.instanceRef.dropdown.focus();
     }
   }
 
@@ -99,23 +102,16 @@ class LoginForm extends Component {
 
   /**
    * @method checkIfAlreadyLogged
-   * @summary Used to verify if a user is already logged in. i.e user is authenticated in another tab and we are on the loging form screen.
-   * @param {*} axiosError
+   * @summary ToDo: Describe the method.
+   * @param {*} err
    */
-  checkIfAlreadyLogged(axiosError) {
-    const { history } = this.props;
-
-    console.log('Checking if already logged in...', { axiosError });
-    return checkLoginRequest().then((response) => {
-      const isLoggedIn = !!response.data;
-
-      if (isLoggedIn) {
-        console.log('Already logged in => forwarding to /');
+  checkIfAlreadyLogged(err) {
+    return localLoginRequest().then((response) => {
+      if (response.data) {
         return history.push('/');
-      } else {
-        console.log('Not already logged in');
-        return Promise.reject(axiosError);
       }
+
+      return Promise.reject(err);
     });
   }
 
@@ -139,50 +135,49 @@ class LoginForm extends Component {
     );
   };
 
-  setLoginError = (message) => {
-    const messageEffective =
-      message || counterpart.translate('login.error.fallback');
-
-    console.log('setLoginError', { message, messageEffective });
-
-    this.setState({
-      err: messageEffective,
-      pending: false,
-    });
-  };
-
-  showRoleSelectPanel = (roles) => {
-    this.setState({
-      roleSelect: true,
-      dropdownFocused: true, // directly focus the role dropdown
-      roles,
-      role: roles?.[0],
-    });
-  };
-
+  /**
+   * @method mapStateToProps
+   * @summary ToDo: Describe the method.
+   * @param {*} resp
+   */
   handleLoginRequest = (resp) => {
-    const request = resp
-      ? resp
-      : loginRequest(this.login.value, this.passwd.value);
+    let request = null;
+
+    if (resp) {
+      request = resp;
+    } else {
+      request = loginRequest(this.login.value, this.passwd.value);
+    }
 
     request
       .then((response) => {
-        const errorType = response.status === 502 ? BAD_GATEWAY_ERROR : '';
-        this.props.dispatch(connectionError({ errorType }));
-
-        if (response.status !== 200) {
-          this.setLoginError(response?.data?.message);
-        } else if (response.data.loginComplete) {
+        if (response.data.loginComplete) {
           return this.handleSuccess();
-        } else {
-          this.showRoleSelectPanel(response.data.roles);
         }
+        const roles = response.data.roles;
+
+        this.setState({
+          roleSelect: true,
+          roles,
+          role: roles[0],
+        });
       })
-      .then(() => this.setState({ pending: false }))
-      .catch((axiosError) => this.checkIfAlreadyLogged(axiosError))
-      .catch((axiosError) =>
-        this.setLoginError(axiosError?.response?.data?.message)
-      );
+      .then(() => {
+        this.setState({
+          pending: false,
+        });
+      })
+      .catch((err) => {
+        return this.checkIfAlreadyLogged(err);
+      })
+      .catch((err) => {
+        this.setState({
+          err: err.response
+            ? err.response.data.message
+            : counterpart.translate('login.error.fallback'),
+          pending: false,
+        });
+      });
   };
 
   /**

@@ -30,7 +30,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
 import lombok.NonNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-@Tag(name = "DocumentPrintRestController")
+@Api
 @RestController
 @RequestMapping(value = DocumentPrintRestController.ENDPOINT)
 public class DocumentPrintRestController

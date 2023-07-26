@@ -1,5 +1,11 @@
 package de.metas.material.dispo.commons.process;
 
+import java.util.function.Predicate;
+
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.SpringContextHolder;
+
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
@@ -11,11 +17,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.SpringContextHolder;
-
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -43,6 +44,7 @@ import java.util.function.Predicate;
  * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(MaterialDispoGroupId)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class MD_Candidate_Request_MaterialDocument extends JavaProcess implements IProcessPrecondition
 {
@@ -65,7 +67,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 		final String status = r.getMD_Candidate_Status();
 
 		return X_MD_Candidate.MD_CANDIDATE_STATUS_Doc_planned.equals(status)
-				|| X_MD_Candidate.MD_CANDIDATE_STATUS_Planned.equals(status);
+		|| X_MD_Candidate.MD_CANDIDATE_STATUS_Planned.equals(status);
 	};
 
 	@Override
@@ -76,14 +78,14 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create()
-				.iterateAndStream()
+				.create().list()
+				.stream()
 				.filter(hasSupportedBusinessCase)
 				.filter(statusIsDocPlanned)
 				.map(r -> MaterialDispoGroupId.ofInt(r.getMD_Candidate_GroupId()))
 				.distinct()
 				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", RequestMaterialOrderService.class.getSimpleName(), groupId))
-				.forEach(groupId -> service.requestMaterialOrderForCandidates(groupId, null));
+				.forEach(service::requestMaterialOrderForCandidates);
 
 		return MSG_OK;
 	}
@@ -96,9 +98,16 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean atLeastOneProperCandidateSelected = context.streamSelectedModels(I_MD_Candidate.class)
-				.anyMatch(selectedRecord -> hasSupportedBusinessCase.test(selectedRecord) 
-						&& statusIsDocPlanned.test(selectedRecord));
+		boolean atLeastOneProperCandidateSelected = false;
+		for (final I_MD_Candidate selectedRecord : context.getSelectedModels(I_MD_Candidate.class))
+		{
+			if (hasSupportedBusinessCase.test(selectedRecord)
+					&& statusIsDocPlanned.test(selectedRecord))
+			{
+				atLeastOneProperCandidateSelected = true;
+				break;
+			}
+		}
 
 		if (!atLeastOneProperCandidateSelected)
 		{

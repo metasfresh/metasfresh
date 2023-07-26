@@ -1,19 +1,19 @@
 package de.metas.material.event.pporder;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.material.event.MaterialEvent;
+
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -44,33 +44,26 @@ import javax.annotation.Nullable;
  * <li>as a response to an {@link PPOrderRequestedEvent}
  * </ul>
  */
-@EqualsAndHashCode(callSuper = false)
-@ToString
-@Getter
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class PPOrderCreatedEvent implements MaterialEvent
+public class PPOrderCreatedEvent extends AbstractPPOrderEvent
 {
-	private final EventDescriptor eventDescriptor;
-	private final PPOrder ppOrder;
-
-	private final boolean directlyPickIfFeasible;
+	public static PPOrderCreatedEvent cast(@Nullable final AbstractPPOrderEvent ppOrderEvent)
+	{
+		return (PPOrderCreatedEvent)ppOrderEvent;
+	}
 
 	public static final String TYPE = "PPOrderCreatedEvent";
-
-	private final String lotForLot;
 
 	@JsonCreator
 	@Builder
 	public PPOrderCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("ppOrder") final @NonNull PPOrder ppOrder,
-			@JsonProperty("directlyPickIfFeasible") final boolean directlyPickIfFeasible,
-			@JsonProperty("lotForLot") @Nullable final String lotForLot)
+			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		this.eventDescriptor = eventDescriptor;
-		this.ppOrder = ppOrder;
-		this.directlyPickIfFeasible = directlyPickIfFeasible;
-		this.lotForLot = lotForLot;
+		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
 	}
 
 	public void validate()

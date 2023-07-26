@@ -46,7 +46,6 @@ import java.util.List;
 public class CSVWriter
 {
 	private static final String encoding = "UTF-8";
-	private static final boolean enforceUTF8BOM = true; // #12334 to be modified accordingly if other encodings are supported in the future
 	private static final String fieldQuote = "\"";
 	private static final String lineEnding = "\n";
 
@@ -76,7 +75,6 @@ public class CSVWriter
 
 		this.outputFile = outputFile;
 		this.writer = createWriter(outputFile);
-
 		this.header = ImmutableList.copyOf(header);
 		this.fieldDelimiter = fieldDelimiter != null ? fieldDelimiter : DEFAULT_FieldDelimiter;
 
@@ -90,24 +88,7 @@ public class CSVWriter
 	{
 		try
 		{
-			final FileOutputStream out = new FileOutputStream(outputFile, false);
-
-			if(enforceUTF8BOM)
-			{
-				try
-				{
-					// Enforce UTF-8 bom  (see https://stackoverflow.com/questions/4389005/how-to-add-a-utf-8-bom-in-java)
-					out.write('\ufeef'); // emits 0xef
-					out.write('\ufebb'); // emits 0xbb
-					out.write('\ufebf'); // emits 0xbf
-				}
-				catch (IOException e)
-				{
-					throw new AdempiereException(" Failed to apply UTF-8 encoding" + outputFile);
-				}
-			}
-
-			return new OutputStreamWriter(out, encoding);
+			return new OutputStreamWriter(new FileOutputStream(outputFile, false), encoding);
 		}
 		catch (FileNotFoundException | UnsupportedEncodingException ex)
 		{

@@ -1,33 +1,27 @@
 package de.metas.acct.doc;
 
-import de.metas.acct.GLCategoryId;
-import de.metas.acct.GLCategoryRepository;
-import de.metas.acct.accounts.AccountProvider;
-import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.vatcode.IVATCodeDAO;
-import de.metas.acct.vatcode.VATCode;
-import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.tax.ITaxAcctBL;
+import de.metas.acct.tax.TaxAcctType;
 import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
-import de.metas.costing.CostElement;
-import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
@@ -41,43 +35,27 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.acct.InvoiceAcct;
-import de.metas.invoice.acct.InvoiceAcctRepository;
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
-import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.order.costs.OrderCostService;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -86,6 +64,7 @@ import org.compiere.util.TrxRunnable2;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
 
@@ -121,59 +100,31 @@ public class AcctDocRequiredServicesFacade
 
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
-	private final ModelCacheInvalidationService modelCacheInvalidationService;
+	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	@Getter
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
-	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
-	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
-	private final AccountProviderFactory accountProviderFactory;
-	private final InvoiceAcctRepository invoiceAcctRepository;
-	@Getter
-	private final MatchInvoiceService matchInvoiceService;
-	@Getter
-	private final OrderCostService orderCostService;
 
 	//
 	// Needed for DocLine:
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
 
 	private final ICostingService costingService;
-	private final DimensionService dimensionService;
 
 	public AcctDocRequiredServicesFacade(
-			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService,
-			@NonNull final GLCategoryRepository glCategoryRepository,
 			@NonNull final BankAccountService bankAccountService,
-			@NonNull final ICostingService costingService,
-			@NonNull final AccountProviderFactory accountProviderFactory,
-			@NonNull final InvoiceAcctRepository invoiceAcctRepository,
-			@NonNull final MatchInvoiceService matchInvoiceService,
-			@NonNull final OrderCostService orderCostService,
-			@NonNull final DimensionService dimensionService)
+			@NonNull final ICostingService costingService)
 	{
-		this.modelCacheInvalidationService = modelCacheInvalidationService;
-		this.glCategoryRepository = glCategoryRepository;
 		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
-		this.accountProviderFactory = accountProviderFactory;
-		this.invoiceAcctRepository = invoiceAcctRepository;
-		this.matchInvoiceService = matchInvoiceService;
-		this.orderCostService = orderCostService;
-		this.dimensionService = dimensionService;
 	}
 
 	public void fireBeforePostEvent(@NonNull final PO po)
@@ -192,7 +143,7 @@ public class AcctDocRequiredServicesFacade
 	{
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(documentTableName, documentRecordId),
-				ModelCacheInvalidationTiming.AFTER_CHANGE);
+				ModelCacheInvalidationTiming.CHANGE);
 	}
 
 	public void runInThreadInheritedTrx(@NonNull final TrxRunnable2 runnable)
@@ -200,9 +151,9 @@ public class AcctDocRequiredServicesFacade
 		trxManager.runInThreadInheritedTrx(runnable);
 	}
 
-	public void deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
+	public int deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
 	{
-		factAcctDAO.deleteForDocumentModel(documentPO);
+		return factAcctDAO.deleteForDocumentModel(documentPO);
 	}
 
 	public boolean getSysConfigBooleanValue(@NonNull final String sysConfigName)
@@ -223,11 +174,6 @@ public class AcctDocRequiredServicesFacade
 		return msgBL.getTranslatableMsgText(adMessage);
 	}
 
-	public AccountProvider.AccountProviderBuilder newAccountProvider()
-	{
-		return accountProviderFactory.newAccountProvider();
-	}
-
 	@NonNull
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
@@ -240,11 +186,12 @@ public class AcctDocRequiredServicesFacade
 	}
 
 	public final CurrencyConversionContext createCurrencyConversionContext(
-			@Nullable final LocalDateAndOrgId convDate,
+			@Nullable final LocalDate convDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final ClientId clientId)
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
-		return currencyConversionBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId);
+		return currencyConversionBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId, orgId);
 	}
 
 	public CurrencyRate getCurrencyRate(
@@ -258,6 +205,13 @@ public class AcctDocRequiredServicesFacade
 	public BankAccount getBankAccountById(final BankAccountId bpBankAccountId)
 	{
 		return bankAccountService.getById(bpBankAccountId);
+	}
+
+	public BankAccountAcct getBankAccountAcct(
+			final BankAccountId bankAccountId,
+			final AcctSchemaId acctSchemaId)
+	{
+		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
 	public void postImmediateNoFail(
@@ -300,6 +254,32 @@ public class AcctDocRequiredServicesFacade
 		return productBL.getStockUOMId(productId);
 	}
 
+	public Optional<AccountId> getProductAcct(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final ProductId productId,
+			@NonNull final ProductAcctType acctType)
+	{
+		return productAcctDAO.getProductAccount(acctSchemaId, productId, acctType);
+	}
+
+	public Optional<AccountId> getProductDefaultAcct(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final ProductAcctType acctType)
+	{
+		final ProductCategoryId defaultProductCategoryId = productBL.getDefaultProductCategoryId();
+		return productAcctDAO.getProductCategoryAccount(acctSchemaId, defaultProductCategoryId, acctType);
+	}
+
+	public Optional<MAccount> getTaxAccount(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@Nullable final TaxId taxId,
+			@NonNull final TaxAcctType taxAcctType)
+	{
+		return taxId != null
+				? taxAcctBL.getAccountIfExists(taxId, acctSchemaId, taxAcctType)
+				: Optional.empty();
+	}
+
 	public CostingMethod getCostingMethod(
 			@NonNull final ProductId productId,
 			@NonNull final AcctSchema as)
@@ -312,11 +292,6 @@ public class AcctDocRequiredServicesFacade
 			@NonNull final AcctSchema as)
 	{
 		return productCostingBL.getCostingLevel(productId, as);
-	}
-
-	public CostElement getCostElementById(@NonNull final CostElementId costElementId)
-	{
-		return costingService.getCostElementById(costElementId);
 	}
 
 	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
@@ -362,81 +337,5 @@ public class AcctDocRequiredServicesFacade
 		errorManager.markIssueAcknowledged(adIssueId);
 	}
 
-	public ZoneId getTimeZone(@NonNull final OrgId orgId)
-	{
-		return orgDAO.getTimeZone(orgId);
-	}
-
-	public Optional<InvoiceAcct> getInvoiceAcct(@NonNull final InvoiceId invoiceId)
-	{
-		return invoiceAcctRepository.getById(invoiceId);
-	}
-
-	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
-	{
-		return docTypeBL.getById(docTypeId);
-	}
-
-	public Optional<GLCategoryId> getDefaultGLCategoryId(@NonNull final ClientId clientId)
-	{
-		return glCategoryRepository.getDefaultId(clientId);
-	}
-
-	public Optional<LocationId> getLocationId(@Nullable final BPartnerLocationId bpartnerLocationId)
-	{
-		if (bpartnerLocationId == null)
-		{
-			return Optional.empty();
-		}
-
-		final LocationId locationId = bpartnerDAO.getLocationId(bpartnerLocationId);
-		return Optional.of(locationId);
-	}
-
-	public Optional<LocationId> getLocationId(@NonNull final OrgId orgId)
-	{
-		if (!orgId.isRegular())
-		{
-			return Optional.empty();
-		}
-
-		final BPartnerLocationId bpartnerLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
-		if (bpartnerLocationId == null)
-		{
-			return Optional.empty();
-		}
-
-		final LocationId locationId = bpartnerDAO.getLocationId(bpartnerLocationId);
-		return Optional.of(locationId);
-	}
-
-	public Optional<LocationId> getLocationIdByLocatorRepoId(final int locatorRepoId)
-	{
-		if (locatorRepoId <= 0)
-		{
-			return Optional.empty();
-		}
-
-		return warehouseBL.getLocationIdByLocatorRepoId(locatorRepoId);
-	}
-
-	public Tax getTaxById(@NonNull final TaxId taxId)
-	{
-		return taxDAO.getTaxById(taxId);
-	}
-
-	public OrgId getOrgIdByLocatorRepoId(final int locatorId)
-	{
-		return warehouseBL.getOrgIdByLocatorRepoId(locatorId);
-	}
-
-	public Optional<VATCode> findVATCode(final VATCodeMatchingRequest request)
-	{
-		return vatCodeDAO.findVATCode(request);
-	}
-
-	public Dimension extractDimensionFromModel(final Object model)
-	{
-		return dimensionService.getFromRecord(model);
-	}
+	public ZoneId getTimeZone(@NonNull OrgId orgId) { return orgDAO.getTimeZone(orgId); }
 }

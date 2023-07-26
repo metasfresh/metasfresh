@@ -56,7 +56,7 @@ public class ProductWithNoCustomsTariffUserNotificationsProducer
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.product.UserNotifications")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	private static final AdWindowId DEFAULT_WINDOW_Product = AdWindowId.ofRepoId(140); // FIXME: HARDCODED

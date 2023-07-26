@@ -58,7 +58,7 @@ public class UomId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final UomId uomId)
+	public static int toRepoId(final UomId uomId)
 	{
 		return uomId != null ? uomId.getRepoId() : -1;
 	}

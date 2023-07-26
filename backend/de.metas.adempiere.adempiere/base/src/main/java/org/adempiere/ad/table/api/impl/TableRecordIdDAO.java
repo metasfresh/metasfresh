@@ -1,12 +1,12 @@
 package org.adempiere.ad.table.api.impl;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.cache.CCache;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
@@ -20,12 +20,14 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.util.DB;
 
-import javax.annotation.Nullable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -53,7 +55,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 {
 	private static final String DB_FUNCTION_RETRIEVE_DISTINCT_IDS = "table_record_reference_retrieve_distinct_ids";
 
-	private CCache<String, ImmutableList<TableRecordIdDescriptor>> tableRecordIdDescriptorsByOriginTableName = CCache.<String, ImmutableList<TableRecordIdDescriptor>>builder()
+	private CCache<String, ImmutableList<TableRecordIdDescriptor>> tableRecordIdDescriptorsByOriginTableName = CCache.<String, ImmutableList<TableRecordIdDescriptor>> builder()
 			.tableName(I_AD_Table.Table_Name)
 			.build();
 
@@ -115,12 +117,10 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 			// now we know for sure that the records "table" of table can reference other records via Table_ID/Record_ID
 			retrieveDistinctIds(tableName, tableColumnName)
 					.stream()
-					.map(referencedTableId -> adTableDAO.getTableNameIfPresent(referencedTableId).orElse(null))
-					.filter(Objects::nonNull)
-					.map(referencedTableName -> TableRecordIdDescriptor.builder()
+					.map(referencedTableId -> TableRecordIdDescriptor.builder()
 							.originTableName(tableName)
 							.recordIdColumnName(recordIdColumnName)
-							.targetTableName(referencedTableName)
+							.targetTableName(adTableDAO.retrieveTableName(referencedTableId))
 							.build())
 					.forEach(result::add);
 		}

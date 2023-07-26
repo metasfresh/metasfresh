@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **orderId** | **String** | Id der zugrundliegenden Bestellung in Alberta |  [optional]
 **prescriptionType** | [**BigDecimal**](BigDecimal.md) | Rezepttyp (0 &#x3D; Arzneimittel 1 &#x3D; Verbandstoffe 2 &#x3D; BtM-Rezept 3 &#x3D; Pflegehilfsmittel 4 &#x3D; Hilfsmittel zum Verbrauch bestimmt 5 &#x3D; Hilfsmittel zum Gebrauch bestimmt) |  [optional]
 **creationDate** | [**OffsetDateTime**](OffsetDateTime.md) |  |  [optional]
-**deliveryDate** | [**LocalDate**](LocalDate.md) | Lieferdatum der Bestellung, auf der das Rezept basiert | 
+**deliveryDate** | [**LocalDate**](LocalDate.md) |  | 
 **startDate** | [**LocalDate**](LocalDate.md) | Versorgungsbeginn |  [optional]
 **endDate** | [**LocalDate**](LocalDate.md) | Versorgungsende |  [optional]
 **accountingMonths** | [**List&lt;BigDecimal&gt;**](BigDecimal.md) | Auflistung der Versorgungs-/Abrechnungsmonate 1,2 &#x3D;&gt; Januar, Februar |  [optional]
@@ -19,7 +19,7 @@ Name | Type | Description | Notes
 **therapyTypeIds** | [**List&lt;BigDecimal&gt;**](BigDecimal.md) |  |  [optional]
 **prescriptedArticleLines** | [**List&lt;PrescriptedArticleLine&gt;**](PrescriptedArticleLine.md) | Die einzelnen Zeilen der Rezeptanforderung mit Artikeln |  [optional]
 **createdBy** | **String** | Id des erstellenden Benutzers (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich der Benutzer in WaWi vorhanden) |  [optional]
-**annotation** | **String** | Bemerkung |  [optional]
+**annotation** | **Boolean** | Bemerkung |  [optional]
 **archived** | **Boolean** | Kennzeichen ob Rezeptanforderung archiviert ist oder nicht |  [optional]
 **timestamp** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel der letzten Datenbankänderung |  [optional]
 **updated** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel der letzten Änderung |  [optional]

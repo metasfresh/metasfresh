@@ -1,15 +1,14 @@
 package de.metas.shipper.gateway.spi.model;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -40,7 +39,7 @@ public class DeliveryPosition
 	int repoId;
 
 	int numberOfPackages;
-	BigDecimal grossWeightKg;
+	int grossWeightKg;
 	String content;
 
 	@Nullable
@@ -55,14 +54,14 @@ public class DeliveryPosition
 	private DeliveryPosition(
 			final int repoId,
 			final int numberOfPackages,
-			@NonNull final BigDecimal grossWeightKg,
+			final int grossWeightKg,
 			final String content,
 			@Nullable final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryData customDeliveryData,
 			@Singular final ImmutableSet<PackageId> packageIds)
 	{
 		Check.assume(numberOfPackages > 0, "numberOfPackages > 0");
-		Check.assume(grossWeightKg.signum() > 0, "grossWeightKg > 0");
+		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
 		//Check.assumeNotEmpty(content, "content is not empty");
 
 		this.repoId = repoId;

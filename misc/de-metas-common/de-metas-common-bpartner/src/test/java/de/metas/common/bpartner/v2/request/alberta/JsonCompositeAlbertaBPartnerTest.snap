@@ -1,63 +1,88 @@
 de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartnerTest.serializeDeserialize=[
   {
-    "jsonAlbertaBPartner": {
-      "archivedSet": true,
-      "isArchived": true,
-      "timestamp": "2019-11-22T00:00:00Z",
-      "timestampSet": true,
-      "title": "title",
-      "titleSet": true,
-      "titleShort": "titleShort",
-      "titleShortSet": true
+    "jsonAlbertaBPartner" : {
+      "isArchived" : true,
+      "archivedSet" : true,
+      "title" : "title",
+      "titleSet" : true,
+      "titleShort" : "titleShort",
+      "titleShortSet" : true,
+      "timestamp" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "timestampSet" : true
     },
-    "jsonAlbertaCareGivers": [
+    "role" : "Patient",
+    "jsonAlbertaPatient" : {
+      "hospitalIdentifier" : "1111111",
+      "hospitalIdentifierSet" : true,
+      "dischargeDate" : {
+        "year" : 2019,
+        "month" : 11,
+        "day" : 22,
+        "leapYear" : false
+      },
+      "dischargeDateSet" : true,
+      "payerIdentifier" : "2222222",
+      "payerIdentifierSet" : true,
+      "payerType" : "payerType",
+      "payerTypeSet" : true,
+      "numberOfInsured" : "333333",
+      "numberOfInsuredSet" : true,
+      "copaymentFrom" : {
+        "year" : 2021,
+        "month" : 5,
+        "day" : 24,
+        "leapYear" : false
+      },
+      "copaymentFromSet" : true,
+      "copaymentTo" : {
+        "year" : 2021,
+        "month" : 5,
+        "day" : 24,
+        "leapYear" : false
+      },
+      "copaymentToSet" : true,
+      "isTransferPatient" : true,
+      "transferPatientSet" : true,
+      "isIVTherapy" : true,
+      "ivTherapySet" : true,
+      "fieldNurseIdentifier" : "4444444",
+      "fieldNurseIdentifierSet" : true,
+      "deactivationReason" : "reason",
+      "deactivationReasonSet" : true,
+      "deactivationDate" : {
+        "year" : 2021,
+        "month" : 5,
+        "day" : 24,
+        "leapYear" : false
+      },
+      "deactivationDateSet" : true,
+      "deactivationComment" : "comment",
+      "deactivationCommentSet" : true,
+      "createdAt" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "createdAtSet" : true,
+      "createdByIdentifier" : "6666666",
+      "createdByIdentifierSet" : true,
+      "updatedAt" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "updatedAtSet" : true,
+      "updateByIdentifierSet" : false
+    },
+    "jsonAlbertaCareGivers" : [
       {
-        "caregiverIdentifier": "11111",
-        "isLegalCarer": true,
-        "legalCarerSet": true,
-        "type": "type",
-        "typeSet": true
+        "caregiverIdentifier" : "11111",
+        "type" : "type",
+        "typeSet" : true,
+        "isLegalCarer" : true,
+        "legalCarerSet" : true
       }
-    ],
-    "jsonAlbertaPatient": {
-      "careDegree": 2.2,
-      "careDegreeSet": true,
-      "classification": "classification",
-      "classificationSet": true,
-      "copaymentFrom": "2021-05-24",
-      "copaymentFromSet": true,
-      "copaymentTo": "2021-05-24",
-      "copaymentToSet": true,
-      "createdAt": "2019-11-22T00:00:00Z",
-      "createdAtSet": true,
-      "createdByIdentifier": "6666666",
-      "createdByIdentifierSet": true,
-      "deactivationComment": "comment",
-      "deactivationCommentSet": true,
-      "deactivationDate": "2021-05-24",
-      "deactivationDateSet": true,
-      "deactivationReason": "reason",
-      "deactivationReasonSet": true,
-      "dischargeDate": "2019-11-22",
-      "dischargeDateSet": true,
-      "fieldNurseIdentifier": "4444444",
-      "fieldNurseIdentifierSet": true,
-      "hospitalIdentifier": "1111111",
-      "hospitalIdentifierSet": true,
-      "isIVTherapy": true,
-      "isTransferPatient": true,
-      "ivTherapySet": true,
-      "numberOfInsured": "333333",
-      "numberOfInsuredSet": true,
-      "payerIdentifier": "2222222",
-      "payerIdentifierSet": true,
-      "payerType": "payerType",
-      "payerTypeSet": true,
-      "transferPatientSet": true,
-      "updateByIdentifierSet": false,
-      "updatedAt": "2019-11-22T00:00:00Z",
-      "updatedAtSet": true
-    },
-    "role": "Patient"
+    ]
   }
 ]

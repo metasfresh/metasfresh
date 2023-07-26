@@ -1,29 +1,39 @@
 package de.metas.invoicecandidate.api.impl;
 
-import de.metas.async.Helper;
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.api.IWorkpackageParamDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IQueueProcessor;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
-import de.metas.invoicecandidate.AbstractICTestSupport;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.process.params.InvoicingParams;
-import de.metas.lock.api.ILock;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.impl.PlainLockManager;
-import de.metas.lock.spi.impl.PlainLockDatabase;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -38,17 +48,28 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.IWorkpackageParamDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IQueueProcessor;
+import de.metas.async.processor.IQueueProcessorFactory;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.invoicecandidate.AbstractICTestSupport;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.impl.PlainLockManager;
+import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Standard test:
@@ -68,7 +89,6 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 	protected Properties ctx;
 	protected I_C_BPartner bpartner1;
 	protected ILoggable loggable;
-	protected Helper helper;
 
 	protected List<I_C_Invoice_Candidate> invoiceCandidates;
 	protected IInvoiceCandidateEnqueueResult enqueueResult;
@@ -88,7 +108,6 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 
 		this.ctx = Env.getCtx();
 		this.loggable = Loggables.console();
-		this.helper = new Helper();
 
 		this.bpartner1 = icTestSupport.bpartner("test-bp");
 	}
@@ -112,14 +131,13 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 
 	protected abstract List<I_C_Invoice_Candidate> step10_createInvoiceCandidates();
 
-	private IInvoiceCandidateEnqueueResult step20_enqueueToInvoice()
+	private final IInvoiceCandidateEnqueueResult step20_enqueueToInvoice()
 	{
 		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModelsCollection(invoiceCandidates);
 
-		final InvoicingParams invoicingParams = InvoicingParams.builder()
-				.ignoreInvoiceSchedule(true)
-				.onlyApprovedForInvoicing(false)
-				.build();
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(true);
+		invoicingParams.setOnlyApprovedForInvoicing(false);
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = Services.get(IInvoiceCandBL.class).enqueueForInvoicing()
 				.setContext(ctx)
@@ -169,16 +187,16 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		// Process all workpackages synchronously
 		final IWorkPackageQueue workpackagesQueue = Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, workpackageProcessorClass);
-		final IQueueProcessor workpackagesQueueProcessor = helper.newSynchronousQueueProcessor(workpackagesQueue);
-
-		SynchronousProcessorPlanner.executeNow(workpackagesQueueProcessor);
+		final IQueueProcessor workpackagesQueueProcessor = Services.get(IQueueProcessorFactory.class)
+				.createSynchronousQueueProcessor(workpackagesQueue);
+		workpackagesQueueProcessor.run();
 
 		//
 		// Make sure all of them are processed
 		final List<I_C_Queue_WorkPackage> workpackages = retrieveWorkpackages(workpackageProcessorClass);
 		assertFalse(workpackages.isEmpty(), "Some workpackages were created");
 
-		for (final I_C_Queue_WorkPackage workpackage : workpackages)
+		for (I_C_Queue_WorkPackage workpackage : workpackages)
 		{
 			assertTrue(workpackage.isProcessed(), "Workpackage processed: " + workpackage);
 			assertFalse(workpackage.isError(), "Workpackage no error: " + workpackage);
@@ -205,13 +223,13 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		}
 	}
 
-	protected void assertWorkpackageInvoiceCandidatesValid(@NonNull final I_C_Queue_WorkPackage workpackage)
+	protected void assertWorkpackageInvoiceCandidatesValid(I_C_Queue_WorkPackage workpackage)
 	{
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 
 		final IParams workpackageParams = workpackageParamDAO.retrieveWorkpackageParams(workpackage);
-		final List<I_C_Invoice_Candidate> ics = queueDAO.retrieveAllItems(workpackage, I_C_Invoice_Candidate.class);
+		final List<I_C_Invoice_Candidate> ics = queueDAO.retrieveItems(workpackage, I_C_Invoice_Candidate.class, ITrx.TRXNAME_None);
 
 		//
 		// Create the invoice candidates processor.
@@ -235,7 +253,7 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		//
 		// Test: NetAmtToInvoice set per workpackage shall be the sum of NetAmtToInvoice of enqueued invoice candidates
 		final BigDecimal netAmtToInvoiceCalc = calculateTotalNetAmtToInvoice(ics);
-		final BigDecimal netAmtToInvoice = workpackageParams.getParameterAsBigDecimal(InvoicingParams.PARA_Check_NetAmtToInvoice);
+		final BigDecimal netAmtToInvoice = workpackageParams.getParameterAsBigDecimal(IInvoicingParams.PARA_Check_NetAmtToInvoice);
 		assertThat(netAmtToInvoiceCalc).as("NetAmtToInvoice shall match: " + workpackage).isEqualByComparingTo(netAmtToInvoice);
 	}
 
@@ -246,7 +264,7 @@ abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 		final List<I_C_Queue_WorkPackage> result = new ArrayList<>();
 		for (final I_C_Queue_WorkPackage workpackage : POJOLookupMap.get().getRecords(I_C_Queue_WorkPackage.class))
 		{
-			final String workpackageClassname = workpackage.getC_Queue_PackageProcessor().getClassname();
+			final String workpackageClassname = workpackage.getC_Queue_Block().getC_Queue_PackageProcessor().getClassname();
 			if (workpackageClassnameExpected.equals(workpackageClassname))
 			{
 				result.add(workpackage);

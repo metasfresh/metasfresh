@@ -1,80 +1,122 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /** Generated Interface for C_Location
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_Location 
 {
 
-	String Table_Name = "C_Location";
+    /** TableName=C_Location */
+    public static final String Table_Name = "C_Location";
 
-//	/** AD_Table_ID=162 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=162 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 7 - System - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Client>(I_C_Location.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Street & House No..
-	 * Address line 1 for this location
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Org>(I_C_Location.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAddress1 (@Nullable java.lang.String Address1);
+	public void setAddress1 (java.lang.String Address1);
 
 	/**
-	 * Get Street & House No..
-	 * Address line 1 for this location
+	 * Get Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAddress1();
+	public java.lang.String getAddress1();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Address1 = new ModelColumn<>(I_C_Location.class, "Address1", null);
-	String COLUMNNAME_Address1 = "Address1";
+    /** Column definition for Address1 */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Address1 = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Address1", null);
+    /** Column name Address1 */
+    public static final String COLUMNNAME_Address1 = "Address1";
 
 	/**
-	 * Set Address 2.
-	 * Address line 2 for this location
+	 * Set Adresszusatz.
+	 * Adresszeile 2 für diesen Standort
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAddress2 (@Nullable java.lang.String Address2);
+	public void setAddress2 (java.lang.String Address2);
 
 	/**
-	 * Get Address 2.
-	 * Address line 2 for this location
+	 * Get Adresszusatz.
+	 * Adresszeile 2 für diesen Standort
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAddress2();
+	public java.lang.String getAddress2();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Address2 = new ModelColumn<>(I_C_Location.class, "Address2", null);
-	String COLUMNNAME_Address2 = "Address2";
+    /** Column definition for Address2 */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Address2 = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Address2", null);
+    /** Column name Address2 */
+    public static final String COLUMNNAME_Address2 = "Address2";
 
 	/**
 	 * Set Adresszeile 3.
@@ -84,7 +126,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAddress3 (@Nullable java.lang.String Address3);
+	public void setAddress3 (java.lang.String Address3);
 
 	/**
 	 * Get Adresszeile 3.
@@ -94,10 +136,12 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAddress3();
+	public java.lang.String getAddress3();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Address3 = new ModelColumn<>(I_C_Location.class, "Address3", null);
-	String COLUMNNAME_Address3 = "Address3";
+    /** Column definition for Address3 */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Address3 = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Address3", null);
+    /** Column name Address3 */
+    public static final String COLUMNNAME_Address3 = "Address3";
 
 	/**
 	 * Set Adresszusatz.
@@ -107,7 +151,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAddress4 (@Nullable java.lang.String Address4);
+	public void setAddress4 (java.lang.String Address4);
 
 	/**
 	 * Get Adresszusatz.
@@ -117,55 +161,12 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAddress4();
+	public java.lang.String getAddress4();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Address4 = new ModelColumn<>(I_C_Location.class, "Address4", null);
-	String COLUMNNAME_Address4 = "Address4";
-
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
-
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set C/O.
-	 * In care of
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCareOf (@Nullable java.lang.String CareOf);
-
-	/**
-	 * Get C/O.
-	 * In care of
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCareOf();
-
-	ModelColumn<I_C_Location, Object> COLUMN_CareOf = new ModelColumn<>(I_C_Location.class, "CareOf", null);
-	String COLUMNNAME_CareOf = "CareOf";
+    /** Column definition for Address4 */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Address4 = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Address4", null);
+    /** Column name Address4 */
+    public static final String COLUMNNAME_Address4 = "Address4";
 
 	/**
 	 * Set Ort.
@@ -175,7 +176,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_City_ID (int C_City_ID);
+	public void setC_City_ID (int C_City_ID);
 
 	/**
 	 * Get Ort.
@@ -185,85 +186,70 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_City_ID();
+	public int getC_City_ID();
 
-	@Nullable org.compiere.model.I_C_City getC_City();
+	public org.compiere.model.I_C_City getC_City();
 
-	void setC_City(@Nullable org.compiere.model.I_C_City C_City);
+	public void setC_City(org.compiere.model.I_C_City C_City);
 
-	ModelColumn<I_C_Location, org.compiere.model.I_C_City> COLUMN_C_City_ID = new ModelColumn<>(I_C_Location.class, "C_City_ID", org.compiere.model.I_C_City.class);
-	String COLUMNNAME_C_City_ID = "C_City_ID";
+    /** Column definition for C_City_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_City> COLUMN_C_City_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_City>(I_C_Location.class, "C_City_ID", org.compiere.model.I_C_City.class);
+    /** Column name C_City_ID */
+    public static final String COLUMNNAME_C_City_ID = "C_City_ID";
 
 	/**
-	 * Set Country.
+	 * Set Land.
 	 * Country
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Country_ID (int C_Country_ID);
+	public void setC_Country_ID (int C_Country_ID);
 
 	/**
-	 * Get Country.
+	 * Get Land.
 	 * Country
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Country_ID();
+	public int getC_Country_ID();
 
-	org.compiere.model.I_C_Country getC_Country();
+	public org.compiere.model.I_C_Country getC_Country();
 
-	void setC_Country(org.compiere.model.I_C_Country C_Country);
+	public void setC_Country(org.compiere.model.I_C_Country C_Country);
 
-	ModelColumn<I_C_Location, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new ModelColumn<>(I_C_Location.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
-	String COLUMNNAME_C_Country_ID = "C_Country_ID";
-
-	/**
-	 * Set City Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCity (@Nullable java.lang.String City);
+    /** Column definition for C_Country_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Country>(I_C_Location.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
+    /** Column name C_Country_ID */
+    public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
 
 	/**
-	 * Get City Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCity();
-
-	ModelColumn<I_C_Location, Object> COLUMN_City = new ModelColumn<>(I_C_Location.class, "City", null);
-	String COLUMNNAME_City = "City";
-
-	/**
-	 * Set Location.
+	 * Set Anschrift.
 	 * Location or Address
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Location_ID (int C_Location_ID);
+	public void setC_Location_ID (int C_Location_ID);
 
 	/**
-	 * Get Location.
+	 * Get Anschrift.
 	 * Location or Address
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Location_ID();
+	public int getC_Location_ID();
 
-	ModelColumn<I_C_Location, Object> COLUMN_C_Location_ID = new ModelColumn<>(I_C_Location.class, "C_Location_ID", null);
-	String COLUMNNAME_C_Location_ID = "C_Location_ID";
+    /** Column definition for C_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_C_Location_ID = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "C_Location_ID", null);
+    /** Column name C_Location_ID */
+    public static final String COLUMNNAME_C_Location_ID = "C_Location_ID";
 
 	/**
 	 * Set Postal codes.
@@ -272,7 +258,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Postal_ID (int C_Postal_ID);
+	public void setC_Postal_ID (int C_Postal_ID);
 
 	/**
 	 * Get Postal codes.
@@ -281,39 +267,16 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Postal_ID();
+	public int getC_Postal_ID();
 
-	@Nullable org.compiere.model.I_C_Postal getC_Postal();
+	public org.compiere.model.I_C_Postal getC_Postal();
 
-	void setC_Postal(@Nullable org.compiere.model.I_C_Postal C_Postal);
+	public void setC_Postal(org.compiere.model.I_C_Postal C_Postal);
 
-	ModelColumn<I_C_Location, org.compiere.model.I_C_Postal> COLUMN_C_Postal_ID = new ModelColumn<>(I_C_Location.class, "C_Postal_ID", org.compiere.model.I_C_Postal.class);
-	String COLUMNNAME_C_Postal_ID = "C_Postal_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_Location, Object> COLUMN_Created = new ModelColumn<>(I_C_Location.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for C_Postal_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Postal> COLUMN_C_Postal_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Postal>(I_C_Location.class, "C_Postal_ID", org.compiere.model.I_C_Postal.class);
+    /** Column name C_Postal_ID */
+    public static final String COLUMNNAME_C_Postal_ID = "C_Postal_ID";
 
 	/**
 	 * Set Region.
@@ -323,7 +286,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Region_ID (int C_Region_ID);
+	public void setC_Region_ID (int C_Region_ID);
 
 	/**
 	 * Get Region.
@@ -333,35 +296,96 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Region_ID();
+	public int getC_Region_ID();
 
-	@Nullable org.compiere.model.I_C_Region getC_Region();
+	public org.compiere.model.I_C_Region getC_Region();
 
-	void setC_Region(@Nullable org.compiere.model.I_C_Region C_Region);
+	public void setC_Region(org.compiere.model.I_C_Region C_Region);
 
-	ModelColumn<I_C_Location, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new ModelColumn<>(I_C_Location.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
-	String COLUMNNAME_C_Region_ID = "C_Region_ID";
+    /** Column definition for C_Region_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_C_Region>(I_C_Location.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
+    /** Column name C_Region_ID */
+    public static final String COLUMNNAME_C_Region_ID = "C_Region_ID";
 
 	/**
-	 * Set DHL Post ID.
+	 * Set C/O.
+	 * In care of
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDHL_PostId (@Nullable java.lang.String DHL_PostId);
+	public void setCareOf (java.lang.String CareOf);
 
 	/**
-	 * Get DHL Post ID.
+	 * Get C/O.
+	 * In care of
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDHL_PostId();
+	public java.lang.String getCareOf();
 
-	ModelColumn<I_C_Location, Object> COLUMN_DHL_PostId = new ModelColumn<>(I_C_Location.class, "DHL_PostId", null);
-	String COLUMNNAME_DHL_PostId = "DHL_PostId";
+    /** Column definition for CareOf */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_CareOf = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "CareOf", null);
+    /** Column name CareOf */
+    public static final String COLUMNNAME_CareOf = "CareOf";
+
+	/**
+	 * Set Ort.
+	 * Identifies a City
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCity (java.lang.String City);
+
+	/**
+	 * Get Ort.
+	 * Identifies a City
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCity();
+
+    /** Column definition for City */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_City = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "City", null);
+    /** Column name City */
+    public static final String COLUMNNAME_City = "City";
+
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_User>(I_C_Location.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Geocoding Error.
@@ -370,7 +394,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGeocoding_Issue_ID (int Geocoding_Issue_ID);
+	public void setGeocoding_Issue_ID (int Geocoding_Issue_ID);
 
 	/**
 	 * Get Geocoding Error.
@@ -379,9 +403,16 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getGeocoding_Issue_ID();
+	public int getGeocoding_Issue_ID();
 
-	String COLUMNNAME_Geocoding_Issue_ID = "Geocoding_Issue_ID";
+	public org.compiere.model.I_AD_Issue getGeocoding_Issue();
+
+	public void setGeocoding_Issue(org.compiere.model.I_AD_Issue Geocoding_Issue);
+
+    /** Column definition for Geocoding_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Issue> COLUMN_Geocoding_Issue_ID = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_Issue>(I_C_Location.class, "Geocoding_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name Geocoding_Issue_ID */
+    public static final String COLUMNNAME_Geocoding_Issue_ID = "Geocoding_Issue_ID";
 
 	/**
 	 * Set Geocoding Status.
@@ -390,7 +421,7 @@ public interface I_C_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setGeocodingStatus (java.lang.String GeocodingStatus);
+	public void setGeocodingStatus (java.lang.String GeocodingStatus);
 
 	/**
 	 * Get Geocoding Status.
@@ -399,75 +430,37 @@ public interface I_C_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getGeocodingStatus();
+	public java.lang.String getGeocodingStatus();
 
-	ModelColumn<I_C_Location, Object> COLUMN_GeocodingStatus = new ModelColumn<>(I_C_Location.class, "GeocodingStatus", null);
-	String COLUMNNAME_GeocodingStatus = "GeocodingStatus";
-
-	/**
-	 * Set Hausnummer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHouseNumber (@Nullable java.lang.String HouseNumber);
+    /** Column definition for GeocodingStatus */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_GeocodingStatus = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "GeocodingStatus", null);
+    /** Column name GeocodingStatus */
+    public static final String COLUMNNAME_GeocodingStatus = "GeocodingStatus";
 
 	/**
-	 * Get Hausnummer.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getHouseNumber();
-
-	ModelColumn<I_C_Location, Object> COLUMN_HouseNumber = new ModelColumn<>(I_C_Location.class, "HouseNumber", null);
-	String COLUMNNAME_HouseNumber = "HouseNumber";
-
-	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_Location, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Location.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Is P.O. box.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsPOBoxNum (boolean IsPOBoxNum);
-
-	/**
-	 * Get Is P.O. box.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isPOBoxNum();
-
-	ModelColumn<I_C_Location, Object> COLUMN_IsPOBoxNum = new ModelColumn<>(I_C_Location.class, "IsPOBoxNum", null);
-	String COLUMNNAME_IsPOBoxNum = "IsPOBoxNum";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set PLZ verifiziert.
@@ -477,7 +470,7 @@ public interface I_C_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsPostalValidated (boolean IsPostalValidated);
+	public void setIsPostalValidated (boolean IsPostalValidated);
 
 	/**
 	 * Get PLZ verifiziert.
@@ -487,10 +480,12 @@ public interface I_C_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isPostalValidated();
+	public boolean isPostalValidated();
 
-	ModelColumn<I_C_Location, Object> COLUMN_IsPostalValidated = new ModelColumn<>(I_C_Location.class, "IsPostalValidated", null);
-	String COLUMNNAME_IsPostalValidated = "IsPostalValidated";
+    /** Column definition for IsPostalValidated */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_IsPostalValidated = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "IsPostalValidated", null);
+    /** Column name IsPostalValidated */
+    public static final String COLUMNNAME_IsPostalValidated = "IsPostalValidated";
 
 	/**
 	 * Set Latitude.
@@ -500,7 +495,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLatitude (@Nullable BigDecimal Latitude);
+	public void setLatitude (java.math.BigDecimal Latitude);
 
 	/**
 	 * Get Latitude.
@@ -510,10 +505,12 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getLatitude();
+	public java.math.BigDecimal getLatitude();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Latitude = new ModelColumn<>(I_C_Location.class, "Latitude", null);
-	String COLUMNNAME_Latitude = "Latitude";
+    /** Column definition for Latitude */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Latitude = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Latitude", null);
+    /** Column name Latitude */
+    public static final String COLUMNNAME_Latitude = "Latitude";
 
 	/**
 	 * Set Längengrad.
@@ -523,7 +520,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLongitude (@Nullable BigDecimal Longitude);
+	public void setLongitude (java.math.BigDecimal Longitude);
 
 	/**
 	 * Get Längengrad.
@@ -533,52 +530,60 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getLongitude();
+	public java.math.BigDecimal getLongitude();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Longitude = new ModelColumn<>(I_C_Location.class, "Longitude", null);
-	String COLUMNNAME_Longitude = "Longitude";
+    /** Column definition for Longitude */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Longitude = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Longitude", null);
+    /** Column name Longitude */
+    public static final String COLUMNNAME_Longitude = "Longitude";
 
 	/**
-	 * Set P.O. box number.
+	 * Set Postfach.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPOBox (@Nullable java.lang.String POBox);
+	public void setPOBox (java.lang.String POBox);
 
 	/**
-	 * Get P.O. box number.
+	 * Get Postfach.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPOBox();
+	public java.lang.String getPOBox();
 
-	ModelColumn<I_C_Location, Object> COLUMN_POBox = new ModelColumn<>(I_C_Location.class, "POBox", null);
-	String COLUMNNAME_POBox = "POBox";
+    /** Column definition for POBox */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_POBox = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "POBox", null);
+    /** Column name POBox */
+    public static final String COLUMNNAME_POBox = "POBox";
 
 	/**
-	 * Set Postal.
+	 * Set PLZ.
+	 * Postal code
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPostal (@Nullable java.lang.String Postal);
+	public void setPostal (java.lang.String Postal);
 
 	/**
-	 * Get Postal.
+	 * Get PLZ.
+	 * Postal code
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPostal();
+	public java.lang.String getPostal();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Postal = new ModelColumn<>(I_C_Location.class, "Postal", null);
-	String COLUMNNAME_Postal = "Postal";
+    /** Column definition for Postal */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Postal = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Postal", null);
+    /** Column name Postal */
+    public static final String COLUMNNAME_Postal = "Postal";
 
 	/**
 	 * Set -.
@@ -588,7 +593,7 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPostal_Add (@Nullable java.lang.String Postal_Add);
+	public void setPostal_Add (java.lang.String Postal_Add);
 
 	/**
 	 * Get -.
@@ -598,77 +603,65 @@ public interface I_C_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPostal_Add();
+	public java.lang.String getPostal_Add();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Postal_Add = new ModelColumn<>(I_C_Location.class, "Postal_Add", null);
-	String COLUMNNAME_Postal_Add = "Postal_Add";
+    /** Column definition for Postal_Add */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Postal_Add = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Postal_Add", null);
+    /** Column name Postal_Add */
+    public static final String COLUMNNAME_Postal_Add = "Postal_Add";
 
 	/**
-	 * Set Region Name.
+	 * Set Region.
 	 * Name of the Region
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setRegionName (@Nullable java.lang.String RegionName);
+	public void setRegionName (java.lang.String RegionName);
 
 	/**
-	 * Get Region Name.
+	 * Get Region.
 	 * Name of the Region
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getRegionName();
+	public java.lang.String getRegionName();
 
-	ModelColumn<I_C_Location, Object> COLUMN_RegionName = new ModelColumn<>(I_C_Location.class, "RegionName", null);
-	String COLUMNNAME_RegionName = "RegionName";
-
-	/**
-	 * Set Straße.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setStreet (@Nullable java.lang.String Street);
+    /** Column definition for RegionName */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_RegionName = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "RegionName", null);
+    /** Column name RegionName */
+    public static final String COLUMNNAME_RegionName = "RegionName";
 
 	/**
-	 * Get Straße.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getStreet();
-
-	ModelColumn<I_C_Location, Object> COLUMN_Street = new ModelColumn<>(I_C_Location.class, "Street", null);
-	String COLUMNNAME_Street = "Street";
-
-	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Location, Object> COLUMN_Updated = new ModelColumn<>(I_C_Location.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Location, Object>(I_C_Location.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Location, org.compiere.model.I_AD_User>(I_C_Location.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

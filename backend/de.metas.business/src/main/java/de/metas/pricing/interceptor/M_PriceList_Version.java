@@ -22,39 +22,32 @@
 
 package de.metas.pricing.interceptor;
 
-import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.LocalDate;
+
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 @Callout(I_M_PriceList_Version.class)
 @Interceptor(I_M_PriceList_Version.class)
 @Component
 public class M_PriceList_Version
 {
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-
 	@Init
 	public void registerCallouts()
 	{
@@ -66,10 +59,12 @@ public class M_PriceList_Version
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_M_PriceList_Version.COLUMNNAME_ValidFrom })
 	public void updatePLVName(@NonNull final I_M_PriceList_Version priceListVersion)
 	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+
 		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
 		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(priceListVersion.getAD_Org_ID()));
-		final LocalDate date = TimeUtil.asLocalDate(priceListVersion.getValidFrom(), timeZone);
+		final LocalDate date = TimeUtil.asLocalDate(priceListVersion.getValidFrom());
 
 		if (date == null)
 		{

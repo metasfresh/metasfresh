@@ -15,8 +15,6 @@ import static org.hamcrest.Matchers.nullValue;
 import java.math.BigDecimal;
 import java.util.List;
 
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -75,29 +73,17 @@ public class HUTransformTestsBase
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHUStatusBL huStatusBL;
 
-	private HUUniqueAttributesService huUniqueAttributesService;
-
-	private M_HU huCallout;
-
 	public HUTransformTestsBase()
 	{
 		data = new LUTUProducerDestinationTestSupport();
 
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
-
-		huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
-
-		huCallout = new M_HU(huUniqueAttributesService);
 	}
 
 	public final TestHUs testCU_To_NewCU_1Tomato_DoIt()
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
-
-		huCallout = new M_HU(huUniqueAttributesService);
 
 		final I_C_BPartner bpartner = createBPartner("testVendor");
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
@@ -126,7 +112,7 @@ public class HUTransformTestsBase
 			sourceTU = createdTUs.get(0);
 
 			huStatusBL.setHUStatus(data.helper.getHUContext(), sourceTU, X_M_HU.HUSTATUS_Active);
-			huCallout.updateChildren(sourceTU);
+			M_HU.INSTANCE.updateChildren(sourceTU);
 			save(sourceTU);
 
 			testHUsBuilder.inititalParent(sourceTU);

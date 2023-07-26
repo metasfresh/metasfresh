@@ -1,6 +1,6 @@
-import axios, { delete as del, get, patch, post } from 'axios';
+import { post, get, patch, delete as del } from 'axios';
 
-import { createPatchRequestPayload, getQueryString } from '../utils';
+import { getQueryString, createPatchRequestPayload } from '../utils';
 import { prepareFilterForBackend } from '../utils/filterHelpers';
 
 export function getData({
@@ -203,22 +203,17 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
   );
 }
 
-/** Fetches all actions to be displayed in top "burger" menu */
-export const allActionsRequest = ({
-  windowId,
-  viewId,
-  selectedIds,
-  childViewId,
-  childViewSelectedIds,
-}) => {
-  return post(`${config.API_URL}/documentView/${windowId}/${viewId}/actions`, {
-    selectedIds,
-    childViewId,
-    childViewSelectedIds,
-  });
-};
-
-export function quickActionsRequest({
+/*
+ * @method quickActionsRequest
+ * @summary Do a request for quick actions
+ *
+ * @param {string} viewId
+ * @param {string} viewProfileId
+ * @param {array} selectedIds
+ * @param {object} childView
+ * @param {object} parentView
+ */
+export async function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
@@ -226,32 +221,33 @@ export function quickActionsRequest({
   childView,
   parentView,
 }) {
-  let requestBody;
+  let query = null;
+
   if (childView && childView.viewId) {
-    requestBody = {
+    query = getQueryString({
       viewProfileId,
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
-    };
+    });
   } else if (parentView && parentView.viewId) {
-    requestBody = {
+    query = getQueryString({
       viewProfileId,
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
-    };
+    });
   } else {
-    requestBody = {
+    query = getQueryString({
       viewProfileId,
       selectedIds,
-    };
+    });
   }
 
-  return post(
-    `${config.API_URL}/documentView/${windowId}/${viewId}/quickActions`,
-    requestBody
-  );
+  return get(`
+    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
+    query ? `?${query}` : ''
+  }`);
 }
 
 /*
@@ -340,7 +336,7 @@ export function patchViewAttributesRequest(
  * @param {number} windowId
  * @param {string} viewId
  * @param {string} rowId
- * @param attribute
+ * @param {attribute} - field name
  */
 export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
   return get(
@@ -372,35 +368,3 @@ export function getViewAttributeTypeahead(
     query
   )}`);
 }
-
-export const getViewFilterParameterDropdown = ({
-  windowId,
-  viewId,
-  filterId,
-  parameterName,
-  context = {},
-}) => {
-  return axios.post(
-    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/dropdown`,
-    {
-      context,
-    }
-  );
-};
-
-export const getViewFilterParameterTypeahead = ({
-  windowId,
-  viewId,
-  filterId,
-  parameterName,
-  query,
-  context = {},
-}) => {
-  return axios.post(
-    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/typeahead`,
-    {
-      query: query,
-      context,
-    }
-  );
-};

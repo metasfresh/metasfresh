@@ -1,4 +1,0 @@
-{
-  "type": "AUTHORIZATION_REPLY",
-  "payload": "{\"authToken\":\"authToken\"}"
-}

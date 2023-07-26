@@ -1,12 +1,11 @@
 package de.metas.ui.web.websocket;
 
 import com.google.common.base.Preconditions;
-import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
+
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -20,12 +19,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,8 +40,7 @@ public class WebsocketTopicNames
 	static final String TOPIC_Document = "/document";
 	static final String TOPIC_Board = "/board";
 	public static final String TOPIC_Dashboard = "/dashboard";
-
-	public static final DeviceWebsocketNamingStrategy DEVICES_NAMING_STRATEGY = new DeviceWebsocketNamingStrategy("/devices");
+	public static final String TOPIC_Devices = "/devices";
 
 	public static WebsocketTopicName buildUserSessionTopicName(@NonNull final UserId adUserId)
 	{

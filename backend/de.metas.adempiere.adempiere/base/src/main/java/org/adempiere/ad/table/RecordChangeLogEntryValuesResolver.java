@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
 
-import de.metas.ad_reference.ReferenceId;
 import org.adempiere.ad.session.ISessionDAO;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -52,7 +51,7 @@ final class RecordChangeLogEntryValuesResolver
 	private final POInfo poInfo;
 
 	private final HashMap<String, MLookup> tableLookupsByTableName = new HashMap<>();
-	private final HashMap<ReferenceId, MLookup> listLookupsByReferenceId = new HashMap<>();
+	private final HashMap<Integer, MLookup> listLookupsByReferenceId = new HashMap<>();
 
 	private RecordChangeLogEntryValuesResolver(@NonNull final POInfo poInfo)
 	{
@@ -140,13 +139,13 @@ final class RecordChangeLogEntryValuesResolver
 		final int displayType = poInfo.getColumnDisplayType(columnName);
 		if (DisplayType.List == displayType)
 		{
-			final ReferenceId adReferenceId = poInfo.getColumnReferenceValueId(columnName);
-			if (adReferenceId == null)
+			final int adReferenceId = poInfo.getColumnReferenceValueId(columnName);
+			if (adReferenceId <= 0)
 			{
 				return null;
 			}
 
-			return listLookupsByReferenceId.computeIfAbsent(adReferenceId, k -> MLookupFactory.newInstance().searchInList(adReferenceId));
+			return listLookupsByReferenceId.computeIfAbsent(adReferenceId, MLookupFactory::searchInList);
 		}
 		else
 		{
@@ -156,7 +155,7 @@ final class RecordChangeLogEntryValuesResolver
 				return null;
 			}
 
-			return tableLookupsByTableName.computeIfAbsent(referencedTableName, k -> MLookupFactory.newInstance().searchInTable(referencedTableName));
+			return tableLookupsByTableName.computeIfAbsent(referencedTableName, MLookupFactory::searchInTable);
 		}
 	}
 

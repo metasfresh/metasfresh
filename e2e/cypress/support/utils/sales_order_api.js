@@ -67,16 +67,15 @@ export class SalesOrder {
         body: JSON.stringify([]),
         headers: {
           'Content-Type': 'application/json',
-          accept: 'application/json',
         },
       })
-      .then((newResponse) => {
+      .then(newResponse => {
         if (!newResponse.body.documents) {
           newResponse.body.documents = newResponse.body;
         }
         salesOrder.id = newResponse.body.documents[0].id;
 
-        SalesOrder.getData(basicUri, salesOrder).then((data) => {
+        SalesOrder.getData(basicUri, salesOrder).then(data => {
           const dataObject = [
             {
               op: 'replace',
@@ -93,7 +92,6 @@ export class SalesOrder {
               body: JSON.stringify(dataObject),
               headers: {
                 'Content-Type': 'application/json',
-                accept: 'application/json',
               },
             })
             .then(() => salesOrder);
@@ -113,7 +111,6 @@ export class SalesOrder {
         },
         headers: {
           'Content-Type': 'application/json',
-          accept: 'application/json',
         },
       })
     );
@@ -137,7 +134,6 @@ export class SalesOrder {
         },
         headers: {
           'Content-Type': 'application/json',
-          accept: 'application/json',
         },
       })
     );
@@ -148,7 +144,6 @@ export class SalesOrder {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          accept: 'application/json',
         },
       })
     );
@@ -159,13 +154,24 @@ export class SalesOrder {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          accept: 'application/json',
         },
       })
     );
 
-    return Cypress.Promise.all([bPartnerRequest, bPartnerLocationRequest, invoicePartnerRequest, invoicePartnerLocationRequest, warehouseRequest]).then((vals) => {
-      const [bPartnerResponse, bPartnerLocationResponse, invoicePartnerResponse, invoicePartnerLocationResponse, warehouseResponse] = vals;
+    return Cypress.Promise.all([
+      bPartnerRequest,
+      bPartnerLocationRequest,
+      invoicePartnerRequest,
+      invoicePartnerLocationRequest,
+      warehouseRequest,
+    ]).then(vals => {
+      const [
+        bPartnerResponse,
+        bPartnerLocationResponse,
+        invoicePartnerResponse,
+        invoicePartnerLocationResponse,
+        warehouseResponse,
+      ] = vals;
 
       const bPartner = findByName(bPartnerResponse.result, salesOrder.bPartner);
       if (salesOrder.bPartner && bPartner) {

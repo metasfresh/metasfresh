@@ -76,12 +76,4 @@ public class BPartnerProduct
 	@Nullable
 	Boolean dropShip;
 
-	@Nullable
-	Boolean usedForVendor;
-
-	@Nullable
-	Boolean isExcludedFromPurchase;
-
-	@Nullable
-	String exclusionFromPurchaseReason;
 }

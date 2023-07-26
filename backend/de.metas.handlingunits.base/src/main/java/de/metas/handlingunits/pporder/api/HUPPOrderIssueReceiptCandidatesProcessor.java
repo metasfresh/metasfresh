@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
@@ -17,7 +16,6 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
@@ -29,10 +27,10 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -48,7 +46,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -59,8 +56,6 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
 import org.slf4j.Logger;
 
@@ -128,11 +123,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-	private static final AdMessageKey MSG_ONLY_CLEARED_HUs_CAN_BE_ISSUED = AdMessageKey.of("OnlyClearedHUsCanBeIssued");
 
 	//
 	// Parameters
@@ -213,10 +203,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					.setParameter("candidate", candidate);
 		}
 
-		final ProductId productId = ProductId.ofRepoId(candidate.getM_Product_ID());
-
-		huAttributesBL.validateMandatoryManufacturingAttributes(HuId.ofRepoId(hu.getM_HU_ID()), productId);
-
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID());
 
 		//
@@ -227,7 +213,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				.orderBOMLine(candidate.getPP_Order_BOMLine())
 				.movementDate(TimeUtil.asZonedDateTime(candidate.getMovementDate()))
 				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
-				.productId(productId)
+				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
 				.locatorId(locatorId)
 				.pickingCandidateId(candidate.getM_Picking_Candidate_ID())
 				.build();
@@ -242,9 +228,18 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private I_PP_Cost_Collector processIssueCandidate(final I_PP_Order_Qty candidate)
 	{
 		// NOTE: we assume the candidate was not processed yet
-		final I_M_HU hu = handlingUnitsBL.getById(HuId.ofRepoId(candidate.getM_HU_ID()));
 
-		validateIssueCandidate(hu, PPOrderQtyId.ofRepoId(candidate.getPP_Order_Qty_ID()));
+		//
+		// Validate the HU
+		final I_M_HU hu = candidate.getM_HU();
+		if (!huStatusBL.isStatusActiveOrIssued(hu))
+		{
+			// if operated by the swing-ui, this code has to deal with active HUs because the swingUI skips that part of the workflow
+			throw new HUException("Only HUs with status 'issued' and 'active' can be finalized with their PP_Cost_Collector and destroyed")
+					.setParameter("HU", hu)
+					.setParameter("HUStatus", hu.getHUStatus())
+					.setParameter("candidate", candidate);
+		}
 
 		//
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(candidate.getPP_Order_BOMLine(), I_PP_Order_BOMLine.class);
@@ -569,24 +564,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		}
 	}
 
-	private void validateIssueCandidate(@NonNull final I_M_HU hu, @NonNull final PPOrderQtyId ppOrderQtyId)
-	{
-		// Validate the HU
-		if (!huStatusBL.isStatusActiveOrIssued(hu))
-		{
-			// if operated by the swing-ui, this code has to deal with active HUs because the swingUI skips that part of the workflow
-			throw new HUException("Only HUs with status 'issued' and 'active' can be finalized with their PP_Cost_Collector and destroyed")
-					.setParameter("HU", hu)
-					.setParameter("HUStatus", hu.getHUStatus())
-					.setParameter("PPOrderQtyId", ppOrderQtyId);
-		}
-
-		if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_ONLY_CLEARED_HUs_CAN_BE_ISSUED));
-		}
-	}
-
 	@Data
 	@ToString(exclude = "uomConversionBL")
 	private static final class IssueCandidate
@@ -629,7 +606,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			if (productId.getRepoId() != orderBOMLine.getM_Product_ID())
 			{
 				throw new HUException("Invalid product to issue."
-						+ "\nExpected: " + orderBOMLine.getM_Product_ID()
+						+ "\nExpected: " + orderBOMLine.getM_Product()
 						+ "\nGot: " + productId
 						+ "\n@PP_Order_BOMLine_ID@: " + orderBOMLine);
 			}

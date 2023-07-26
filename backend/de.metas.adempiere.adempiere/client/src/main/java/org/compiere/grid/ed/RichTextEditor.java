@@ -25,19 +25,35 @@ package org.compiere.grid.ed;
  * #L%
  */
 
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
-import net.sf.memoranda.ui.htmleditor.AltHTMLWriter;
-import net.sf.memoranda.ui.htmleditor.HTMLEditor;
-import org.adempiere.images.Images;
-import org.compiere.swing.CPanel;
-import org.compiere.util.Env;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.StringWriter;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
+
+import org.adempiere.images.Images;
+import org.compiere.apps.ADialogDialog;
+import org.compiere.print.ReportEngine;
+import org.compiere.swing.CPanel;
+import org.compiere.util.Env;
+
+import de.metas.i18n.Msg;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import net.sf.memoranda.ui.htmleditor.AltHTMLWriter;
+import net.sf.memoranda.ui.htmleditor.HTMLEditor;
 
 /**
  * @author teo_sarca
@@ -293,7 +309,7 @@ public class RichTextEditor extends CPanel
 
 	public File getPDF(String fileNamePrefix)
 	{
-		throw new UnsupportedOperationException();
+		return MADBoilerPlate.getPDF(fileNamePrefix, getHtmlText(), getAttributes());
 	}
 
 	private void actionPreview()
@@ -325,7 +341,19 @@ public class RichTextEditor extends CPanel
 
 	public boolean print()
 	{
-		throw new UnsupportedOperationException();
+		ReportEngine re = MADBoilerPlate.getReportEngine(getHtmlText(), getAttributes());
+		int retValue = ADialogDialog.A_CANCEL;
+		do
+		{
+			re.print();
+			ADialogDialog d = new ADialogDialog(getParentDialog(),
+					"Print", // Env.getHeader(Env.getCtx(), windowNo),
+					Msg.getMsg(Env.getCtx(), "PrintoutOK?"),
+					JOptionPane.QUESTION_MESSAGE);
+			retValue = d.getReturnCode();
+		}
+		while (retValue == ADialogDialog.A_CANCEL);
+		return retValue == ADialogDialog.A_OK;
 	}
 
 	public static boolean isHtml(String s)

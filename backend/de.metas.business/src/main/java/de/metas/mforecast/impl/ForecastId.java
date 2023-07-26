@@ -24,11 +24,17 @@ package de.metas.mforecast.impl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
 
 @Value
 public class ForecastId implements RepoIdAware
@@ -39,7 +45,6 @@ public class ForecastId implements RepoIdAware
 		return new ForecastId(repoId);
 	}
 
-	@Nullable
 	public static ForecastId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ForecastId(repoId) : null;

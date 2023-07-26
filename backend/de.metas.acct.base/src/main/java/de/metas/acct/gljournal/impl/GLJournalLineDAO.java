@@ -156,10 +156,4 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 		return lastLineNo;
 
 	}
-
-	@Override
-	public void save(final I_GL_JournalLine glJournalLine)
-	{
-		InterfaceWrapperHelper.save(glJournalLine);
-	}
 }

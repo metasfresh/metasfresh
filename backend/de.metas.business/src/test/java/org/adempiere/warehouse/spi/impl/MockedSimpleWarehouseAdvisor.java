@@ -22,7 +22,6 @@ package org.adempiere.warehouse.spi.impl;
  * #L%
  */
 
-import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
@@ -47,7 +46,7 @@ public class MockedSimpleWarehouseAdvisor extends WarehouseAdvisor
 	}
 
 	@Override
-	protected WarehouseId findOrderWarehouseId(final @NonNull I_C_Order order)
+	protected WarehouseId findOrderWarehouseId(final I_C_Order order)
 	{
 		return warehouseId;
 	}

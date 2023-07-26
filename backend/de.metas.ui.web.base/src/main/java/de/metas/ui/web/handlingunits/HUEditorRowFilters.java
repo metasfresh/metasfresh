@@ -140,7 +140,7 @@ public class HUEditorRowFilters
 		// }
 
 		// Exclude M_HU_IDs
-		huQueryBuilder.addHUIdsToExclude(filter.getExcludeHUIds());
+		huQueryBuilder.addHUIdsToExclude(HuId.toRepoIds(filter.getExcludeHUIds()));
 
 		// Include HUStatuses
 		huQueryBuilder.addHUStatusesToInclude(filter.getOnlyHUStatuses());

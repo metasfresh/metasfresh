@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_QuickInput
  *  @author metasfresh (generated) 
@@ -138,48 +137,6 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Kunden E-Mail Adresse.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_Location_Email (@Nullable java.lang.String C_BPartner_Location_Email);
-
-	/**
-	 * Get Kunden E-Mail Adresse.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getC_BPartner_Location_Email();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_C_BPartner_Location_Email = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_BPartner_Location_Email", null);
-	String COLUMNNAME_C_BPartner_Location_Email = "C_BPartner_Location_Email";
-
-	/**
-	 * Set Telefax.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_Location_Fax (@Nullable java.lang.String C_BPartner_Location_Fax);
-
-	/**
-	 * Get Telefax.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getC_BPartner_Location_Fax();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_C_BPartner_Location_Fax = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_BPartner_Location_Fax", null);
-	String COLUMNNAME_C_BPartner_Location_Fax = "C_BPartner_Location_Fax";
-
-	/**
 	 * Set Location.
 	 *
 	 * <br>Type: Search
@@ -198,48 +155,6 @@ public interface I_C_BPartner_QuickInput
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
-	 * Set Mobil.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_Location_Mobile (@Nullable java.lang.String C_BPartner_Location_Mobile);
-
-	/**
-	 * Get Mobil.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getC_BPartner_Location_Mobile();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_C_BPartner_Location_Mobile = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_BPartner_Location_Mobile", null);
-	String COLUMNNAME_C_BPartner_Location_Mobile = "C_BPartner_Location_Mobile";
-
-	/**
-	 * Set Telefon.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_Location_Phone (@Nullable java.lang.String C_BPartner_Location_Phone);
-
-	/**
-	 * Get Telefon.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getC_BPartner_Location_Phone();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_C_BPartner_Location_Phone = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_BPartner_Location_Phone", null);
-	String COLUMNNAME_C_BPartner_Location_Phone = "C_BPartner_Location_Phone";
 
 	/**
 	 * Set New BPartner quick input.
@@ -288,28 +203,6 @@ public interface I_C_BPartner_QuickInput
 
 	ModelColumn<I_C_BPartner_QuickInput, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
-
-	/**
-	 * Set Document Type.
-	 * Target document type for conversing documents
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
-
-	/**
-	 * Get Document Type.
-	 * Target document type for conversing documents
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DocTypeTarget_ID();
-
-	String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 
 	/**
 	 * Set Greeting (ID).
@@ -471,29 +364,6 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_ExcludeFromPromotions = "ExcludeFromPromotions";
 
 	/**
-	 * Set Firstname.
-	 * Firstname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFirstname (@Nullable java.lang.String Firstname);
-
-	/**
-	 * Get Firstname.
-	 * Firstname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getFirstname();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Firstname = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Firstname", null);
-	String COLUMNNAME_Firstname = "Firstname";
-
-	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -605,29 +475,6 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_IsVendor = "IsVendor";
 
 	/**
-	 * Set Lastname.
-	 * Lastname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLastname (@Nullable java.lang.String Lastname);
-
-	/**
-	 * Get Lastname.
-	 * Lastname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getLastname();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Lastname = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Lastname", null);
-	String COLUMNNAME_Lastname = "Lastname";
-
-	/**
 	 * Set Marketing Campaign.
 	 *
 	 * <br>Type: TableDir
@@ -690,29 +537,6 @@ public interface I_C_BPartner_QuickInput
 
 	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Name2 = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Name2", null);
 	String COLUMNNAME_Name2 = "Name2";
-
-	/**
-	 * Set Payment Rule.
-	 * How you pay the invoice
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPaymentRule (@Nullable java.lang.String PaymentRule);
-
-	/**
-	 * Get Payment Rule.
-	 * How you pay the invoice
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPaymentRule();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_BPartner_QuickInput.class, "PaymentRule", null);
-	String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
 	 * Set Phone.
@@ -847,25 +671,4 @@ public interface I_C_BPartner_QuickInput
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set VAT ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setVATaxID (@Nullable java.lang.String VATaxID);
-
-	/**
-	 * Get VAT ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getVATaxID();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_VATaxID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "VATaxID", null);
-	String COLUMNNAME_VATaxID = "VATaxID";
 }

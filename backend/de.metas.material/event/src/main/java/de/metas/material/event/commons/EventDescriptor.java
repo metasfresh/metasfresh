@@ -1,17 +1,16 @@
 package de.metas.material.event.commons;
 
+import org.adempiere.service.ClientId;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.service.ClientId;
-
-import javax.annotation.Nullable;
-import java.util.UUID;
 
 /*
  * #%L
@@ -36,7 +35,7 @@ import java.util.UUID;
  */
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class EventDescriptor
+public final class EventDescriptor
 {
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{
@@ -50,37 +49,17 @@ public class EventDescriptor
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		return new EventDescriptor(clientAndOrgId, UUID.randomUUID().toString(), null);
-	}
-
-	public static EventDescriptor ofClientOrgAndTraceId(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final String traceId)
-	{
-		return new EventDescriptor(clientAndOrgId, UUID.randomUUID().toString(), traceId);
-	}
-
-	public static EventDescriptor ofEventDescriptor(@NonNull final EventDescriptor eventDescriptor)
-	{
-		return ofClientOrgAndTraceId(eventDescriptor.clientAndOrgId, eventDescriptor.getTraceId());
+		return new EventDescriptor(clientAndOrgId);
 	}
 
 	@JsonProperty("clientAndOrgId")
 	ClientAndOrgId clientAndOrgId;
 
-	@JsonProperty("eventId")
-	String eventId;
-
-	@JsonProperty("traceId")
-	String traceId;
-
 	@JsonCreator
 	private EventDescriptor(
-			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
-			@JsonProperty("eventId") @NonNull final String eventId,
-			@JsonProperty("traceId") @Nullable final String traceId)
+			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		this.clientAndOrgId = clientAndOrgId;
-		this.eventId = eventId;
-		this.traceId = traceId;
 	}
 
 	public ClientId getClientId()

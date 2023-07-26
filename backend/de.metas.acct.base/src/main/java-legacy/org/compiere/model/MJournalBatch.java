@@ -16,40 +16,40 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.document.DocBaseType;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.IMsgBL;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.DB;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  *  Journal Batch Model
  *
- *    @author Jorg Janke
+ *	@author Jorg Janke
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * 			<li>FR [ 1948157  ]  Is necessary the reference for document reverse
- *        @see <a href="http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962">...</a>
+ *  		@see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
  * 			<li> FR [ 2520591 ] Support multiples calendar for Org
- *            @see <a href="http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962">...</a>
+ *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *  @author Teo Sarca, www.arhipac.ro
  * 			<li>FR [ 1776045 ] Add ReActivate action to GL Journal
- *    @version $Id: MJournalBatch.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+ *	@version $Id: MJournalBatch.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 {
@@ -58,10 +58,51 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	 */
 	private static final long serialVersionUID = -2494833602067696046L;
 
+	/**
+	 * 	Create new Journal Batch by copying
+	 * 	@param ctx context
+	 *	@param GL_JournalBatch_ID journal batch
+	 * 	@param dateDoc date of the document date
+	 *	@param trxName transaction
+	 *	@return Journal Batch
+	 */
+	public static MJournalBatch copyFrom (Properties ctx, int GL_JournalBatch_ID,
+		Timestamp dateDoc, String trxName)
+	{
+		MJournalBatch from = new MJournalBatch (ctx, GL_JournalBatch_ID, trxName);
+		if (from.getGL_JournalBatch_ID() == 0)
+			throw new IllegalArgumentException ("From Journal Batch not found GL_JournalBatch_ID=" + GL_JournalBatch_ID);
+		//
+		MJournalBatch to = new MJournalBatch (ctx, 0, trxName);
+		PO.copyValues(from, to, from.getAD_Client_ID(), from.getAD_Org_ID());
+		to.set_ValueNoCheck ("DocumentNo", null);
+		to.setDateAcct(dateDoc);
+		to.setDateDoc(dateDoc);
+		to.setDocStatus(DOCSTATUS_Drafted);
+		to.setDocAction(DOCACTION_Complete);
+		to.setIsApproved(false);
+		to.setProcessed (false);
+		//
+		if (!to.save())
+			throw new IllegalStateException("Could not create Journal Batch");
+
+		if (to.copyDetailsFrom(from) == 0)
+			throw new IllegalStateException("Could not create Journal Batch Details");
+
+		return to;
+	}	//	copyFrom
+
+
+	/**************************************************************************
+	 * 	Standard Construvtore
+	 *	@param ctx context
+	 *	@param GL_JournalBatch_ID id if 0 - create actual batch
+	 *	@param trxName transaction
+	 */
 	public MJournalBatch (Properties ctx, int GL_JournalBatch_ID, String trxName)
 	{
 		super (ctx, GL_JournalBatch_ID, trxName);
-		if (is_new())
+		if (GL_JournalBatch_ID == 0)
 		{
 		//	setGL_JournalBatch_ID (0);	PK
 		//	setDescription (null);
@@ -78,7 +119,12 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		}
 	}	//	MJournalBatch
 
-	@SuppressWarnings("unused")
+	/**
+	 * 	Load Constructor
+	 *	@param ctx context
+	 *	@param rs result set
+	 *	@param trxName transaction
+	 */
 	public MJournalBatch (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -125,10 +171,24 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	}	//	setClientOrg
 
 	/**
-	 * 	Get Journal Lines
-	 *    @return Array of lines
+	 * 	Set Accounting Date.
+	 * 	Set also Period if not set earlier
+	 *	@param DateAcct date
 	 */
-	private MJournal[] getJournals ()
+	@Override
+	public void setDateAcct (Timestamp DateAcct)
+	{
+		super.setDateAcct(DateAcct);
+		if (DateAcct == null)
+			return;
+	}	//	setDateAcct
+
+	/**
+	 * 	Get Journal Lines
+	 * 	@param requery requery
+	 *	@return Array of lines
+	 */
+	public MJournal[] getJournals (boolean requery)
 	{
 		ArrayList<MJournal> list = new ArrayList<>();
 		String sql = "SELECT * FROM GL_Journal WHERE GL_JournalBatch_ID=? ORDER BY DocumentNo";
@@ -162,6 +222,47 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		list.toArray(retValue);
 		return retValue;
 	}	//	getJournals
+
+	/**
+	 * 	Copy Journal/Lines from other Journal Batch
+	 *	@param jb Journal Batch
+	 *	@return number of journals + lines copied
+	 */
+	private int copyDetailsFrom (MJournalBatch jb)
+	{
+		if (isProcessed() || jb == null)
+			return 0;
+		int count = 0;
+		int lineCount = 0;
+		MJournal[] fromJournals = jb.getJournals(false);
+		for (MJournal fromJournal : fromJournals)
+		{
+			MJournal toJournal = new MJournal (getCtx(), 0, jb.get_TrxName());
+			PO.copyValues(fromJournal, toJournal, getAD_Client_ID(), getAD_Org_ID());
+			toJournal.setGL_JournalBatch_ID(getGL_JournalBatch_ID());
+			toJournal.set_ValueNoCheck ("DocumentNo", null);	//	create new
+			toJournal.setDateDoc(getDateDoc());		//	dates from this Batch
+			toJournal.setDateAcct(getDateAcct());
+			toJournal.setDocStatus(MJournal.DOCSTATUS_Drafted);
+			toJournal.setDocAction(MJournal.DOCACTION_Complete);
+			toJournal.setTotalCr(BigDecimal.ZERO);
+			toJournal.setTotalDr(BigDecimal.ZERO);
+			toJournal.setIsApproved(false);
+			toJournal.setIsPrinted(false);
+			toJournal.setPosted(false);
+			toJournal.setProcessed(false);
+			if (toJournal.save())
+			{
+				count++;
+				lineCount += toJournal.copyLinesFrom(fromJournal, getDateAcct(), 'x');
+			}
+		}
+		if (fromJournals.length != count)
+			log.error("Line difference - Journals=" + fromJournals.length + " <> Saved=" + count);
+
+		return count + lineCount;
+	}	//	copyLinesFrom
+
 
 	@Override
 	public boolean processIt(final String processAction)
@@ -212,14 +313,14 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
 		}
 
 		//	Add up Amounts & prepare them
-		MJournal[] journals = getJournals();
+		MJournal[] journals = getJournals(false);
 		if (journals.length == 0)
 		{
 			m_processMsg = "@NoLines@";
@@ -325,7 +426,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		approveIt();
 
 		//	Add up Amounts & complete them
-		MJournal[] journals = getJournals();
+		MJournal[] journals = getJournals(true);
 		BigDecimal TotalDr = BigDecimal.ZERO;
 		BigDecimal TotalCr = BigDecimal.ZERO;		
 		for (final MJournal journal : journals)
@@ -433,7 +534,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		MJournal[] journals = getJournals();
+		MJournal[] journals = getJournals(true);
 		for (MJournal journal2 : journals)
 		{
 			MJournal journal = journal2;
@@ -490,7 +591,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		MJournal[] journals = getJournals();
+		MJournal[] journals = getJournals(true);
 		//	check prerequisites
 		for (MJournal journal2 : journals)
 		{
@@ -573,7 +674,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		MJournal[] journals = getJournals();
+		MJournal[] journals = getJournals(true);
 		//	check prerequisites
 		for (MJournal journal2 : journals)
 		{
@@ -637,7 +738,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		if (m_processMsg != null)
 			return false;
 
-		for (MJournal journal : getJournals())
+		for (MJournal journal : getJournals(true))
 		{
 			if (DOCSTATUS_Completed.equals(journal.getDocStatus()))
 			{
@@ -679,7 +780,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		.append(msgBL.translate(getCtx(),"TotalDr")).append("=").append(getTotalDr())
 		.append(" ")
 		.append(msgBL.translate(getCtx(),"TotalCR")).append("=").append(getTotalCr())
-		.append(" (#").append(getJournals().length).append(")");
+		.append(" (#").append(getJournals(false).length).append(")");
 		//	 - Description
 		if (getDescription() != null && getDescription().length() > 0)
 			sb.append(" - ").append(getDescription());
@@ -687,9 +788,9 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 	}	//	getSummary
 
 	@Override
-	public InstantAndOrgId getDocumentDate()
+	public LocalDate getDocumentDate()
 	{
-		return InstantAndOrgId.ofTimestamp(getDateDoc(), OrgId.ofRepoId(getAD_Org_ID()));
+		return TimeUtil.asLocalDate(getDateDoc());
 	}
 
 	/**

@@ -1,90 +1,112 @@
-import React from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import React, { Component } from 'react';
+import { DragSource, DropTarget } from 'react-dnd';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-const DndWidget = (props) => {
-  const {
-    id,
-    index,
-    entity,
-    isNew,
-    transparent,
-    placeholder,
-    className,
-    //
-    children,
-    //
-    onDrop,
-    onRemove,
-  } = props;
-
-  if (transparent) return <div {...{ className }}>{children}</div>;
-
-  //
-  // dragging
-  let isDragging, connectDragSource;
-  if (!placeholder) {
-    [{ isDragging }, connectDragSource] = useDrag({
-      type: entity,
-      item: { id, index, entity, isNew: !!isNew },
-    });
-  } else {
-    isDragging = false;
-    connectDragSource = (element) => element;
-  }
-
-  //
-  // dropping
-  let connectDropTarget;
-  if (!isNew && onDrop) {
-    [, connectDropTarget] = useDrop({
-      accept: entity,
-      drop: (item) =>
-        onDrop({
-          entity: item.entity,
-          id: item.id,
-          isNew: item.isNew,
-          droppedOverId: id,
-        }),
-    });
-  } else {
-    connectDropTarget = (element) => element;
-  }
-
-  return connectDragSource(
-    connectDropTarget(
-      <div
-        className={classnames(className, 'dnd-widget', {
-          dragging: isDragging,
-          'dnd-placeholder': placeholder,
-        })}
-      >
-        {!placeholder && onRemove && (
-          <i
-            className="meta-icon-trash draggable-icon-remove pointer"
-            onClick={() => onRemove(entity, index, id)}
-          />
-        )}
-        {children}
-      </div>
-    )
-  );
+const cardSource = {
+  beginDrag(props) {
+    return {
+      id: props.id,
+      index: props.index,
+      isNew: props.isNew,
+    };
+  },
 };
+
+const cardTarget = {
+  hover(props, monitor) {
+    const dragIndex = monitor.getItem().index;
+    const hoverIndex = props.index;
+
+    if (dragIndex === hoverIndex || monitor.getItem().id === props.id) {
+      return;
+    }
+
+    props.moveCard &&
+      props.moveCard(props.entity, dragIndex, hoverIndex, monitor.getItem());
+    monitor.getItem().index = hoverIndex;
+  },
+  drop(props, monitor) {
+    if (monitor.getItem().isNew && props.addCard) {
+      props.addCard(props.entity, monitor.getItem().id);
+    } else {
+      props.onDrop && props.onDrop(props.entity, monitor.getItem().id);
+    }
+  },
+};
+
+function collect(connect, monitor) {
+  return {
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging(),
+  };
+}
+
+function connect(connect) {
+  return {
+    connectDropTarget: connect.dropTarget(),
+  };
+}
+
+export class DndWidget extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    const {
+      children,
+      connectDragSource,
+      connectDropTarget,
+      isDragging,
+      className,
+      transparent,
+      removeCard,
+      entity,
+      id,
+      placeholder,
+      index,
+    } = this.props;
+
+    if (transparent) return <div {...{ className }}>{children}</div>;
+
+    return connectDragSource(
+      connectDropTarget(
+        <div
+          className={classnames(className, 'dnd-widget', {
+            dragging: isDragging,
+            'dnd-placeholder': placeholder,
+          })}
+        >
+          {!placeholder && removeCard && (
+            <i
+              className="meta-icon-trash draggable-icon-remove pointer"
+              onClick={() => removeCard(entity, index, id)}
+            />
+          )}
+          {children}
+        </div>
+      )
+    );
+  }
+}
 
 DndWidget.propTypes = {
-  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-  index: PropTypes.number.isRequired,
-  entity: PropTypes.string.isRequired,
-  isNew: PropTypes.bool,
-  placeholder: PropTypes.bool,
-  transparent: PropTypes.bool,
-  className: PropTypes.string,
-  //
   children: PropTypes.any,
-  //
-  onDrop: PropTypes.func,
-  onRemove: PropTypes.func,
+  connectDragSource: PropTypes.func,
+  connectDropTarget: PropTypes.func,
+  className: PropTypes.string,
+  transparent: PropTypes.bool,
+  removeCard: PropTypes.func,
+  entity: PropTypes.any,
+  id: PropTypes.number,
+  placeholder: PropTypes.string,
+  index: PropTypes.number,
+  isDragging: PropTypes.any,
 };
 
-export default DndWidget;
+export default DragSource(
+  (props) => props.entity,
+  cardSource,
+  collect
+)(DropTarget((props) => props.entity, cardTarget, connect)(DndWidget));

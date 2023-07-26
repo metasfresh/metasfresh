@@ -51,7 +51,7 @@ import de.metas.util.Services;
  */
 /* package */class HUPackingMaterialMovementLineAggregateBuilder
 {
-	public static HUPackingMaterialMovementLineAggregateBuilder newInstance()
+	public static final HUPackingMaterialMovementLineAggregateBuilder newInstance()
 	{
 		return new HUPackingMaterialMovementLineAggregateBuilder();
 	}
@@ -85,7 +85,7 @@ import de.metas.util.Services;
 		return this;
 	}
 
-	private I_M_Movement getM_Movement()
+	private final I_M_Movement getM_Movement()
 	{
 		Check.assumeNotNull(_movement, "_movement not null");
 		return _movement;

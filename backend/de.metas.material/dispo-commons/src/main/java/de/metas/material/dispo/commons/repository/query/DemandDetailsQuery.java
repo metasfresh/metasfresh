@@ -1,6 +1,11 @@
 package de.metas.material.dispo.commons.repository.query;
 
-import de.metas.common.util.IdConstants;
+import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toUnspecifiedIfZero;
+
+import javax.annotation.Nullable;
+
+import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
@@ -8,11 +13,6 @@ import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-
-import static de.metas.common.util.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.common.util.IdConstants.toUnspecifiedIfZero;
 
 /*
  * #%L
@@ -47,7 +47,6 @@ public class DemandDetailsQuery
 				shipmentScheduleId,
 				UNSPECIFIED_REPO_ID,
 				UNSPECIFIED_REPO_ID,
-				UNSPECIFIED_REPO_ID,
 				UNSPECIFIED_REPO_ID);
 	}
 
@@ -57,8 +56,7 @@ public class DemandDetailsQuery
 				UNSPECIFIED_REPO_ID,
 				UNSPECIFIED_REPO_ID,
 				UNSPECIFIED_REPO_ID,
-				forecastLineId,
-				UNSPECIFIED_REPO_ID);
+				forecastLineId);
 	}
 
 	public static DemandDetailsQuery ofDemandDetailOrNull(@Nullable final DemandDetail demandDetail)
@@ -72,8 +70,7 @@ public class DemandDetailsQuery
 				toUnspecifiedIfZero(demandDetail.getShipmentScheduleId()),
 				toUnspecifiedIfZero(demandDetail.getOrderLineId()),
 				toUnspecifiedIfZero(demandDetail.getSubscriptionProgressId()),
-				toUnspecifiedIfZero(demandDetail.getForecastLineId()),
-				toUnspecifiedIfZero(demandDetail.getInOutLineId()));
+				toUnspecifiedIfZero(demandDetail.getForecastLineId()));
 	}
 
 	public static DemandDetailsQuery forDocumentLine(
@@ -86,7 +83,6 @@ public class DemandDetailsQuery
 					UNSPECIFIED_REPO_ID,
 					orderLineDescriptor.getOrderLineId(),
 					UNSPECIFIED_REPO_ID,
-					UNSPECIFIED_REPO_ID,
 					UNSPECIFIED_REPO_ID);
 		}
 		else if (documentLineDescriptor instanceof SubscriptionLineDescriptor)
@@ -96,7 +92,6 @@ public class DemandDetailsQuery
 					UNSPECIFIED_REPO_ID,
 					UNSPECIFIED_REPO_ID,
 					subscriptionLineDescriptor.getSubscriptionProgressId(),
-					UNSPECIFIED_REPO_ID,
 					UNSPECIFIED_REPO_ID);
 		}
 		else
@@ -107,17 +102,6 @@ public class DemandDetailsQuery
 		return null;
 	}
 
-	public static DemandDetailsQuery ofShipmentLineId(final int inOutLineId)
-	{
-		Check.assumeGreaterThanZero(inOutLineId, "inOutLineId");
-		return new DemandDetailsQuery(
-				UNSPECIFIED_REPO_ID,
-				UNSPECIFIED_REPO_ID,
-				UNSPECIFIED_REPO_ID,
-				UNSPECIFIED_REPO_ID,
-				inOutLineId);
-	}
-
 	int shipmentScheduleId;
 
 	int orderLineId;
@@ -125,25 +109,20 @@ public class DemandDetailsQuery
 
 	int forecastLineId;
 
-	int inOutLineId;
-
 	private DemandDetailsQuery(
 			final int shipmentScheduleId,
 			final int orderLineId,
 			final int subscriptionLineId,
-			final int forecastLineId,
-			final int inOutLineId)
+			final int forecastLineId)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.orderLineId = orderLineId;
 		this.subscriptionLineId = subscriptionLineId;
 		this.forecastLineId = forecastLineId;
-		this.inOutLineId = inOutLineId;
 
 		IdConstants.assertValidId(shipmentScheduleId, "shipmentScheduleId");
 		IdConstants.assertValidId(orderLineId, "orderLineId");
 		IdConstants.assertValidId(subscriptionLineId, "subscriptionLineId");
 		IdConstants.assertValidId(forecastLineId, "forecastLineId");
-		IdConstants.assertValidId(inOutLineId, "inOutLineId");
 	}
 }

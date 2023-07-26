@@ -41,7 +41,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
 		}
 
-		if (rowsService.noRowsEligibleForPicking(getSelectedRows()))
+		if (!rowsService.anyRowsEligibleForPicking(getSelectedRows()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}

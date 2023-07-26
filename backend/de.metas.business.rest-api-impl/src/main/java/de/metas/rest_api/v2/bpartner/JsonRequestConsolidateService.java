@@ -31,7 +31,6 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -59,7 +58,7 @@ public class JsonRequestConsolidateService
 
 		consolidateWithIdentifier(bpartnerComposite.getLocationsNotNull());
 
-		// note that bank-accounts and creditLimits don't need this treatment yet because they don't have the identifier stuff etc
+		// note that bank-accounts don't need this treatment yet because they don't have the identifier stuff etc
 	}
 
 	public void consolidateWithIdentifier(@NonNull final JsonRequestContactUpsert contacts)
@@ -75,30 +74,6 @@ public class JsonRequestConsolidateService
 		for (final JsonRequestLocationUpsertItem locationRequestItem : locations.getRequestItems())
 		{
 			consolidateWithIdentifier(locationRequestItem);
-		}
-	}
-
-	public static void consolidateWithOrg(@NonNull final JsonRequestBPartnerUpsertItem requestItem, @Nullable final String orgCode)
-	{
-		if (Check.isBlank(orgCode))
-		{
-			//nothing to consolidate
-			return;
-		}
-
-		final String requestItemOrgCode = requestItem.getBpartnerComposite().getOrgCode();
-
-		if (Check.isBlank(requestItemOrgCode))
-		{
-			requestItem.getBpartnerComposite().setOrgCode(orgCode);
-			return;
-		}
-
-		if (!orgCode.equals(requestItemOrgCode))
-		{
-			throw new AdempiereException("Path parameter orgCode: " + orgCode + " and JsonRequestComposite.OrgCode: " + requestItemOrgCode + " don't match!")
-					.appendParametersToMessage()
-					.setParameter(requestItem.getBpartnerIdentifier(), "BPartnerIdentifier");
 		}
 	}
 

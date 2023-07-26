@@ -235,7 +235,7 @@ public class JavaAssistInterceptor extends AbstractBaseInterceptor
 				factory.setHandler(handler);
 
 				@SuppressWarnings("unchecked")
-				final Class<T> serviceInstanceInterceptedClass = (Class<T>) factory.createClass();
+				final Class<T> serviceInstanceInterceptedClass = factory.createClass();
 
 				return serviceInstanceInterceptedClass;
 			}

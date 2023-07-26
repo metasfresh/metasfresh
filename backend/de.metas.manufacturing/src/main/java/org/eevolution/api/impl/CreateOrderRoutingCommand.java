@@ -27,7 +27,7 @@ import org.eevolution.api.PPOrderRoutingProductId;
 import org.eevolution.exceptions.RoutingExpiredException;
 
 import java.time.Duration;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -53,10 +53,9 @@ import java.time.Instant;
 
 final class CreateOrderRoutingCommand
 {
-
 	private final PPRouting routing;
 	private final PPOrderId ppOrderId;
-	private final Instant dateStartSchedule;
+	private final LocalDateTime dateStartSchedule;
 	private final Quantity qtyOrdered;
 
 	@Builder
@@ -65,11 +64,10 @@ final class CreateOrderRoutingCommand
 			@NonNull final PPOrderId ppOrderId,
 			//
 			@NonNull final Quantity qtyOrdered,
-			@NonNull final Instant dateStartSchedule)
+			@NonNull final LocalDateTime dateStartSchedule)
 	{
-		final IPPRoutingRepository routingRepo = Services.get(IPPRoutingRepository.class);
-
-		routing = routingRepo.getById(routingId);
+		final IPPRoutingRepository routingsRepo = Services.get(IPPRoutingRepository.class);
+		routing = routingsRepo.getById(routingId);
 		this.ppOrderId = ppOrderId;
 
 		this.qtyOrdered = qtyOrdered;
@@ -188,17 +186,13 @@ final class CreateOrderRoutingCommand
 
 		return PPOrderRoutingActivity.builder()
 				.id(null) // n/a
-				.type(activity.getType())
 				.routingActivityId(activity.getId())
 				.code(PPOrderRoutingActivityCode.ofString(activity.getCode()))
-				.name(activity.getName())
 				//
 				.subcontracting(activity.isSubcontracting())
 				.subcontractingVendorId(activity.getSubcontractingVendorId())
 				//
 				.milestone(activity.isMilestone())
-				.alwaysAvailableToUser(activity.getAlwaysAvailableToUser())
-				.userInstructions(activity.getUserInstructions())
 				//
 				.resourceId(activity.getResourceId())
 				//

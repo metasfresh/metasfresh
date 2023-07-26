@@ -68,13 +68,11 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -121,9 +119,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	private final MLookupFactory lookupFactory = MLookupFactory.newInstance();
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.QueryType";
 
@@ -132,9 +127,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private static final String SYSCONFIG_DISPLAY_AVAILABILITY_INFO_ONLY_IF_POSITIVE = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.DisplayOnlyPositive";
-
-	private static final String SYSCONFIG_FILTER_OUT_PRODUCTS_BASED_ON_SECTION_CODE = //
-			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.FilterProductsBasedOnSectionCode";
 
 	private static final String SYSCONFIG_DisableFullTextSearch = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.DisableFullTextSearch";
@@ -147,8 +139,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final CtxName param_C_BPartner_ID;
 	private final CtxName param_PricingDate;
 	private final CtxName param_AvailableStockDate;
-	@Nullable
-	private final CtxName param_M_SectionCode_ID;
 	private static final CtxName param_AD_Client_ID = CtxNames.ofNameAndDefaultValue(WindowConstants.FIELDNAME_AD_Client_ID, "-1");
 
 	private static final CtxName param_M_PriceList_ID = CtxNames.ofNameAndDefaultValue("M_PriceList_ID", "-1");
@@ -175,7 +165,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
 			@NonNull final String availableStockDateParamName,
-			@Nullable final String sectionCodeParamName,
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
 			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
@@ -184,7 +173,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
-		param_M_SectionCode_ID = CtxNames.ofNullableNameAndDefaultValue(sectionCodeParamName, "-1");
 
 		this.hideDiscontinued = hideDiscontinued;
 
@@ -195,12 +183,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		this.excludeBOMProducts = excludeBOMProducts;
 
-		final ImmutableSet.Builder<CtxName> ctxNamesNeededForQuerySetBuilder = ImmutableSet.builder();
-
-		ctxNamesNeededForQuerySetBuilder.add(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
-		Optional.ofNullable(param_M_SectionCode_ID).ifPresent(ctxNamesNeededForQuerySetBuilder::add);
-
-		ctxNamesNeededForQuery = ctxNamesNeededForQuerySetBuilder.build();
+		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
 
 		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
@@ -210,13 +193,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
-			@Nullable final String sectionCodeParamName,
 			final boolean hideDiscontinued,
 			final boolean excludeBOMProducts)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
-		param_M_SectionCode_ID = CtxNames.ofNullableNameAndDefaultValue(sectionCodeParamName, "-1");
 		this.hideDiscontinued = hideDiscontinued;
 
 		param_AvailableStockDate = null;
@@ -226,12 +207,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		this.excludeBOMProducts = excludeBOMProducts;
 
-		final ImmutableSet.Builder<CtxName> ctxNamesNeededForQuerySetBuilder = ImmutableSet.builder();
-
-		ctxNamesNeededForQuerySetBuilder.add(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
-		Optional.ofNullable(param_M_SectionCode_ID).ifPresent(ctxNamesNeededForQuerySetBuilder::add);
-
-		ctxNamesNeededForQuery = ctxNamesNeededForQuerySetBuilder.build();
+		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 
 		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
@@ -415,21 +391,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		sqlWhereClause.append("\n p.").append(I_M_Product_Lookup_V.COLUMNNAME_IsActive).append("=").append(sqlWhereClauseParams.placeholder(true));
 	}
 
-	private void appendFilterByDiscontinued(@NonNull final StringBuilder sqlWhereClause, @NonNull final SqlParamsCollector sqlWhereClauseParams, @NonNull final LookupDataSourceContext evalCtx)
+	private static void appendFilterByDiscontinued(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams)
 	{
-		final Timestamp priceDate = TimeUtil.asTimestamp(getEffectivePricingDate(evalCtx));
-
-		sqlWhereClause.append("\n AND ")
-				//@formatter:off
-				.append(" ( ")
-					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append(" = ").append(sqlWhereClauseParams.placeholder(false))
-				.append(" OR ")
-					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append(" = ").append(sqlWhereClauseParams.placeholder(true))
-					// note: if DiscontinuedFrom='Y' and DiscontinuedFrom is null, then the SQL does not match, which is what we want
-				.append(" AND ")
-					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom).append(" > ").append(sqlWhereClauseParams.placeholder(priceDate))
-				.append(" ) ");
-		//@formatter:on
+		sqlWhereClause.append("\n AND p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append("=").append(sqlWhereClauseParams.placeholder(false));
 	}
 
 	private static IntegerLookupValue createProductLookupValue(final ProductWithAvailabilityInfo productWithAvailabilityInfo, final String adLanguage)
@@ -534,24 +498,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 	}
 
-	private void appendFilterBySectionCode(
-			@NonNull final StringBuilder sqlWhereClause,
-			@NonNull final SqlParamsCollector sqlWhereClauseParams,
-			@NonNull final LookupDataSourceContext evalCtx)
-	{
-		if (!isFilterProductsBasedOnSectionCodeEnabled())
-		{
-			return;
-		}
-
-		Optional.ofNullable(param_M_SectionCode_ID)
-				.map(param -> param.getValueAsInteger(evalCtx))
-				.filter(sectionCodeId -> sectionCodeId > 0)
-				.ifPresent(sectionCodeId -> sqlWhereClause
-						.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID + "=")
-						.append(sqlWhereClauseParams.placeholder(sectionCodeId)));
-	}
-
 	private void appendFilterByPriceList(
 			@NonNull final StringBuilder sqlWhereClause,
 			@NonNull final SqlParamsCollector sqlWhereClauseParams,
@@ -654,7 +600,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return true;
 		}
-
+		
 		if (EmptyUtil.isBlank(filter))
 		{
 			return false;
@@ -695,7 +641,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByIsActive(sqlWhereClause, sqlWhereClauseParams);
 		if (this.isHideDiscontinued())
 		{
-			appendFilterByDiscontinued(sqlWhereClause, sqlWhereClauseParams, evalCtx);
+			appendFilterByDiscontinued(sqlWhereClause, sqlWhereClauseParams);
 		}
 		appendFilterBySearchString(sqlWhereClause, sqlWhereClauseParams, evalCtx.getFilter(), isFullTextSearchEnabled());
 		appendFilterById(sqlWhereClause, sqlWhereClauseParams, evalCtx);
@@ -703,12 +649,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
-		appendFilterBySectionCode(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams);
 
 		//
 		// SQL: SELECT ... FROM
-		final String sqlDisplayName = lookupFactory.getLookup_TableDirEmbed(
+		final String sqlDisplayName = MLookupFactory.getLookup_TableDirEmbed(
 				LanguageInfo.ofSpecificLanguage(evalCtx.getAD_Language()),
 				org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID, // columnName
 				null, // baseTable
@@ -723,11 +668,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
 															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_M_SectionCode_ID
 															+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		sql.insert(0, "SELECT * FROM (").append(") p");
 
@@ -926,20 +869,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private String getAvailableStockQueryActivatedInSysConfig()
 	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
 		return sysConfigBL.getValue(
 				SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE,
 				"AFS", clientId, orgId);
-	}
-
-	private boolean isFilterProductsBasedOnSectionCodeEnabled()
-	{
-		final int clientId = Env.getAD_Client_ID(Env.getCtx());
-		final int orgId = Env.getAD_Org_ID(Env.getCtx());
-
-		return sysConfigBL.getBooleanValue(SYSCONFIG_FILTER_OUT_PRODUCTS_BASED_ON_SECTION_CODE, false, clientId, orgId);
 	}
 
 	private static ITranslatableString createAttributesDisplayString(
@@ -974,7 +910,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		final Properties ctx = Env.getCtx();
 
-		return sysConfigBL.getBooleanValue(
+		return Services.get(ISysConfigBL.class).getBooleanValue(
 				SYSCONFIG_DISPLAY_AVAILABILITY_INFO_ONLY_IF_POSITIVE,
 				true,
 				Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
@@ -1015,7 +951,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private boolean isFullTextSearchEnabled()
 	{
-		final boolean disabled = sysConfigBL.getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
+		final boolean disabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
 		return !disabled;
 	}
 
@@ -1044,9 +980,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		String COLUMNNAME_BPartnerProductNo = "BPartnerProductNo";
 		String COLUMNNAME_BPartnerProductName = "BPartnerProductName";
 		String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-		String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 		String COLUMNNAME_Discontinued = "Discontinued";
-		String COLUMNNAME_DiscontinuedFrom = "DiscontinuedFrom";
 
 		String COLUMNNAME_IsBOM = "IsBOM";
 	}

@@ -1,23 +1,20 @@
 package org.compiere.model;
 
-import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
-import org.adempiere.ad.table.api.TableName;
-import org.adempiere.ad.validationRule.AdValRuleId;
-import org.compiere.model.copy.ColumnCloningStrategy;
-import org.compiere.util.DisplayType;
+import de.metas.util.Services;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * PO Info Column Info Value Object
@@ -32,10 +29,10 @@ public final class POInfoColumn implements Serializable
 	 */
 	private static final long serialVersionUID = 1667303121090497293L;
 
-	private static final Logger logger = LogManager.getLogger(POInfoColumn.class);
+	private static final transient Logger logger = LogManager.getLogger(POInfoColumn.class);
 
 	public POInfoColumn(
-			@NonNull final AdColumnId AD_Column_ID,
+			final int ad_Column_ID,
 			final String tableName,
 			final String columnName,
 			final String columnSQL,
@@ -47,23 +44,18 @@ public final class POInfoColumn implements Serializable
 			final String columnDescription,
 			final boolean isKey,
 			final boolean isParent,
-			@Nullable final ReferenceId ad_Reference_Value_ID,
-			@Nullable final TableName AD_Reference_Value_TableName,
-			final int ad_Reference_Value_KeyColumn_DisplayType,
-			final AdValRuleId AD_Val_Rule_ID,
+			final int ad_Reference_Value_ID,
+			final int AD_Val_Rule_ID,
 			final int fieldLength,
 			final String valueMin,
 			final String valueMax,
 			final boolean isTranslated,
 			final boolean isEncrypted,
-			final boolean isAllowLogging,
-			final boolean isRestAPICustomColumn,
-			final int adSequenceID,
-			@NonNull final ColumnCloningStrategy cloningStrategy)
+			final boolean isAllowLogging)
 	{
-		this.AD_Column_ID = AD_Column_ID;
+		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
-		this.tableName = tableName;
+		TableName = tableName;
 		this.virtualColumn = !Check.isEmpty(columnSQL, false); // trimWhitespaces=false to preserve back compatibility
 		if (virtualColumn)
 		{
@@ -76,24 +68,24 @@ public final class POInfoColumn implements Serializable
 			this.sqlColumnForSelect = ColumnName;
 		}
 
-		if (isString(tableName, columnName, displayTypeParam, ad_Reference_Value_ID, ad_Reference_Value_KeyColumn_DisplayType))
+		if (isString(tableName, columnName, displayTypeParam, ad_Reference_Value_ID))
 		{
-			this.displayType = org.compiere.util.DisplayType.String;
+			this.DisplayType = org.compiere.util.DisplayType.String;
 			this.ColumnClass = String.class;
 		}
 		else if (columnName.equals("Posted") || columnName.equals("Processed") || columnName.equals("Processing"))
 		{
-			this.displayType = displayTypeParam;
+			this.DisplayType = displayTypeParam;
 			this.ColumnClass = Boolean.class;
 		}
-		else if (IColumnBL.isRecordIdColumnName(columnName))
+		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
 		{
-			this.displayType = org.compiere.util.DisplayType.ID;
+			this.DisplayType = org.compiere.util.DisplayType.ID;
 			this.ColumnClass = Integer.class;
 		}
 		else
 		{
-			this.displayType = displayTypeParam;
+			this.DisplayType = displayTypeParam;
 			this.ColumnClass = org.compiere.util.DisplayType.getClass(displayTypeParam, true);
 		}
 
@@ -105,32 +97,25 @@ public final class POInfoColumn implements Serializable
 		IsKey = isKey;
 		IsParent = isParent;
 		//
-		this.AD_Reference_Value_ID = ad_Reference_Value_ID;
+		AD_Reference_Value_ID = ad_Reference_Value_ID;
 		// ValidationCode = validationCode;
-		this.AD_Val_Rule_ID = AD_Val_Rule_ID;
+		this.AD_Val_Rule_ID = AD_Val_Rule_ID <= 0 ? -1 : AD_Val_Rule_ID;
 		//
 		FieldLength = fieldLength;
-		ValueMin = StringUtils.trimBlankToNull(valueMin);
-		ValueMin_BD = toBigDecimalOrNull(this.ValueMin, "ValueMin");
-		ValueMax = StringUtils.trimBlankToNull(valueMax);
-		ValueMax_BD = toBigDecimalOrNull(this.ValueMax, "ValueMax");
+		ValueMin = valueMin;
+		ValueMin_BD = toBigDecimalOrNull(ValueMin, "ValueMin");
+		ValueMax = valueMax;
+		ValueMax_BD = toBigDecimalOrNull(ValueMax, "ValueMax");
 		IsTranslated = isTranslated;
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
-		IsRestAPICustomColumn = isRestAPICustomColumn;
-		AD_Sequence_ID = adSequenceID;
-		AD_Reference_Value_KeyColumn_DisplayType = ad_Reference_Value_KeyColumn_DisplayType;
-		this.cloningStrategy = cloningStrategy;
-
-		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
 	}   // Column
 
 	private static boolean isString(
 			final String tableName,
 			final String columnName,
 			final int displayType,
-			@Nullable final ReferenceId ad_Reference_Value_ID,
-			final int ad_Reference_Value_KeyColumn_DisplayType)
+			final int ad_Reference_Value_ID)
 	{
 		if (org.compiere.util.DisplayType.String == displayType)
 		{
@@ -145,19 +130,25 @@ public final class POInfoColumn implements Serializable
 		}
 
 		// task #500: Also allow type String for non-numeric types with a reference value (Table and search)
-		if (ad_Reference_Value_ID != null
+		if (ad_Reference_Value_ID > 0
 				&& (isTableDisplayType(displayType) || isSearchDisplayType(displayType)))
 		{
-			final boolean isNumericKey = org.compiere.util.DisplayType.isID(ad_Reference_Value_KeyColumn_DisplayType);
-			return !isNumericKey;
+			// The method org.adempiere.ad.service.ILookupDAO.retrieveTableRefInfo(int) logs warnings when the {@link ITableRefInfo} was not found.
+			// Permit warnings here because we shouldn't have Table or Search types with no reference table IDs.
+			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+			final ExplainedOptional<TableRefInfo> tableRefInfo = lookupDAO.getTableRefInfo(ad_Reference_Value_ID);
+			if (!tableRefInfo.isPresent())
+			{
+				// NOTE: avoid log WARN or ERROR because that one might trigger ErrorManager which might call POInfo => recursion
+				System.err.println("Failed retrieving reference info for " + tableName + "." + columnName + " because " + tableRefInfo.getExplanation().getDefaultValue()
+						+ ". Considering not a string reference.");
+				return false;
+			}
+
+			return !tableRefInfo.get().isNumericKey();
 		}
 
 		return false;
-	}
-
-	public boolean isString()
-	{
-		return isString(tableName, ColumnName, displayType, AD_Reference_Value_ID, AD_Reference_Value_KeyColumn_DisplayType);
 	}
 
 	private static boolean isSearchDisplayType(final int displayType)
@@ -173,13 +164,13 @@ public final class POInfoColumn implements Serializable
 	/**
 	 * Column ID
 	 */
-	final AdColumnId AD_Column_ID;
+	final int AD_Column_ID;
 	/**
 	 * Column Name
 	 */
 	private final String ColumnName;
 
-	private final String tableName;
+	private final String TableName;
 
 	/**
 	 * Virtual Column SQL
@@ -196,7 +187,7 @@ public final class POInfoColumn implements Serializable
 	/**
 	 * Display Type
 	 */
-	@Getter private final int displayType;
+	final int DisplayType;
 	/**
 	 * Data Type
 	 */
@@ -212,7 +203,7 @@ public final class POInfoColumn implements Serializable
 	/**
 	 * Updateable
 	 */
-	final boolean IsUpdateable;
+	boolean IsUpdateable;
 	/**
 	 * PK
 	 */
@@ -237,12 +228,12 @@ public final class POInfoColumn implements Serializable
 	/**
 	 * Reference Value
 	 */
-	final ReferenceId AD_Reference_Value_ID;
+	final int AD_Reference_Value_ID;
 	/**
 	 * Validation
 	 */
 	// public String ValidationCode;
-	final AdValRuleId AD_Val_Rule_ID;
+	final int AD_Val_Rule_ID;
 
 	/**
 	 * Field Length
@@ -265,9 +256,6 @@ public final class POInfoColumn implements Serializable
 	 */
 	final BigDecimal ValueMax_BD;
 
-	final boolean IsRestAPICustomColumn;
-	@Getter private final ColumnCloningStrategy cloningStrategy;
-
 	/* package */ boolean IsCalculated = false;
 	// metas: us215
 	/* package */ boolean IsUseDocumentSequence = false;
@@ -278,11 +266,14 @@ public final class POInfoColumn implements Serializable
 
 	private final String sqlColumnForSelect;
 
-	private final Optional<String> _referencedTableName;
+	/**
+	 * Cached {@link MLookupInfo} for {@link Env#WINDOW_None} (most used case)
+	 */
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @Nullable
+	private Optional<MLookupInfo> _lookupInfoForWindowNone = null;
 
-	private final int AD_Sequence_ID;
-
-	private final int AD_Reference_Value_KeyColumn_DisplayType;
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @Nullable
+	private Optional<String> _referencedTableName = null; // lazy, cached
 
 	/**
 	 * String representation
@@ -295,7 +286,7 @@ public final class POInfoColumn implements Serializable
 		return "POInfo.Column["
 				+ ColumnName
 				+ ",ID=" + AD_Column_ID
-				+ ",DisplayType=" + this.displayType
+				+ ",DisplayType=" + DisplayType
 				+ ",ColumnClass=" + ColumnClass
 				+ "]";
 	}    // toString
@@ -303,21 +294,21 @@ public final class POInfoColumn implements Serializable
 	@Nullable
 	private static BigDecimal toBigDecimalOrNull(final String valueStr, final String name)
 	{
-		final String valueNorm = StringUtils.trimBlankToNull(valueStr);
-		if(valueNorm == null)
+		if (Check.isEmpty(valueStr, true))
 		{
 			return null;
 		}
 
 		try
 		{
-			return new BigDecimal(valueNorm);
+			return new BigDecimal(valueStr.trim());
 		}
 		catch (final Exception ex) // i.e. NumberFormatException
 		{
-			logger.error("Cannot parse {}=`{}`. Returning null.", name, valueNorm, ex);
-			return null;
+			logger.error("Cannot parse " + name + "=" + valueStr, ex);
 		}
+
+		return null;
 	}
 
 	public String getColumnName()
@@ -325,7 +316,7 @@ public final class POInfoColumn implements Serializable
 		return this.ColumnName;
 	}
 
-	public AdColumnId getAD_Column_ID()
+	public int getAD_Column_ID()
 	{
 		return this.AD_Column_ID;
 	}
@@ -350,7 +341,12 @@ public final class POInfoColumn implements Serializable
 		return sqlColumnForSelect;
 	}
 
-	public ReferenceId getAD_Reference_Value_ID()
+	public int getDisplayType()
+	{
+		return DisplayType;
+	}
+
+	public int getAD_Reference_Value_ID()
 	{
 		return AD_Reference_Value_ID;
 	}
@@ -380,48 +376,117 @@ public final class POInfoColumn implements Serializable
 		return IsStaleable;
 	}
 
+	public int getAD_Val_Rule_ID()
+	{
+		return AD_Val_Rule_ID;
+	}
+
 	public boolean isLookup()
 	{
-		return org.compiere.util.DisplayType.isLookup(displayType);
-	}
-
-	public boolean isRestAPICustomColumn()
-	{
-		return IsRestAPICustomColumn;
-	}
-
-	public int getAD_Sequence_ID()
-	{
-		return AD_Sequence_ID;
+		return org.compiere.util.DisplayType.isLookup(DisplayType);
 	}
 
 	@Nullable
 	public String getReferencedTableNameOrNull()
 	{
-		return _referencedTableName.orElse(null);
+		Optional<String> referencedTableName = _referencedTableName;
+		if (referencedTableName == null)
+		{
+			_referencedTableName = referencedTableName = computeReferencedTableName();
+		}
+
+		return referencedTableName.orElse(null);
 	}
 
-	private static Optional<String> computeReferencedTableName(
-			final int displayType,
-			@Nullable final TableName adReferenceValueTableName)
+	private Optional<String> computeReferencedTableName()
 	{
 		// Special lookups (Location, Locator etc)
-		final String refTableName = DisplayType.getTableName(displayType);
+		final String refTableName = org.compiere.util.DisplayType.getTableName(DisplayType);
 		if (refTableName != null)
 		{
 			return Optional.of(refTableName);
 		}
 
-		if (DisplayType.isLookup(displayType) && adReferenceValueTableName != null)
+		// Regular lookups
+		final MLookupInfo lookupInfo = getLookupInfo(Env.WINDOW_None);
+		if (lookupInfo != null)
 		{
-			return Optional.of(adReferenceValueTableName.getAsString());
+			return Optional.ofNullable(lookupInfo.getTableName());
 		}
 
 		return Optional.empty();
 	}
 
+	@Nullable
+	public MLookupInfo getLookupInfo(final int windowNo)
+	{
+		//
+		// List, Table, TableDir
+		if (isLookup())
+		{
+			if (windowNo == Env.WINDOW_None)
+			{
+				if (_lookupInfoForWindowNone == null)
+				{
+					final MLookupInfo lookupInfoCached = MLookupFactory.getLookupInfo(
+							Env.WINDOW_None
+							, DisplayType
+							, TableName
+							, ColumnName
+							, AD_Reference_Value_ID
+							, IsParent
+							, AD_Val_Rule_ID);
+					_lookupInfoForWindowNone = Optional.ofNullable(lookupInfoCached);
+				}
+				return _lookupInfoForWindowNone.orElse(null);
+			}
+
+			return MLookupFactory.getLookupInfo(
+					windowNo
+					, DisplayType
+					, TableName
+					, ColumnName
+					, AD_Reference_Value_ID
+					, IsParent
+					, AD_Val_Rule_ID);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	@Nullable
+	public Lookup getLookup(final Properties ctx, final int windowNo)
+	{
+		//
+		// List, Table, TableDir
+		if (isLookup())
+		{
+			try
+			{
+				final MLookupInfo lookupInfo = getLookupInfo(windowNo);
+				if (lookupInfo == null)
+				{
+					return null;
+				}
+
+				return MLookupFactory.ofLookupInfo(ctx, lookupInfo, AD_Column_ID);
+			}
+			catch (final Exception e)
+			{
+				return null;
+			}
+		}
+		else
+		{
+			return null;
+		}
+
+	}
+
 	public boolean isPasswordColumn()
 	{
-		return DisplayType.isPassword(ColumnName, displayType);
+		return org.compiere.util.DisplayType.isPassword(ColumnName, DisplayType);
 	}
 }    // POInfoColumn

@@ -73,7 +73,6 @@ public class DataExportAuditLogRepository
 		return queryBL.createQueryBuilder(I_Data_Export_Audit_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_Data_Export_Audit_Log.COLUMNNAME_Data_Export_Audit_ID, dataExportAuditId.getRepoId())
-				.addNotEqualsFilter(I_Data_Export_Audit_Log.COLUMNNAME_ExternalSystem_Config_ID, null)
 				.create()
 				.listDistinct(I_Data_Export_Audit_Log.COLUMNNAME_ExternalSystem_Config_ID, Integer.class)
 				.stream()

@@ -1,12 +1,12 @@
 package de.metas.invoice_gateway.spi.model;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.io.InputStream;
+
+import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 
 /*
  * #%L

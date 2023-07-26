@@ -52,7 +52,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-import de.metas.util.ColorId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
@@ -1988,14 +1987,14 @@ public final class GridController extends CPanel
 		// Check database
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ColorId adColorId = null;
+		int adColorId = -1;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				adColorId = ColorId.ofRepoIdOrNull(rs.getInt(1));
+				adColorId = rs.getInt(1);
 			}
 		}
 		catch (SQLException e)
@@ -2016,7 +2015,7 @@ public final class GridController extends CPanel
 			pstmt = null;
 		}
 		//
-		if (adColorId == null)
+		if (adColorId <= 0)
 		{
 			winColorsCache.put(sql, ColorNone);
 			return null;

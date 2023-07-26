@@ -1,10 +1,5 @@
 package de.metas.util;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
 
 /*
@@ -29,7 +24,6 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public enum OptionalBoolean
 {
 	TRUE, FALSE, UNKNOWN;
@@ -39,7 +33,6 @@ public enum OptionalBoolean
 		return value ? TRUE : FALSE;
 	}
 
-	@JsonCreator
 	public static OptionalBoolean ofNullableBoolean(@Nullable final Boolean value)
 	{
 		return value != null ? ofBoolean(value) : UNKNOWN;
@@ -70,9 +63,9 @@ public enum OptionalBoolean
 		return this == UNKNOWN;
 	}
 
-	public boolean orElseTrue() {return orElse(true);}
+	public boolean orElseTrue() { return orElse(true); }
 
-	public boolean orElseFalse() {return orElse(false);}
+	public boolean orElseFalse() { return orElse(false); }
 
 	public boolean orElse(final boolean other)
 	{
@@ -90,7 +83,6 @@ public enum OptionalBoolean
 		}
 	}
 
-	@JsonValue
 	@Nullable
 	public Boolean toBooleanOrNull()
 	{
@@ -104,18 +96,6 @@ public enum OptionalBoolean
 				return null;
 			default:
 				throw new IllegalStateException("Type not handled: " + this);
-		}
-	}
-
-	public void ifPresent(@NonNull final BooleanConsumer action)
-	{
-		if (this == TRUE)
-		{
-			action.accept(true);
-		}
-		else if (this == FALSE)
-		{
-			action.accept(false);
 		}
 	}
 

@@ -24,7 +24,6 @@ package de.metas.serviceprovider.external.label;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.organization.OrgId;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.model.I_S_IssueLabel;
 import de.metas.util.Check;
@@ -46,7 +45,8 @@ public class IssueLabelRepository
 		this.queryBL = queryBL;
 	}
 
-	public void persistLabels(@NonNull final IssueId issueId, @NonNull final ImmutableList<IssueLabel> issueLabels)
+	public void persistLabels(@NonNull final IssueId issueId,
+							  @NonNull final ImmutableList<IssueLabel> issueLabels)
 	{
 		final ImmutableList<I_S_IssueLabel> newLabels =
 				issueLabels
@@ -57,29 +57,6 @@ public class IssueLabelRepository
 		final ImmutableList<I_S_IssueLabel> existingLabels = getRecordsByIssueId(issueId);
 
 		persistLabels(newLabels, existingLabels);
-	}
-
-	@NonNull
-	public LabelCollection getByIssueId(@NonNull final IssueId issueId)
-	{
-		final ImmutableList<IssueLabel> labelList = getRecordsByIssueId(issueId)
-				.stream()
-				.map(IssueLabelRepository::fromRecord)
-				.collect(ImmutableList.toImmutableList());
-
-		return LabelCollection.builder()
-				.issueId(issueId)
-				.issueLabelList(labelList)
-				.build();
-	}
-
-	@NonNull
-	public static IssueLabel fromRecord(@NonNull final I_S_IssueLabel record)
-	{
-		return IssueLabel.builder()
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.value(record.getLabel())
-				.build();
 	}
 
 	@VisibleForTesting
@@ -119,11 +96,12 @@ public class IssueLabelRepository
 
 		final List<I_S_IssueLabel> recordsToInsert =
 				newLabels
+				.stream()
+				.filter(label -> existingLabels
 						.stream()
-						.filter(label -> existingLabels
-								.stream()
-								.noneMatch(record -> areEqual(record, label)))
-						.collect(Collectors.toList());
+						.noneMatch(record -> areEqual(record, label))
+				)
+				.collect(Collectors.toList());
 
 		final List<I_S_IssueLabel> recordsToDelete = existingLabels
 				.stream()

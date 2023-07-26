@@ -25,6 +25,10 @@ package de.metas.payment.sepa.api.impl;
  * #L%
  */
 
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.IBBANStructureBL;
@@ -33,8 +37,6 @@ import de.metas.payment.sepa.wrapper.BBANStructure;
 import de.metas.payment.sepa.wrapper.BBANStructureEntry;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 
 /**
  * @author cg
@@ -93,6 +95,9 @@ public class IBANValidationBL implements IIBANValidationBL
 	
 	/**
 	 * Other implementation of modulo 97
+	 * 
+	 * @param iban
+	 * @return
 	 */
 	/* package */ int ISO7064Mod97_10(final String iban)
 	{

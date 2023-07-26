@@ -23,15 +23,11 @@
 package de.metas.camel.externalsystems.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
-import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.converter.stream.InputStreamCache;
@@ -43,35 +39,14 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static de.metas.camel.externalsystems.core.CoreConstants.AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT;
-import static de.metas.camel.externalsystems.core.CoreConstants.AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT_GROUP;
-import static de.metas.camel.externalsystems.core.CoreConstants.AUDIT_SENSITIVE_DATA_PATTERN_GROUP_PROPERTY;
-import static de.metas.camel.externalsystems.core.CoreConstants.AUDIT_SENSITIVE_DATA_PATTERN_PROPERTY;
 
 @UtilityClass
 public class AuditFileTrailUtil
 {
 	@NonNull
 	public Optional<String> computeAuditLogFileContent(@NonNull final Exchange exchange, @NonNull final String message)
-	{
-		final StringBuilder fileContent = new StringBuilder();
-
-		computeExchangeHeadersToString(exchange).ifPresent(fileContent::append);
-
-		computeExchangeBodyToString(exchange, message).ifPresent(fileContent::append);
-
-		return Optional.ofNullable(StringUtils.trimBlankToNull(fileContent.toString()))
-				.map(content -> maskSensitiveData(exchange.getContext(), content));
-	}
-
-	@NonNull
-	private Optional<String> computeExchangeBodyToString(@NonNull final Exchange exchange, @NonNull final String message)
 	{
 		final Object body = exchange.getIn().getBody(Object.class);
 		if (body == null || EmptyUtil.isEmpty(body))
@@ -140,7 +115,7 @@ public class AuditFileTrailUtil
 
 		final String fileContent = message
 				+ ";\n ========================= body ======================== \n"
-				+ bodyContent + "\n";
+				+ bodyContent;
 
 		return Optional.of(fileContent);
 	}
@@ -153,94 +128,10 @@ public class AuditFileTrailUtil
 		ex.printStackTrace(pw);
 
 		return message
-				+ "\n Got exception while parsing exchange.body of type " + body.getClass() + " for the audit-trail"
+				+ "\n Got exception while parsing exchange.body of type " + body.getClass()
 				+ ";\n ========================= blindly converting body toString(); body: ======================== \n"
 				+ body.toString()
 				+ ";\n ========================= error stack trace ======================== \n"
-				+ ex.getLocalizedMessage() + "\n";
-	}
-
-	@NonNull
-	private String maskSensitiveData(@NonNull final CamelContext context, @NonNull final String messageToMask)
-	{
-		String message = messageToMask;
-
-		final String sensitiveDataPattern = CamelRouteUtil.resolveProperty(context, AUDIT_SENSITIVE_DATA_PATTERN_PROPERTY, AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT);
-		final int sensitiveDataPatternGroup = Integer.parseInt(CamelRouteUtil.resolveProperty(context, AUDIT_SENSITIVE_DATA_PATTERN_GROUP_PROPERTY, AUDIT_SENSITIVE_DATA_PATTERN_DEFAULT_GROUP));
-
-		final Pattern pattern = Pattern.compile(sensitiveDataPattern, Pattern.CASE_INSENSITIVE);
-		final Matcher matcher = pattern.matcher(message);
-
-		while (matcher.find())
-		{
-			final String segmentToBeMasked = matcher.group(sensitiveDataPatternGroup);
-			final String maskedSegment = segmentToBeMasked.replaceAll(".", "x");
-			message = message.replace(segmentToBeMasked, maskedSegment);
-		}
-
-		return message;
-	}
-
-	@NonNull
-	private Optional<String> computeExchangeHeadersToString(@NonNull final Exchange exchange)
-	{
-		return getHeaders(exchange).map(AuditFileTrailUtil::auditHeaders);
-	}
-
-	@NonNull
-	private Optional<Map<String, Object>> getHeaders(@NonNull final Exchange exchange)
-	{
-		if (exchange.getIn().getHeaders() == null)
-		{
-			return Optional.empty();
-		}
-
-		final Map<String, Object> headers = exchange.getIn().getHeaders().entrySet()
-				.stream()
-				.filter(entry -> !Exchange.HTTP_SERVLET_REQUEST.equals(entry.getKey()))
-				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-
-		if (headers.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(headers);
-	}
-
-	@NonNull
-	private String auditHeaders(@NonNull final Map<String, Object> headers)
-	{
-		final StringBuilder headersStringCollector = new StringBuilder(" ========================= Headers ======================== \n");
-
-		try
-		{
-			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-
-			return headersStringCollector
-					.append(objectMapper.writeValueAsString(headers))
-					.append("\n")
-					.toString();
-
-		}
-		catch (final Exception e)
-		{
-			return headersStringCollector.append(getHeadersErrorMessage(e, headers)).toString();
-		}
-	}
-
-	@NonNull
-	private String getHeadersErrorMessage(@NonNull final Exception exception, @NonNull final Map<String, Object> headers)
-	{
-		final StringWriter sw = new StringWriter();
-		final PrintWriter pw = new PrintWriter(sw);
-		exception.printStackTrace(pw);
-
-		return "\n Got exception while parsing request headers \n"
-				+ ";\n ========================= blindly converting headers toString(); headers: ======================== \n"
-				+ headers.toString()
-				+ ";\n ========================= error stack trace - start ======================== \n"
-				+ exception.getLocalizedMessage()
-				+ ";\n ========================= error stack trace - end ======================== \n";
+				+ ex.getLocalizedMessage();
 	}
 }

@@ -22,20 +22,11 @@
 
 package org.adempiere.ad.table.api.impl;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.cache.CCache;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.common.util.StringUtils;
 import de.metas.document.DocumentConstants;
 import de.metas.i18n.ITranslatableString;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -43,19 +34,13 @@ import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
-import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.ColumnName;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor.FetchTargetRecordsMethod;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.MinimalColumnInfo;
-import org.adempiere.ad.table.api.TableName;
-import org.adempiere.ad.table.api.ViewSourceDescriptor;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
@@ -63,17 +48,11 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_AD_ViewSource;
-import org.compiere.model.I_AD_ViewSource_Column;
 import org.compiere.model.X_AD_SQLColumn_SourceTableColumn;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -82,11 +61,13 @@ import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ADTableDAO implements IADTableDAO
 {
-	private static final Logger logger = LogManager.getLogger(ADTableDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final ImmutableSet<String> STANDARD_COLUMN_NAMES = ImmutableSet.of(
@@ -95,22 +76,44 @@ public class ADTableDAO implements IADTableDAO
 			"Created", "CreatedBy",
 			"Updated", "UpdatedBy");
 
-	private final CCache<Integer, MinimalColumnInfoMap> minimalColumnInfoMapCache = CCache.<Integer, MinimalColumnInfoMap>builder()
-			.tableName(I_AD_Column.Table_Name)
-			.initialCapacity(1)
-			.build();
+	@Override
+	public I_AD_Column retrieveColumnById(@NonNull final AdColumnId columnId)
+	{
+		return load(columnId, I_AD_Column.class);
+	}
+
+	@Override
+	public I_AD_Column retrieveColumn(@NonNull final AdTableId tableId, @NonNull final String columnName)
+	{
+		final I_AD_Column columnRecord = queryBL.createQueryBuilder(I_AD_Column.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
+				.create()
+				.firstOnly(I_AD_Column.class);
+
+		if (columnRecord == null)
+		{
+			if (Adempiere.isUnitTestMode())
+			{
+				final I_AD_Column newColumnRecord = newInstance(I_AD_Column.class);
+				newColumnRecord.setAD_Table_ID(tableId.getRepoId());
+				newColumnRecord.setColumnName(columnName);
+				newColumnRecord.setName(columnName + " + on-the-fly created for unit-test");
+				saveRecord(newColumnRecord);
+				return newColumnRecord;
+			}
+			throw new AdempiereException("@NotFound@ @AD_Column_ID@ " + columnName + " (@AD_Table_ID@=" + tableId + ")");
+		}
+		return columnRecord;
+	}
 
 	@Override
 	public AdColumnId retrieveColumnId(final AdTableId tableId, final String columnName)
 	{
-		return getMinimalColumnInfoMap().getByColumnName(tableId, columnName).getAdColumnId();
-	}
+		final I_AD_Column column = retrieveColumn(tableId, columnName);
 
-	@Override
-	public AdColumnId retrieveColumnId(final String tableName, final String columnName)
-	{
-		final AdTableId adTableId = retrieveAdTableId(tableName);
-		return getMinimalColumnInfoMap().getByColumnName(adTableId, columnName).getAdColumnId();
+		return AdColumnId.ofRepoId(column.getAD_Column_ID());
 	}
 
 	@Override
@@ -136,19 +139,16 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public boolean hasColumnName(final String tableName, final String columnName)
 	{
-		final AdTableId adTableId = AdTableId.ofRepoIdOrNull(retrieveTableId(tableName));
-		if (adTableId == null)
-		{
-			return false;
-		}
-
-		return getMinimalColumnInfoMap().hasColumnName(adTableId, columnName);
+		final IQueryBuilder<I_AD_Column> queryBuilder = retrieveColumnQueryBuilder(tableName, columnName, ITrx.TRXNAME_None);
+		return queryBuilder.create()
+				.setOnlyActiveRecords(true)
+				.anyMatch();
 	}
 
 	@Override
 	public IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName,
-																 final String columnName,
-																 @Nullable final String trxName)
+			final String columnName,
+			@Nullable final String trxName)
 	{
 		return queryBL.createQueryBuilder(I_AD_Column.class, Env.getCtx(), trxName)
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, retrieveTableId(tableName))
@@ -158,19 +158,14 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public String retrieveColumnName(final int adColumnId)
 	{
-		return getMinimalColumnInfoMap().getColumnNameById(AdColumnId.ofRepoId(adColumnId));
+		Check.assumeGreaterThanZero(adColumnId, "adColumnId");
+		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?", adColumnId);
 	}
 
 	@Override
 	public String retrieveTableName(@NonNull final AdTableId adTableId)
 	{
 		return TableIdsCache.instance.getTableName(adTableId);
-	}
-
-	@Override
-	public Optional<String> getTableNameIfPresent(@NonNull final AdTableId adTableId)
-	{
-		return TableIdsCache.instance.getTableNameIfPresent(adTableId);
 	}
 
 	// IMPORTANT: make sure we are returning -1 in case tableName was not found (and NOT throw exception),
@@ -351,7 +346,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		final I_AD_Table table = retrieveTable(tableName);
 		final int typeaheadMinLength = table.getACTriggerLength();
-		return Math.max(typeaheadMinLength, 0);
+		return typeaheadMinLength > 0 ? typeaheadMinLength : 0;
 	}
 
 	@Override
@@ -421,180 +416,4 @@ public class ADTableDAO implements IADTableDAO
 	{
 		return TableIdsCache.instance.getTooltipType(tableName);
 	}
-
-	@Override
-	public void updateColumnNameByAdElementId(
-			@NonNull final AdElementId adElementId,
-			@Nullable final String newColumnName)
-	{
-
-		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(
-				// Inline parameters because this sql will be logged into the migration script.
-				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
-				ITrx.TRXNAME_ThreadInherited);
-
-		if (no > 0)
-		{
-			CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, CacheInvalidateMultiRequest.allRecordsForTable(I_AD_Column.Table_Name));
-		}
-	}
-
-	@Override
-	public MinimalColumnInfo getMinimalColumnInfo(@NonNull final String tableName, @NonNull final String columnName)
-	{
-		final AdTableId adTableId = retrieveAdTableId(tableName);
-		return getMinimalColumnInfoMap().getByColumnName(adTableId, columnName);
-	}
-
-	@Override
-	public MinimalColumnInfo getMinimalColumnInfo(@NonNull final AdColumnId adColumnId)
-	{
-		return getMinimalColumnInfoMap().getById(adColumnId);
-	}
-
-	@Override
-	public ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByIds(@NonNull final Collection<AdColumnId> adColumnIds)
-	{
-		return getMinimalColumnInfoMap().getByIds(adColumnIds);
-	}
-
-	@Override
-	public ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByColumnName(@NonNull final String columnName)
-	{
-		return getMinimalColumnInfoMap().getByColumnName(columnName);
-	}
-
-
-	private MinimalColumnInfoMap getMinimalColumnInfoMap()
-	{
-		return minimalColumnInfoMapCache.getOrLoad(0, this::retrieveMinimalColumnInfoMap);
-	}
-
-	private MinimalColumnInfoMap retrieveMinimalColumnInfoMap()
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return new MockedMinimalColumnInfoMap();
-		}
-
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final ImmutableList<MinimalColumnInfo> list = DB.retrieveRows(
-				"SELECT "
-						+ " " + I_AD_Column.COLUMNNAME_ColumnName
-						+ "," + I_AD_Column.COLUMNNAME_AD_Column_ID
-						+ "," + I_AD_Column.COLUMNNAME_AD_Table_ID
-						+ "," + I_AD_Column.COLUMNNAME_IsActive
-						+ "," + I_AD_Column.COLUMNNAME_IsParent
-						+ "," + I_AD_Column.COLUMNNAME_IsGenericZoomOrigin
-						+ "," + I_AD_Column.COLUMNNAME_AD_Reference_ID
-						+ "," + I_AD_Column.COLUMNNAME_AD_Reference_Value_ID
-						+ "," + I_AD_Column.COLUMNNAME_AD_Val_Rule_ID
-						+ "," + I_AD_Column.COLUMNNAME_EntityType
-						+ "," + I_AD_Column.COLUMNNAME_FieldLength
-						+ "," + I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary
-						+ " FROM " + I_AD_Column.Table_Name
-						+ " ORDER BY "
-						+ " " + I_AD_Column.COLUMNNAME_AD_Table_ID
-						+ "," + I_AD_Column.COLUMNNAME_AD_Column_ID,
-				ImmutableList.of(),
-				ADTableDAO::retrieveMinimalColumnInfo);
-
-		final ImmutableMinimalColumnInfoMap map = new ImmutableMinimalColumnInfoMap(list);
-		stopwatch.stop();
-		logger.info("Loaded {} in {}", map, stopwatch);
-		return map;
-	}
-
-	private static MinimalColumnInfo retrieveMinimalColumnInfo(final ResultSet rs) throws SQLException
-	{
-		return MinimalColumnInfo.builder()
-				.columnName(rs.getString(I_AD_Column.COLUMNNAME_ColumnName))
-				.adColumnId(AdColumnId.ofRepoId(rs.getInt(I_AD_Column.COLUMNNAME_AD_Column_ID)))
-				.adTableId(AdTableId.ofRepoId(rs.getInt(I_AD_Column.COLUMNNAME_AD_Table_ID)))
-				.isActive(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsActive)))
-				.isParent(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsParent)))
-				.isGenericZoomOrigin(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsGenericZoomOrigin)))
-				.displayType(rs.getInt(I_AD_Column.COLUMNNAME_AD_Reference_ID))
-				.adReferenceValueId(ReferenceId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_AD_Reference_Value_ID)))
-				.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_AD_Val_Rule_ID)))
-				.entityType(rs.getString(I_AD_Column.COLUMNNAME_EntityType))
-				.fieldLength(rs.getInt(I_AD_Column.COLUMNNAME_FieldLength))
-				.isDLMPartitionBoundary(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary)))
-				.build();
-	}
-
-	@Override
-	public List<ViewSourceDescriptor> retrieveViewSourceDescriptors()
-	{
-		final ImmutableListMultimap<Integer, I_AD_ViewSource_Column> viewSourceColumnRecordsMap = queryBL.createQueryBuilder(I_AD_ViewSource_Column.class)
-				.addOnlyActiveRecordsFilter()
-				.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						I_AD_ViewSource_Column::getAD_ViewSource_ID,
-						record -> record
-				));
-
-		return queryBL.createQueryBuilder(I_AD_ViewSource.class)
-				.addOnlyActiveRecordsFilter()
-				.stream()
-				.map(viewSourceRecord -> toViewSourceDescriptor(viewSourceRecord, viewSourceColumnRecordsMap.get(viewSourceRecord.getAD_ViewSource_ID())))
-				.collect(ImmutableList.toImmutableList());
-
-	}
-
-	private ViewSourceDescriptor toViewSourceDescriptor(
-			@NonNull final I_AD_ViewSource viewSourceRecord,
-			@NonNull final Collection<I_AD_ViewSource_Column> viewSourceColumnRecords)
-	{
-		final AdTableId viewId = AdTableId.ofRepoId(viewSourceRecord.getAD_Table_ID());
-
-		return ViewSourceDescriptor.builder()
-				.viewId(viewId)
-				.viewName(TableName.ofString(retrieveTableName(viewId)))
-				.sourceTableName(TableName.ofString(retrieveTableName(AdTableId.ofRepoId(viewSourceRecord.getSource_Table_ID()))))
-				.sourceLinkColumnName(ColumnName.ofString(retrieveColumnName(viewSourceRecord.getSource_LinkColumn_ID())))
-				.viewLinkColumnName(ColumnName.ofString(retrieveColumnName(viewSourceRecord.getParent_LinkColumn_ID())))
-				.invalidateOnTimings(extractInvalidateOnTimings(viewSourceRecord))
-				.invalidateOnChangeOnlyForColumnNames(extractColumnNames(viewSourceColumnRecords))
-				.build();
-	}
-
-	private ImmutableSet<ColumnName> extractColumnNames(final @NonNull Collection<I_AD_ViewSource_Column> viewSourceColumnRecords)
-	{
-		return viewSourceColumnRecords.stream()
-				.map(I_AD_ViewSource_Column::getAD_Column_ID)
-				.map(adColumnId -> ColumnName.ofString(retrieveColumnName(adColumnId)))
-				.distinct()
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@NonNull
-	private static ImmutableSet<ModelCacheInvalidationTiming> extractInvalidateOnTimings(final @NonNull I_AD_ViewSource viewSourceRecord)
-	{
-		final ImmutableSet.Builder<ModelCacheInvalidationTiming> result = ImmutableSet.builder();
-		if (viewSourceRecord.isInvalidateOnBeforeNew())
-		{
-			result.add(ModelCacheInvalidationTiming.BEFORE_NEW);
-		}
-		if (viewSourceRecord.isInvalidateOnAfterNew())
-		{
-			result.add(ModelCacheInvalidationTiming.AFTER_NEW);
-		}
-		if (viewSourceRecord.isInvalidateOnBeforeChange())
-		{
-			result.add(ModelCacheInvalidationTiming.BEFORE_CHANGE);
-		}
-		if (viewSourceRecord.isInvalidateOnAfterChange())
-		{
-			result.add(ModelCacheInvalidationTiming.AFTER_CHANGE);
-		}
-		if (viewSourceRecord.isInvalidateOnAfterDelete())
-		{
-			result.add(ModelCacheInvalidationTiming.AFTER_DELETE);
-		}
-
-		return result.build();
-	}
-
 }

@@ -10,32 +10,23 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import de.metas.async.Helper;
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.api.NOPWorkpackageLogsRepository;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IQueueProcessor;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
-import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
-import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
-import de.metas.async.spi.impl.ConstantWorkpackagePrio;
-import de.metas.util.Services;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -44,15 +35,26 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Properties;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import de.metas.async.Helper;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.api.NOPWorkpackageLogsRepository;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IQueueProcessor;
+import de.metas.async.processor.IQueueProcessorFactory;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.impl.ConstantWorkpackagePrio;
+import de.metas.util.Services;
 
 /**
  * See {@link #test_forwardWorkPackagePrio()}.
- *
+ * 
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class TestQueue_InheritPriority
 {
@@ -64,19 +66,17 @@ public class TestQueue_InheritPriority
 
 	private Properties ctx;
 	private String trxName;
-	private Helper helper;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		NOPWorkpackageLogsRepository.registerToSpringContext();
-
+		
 		//
 		// Setup test data
 		ctx = Env.getCtx();
 		trxName = ITrx.TRXNAME_None;
-		helper = new Helper();
 	}
 
 	private I_C_Queue_Element createQueueElement(final I_C_Queue_WorkPackage workpackage, final int recordId)
@@ -107,9 +107,8 @@ public class TestQueue_InheritPriority
 	private void doTheTestWithPrio(final ConstantWorkpackagePrio priorityToForward)
 	{
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-
-		final I_C_Queue_Processor queueProcessorDef = createProcessor();
-		final QueueProcessorDescriptor queueProcessor = QueueProcessorDescriptorRepository.mapToQueueProcessor(queueProcessorDef);
+		final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
+		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
@@ -119,39 +118,32 @@ public class TestQueue_InheritPriority
 		// tell the processor to perform the verification, as oposed to returning directly
 		TestQueue_InheritPriority_WorkPackageProcessor.returnDirectly = false;
 
-		final I_C_Queue_WorkPackage workPackage = queueForEnqueuing
-				.newWorkPackage()
-				.buildWithPackageProcessor();
+		I_C_Queue_Block block1 = queueForEnqueuing
+				.newBlock()
+				.build();
 		// creating the WP with this method because this is still the code under test and it is also still called by the modern builder API.
 		@SuppressWarnings("deprecation")
-		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.enqueueWorkPackage(workPackage, priorityToForward);
+		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.enqueueWorkPackage(block1, priorityToForward);
 		createQueueElement(wp1, 456);
 		wp1.setIsReadyForProcessing(true);
 
 		InterfaceWrapperHelper.save(wp1);
 
-		final IWorkPackageQueue queueForPackageProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessor);
+		final Helper helper = new Helper();
+		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_forwardWorkPackagePrio", 10, 1000);
 
-		final IQueueProcessor processor = helper.newSynchronousQueueProcessor(queueForPackageProcessing);
+		final I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass = queueDAO.retrievePackageProcessorDefByClass(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
+		helper.assignPackageProcessor(queueProcessorDef, retrievePackageProcessorDefByClass);
 
-		SynchronousProcessorPlanner.executeNow(processor);
+		final IWorkPackageQueue queueForPackageProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorDef);
+
+		final IQueueProcessor processor = queueProcessorFactory.createSynchronousQueueProcessor(queueForPackageProcessing);
+		processor.run();
+		processor.shutdown();
 
 		// expecting CountProcessed = two, because when we enqueue the 2nd WP in TestQueue_InheritPriority_WorkPackageProcessor (in order to verify it's prio),
 		// the second WP will also be processed
 		assertThat(processor.getStatisticsSnapshot().getCountProcessed(), is(2L));
 		assertThat(processor.getStatisticsSnapshot().getCountErrors(), is(0L));
-	}
-
-	private I_C_Queue_Processor createProcessor()
-	{
-		final Helper helper = new Helper();
-
-		final I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass = helper.createPackageProcessor(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
-
-		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_forwardWorkPackagePrio", 10, 1000);
-
-		helper.assignPackageProcessor(queueProcessorDef, retrievePackageProcessorDefByClass);
-
-		return queueProcessorDef;
 	}
 }

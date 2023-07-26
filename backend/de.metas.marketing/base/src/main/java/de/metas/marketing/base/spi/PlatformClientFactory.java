@@ -1,9 +1,6 @@
 package de.metas.marketing.base.spi;
 
-import de.metas.marketing.base.model.PlatformGatewayId;
 import de.metas.marketing.base.model.PlatformId;
-
-import java.util.List;
 
 /*
  * #%L
@@ -29,7 +26,7 @@ import java.util.List;
 
 public interface PlatformClientFactory
 {
-	PlatformGatewayId getPlatformGatewayId();
+	String getPlatformGatewayId();
 
 	PlatformClient newClientForPlatformId(PlatformId platformId);
 }

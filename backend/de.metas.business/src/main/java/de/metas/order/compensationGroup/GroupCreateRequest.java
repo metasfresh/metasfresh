@@ -44,15 +44,11 @@ public class GroupCreateRequest
 	@Builder.Default
 	boolean isNamePrinted = true;
 
-	@Nullable
-	ActivityId activityId;
+	@Nullable ActivityId activityId;
 
 	@Nullable
 	ProductCategoryId productCategoryId;
 
 	@Nullable
 	GroupTemplateId groupTemplateId;
-
-	@Nullable
-	GroupCompensationOrderBy groupCompensationOrderBy;
 }

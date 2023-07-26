@@ -2,7 +2,6 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.algorithm
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
@@ -30,18 +29,12 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -80,16 +73,6 @@ class HierachyAlgorithmTest
 	private final Beneficiary salesRep = Beneficiary.of(BPartnerId.ofRepoId(20));
 	private final BPartnerId payerId = BPartnerId.ofRepoId(1001);
 
-	private I_C_UOM uomRecord;
-
-	@BeforeEach
-	void beforeEach()
-	{
-		AdempiereTestHelper.get().init();
-
-		uomRecord = BusinessTestHelper.createUOM("uom");
-	}
-
 	@Test
 	void createInstanceShares()
 	{
@@ -110,18 +93,16 @@ class HierachyAlgorithmTest
 		final CommissionTriggerChange change = CommissionTriggerChange.builder()
 				.instanceToUpdate(instance)
 				.newCommissionTriggerData(CommissionTriggerData.builder()
-												  .orgId(orgId)
-												  .triggerDocumentId(new SalesInvoiceCandidateDocumentId(invoiceCandiateId))
-												  .triggerType(CommissionTriggerType.InvoiceCandidate)
-												  .triggerDocumentDate(LocalDate.of(2020, 03, 22))
-												  .timestamp(Instant.now())
-												  .forecastedBasePoints(CommissionPoints.ZERO)
-												  .invoiceableBasePoints(CommissionPoints.ZERO)
-												  .invoicedBasePoints(CommissionPoints.of("1110.00"))
-												  .productId(commissionProductId)
-												  .totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
-												  .documentCurrencyId(CurrencyId.ofRepoId(1))
-												  .build())
+						.orgId(orgId)
+						.triggerDocumentId(new SalesInvoiceCandidateDocumentId(invoiceCandiateId))
+						.triggerType(CommissionTriggerType.InvoiceCandidate)
+						.triggerDocumentDate(LocalDate.of(2020, 03, 22))
+						.timestamp(Instant.now())
+						.forecastedBasePoints(CommissionPoints.ZERO)
+						.invoiceableBasePoints(CommissionPoints.ZERO)
+						.invoicedBasePoints(CommissionPoints.of("1110.00"))
+						.tradedCommissionPercent(Percent.ZERO)
+						.build())
 				.build();
 
 		// invoke the method under test
@@ -176,9 +157,7 @@ class HierachyAlgorithmTest
 		});
 	}
 
-	/**
-	 * Applies a commission trigger with negative base points.
-	 */
+	/** Applies a commission trigger with negative base points. */
 	@Test
 	void applyTriggerChange_negative()
 	{
@@ -191,9 +170,7 @@ class HierachyAlgorithmTest
 				.forecastedBasePoints(CommissionPoints.of("30.00"))
 				.invoiceableBasePoints(CommissionPoints.of("20.00"))
 				.invoicedBasePoints(CommissionPoints.of("10.00"))
-				.productId(commissionProductId)
-				.totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
-				.documentCurrencyId(CurrencyId.ofRepoId(1))
+				.tradedCommissionPercent(Percent.ZERO)
 				.build();
 
 		final HierarchyConfig config = HierarchyConfig.builder()
@@ -209,27 +186,27 @@ class HierachyAlgorithmTest
 		final CommissionInstance instance = CommissionInstance.builder()
 				.currentTriggerData(triggerData)
 				.share(CommissionShare.builder()
-							   .beneficiary(salesRep)
-							   .config(config)
+						.beneficiary(salesRep)
+						.config(config)
 						.soTrx(SOTrx.PURCHASE)
 						.payer(Payer.of(payerId))
 						.fact(CommissionFact.builder()
-											 .points(CommissionPoints.of("30.00"))
+								.points(CommissionPoints.of("30.00"))
 								.state(CommissionState.FORECASTED)
-											 .timestamp(de.metas.common.util.time.SystemTime.asInstant())
-											 .build())
+								.timestamp(de.metas.common.util.time.SystemTime.asInstant())
+								.build())
 						.fact(CommissionFact.builder()
-											 .points(CommissionPoints.of("20.00"))
+								.points(CommissionPoints.of("20.00"))
 								.state(CommissionState.INVOICEABLE)
-											 .timestamp(de.metas.common.util.time.SystemTime.asInstant())
-											 .build())
+								.timestamp(de.metas.common.util.time.SystemTime.asInstant())
+								.build())
 						.fact(CommissionFact.builder()
-											 .points(CommissionPoints.of("10.00"))
+								.points(CommissionPoints.of("10.00"))
 								.state(CommissionState.INVOICED)
-											 .timestamp(SystemTime.asInstant())
-											 .build())
-							   .level(HierarchyLevel.of(10))
-							   .build())
+								.timestamp(SystemTime.asInstant())
+								.build())
+						.level(HierarchyLevel.of(10))
+						.build())
 				.build();
 
 		// guard
@@ -239,18 +216,16 @@ class HierachyAlgorithmTest
 		final CommissionTriggerChange change = CommissionTriggerChange.builder()
 				.instanceToUpdate(instance)
 				.newCommissionTriggerData(CommissionTriggerData.builder()
-												  .orgId(orgId)
-												  .triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
-												  .triggerType(CommissionTriggerType.SalesInvoice)
-												  .triggerDocumentDate(LocalDate.of(2020, 03, 21))
-												  .timestamp(Instant.now())
-												  .forecastedBasePoints(CommissionPoints.ZERO)
-												  .invoiceableBasePoints(CommissionPoints.ZERO)
-												  .invoicedBasePoints(CommissionPoints.of("-1110.00")) // with our 10% commission form the config, this trls to -111
-												  .productId(commissionProductId)
-												  .totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
-												  .documentCurrencyId(CurrencyId.ofRepoId(1))
-												  .build())
+						.orgId(orgId)
+						.triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
+						.triggerType(CommissionTriggerType.SalesInvoice)
+						.triggerDocumentDate(LocalDate.of(2020, 03, 21))
+						.timestamp(Instant.now())
+						.forecastedBasePoints(CommissionPoints.ZERO)
+						.invoiceableBasePoints(CommissionPoints.ZERO)
+						.invoicedBasePoints(CommissionPoints.of("-1110.00")) // with our 10% commission form the config, this trls to -111
+						.tradedCommissionPercent(Percent.ZERO)
+						.build())
 				.build();
 
 		// invoke the method under test
@@ -383,9 +358,7 @@ class HierachyAlgorithmTest
 				// it's uncommon to have a trigger with points beyond "forecasted"..but still should work
 				.invoiceableBasePoints(CommissionPoints.of("100.00"))
 				.invoicedBasePoints(CommissionPoints.of("10.00"))
-				.productId(commissionProductId)
-				.totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
-				.documentCurrencyId(CurrencyId.ofRepoId(1))
+				.tradedCommissionPercent(Percent.ZERO)
 				.build();
 
 		final CommissionTrigger trigger = CommissionTrigger.builder()

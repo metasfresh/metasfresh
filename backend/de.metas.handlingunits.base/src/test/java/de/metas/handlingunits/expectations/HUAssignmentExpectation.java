@@ -22,10 +22,9 @@ package de.metas.handlingunits.expectations;
  * #L%
  */
 
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.util.Check;
-import de.metas.util.Services;
+
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -33,8 +32,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.IQuery;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Expect to have a {@link I_M_HU_Assignment} record.
@@ -53,7 +54,7 @@ public class HUAssignmentExpectation<ParentExpectationType> extends AbstractHUEx
 	private int tableId = -1;
 	private int recordId = -1;
 	private I_M_HU hu;
-	@Nullable private I_M_HU luHU;
+	private I_M_HU luHU;
 	private I_M_HU tuHU;
 	private int huAssignmentsCount = 1;
 
@@ -139,7 +140,7 @@ public class HUAssignmentExpectation<ParentExpectationType> extends AbstractHUEx
 		return this;
 	}
 
-	public HUAssignmentExpectation<ParentExpectationType> luHU(@Nullable final I_M_HU luHU)
+	public HUAssignmentExpectation<ParentExpectationType> luHU(final I_M_HU luHU)
 	{
 		this.luHU = luHU;
 		return this;

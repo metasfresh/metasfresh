@@ -1,31 +1,22 @@
 package de.metas.marketing.base.interceptor;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.i18n.Language;
-import de.metas.marketing.base.ContactPersonService;
-import de.metas.marketing.base.ContactPersonsEventBus;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.ContactPersonId;
-import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
-import de.metas.marketing.base.model.I_MKTG_ContactPerson;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import de.metas.i18n.Language;
+import de.metas.marketing.base.UserService;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
+import de.metas.marketing.base.model.I_MKTG_ContactPerson;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -53,125 +44,67 @@ import java.util.HashMap;
 @Interceptor(I_MKTG_ContactPerson.class)
 public class MKTG_ContactPerson
 {
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ContactPersonService contactPersonService;
-	private final ContactPersonsEventBus contactPersonsEventBus;
+	private final UserService userService;
 
-	public MKTG_ContactPerson(
-			@NonNull final ContactPersonService contactPersonService,
-			@NonNull final ContactPersonsEventBus contactPersonsEventBus)
+	private final ContactPersonRepository contactPersonRepo;
+
+	private MKTG_ContactPerson(@NonNull final UserService userService, @NonNull final ContactPersonRepository contactPersonRepo)
 	{
-		this.contactPersonService = contactPersonService;
-		this.contactPersonsEventBus = contactPersonsEventBus;
+		this.userService = userService;
+		this.contactPersonRepo = contactPersonRepo;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
-	public void beforeSave(@NonNull final I_MKTG_ContactPerson contactPersonRecord, @NonNull final ModelChangeType changeType)
+	/**
+	 * When MKTG_ContactPerson.AD_User_ID changes, then update MKTG_Campaign_ContactPerson.AD_User_ID accordingly
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID)
+	public void updateCampaignContactPersonAdUserId(@NonNull final I_MKTG_ContactPerson contactPerson)
 	{
-		if (changeType.isChange() && InterfaceWrapperHelper.isValueChanged(contactPersonRecord, I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID))
-		{
-			updateCampaignContactPersonAdUserId(contactPersonRecord);
-		}
-	}
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(@NonNull final I_MKTG_ContactPerson contactPersonRecord, @NonNull final ModelChangeType changeType)
-	{
-		if (InterfaceWrapperHelper.isValueChanged(contactPersonRecord, I_MKTG_ContactPerson.COLUMNNAME_EMail, I_MKTG_ContactPerson.COLUMNNAME_AD_Language))
-		{
-			updateUserFromContactPerson(contactPersonRecord);
-		}
-
-		if (changeType.isChange())
-		{
-			trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail)
-					.getPropertyAndProcessAfterCommit(
-							ChangesCollector.class.getName(),
-							() -> new ChangesCollector(contactPersonsEventBus),
-							ChangesCollector::commit)
-					.collectChangedContact(ContactPersonRepository.toContactPerson(contactPersonRecord));
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void beforeDelete(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
-	{
-		queryCampaignContactPersonAssignment(contactPersonRecord).delete();
-	}
-
-	private void updateCampaignContactPersonAdUserId(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
-	{
-		final UserId newAdUserId = UserId.ofRepoIdOrNullIfSystem(contactPersonRecord.getAD_User_ID());
+		// note AD_User_ID=0 needs special treatment
+		final Integer newAdUserID = contactPerson.getAD_User_ID() <= 0 ? null : contactPerson.getAD_User_ID();
 
 		final IQueryUpdater<I_MKTG_Campaign_ContactPerson> updater = queryBL
 				.createCompositeQueryUpdater(I_MKTG_Campaign_ContactPerson.class)
-				.addSetColumnValue(I_MKTG_Campaign_ContactPerson.COLUMNNAME_AD_User_ID, newAdUserId);
+				.addSetColumnValue(I_MKTG_Campaign_ContactPerson.COLUMNNAME_AD_User_ID, newAdUserID);
 
-		queryCampaignContactPersonAssignment(contactPersonRecord).update(updater);
+		createContactPersonQuery(contactPerson)
+				.update(updater);
 	}
 
-	private IQuery<I_MKTG_Campaign_ContactPerson> queryCampaignContactPersonAssignment(@NonNull final I_MKTG_ContactPerson contactPerson)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteCampaignContactPersonAdUserId(@NonNull final I_MKTG_ContactPerson contactPerson)
 	{
+		createContactPersonQuery(contactPerson)
+				.delete();
+	}
+
+	private IQuery<I_MKTG_Campaign_ContactPerson> createContactPersonQuery(@NonNull final I_MKTG_ContactPerson contactPerson)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPerson.getMKTG_ContactPerson_ID())
 				.create();
 	}
 
-	private void updateUserFromContactPerson(final I_MKTG_ContactPerson contactPersonRecord)
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+			ifColumnsChanged = { I_MKTG_ContactPerson.COLUMNNAME_EMail, I_MKTG_ContactPerson.COLUMNNAME_AD_Language })
+	public void updateUserFromContactPerson(final I_MKTG_ContactPerson contactPersonRecord)
 	{
-		final I_MKTG_ContactPerson oldContactPersonRecord = InterfaceWrapperHelper.createOld(contactPersonRecord, I_MKTG_ContactPerson.class);
-		final String oldContactPersonMail = oldContactPersonRecord.getEMail();
-		final Language oldContactPersonLanguage = Language.asLanguage(oldContactPersonRecord.getAD_Language());
+		final I_MKTG_ContactPerson oldContactPerson = InterfaceWrapperHelper.createOld(contactPersonRecord, I_MKTG_ContactPerson.class);
 
-		final ContactPerson contactPerson = ContactPersonRepository.toContactPerson(contactPersonRecord);
+		final String oldContactPersonMail = oldContactPerson.getEMail();
+		final Language oldContactPersonLanguage = Language.asLanguage(oldContactPerson.getAD_Language());
 
-		contactPersonService.updateUserFromContactPersonIfFeasible(
+		final ContactPerson contactPerson = contactPersonRepo.asContactPerson(contactPersonRecord);
+
+		userService.updateUserFromContactPersonIfFeasible(
 				contactPerson,
 				oldContactPersonMail,
 				oldContactPersonLanguage);
-	}
-
-	//
-	//
-	//
-	private static class ChangesCollector
-	{
-		private final ContactPersonsEventBus contactPersonsEventBus;
-
-		private HashMap<ContactPersonId, ContactPerson> contacts = new HashMap<>();
-
-		private ChangesCollector(@NonNull final ContactPersonsEventBus contactPersonsEventBus)
-		{
-			this.contactPersonsEventBus = contactPersonsEventBus;
-		}
-
-		public void collectChangedContact(final ContactPerson contact)
-		{
-			if (contacts == null)
-			{
-				throw new AdempiereException("collector already committed");
-			}
-
-			contacts.put(contact.getContactPersonId(), contact);
-		}
-
-		public void commit()
-		{
-			if (contacts == null)
-			{
-				return;
-			}
-
-			final ImmutableList<ContactPerson> contacts = ImmutableList.copyOf(this.contacts.values());
-			this.contacts = null;
-			if (contacts.isEmpty())
-			{
-				return;
-			}
-
-			contactPersonsEventBus.notifyChanged(contacts);
-		}
 	}
 }

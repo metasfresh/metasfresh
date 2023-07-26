@@ -1,16 +1,16 @@
 package de.metas.ui.web.order.sales.hu.reservation;
 
+import org.springframework.stereotype.Service;
+
 import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
-import de.metas.picking.api.Packageable;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -62,15 +62,11 @@ public class HUReservationDocumentFilterService
 
 	private IHUQueryBuilder createHUQuery(@NonNull final OrderLine salesOrderLine)
 	{
-		final OrderLineId salesOrderLineId = salesOrderLine.getId();
-		final HUReservationDocRef reservationDocRef = salesOrderLineId != null ? HUReservationDocRef.ofSalesOrderLineId(salesOrderLineId) : null;
-
 		return huReservationService.prepareHUQuery()
 				.warehouseId(salesOrderLine.getWarehouseId())
 				.productId(salesOrderLine.getProductId())
-				.bpartnerId(salesOrderLine.getBPartnerId())
 				.asiId(salesOrderLine.getAsiId())
-				.reservedToDocumentOrNotReservedAtAll(reservationDocRef)
+				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine.getId())
 				.build();
 	}
 
@@ -83,15 +79,11 @@ public class HUReservationDocumentFilterService
 
 	private IHUQueryBuilder createHUQueryIgnoreAttributes(final Packageable packageable)
 	{
-		final OrderLineId salesOrderLineId = packageable.getSalesOrderLineIdOrNull();
-		final HUReservationDocRef reservationDocRef = salesOrderLineId != null ? HUReservationDocRef.ofSalesOrderLineId(salesOrderLineId) : null;
-
 		return huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
-				.bpartnerId(packageable.getCustomerId())
 				.asiId(null) // ignore attributes
-				.reservedToDocumentOrNotReservedAtAll(reservationDocRef)
+				.reservedToSalesOrderLineIdOrNotReservedAtAll(packageable.getSalesOrderLineIdOrNull())
 				.build();
 	}
 }

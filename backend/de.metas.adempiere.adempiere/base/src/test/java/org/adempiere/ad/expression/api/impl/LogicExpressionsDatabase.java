@@ -948,7 +948,5 @@ public class LogicExpressionsDatabase
 			"Processed=Y",
 			"PropagationType='BOTU' | PropagationType='IVAL'",
 			"PropagationType='TOPB' | PropagationType='IVAL'",
-			"Y=N",
-			"@$Element_D1@=Y",
-			"@$Element_D2@=Y");
+			"Y=N");
 }

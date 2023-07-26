@@ -3,8 +3,6 @@ package org.eevolution.api;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.pporder.PPRoutingId;
@@ -36,12 +34,12 @@ import java.time.Instant;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -71,16 +69,12 @@ public class PPOrderCreateRequest
 	@NonNull Instant dateStartSchedule;
 
 	@Nullable OrderLineId salesOrderLineId;
-	@Nullable ShipmentScheduleId shipmentScheduleId;
 	@Nullable BPartnerId customerId;
 	@Nullable ProjectId projectId;
 
 	@Nullable Boolean completeDocument;
 
-	@Nullable
-	HUPIItemProductId packingMaterialId;
-
-	@Builder(toBuilder = true)
+	@Builder
 	PPOrderCreateRequest(
 			@Nullable final PPOrderDocBaseType docBaseType,
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -102,12 +96,10 @@ public class PPOrderCreateRequest
 			@NonNull final Instant dateStartSchedule,
 			//
 			@Nullable final OrderLineId salesOrderLineId,
-			@Nullable final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final BPartnerId customerId,
 			@Nullable final ProjectId projectId,
 			//
-			@Nullable final Boolean completeDocument,
-			@Nullable final HUPIItemProductId packingMaterialId)
+			@Nullable final Boolean completeDocument)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -131,12 +123,10 @@ public class PPOrderCreateRequest
 		this.dateStartSchedule = dateStartSchedule;
 
 		this.salesOrderLineId = salesOrderLineId;
-		this.shipmentScheduleId = shipmentScheduleId;
 		this.customerId = customerId;
 		this.projectId = projectId;
 
 		this.completeDocument = completeDocument;
-		this.packingMaterialId = packingMaterialId;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

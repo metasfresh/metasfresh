@@ -15,7 +15,6 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -39,14 +38,11 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -59,13 +55,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -120,12 +114,6 @@ public class InventoryRepository
 		return getInventoryLineRecordById(inventoryLine.getId());
 	}
 
-	private ImmutableSet getInventoryLinesByIDs(@Nullable final Set<InventoryLineId> inventoryLineIds)
-	{
-		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
-				.stream()
-				.collect(ImmutableSet.toImmutableSet());
-	}
 	private HashMap<InventoryLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@Nullable final Set<InventoryLineId> inventoryLineIds)
 	{
 		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
@@ -728,58 +716,4 @@ public class InventoryRepository
 
 		return toInventory(inventory);
 	}
-
-	public Set<I_M_InventoryLine> retrieveAllLinesForHU(final @NonNull IContextAware ctxAware, @NonNull final HuId huId)
-	{
-		final List<I_M_HU> includedHUs = huDAO.retrieveIncludedHUs(huDAO.getById(huId));
-
-		final ImmutableSet<HuId> includedHUIds = includedHUs.stream()
-				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableSet<HuId> huIds = ImmutableSet.<HuId>builder()
-				.addAll(includedHUIds)
-				.add(huId)
-				.build();
-
-		final ImmutableSet<InventoryLineId> linesViaHUId = queryBL.createQueryBuilder(I_M_InventoryLine.class)
-				.addInArrayFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, huIds)
-				.create()
-				.listIds(InventoryLineId::ofRepoId);
-
-		final ImmutableSet<InventoryLineId> linesViaHUInventoryLine = queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
-				.addInArrayFilter(I_M_InventoryLine_HU.COLUMNNAME_M_HU_ID, huIds)
-				.andCollect(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_ID, I_M_InventoryLine.class)
-				.create()
-				.listIds(InventoryLineId::ofRepoId);
-
-		final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
-				.setJoinOr()
-				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
-				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, huIds)
-				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, huIds)
-				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, huIds);
-
-		final ImmutableSet<InventoryLineId> linesViaHUAssignment = queryBL.createQueryBuilder(I_M_HU_Assignment.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(org.compiere.model.I_M_InventoryLine.class))
-				.filter(filter)
-				.create()
-				.stream()
-				.map(huAssignment -> TableRecordReference.ofReferenced(huAssignment))
-				.sorted(Comparator.comparing(TableRecordReference::getRecord_ID))
-				.distinct()
-				.map(ref -> ref.getModel(ctxAware, I_M_InventoryLine.class))
-				.map(line -> InventoryLineId.ofRepoId(line.getM_InventoryLine_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableSet<InventoryLineId> inventoryLineIds = ImmutableSet.<InventoryLineId>builder()
-				.addAll(linesViaHUId)
-				.addAll(linesViaHUInventoryLine)
-				.addAll(linesViaHUAssignment)
-				.build();
-
-		return getInventoryLinesByIDs(inventoryLineIds);
-	}
 }
-

@@ -2,12 +2,16 @@ package de.metas.contracts.inoutcandidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.document.location.DocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -127,7 +131,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(InterfaceWrapperHelper.load(subscriptionLine.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(subscriptionLine.getM_ShipmentSchedule());
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
 		return ImmutableShipmentScheduleSegment.builder()
@@ -154,8 +158,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQuery<I_C_Flatrate_Term> itemProductQuery = queryBL.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_ProductType, X_M_Product.PRODUCTTYPE_Item)
-				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_M_Product.COLUMN_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_M_Product_ID)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
@@ -163,17 +167,17 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		return queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_Status, X_C_SubscriptionProgress.STATUS_Planned)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMNNAME_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
-				.addCompareFilter(I_C_SubscriptionProgress.COLUMNNAME_Qty, Operator.GREATER, ZERO)
-				.addEqualsFilter(I_C_SubscriptionProgress.COLUMNNAME_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_Qty, Operator.GREATER, ZERO)
+				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
 				.addInSubQueryFilter(
-						I_C_SubscriptionProgress.COLUMNNAME_C_Flatrate_Term_ID,
-						I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID,
+						I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID,
+						I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID,
 						itemProductQuery)
 				.addOnlyContextClient(ctx)
-				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_C_SubscriptionProgress_ID).endOrderBy()
+				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)

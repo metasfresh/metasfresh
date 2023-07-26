@@ -1,7 +1,9 @@
 package org.eevolution.model.validator;
 
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -10,15 +12,12 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
-import org.eevolution.api.impl.ProductBOMService;
-import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -78,8 +77,7 @@ public class PP_Product_PlanningTest
 		productPlanning.setM_AttributeSetInstance(asi);
 		save(productPlanning);
 
-		final ProductBOMVersionsDAO versionsDAO = new ProductBOMVersionsDAO();
-		new PP_Product_Planning(versionsDAO, new ProductBOMService(versionsDAO)).updateStorageAttributesKey(productPlanning);
+		new PP_Product_Planning().updateStorageAttributesKey(productPlanning);
 
 		final AttributesKey storageAttributesKeyExpected = AttributesKey.ofAttributeValueIds(attributeValue1.getId(), attributeValue2.getId());
 		assertThat(productPlanning.getStorageAttributesKey()).isEqualTo(storageAttributesKeyExpected.getAsString());

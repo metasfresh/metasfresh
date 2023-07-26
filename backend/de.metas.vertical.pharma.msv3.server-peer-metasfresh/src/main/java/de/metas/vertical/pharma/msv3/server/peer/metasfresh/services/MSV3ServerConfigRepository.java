@@ -1,5 +1,10 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.springframework.stereotype.Repository;
+
 import de.metas.cache.CCache;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
@@ -7,10 +12,6 @@ import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Server;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Server_Product_Category;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig.MSV3ServerConfigBuilder;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
-import org.springframework.stereotype.Repository;
 
 /*
  * #%L

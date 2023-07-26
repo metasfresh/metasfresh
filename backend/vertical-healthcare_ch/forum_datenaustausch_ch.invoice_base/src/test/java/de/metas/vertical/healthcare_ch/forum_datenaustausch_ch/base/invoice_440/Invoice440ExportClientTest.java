@@ -1,18 +1,19 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.invoice_440;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice_gateway.spi.model.BPartner;
-import de.metas.invoice_gateway.spi.model.GLN;
-import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
-import de.metas.invoice_gateway.spi.model.Money;
-import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
-import org.junit.jupiter.api.Test;
+import static java.math.BigDecimal.TEN;
 
 import java.time.Instant;
 import java.util.GregorianCalendar;
 
-import static java.math.BigDecimal.TEN;
+
+import de.metas.invoice_gateway.spi.model.BPartner;
+import de.metas.invoice_gateway.spi.model.BPartnerId;
+import de.metas.invoice_gateway.spi.model.GLN;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
+import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
+import de.metas.invoice_gateway.spi.model.Money;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L

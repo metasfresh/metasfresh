@@ -1,13 +1,50 @@
 package de.metas.contracts.impl;
 
-import de.metas.acct.GLCategoryRepository;
-import de.metas.ad_reference.ADReferenceService;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.math.BigDecimal;
+
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+
+import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.C_Aggregation_Builder;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
@@ -35,53 +72,29 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
-import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.process.PInstanceId;
-import de.metas.user.UserRepository;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 {
-	private IContractChangeBL contractChangeBL;
-	private IContractsDAO contractsDAO;
-	private IInvoiceCandDAO invoiceCandDAO;
-	private IInvoiceCandBL invoiceCandBL;
+	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
-	@Override
-	protected void afterInit()
+	@BeforeEach
+	public void before()
 	{
-		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
 
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
-				new C_Flatrate_Term(
-						new ContractOrderService(),
-						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
-						ADReferenceService.newMocked(),
-						new GLCategoryRepository()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService()));
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);
@@ -109,12 +122,6 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		}
 
 		de.metas.common.util.time.SystemTime.setTimeSource(today);
-
-
-		contractChangeBL = Services.get(IContractChangeBL.class);
-		contractsDAO = Services.get(IContractsDAO.class);
-		invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	}
 
 	@Test
@@ -141,8 +148,9 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();
 
-		assertThatThrownBy(() -> contractChangeBL.cancelContract(contract, contractChangeParameters))
-				.hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT.toAD_Message());
+		assertThatThrownBy(() -> {
+			contractChangeBL.cancelContract(contract, contractChangeParameters);
+		}).hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT.toAD_Message());
 
 	}
 

@@ -1,7 +1,15 @@
 package de.metas.cache;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.event.Event;
@@ -13,15 +21,8 @@ import de.metas.event.impl.EventMDC;
 import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
-import javax.annotation.Nullable;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 /*
  * #%L
@@ -48,7 +49,7 @@ import java.util.function.Function;
 /** Bidirectional binding between local cache system and remote cache systems */
 final class CacheInvalidationRemoteHandler implements IEventListener
 {
-	public static final CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
+	public static final transient CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
 
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
 
@@ -76,7 +77,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		//
 		// Globally register this listener.
 		// We register it globally because we want to survive.
-		final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
+		final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 		eventBusFactory.registerGlobalEventListener(TOPIC_CacheInvalidation, instance);
 	}
 
@@ -87,6 +88,8 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	/**
 	 * Enable cache invalidation broadcasting for given table name.
+	 *
+	 * @param tableName
 	 */
 	public void enableForTableName(@NonNull final String tableName)
 	{
@@ -96,6 +99,8 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	/**
 	 * Enable cache invalidation broadcasting for given table names.
+	 *
+	 * @param tableName
 	 */
 	public void enableForTableNamesGroup(@NonNull final TableNamesGroup group)
 	{
@@ -140,13 +145,12 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 		// Broadcast the event.
 		final Event event = createEventFromRequest(request);
-		try (final MDCCloseable ignored = EventMDC.putEvent(event))
+		try (final MDCCloseable mdc = EventMDC.putEvent(event))
 		{
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
-			final IEventBusFactory eventBusFactory = SpringContextHolder.instance.getBean(IEventBusFactory.class);
-			eventBusFactory
+			Services.get(IEventBusFactory.class)
 					.getEventBus(TOPIC_CacheInvalidation)
-					.enqueueEvent(event);
+					.postEvent(event);
 		}
 	}
 
@@ -192,12 +196,13 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	@VisibleForTesting
 	Event createEventFromRequest(@NonNull final CacheInvalidateMultiRequest request)
 	{
-		return Event.builder()
+		final Event event = Event.builder()
 				.putProperty(EVENT_PROPERTY, jsonSerializer.toJson(request))
 				.build();
+
+		return event;
 	}
 
-	@Nullable
 	private CacheInvalidateMultiRequest createRequestFromEvent(final Event event)
 	{
 		final String jsonRequest = event.getProperty(EVENT_PROPERTY);

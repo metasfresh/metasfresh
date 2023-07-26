@@ -37,7 +37,6 @@ import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -63,6 +62,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -187,8 +187,8 @@ public class CreateRemittanceAdviceService
 			serviceFeeCurrencyId = getCurrencyIdByCurrencyISO(jsonRemittanceAdvice.getServiceFeeCurrencyISO());
 		}
 
-		final DocTypeId targetPaymentDocTypeId = getDocTypeIdByType(DocBaseType.ofCode(jsonRemittanceAdvice.getRemittanceAdviceType().getDocBaseType()), clientId, orgId);
-		final DocTypeId remittanceDocTypeId = getDocTypeIdByType(DocBaseType.RemittanceAdvice, clientId, orgId);
+		final DocTypeId targetPaymentDocTypeId = getDocTypeIdByType(jsonRemittanceAdvice.getRemittanceAdviceType().getDocBaseType(), clientId, orgId);
+		final DocTypeId remittanceDocTypeId = getDocTypeIdByType(X_C_DocType.DOCBASETYPE_RemittanceAdvice, clientId, orgId);
 		final String remittanceDocNumber = buildDocumentNo(remittanceDocTypeId);
 
 		final Instant sendDate = jsonRemittanceAdvice.getSendDate() != null ? Instant.parse(jsonRemittanceAdvice.getSendDate()) : null;
@@ -299,7 +299,7 @@ public class CreateRemittanceAdviceService
 
 	@NonNull
 	private DocTypeId getDocTypeIdByType(
-			@NonNull final DocBaseType type,
+			@NonNull final String type,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{

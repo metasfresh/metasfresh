@@ -32,7 +32,6 @@ import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -138,7 +137,7 @@ public class ProjectLineRepository
 	}
 
 	public void createProjectLine(
-			@NonNull final CreateServiceOrRepairProjectRequest.ProjectLine request,
+			@NonNull final CreateProjectRequest.ProjectLine request,
 			@NonNull final ProjectId projectId,
 			@NonNull final OrgId orgId)
 	{

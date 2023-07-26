@@ -27,12 +27,9 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -44,7 +41,6 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.logging.LogManager;
-import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -104,14 +100,6 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
-	}
-
-	public AggregationEngine newAggregationEngine()
-	{
-		return  AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
-				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
-				.build();
 	}
 
 	protected final List<IInvoiceLineRW> getInvoiceLines(final IInvoiceHeader invoice)
@@ -178,7 +166,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		final I_M_InOut inOut1;
 		{
 			final String inOutDocumentNo = "1";
-			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment);
+			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
 			createInvoiceCandidateInOutLine(ic, inOut1, partialQty1, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut1);
 		}
@@ -186,7 +174,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		final I_M_InOut inOut2;
 		{
 			final String inOutDocumentNo = "2";
-			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment);
+			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
 			createInvoiceCandidateInOutLine(ic, inOut2, partialQty2, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut2);
 		}
@@ -202,7 +190,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(summedQty.getStockQty().toBigDecimal()));
 		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(summedQty.getStockQty().toBigDecimal()));
 
-		final AggregationEngine engine = newAggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(ic);
 
 		return engine;

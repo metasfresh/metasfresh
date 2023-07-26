@@ -1,10 +1,10 @@
 package de.metas.marketing.base.model;
 
+import javax.annotation.Nullable;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -87,13 +87,9 @@ public class RemoteToLocalSyncResult implements SyncResult
 	/** contact or campaign that doesn't yet exist locally */
 	public static RemoteToLocalSyncResult obtainedNewDataRecord(@NonNull final DataRecord datarecord)
 	{
-		final RemoteToLocalStatus status = datarecord instanceof Campaign
-				? RemoteToLocalStatus.OBTAINED_NEW_CAMPAIGN
-				: RemoteToLocalStatus.OBTAINED_NEW_CONTACT_PERSON;
-
 		return RemoteToLocalSyncResult.builder()
 				.synchedDataRecord(datarecord)
-				.remoteToLocalStatus(status)
+				.remoteToLocalStatus(RemoteToLocalStatus.OBTAINED_NEW_CONTACT_PERSON)
 				.build();
 	}
 
@@ -131,11 +127,9 @@ public class RemoteToLocalSyncResult implements SyncResult
 		/** See {@link RemoteToLocalSyncResult#obtainedEmailBounceInfo(DataRecord)}. */
 		OBTAINED_EMAIL_BOUNCE_INFO,
 
-		OBTAINED_NEW_CONTACT_PERSON,
-		NO_CHANGES,
-		OBTAINED_OTHER_REMOTE_DATA,
-		ERROR,
-		OBTAINED_NEW_CAMPAIGN;
+
+		OBTAINED_NEW_CONTACT_PERSON, NO_CHANGES, OBTAINED_OTHER_REMOTE_DATA, ERROR;
+
 	}
 
 	RemoteToLocalStatus remoteToLocalStatus;

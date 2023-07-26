@@ -6,17 +6,13 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
-import de.metas.invoice.sequence.InvoiceCountryIdProvider;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -25,7 +21,6 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
-import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
@@ -37,12 +32,10 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
@@ -55,8 +48,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 @Interceptor(I_C_Invoice.class)
 @Component
@@ -75,46 +66,12 @@ public class C_Invoice // 03771
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	private final IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
-
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-
 	public C_Invoice(
 			@NonNull final PaymentReservationService paymentReservationService,
-			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
+			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.paymentReservationService = paymentReservationService;
 		this.documentLocationBL = documentLocationBL;
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-	}
-
-	@Init
-	void init()
-	{
-		documentNoBuilderFactory.registerCountryIdProvider(new InvoiceCountryIdProvider());
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID })
-	public void updateDocNo(@NonNull final I_C_Invoice invoice)
-	{
-		final I_C_DocType docTypeRecord = loadOutOfTrx(invoice.getC_DocTypeTarget_ID(), I_C_DocType.class);
-
-		final IDocumentNoInfo documentNoInfo = documentNoBuilderFactory
-				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(docTypeRecord)
-				.setOldDocumentNo(invoice.getDocumentNo())
-				.setDocumentModel(invoice)
-				.buildOrNull();
-		if (documentNoInfo == null)
-		{
-			return;
-		}
-
-		if (documentNoInfo.isDocNoControlled())
-		{
-			invoice.setDocumentNo(documentNoInfo.getDocumentNo());
-		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -142,6 +99,7 @@ public class C_Invoice // 03771
 	private void autoAllocateAvailablePayments(final I_C_Invoice invoice)
 	{
 		allocationBL.autoAllocateAvailablePayments(invoice);
+		testAndMarkAsPaid(invoice);
 	}
 
 	private void ensureUOMsAreNotNull(@NonNull final I_C_Invoice invoice)
@@ -195,7 +153,8 @@ public class C_Invoice // 03771
 
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
-		@SuppressWarnings("ConstantConditions") final I_M_PriceList_Version priceListVersion = priceListDAO
+		@SuppressWarnings("ConstantConditions")
+		final I_M_PriceList_Version priceListVersion = priceListDAO
 				.retrievePriceListVersionOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
@@ -209,38 +168,6 @@ public class C_Invoice // 03771
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
 		}
-	}
-
-	/**
-	 * In the workflow [order => invoice] : The new invoice must inherit the payment rule from the related order.
-	 * When creating a manual invoice: The new invoice must inherit the payment rule from the BPartner.
-	 * When cloning an invoice: all should be set as in the original invoice, so the payment rule should be the same as in the old invoice.
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID })
-	public void setPaymentRule(final I_C_Invoice invoice)
-	{
-		if (!InterfaceWrapperHelper.isUIAction(invoice) || InterfaceWrapperHelper.isCopying(invoice))
-		{
-			return;
-		}
-
-		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
-		final PaymentRule paymentRule;
-		if (invoice.isSOTrx() && bpartner != null && bpartner.getPaymentRule() != null)
-		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
-
-		}
-		else if (!invoice.isSOTrx() && bpartner != null && bpartner.getPaymentRulePO() != null)
-		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRulePO());
-		}
-		else
-		{
-			paymentRule = invoiceBL.getDefaultPaymentRule();
-		}
-
-		invoice.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -309,14 +236,15 @@ public class C_Invoice // 03771
 		if (creditMemo.getRef_Invoice_ID() > 0)
 		{
 			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
-			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(parentInvoice,
-					false).toBigDecimal(); // creditMemoAdjusted = false
+			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(parentInvoice,
+																			false); // creditMemoAdjusted = false
 
 			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
 			// Allocate the minimum between parent invoice open amt and what is left of the creditMemo's grand Total
 			invoiceBL.allocateCreditMemo(parentInvoice, creditMemo, amtToAllocate);
 		}
+		testAndMarkAsPaid(creditMemo);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -374,6 +302,7 @@ public class C_Invoice // 03771
 			paymentDAO.save(payment);
 
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+			testAndMarkAsPaid(invoice);
 		}
 	}
 
@@ -384,6 +313,7 @@ public class C_Invoice // 03771
 		{
 			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
+			testAndMarkAsPaid(invoice);
 		}
 	}
 
@@ -431,12 +361,12 @@ public class C_Invoice // 03771
 		final Money grandTotal = extractGrandTotal(salesInvoice);
 
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.salesOrderId(salesOrderId)
-				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
-				.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
-				.dateTrx(dateTrx)
-				.amount(grandTotal)
-				.build());
+														.salesOrderId(salesOrderId)
+														.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
+														.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
+														.dateTrx(dateTrx)
+														.amount(grandTotal)
+														.build());
 	}
 
 	private static Money extractGrandTotal(@NonNull final I_C_Invoice salesInvoice)
@@ -448,82 +378,5 @@ public class C_Invoice // 03771
 	public void updateInvoiceLinesTax(@NonNull final I_C_Invoice invoice)
 	{
 		invoiceBL.setInvoiceLineTaxes(invoice);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = {
-					I_C_Invoice.COLUMNNAME_M_SectionCode_ID,
-					I_C_Invoice.COLUMNNAME_UserElementString1,
-					I_C_Invoice.COLUMNNAME_UserElementString2,
-					I_C_Invoice.COLUMNNAME_UserElementString3,
-					I_C_Invoice.COLUMNNAME_UserElementString4,
-					I_C_Invoice.COLUMNNAME_UserElementString5,
-					I_C_Invoice.COLUMNNAME_UserElementString6,
-					I_C_Invoice.COLUMNNAME_UserElementString7,
-			})
-	public void copyDimensionToLines(@NonNull final I_C_Invoice invoice)
-	{
-		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice);
-		if (lines.isEmpty())
-		{
-			return;
-		}
-
-		final boolean sectionCodeChanged = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_M_SectionCode_ID);
-		final boolean userElementString1Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString1);
-		final boolean userElementString2Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString2);
-		final boolean userElementString3Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString3);
-		final boolean userElementString4Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString4);
-		final boolean userElementString5Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString5);
-		final boolean userElementString6Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString6);
-		final boolean userElementString7Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString7);
-
-		for (final I_C_InvoiceLine line : lines)
-		{
-			if (sectionCodeChanged)
-			{
-				line.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
-			}
-			if (userElementString1Changed)
-			{
-				line.setUserElementString1(invoice.getUserElementString1());
-			}
-			if (userElementString2Changed)
-			{
-				line.setUserElementString2(invoice.getUserElementString2());
-			}
-			if (userElementString3Changed)
-			{
-				line.setUserElementString3(invoice.getUserElementString3());
-			}
-			if (userElementString4Changed)
-			{
-				line.setUserElementString4(invoice.getUserElementString4());
-			}
-			if (userElementString5Changed)
-			{
-				line.setUserElementString5(invoice.getUserElementString5());
-			}
-			if (userElementString6Changed)
-			{
-				line.setUserElementString6(invoice.getUserElementString6());
-			}
-			if (userElementString7Changed)
-			{
-				line.setUserElementString7(invoice.getUserElementString7());
-			}
-
-			invoiceDAO.save(line);
-		}
-	}
-
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_PREPARE })
-	public void updateBPartnerStats(@NonNull final I_C_Invoice invoice)
-	{
-		bPartnerStatisticsUpdater
-				.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
-						.bpartnerId(invoice.getC_BPartner_ID())
-						.build());
-
 	}
 }

@@ -22,14 +22,15 @@ package org.adempiere.ad.service.impl;
  * #L%
  */
 
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+
 import org.adempiere.ad.service.ISequenceDAO;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.service.ITableSequenceChecker;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -38,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Sequence;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MSequence;
 import org.compiere.util.DB;
@@ -45,12 +47,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class TableSequenceChecker implements ITableSequenceChecker
 {
@@ -181,7 +184,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		{
 
 			@Override
-			public void run(final String localTrxName)
+			public void run(final String localTrxName) throws Exception
 			{
 				createOrUpdateTableSequence(ctx, tableName, localTrxName);
 
@@ -215,9 +218,12 @@ public class TableSequenceChecker implements ITableSequenceChecker
 	/**
 	 * Create/Update {@link I_AD_Sequence} for the given {@code tableName}.
 	 * 
+	 * @param ctx context
+	 * @param TableName table name
+	 * @param trxName transaction
 	 * @return created/updated sequence; never return null
 	 */
-	private I_AD_Sequence createOrUpdateTableSequence(final Properties ctx, final String tableName, final String trxName)
+	private final I_AD_Sequence createOrUpdateTableSequence(final Properties ctx, final String tableName, final String trxName)
 	{
 		I_AD_Sequence sequence = sequenceDAO.retrieveTableSequenceOrNull(ctx, tableName, trxName);
 		if (sequence == null)
@@ -270,7 +276,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 	 * 
 	 * @return true if updated
 	 */
-	private boolean updateTableCurrentNext(final I_AD_Sequence seq)
+	private final boolean updateTableCurrentNext(final I_AD_Sequence seq)
 	{
 		if (!seq.isTableID())
 		{
@@ -304,6 +310,13 @@ public class TableSequenceChecker implements ITableSequenceChecker
 
 		//
 		// Retrieve from AD_System: IDRangeEnd
+		final Properties ctx = InterfaceWrapperHelper.getCtx(seq);
+		final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
+		int IDRangeEnd = 0;
+		if (system != null && system.getIDRangeEnd() != null)
+		{
+			IDRangeEnd = system.getIDRangeEnd().intValue();
+		}
 
 		boolean changed = false;
 		String info = null;
@@ -312,6 +325,10 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		// Check/Update CurrentNext
 		{
 			String sql = "SELECT MAX(" + keyColumnName + ") FROM " + tableName;
+			if (IDRangeEnd > 0)
+			{
+				sql += " WHERE " + tableName + "_ID < " + IDRangeEnd;
+			}
 			int maxTableID = DB.getSQLValue(ITrx.TRXNAME_None, sql);
 			if (maxTableID < MSequence.INIT_NO)
 			{
@@ -376,7 +393,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		getLogger().addLog(changeLog.toString());
 	}
 
-	private void logError(final String tableName, final Throwable e)
+	private final void logError(final String tableName, final Throwable e)
 	{
 		getLogger().addLog("Sequence " + tableName + ": " + e.getLocalizedMessage());
 		log.warn(e.getLocalizedMessage(), e);

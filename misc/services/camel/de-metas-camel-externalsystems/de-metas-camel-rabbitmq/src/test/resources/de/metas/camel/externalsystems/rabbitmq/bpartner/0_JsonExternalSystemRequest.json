@@ -1,7 +1,6 @@
 {
   "orgCode": "001",
   "externalSystemName": "RabbitMQ",
-  "externalSystemChildConfigValue": "childValue",
   "command": "exportBPartner",
   "adPInstanceId": 2,
   "externalSystemConfigId": 1,

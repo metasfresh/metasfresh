@@ -14,7 +14,8 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -44,12 +45,10 @@ public class PPRoutingActivity
 {
 	@NonNull PPRoutingActivityId id;
 
-	@NonNull PPRoutingActivityType type;
-
 	@NonNull String code;
 	@NonNull String name;
 
-	@NonNull @Default Range<Instant> validDates = Range.all();
+	@NonNull @Default Range<LocalDate> validDates = Range.all();
 
 	@NonNull ResourceId resourceId;
 
@@ -79,15 +78,13 @@ public class PPRoutingActivity
 	BPartnerId subcontractingVendorId;
 
 	boolean milestone;
-	@NonNull PPAlwaysAvailableToUser alwaysAvailableToUser;
-	@Nullable UserInstructions userInstructions;
 
 	@NonNull @Default ImmutableSet<PPRoutingActivityId> nextActivityIds = ImmutableSet.of();
 
 	@Nullable PPRoutingActivityTemplateId activityTemplateId;
 
-	public boolean isValidAtDate(final Instant dateTime)
+	public boolean isValidAtDate(final LocalDateTime dateTime)
 	{
-		return validDates.contains(dateTime);
+		return validDates.contains(dateTime.toLocalDate());
 	}
 }

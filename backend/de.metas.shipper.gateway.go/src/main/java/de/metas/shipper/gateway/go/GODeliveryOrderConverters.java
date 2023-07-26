@@ -1,7 +1,5 @@
 package de.metas.shipper.gateway.go;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -155,7 +153,7 @@ import lombok.experimental.UtilityClass;
 		return DeliveryPosition.builder()
 				.numberOfPackages(orderPO.getGO_NumberOfPackages())
 				.packageIds(mpackageIds)
-				.grossWeightKg(BigDecimal.valueOf(orderPO.getGO_GrossWeightKg()))
+				.grossWeightKg(orderPO.getGO_GrossWeightKg())
 				.content(orderPO.getGO_PackageContentDescription())
 				.build();
 	}
@@ -163,11 +161,7 @@ import lombok.experimental.UtilityClass;
 	public static void deliveryPositionToPO(final I_GO_DeliveryOrder orderPO, final DeliveryPosition deliveryPosition)
 	{
 		orderPO.setGO_NumberOfPackages(deliveryPosition.getNumberOfPackages());
-		//model expects weight as kg, integer value
-		final int go_grossWeightKg = deliveryPosition.getGrossWeightKg()
-				.setScale(0, RoundingMode.UP)
-				.intValue();
-		orderPO.setGO_GrossWeightKg(go_grossWeightKg);
+		orderPO.setGO_GrossWeightKg(deliveryPosition.getGrossWeightKg());
 		orderPO.setGO_PackageContentDescription(deliveryPosition.getContent());
 	}
 

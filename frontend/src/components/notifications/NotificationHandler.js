@@ -1,12 +1,10 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import Notification from './Notification';
 
-const EMPTY_OBJECT = { notifications: {} };
-
-class NotificationHandler extends PureComponent {
+class NotificationHandler extends Component {
   render() {
     const { notifications, children } = this.props;
 
@@ -30,7 +28,9 @@ NotificationHandler.propTypes = {
 
 function mapStateToProps(state) {
   const { appHandler } = state;
-  const { notifications } = appHandler || EMPTY_OBJECT;
+  const { notifications } = appHandler || {
+    notifications: {},
+  };
 
   return {
     notifications,

@@ -63,7 +63,58 @@ export const componentPropTypes = {
   onDeselect: PropTypes.func.isRequired,
 };
 
-const userSettings_defaultPrecisionByFieldType = {};
+// TableRow props
+export const tableRowPropTypes = {
+  lastPage: PropTypes.string,
+  cols: PropTypes.array.isRequired,
+  onClick: PropTypes.func.isRequired,
+  item: PropTypes.object.isRequired,
+  dataKey: PropTypes.string.isRequired,
+  handleSelect: PropTypes.func,
+  onDoubleClick: PropTypes.func,
+  indentSupported: PropTypes.bool,
+  collapsible: PropTypes.bool,
+  collapsed: PropTypes.bool,
+  processed: PropTypes.bool,
+  notSaved: PropTypes.bool,
+  isSelected: PropTypes.bool,
+  odd: PropTypes.number,
+  caption: PropTypes.string,
+  changeListenOnTrue: PropTypes.func,
+  onRowCollapse: PropTypes.func,
+  handleRightClick: PropTypes.func,
+  fieldsByName: PropTypes.object,
+  indent: PropTypes.array,
+  rowId: PropTypes.string,
+  supportOpenRecord: PropTypes.bool,
+  changeListenOnFalse: PropTypes.func,
+  tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  mainTable: PropTypes.bool,
+  newRow: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  entity: PropTypes.string,
+  colspan: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  // TODO: ^^ We cannot allow having a prop which is sometimes bool and sometimes string
+  viewId: PropTypes.string,
+  docId: PropTypes.string,
+  windowId: PropTypes.string,
+  lastChild: PropTypes.bool,
+  includedDocuments: PropTypes.array,
+  contextType: PropTypes.any,
+  focusOnFieldName: PropTypes.string,
+  modalVisible: PropTypes.bool,
+  isGerman: PropTypes.bool,
+  keyProperty: PropTypes.string,
+  page: PropTypes.number,
+  activeSort: PropTypes.bool,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table
+  hasComments: PropTypes.bool,
+  handleFocusAction: PropTypes.func,
+  tableId: PropTypes.string,
+  updatePropertyValue: PropTypes.func,
+  onFastInlineEdit: PropTypes.func,
+};
 
 /**
  * @method getAmountFormatByPrecisiont
@@ -75,41 +126,6 @@ export function getAmountFormatByPrecision(precision) {
     precision < AMOUNT_FIELD_FORMATS_BY_PRECISION.length
     ? AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
     : null;
-}
-
-function getDefaultPrecisionByFieldType(fieldType) {
-  return userSettings_defaultPrecisionByFieldType[fieldType];
-}
-
-export function updateDefaultPrecisionsFromUserSettings(userSettings) {
-  userSettings_defaultPrecisionByFieldType['Quantity'] =
-    extractDefaultPrecisionFromUserSettings(userSettings, 'Quantity');
-  userSettings_defaultPrecisionByFieldType['Amount'] =
-    extractDefaultPrecisionFromUserSettings(userSettings, 'Amount');
-  userSettings_defaultPrecisionByFieldType['CostPrice'] =
-    extractDefaultPrecisionFromUserSettings(userSettings, 'CostPrice');
-  userSettings_defaultPrecisionByFieldType['Number'] =
-    extractDefaultPrecisionFromUserSettings(userSettings, 'Number');
-
-  console.debug('Updated default precision from user settings', {
-    userSettings_defaultPrecisionByFieldType,
-    userSettings,
-  });
-}
-
-function extractDefaultPrecisionFromUserSettings(userSettings, fieldType) {
-  const precision =
-    userSettings?.[`widget.${fieldType}.defaultPrecision`] ?? null;
-  if (
-    precision == null ||
-    precision === '-' ||
-    precision === '' ||
-    precision < 0
-  ) {
-    return null;
-  } else {
-    return Number(precision);
-  }
 }
 
 /**
@@ -312,11 +328,7 @@ export function fieldValueToString({
       ) {
         return createDate({ fieldValue, fieldType });
       } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
-        const precisionEffective =
-          precision != null
-            ? precision
-            : getDefaultPrecisionByFieldType(fieldType);
-        return createAmount(fieldValue, precisionEffective, isGerman);
+        return createAmount(fieldValue, precision, isGerman);
       } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
         return createSpecialField(fieldType, fieldValue);
       }
@@ -425,7 +437,7 @@ export function prepareWidgetData(item, cells) {
  * @param {object} cells - row's `fieldsByName` that hold the field value/type
  * @param {object} item - widget data object
  * @param {boolean} isEditable - flag if cell is editable
- * @param {boolean} supportFieldEdit - flag if selected cell can be editable
+ * @param {boolean} supportfieldEdit - flag if selected cell can be editable
  */
 export function getCellWidgetData(cells, item, isEditable, supportFieldEdit) {
   const widgetData = item.fields.reduce((result, prop) => {
@@ -566,11 +578,3 @@ export function getTooltipWidget(item, widgetData) {
 
   return { tooltipData, tooltipWidget };
 }
-
-export const computeNumberOfPages = (size, pageLength) => {
-  if (pageLength > 0) {
-    return size ? Math.ceil(size / pageLength) : 0;
-  } else {
-    return size ? 1 : 0;
-  }
-};

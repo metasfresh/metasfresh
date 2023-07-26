@@ -1,5 +1,16 @@
 package de.metas.security;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Role_OrgAccess;
+
+import com.google.common.base.Optional;
+
 import de.metas.organization.OrgId;
 import de.metas.security.impl.RolePermissionsNotFoundException;
 import de.metas.security.requests.CreateDocActionAccessRequest;
@@ -18,15 +29,6 @@ import de.metas.security.requests.RemoveWindowAccessRequest;
 import de.metas.security.requests.RemoveWorkflowAccessRequest;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_AD_Role_OrgAccess;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
 
 /**
  * {@link IUserRolePermissions} retrieval DAO.
@@ -47,7 +49,7 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	long getCacheVersion();
 
 	/**
-	 * Resets all role and permissions related caches after current transaction is committed.
+	 * Resets all role and permissions related caches after current transaction is commited.
 	 * If there is no current transaction, the caches will be reset right away.
 	 * 
 	 * If a cache reset was already scheduled for current transaction this method won't schedule another one.
@@ -63,6 +65,9 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	/**
 	 * Retrieves user/role permissions.
 	 *
+	 * @param adRoleId
+	 * @param adUserId
+	 * @param adClientId
 	 * @param date date when permissions shall be effective
 	 * @return user/role permissions
 	 * @throws RolePermissionsNotFoundException if permissions could not be loaded
@@ -156,8 +161,4 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()}
 	 */
 	boolean isAdministrator(ClientId clientId, UserId adUserId, LocalDate date);
-
-	void deleteUserOrgAccessByUserId(final UserId userId);
-
-	void deleteUserOrgAssignmentByUserId(final UserId userId);
 }

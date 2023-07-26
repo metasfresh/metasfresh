@@ -48,8 +48,4 @@ public class DBFunctions
 	@NonNull
 	@Default
 	private final List<DBFunction> availableAfterRowFunctions = ImmutableList.of();
-
-	@NonNull
-	@Default
-	private final List<DBFunction> availableAfterAllFunctions = ImmutableList.of();
 }

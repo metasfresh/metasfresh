@@ -1,18 +1,9 @@
 package de.metas.handlingunits.empties.impl;
 
-import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
-import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
-import de.metas.handlingunits.impl.PlainPackingMaterialDocumentLineSource;
-import de.metas.handlingunits.inout.returns.AbstractReturnsInOutProducer;
-import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
@@ -22,9 +13,18 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
+import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
+import de.metas.handlingunits.impl.PlainPackingMaterialDocumentLineSource;
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.AbstractReturnsInOutProducer;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 {
@@ -115,7 +115,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		return this;
 	}
 
-	private static I_C_DocType getEmptiesDocType(final DocBaseType docBaseType, final int adClientId, final int adOrgId, final boolean isSOTrx)
+	private static I_C_DocType getEmptiesDocType(final String docBaseType, final int adClientId, final int adOrgId, final boolean isSOTrx)
 	{
 		//
 		// Search for specific empties shipment/receipt document sub-type (task 07694)
@@ -164,7 +164,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 	}
 
 	@Override
-	protected int getReturnsDocTypeId(final DocBaseType docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
+	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
 		final I_C_DocType docType = getEmptiesDocType(docBaseType, adClientId, adOrgId, isSOTrx);
 

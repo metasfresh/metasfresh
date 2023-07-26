@@ -2,6 +2,7 @@ import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
 
+import history from '../services/History';
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
 import {
@@ -9,7 +10,6 @@ import {
   getNotificationsEndpointRequest,
   getUserSession,
 } from '../api';
-import { updateDefaultPrecisionsFromUserSettings } from '../utils/tableHelpers';
 
 // TODO: All requests should be moved to API
 
@@ -78,13 +78,6 @@ export function enableTutorial(flag = true) {
   return {
     type: types.ENABLE_TUTORIAL,
     flag: flag,
-  };
-}
-
-export function connectionError({ errorType }) {
-  return {
-    type: types.CONNECTION_ERROR,
-    errorType,
   };
 }
 
@@ -214,17 +207,6 @@ export function userSessionUpdate(me) {
   };
 }
 
-/**
- * @summary updates the lastBackPage in the store to have it for comparison when back button is used
- * @param {string} lastBackPage
- */
-export function updateLastBackPage(lastBackPage) {
-  return {
-    type: types.UPDATE_LAST_BACK_PAGE,
-    lastBackPage,
-  };
-}
-
 export function setLanguages(data) {
   return {
     type: types.SET_LANGUAGES,
@@ -262,46 +244,58 @@ export function updateHotkeys(hotkeys) {
 
 export function getNotificationsEndpoint(auth) {
   return (dispatch) => {
-    return getNotificationsEndpointRequest().then((topic) => {
-      auth.initNotificationClient(topic, (msg) => {
-        const notification = JSON.parse(msg.body);
+    return getNotificationsEndpointRequest()
+      .then((topic) => {
+        auth.initNotificationClient(topic, (msg) => {
+          const notification = JSON.parse(msg.body);
 
-        if (notification.eventType === 'Read') {
-          dispatch(
-            readNotification(
-              notification.notificationId,
-              notification.unreadCount
-            )
-          );
-        } else if (notification.eventType === 'ReadAll') {
-          dispatch(readAllNotifications());
-        } else if (notification.eventType === 'Delete') {
-          dispatch(
-            removeNotification(
-              notification.notificationId,
-              notification.unreadCount
-            )
-          );
-        } else if (notification.eventType === 'DeleteAll') {
-          dispatch(deleteAllNotifications());
-        } else if (notification.eventType === 'New') {
-          dispatch(
-            newNotification(notification.notification, notification.unreadCount)
-          );
-          const notif = notification.notification;
-          if (notif.important) {
+          if (notification.eventType === 'Read') {
             dispatch(
-              addNotification(
-                'Important notification',
-                notif.message,
-                5000,
-                'primary'
+              readNotification(
+                notification.notificationId,
+                notification.unreadCount
               )
             );
+          } else if (notification.eventType === 'ReadAll') {
+            dispatch(readAllNotifications());
+          } else if (notification.eventType === 'Delete') {
+            dispatch(
+              removeNotification(
+                notification.notificationId,
+                notification.unreadCount
+              )
+            );
+          } else if (notification.eventType === 'DeleteAll') {
+            dispatch(deleteAllNotifications());
+          } else if (notification.eventType === 'New') {
+            dispatch(
+              newNotification(
+                notification.notification,
+                notification.unreadCount
+              )
+            );
+            const notif = notification.notification;
+            if (notif.important) {
+              dispatch(
+                addNotification(
+                  'Important notification',
+                  notif.message,
+                  5000,
+                  'primary'
+                )
+              );
+            }
+          }
+        });
+      })
+      .catch((e) => {
+        if (e.response) {
+          let { status } = e.response;
+          if (status === 401) {
+            history.push('/');
           }
         }
       });
-    });
   };
 }
 
@@ -342,7 +336,6 @@ export function loginSuccess(auth) {
           setCurrentActiveLocale(data.language['key']);
           initNumeralLocales(data.language['key'], data.locale);
           MomentTZ.tz.setDefault(data.timeZone);
-          updateDefaultPrecisionsFromUserSettings(data.settings);
 
           auth.initSessionClient(data.websocketEndpoint, (msg) => {
             const me = JSON.parse(msg.body);

@@ -1,7 +1,0 @@
-de.metas.global_qrcodes.PrintableQRCodeTest.checkJsonFormatIsNotChanging=[
-  {
-    "bottomText": "bottom text",
-    "qrCode": "qr code line 1\nline 2\nline 3",
-    "topText": "top text"
-  }
-]

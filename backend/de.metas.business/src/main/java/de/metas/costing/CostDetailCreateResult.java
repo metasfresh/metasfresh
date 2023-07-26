@@ -1,11 +1,9 @@
 package de.metas.costing;
 
-import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 
 /*
  * #%L
@@ -32,16 +30,16 @@ import lombok.With;
 @Value
 public class CostDetailCreateResult
 {
-	@NonNull CostSegment costSegment;
-	@NonNull CostElement costElement;
-	@With @NonNull CostAmountDetailed amt;
-	@NonNull Quantity qty;
+	CostSegment costSegment;
+	CostElement costElement;
+	CostAmount amt;
+	Quantity qty;
 
 	@Builder
 	private CostDetailCreateResult(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
-			@NonNull final CostAmountDetailed amt,
+			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty)
 	{
 		this.costSegment = costSegment;

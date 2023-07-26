@@ -1,8 +1,20 @@
 package de.metas.contracts.invoice;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
@@ -10,23 +22,9 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /*
  * #%L
@@ -57,7 +55,6 @@ public class ContractInvoiceService
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public boolean isContractSalesInvoice(@NonNull final InvoiceId invoiceId)
 	{
@@ -75,7 +72,7 @@ public class ContractInvoiceService
 		{
 			final boolean isContractSalesInvoiceLine = invoiceCandDAO.retrieveIcForIl(invoiceLine)
 					.stream()
-					.anyMatch(this::isSubscriptionInvoiceCandidate);
+					.anyMatch(invoiceCandidate -> isSubscriptionInvoiceCandidate(invoiceCandidate));
 
 			if (isContractSalesInvoiceLine)
 			{
@@ -98,10 +95,10 @@ public class ContractInvoiceService
 				.create()
 				.listIds(InvoiceId::ofRepoId)
 				.stream()
-				.filter(this::isContractSalesInvoice)
+				.filter(olderInvoiceId -> isContractSalesInvoice(olderInvoiceId))
 				.findFirst();
 
-		return predecessorInvoice.orElse(null);
+		return predecessorInvoice.isPresent() ? predecessorInvoice.get() : null;
 	}
 
 	public InvoiceId retrieveLastSalesContractInvoiceId(final BPartnerId bPartnerId)
@@ -113,10 +110,10 @@ public class ContractInvoiceService
 				.create()
 				.listIds(InvoiceId::ofRepoId)
 				.stream()
-				.filter(this::isContractSalesInvoice)
+				.filter(olderInvoiceId -> isContractSalesInvoice(olderInvoiceId))
 				.findFirst();
 
-		return predecessorInvoice.orElse(null);
+		return predecessorInvoice.isPresent() ? predecessorInvoice.get() : null;
 	}
 
 	private boolean isSubscriptionInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidate)
@@ -128,8 +125,10 @@ public class ContractInvoiceService
 
 	public LocalDate retrieveContractEndDateForInvoiceIdOrNull(@NonNull final InvoiceId invoiceId)
 	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		final List<I_C_InvoiceLine> invoiceLines = invoiceDAO.retrieveLines(invoice);
 
 		final List<I_C_Invoice_Candidate> allInvoiceCands = new ArrayList<>();
@@ -141,10 +140,10 @@ public class ContractInvoiceService
 		}
 
 		final Optional<I_C_Flatrate_Term> latestTerm = allInvoiceCands.stream()
-				.filter(this::isSubscriptionInvoiceCandidate)
-				.map(I_C_Invoice_Candidate::getRecord_ID)
+				.filter(cand -> isSubscriptionInvoiceCandidate(cand))
+				.map(cand -> cand.getRecord_ID())
 
-				.map(flatrateDAO::getById)
+				.map(recordId -> flatrateDAO.getById(recordId))
 				.sorted((contract1, contract2) -> {
 					final Timestamp contractEndDate1 = CoalesceUtil.coalesce(contract1.getMasterEndDate(), contract1.getEndDate());
 
@@ -164,8 +163,6 @@ public class ContractInvoiceService
 			return null;
 		}
 
-		return TimeUtil.asLocalDate(
-				CoalesceUtil.coalesce(latestTerm.get().getMasterEndDate(), latestTerm.get().getEndDate()), 
-				timeZone);
+		return TimeUtil.asLocalDate(CoalesceUtil.coalesce(latestTerm.get().getMasterEndDate(), latestTerm.get().getEndDate()));
 	}
 }

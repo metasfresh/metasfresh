@@ -1,9 +1,10 @@
 package de.metas.document;
 
+import org.adempiere.ad.expression.api.IStringExpression;
+
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import lombok.Builder;
 import lombok.Value;
-import org.adempiere.ad.expression.api.IStringExpression;
 
 /**
  * Immutable DocumentNo sequence definition.
@@ -24,7 +25,6 @@ public class DocumentSequenceInfo
 	private final String decimalPattern;
 	private final boolean autoSequence;
 	private final boolean startNewYear;
-	private final boolean startNewMonth;
 	private final String dateColumn;
 
 	private final CustomSequenceNoProvider customSequenceNoProvider;
@@ -39,7 +39,6 @@ public class DocumentSequenceInfo
 			final String decimalPattern,
 			final boolean autoSequence,
 			final boolean startNewYear,
-			final boolean startNewMonth,
 			final String dateColumn,
 			final CustomSequenceNoProvider customSequenceNoProvider)
 	{
@@ -51,7 +50,6 @@ public class DocumentSequenceInfo
 		this.decimalPattern = decimalPattern;
 		this.autoSequence = autoSequence;
 		this.startNewYear = startNewYear;
-		this.startNewMonth = startNewMonth;
 		this.dateColumn = dateColumn;
 		this.customSequenceNoProvider = customSequenceNoProvider;
 	}

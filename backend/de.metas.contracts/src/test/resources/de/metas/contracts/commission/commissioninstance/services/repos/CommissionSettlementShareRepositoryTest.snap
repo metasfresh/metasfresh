@@ -1,27 +1,21 @@
-de.metas.contracts.commission.commissioninstance.services.repos.CommissionSettlementShareRepositoryTest.getByInvoiceCandidateId=[
-  {
-    "facts": [
-      {
-        "points": 20,
-        "settlementInvoiceCandidateId": 100005,
-        "state": "TO_SETTLE",
-        "timestamp": "2019-09-17T11:49:25Z"
-      },
-      {
-        "points": -3,
-        "settlementInvoiceCandidateId": 100005,
-        "state": "TO_SETTLE",
-        "timestamp": "2019-09-17T11:49:35Z"
-      },
-      {
-        "points": 18,
-        "settlementInvoiceCandidateId": 100005,
-        "state": "SETTLED",
-        "timestamp": "2019-09-17T11:49:55Z"
-      }
-    ],
-    "salesCommissionShareId": 100017,
-    "pointsToSettleSum": 17,
-    "settledPointsSum": 18
-  }
-]
+de.metas.contracts.commission.commissioninstance.services.repos.CommissionSettlementShareRepositoryTest.getByInvoiceCandidateId=[ {
+  "salesCommissionShareId" : 100016,
+  "facts" : [ {
+    "settlementInvoiceCandidateId" : 100004,
+    "timestamp" : "2019-09-17T11:49:25Z",
+    "state" : "TO_SETTLE",
+    "points" : 20
+  }, {
+    "settlementInvoiceCandidateId" : 100004,
+    "timestamp" : "2019-09-17T11:49:35Z",
+    "state" : "TO_SETTLE",
+    "points" : -3
+  }, {
+    "settlementInvoiceCandidateId" : 100004,
+    "timestamp" : "2019-09-17T11:49:55Z",
+    "state" : "SETTLED",
+    "points" : 18
+  } ],
+  "pointsToSettleSum" : 17,
+  "settledPointsSum" : 18
+} ]

@@ -1,4 +1,0 @@
--- 2022-02-18T14:53:27.435Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=548109, SeqNo=30,Updated=TO_TIMESTAMP('2022-02-18 16:53:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=601121
-;

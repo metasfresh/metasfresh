@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.lang.ITableRecordReference;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;

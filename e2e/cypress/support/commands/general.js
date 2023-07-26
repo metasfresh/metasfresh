@@ -255,7 +255,7 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
 
 function visitTableWindow(windowId) {
   const quickActionsAlias = 'quickActions_' + humanReadableNow();
-  cy.intercept('POST', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
+  cy.intercept('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
 
   cy.visit(`/window/${windowId}`);
 

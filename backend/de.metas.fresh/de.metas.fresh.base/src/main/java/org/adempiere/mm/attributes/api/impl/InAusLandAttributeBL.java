@@ -24,7 +24,6 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -53,7 +52,6 @@ public class InAusLandAttributeBL implements IInAusLandAttributeBL
 {
 
 	private static final AdMessageKey MSG_NoInAusLandAttribute = AdMessageKey.of("de.metas.fresh.InAuslandAttribute.error");
-	private final int c_countryTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Country.Table_Name);
 
 	/**
 	 * Switzerland's C_Country_ID.
@@ -73,7 +71,8 @@ public class InAusLandAttributeBL implements IInAusLandAttributeBL
 
 		final int adClientId = countryAware.getAD_Client_ID();
 		final int adOrgId = countryAware.getAD_Org_ID();
-		return inAusLandAttributeDAO.retrieveInAusLandAttributeId(adClientId, adOrgId);
+		final AttributeId inAusLandAttributeId = inAusLandAttributeDAO.retrieveInAusLandAttributeId(adClientId, adOrgId);
+		return inAusLandAttributeId;
 	}
 
 	@Override
@@ -108,7 +107,7 @@ public class InAusLandAttributeBL implements IInAusLandAttributeBL
 					throw new NoAttributeGeneratorException(country.getCountryCode());
 				}
 
-				return generator.generateAttributeValue(ctx, c_countryTableId, country.getC_Country_ID(), false, trxName); // SO Trx doesn't matter here
+				return generator.generateAttributeValue(ctx, I_C_Country.Table_ID, country.getC_Country_ID(), false, trxName); // SO Trx doesn't matter here
 			}
 			else if (attributeAction == AttributeAction.Ignore)
 			{

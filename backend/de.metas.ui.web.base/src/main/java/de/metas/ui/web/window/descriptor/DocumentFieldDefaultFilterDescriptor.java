@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_Column;
 
@@ -36,7 +35,6 @@ import java.util.OptionalInt;
  */
 
 @Value
-@SuppressWarnings({ "OptionalAssignedToNull", "OptionalUsedAsFieldOrParameterType" })
 public class DocumentFieldDefaultFilterDescriptor
 {
 	boolean defaultFilter;
@@ -45,7 +43,6 @@ public class DocumentFieldDefaultFilterDescriptor
 	boolean showFilterIncrementButtons;
 	Object autoFilterInitialValue;
 	boolean showFilterInline;
-	@Nullable AdValRuleId adValRuleId;
 
 	boolean facetFilter;
 	int facetFilterSeqNo;
@@ -61,7 +58,6 @@ public class DocumentFieldDefaultFilterDescriptor
 			final boolean showFilterIncrementButtons,
 			final boolean showFilterInline,
 			@Nullable final Object autoFilterInitialValue,
-			@Nullable AdValRuleId adValRuleId,
 			//
 			final boolean facetFilter,
 			final int facetFilterSeqNo,
@@ -80,7 +76,6 @@ public class DocumentFieldDefaultFilterDescriptor
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
 			this.autoFilterInitialValue = autoFilterInitialValue;
 			this.showFilterInline = showFilterInline;
-			this.adValRuleId = adValRuleId;
 		}
 		else
 		{
@@ -90,7 +85,6 @@ public class DocumentFieldDefaultFilterDescriptor
 			this.showFilterIncrementButtons = false;
 			this.autoFilterInitialValue = null;
 			this.showFilterInline = false;
-			this.adValRuleId = null;
 		}
 
 		if (facetFilter)

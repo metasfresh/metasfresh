@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_DocType
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 172912328L;
+	private static final long serialVersionUID = -966720172L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -282,8 +282,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
 	/** Interne Rechnung (Lieferant) = AVI */
 	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
-	/** ShipperTransportation = MST */
-	public static final String DOCBASETYPE_ShipperTransportation = "MST";
+	/** Speditionsauftrag/Ladeliste = MST */
+	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** DunningDoc = DUN */
@@ -298,10 +298,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	/** Remittance Advice = RMA */
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
-	/** BOM & Formula = BOM */
-	public static final String DOCBASETYPE_BOMFormula = "BOM";
-	/** Cost Revaluation = CRD */
-	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -438,30 +434,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_RD = "RD";
 	/** Cost Estimate = CE */
 	public static final String DOCSUBTYPE_CostEstimate = "CE";
-	/** Kreditoren Nachbelastung = NBK */
-	public static final String DOCSUBTYPE_KreditorenNachbelastung = "NBK";
-	/** LS = LS */
-	public static final String DOCSUBTYPE_LS = "LS";
-	/** Payment service provider invoice = SI */
-	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
-	/** CallOrder = CAO */
-	public static final String DOCSUBTYPE_CallOrder = "CAO";
-	/** InterimInvoice = II */
-	public static final String DOCSUBTYPE_InterimInvoice = "II";
-	/** Withholding = WH */
-	public static final String DOCSUBTYPE_Withholding = "WH";
-	/** InternalVendorInvoice = IVI */
-	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
-	/** Delivery Instruction = DI */
-	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
-	/** InventoryShortageDocument = ISD */
-	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
-	/** InventoryOverageDocument = IOD */
-	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
-	/** CorrectionInvoice = CI */
-	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
-	/** Provision = PRV */
-	public static final String DOCSUBTYPE_Provision = "PRV";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -530,7 +502,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 1)
+		if (GL_Category_ID < 1) 
 			set_Value (COLUMNNAME_GL_Category_ID, null);
 		else 
 			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
@@ -732,33 +704,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public boolean isSplitWhenDifference() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSplitWhenDifference);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Sequence getLotNo_Sequence()
-	{
-		return get_ValueAsPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
-	}
-
-	@Override
-	public void setLotNo_Sequence(final org.compiere.model.I_AD_Sequence LotNo_Sequence)
-	{
-		set_ValueFromPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class, LotNo_Sequence);
-	}
-
-	@Override
-	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
-	{
-		if (LotNo_Sequence_ID < 1) 
-			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
-		else 
-			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
-	}
-
-	@Override
-	public int getLotNo_Sequence_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
 
 	@Override

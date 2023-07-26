@@ -1,6 +1,5 @@
 package de.metas.material.dispo.commons.repository.query;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -21,7 +20,6 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.With;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -50,10 +48,11 @@ import java.util.List;
  * Identifies a set of candidates.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @Value
 @With
-public class CandidatesQuery
+public final class CandidatesQuery
 {
 	/**
 	 * This query matches no candidate.
@@ -115,16 +114,6 @@ public class CandidatesQuery
 		{
 			builder.parentId(CandidateId.UNSPECIFIED);
 		}
-
-		if (candidate.isSimulated())
-		{
-			builder.simulatedQueryQualifier(SimulatedQueryQualifier.ONLY_SIMULATED);
-		}
-		else
-		{
-			builder.simulatedQueryQualifier(SimulatedQueryQualifier.EXCLUDE_SIMULATED);
-		}
-
 		return builder.build();
 	}
 
@@ -201,9 +190,6 @@ public class CandidatesQuery
 	 */
 	StockChangeDetailQuery stockChangeDetailQuery;
 
-	@NonNull
-	SimulatedQueryQualifier simulatedQueryQualifier;
-
 	@Builder
 	public CandidatesQuery(
 			final MaterialDescriptorQuery parentMaterialDescriptorQuery,
@@ -222,8 +208,7 @@ public class CandidatesQuery
 			final PurchaseDetailsQuery purchaseDetailsQuery,
 			final DemandDetailsQuery demandDetailsQuery,
 			@Singular final List<TransactionDetail> transactionDetails,
-			final StockChangeDetailQuery stockChangeDetailQuery,
-			@Nullable final SimulatedQueryQualifier simulatedQueryQualifier)
+			final StockChangeDetailQuery stockChangeDetailQuery)
 	{
 		this.parentMaterialDescriptorQuery = parentMaterialDescriptorQuery;
 		this.parentDemandDetailsQuery = parentDemandDetailsQuery;
@@ -246,6 +231,5 @@ public class CandidatesQuery
 		this.transactionDetails = transactionDetails;
 
 		this.stockChangeDetailQuery = stockChangeDetailQuery;
-		this.simulatedQueryQualifier = CoalesceUtil.coalesceNotNull(simulatedQueryQualifier, SimulatedQueryQualifier.EXCLUDE_SIMULATED);
 	}
 }

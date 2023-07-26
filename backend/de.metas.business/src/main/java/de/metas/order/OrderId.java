@@ -8,7 +8,6 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.Optional;
 
 /*
  * #%L
@@ -44,11 +43,6 @@ public class OrderId implements RepoIdAware
 	public static OrderId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new OrderId(repoId) : null;
-	}
-
-	public static Optional<OrderId> optionalOfRepoId(final int repoId)
-	{
-		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(@Nullable final OrderId orderId)

@@ -22,13 +22,12 @@ package de.metas.async.processor;
  * #L%
  */
 
+
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 
-import java.util.Set;
-
-public interface IQueueProcessor
+public interface IQueueProcessor extends Runnable
 {
 	String getName();
 
@@ -52,7 +51,10 @@ public interface IQueueProcessor
 
 	IWorkPackageQueue getQueue();
 
-	void shutdownExecutor();
+	@Override
+	void run();
+
+	void shutdown();
 
 	/**
 	 * Called by API when a workpackage was processed.
@@ -61,11 +63,4 @@ public interface IQueueProcessor
 	 */
 	void notifyWorkpackageProcessed(I_C_Queue_WorkPackage workPackage, IWorkpackageProcessor workPackageProcessor);
 
-	boolean isAvailableToWork();
-
-	Set<QueuePackageProcessorId> getAssignedPackageProcessorIds();
-
-	boolean processLockedWorkPackage(I_C_Queue_WorkPackage workPackage);
-
-	QueueProcessorId getQueueProcessorId();
 }

@@ -1,4 +1,26 @@
 /*
+ * #%L
+ * alberta-article-api
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/*
  * Artikel - Warenwirtschaft (Basis)
  * Synchronisation der Artikel mit Kumavision
  *
@@ -14,7 +36,6 @@ package io.swagger.client.model;
 
 import com.google.gson.annotations.SerializedName;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.threeten.bp.LocalDate;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,7 +45,7 @@ import java.util.Objects;
  * Article
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2022-02-18T14:17:41.660Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-03-11T10:09:42.333Z[GMT]")
 public class Article {
   @SerializedName("customerNumber")
   private String customerNumber = null;
@@ -45,10 +66,10 @@ public class Article {
   private String manufacturerNumber = null;
 
   @SerializedName("therapyIds")
-  private List<BigDecimal> therapyIds = null;
+  private List<String> therapyIds = null;
 
   @SerializedName("billableTherapies")
-  private List<BigDecimal> billableTherapies = null;
+  private List<String> billableTherapies = null;
 
   @SerializedName("productGroupId")
   private String productGroupId = null;
@@ -59,23 +80,11 @@ public class Article {
   @SerializedName("inventoryType")
   private BigDecimal inventoryType = null;
 
-  @SerializedName("prescriptionType")
-  private BigDecimal prescriptionType = null;
-
   @SerializedName("status")
   private BigDecimal status = null;
 
-  @SerializedName("statusAnnotation")
-  private String statusAnnotation = null;
-
   @SerializedName("medicalAidPositionNumber")
   private String medicalAidPositionNumber = null;
-
-  @SerializedName("unavailableFrom")
-  private LocalDate unavailableFrom = null;
-
-  @SerializedName("unavailableTo")
-  private LocalDate unavailableTo = null;
 
   @SerializedName("stars")
   private BigDecimal stars = null;
@@ -94,12 +103,6 @@ public class Article {
 
   @SerializedName("packagingUnits")
   private List<PackagingUnit> packagingUnits = new ArrayList<PackagingUnit>();
-
-  @SerializedName("pharmacyOnly")
-  private Boolean pharmacyOnly = null;
-
-  @SerializedName("archived")
-  private Boolean archived = null;
 
   public Article customerNumber(String customerNumber) {
     this.customerNumber = customerNumber;
@@ -209,40 +212,40 @@ public class Article {
     this.manufacturerNumber = manufacturerNumber;
   }
 
-  public Article therapyIds(List<BigDecimal> therapyIds) {
+  public Article therapyIds(List<String> therapyIds) {
     this.therapyIds = therapyIds;
     return this;
   }
 
-  public Article addTherapyIdsItem(BigDecimal therapyIdsItem) {
+  public Article addTherapyIdsItem(String therapyIdsItem) {
     if (this.therapyIds == null) {
-      this.therapyIds = new ArrayList<BigDecimal>();
+      this.therapyIds = new ArrayList<String>();
     }
     this.therapyIds.add(therapyIdsItem);
     return this;
   }
 
    /**
-   * Auflistung der Therapien, in denen der Artikel verwendet wird (0 &#x3D; Unbekannt, 1 &#x3D; Parenterale Ernährung, 2 &#x3D; Enterale Ernährung, 3 &#x3D; Stoma, 4 &#x3D; Tracheostoma, 5 &#x3D; Inkontinenz ableitend, 6 &#x3D; Wundversorgung, 7 &#x3D; IV-Therapien, 8 &#x3D; Beatmung, 9 &#x3D; Sonstiges, 10 &#x3D; OSA, 11 &#x3D; Hustenhilfen, 12 &#x3D; Absaugung, 13 &#x3D; Patientenüberwachung, 14 &#x3D; Sauerstoff, 15 &#x3D; Inhalations- und Atemtherapie, 16 &#x3D; Lagerungshilfsmittel, 17 &#x3D; Schmerztherapie, 18 &#x3D; Immuntherapie, 19 &#x3D; Rehydration, Befeuchtung &#x3D; 20, High-Flow &#x3D; 21, Atemtherapie &#x3D; 22, Monitoring &#x3D; 23, Diagnostik &#x3D; 24, Zahnschiene &#x3D; 25, Sitzschalenbau &#x3D; 26, Orthopaedietechnik &#x3D; 27, Reha Hilfsmittel &#x3D; 28, Elektrostimulation &#x3D; 29, Diabetes &#x3D; 30, Applikationshilfen IV PE EE &#x3D; 31, Messgeraete fuer Koerperszustaende/-funktionen &#x3D; 32, PCA Schmerztherapie &#x3D; 33, Arzneimittelgabe &#x3D; 34)
+   * Auflistung der Therapien, in denen der Artikel verwendet wird (0&#x3D; Unbekannt, 1 &#x3D; Parenterale Ernährung, 2 &#x3D; Enterale Ernährung, 3 &#x3D; Stoma, 4 &#x3D; Tracheostoma, 5 &#x3D; Inkontinenz ableitend, 6 &#x3D; Wundversorgung, 7 &#x3D; IV-Therapien, 8 &#x3D; Beatmung, 9 &#x3D; Sonstiges, 10 &#x3D; OSA, 11 &#x3D; Hustenhilfen, 12 &#x3D; Absaugung, 13 &#x3D; Patientenüberwachung, 14 &#x3D; Sauerstoff, 15 &#x3D; Inhalations- und Atemtherapie, 16 &#x3D; Lagerungshilfsmittel, 17 &#x3D; Schmerztherapie)
    * @return therapyIds
   **/
-  @Schema(example = "[4]", description = "Auflistung der Therapien, in denen der Artikel verwendet wird (0 = Unbekannt, 1 = Parenterale Ernährung, 2 = Enterale Ernährung, 3 = Stoma, 4 = Tracheostoma, 5 = Inkontinenz ableitend, 6 = Wundversorgung, 7 = IV-Therapien, 8 = Beatmung, 9 = Sonstiges, 10 = OSA, 11 = Hustenhilfen, 12 = Absaugung, 13 = Patientenüberwachung, 14 = Sauerstoff, 15 = Inhalations- und Atemtherapie, 16 = Lagerungshilfsmittel, 17 = Schmerztherapie, 18 = Immuntherapie, 19 = Rehydration, Befeuchtung = 20, High-Flow = 21, Atemtherapie = 22, Monitoring = 23, Diagnostik = 24, Zahnschiene = 25, Sitzschalenbau = 26, Orthopaedietechnik = 27, Reha Hilfsmittel = 28, Elektrostimulation = 29, Diabetes = 30, Applikationshilfen IV PE EE = 31, Messgeraete fuer Koerperszustaende/-funktionen = 32, PCA Schmerztherapie = 33, Arzneimittelgabe = 34)")
-  public List<BigDecimal> getTherapyIds() {
+  @Schema(example = "[4]", description = "Auflistung der Therapien, in denen der Artikel verwendet wird (0= Unbekannt, 1 = Parenterale Ernährung, 2 = Enterale Ernährung, 3 = Stoma, 4 = Tracheostoma, 5 = Inkontinenz ableitend, 6 = Wundversorgung, 7 = IV-Therapien, 8 = Beatmung, 9 = Sonstiges, 10 = OSA, 11 = Hustenhilfen, 12 = Absaugung, 13 = Patientenüberwachung, 14 = Sauerstoff, 15 = Inhalations- und Atemtherapie, 16 = Lagerungshilfsmittel, 17 = Schmerztherapie)")
+  public List<String> getTherapyIds() {
     return therapyIds;
   }
 
-  public void setTherapyIds(List<BigDecimal> therapyIds) {
+  public void setTherapyIds(List<String> therapyIds) {
     this.therapyIds = therapyIds;
   }
 
-  public Article billableTherapies(List<BigDecimal> billableTherapies) {
+  public Article billableTherapies(List<String> billableTherapies) {
     this.billableTherapies = billableTherapies;
     return this;
   }
 
-  public Article addBillableTherapiesItem(BigDecimal billableTherapiesItem) {
+  public Article addBillableTherapiesItem(String billableTherapiesItem) {
     if (this.billableTherapies == null) {
-      this.billableTherapies = new ArrayList<BigDecimal>();
+      this.billableTherapies = new ArrayList<String>();
     }
     this.billableTherapies.add(billableTherapiesItem);
     return this;
@@ -253,11 +256,11 @@ public class Article {
    * @return billableTherapies
   **/
   @Schema(example = "[4]", description = "Auflistung der abrechenbaren Therapien für den Artikel (siehe therapies)")
-  public List<BigDecimal> getBillableTherapies() {
+  public List<String> getBillableTherapies() {
     return billableTherapies;
   }
 
-  public void setBillableTherapies(List<BigDecimal> billableTherapies) {
+  public void setBillableTherapies(List<String> billableTherapies) {
     this.billableTherapies = billableTherapies;
   }
 
@@ -315,24 +318,6 @@ public class Article {
     this.inventoryType = inventoryType;
   }
 
-  public Article prescriptionType(BigDecimal prescriptionType) {
-    this.prescriptionType = prescriptionType;
-    return this;
-  }
-
-   /**
-   * Rezepttyp 0&#x3D;Arzneimittel, 1&#x3D;Verbandstoffe, 2&#x3D;BtM-Rezept, 3&#x3D;Pflegehilfsmittel, 4&#x3D;Hilfsmittel zum Verbrauch bestimmt, 5&#x3D;Hilfsmittel zum Gebrauch bestimmt
-   * @return prescriptionType
-  **/
-  @Schema(example = "1", description = "Rezepttyp 0=Arzneimittel, 1=Verbandstoffe, 2=BtM-Rezept, 3=Pflegehilfsmittel, 4=Hilfsmittel zum Verbrauch bestimmt, 5=Hilfsmittel zum Gebrauch bestimmt")
-  public BigDecimal getPrescriptionType() {
-    return prescriptionType;
-  }
-
-  public void setPrescriptionType(BigDecimal prescriptionType) {
-    this.prescriptionType = prescriptionType;
-  }
-
   public Article status(BigDecimal status) {
     this.status = status;
     return this;
@@ -351,24 +336,6 @@ public class Article {
     this.status = status;
   }
 
-  public Article statusAnnotation(String statusAnnotation) {
-    this.statusAnnotation = statusAnnotation;
-    return this;
-  }
-
-   /**
-   * Hinweis zum Status
-   * @return statusAnnotation
-  **/
-  @Schema(example = "Lieferschwierigkeiten bei Händler x", description = "Hinweis zum Status")
-  public String getStatusAnnotation() {
-    return statusAnnotation;
-  }
-
-  public void setStatusAnnotation(String statusAnnotation) {
-    this.statusAnnotation = statusAnnotation;
-  }
-
   public Article medicalAidPositionNumber(String medicalAidPositionNumber) {
     this.medicalAidPositionNumber = medicalAidPositionNumber;
     return this;
@@ -385,42 +352,6 @@ public class Article {
 
   public void setMedicalAidPositionNumber(String medicalAidPositionNumber) {
     this.medicalAidPositionNumber = medicalAidPositionNumber;
-  }
-
-  public Article unavailableFrom(LocalDate unavailableFrom) {
-    this.unavailableFrom = unavailableFrom;
-    return this;
-  }
-
-   /**
-   * gesperrt/nicht mehr verfügbar ab Datum
-   * @return unavailableFrom
-  **/
-  @Schema(example = "Fri Aug 20 00:00:00 GMT 2021", description = "gesperrt/nicht mehr verfügbar ab Datum")
-  public LocalDate getUnavailableFrom() {
-    return unavailableFrom;
-  }
-
-  public void setUnavailableFrom(LocalDate unavailableFrom) {
-    this.unavailableFrom = unavailableFrom;
-  }
-
-  public Article unavailableTo(LocalDate unavailableTo) {
-    this.unavailableTo = unavailableTo;
-    return this;
-  }
-
-   /**
-   * temporär nicht verfügbar bis Datum - nur bei Status 3
-   * @return unavailableTo
-  **/
-  @Schema(example = "Mon Sep 20 00:00:00 GMT 2021", description = "temporär nicht verfügbar bis Datum - nur bei Status 3")
-  public LocalDate getUnavailableTo() {
-    return unavailableTo;
-  }
-
-  public void setUnavailableTo(LocalDate unavailableTo) {
-    this.unavailableTo = unavailableTo;
   }
 
   public Article stars(BigDecimal stars) {
@@ -465,10 +396,10 @@ public class Article {
   }
 
    /**
-   * Der Apothekeneinkaufspreis eines Artikels (AEP) -&gt; pro Stück
+   * Der Apothekeneinkaufspreis des Artikels (AEP)
    * @return pharmacyPrice
   **/
-  @Schema(example = "1,99", description = "Der Apothekeneinkaufspreis eines Artikels (AEP) -> pro Stück")
+  @Schema(example = "1,99", description = "Der Apothekeneinkaufspreis des Artikels (AEP)")
   public String getPharmacyPrice() {
     return pharmacyPrice;
   }
@@ -483,10 +414,10 @@ public class Article {
   }
 
    /**
-   * Der Festbetrag eines Artikels -&gt; pro Stück
+   * Der Festbetrag des Artikels
    * @return fixedPrice
   **/
-  @Schema(example = "2,10", description = "Der Festbetrag eines Artikels -> pro Stück")
+  @Schema(example = "2,10", description = "Der Festbetrag des Artikels")
   public String getFixedPrice() {
     return fixedPrice;
   }
@@ -536,45 +467,9 @@ public class Article {
     this.packagingUnits = packagingUnits;
   }
 
-  public Article pharmacyOnly(Boolean pharmacyOnly) {
-    this.pharmacyOnly = pharmacyOnly;
-    return this;
-  }
-
-   /**
-   * apothekenpflichtige Artikel
-   * @return pharmacyOnly
-  **/
-  @Schema(example = "false", description = "apothekenpflichtige Artikel")
-  public Boolean isPharmacyOnly() {
-    return pharmacyOnly;
-  }
-
-  public void setPharmacyOnly(Boolean pharmacyOnly) {
-    this.pharmacyOnly = pharmacyOnly;
-  }
-
-  public Article archived(Boolean archived) {
-    this.archived = archived;
-    return this;
-  }
-
-   /**
-   * Kennzeichen ob Artikel archiviert ist
-   * @return archived
-  **/
-  @Schema(example = "false", description = "Kennzeichen ob Artikel archiviert ist")
-  public Boolean isArchived() {
-    return archived;
-  }
-
-  public void setArchived(Boolean archived) {
-    this.archived = archived;
-  }
-
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -593,25 +488,19 @@ public class Article {
         Objects.equals(this.productGroupId, article.productGroupId) &&
         Objects.equals(this.size, article.size) &&
         Objects.equals(this.inventoryType, article.inventoryType) &&
-        Objects.equals(this.prescriptionType, article.prescriptionType) &&
         Objects.equals(this.status, article.status) &&
-        Objects.equals(this.statusAnnotation, article.statusAnnotation) &&
         Objects.equals(this.medicalAidPositionNumber, article.medicalAidPositionNumber) &&
-        Objects.equals(this.unavailableFrom, article.unavailableFrom) &&
-        Objects.equals(this.unavailableTo, article.unavailableTo) &&
         Objects.equals(this.stars, article.stars) &&
         Objects.equals(this.assortmentType, article.assortmentType) &&
         Objects.equals(this.pharmacyPrice, article.pharmacyPrice) &&
         Objects.equals(this.fixedPrice, article.fixedPrice) &&
         Objects.equals(this.purchaseRating, article.purchaseRating) &&
-        Objects.equals(this.packagingUnits, article.packagingUnits) &&
-        Objects.equals(this.pharmacyOnly, article.pharmacyOnly) &&
-        Objects.equals(this.archived, article.archived);
+        Objects.equals(this.packagingUnits, article.packagingUnits);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(customerNumber, name, description, additionalDescription, manufacturer, manufacturerNumber, therapyIds, billableTherapies, productGroupId, size, inventoryType, prescriptionType, status, statusAnnotation, medicalAidPositionNumber, unavailableFrom, unavailableTo, stars, assortmentType, pharmacyPrice, fixedPrice, purchaseRating, packagingUnits, pharmacyOnly, archived);
+    return Objects.hash(customerNumber, name, description, additionalDescription, manufacturer, manufacturerNumber, therapyIds, billableTherapies, productGroupId, size, inventoryType, status, medicalAidPositionNumber, stars, assortmentType, pharmacyPrice, fixedPrice, purchaseRating, packagingUnits);
   }
 
 
@@ -631,20 +520,14 @@ public class Article {
     sb.append("    productGroupId: ").append(toIndentedString(productGroupId)).append("\n");
     sb.append("    size: ").append(toIndentedString(size)).append("\n");
     sb.append("    inventoryType: ").append(toIndentedString(inventoryType)).append("\n");
-    sb.append("    prescriptionType: ").append(toIndentedString(prescriptionType)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
-    sb.append("    statusAnnotation: ").append(toIndentedString(statusAnnotation)).append("\n");
     sb.append("    medicalAidPositionNumber: ").append(toIndentedString(medicalAidPositionNumber)).append("\n");
-    sb.append("    unavailableFrom: ").append(toIndentedString(unavailableFrom)).append("\n");
-    sb.append("    unavailableTo: ").append(toIndentedString(unavailableTo)).append("\n");
     sb.append("    stars: ").append(toIndentedString(stars)).append("\n");
     sb.append("    assortmentType: ").append(toIndentedString(assortmentType)).append("\n");
     sb.append("    pharmacyPrice: ").append(toIndentedString(pharmacyPrice)).append("\n");
     sb.append("    fixedPrice: ").append(toIndentedString(fixedPrice)).append("\n");
     sb.append("    purchaseRating: ").append(toIndentedString(purchaseRating)).append("\n");
     sb.append("    packagingUnits: ").append(toIndentedString(packagingUnits)).append("\n");
-    sb.append("    pharmacyOnly: ").append(toIndentedString(pharmacyOnly)).append("\n");
-    sb.append("    archived: ").append(toIndentedString(archived)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -653,7 +536,7 @@ public class Article {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

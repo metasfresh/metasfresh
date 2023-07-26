@@ -50,7 +50,6 @@ public class AvailableForSalesSqlHelper
 				"The given multiQuery may not be empty; multiQuery={}", multiQuery);
 
 		final IQuery<I_MD_Available_For_Sales_QueryResult> dbQuery = createDBQueryForAvailableForSalesQuery(0, availableForSalesQueries.get(0));
-
 		for (int i = 1; i < availableForSalesQueries.size(); i++)
 		{
 			dbQuery.addUnion(createDBQueryForAvailableForSalesQuery(i, availableForSalesQueries.get(i)), false/* distinct */);
@@ -92,7 +91,6 @@ public class AvailableForSalesSqlHelper
 				+ ", p_PreparationDate => " + dateString
 				+ ", p_shipmentDateLookAheadHours => " + availableForSalesQuery.getShipmentDateLookAheadHours()
 				+ ", p_salesOrderLookBehindHours => " + availableForSalesQuery.getSalesOrderLookBehindHours()
-				+ ", p_AD_ORG_ID => " + availableForSalesQuery.getOrgId().getRepoId()
 				+ ")";
 
 		sqlDbQuery.setSqlFrom(sqlFrom);

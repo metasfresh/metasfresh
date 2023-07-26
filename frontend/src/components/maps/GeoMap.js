@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 
 import MapMarker from './MapMarker';
 
-class GeoMap extends Component {
+class Map extends Component {
   static defaultProps = {
     center: {
       lat: 52.31,
@@ -103,12 +103,12 @@ class GeoMap extends Component {
   }
 }
 
-GeoMap.propTypes = {
-  data: PropTypes.array,
+Map.propTypes = {
+  data: PropTypes.object,
   mapConfig: PropTypes.object,
-  center: PropTypes.object,
-  toggleState: PropTypes.string,
-  zoom: PropTypes.number,
+  center: PropTypes.any,
+  toggleState: PropTypes.any,
+  zoom: PropTypes.any,
 };
 
-export default GeoMap;
+export default Map;

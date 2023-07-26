@@ -1,5 +1,6 @@
 package de.metas.contracts.invoicecandidate;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.location.ContractLocationHelper;
@@ -16,7 +17,6 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -95,9 +95,7 @@ public class HandlerTools
 
 		ic.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Flatrate_Term.class));
 		ic.setRecord_ID(term.getC_Flatrate_Term_ID());
-		
-		ic.setC_Async_Batch_ID(term.getC_Async_Batch_ID());
-		
+
 		ic.setM_Product_ID(term.getM_Product_ID());
 
 		ic.setC_Currency_ID(term.getC_Currency_ID());
@@ -111,7 +109,7 @@ public class HandlerTools
 		ic.setM_PricingSystem_ID(term.getM_PricingSystem_ID());
 
 		// 07442 activity and tax
-		final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(term.getAD_Client_ID()),
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				ProductId.ofRepoId(term.getM_Product_ID()));
@@ -125,9 +123,6 @@ public class HandlerTools
 
 			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 			ic.setC_Order_ID(orderLine.getC_Order_ID());
-			ic.setC_OrderSO_ID(orderLine.getC_OrderSO_ID());
-			ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
-			ic.setIncotermLocation(order.getIncotermLocation());
 
 			//DocType
 			final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(

@@ -42,14 +42,16 @@ public class DocTypeId implements RepoIdAware
 	}
 
 	@Nullable
-	public static DocTypeId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static DocTypeId ofRepoIdOrNull(int repoId)
 	{
-		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	public static Optional<DocTypeId> optionalOfRepoId(@Nullable final Integer repoId)
 	{
-		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+		return repoId != null
+				? Optional.ofNullable(ofRepoIdOrNull(repoId))
+				: Optional.empty();
 	}
 
 	int repoId;

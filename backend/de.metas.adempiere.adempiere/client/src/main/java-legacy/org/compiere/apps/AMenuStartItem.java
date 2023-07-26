@@ -16,12 +16,16 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.logging.LogManager;
-import de.metas.process.ui.ProcessDialog;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
+
+import javax.swing.SwingWorker;
+
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import de.metas.workflow.WFNode;
+import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -39,12 +43,11 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
-import javax.annotation.Nullable;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.process.ui.ProcessDialog;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Start application action ( process, workflow, window, form, task etc).
@@ -55,24 +58,29 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 {
 	/**
 	 * Start menu item action asynchronously
-	 *
+	 * 
+	 * @param node
+	 * @param menu
 	 */
-	public static void startMenuItem(final MTreeNode node, final AMenu menu)
+	public static final void startMenuItem(final MTreeNode node, final AMenu menu)
 	{
 		new AMenuStartItem(node, menu).start();
 	}
 
 	/**
 	 * Start menu item action asynchronously
-	 *
+	 * 
+	 * @param adMenuId
+	 * @param name
+	 * @param menu
 	 */
-	public static void startMenuItemById(final int adMenuId, final String name, final AMenu menu)
+	public static final void startMenuItemById(final int adMenuId, final String name, final AMenu menu)
 	{
 		final boolean isMenu = true;
 		new AMenuStartItem(adMenuId, isMenu, name, menu).start();
 	}
 	
-	public static void startWFNode(
+	public static final void startWFNode(
 			@NonNull final WorkflowId workflowId,
 			@NonNull final WFNode wfNode,
 			final AMenu menu)
@@ -145,11 +153,9 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	private boolean loaded = false;
 	private String action;
 	private boolean IsSOTrx = true;
-	@Nullable
 	private AdWindowId adWindowId = null;
 	private int adWorkbenchId = -1;
 	private int adProcessId = -1;
-	@Nullable
 	private WorkflowId adWorkflowId = null;
 	private int adFormId = -1;
 	private int adTaskId = -1;
@@ -162,7 +168,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		execute();
 	}
 
-	private void lock()
+	private final void lock()
 	{
 		if (m_menu != null)
 		{
@@ -170,7 +176,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		}
 	}
 
-	private void unlock()
+	private final void unlock()
 	{
 		if (m_menu != null)
 		{
@@ -179,7 +185,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	}
 
 	@Override
-	protected Void doInBackground()
+	protected Void doInBackground() throws Exception
 	{
 		loadIfNeeded();
 
@@ -199,7 +205,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		}
 		else if (X_AD_Menu.ACTION_Workbench.equals(action))
 		{
-			startWindow(adWorkbenchId, null);
+			startWindow(adWorkbenchId, (AdWindowId)null);
 		}
 		else if (X_AD_Menu.ACTION_WorkFlow.equals(action))
 		{
@@ -221,7 +227,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		return null;
 	}
 
-	private void loadIfNeeded()
+	private final void loadIfNeeded()
 	{
 		if (loaded)
 		{
@@ -271,6 +277,8 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		if (!loaded)
@@ -308,7 +316,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	 * @param AD_Workbench_ID workbench
 	 * @param adWindowId window
 	 */
-	private void startWindow(final int AD_Workbench_ID, @Nullable final AdWindowId adWindowId)
+	private void startWindow(final int AD_Workbench_ID, final AdWindowId adWindowId)
 	{
 		// metas-ts: task 05796: moved the code to WindowBL.openWindow() to allow it beeing called on other occasions too
 		Services.get(IWindowBL.class).openWindow(
@@ -331,7 +339,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 				.show();
 	}
 
-	private void startWorkflow(final WorkflowId workflowId)
+	private final void startWorkflow(final WorkflowId workflowId)
 	{
 		if (m_menu == null)
 		{

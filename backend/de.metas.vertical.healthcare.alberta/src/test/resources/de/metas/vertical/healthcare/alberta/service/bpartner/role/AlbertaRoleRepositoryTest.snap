@@ -1,7 +1,7 @@
 de.metas.vertical.healthcare.alberta.service.bpartner.role.AlbertaRoleRepositoryTest.save=[
   {
-    "bPartnerAlbertaRoleId": 100001,
-    "bPartnerId": 1,
-    "role": "HealthInsurance"
+    "bPartnerAlbertaRoleId" : 100001,
+    "bPartnerId" : 1,
+    "role" : "HealthInsurance"
   }
 ]

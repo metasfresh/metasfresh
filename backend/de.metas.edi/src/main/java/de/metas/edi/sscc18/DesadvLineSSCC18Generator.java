@@ -23,14 +23,10 @@ package de.metas.edi.sscc18;
  */
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.edi.api.EDIDesadvId;
-import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
-import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
-import de.metas.edi.api.impl.pack.EDIDesadvPack;
-import de.metas.edi.api.impl.pack.EDIDesadvPackId;
-import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
@@ -42,6 +38,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -51,7 +48,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Producer which is used to generate {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack}s labels and print them.
+ * Producer which is used to generate {@link I_EDI_DesadvLine_Pack}s labels and print them.
  *
  * @author tsa
  */
@@ -63,7 +60,6 @@ public class DesadvLineSSCC18Generator
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final SSCC18CodeBL sscc18CodeBL;
 	private final IDesadvBL desadvBL;
-	private final EDIDesadvPackRepository ediDesadvPackRepository;
 
 	//
 	// Parameters
@@ -75,32 +71,30 @@ public class DesadvLineSSCC18Generator
 	//
 	// status
 	/**
-	 * {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} IDs to print
+	 * {@link I_EDI_DesadvLine_Pack} IDs to print
 	 */
-	private final Set<EDIDesadvPackId> desadvLineSSCC_IDs_ToPrint = new LinkedHashSet<>();
+	private final Set<EDIDesadvLinePackId> desadvLineSSCC_IDs_ToPrint = new LinkedHashSet<>();
 
 	@Builder
 	private DesadvLineSSCC18Generator(
 			@NonNull final SSCC18CodeBL sscc18CodeService,
 			@NonNull final IDesadvBL desadvBL,
-			@NonNull final EDIDesadvPackRepository ediDesadvPackRepository,
 			final boolean printExistingLabels)
 	{
 		this.sscc18CodeBL = sscc18CodeService;
 		this.desadvBL = desadvBL;
-		this.ediDesadvPackRepository = ediDesadvPackRepository;
 		this.printExistingLabels = printExistingLabels;
 	}
 
 	/**
-	 * Generates {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fulfilled.
+	 * Generates {@link I_EDI_DesadvLine_Pack} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fulfilled.
 	 * <p>
 	 * It will enqueue the SSCC18 labels to be printed.
 	 * To actually print the labels, call {@link #printAll()}.
 	 */
 	public void generateAndEnqueuePrinting(@NonNull final IPrintableDesadvLineSSCC18Labels desadvLineLabels)
 	{
-		final List<EDIDesadvPack> desadvLineSSCCsExisting = desadvLineLabels.getExistingSSCC18s();
+		final List<I_EDI_DesadvLine_Pack> desadvLineSSCCsExisting = desadvLineLabels.getExistingSSCC18s();
 		final int countExisting = desadvLineSSCCsExisting.size();
 		final int countRequired = desadvLineLabels.getRequiredSSCC18sCount().intValueExact();
 		final TotalQtyCUBreakdownCalculator totalQtyCUsRemaining = desadvLineLabels.breakdownTotalQtyCUsToLUs();
@@ -110,18 +104,18 @@ public class DesadvLineSSCC18Generator
 			// Use existing SSCC if any
 			if (i < countExisting)
 			{
-				final EDIDesadvPack desadvPack = desadvLineSSCCsExisting.get(i);
+				final I_EDI_DesadvLine_Pack desadvLineSSCC = desadvLineSSCCsExisting.get(i);
 
 				// Subtract the "LU" of this SSCC from total QtyCUs remaining
 				totalQtyCUsRemaining.subtractLU()
-						.setQtyTUsPerLU(desadvPack.getQtyTU())
-						.setQtyCUsPerTU(desadvPack.getQtyCU())
-						.setQtyCUsPerLU_IfGreaterThanZero(desadvPack.getQtyCUsPerLU())
+						.setQtyTUsPerLU(desadvLineSSCC.getQtyTU())
+						.setQtyCUsPerTU(desadvLineSSCC.getQtyCU())
+						.setQtyCUsPerLU_IfGreaterThanZero(desadvLineSSCC.getQtyCUsPerLU())
 						.build();
 
 				if (printExistingLabels)
 				{
-					enqueueToPrint(desadvPack);
+					enqueueToPrint(desadvLineSSCC);
 				}
 			}
 			// Generate a new SSCC record
@@ -132,14 +126,14 @@ public class DesadvLineSSCC18Generator
 				// Subtract one LU from total QtyCUs remaining.
 				final LUQtys luQtys = totalQtyCUsRemaining.subtractOneLU();
 
-				final EDIDesadvPack desadvPack = generateDesadvLineSSCC(desadvLine, luQtys);
-				enqueueToPrint(desadvPack);
+				final I_EDI_DesadvLine_Pack desadvLineSSCC = generateDesadvLineSSCC(desadvLine, luQtys);
+				enqueueToPrint(desadvLineSSCC);
 			}
 		}
 	}
 
 	/**
-	 * Generates {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fullfilled.
+	 * Generates {@link I_EDI_DesadvLine_Pack} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fullfilled.
 	 * <p>
 	 * It will enqueue the SSCC18 labels to be printed.
 	 * To actually print the labels, call {@link #printAll()}.
@@ -181,44 +175,41 @@ public class DesadvLineSSCC18Generator
 	}
 
 	/**
-	 * Creates a new {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} record with a new {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item} record.
+	 * Creates a new {@link I_EDI_DesadvLine_Pack} record.
 	 * <p>
 	 * The SSCC18 code will be generated.
 	 */
-	private EDIDesadvPack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
+	private I_EDI_DesadvLine_Pack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
 	{
 		//
 		// Generate the actual SSCC18 number and update the SSCC record
 		final SSCC18 sscc18 = sscc18CodeBL.generate(OrgId.ofRepoId(desadvLine.getAD_Org_ID()));
 		final String ipaSSCC18 = sscc18.asString(); // humanReadable=false
 
+		//
 		// Create SSCC record
-		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest
-				.builder()
-				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(desadvLine.getEDI_DesadvLine_ID()))
-				.qtyCu(luQtys.getQtyCUsPerTU())
-				.qtyTu(luQtys.getQtyTUsPerLU().intValueExact())
-				.qtyCUsPerLU(luQtys.getQtyCUsPerLU())
-				.movementQtyInStockUOM(luQtys.getQtyCUsPerLU())
-				.build();
+		final I_EDI_DesadvLine_Pack desadvLineSSCC = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine_Pack.class);
+		desadvLineSSCC.setAD_Org_ID(desadvLine.getAD_Org_ID());
+		desadvLineSSCC.setEDI_Desadv_ID(desadvLine.getEDI_Desadv_ID());
+		desadvLineSSCC.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
+		desadvLineSSCC.setIPA_SSCC18(ipaSSCC18);
+		desadvLineSSCC.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
+		desadvLineSSCC.setC_UOM_ID(desadvLine.getC_UOM_ID());
+		desadvLineSSCC.setQtyCU(luQtys.getQtyCUsPerTU());
+		desadvLineSSCC.setQtyTU(luQtys.getQtyTUsPerLU().intValueExact());
+		desadvLineSSCC.setQtyCUsPerLU(luQtys.getQtyCUsPerLU());
+		desadvLineSSCC.setMovementQty(luQtys.getQtyCUsPerLU());
+		InterfaceWrapperHelper.save(desadvLineSSCC);
 
-		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = CreateEDIDesadvPackRequest.builder()
-				.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
-				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
-				.sscc18(ipaSSCC18)
-				.isManualIpaSSCC(true)
-				.createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequest)
-				.build();
-
-		return ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
+		return desadvLineSSCC;
 	}
 
-	private void enqueueToPrint(@NonNull final EDIDesadvPack desadvLineSSCC)
+	private void enqueueToPrint(@NonNull final I_EDI_DesadvLine_Pack desadvLineSSCC)
 	{
-		desadvLineSSCC_IDs_ToPrint.add(desadvLineSSCC.getEdiDesadvPackId());
+		desadvLineSSCC_IDs_ToPrint.add(EDIDesadvLinePackId.ofRepoId(desadvLineSSCC.getEDI_DesadvLine_Pack_ID()));
 	}
 
-	public ImmutableSet<EDIDesadvPackId> getLineSSCCIdsToPrint()
+	public ImmutableSet<EDIDesadvLinePackId> getLineSSCCIdsToPrint()
 	{
 		return ImmutableSet.copyOf(desadvLineSSCC_IDs_ToPrint);
 	}

@@ -1,8 +1,9 @@
 package org.adempiere.ad.modelvalidator;
 
-import de.metas.security.IUserLoginListener;
 import org.adempiere.ad.session.MFSession;
 import org.compiere.model.I_AD_Client;
+
+import de.metas.security.IUserLoginListener;
 
 /**
  * Template class to be used when implementing custom {@link IModelInterceptor}s.
@@ -23,6 +24,9 @@ public abstract class AbstractModelInterceptor implements IModelInterceptor, IUs
 
 	/**
 	 * Called when interceptor is registered and needs to be initialized
+	 *
+	 * @param engine
+	 * @param client
 	 */
 	protected abstract void onInit(final IModelValidationEngine engine, final I_AD_Client client);
 

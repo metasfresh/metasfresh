@@ -88,10 +88,9 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 		final IDunningBL dunningBL = Services.get(IDunningBL.class);
 
 		final IDunningContext context = dunningBL.createDunningContext(getCtx(),
-																	   null, // DunningDate, not needed
-																	   null, // C_DunningLevel, not needed
-																	   get_TrxName(),
-																	   null); // recomputeDunningCandidatesQuery
+				null, // DunningDate, not needed
+				null, // C_DunningLevel, not needed
+				get_TrxName());
 
 		context.setProperty(IDunningProducer.CONTEXT_ProcessDunningDoc, p_isAutoProcess);
 

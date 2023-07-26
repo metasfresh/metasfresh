@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -122,7 +121,7 @@ public class DocumentFilterParamDescriptor
 
 	public Optional<LookupDataSource> getLookupDataSource()
 	{
-		return lookupDescriptor.map(LookupDataSourceFactory.sharedInstance()::getLookupDataSource);
+		return lookupDescriptor.map(LookupDataSourceFactory.instance::getLookupDataSource);
 	}
 
 	@Nullable
@@ -206,13 +205,13 @@ public class DocumentFilterParamDescriptor
 			return new DocumentFilterParamDescriptor(this);
 		}
 
-		public Builder joinAnd(final boolean joinAnd)
+		public Builder setJoinAnd(final boolean joinAnd)
 		{
 			this.joinAnd = joinAnd;
 			return this;
 		}
 
-		public Builder fieldName(final String fieldName)
+		public Builder setFieldName(final String fieldName)
 		{
 			this.fieldName = fieldName;
 			return this;
@@ -223,17 +222,12 @@ public class DocumentFilterParamDescriptor
 			return fieldName;
 		}
 
-		void parameterName(final String parameterName)
+		void setParameterName(final String parameterName)
 		{
 			this.parameterName = parameterName;
 		}
 
-		public String getParameterName()
-		{
-			return parameterName;
-		}
-
-		public Builder widgetType(final DocumentFieldWidgetType widgetType)
+		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
 			this.widgetType = widgetType;
 			return this;
@@ -250,21 +244,21 @@ public class DocumentFilterParamDescriptor
 			return this;
 		}
 
-		public Builder displayName(final ITranslatableString displayName)
+		public Builder setDisplayName(final ITranslatableString displayName)
 		{
 			this.displayName = TranslatableStrings.copyOf(displayName);
 			return this;
 		}
 
-		public Builder displayName(final String displayName)
+		public Builder setDisplayName(final String displayName)
 		{
 			this.displayName = TranslatableStrings.constant(displayName);
 			return this;
 		}
 
-		public Builder displayName(final AdMessageKey displayName)
+		public Builder setDisplayName(final AdMessageKey displayName)
 		{
-			return displayName(TranslatableStrings.adMessage(displayName));
+			return setDisplayName(TranslatableStrings.adMessage(displayName));
 		}
 
 		public ITranslatableString getDisplayName()
@@ -272,53 +266,49 @@ public class DocumentFilterParamDescriptor
 			return displayName;
 		}
 
-		public Builder operator(@NonNull final Operator operator)
+		public Builder setOperator(final Operator operator)
 		{
+			Check.assumeNotNull(operator, "Parameter operator is not null");
 			this.operator = operator;
 			return this;
 		}
 
-		public Builder defaultValue(final Object defaultValue)
+		public Builder setDefaultValue(final Object defaultValue)
 		{
 			this.defaultValue = defaultValue;
 			return this;
 		}
 
-		public Builder defaultValueTo(final Object defaultValueTo)
+		public Builder setDefaultValueTo(final Object defaultValueTo)
 		{
 			this.defaultValueTo = defaultValueTo;
 			return this;
 		}
 
-		public Builder lookupDescriptor(@NonNull final Optional<LookupDescriptor> lookupDescriptor)
+		public Builder setLookupDescriptor(@NonNull final Optional<LookupDescriptor> lookupDescriptor)
 		{
 			this.lookupDescriptor = lookupDescriptor;
 			return this;
 		}
 
-		public Builder lookupDescriptor(@Nullable final LookupDescriptor lookupDescriptor)
+		public Builder setLookupDescriptor(@Nullable final LookupDescriptor lookupDescriptor)
 		{
-			return lookupDescriptor(Optional.ofNullable(lookupDescriptor));
+			return setLookupDescriptor(Optional.ofNullable(lookupDescriptor));
 		}
 
-		public Builder lookupDescriptor(@NonNull final UnaryOperator<LookupDescriptor> mapper)
-		{
-			return lookupDescriptor(this.lookupDescriptor.map(mapper));
-		}
-
-		public Builder mandatory(final boolean mandatory)
+		public Builder setMandatory(final boolean mandatory)
 		{
 			this.mandatory = mandatory;
 			return this;
 		}
 
-		public Builder showIncrementDecrementButtons(final boolean showIncrementDecrementButtons)
+		public Builder setShowIncrementDecrementButtons(final boolean showIncrementDecrementButtons)
 		{
 			this.showIncrementDecrementButtons = showIncrementDecrementButtons;
 			return this;
 		}
 
-		public Builder autoFilterInitialValue(final Object autoFilterInitialValue)
+		public Builder setAutoFilterInitialValue(final Object autoFilterInitialValue)
 		{
 			this.autoFilterInitialValue = autoFilterInitialValue;
 			return this;

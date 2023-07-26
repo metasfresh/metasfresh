@@ -33,7 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_DD_Order;
 
-import de.metas.distribution.ddorder.hu_spis.DDOrderHUDocumentFactory;
+import de.metas.handlingunits.ddorder.api.impl.DDOrderHUDocumentFactory;
 import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -43,7 +43,7 @@ import de.metas.util.Check;
 
 public class HUDocumentFactoryService implements IHUDocumentFactoryService
 {
-	private final Map<String, IHUDocumentFactory> factories = new HashMap<>();
+	private final Map<String, IHUDocumentFactory> factories = new HashMap<String, IHUDocumentFactory>();
 
 	public HUDocumentFactoryService()
 	{
@@ -74,7 +74,8 @@ public class HUDocumentFactoryService implements IHUDocumentFactoryService
 
 	private IHUDocumentFactory getHUDocumentFactoryOrNull(final String tableName)
 	{
-		return factories.get(tableName);
+		final IHUDocumentFactory factory = factories.get(tableName);
+		return factory;
 	}
 
 	@Override

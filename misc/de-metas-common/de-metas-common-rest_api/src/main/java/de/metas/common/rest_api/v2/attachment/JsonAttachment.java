@@ -44,11 +44,6 @@ public class JsonAttachment
 	@JsonProperty("data")
 	String data;
 
-	@NonNull
-	@JsonProperty(value = "type")
-	@Builder.Default
-	JsonAttachmentSourceType type = JsonAttachmentSourceType.Data;
-
 	@Nullable
 	@JsonProperty("mimeType")
 	String mimeType;

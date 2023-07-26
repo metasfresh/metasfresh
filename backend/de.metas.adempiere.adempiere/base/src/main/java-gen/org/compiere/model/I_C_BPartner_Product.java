@@ -1,14 +1,12 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_Product
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
 public interface I_C_BPartner_Product 
 {
 
@@ -225,27 +223,6 @@ public interface I_C_BPartner_Product
 	String COLUMNNAME_EAN_CU = "EAN_CU";
 
 	/**
-	 * Set Exclusion From Purchase Reason.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExclusionFromPurchaseReason (@Nullable java.lang.String ExclusionFromPurchaseReason);
-
-	/**
-	 * Get Exclusion From Purchase Reason.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getExclusionFromPurchaseReason();
-
-	ModelColumn<I_C_BPartner_Product, Object> COLUMN_ExclusionFromPurchaseReason = new ModelColumn<>(I_C_BPartner_Product.class, "ExclusionFromPurchaseReason", null);
-	String COLUMNNAME_ExclusionFromPurchaseReason = "ExclusionFromPurchaseReason";
-
-	/**
 	 * Set Exclusion From Sale Reason.
 	 *
 	 * <br>Type: Text
@@ -265,29 +242,6 @@ public interface I_C_BPartner_Product
 
 	ModelColumn<I_C_BPartner_Product, Object> COLUMN_ExclusionFromSaleReason = new ModelColumn<>(I_C_BPartner_Product.class, "ExclusionFromSaleReason", null);
 	String COLUMNNAME_ExclusionFromSaleReason = "ExclusionFromSaleReason";
-
-	/**
-	 * Set FLO ID.
-	 * ID granted by FLOCERT for companies to put it on their products.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFLO_Identifier (@Nullable java.lang.String FLO_Identifier);
-
-	/**
-	 * Get FLO ID.
-	 * ID granted by FLOCERT for companies to put it on their products.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getFLO_Identifier();
-
-	ModelColumn<I_C_BPartner_Product, Object> COLUMN_FLO_Identifier = new ModelColumn<>(I_C_BPartner_Product.class, "FLO_Identifier", null);
-	String COLUMNNAME_FLO_Identifier = "FLO_Identifier";
 
 	/**
 	 * Set GTIN.
@@ -401,28 +355,7 @@ public interface I_C_BPartner_Product
 	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Exclude from purchase.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsExcludedFromPurchase (boolean IsExcludedFromPurchase);
-
-	/**
-	 * Get Exclude from purchase.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isExcludedFromPurchase();
-
-	ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsExcludedFromPurchase = new ModelColumn<>(I_C_BPartner_Product.class, "IsExcludedFromPurchase", null);
-	String COLUMNNAME_IsExcludedFromPurchase = "IsExcludedFromPurchase";
-
-	/**
-	 * Set Exclude from sales.
+	 * Set Exclusion from sales documents.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -431,7 +364,7 @@ public interface I_C_BPartner_Product
 	void setIsExcludedFromSale (boolean IsExcludedFromSale);
 
 	/**
-	 * Get Exclude from sales.
+	 * Get Exclusion from sales documents.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -441,29 +374,6 @@ public interface I_C_BPartner_Product
 
 	ModelColumn<I_C_BPartner_Product, Object> COLUMN_IsExcludedFromSale = new ModelColumn<>(I_C_BPartner_Product.class, "IsExcludedFromSale", null);
 	String COLUMNNAME_IsExcludedFromSale = "IsExcludedFromSale";
-
-	/**
-	 * Set LeadTime.
-	 * This column indicates the replenish time in days for a product
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setLeadTime (int LeadTime);
-
-	/**
-	 * Get LeadTime.
-	 * This column indicates the replenish time in days for a product
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getLeadTime();
-
-	ModelColumn<I_C_BPartner_Product, Object> COLUMN_LeadTime = new ModelColumn<>(I_C_BPartner_Product.class, "LeadTime", null);
-	String COLUMNNAME_LeadTime = "LeadTime";
 
 	/**
 	 * Set Hersteller.
@@ -489,8 +399,8 @@ public interface I_C_BPartner_Product
 	String COLUMNNAME_Manufacturer = "Manufacturer";
 
 	/**
-	 * Set Attributes.
-	 * Attribute Instances for Products
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -499,8 +409,8 @@ public interface I_C_BPartner_Product
 	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Attributes.
-	 * Attribute Instances for Products
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -538,8 +448,8 @@ public interface I_C_BPartner_Product
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Minimum Order Qty.
-	 * Minimum order quantity in UOM
+	 * Set Mindestbestellmenge.
+	 * Mindestbestellmenge in Mengeneinheit
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -548,8 +458,8 @@ public interface I_C_BPartner_Product
 	void setOrder_Min (@Nullable BigDecimal Order_Min);
 
 	/**
-	 * Get Minimum Order Qty.
-	 * Minimum order quantity in UOM
+	 * Get Mindestbestellmenge.
+	 * Mindestbestellmenge in Mengeneinheit
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -582,48 +492,6 @@ public interface I_C_BPartner_Product
 
 	ModelColumn<I_C_BPartner_Product, Object> COLUMN_Order_Pack = new ModelColumn<>(I_C_BPartner_Product.class, "Order_Pack", null);
 	String COLUMNNAME_Order_Pack = "Order_Pack";
-
-	/**
-	 * Set Picking_AgeTolerance_AfterMonths.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setPicking_AgeTolerance_AfterMonths (int Picking_AgeTolerance_AfterMonths);
-
-	/**
-	 * Get Picking_AgeTolerance_AfterMonths.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getPicking_AgeTolerance_AfterMonths();
-
-	ModelColumn<I_C_BPartner_Product, Object> COLUMN_Picking_AgeTolerance_AfterMonths = new ModelColumn<>(I_C_BPartner_Product.class, "Picking_AgeTolerance_AfterMonths", null);
-	String COLUMNNAME_Picking_AgeTolerance_AfterMonths = "Picking_AgeTolerance_AfterMonths";
-
-	/**
-	 * Set Picking_AgeTolerance_BeforeMonths.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setPicking_AgeTolerance_BeforeMonths (int Picking_AgeTolerance_BeforeMonths);
-
-	/**
-	 * Get Picking_AgeTolerance_BeforeMonths.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getPicking_AgeTolerance_BeforeMonths();
-
-	ModelColumn<I_C_BPartner_Product, Object> COLUMN_Picking_AgeTolerance_BeforeMonths = new ModelColumn<>(I_C_BPartner_Product.class, "Picking_AgeTolerance_BeforeMonths", null);
-	String COLUMNNAME_Picking_AgeTolerance_BeforeMonths = "Picking_AgeTolerance_BeforeMonths";
 
 	/**
 	 * Set Produktkategorie.
@@ -693,7 +561,7 @@ public interface I_C_BPartner_Product
 	String COLUMNNAME_ProductName = "ProductName";
 
 	/**
-	 * Set Product No.
+	 * Set Produktnummer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -702,7 +570,7 @@ public interface I_C_BPartner_Product
 	void setProductNo (@Nullable java.lang.String ProductNo);
 
 	/**
-	 * Get Product No.
+	 * Get Produktnummer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

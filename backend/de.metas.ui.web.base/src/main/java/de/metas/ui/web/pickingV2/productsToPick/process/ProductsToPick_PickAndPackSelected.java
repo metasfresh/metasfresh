@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -55,7 +54,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only picker shall pick");
 		}
 
-		if (rowsService.noRowsEligibleForPicking(getValidRowsForPickAndPack()))
+		if (!rowsService.anyRowsEligibleForPicking(getValidRowsForPickAndPack()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
@@ -85,7 +84,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 
 	private void pack()
 	{
-		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getValidRowsForPickAndPack(), getPackToSpec());
+		final ImmutableList<WebuiPickHUResult> result = rowsService.setPackingInstruction(getValidRowsForPickAndPack(), getHuPackingInstructionsId());
 
 		updateViewRowFromPickingCandidate(result);
 	}
@@ -99,7 +98,7 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 	}
 
 	@NonNull
-	private PackToSpec getPackToSpec()
+	private HuPackingInstructionsId getHuPackingInstructionsId()
 	{
 		final I_M_HU_PI defaultPIForPicking = handlingUnitsDAO.retrievePIDefaultForPicking();
 		if (defaultPIForPicking == null)
@@ -107,12 +106,12 @@ public class ProductsToPick_PickAndPackSelected extends ProductsToPickViewBasedP
 			throw new AdempiereException(MSG_SET_DEFAULT_PACKING_INSTRUCTION);
 		}
 
-		return PackToSpec.ofGenericPackingInstructionsId(HuPackingInstructionsId.ofRepoId(defaultPIForPicking.getM_HU_PI_ID()));
+		return HuPackingInstructionsId.ofRepoId(defaultPIForPicking.getM_HU_PI_ID());
 	}
 
 	private void ensureDefaultPackingInstructionExists()
 	{
-		getPackToSpec();
+		getHuPackingInstructionsId();
 	}
 
 }

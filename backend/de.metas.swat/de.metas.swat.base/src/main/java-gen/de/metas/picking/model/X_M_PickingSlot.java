@@ -1,151 +1,239 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package de.metas.picking.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_PickingSlot
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_M_PickingSlot extends org.compiere.model.PO implements I_M_PickingSlot, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 62436541L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -814804242L;
 
     /** Standard Constructor */
-    public X_M_PickingSlot (final Properties ctx, final int M_PickingSlot_ID, @Nullable final String trxName)
+    public X_M_PickingSlot (Properties ctx, int M_PickingSlot_ID, String trxName)
     {
       super (ctx, M_PickingSlot_ID, trxName);
+      /** if (M_PickingSlot_ID == 0)
+        {
+			setIsDynamic (false); // N
+			setIsPickingRackSystem (false); // N
+			setM_Locator_ID (0);
+			setM_PickingSlot_ID (0);
+			setM_Warehouse_ID (0);
+			setPickingSlot (null);
+        } */
     }
 
     /** Load Constructor */
-    public X_M_PickingSlot (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_M_PickingSlot (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
 
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
 	@Override
-	public void setC_BPartner_ID (final int C_BPartner_ID)
+	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
 	@Override
-	public int getC_BPartner_ID() 
+	public int getC_BPartner_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Standort.
+		@param C_BPartner_Location_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
 	@Override
-	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
 	}
 
+	/** Get Standort.
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
 	@Override
-	public int getC_BPartner_Location_ID() 
+	public int getC_BPartner_Location_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Is Dynamic.
+		@param IsDynamic Is Dynamic	  */
 	@Override
-	public void setIsDynamic (final boolean IsDynamic)
+	public void setIsDynamic (boolean IsDynamic)
 	{
-		set_Value (COLUMNNAME_IsDynamic, IsDynamic);
+		set_Value (COLUMNNAME_IsDynamic, Boolean.valueOf(IsDynamic));
 	}
 
+	/** Get Is Dynamic.
+		@return Is Dynamic	  */
 	@Override
-	public boolean isDynamic() 
+	public boolean isDynamic () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDynamic);
+		Object oo = get_Value(COLUMNNAME_IsDynamic);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Rack System.
+		@param IsPickingRackSystem Rack System	  */
 	@Override
-	public void setIsPickingRackSystem (final boolean IsPickingRackSystem)
+	public void setIsPickingRackSystem (boolean IsPickingRackSystem)
 	{
-		set_Value (COLUMNNAME_IsPickingRackSystem, IsPickingRackSystem);
+		set_Value (COLUMNNAME_IsPickingRackSystem, Boolean.valueOf(IsPickingRackSystem));
 	}
 
+	/** Get Rack System.
+		@return Rack System	  */
 	@Override
-	public boolean isPickingRackSystem() 
+	public boolean isPickingRackSystem () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPickingRackSystem);
+		Object oo = get_Value(COLUMNNAME_IsPickingRackSystem);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_Locator_ID (final int M_Locator_ID)
+	public void setM_HU_ID (int M_HU_ID)
+	{
+		if (M_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+	}
+
+	/** Get Handling Unit.
+		@return Handling Unit	  */
+	@Override
+	public int getM_HU_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lagerort.
+		@param M_Locator_ID 
+		Lagerort im Lager
+	  */
+	@Override
+	public void setM_Locator_ID (int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
+			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
 	}
 
+	/** Get Lagerort.
+		@return Lagerort im Lager
+	  */
 	@Override
-	public int getM_Locator_ID() 
+	public int getM_Locator_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Picking Slot.
+		@param M_PickingSlot_ID Picking Slot	  */
 	@Override
-	public void setM_Picking_Job_ID (final int M_Picking_Job_ID)
-	{
-		if (M_Picking_Job_ID < 1) 
-			set_Value (COLUMNNAME_M_Picking_Job_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Picking_Job_ID, M_Picking_Job_ID);
-	}
-
-	@Override
-	public int getM_Picking_Job_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_ID);
-	}
-
-	@Override
-	public void setM_PickingSlot_ID (final int M_PickingSlot_ID)
+	public void setM_PickingSlot_ID (int M_PickingSlot_ID)
 	{
 		if (M_PickingSlot_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_PickingSlot_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_PickingSlot_ID, M_PickingSlot_ID);
+			set_ValueNoCheck (COLUMNNAME_M_PickingSlot_ID, Integer.valueOf(M_PickingSlot_ID));
 	}
 
+	/** Get Picking Slot.
+		@return Picking Slot	  */
 	@Override
-	public int getM_PickingSlot_ID() 
+	public int getM_PickingSlot_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_PickingSlot_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PickingSlot_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Lager.
+		@param M_Warehouse_ID 
+		Lager oder Ort für Dienstleistung
+	  */
 	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
 	}
 
+	/** Get Lager.
+		@return Lager oder Ort für Dienstleistung
+	  */
 	@Override
-	public int getM_Warehouse_ID() 
+	public int getM_Warehouse_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** 
@@ -805,15 +893,20 @@ public class X_M_PickingSlot extends org.compiere.model.PO implements I_M_Pickin
 	public static final String PICKINGSLOT_1990 = "199.0";
 	/** 200.0 = 200.0 */
 	public static final String PICKINGSLOT_2000 = "200.0";
+	/** Set PickingSlot.
+		@param PickingSlot PickingSlot	  */
 	@Override
-	public void setPickingSlot (final java.lang.String PickingSlot)
+	public void setPickingSlot (java.lang.String PickingSlot)
 	{
+
 		set_Value (COLUMNNAME_PickingSlot, PickingSlot);
 	}
 
+	/** Get PickingSlot.
+		@return PickingSlot	  */
 	@Override
-	public java.lang.String getPickingSlot() 
+	public java.lang.String getPickingSlot () 
 	{
-		return get_ValueAsString(COLUMNNAME_PickingSlot);
+		return (java.lang.String)get_Value(COLUMNNAME_PickingSlot);
 	}
 }

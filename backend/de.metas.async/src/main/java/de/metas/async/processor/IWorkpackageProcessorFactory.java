@@ -22,18 +22,20 @@ package de.metas.async.processor;
  * #L%
  */
 
-import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.util.ISingletonService;
-import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.ISingletonService;
 
 public interface IWorkpackageProcessorFactory extends ISingletonService
 {
 	IWorkpackageProcessor getWorkpackageProcessor(Properties ctx, int packageProcessorId);
 
-	IWorkpackageProcessor getWorkpackageProcessor(QueuePackageProcessor packageProcessorDef);
+	IWorkpackageProcessor getWorkpackageProcessor(I_C_Queue_PackageProcessor packageProcessorDef);
 
 	boolean isWorkpackageProcessorBlacklisted(final int workpackageProcessorId);
 
@@ -43,7 +45,7 @@ public interface IWorkpackageProcessorFactory extends ISingletonService
 	 * @param packageProcessorDef
 	 * @throws AdempiereException if something went wrong (i.e. package processor definition is not ok)
 	 */
-	void validateWorkpackageProcessor(QueuePackageProcessor packageProcessorDef);
+	void validateWorkpackageProcessor(I_C_Queue_PackageProcessor packageProcessorDef);
 
 	/**
 	 * Gets mutable statistics for given workpackageProcessor
@@ -59,5 +61,5 @@ public interface IWorkpackageProcessorFactory extends ISingletonService
 	 * @param workpackageProcessorDef
 	 * @return mutable statistics instance
 	 */
-	IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(final QueuePackageProcessor workpackageProcessorDef);
+	IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(final I_C_Queue_PackageProcessor workpackageProcessorDef);
 }

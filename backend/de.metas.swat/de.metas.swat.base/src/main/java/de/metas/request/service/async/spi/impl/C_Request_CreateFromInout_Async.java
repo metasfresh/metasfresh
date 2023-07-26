@@ -144,7 +144,7 @@ public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 		final IRequestBL requestBL = Services.get(IRequestBL.class);
 
 		// retrieve the items (inout lines) that were enqueued and put them in a list
-		final List<I_M_InOutLine> lines = queueDAO.retrieveAllItems(workPackage, I_M_InOutLine.class);
+		final List<I_M_InOutLine> lines = queueDAO.retrieveItems(workPackage, I_M_InOutLine.class, localTrxName);
 
 		// for each line that was enqueued, create a R_Request containing the information from the inout line and inout
 		for (final I_M_InOutLine line : lines)

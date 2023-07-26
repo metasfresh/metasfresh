@@ -1,35 +1,33 @@
 package de.metas.contracts.flatrate.callout;
 
-import de.metas.contracts.order.model.I_C_OrderLine;
-import de.metas.contracts.subscription.ISubscriptionBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 public class OrderLine extends CalloutEngine
 {
 
-	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 	/**
 	 * This callout "interposes" the callout {@link CalloutOrder#amt(ICalloutField)}
 	 *
 	 * and decides whether that callout should be executed. If no subscription is selected or this callout is invoked
 	 * for another field than 'QtyEntered' that callout is executed, otherwise it is not.
 	 */
-	public String amt(@NonNull final ICalloutField calloutField)
+	public String amt(ICalloutField calloutField)
 	{
 
 		if (isCalloutActive())
@@ -75,15 +73,16 @@ public class OrderLine extends CalloutEngine
 		}
 
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
+		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
 
-		// don't execute the callout
-		if(subscriptionBL.isSubscription(ol))
+		if (subscriptionId <= 0)
 		{
-			return false;
+			// execute the callout
+			return true;
 		}
 
-		//execute the callout
-		return true;
+		// don't execute the callout
+		return false;
 	}
 
 
@@ -115,11 +114,11 @@ public class OrderLine extends CalloutEngine
 		}
 		if (IsSOTrx && isSubscription)
 		{
-			final int C_BPartner_ID = order.getC_BPartner_ID();
+			int C_BPartner_ID = order.getC_BPartner_ID();
 
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
-			final String sql = "SELECT C_BPartner_Location_ID FROM C_BPartner_Location "
+			String sql = "SELECT C_BPartner_Location_ID FROM C_BPartner_Location "
 					+ " WHERE C_BPartner_ID = ? "
 					+ " ORDER BY IsSubscriptionToDefault DESC";
 			try
@@ -134,7 +133,7 @@ public class OrderLine extends CalloutEngine
 					log.debug("C_BPartner_Location_ID for Subscription changed -> " + bpartnerLocationId);
 				}
 			}
-			catch (final SQLException e)
+			catch (SQLException e)
 			{
 				log.error(sql, e);
 				return e.getLocalizedMessage();
@@ -142,6 +141,8 @@ public class OrderLine extends CalloutEngine
 			finally
 			{
 				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
 			}
 		}
 		return NO_ERROR;

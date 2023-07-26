@@ -16,13 +16,11 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".assert_period_open(
 AS
 $BODY$
 DECLARE
-    v_C_Period_ID          numeric;
-    v_C_AcctSchema_ID      numeric;
-    v_acctSchema           c_acctschema%rowtype;
-    v_PeriodStatus         varchar;
-    v_Now                  timestamp WITH TIME ZONE;
-    v_AutomaticPeriodStart timestamp WITH TIME ZONE;
-    v_AutomaticPeriodEnd   timestamp WITH TIME ZONE;
+    v_C_Calendar_ID   numeric;
+    v_C_Period_ID     numeric;
+    v_C_AcctSchema_ID numeric;
+    v_acctSchema      c_acctschema%rowtype;
+    v_PeriodStatus    varchar;
 BEGIN
     -- RAISE NOTICE 'assert_period_open: checking for p_DateAcct=%, p_DocBaseType=%, p_AD_Client_ID=%, p_AD_Org_ID=%', p_DateAcct, p_DocBaseType, p_AD_Client_ID, p_AD_Org_ID;
 
@@ -31,7 +29,7 @@ BEGIN
     --
     v_C_Period_ID := getC_Period_ID_by_Date(p_DateAcct, p_AD_Client_ID, p_AD_Org_ID);
     IF (v_C_Period_ID IS NULL OR v_C_Period_ID <= 0) THEN
-        RAISE EXCEPTION 'No standard C_Period_ID found for p_DateAcct=%, AD_Client_ID=%', p_DateAcct, p_AD_Client_ID;
+        RAISE EXCEPTION 'No C_Period_ID found for p_DateAcct=%, C_Calendar_ID=%, AD_Client_ID=%', p_DateAcct, v_C_Calendar_ID, p_AD_Client_ID;
     END IF;
 
     --
@@ -48,12 +46,7 @@ BEGIN
     WHERE cas.c_acctschema_id = v_C_AcctSchema_ID;
 
     IF (v_acctSchema.autoperiodcontrol = 'Y') THEN
-        v_now := NOW();
-        v_AutomaticPeriodStart := v_now - v_acctSchema.period_openhistory;
-        v_AutomaticPeriodEnd := v_now + v_acctSchema.period_openfuture;
-        IF (p_DateAcct < v_AutomaticPeriodStart OR p_DateAcct > v_AutomaticPeriodEnd) THEN
-            RAISE EXCEPTION 'Period not open: DateAcct=%, automatic period=[%, %]', p_DateAcct, v_AutomaticPeriodStart, v_AutomaticPeriodEnd;
-        END IF;
+        RAISE EXCEPTION 'Automatic period control is not yet implemented';
     ELSE
         IF (p_DocBaseType IS NULL) THEN
             RAISE EXCEPTION 'DocBaseType shall not be null';
@@ -79,6 +72,7 @@ $BODY$
 ;
 
 
+
 /*
 SELECT "de_metas_acct".assert_period_open(
                p_DateAcct := '2020-12-01'::timestamp WITH TIME ZONE,
@@ -87,5 +81,3 @@ SELECT "de_metas_acct".assert_period_open(
                p_AD_Org_ID := 1000001::numeric)
 ;
  */
-
-

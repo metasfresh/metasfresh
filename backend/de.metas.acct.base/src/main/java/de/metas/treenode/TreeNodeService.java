@@ -22,60 +22,37 @@
 
 package de.metas.treenode;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.elementvalue.ChartOfAccountsService;
-import de.metas.elementvalue.ElementValue;
-import lombok.NonNull;
-import org.adempiere.model.tree.AdTreeId;
+import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import de.metas.elementvalue.ElementValue;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.elementvalue.ElementValueRepository;
+import lombok.NonNull;
 
 @Service
 public class TreeNodeService
 {
+	private final ElementValueRepository elementValueRepo;
 	private final TreeNodeRepository treeNodeRepo;
-	private final ChartOfAccountsService chartOfAccountsService;
 
 	public TreeNodeService(
-			@NonNull final TreeNodeRepository treeNodeRepo,
-			@NonNull final ChartOfAccountsService chartOfAccountsService)
+			@NonNull final ElementValueRepository elementValueRepo,
+			@NonNull final TreeNodeRepository treeNodeRepo)
 	{
+		this.elementValueRepo = elementValueRepo;
 		this.treeNodeRepo = treeNodeRepo;
-		this.chartOfAccountsService = chartOfAccountsService;
 	}
 
-	public void updateTreeNode(@NonNull final ElementValue elementValue)
+	public void updateTreeNode(@NonNull final I_C_ElementValue elementValueRecord)
 	{
+		final ElementValueId evId = ElementValueId.ofRepoIdOrNull(elementValueRecord.getC_ElementValue_ID());
+		final ElementValue elementValue = elementValueRepo.getById(evId);
+
 		// treeNode base on all the data from element value
-		final TreeNode treeNode = toTreeNode(elementValue);
+		final TreeNode treeNode = treeNodeRepo.toTreeNode(elementValue);
 
 		// save entire info from treenode to treenode record
 		treeNodeRepo.save(treeNode);
-	}
-
-	@NonNull
-	public TreeNode toTreeNode(@NonNull final ElementValue elementValue)
-	{
-		final AdTreeId chartOfAccountsTreeId = chartOfAccountsService.getById(elementValue.getChartOfAccountsId()).getTreeId();
-		return TreeNode.builder()
-				.chartOfAccountsTreeId(chartOfAccountsTreeId)
-				.nodeId(elementValue.getId())
-				.parentId(elementValue.getParentId())
-				.seqNo(elementValue.getSeqNo())
-				.build();
-	}
-
-	private ImmutableList<TreeNode> toTreeNodes(final @NonNull List<ElementValue> elementValues)
-	{
-		return elementValues.stream()
-				.map(this::toTreeNode)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	public void recreateTree(@NonNull final List<ElementValue> elementValues)
-	{
-		final ImmutableList<TreeNode> nodes = toTreeNodes(elementValues);
-		treeNodeRepo.recreateTree(nodes);
 	}
 }

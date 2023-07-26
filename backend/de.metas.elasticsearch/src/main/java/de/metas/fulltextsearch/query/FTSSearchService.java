@@ -22,12 +22,9 @@
 
 package de.metas.fulltextsearch.query;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.fulltextsearch.config.ESFieldName;
-import de.metas.fulltextsearch.config.ESQueryTemplate;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.fulltextsearch.config.FTSConfigService;
@@ -35,18 +32,12 @@ import de.metas.fulltextsearch.config.FTSFilterDescriptor;
 import de.metas.fulltextsearch.config.FTSJoinColumn;
 import de.metas.fulltextsearch.config.FTSJoinColumnList;
 import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.OrgIdAccessList;
-import de.metas.security.UserRolePermissionsKey;
-import de.metas.security.permissions.Access;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Evaluatee;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatees;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -54,11 +45,11 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.xcontent.DeprecationHandler;
-import org.elasticsearch.xcontent.NamedXContentRegistry;
-import org.elasticsearch.xcontent.XContentFactory;
-import org.elasticsearch.xcontent.XContentParser;
-import org.elasticsearch.xcontent.XContentType;
+import org.elasticsearch.common.xcontent.DeprecationHandler;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchModule;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -70,7 +61,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 @Service
 public class FTSSearchService
@@ -79,11 +69,10 @@ public class FTSSearchService
 	private final FTSConfigService ftsConfigService;
 	private final FTSSearchResultRepository ftsSearchResultRepository;
 	private final IESSystem elasticsearchSystem = Services.get(IESSystem.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
-	private static final String SYSCONFIG_ResultMaxSize = "fulltextsearch.query.limit";
-	private static final int DEFAULT_ResultMaxSize = 100;
+	private static final CtxName CTXNAME_query = CtxNames.parse("query");
+
+	private static final int RESULT_MAX_SIZE = 100;
 
 	public FTSSearchService(
 			@NonNull final FTSConfigService ftsConfigService,
@@ -100,9 +89,10 @@ public class FTSSearchService
 		final FTSConfig ftsConfig = ftsConfigService.getConfigByESIndexName(request.getEsIndexName());
 		logger.debug("search: ftsConfig: {}", ftsConfig);
 
-		final ESQueryTemplate jsonQueryTemplate = ftsConfig.getQueryCommand();
-		final String jsonQuery = jsonQueryTemplate.resolve(createQueryEvalCtx(request, ftsConfig));
-
+		final String jsonQuery = ftsConfig.getQueryCommand()
+				.resolve(Evaluatees.mapBuilder()
+						.put(CTXNAME_query, request.getSearchText())
+						.build());
 		logger.debug("search: elasticsearch query: {}", jsonQuery);
 
 		try
@@ -116,17 +106,14 @@ public class FTSSearchService
 							DeprecationHandler.THROW_UNSUPPORTED_OPERATION,
 							jsonQuery);
 
-			final Stopwatch stopwatch = Stopwatch.createStarted();
 			final RestHighLevelClient elasticsearchClient = elasticsearchSystem.elasticsearchClient();
 			final SearchResponse elasticsearchResponse = elasticsearchClient
 					.search(new SearchRequest()
 									.indices(ftsConfig.getEsIndexName())
 									.source(SearchSourceBuilder.fromXContent(parser)
-											.size(getResultMaxSize())),
+											.size(RESULT_MAX_SIZE)),
 							RequestOptions.DEFAULT
 					);
-			stopwatch.stop();
-			logger.debug("Got response from elasticsearch server in {}", stopwatch);
 
 			final FTSSearchResult ftsResult = FTSSearchResult.builder()
 					.searchId(request.getSearchId())
@@ -143,62 +130,6 @@ public class FTSSearchService
 		catch (final IOException ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
-		}
-	}
-
-	private int getResultMaxSize()
-	{
-		return sysConfigBL.getIntValue(SYSCONFIG_ResultMaxSize, DEFAULT_ResultMaxSize);
-	}
-
-	private Evaluatee createQueryEvalCtx(
-			final @NonNull FTSSearchRequest request,
-			final @NonNull FTSConfig ftsConfig)
-	{
-		final ESQueryTemplate jsonQueryTemplate = ftsConfig.getQueryCommand();
-
-		final Evaluatees.MapEvaluateeBuilder builder = Evaluatees.mapBuilder();
-		builder.put(ESQueryTemplate.PARAM_query, request.getSearchText());
-
-		if (jsonQueryTemplate.isParameterRequired(ESQueryTemplate.PARAM_queryStartsWith))
-		{
-			builder.put(ESQueryTemplate.PARAM_queryStartsWith, request.getSearchText() + "*");
-		}
-
-		if (jsonQueryTemplate.isOrgFilterParameterRequired())
-		{
-			builder.put(ESQueryTemplate.PARAM_orgFilter, buildOrgIdsFilterPart(request.getUserRolePermissionsKey()));
-		}
-
-		return builder.build();
-	}
-
-	private String buildOrgIdsFilterPart(@Nullable final UserRolePermissionsKey userRolePermissionsKey)
-	{
-		if (userRolePermissionsKey == null)
-		{
-			return "";
-		}
-
-		final IUserRolePermissions userRolePermissions = userRolePermissionsDAO.getUserRolePermissions(userRolePermissionsKey);
-		final OrgIdAccessList orgIdAccessList = userRolePermissions.getOrgAccess(null, Access.READ);
-		if (orgIdAccessList.isAny())
-		{
-			return "";
-		}
-		else
-		{
-			final ImmutableSet<OrgId> orgIds = orgIdAccessList.toSet();
-			String orgIdsCommaSeparated = orgIds.stream()
-					.map(OrgId::getRepoId)
-					.map(String::valueOf)
-					.collect(Collectors.joining(", "));
-			if (orgIdsCommaSeparated.isEmpty())
-			{
-				orgIdsCommaSeparated = "-1";
-			}
-
-			return ", \"filter\": { \"terms\": { \"ad_org_id\": [" + orgIdsCommaSeparated + "] } }";
 		}
 	}
 

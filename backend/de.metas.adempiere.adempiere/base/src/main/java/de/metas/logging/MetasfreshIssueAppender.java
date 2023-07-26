@@ -1,5 +1,17 @@
 package de.metas.logging;
 
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.adempiere.ad.service.ISystemBL;
+import org.adempiere.exceptions.IssueReportableExceptions;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.NullAutoCloseable;
+import org.compiere.model.I_AD_Issue;
+import org.compiere.util.DB;
+import org.slf4j.ILoggerFactory;
+import org.slf4j.LoggerFactory;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -10,16 +22,6 @@ import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.util.Services;
-import org.adempiere.exceptions.IssueReportableExceptions;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.NullAutoCloseable;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.util.DB;
-import org.slf4j.ILoggerFactory;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -48,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
 {
-	public static MetasfreshIssueAppender get()
+	public static final MetasfreshIssueAppender get()
 	{
 		final ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
 		if (loggerFactory instanceof LoggerContext)
@@ -225,6 +227,13 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 	{
 		// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
 		if (!DB.isConnected())
+		{
+			return;
+		}
+
+		// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
+		final ISystemBL systemBL = Services.get(ISystemBL.class);
+		if (!systemBL.isAutoErrorReport())
 		{
 			return;
 		}

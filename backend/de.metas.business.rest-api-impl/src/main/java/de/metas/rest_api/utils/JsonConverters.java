@@ -1,18 +1,15 @@
 package de.metas.rest_api.utils;
 
-import de.metas.attachments.AttachmentEntryType;
+import javax.annotation.Nullable;
+
+import de.metas.dao.selection.pagination.PageDescriptor;
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonPagingDescriptor;
 import de.metas.common.rest_api.v1.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
-import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
-import de.metas.dao.selection.pagination.PageDescriptor;
-import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -71,23 +68,5 @@ public class JsonConverters
 			return null;
 		}
 		return ExternalId.of(jsonExternalId.getValue());
-	}
-
-	@NonNull
-	public JsonAttachmentType toJsonAttachmentType(@NonNull final AttachmentEntryType type)
-	{
-		switch (type)
-		{
-			case Data:
-				return JsonAttachmentType.Data;
-			case URL:
-				return JsonAttachmentType.URL;
-			case LocalFileURL:
-				return JsonAttachmentType.LocalFileURL;
-			default:
-				throw new AdempiereException("Unknown AttachmentEntryType")
-						.appendParametersToMessage()
-						.setParameter("type", type);
-		}
 	}
 }

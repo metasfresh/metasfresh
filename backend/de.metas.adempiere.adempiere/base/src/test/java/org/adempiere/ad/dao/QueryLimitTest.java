@@ -1,14 +1,11 @@
 package org.adempiere.ad.dao;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -34,17 +31,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class QueryLimitTest
 {
-	@SuppressWarnings("SameParameterValue")
-	private static List<String> listOfSize(final int size)
-	{
-		final ArrayList<String> list = new ArrayList<>(size);
-		while (list.size() < size)
-		{
-			list.add("element");
-		}
-		return list;
-	}
-
 	@Test
 	public void ofInt()
 	{
@@ -59,13 +45,7 @@ public class QueryLimitTest
 		assertThat(QueryLimit.ofInt(1000)).isSameAs(QueryLimit.ONE_THOUSAND);
 
 		assertThat(QueryLimit.ofInt(5).toInt()).isEqualTo(5);
-	}
 
-	@Test
-	public void toIntOr()
-	{
-		assertThat(QueryLimit.NO_LIMIT.toIntOr(Integer.MAX_VALUE)).isEqualTo(Integer.MAX_VALUE);
-		assertThat(QueryLimit.ofInt(1).toIntOr(Integer.MAX_VALUE)).isEqualTo(1);
 	}
 
 	@Test
@@ -93,46 +73,13 @@ public class QueryLimitTest
 		assertThat(QueryLimit.ofInt(11).isLimitHitOrExceeded(listOfSize(10))).isFalse();
 	}
 
-	@Nested
-	public class minusSizeOf
+	private static List<String> listOfSize(int size)
 	{
-		@Test
-		void noLimit_minus_listOf7()
+		final ArrayList<String> list = new ArrayList<>(size);
+		while (list.size() < size)
 		{
-			assertThat(QueryLimit.NO_LIMIT.minusSizeOf(listOfSize(7)))
-					.isSameAs(QueryLimit.NO_LIMIT);
+			list.add("element");
 		}
-
-		@Test
-		void limit10_minus_emptyList()
-		{
-			final QueryLimit limit = QueryLimit.ofInt(10);
-			assertThat(limit.minusSizeOf(listOfSize(0)))
-					.isSameAs(limit);
-		}
-
-		@Test
-		void limit10_minus_listOf9()
-		{
-			assertThat(QueryLimit.ofInt(10).minusSizeOf(listOfSize(9)))
-					.isEqualTo(QueryLimit.ofInt(1));
-		}
-
-		@Test
-		void limit10_minus_listOf10()
-		{
-			assertThatThrownBy(() -> QueryLimit.ofInt(10).minusSizeOf(listOfSize(10)))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Invalid collection size");
-		}
-
-		@Test
-		void limit10_minus_listOf11()
-		{
-			assertThatThrownBy(() -> QueryLimit.ofInt(10).minusSizeOf(listOfSize(11)))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Invalid collection size");
-		}
-
+		return list;
 	}
 }

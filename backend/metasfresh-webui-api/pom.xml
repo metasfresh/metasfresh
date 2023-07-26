@@ -30,39 +30,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.acct</groupId>
-			<artifactId>de.metas.acct.webui</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.servicerepair</groupId>
 			<artifactId>de.metas.servicerepair.webui</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-
-		<dependency>
-			<groupId>de.metas.handlingunits</groupId>
-			<artifactId>de.metas.handlingunits.webui</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.forex</groupId>
-			<artifactId>de.metas.forex.webui</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.deliveryplanning</groupId>
-			<artifactId>de.metas.deliveryplanning.webui</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.invoice</groupId>
-			<artifactId>de.metas.invoice.webui</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
@@ -165,12 +134,6 @@
 								Note that the ${docker.build.directory} property is set by the prepare-docker 
 								profile that is activated by the presence of the scr/main/docker folder -->
 							<outputDirectory>${docker.build.directory}</outputDirectory>
-
-							<!-- layout=ZIP still creates an executable jar, but with org.springframework.boot.loader.PropertiesLauncher
-								That way we can specify external jars which contain additional things like cucumber tests 
-								Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
-							<layout>ZIP</layout>
-							
 						</configuration>
 					</execution>
 					<execution>

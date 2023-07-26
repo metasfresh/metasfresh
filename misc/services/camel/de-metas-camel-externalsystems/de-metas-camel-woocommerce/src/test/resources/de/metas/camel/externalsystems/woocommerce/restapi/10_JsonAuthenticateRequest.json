@@ -1,7 +1,5 @@
 {
   "grantedAuthority": "WOO",
   "authKey": "authKey",
-  "pinstance": 123,
-  "orgCode": "orgCode",
-  "externalSystemValue": "childValue"
+  "pinstance": 123
 }

@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
@@ -40,7 +39,6 @@ import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.edi.impprocessor.IMP_Processor_StepDefData;
@@ -52,10 +50,8 @@ import de.metas.edi.model.I_AD_InputDataSource;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
-import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Check;
@@ -73,31 +69,22 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ErrorMsg;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalLineId;
-import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_IsError;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
 {
-	public static final JsonCreateShipmentResponse EMPTY_SHIPMENT_RESPONSE = JsonCreateShipmentResponse.builder().createdShipmentIds(ImmutableList.of()).build();
-
-	private static final Logger logger = LogManager.getLogger(C_OLCand_StepDef.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Order_StepDefData orderTable;
@@ -148,31 +135,39 @@ public class C_OLCand_StepDef
 	@Then("process metasfresh response")
 	public void process_metasfresh_response(@NonNull final DataTable table) throws JsonProcessingException
 	{
-		try
+		final JsonProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonProcessCompositeResponse.class);
+		assertThat(compositeResponse).isNotNull();
+
+		final Map<String, String> row = table.asMaps().get(0);
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Order.Identifier");
+		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Shipment.Identifier");
+		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Invoice.Identifier");
+
+		if (orderIdentifier == null)
 		{
-			processResponse(table);
+			assertThat(compositeResponse.getOrderResponse()).isEqualTo(null);
 		}
-		catch (final Exception e)
+		else
 		{
-			final StringBuilder message = new StringBuilder();
-			message.append("C_OLCand records could not be processed. See:\n");
-
-			final JsonOLCandProcessRequest request = mapper.readValue(testContext.getRequestPayload(), JsonOLCandProcessRequest.class);
-			assertThat(request).isNotNull();
-
-			logOLCandidateRecords(message, request);
-
-			throw e;
+			processOrderResponse(compositeResponse.getOrderResponse(), orderIdentifier);
 		}
-	}
 
-	@Then("validate order line allocated 'line'")
-	public void validate_OrderLine_Allocated_Line(@NonNull final DataTable table)
-	{
-		final List<Map<String, String>> tableRows = table.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		if (shipmentIdentifier == null)
 		{
-			validateOrderLineAllocatedLine(tableRow);
+			assertThat(compositeResponse.getShipmentResponse()).isEqualTo(null);
+		}
+		else
+		{
+			processShipmentResponse(compositeResponse.getShipmentResponse(), shipmentIdentifier);
+		}
+
+		if (invoiceIdentifier == null)
+		{
+			assertThat(compositeResponse.getInvoiceInfoResponse()).isEqualTo(null);
+		}
+		else
+		{
+			processInvoiceResponse(compositeResponse.getInvoiceInfoResponse(), invoiceIdentifier);
 		}
 	}
 
@@ -188,7 +183,7 @@ public class C_OLCand_StepDef
 		final Map<String, String> row = dataTable.asMaps().get(0);
 		final String olCandIdentifiers = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		final List<String> identifiers = StepDefUtil.splitIdentifiers(olCandIdentifiers);
+		final List<String> identifiers = splitIdentifiers(olCandIdentifiers);
 		assertThat(jsonOLCands.size()).isEqualTo(identifiers.size());
 
 		for (int index = 0; index < identifiers.size(); index++)
@@ -201,29 +196,6 @@ public class C_OLCand_StepDef
 			final String olCandIdentifier = identifiers.get(index);
 			olCandTable.putOrReplace(olCandIdentifier, olCandRecord);
 		}
-	}
-
-	@And("validate C_OLCand is with error")
-	public void validate_C_OLCand_has_error(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : rows)
-		{
-			validateOLCandError(row);
-		}
-	}
-
-	private void validateOLCandError(@NonNull final Map<String, String> row)
-	{
-		final String olCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_OLCand_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_C_OLCand olCand = olCandTable.get(olCandIdentifier);
-		InterfaceWrapperHelper.refresh(olCand);
-		assertThat(olCand).isNotNull();
-
-		assertThat(olCand.isError()).isTrue();
-
-		final String errorMsg = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_ErrorMsg);
-		assertThat(olCand.getErrorMsg()).contains(errorMsg);
 	}
 
 	@And("validate C_OLCand:")
@@ -365,30 +337,6 @@ public class C_OLCand_StepDef
 		}
 	}
 
-	private void validateOrderLineAllocatedLine(@NonNull final Map<String, String> row)
-	{
-		final String externalLineId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalLineId);
-		final int olCandLine = DataTableUtil.extractIntForColumnName(row, I_C_OLCand.Table_Name + "." + I_C_OLCand.COLUMNNAME_Line);
-		final int olLine = DataTableUtil.extractIntForColumnName(row, I_C_OrderLine.Table_Name + "." + I_C_OrderLine.COLUMNNAME_Line);
-
-		final I_C_OLCand olCand = queryBL.createQueryBuilder(I_C_OLCand.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(COLUMNNAME_ExternalLineId, externalLineId)
-				.create()
-				.firstOnlyNotNull(I_C_OLCand.class);
-
-		final I_C_Order_Line_Alloc orderLineAlloc = queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(COLUMNNAME_C_OLCand_ID, olCand.getC_OLCand_ID())
-				.create()
-				.firstOnlyNotNull(I_C_Order_Line_Alloc.class);
-
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.load(orderLineAlloc.getC_OrderLine_ID(), I_C_OrderLine.class);
-
-		assertThat(olCand.getLine()).isEqualTo(olCandLine);
-		assertThat(orderLine.getLine()).isEqualTo(olLine);
-	}
-
 	private void processOrderResponse(
 			@NonNull final JsonGenerateOrdersResponse response,
 			@NonNull final String orderIdentifier)
@@ -413,7 +361,7 @@ public class C_OLCand_StepDef
 
 		if (orders.size() > 1)
 		{
-			final List<String> identifiers = StepDefUtil.splitIdentifiers(orderIdentifier);
+			final List<String> identifiers = splitIdentifiers(orderIdentifier);
 
 			for (int index = 0; index < identifiers.size(); index++)
 			{
@@ -440,22 +388,18 @@ public class C_OLCand_StepDef
 
 		final List<I_M_InOut> shipments = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, generatedShipmentIds)
-				.orderBy(I_M_InOut.COLUMNNAME_M_InOut_ID) // important to avoid mixing up shipments
 				.create()
 				.list();
 
 		assertThat(shipments).isNotEmpty();
 
-		final List<String> identifiers = StepDefUtil.splitIdentifiers(shipmentIdentifier);
-		assertThat(identifiers).hasSameSizeAs(shipments);
-
 		if (shipments.size() > 1)
 		{
+			final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
+
 			for (int index = 0; index < shipments.size(); index++)
 			{
-				final String identifier = identifiers.get(index);
-				final I_M_InOut record = shipments.get(index);
-				shipmentTable.putOrReplace(identifier, record);
+				shipmentTable.putOrReplace(identifiers.get(index), shipments.get(index));
 			}
 		}
 		else
@@ -487,67 +431,10 @@ public class C_OLCand_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
-	private void processResponse(@NonNull final DataTable table) throws JsonProcessingException
+	@NonNull
+	private List<String> splitIdentifiers(@NonNull final String identifiers)
 	{
-		final JsonProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonProcessCompositeResponse.class);
-		assertThat(compositeResponse).isNotNull();
-
-		final Map<String, String> row = table.asMaps().get(0);
-		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Order_ID.Identifier");
-		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "M_InOut_ID.Identifier");
-		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Invoice_ID.Identifier");
-
-		if (orderIdentifier == null)
-		{
-			assertThat(compositeResponse.getOrderResponse()).isEqualTo(null);
-		}
-		else
-		{
-			processOrderResponse(compositeResponse.getOrderResponse(), orderIdentifier);
-		}
-
-		if (shipmentIdentifier == null)
-		{
-			// we expect that there are no infos about any generated shipments
-			if (compositeResponse.getShipmentResponse() != null)
-			{
-				assertThat(compositeResponse.getShipmentResponse()).isEqualTo(EMPTY_SHIPMENT_RESPONSE);
-			}
-		}
-		else
-		{
-			processShipmentResponse(compositeResponse.getShipmentResponse(), shipmentIdentifier);
-		}
-
-		if (invoiceIdentifier == null)
-		{
-			// we expect that there are no infos about any generated invoice
-			if (compositeResponse.getInvoiceInfoResponse() != null)
-			{
-				assertThat(compositeResponse.getInvoiceInfoResponse()).isEmpty();
-			}
-		}
-		else
-		{
-			processInvoiceResponse(compositeResponse.getInvoiceInfoResponse(), invoiceIdentifier);
-		}
-	}
-
-	private void logOLCandidateRecords(@NonNull final StringBuilder message, @NonNull final JsonOLCandProcessRequest request)
-	{
-		message.append("C_OLCand infos:").append("\n");
-
-		queryBL.createQueryBuilder(I_C_OLCand.class)
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalHeaderId, request.getExternalHeaderId())
-				.create()
-				.stream(I_C_OLCand.class)
-				.forEach(olCandRecord -> message
-						.append(COLUMNNAME_C_OLCand_ID).append(" : ").append(olCandRecord.getC_OLCand_ID()).append(" ; ")
-						.append(COLUMNNAME_IsError).append(" : ").append(olCandRecord.isError()).append(" ; ")
-						.append(COLUMNNAME_ErrorMsg).append(" : ").append(olCandRecord.getErrorMsg()).append(" ; ")
-						.append("\n"));
-
-		logger.error("*** Error while processing C_OLCand records, see current context: \n" + message);
+		return Arrays.asList(identifiers.split(","));
 	}
 
 	@NonNull

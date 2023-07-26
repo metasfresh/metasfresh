@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.payment.paymentterm.PaymentTermId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -59,25 +58,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import static de.metas.util.Check.assumeNotNull;
 
 /**
  * {@link I_C_Invoice_Candidate} builder to be used ONLY for testing.
@@ -92,7 +72,6 @@ public class C_Invoice_Candidate_Builder
 	private String instanceName;
 	private OrgId orgId;
 	private BPartnerId billBPartnerId;
-	private PaymentTermId paymentTermId;
 	private BPartnerLocationId billBPartnerLocationId;
 	private int priceEntered;
 	private BigDecimal priceEntered_Override;
@@ -112,7 +91,6 @@ public class C_Invoice_Candidate_Builder
 	private String poReference;
 	private LocalDate dateAcct;
 	private LocalDate dateInvoiced;
-	private LocalDate dateToInvoice;
 	private LocalDate presetDateInvoiced;
 	private BigDecimal qualityDiscountPercent_Override;
 
@@ -139,7 +117,6 @@ public class C_Invoice_Candidate_Builder
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		POJOWrapper.setInstanceName(ic, instanceName);
 
-		ic.setIsInEffect(true);
 		ic.setAD_Org_ID(orgId.getRepoId());
 
 		//
@@ -147,7 +124,6 @@ public class C_Invoice_Candidate_Builder
 		ic.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 		ic.setPresetDateInvoiced(TimeUtil.asTimestamp(presetDateInvoiced));
 		ic.setDateInvoiced(TimeUtil.asTimestamp(dateInvoiced));
-		ic.setDateToInvoice(TimeUtil.asTimestamp(dateToInvoice));
 
 		// InvoiceRule
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
@@ -161,7 +137,6 @@ public class C_Invoice_Candidate_Builder
 		{
 			ic.setInvoiceRule_Override(invoiceRule_Override);
 		}
-		ic.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 
 		ic.setBill_BPartner_ID(billBPartnerId.getRepoId());
 
@@ -268,7 +243,6 @@ public class C_Invoice_Candidate_Builder
 
 			ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 			ic.setC_Order_ID(orderLine.getC_Order_ID());
-			ic.setC_OrderSO_ID(orderLine.getC_OrderSO_ID());
 			ic.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
 			ic.setRecord_ID(orderLine.getC_OrderLine_ID());
 			ic.setPriceActual(priceActual);
@@ -320,12 +294,6 @@ public class C_Invoice_Candidate_Builder
 		return this;
 	}
 
-	public C_Invoice_Candidate_Builder setPaymentTermId(@NonNull final PaymentTermId paymentTermId)
-	{
-		this.paymentTermId = paymentTermId;
-		return this;
-	}
-
 	public C_Invoice_Candidate_Builder setBillBPartner(final org.compiere.model.I_C_BPartner billBPartner)
 	{
 		return setBillBPartnerId(BPartnerId.ofRepoId(billBPartner.getC_BPartner_ID()));
@@ -366,6 +334,9 @@ public class C_Invoice_Candidate_Builder
 	 * If not set,
 	 * then either {@link AbstractICTestSupport#pricingSystem_PO} or {@link AbstractICTestSupport#pricingSystem_SO} are used,
 	 * depending on {@link #isSOTrx}.
+	 *
+	 * @param M_PricingSystem_ID
+	 * @return
 	 */
 	public C_Invoice_Candidate_Builder setM_PricingSystem_ID(final int M_PricingSystem_ID)
 	{
@@ -429,6 +400,8 @@ public class C_Invoice_Candidate_Builder
 	}
 
 	/**
+	 * @param instanceName
+	 * @return
 	 * @see POJOWrapper#setInstanceName(Object, String)
 	 */
 	public C_Invoice_Candidate_Builder setInstanceName(final String instanceName)
@@ -478,12 +451,6 @@ public class C_Invoice_Candidate_Builder
 	public C_Invoice_Candidate_Builder setDateInvoiced(final LocalDate dateInvoiced)
 	{
 		this.dateInvoiced = dateInvoiced;
-		return this;
-	}
-
-	public C_Invoice_Candidate_Builder setDateToInvoice(final LocalDate dateToInvoice)
-	{
-		this.dateToInvoice = dateToInvoice;
 		return this;
 	}
 

@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order
  *  @author metasfresh (generated) 
@@ -74,26 +75,6 @@ public interface I_PP_Order
 	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
-	 * Set Verantwortlicher Benutzer.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_User_Responsible_ID (int AD_User_Responsible_ID);
-
-	/**
-	 * Get Verantwortlicher Benutzer.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_User_Responsible_ID();
-
-	String COLUMNNAME_AD_User_Responsible_ID = "AD_User_Responsible_ID";
-
-	/**
 	 * Set Workflow.
 	 * Workflow or combination of tasks
 	 *
@@ -159,6 +140,29 @@ public interface I_PP_Order
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCanBeExportedFrom (@Nullable java.sql.Timestamp CanBeExportedFrom);
+
+	/**
+	 * Get Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getCanBeExportedFrom();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_CanBeExportedFrom = new ModelColumn<>(I_PP_Order.class, "CanBeExportedFrom", null);
+	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
 
 	/**
 	 * Set Business Partner.
@@ -250,6 +254,29 @@ public interface I_PP_Order
 	int getC_DocTypeTarget_ID();
 
 	String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_CopyFrom = new ModelColumn<>(I_PP_Order.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Sales order.
@@ -359,74 +386,6 @@ public interface I_PP_Order
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Can be exported from.
-	 * Timestamp from which onwards the record may be exported
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCanBeExportedFrom (@Nullable java.sql.Timestamp CanBeExportedFrom);
-
-	/**
-	 * Get Can be exported from.
-	 * Timestamp from which onwards the record may be exported
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getCanBeExportedFrom();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_CanBeExportedFrom = new ModelColumn<>(I_PP_Order.class, "CanBeExportedFrom", null);
-	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCopyFrom (@Nullable java.lang.String CopyFrom);
-
-	/**
-	 * Get Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCopyFrom();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_CopyFrom = new ModelColumn<>(I_PP_Order.class, "CopyFrom", null);
-	String COLUMNNAME_CopyFrom = "CopyFrom";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -452,67 +411,26 @@ public interface I_PP_Order
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Current Receiving LU.
+	 * Set UOM.
+	 * Unit of Measure
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCurrent_Receiving_LU_HU_ID (int Current_Receiving_LU_HU_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Current Receiving LU.
+	 * Get UOM.
+	 * Unit of Measure
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCurrent_Receiving_LU_HU_ID();
+	int getC_UOM_ID();
 
-	ModelColumn<I_PP_Order, Object> COLUMN_Current_Receiving_LU_HU_ID = new ModelColumn<>(I_PP_Order.class, "Current_Receiving_LU_HU_ID", null);
-	String COLUMNNAME_Current_Receiving_LU_HU_ID = "Current_Receiving_LU_HU_ID";
-
-	/**
-	 * Set Current Receiving TU instructions.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCurrent_Receiving_TU_PI_Item_Product_ID (int Current_Receiving_TU_PI_Item_Product_ID);
-
-	/**
-	 * Get Current Receiving TU instructions.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getCurrent_Receiving_TU_PI_Item_Product_ID();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_Current_Receiving_TU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order.class, "Current_Receiving_TU_PI_Item_Product_ID", null);
-	String COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID = "Current_Receiving_TU_PI_Item_Product_ID";
-
-	/**
-	 * Set Current Scale DeviceId.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCurrentScaleDeviceId (@Nullable java.lang.String CurrentScaleDeviceId);
-
-	/**
-	 * Get Current Scale DeviceId.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCurrentScaleDeviceId();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_CurrentScaleDeviceId = new ModelColumn<>(I_PP_Order.class, "CurrentScaleDeviceId", null);
-	String COLUMNNAME_CurrentScaleDeviceId = "CurrentScaleDeviceId";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set DateConfirm.
@@ -626,7 +544,7 @@ public interface I_PP_Order
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Date Promised.
+	 * Set Zugesagter Termin.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -636,7 +554,7 @@ public interface I_PP_Order
 	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Date Promised.
+	 * Get Zugesagter Termin.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -649,8 +567,7 @@ public interface I_PP_Order
 	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
-	 * Set Start Date.
-	 * Indicate the real date to start
+	 * Set DateStart.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -659,8 +576,7 @@ public interface I_PP_Order
 	void setDateStart (@Nullable java.sql.Timestamp DateStart);
 
 	/**
-	 * Get Start Date.
-	 * Indicate the real date to start
+	 * Get DateStart.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -672,8 +588,7 @@ public interface I_PP_Order
 	String COLUMNNAME_DateStart = "DateStart";
 
 	/**
-	 * Set Date Start Schedule.
-	 * Scheduled start date for this Order
+	 * Set DateStartSchedule.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -682,8 +597,7 @@ public interface I_PP_Order
 	void setDateStartSchedule (java.sql.Timestamp DateStartSchedule);
 
 	/**
-	 * Get Date Start Schedule.
-	 * Scheduled start date for this Order
+	 * Get DateStartSchedule.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -1097,27 +1011,6 @@ public interface I_PP_Order
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Packing Instruction.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
-
-	/**
-	 * Get Packing Instruction.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_HU_PI_Item_Product_ID();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order.class, "M_HU_PI_Item_Product_ID", null);
-	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
-
-	/**
 	 * Set Locator.
 	 * Warehouse Locator
 	 *
@@ -1160,49 +1053,6 @@ public interface I_PP_Order
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Shipment Candidate.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Shipment Candidate.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_ShipmentSchedule_ID();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_PP_Order.class, "M_ShipmentSchedule_ID", null);
-	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Warehouse_ID();
-
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set MRP Allow Cleanup.
@@ -1272,6 +1122,28 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_MRP_ToDelete = new ModelColumn<>(I_PP_Order.class, "MRP_ToDelete", null);
 	String COLUMNNAME_MRP_ToDelete = "MRP_ToDelete";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set OrderType.
@@ -1402,7 +1274,7 @@ public interface I_PP_Order
 	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
 
 	/**
-	 * Set BOM & Formula Version.
+	 * Set BOM & Formula.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -1412,7 +1284,7 @@ public interface I_PP_Order
 	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
-	 * Get BOM & Formula Version.
+	 * Get BOM & Formula.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -1430,7 +1302,6 @@ public interface I_PP_Order
 
 	/**
 	 * Set Product Planning.
-	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1440,7 +1311,6 @@ public interface I_PP_Order
 
 	/**
 	 * Get Product Planning.
-	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1456,7 +1326,7 @@ public interface I_PP_Order
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
-	 * Set Date ready.
+	 * Set Bereitstellungsdatum.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1465,7 +1335,7 @@ public interface I_PP_Order
 	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
 
 	/**
-	 * Get Date ready.
+	 * Get Bereitstellungsdatum.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1626,7 +1496,8 @@ public interface I_PP_Order
 	String COLUMNNAME_QtyBeforeClose = "QtyBeforeClose";
 
 	/**
-	 * Set Shipped Qty.
+	 * Set Gelieferte Menge.
+	 * Delivered Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1635,7 +1506,8 @@ public interface I_PP_Order
 	void setQtyDelivered (BigDecimal QtyDelivered);
 
 	/**
-	 * Get Shipped Qty.
+	 * Get Gelieferte Menge.
+	 * Delivered Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1799,33 +1671,6 @@ public interface I_PP_Order
 	String COLUMNNAME_RepairServicePerformed_Product_ID = "RepairServicePerformed_Product_ID";
 
 	/**
-	 * Set Resource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Resource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_PP_Order, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
 	 * Set Planungs-Art.
 	 * Type of schedule
 	 *
@@ -1849,31 +1694,6 @@ public interface I_PP_Order
 	String COLUMNNAME_ScheduleType = "ScheduleType";
 
 	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo (int SeqNo);
-
-	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getSeqNo();
-
-	ModelColumn<I_PP_Order, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Order.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
-
-	/**
 	 * Set Serien-Nr..
 	 * Product Serial Number
 	 *
@@ -1895,6 +1715,33 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_SerNo = new ModelColumn<>(I_PP_Order.class, "SerNo", null);
 	String COLUMNNAME_SerNo = "SerNo";
+
+	/**
+	 * Set Ressource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Ressource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_PP_Order, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Get Updated.

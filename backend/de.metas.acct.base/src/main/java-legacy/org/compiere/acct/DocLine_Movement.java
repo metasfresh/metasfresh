@@ -1,5 +1,9 @@
 package org.compiere.acct;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_MovementLine;
+
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailReverseRequest;
@@ -12,9 +16,6 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_MovementLine;
 
 /*
  * #%L
@@ -49,12 +50,18 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		setReversalLine_ID(movementLine.getReversalLine_ID());
 	}
 
-	private OrgId getFromOrgId()
+	public final int getM_AttributeSetInstanceTo_ID()
+	{
+		final I_M_MovementLine movementLine = getModel(I_M_MovementLine.class);
+		return movementLine.getM_AttributeSetInstanceTo_ID();
+	}
+
+	private final OrgId getFromOrgId()
 	{
 		return Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(getM_Locator_ID());
 	}
 
-	private OrgId getToOrgId()
+	private final OrgId getToOrgId()
 	{
 		return Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(getM_LocatorTo_ID());
 	}
@@ -69,8 +76,8 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 	@Builder
 	private static class MovementLineCostAmounts
 	{
-		AggregatedCostAmount outboundCosts;
-		AggregatedCostAmount inboundCosts;
+		final AggregatedCostAmount outboundCosts;
+		final AggregatedCostAmount inboundCosts;
 	}
 
 	public final MoveCostsResult getCreateCosts(@NonNull final AcctSchema as)
@@ -81,14 +88,14 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
+					.date(getDateAcct())
 					.build());
 
 			final AggregatedCostAmount inboundCosts = services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
+					.date(getDateAcct())
 					.build());
 
 			return MoveCostsResult.builder()
@@ -101,7 +108,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 			return services.moveCosts(MoveCostsRequest.builder()
 					.acctSchemaId(as.getId())
 					.clientId(getClientId())
-					.date(getDateAcctAsInstant())
+					.date(getDateAcct())
 					// .costElement(null) // all cost elements
 					.productId(getProductId())
 					.attributeSetInstanceId(getAttributeSetInstanceId())

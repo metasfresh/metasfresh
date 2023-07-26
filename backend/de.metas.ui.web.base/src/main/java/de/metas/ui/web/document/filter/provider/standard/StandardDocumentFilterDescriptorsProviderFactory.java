@@ -14,17 +14,17 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
-import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -78,13 +78,15 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 	}
 
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context,
-																   @NonNull final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(
+			@Nullable final AdTabId adTabId_NOTUSED,
+			@Nullable final String tableName_NOTUSED,
+			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
-		return createFiltersProvider(fields, context.isAutodetectDefaultDateFilter());
+		return createFiltersProvider(fields);
 	}
 
-	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields, final boolean isAutodetectDefaultDateFilter)
+	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
 		final List<DocumentFieldDescriptor> fieldsForDefaultFiltering = fields.stream()
 				.filter(DocumentFieldDescriptor::hasFileringInfo)
@@ -105,9 +107,9 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		final ArrayList<DocumentFilterDescriptor> inlineFilters = new ArrayList<>();
 		for (final DocumentFieldDescriptor field : fieldsForDefaultFiltering)
 		{
-			final DocumentFilterParamDescriptor.Builder filterParam = prepareFilterParam(field);
+			final DocumentFilterParamDescriptor.Builder filterParam = createFilterParam(field);
 
-			if (isAutodetectDefaultDateFilter && defaultDateFilter == null && filterParam.getWidgetType().isDateOrTime())
+			if (defaultDateFilter == null && filterParam.getWidgetType().isDateOrTime())
 			{
 				defaultDateFilter = DocumentFilterDescriptor.builder()
 						.setFilterId(FILTER_ID_DefaultDate)
@@ -167,7 +169,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		return ImmutableDocumentFilterDescriptorsProvider.of(descriptors);
 	}
 
-	private static DocumentFilterParamDescriptor.Builder prepareFilterParam(final DocumentFieldDescriptor field)
+	private static DocumentFilterParamDescriptor.Builder createFilterParam(final DocumentFieldDescriptor field)
 	{
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
@@ -206,14 +208,14 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		}
 
 		return DocumentFilterParamDescriptor.builder()
-				.displayName(displayName)
-				.fieldName(fieldName)
-				.widgetType(widgetTypeEffective)
-				.operator(operator)
-				.lookupDescriptor(lookupDescriptor)
-				.mandatory(false)
-				.showIncrementDecrementButtons(filteringInfo.isShowFilterIncrementButtons())
-				.autoFilterInitialValue(filteringInfo.getAutoFilterInitialValue());
+				.setDisplayName(displayName)
+				.setFieldName(fieldName)
+				.setWidgetType(widgetTypeEffective)
+				.setOperator(operator)
+				.setLookupDescriptor(lookupDescriptor)
+				.setMandatory(false)
+				.setShowIncrementDecrementButtons(filteringInfo.isShowFilterIncrementButtons())
+				.setAutoFilterInitialValue(filteringInfo.getAutoFilterInitialValue());
 	}
 
 	private static DocumentFieldWidgetType extractFilterWidgetType(final DocumentFieldDescriptor field)
@@ -252,20 +254,18 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 				.setDisplayName(field.getCaption())
 				.setFacetFilter(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.fieldName(facetsLookupDescriptor.getFieldName())
-						.operator(Operator.IN_ARRAY)
-						.displayName(field.getCaption())
-						.mandatory(true)
-						.widgetType(DocumentFieldWidgetType.MultiValuesList)
-						.lookupDescriptor(facetsLookupDescriptor))
+						.setFieldName(facetsLookupDescriptor.getFieldName())
+						.setOperator(Operator.IN_ARRAY)
+						.setDisplayName(field.getCaption())
+						.setMandatory(true)
+						.setWidgetType(DocumentFieldWidgetType.MultiValuesList)
+						.setLookupDescriptor(facetsLookupDescriptor))
 				.build();
 	}
 
 	private FacetsFilterLookupDescriptor createFacetsFilterLookupDescriptor(final DocumentFieldDescriptor field)
 	{
-		final String columnName = field.getDataBinding()
-				.orElseThrow(() -> new AdempiereException("No data binding defined for " + field))
-				.getColumnName();
+		final String columnName = field.getDataBinding().get().getColumnName();
 		final String filterId = FACET_FILTER_ID_PREFIX + columnName;
 
 		final DocumentFieldDefaultFilterDescriptor fieldFilteringInfo = field.getDefaultFilterInfo();
@@ -273,7 +273,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		final LookupDescriptor fieldLookupDescriptor = field.getLookupDescriptorForFiltering().orElse(null);
 
 		final boolean numericKey;
-		if (fieldWidgetType.isLookup() && fieldLookupDescriptor != null)
+		if (fieldWidgetType.isLookup())
 		{
 			numericKey = fieldLookupDescriptor.isNumericKey();
 		}

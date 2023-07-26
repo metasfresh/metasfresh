@@ -22,29 +22,32 @@
 
 package de.metas.common.bpartner.v1.request;
 
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.*;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.common.rest_api.v1.SyncAdvise;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.CREATE_OR_MERGE_SYNC_ADVISE_DOC;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 @Value
-@Schema
+@ApiModel
 public class JsonRequestContactUpsert
 {
-	@Schema
+	@ApiModelProperty(position = 10)
 	List<JsonRequestContactUpsertItem> requestItems;
 
-	@Schema(description = "Sync-advise for individual items.\n" + CREATE_OR_MERGE_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 20, value = "Sync-advise for individual items.\n" + CREATE_OR_MERGE_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@JsonCreator

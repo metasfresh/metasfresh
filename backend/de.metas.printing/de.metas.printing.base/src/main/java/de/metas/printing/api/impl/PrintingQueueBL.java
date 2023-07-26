@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package de.metas.printing.api.impl;
 
 /*
@@ -25,10 +28,12 @@ package de.metas.printing.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.async.Async_Constants;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.IDocOutboundProducerService;
+import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
@@ -63,14 +68,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -83,28 +86,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class PrintingQueueBL implements IPrintingQueueBL
 {
-	private final static Logger logger = LogManager.getLogger(PrintingQueueBL.class);
+	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
 
 	/**
 	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
-	@Override
-	public void updateArchiveFlagsFromConfig(final I_AD_Archive archive)
-	{
-		// Check if the archive references a docOutBoundConfig, and if yes, use its settings. (task 09417)
-		final I_C_Doc_Outbound_Config config = getDocOutboundConfigOrNull(archive);
-		if (config != null)
-		{
-			archive.setIsDirectEnqueue(config.isDirectEnqueue());
-			archive.setIsDirectProcessQueueItem(config.isDirectProcessQueueItem());
-		}
-	}
-
-	@Nullable
 	@Override
 	public I_C_Printing_Queue enqueue(final org.compiere.model.I_AD_Archive archiveRecord)
 	{
@@ -134,7 +124,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 			item.setCopies(1); // can be changed by printingQueueHandlers and a value stored in "COPIES_PER_ARCHIVE"
 
-			printingQueueHandler.afterEnqueueBeforeSave(item, InterfaceWrapperHelper.create(archiveRecord, de.metas.document.archive.model.I_AD_Archive.class));
+			printingQueueHandler.afterEnqueueBeforeSave(item, InterfaceWrapperHelper.create(archiveRecord, I_AD_Archive.class));
 			// If queue item was deactivated by listeners, there is no point to save it or go forward
 			if (!item.isActive())
 			{
@@ -143,7 +133,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 			InterfaceWrapperHelper.save(item);
 
-			printingQueueHandler.afterEnqueueAfterSave(item, InterfaceWrapperHelper.create(archiveRecord, de.metas.document.archive.model.I_AD_Archive.class));
+			printingQueueHandler.afterEnqueueAfterSave(item, InterfaceWrapperHelper.create(archiveRecord, I_AD_Archive.class));
 
 			// https://github.com/metasfresh/metasfresh/issues/1240
 			// see if a copies-per-archiveRecord value was specified. If yes, then use it as a multiplier.
@@ -172,7 +162,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public void printArchive(@NonNull final PrintArchiveParameters printArchiveParameters)
+	public void printArchive(final PrintArchiveParameters printArchiveParameters)
 	{
 		final PrintOutputFacade printOutputFacade = printArchiveParameters.getPrintOutputFacade();
 		final de.metas.printing.model.I_AD_Archive archive = printArchiveParameters.getArchive();
@@ -219,7 +209,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	 * Directly create the print job. That means it will be printed now.
 	 */
 	private void forwardToJob(@NonNull final I_C_Printing_Queue printingQueue,
-							  @NonNull final PrintOutputFacade printOutputFacade)
+			@NonNull final PrintOutputFacade printOutputFacade)
 	{
 		final UserId adUserPrintJobId = UserId.ofRepoId(CoalesceUtil.firstGreaterThanZero(printingQueue.getAD_User_ID(), printingQueue.getCreatedBy()));
 		final IPrintingQueueSource source = new SingletonPrintingQueueSource(printingQueue, adUserPrintJobId);
@@ -247,32 +237,20 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			}
 
 			// task 09417: also check if the archive references a docOutBoundConfig, and if yes, use its settings.
-			final I_C_Doc_Outbound_Config config = getDocOutboundConfigOrNull(archive);
-			if (config != null)
+			if (archive.getC_Doc_Outbound_Config_ID() > 0)
 			{
+				final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
+																					 I_C_Doc_Outbound_Config.class);
 				if (config.isDirectEnqueue() || config.isDirectProcessQueueItem())
 				{
 					logger.debug("IsCreatePrintingQueueItem - AD_Archive has C_Doc_Outbound_Config_ID={} "
-									+ "which has IsDirectEnqueue={} and DirectProcessQueueItem={}; -> return true",
-							config, config.isDirectEnqueue(), config.isDirectProcessQueueItem());
+										 + "which has IsDirectEnqueue={} and DirectProcessQueueItem={}; -> return true",
+								 archive.getC_Doc_Outbound_Config_ID(), config.isDirectEnqueue(), config.isDirectProcessQueueItem());
 					return true;
 				}
 			}
 			return false;
 		}
-	}
-
-	private I_C_Doc_Outbound_Config getDocOutboundConfigOrNull(@NonNull final I_AD_Archive archive)
-	{
-		final int docOutboundConfigId = archive.getC_Doc_Outbound_Config_ID();
-		if (docOutboundConfigId <= 0)
-		{
-			return null;
-		}
-
-		return InterfaceWrapperHelper.create(
-				docOutboundDAO.getConfigById(docOutboundConfigId),
-				I_C_Doc_Outbound_Config.class);
 	}
 
 	private boolean isGenericArchive(final de.metas.printing.model.I_AD_Archive archive)
@@ -296,9 +274,10 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			return true;
 		}
 
-		final I_C_Doc_Outbound_Config config = getDocOutboundConfigOrNull(archive);
-		if (config != null)
+		if (archive.getC_Doc_Outbound_Config_ID() > 0)
 		{
+			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
+																				 I_C_Doc_Outbound_Config.class);
 			if (config.isDirectProcessQueueItem())
 			{
 				logger.debug("IsProcessQueueItem - AD_Archive has C_Doc_Outbound_Config_ID={} which has IsDirectProcessQueueItem=true; -> return true", archive.getC_Doc_Outbound_Config_ID());
@@ -379,7 +358,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(@NonNull final I_C_Printing_Queue printingQueueRecord)
+	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(final I_C_Printing_Queue printingQueueRecord)
 	{
 		final UserId printJobADUserId = getPrintToUser(printingQueueRecord);
 		return createPrintingQueueProcessingInfo(printingQueueRecord, printJobADUserId);
@@ -392,7 +371,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		final I_C_Printing_Queue firstItem = printingDAO
 				.createQuery(ctx, query, ITrx.TRXNAME_ThreadInherited)
-				.firstNotNull(I_C_Printing_Queue.class);
+				.first();
 
 		final UserId printJobAD_User_ID = getPrintJobAD_User_ID(ctx, query);
 
@@ -502,7 +481,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 	@Override
 	public void setPrintoutForOtherUsers(@NonNull final I_C_Printing_Queue item,
-										 final Set<Integer> userToPrintIds)
+			final Set<Integer> userToPrintIds)
 	{
 		//
 		// Make sure the item is not null and it was not already printed (i.e. processed)
@@ -566,12 +545,5 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	private UserId getPrintToUser(@NonNull final I_C_Printing_Queue printingQueueRecord)
 	{
 		return UserId.ofRepoId(printingQueueRecord.getCreatedBy());
-	}
-
-	@Override
-	public void setProcessedAndSave(@NonNull final I_C_Printing_Queue item)
-	{
-		item.setProcessed(true);
-		InterfaceWrapperHelper.save(item);
 	}
 }

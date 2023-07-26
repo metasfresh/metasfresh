@@ -22,8 +22,10 @@ package de.metas.async.exceptions;
  * #L%
  */
 
-import de.metas.async.model.I_C_Queue_Element;
+
 import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.async.model.I_C_Queue_Element;
 
 /**
  * Exception thrown when system tries to load the underlying object from an {@link I_C_Queue_Element} but the record is currently(temporary) not available for various reasons (e.g. underlying element
@@ -34,6 +36,9 @@ import org.adempiere.exceptions.AdempiereException;
  */
 public class PackageItemNotAvailableException extends AdempiereException
 {
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 4271514302298190437L;
 
 	private final String tableName;

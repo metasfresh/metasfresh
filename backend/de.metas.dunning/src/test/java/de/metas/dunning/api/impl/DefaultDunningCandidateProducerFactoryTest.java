@@ -22,19 +22,21 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningCandidateProducer;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.util.Check;
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.util.Date;
 
 public class DefaultDunningCandidateProducerFactoryTest
 {
@@ -169,12 +171,6 @@ public class DefaultDunningCandidateProducerFactoryTest
 		}
 
 		@Override
-		public int getTableId()
-		{
-			return 0;
-		}
-
-		@Override
 		public int getRecordId()
 		{
 			return 0;
@@ -192,11 +188,6 @@ public class DefaultDunningCandidateProducerFactoryTest
 			return null;
 		}
 
-		@Override
-		public int getM_SectionCode_ID()
-		{
-			return 0;
-		}
 	}
 
 	private DefaultDunningCandidateProducerFactory factory;

@@ -4,7 +4,6 @@ import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Properties;
 
-import de.metas.organization.OrgId;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -53,14 +52,11 @@ public final class ViewEvaluationCtx
 				.adLanguage(Env.getAD_Language(ctx))
 				.timeZone(UserSession.getTimeZoneOrSystemDefault())
 				.permissionsKey(UserRolePermissionsKey.fromContext(ctx))
-				.orgId(Env.getOrgId(ctx))
 				.build();
 	}
 
 	@Getter
 	private final Optional<UserId> loggedUserId;
-	@Getter
-	private final OrgId orgId;
 	@Getter
 	private final String adLanguage;
 	@Getter
@@ -74,13 +70,11 @@ public final class ViewEvaluationCtx
 	@Builder(builderMethodName = "_builder")
 	private ViewEvaluationCtx(
 			@NonNull final Optional<UserId> loggedUserId,
-			@NonNull final OrgId orgId,
 			@NonNull final String adLanguage,
 			@NonNull final ZoneId timeZone,
 			@NonNull final UserRolePermissionsKey permissionsKey)
 	{
 		this.loggedUserId = loggedUserId;
-		this.orgId = orgId;
 		this.adLanguage = adLanguage;
 		this.timeZone = timeZone;
 		this.permissionsKey = permissionsKey;
@@ -100,7 +94,6 @@ public final class ViewEvaluationCtx
 	{
 		return Evaluatees.mapBuilder()
 				.put(Env.CTXNAME_AD_User_ID, loggedUserId.map(UserId::getRepoId).orElse(-1))
-				.put(Env.CTXNAME_AD_Org_ID, OrgId.toRepoIdOrAny(orgId))
 				.put(Env.CTXNAME_AD_Language, adLanguage)
 				.put(AccessSqlStringExpression.PARAM_UserRolePermissionsKey.getName(), permissionsKey.toPermissionsKeyString())
 				.build();

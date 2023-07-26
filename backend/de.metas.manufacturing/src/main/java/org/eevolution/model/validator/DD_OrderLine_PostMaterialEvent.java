@@ -29,20 +29,18 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
-import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMaterialEvent.createAndInitPPOrderPojoBuilder;
-import static de.metas.distribution.ddorder.lowlevel.interceptor.DD_Order_PostMaterialEvent.createDDOrderLinePojo;
+import static org.eevolution.model.validator.DD_Order_PostMaterialEvent.createAndInitPPOrderPojoBuilder;
+import static org.eevolution.model.validator.DD_Order_PostMaterialEvent.createDDOrderLinePojo;
 
 @Interceptor(I_DD_OrderLine.class)
 @Component
@@ -50,7 +48,6 @@ public class DD_OrderLine_PostMaterialEvent
 {
 	private final ReplenishInfoRepository replenishInfoRepository;
 	private final PostMaterialEventService postMaterialEventService;
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	public DD_OrderLine_PostMaterialEvent(
 			@NonNull final ReplenishInfoRepository replenishInfoRepository,
@@ -84,16 +81,13 @@ public class DD_OrderLine_PostMaterialEvent
 
 		ddOrderBuilder.lines(ImmutableList.of(createDDOrderLinePojo(replenishInfoRepository, oldDDOrderLine, ddOrder, durationDays)));
 
-		final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(oldDDOrderLine.getM_Locator_ID());
-		final WarehouseId warehouseToId = warehouseDAO.getWarehouseIdByLocatorRepoId(oldDDOrderLine.getM_LocatorTo_ID());
-		
 		final DDOrderDeletedEvent event = DDOrderDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 				.ddOrder(ddOrderBuilder.build())
-				.fromWarehouseId(warehouseId)
-				.toWarehouseId(warehouseToId)
+				.fromWarehouseId(WarehouseId.ofRepoId(oldDDOrderLine.getM_Locator().getM_Warehouse_ID()))
+				.toWarehouseId(WarehouseId.ofRepoId(oldDDOrderLine.getM_LocatorTo().getM_Warehouse_ID()))
 				.build();
 
-		postMaterialEventService.enqueueEventNow(event);
+		postMaterialEventService.postEventAsync(event);
 	}
 }

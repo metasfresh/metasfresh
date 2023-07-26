@@ -2,10 +2,8 @@ package de.metas.invoicecandidate.api.impl;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
@@ -35,21 +33,12 @@ import java.util.Properties;
 @Value
 public class InvoiceCandUpdateSchedulerRequest implements IInvoiceCandUpdateSchedulerRequest
 {
-	public static InvoiceCandUpdateSchedulerRequest of(
+	public static InvoiceCandUpdateSchedulerRequest of (
 			@NonNull final Properties ctx,
 			@Nullable final String trxName,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		return new InvoiceCandUpdateSchedulerRequest(ctx, trxName, asyncBatchId);
-	}
-
-	public static InvoiceCandUpdateSchedulerRequest of(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCandidate);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceCandidate);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(invoiceCandidate.getC_Async_Batch_ID());
-
-		return InvoiceCandUpdateSchedulerRequest.of(ctx, trxName, asyncBatchId);
 	}
 
 	String trxName;

@@ -1,20 +1,14 @@
 package de.metas.contracts.interceptor;
 
-import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
-import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermQuery;
-import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermDAO;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -33,8 +27,6 @@ public class C_OrderLine
 {
 	private static final ModelDynAttributeAccessor<I_C_OrderLine, Boolean> DYNATTR_SkipUpdatingGroupFlatrateConditions = new ModelDynAttributeAccessor<>("SkipUpdatingGroupFlatrateConditions", Boolean.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IInterimInvoiceFlatrateTermDAO interimInvoiceFlatrateTermDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
 	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 
@@ -63,7 +55,7 @@ public class C_OrderLine
 
 		orderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
 
-		final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
+		int excludeOrderLineId = orderLine.getC_OrderLine_ID();
 		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
 	}
 
@@ -139,7 +131,12 @@ public class C_OrderLine
 	})
 	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
 	{
-		if (subscriptionBL.isSubscription(orderLine))
+		if (orderLine.getC_Flatrate_Conditions_ID() <= 0)
+		{
+			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
+			orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+		}
+		else
 		{
 			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
@@ -151,38 +148,5 @@ public class C_OrderLine
 
 			subscriptionBL.updateQtysAndPrices(orderLine, soTrx, true);
 		}
-		else
-		{
-			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
-			orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = de.metas.interfaces.I_C_OrderLine.COLUMNNAME_QtyEntered)
-	public void setQtyOrderedInInterimInvoice(final I_C_OrderLine orderLine)
-	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		if (soTrx.isSales())
-		{
-			return;
-		}
-
-		final Quantity qtyOrdered = orderLineBL.getQtyOrdered(orderLine);
-		interimInvoiceFlatrateTermDAO.retrieveBy(InterimInvoiceFlatrateTermQuery.builder()
-						.orderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
-						.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-						.build())
-				.filter(iift -> iift.getQtyDelivered() == null || iift.getQtyDelivered().isZero())
-				.map(iift -> updateIIFTQtyOrdered(iift, qtyOrdered))
-				.forEach(interimInvoiceFlatrateTermDAO::save);
-	}
-
-	private InterimInvoiceFlatrateTerm updateIIFTQtyOrdered(final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm, final Quantity qtyOrdered)
-	{
-		final Quantity newOrderedQuantity = uomConversionBL.convertQuantityTo(qtyOrdered, interimInvoiceFlatrateTerm.getProductId(), interimInvoiceFlatrateTerm.getUomId());
-		return interimInvoiceFlatrateTerm.toBuilder()
-				.qtyOrdered(newOrderedQuantity)
-				.build();
 	}
 }

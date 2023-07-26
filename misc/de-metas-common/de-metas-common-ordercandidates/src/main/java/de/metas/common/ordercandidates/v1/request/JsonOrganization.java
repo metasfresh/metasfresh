@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v1.SyncAdvise;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
@@ -39,7 +39,7 @@ public class JsonOrganization
 	String name;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Schema(description = "Optional bpartner of this organization")
+	@ApiModelProperty(required = false, value = "Optional bpartner of this organization")
 	JsonRequestBPartnerLocationAndContact bpartner;
 
 	SyncAdvise syncAdvise;

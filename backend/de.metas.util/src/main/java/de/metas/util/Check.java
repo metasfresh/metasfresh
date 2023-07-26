@@ -96,43 +96,6 @@ public final class Check
 
 	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
-		final String msgToUse = buildExceptionMessage(exClazz, msg);
-
-		try
-		{
-			final Constructor<? extends RuntimeException> c = exClazz.getConstructor(String.class);
-			return c.newInstance(msgToUse);
-		}
-		catch (final Exception e)
-		{
-			throw new RuntimeException("Failure throwing exception with class '" + exClazz + "' and message '" + msg + "'", e);
-		}
-	}
-
-	public static RuntimeException mkEx(final String msg, final Throwable cause)
-	{
-		return mkEx(defaultExClazz, msg, cause);
-	}
-
-	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg, final Throwable cause)
-	{
-		final String msgToUse = buildExceptionMessage(exClazz, msg);
-
-		try
-		{
-			final Constructor<? extends RuntimeException> c = exClazz.getConstructor(String.class, Throwable.class);
-			return c.newInstance(msgToUse, cause);
-		}
-		catch (final Exception e)
-		{
-			throw new RuntimeException("Failure throwing exception with class '" + exClazz + "' and message '" + msg + "'", e);
-		}
-	}
-
-
-	@NonNull
-	private static String buildExceptionMessage(final Class<? extends RuntimeException> exClazz, final String msg)
-	{
 		final boolean exceptionHasItsOwnHeaderMessage = ExceptionWithOwnHeaderMessage.class.isAssignableFrom(exClazz);
 
 		final StringBuilder msgToUse = new StringBuilder();
@@ -142,7 +105,16 @@ public final class Check
 			msgToUse.append("\n\n");
 		}
 		msgToUse.append(msg);
-		return msgToUse.toString();
+
+		try
+		{
+			final Constructor<? extends RuntimeException> c = exClazz.getConstructor(String.class);
+			return c.newInstance(msgToUse.toString());
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeException("Failure throwing exception with class '" + exClazz + "' and message '" + msg + "'", e);
+		}
 	}
 
 	public interface ExceptionWithOwnHeaderMessage

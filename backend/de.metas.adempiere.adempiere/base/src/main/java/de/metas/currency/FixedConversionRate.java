@@ -23,7 +23,6 @@
 package de.metas.currency;
 
 import de.metas.money.CurrencyId;
-import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,20 +30,15 @@ import lombok.Value;
 import java.math.BigDecimal;
 
 @Value
+@Builder
 public class FixedConversionRate
 {
-	@NonNull CurrencyId fromCurrencyId;
-	@NonNull CurrencyId toCurrencyId;
-	@NonNull BigDecimal multiplyRate;
+	@NonNull
+	CurrencyId fromCurrencyId;
 
-	@Builder
-	private FixedConversionRate(
-			@NonNull final CurrencyId fromCurrencyId,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final BigDecimal multiplyRate)
-	{
-		this.fromCurrencyId = fromCurrencyId;
-		this.toCurrencyId = toCurrencyId;
-		this.multiplyRate = NumberUtils.stripTrailingDecimalZeros(multiplyRate); // strip trailing zeros to make it work with equals
-	}
+	@NonNull
+	CurrencyId toCurrencyId;
+
+	@NonNull
+	BigDecimal multiplyRate;
 }

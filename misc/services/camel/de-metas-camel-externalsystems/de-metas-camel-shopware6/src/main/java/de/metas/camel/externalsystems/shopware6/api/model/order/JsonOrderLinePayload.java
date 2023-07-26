@@ -40,10 +40,6 @@ public class JsonOrderLinePayload
 	@JsonProperty("isBundle")
 	Boolean isBundle;
 
-	@Nullable
-	@JsonProperty("productNumber")
-	String productNumber;
-	
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
 	static class JsonOrderLinePayloadBuilder

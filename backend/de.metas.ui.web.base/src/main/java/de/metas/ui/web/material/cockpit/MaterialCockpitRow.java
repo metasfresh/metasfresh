@@ -12,9 +12,7 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
-import de.metas.resource.ResourceService;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -42,6 +40,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -101,13 +100,13 @@ public class MaterialCockpitRow implements IViewRow
 	@Getter
 	private final int productId;
 
-	public static final String FIELDNAME_QtyStockEstimateSeqNoAtDate = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateSeqNoAtDate, //
-			captionKey = FIELDNAME_QtyStockEstimateSeqNoAtDate, //
+	public static final String FIELDNAME_QtyStockEstimateSeqNo = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo;
+	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateSeqNo, //
+			captionKey = FIELDNAME_QtyStockEstimateSeqNo, //
 			widgetType = DocumentFieldWidgetType.Integer, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 5, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final Integer qtyStockEstimateSeqNoAtDate;
+	private final Integer qtyStockEstimateSeqNo;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_ProductValue, //
@@ -132,7 +131,7 @@ public class MaterialCockpitRow implements IViewRow
 	public static final String FIELDNAME_Manufacturer_ID = I_M_Product.COLUMNNAME_Manufacturer_ID;
 
 	/**
-	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.getLookupDisplayInfo which goes directly to the DB.
+	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB.
 	 */
 	@ViewColumn(fieldName = FIELDNAME_Manufacturer_ID, //
 			captionKey = FIELDNAME_Manufacturer_ID, //
@@ -154,7 +153,7 @@ public class MaterialCockpitRow implements IViewRow
 	public static final String FIELDNAME_C_UOM_ID = I_M_Product.COLUMNNAME_C_UOM_ID;
 
 	/**
-	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.getLookupDisplayInfo which goes directly to the DB.
+	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB.
 	 */
 	@ViewColumn(fieldName = FIELDNAME_C_UOM_ID, //
 			captionKey = FIELDNAME_C_UOM_ID, //
@@ -166,172 +165,155 @@ public class MaterialCockpitRow implements IViewRow
 
 	// Zusage Lieferant
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_MD_Cockpit.COLUMNNAME_PMM_QtyPromised_OnDate_AtDate, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_PMM_QtyPromised_OnDate, //
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70, //
 							displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
-	private final BigDecimal pmmQtyPromisedAtDate;
+	private final BigDecimal pmmQtyPromised;
 
-	public static final String FIELDNAME_QtyDemand_SalesOrder_AtDate = I_MD_Cockpit.COLUMNNAME_QtyDemand_SalesOrder_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyDemand_SalesOrder_AtDate, //
-			captionKey = FIELDNAME_QtyDemand_SalesOrder_AtDate, //
-			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80,
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyDemandSalesOrderAtDate;
-
-	public static final String FIELDNAME_QtyDemand_SalesOrder = "QtyDemand_SalesOrder";
+	public static final String FIELDNAME_QtyDemand_SalesOrder = I_MD_Cockpit.COLUMNNAME_QtyDemand_SalesOrder;
 	@ViewColumn(fieldName = FIELDNAME_QtyDemand_SalesOrder, //
 			captionKey = FIELDNAME_QtyDemand_SalesOrder, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyDemandSalesOrder;
 
-	public static final String FIELDNAME_QtyDemand_DD_Order_AtDate = I_MD_Cockpit.COLUMNNAME_QtyDemand_DD_Order_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyDemand_DD_Order_AtDate, //
-			captionKey = FIELDNAME_QtyDemand_DD_Order_AtDate, //
+	public static final String FIELDNAME_QtyDemand_DD_Order = I_MD_Cockpit.COLUMNNAME_QtyDemand_DD_Order;
+	@ViewColumn(fieldName = FIELDNAME_QtyDemand_DD_Order, //
+			captionKey = FIELDNAME_QtyDemand_DD_Order, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90,
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal qtyDemandDDOrder;
+
+	public static final String FIELDNAME_QtyDemandSum = I_MD_Cockpit.COLUMNNAME_QtyDemandSum;
+	@ViewColumn(fieldName = FIELDNAME_QtyDemandSum, //
+			captionKey = FIELDNAME_QtyDemandSum, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyDemandDDOrderAtDate;
+	private final BigDecimal qtyDemandSum;
 
-	public static final String FIELDNAME_QtyDemandSum_AtDate = I_MD_Cockpit.COLUMNNAME_QtyDemandSum_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyDemandSum_AtDate, //
-			captionKey = FIELDNAME_QtyDemandSum_AtDate, //
+	public static final String FIELDNAME_QtySupplyPPOrder = I_MD_Cockpit.COLUMNNAME_QtySupply_PP_Order;
+	@ViewColumn(fieldName = FIELDNAME_QtySupplyPPOrder, //
+			captionKey = FIELDNAME_QtySupplyPPOrder, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyDemandSumAtDate;
+	private final BigDecimal qtySupplyPPOrder;
 
-	public static final String FIELDNAME_QtySupplyPPOrder_AtDate = I_MD_Cockpit.COLUMNNAME_QtySupply_PP_Order_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtySupplyPPOrder_AtDate, //
-			captionKey = FIELDNAME_QtySupplyPPOrder_AtDate, //
-			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 120,
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtySupplyPPOrderAtDate;
-
-	public static final String FIELDNAME_QtySupply_PurchaseOrder_AtDate = I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtySupply_PurchaseOrder_AtDate, //
-			captionKey = FIELDNAME_QtySupply_PurchaseOrder_AtDate, //
-			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 130,
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	@Getter // note that we use the getter for testing
-	private final BigDecimal qtySupplyPurchaseOrderAtDate;
-
-	public static final String FIELDNAME_QtySupply_PurchaseOrder = "QtySupply_PurchaseOrder";
+	public static final String FIELDNAME_QtySupply_PurchaseOrder = I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder;
 	@ViewColumn(fieldName = FIELDNAME_QtySupply_PurchaseOrder, //
 			captionKey = FIELDNAME_QtySupply_PurchaseOrder, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 140,
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 120) })
+	@Getter // note that we use the getter for testing
 	private final BigDecimal qtySupplyPurchaseOrder;
 
-	public static final String FIELDNAME_QtySupplyDDOrder_AtDate = I_MD_Cockpit.COLUMNNAME_QtySupply_DD_Order_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtySupplyDDOrder_AtDate, //
-			captionKey = FIELDNAME_QtySupplyDDOrder_AtDate, //
+	public static final String FIELDNAME_QtySupplyDDOrder = I_MD_Cockpit.COLUMNNAME_QtySupply_DD_Order;
+	@ViewColumn(fieldName = FIELDNAME_QtySupplyDDOrder, //
+			captionKey = FIELDNAME_QtySupplyDDOrder, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 130,
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal qtySupplyDDOrder;
+
+	public static final String FIELDNAME_QtySupplySum = I_MD_Cockpit.COLUMNNAME_QtySupplySum;
+	@ViewColumn(fieldName = FIELDNAME_QtySupplySum, //
+			captionKey = FIELDNAME_QtySupplySum, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 140,
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final BigDecimal qtySupplySum;
+
+	public static final String FIELDNAME_QtySupplyRequired = I_MD_Cockpit.COLUMNNAME_QtySupplyRequired;
+	@ViewColumn(fieldName = FIELDNAME_QtySupplyRequired, //
+			captionKey = FIELDNAME_QtySupplyRequired, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 150,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtySupplyDDOrderAtDate;
+	private final BigDecimal qtySupplyRequired;
 
-	public static final String FIELDNAME_QtySupplySum_AtDate = I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtySupplySum_AtDate, //
-			captionKey = FIELDNAME_QtySupplySum_AtDate, //
+	public static final String FIELDNAME_QtySupplyToSchedule = I_MD_Cockpit.COLUMNNAME_QtySupplyToSchedule;
+	@ViewColumn(fieldName = FIELDNAME_QtySupplyToSchedule, //
+			captionKey = FIELDNAME_QtySupplyToSchedule, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 160,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtySupplySumAtDate;
+	private final BigDecimal qtySupplyToSchedule;
 
-	public static final String FIELDNAME_QtySupplyRequired_AtDate = I_MD_Cockpit.COLUMNNAME_QtySupplyRequired_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtySupplyRequired_AtDate, //
-			captionKey = FIELDNAME_QtySupplyRequired_AtDate, //
+	public static final String FIELDNAME_QtyMaterialentnahme = I_MD_Cockpit.COLUMNNAME_QtyMaterialentnahme;
+	@ViewColumn(fieldName = FIELDNAME_QtyMaterialentnahme, //
+			captionKey = FIELDNAME_QtyMaterialentnahme, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 170,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 170, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtySupplyRequiredAtDate;
+	private final BigDecimal qtyMaterialentnahme;
 
-	public static final String FIELDNAME_QtySupplyToSchedule_AtDate = I_MD_Cockpit.COLUMNNAME_QtySupplyToSchedule_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtySupplyToSchedule_AtDate, //
-			captionKey = FIELDNAME_QtySupplyToSchedule_AtDate, //
+	// MRP MEnge
+	public static final String FIELDNAME_QtyDemand_PP_Order = I_MD_Cockpit.COLUMNNAME_QtyDemand_PP_Order;
+	@ViewColumn(fieldName = FIELDNAME_QtyDemand_PP_Order, //
+			captionKey = FIELDNAME_QtyDemand_PP_Order, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 180,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 180, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtySupplyToScheduleAtDate;
+	private final BigDecimal qtyDemandPPOrder;
 
-	public static final String FIELDNAME_QtyMaterialentnahme_AtDate = I_MD_Cockpit.COLUMNNAME_QtyMaterialentnahme_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyMaterialentnahme_AtDate, //
-			captionKey = FIELDNAME_QtyMaterialentnahme_AtDate, //
+	// Zaehlbestand
+	public static final String FIELDNAME_QtyStockCurrent = I_MD_Cockpit.COLUMNNAME_QtyStockCurrent;
+	@ViewColumn(fieldName = FIELDNAME_QtyStockCurrent, //
+			captionKey = FIELDNAME_QtyStockCurrent, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 190, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyMaterialentnahmeAtDate;
+	private final BigDecimal qtyStockCurrent;
 
-	// MRP MEnge
-	public static final String FIELDNAME_QtyDemand_PP_Order_AtDate = I_MD_Cockpit.COLUMNNAME_QtyDemand_PP_Order_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyDemand_PP_Order_AtDate, //
-			captionKey = FIELDNAME_QtyDemand_PP_Order_AtDate, //
-			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 200, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyDemandPPOrderAtDate;
-
-	// Zaehlbestand
-	public static final String FIELDNAME_QtyStockCurrent_AtDate = I_MD_Cockpit.COLUMNNAME_QtyStockCurrent_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyStockCurrent_AtDate, //
-			captionKey = FIELDNAME_QtyStockCurrent_AtDate, //
+	public static final String FIELDNAME_QtyStockEstimateCount = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateCount;
+	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateCount, //
+			captionKey = FIELDNAME_QtyStockEstimateCount, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 210, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyStockCurrentAtDate;
+	private final BigDecimal qtyStockEstimateCount;
 
-	public static final String FIELDNAME_QtyStockEstimateCount_AtDate = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateCount_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateCount_AtDate, //
-			captionKey = FIELDNAME_QtyStockEstimateCount_AtDate, //
-			widgetType = DocumentFieldWidgetType.Quantity, //
+	public static final String FIELDNAME_QtyStockEstimateTime = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateTime;
+	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateTime, //
+			captionKey = FIELDNAME_QtyStockEstimateTime, //
+			widgetType = DocumentFieldWidgetType.Timestamp, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 220, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyStockEstimateCountAtDate;
+	private final Instant qtyStockEstimateTime;
 
-	public static final String FIELDNAME_QtyStockEstimateTime_AtDate = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateTime_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateTime_AtDate, //
-			captionKey = FIELDNAME_QtyStockEstimateTime_AtDate, //
-			widgetType = DocumentFieldWidgetType.Timestamp, //
+	public static final String FIELDNAME_QtyInventoryCount = I_MD_Cockpit.COLUMNNAME_QtyInventoryCount;
+	@ViewColumn(fieldName = FIELDNAME_QtyInventoryCount, //
+			captionKey = FIELDNAME_QtyInventoryCount, //
+			widgetType = DocumentFieldWidgetType.Quantity, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 230, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final Instant qtyStockEstimateTimeAtDate;
+	private final BigDecimal qtyInventoryCount;
 
-	public static final String FIELDNAME_QtyInventoryCount_AtDate = I_MD_Cockpit.COLUMNNAME_QtyInventoryCount_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyInventoryCount_AtDate, //
-			captionKey = FIELDNAME_QtyInventoryCount_AtDate, //
-			widgetType = DocumentFieldWidgetType.Quantity, //
+	public static final String FIELDNAME_QtyInventoryTime = I_MD_Cockpit.COLUMNNAME_QtyInventoryTime;
+	@ViewColumn(fieldName = FIELDNAME_QtyInventoryTime, //
+			captionKey = FIELDNAME_QtyInventoryTime, //
+			widgetType = DocumentFieldWidgetType.Timestamp, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 240, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyInventoryCountAtDate;
-
-	public static final String FIELDNAME_QtyInventoryTime_AtDate = I_MD_Cockpit.COLUMNNAME_QtyInventoryTime_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyInventoryTime_AtDate, //
-			captionKey = FIELDNAME_QtyInventoryTime_AtDate, //
-			widgetType = DocumentFieldWidgetType.Timestamp, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 250, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final Instant qtyInventoryTimeAtDate;
+	private final Instant qtyInventoryTime;
 
 	// zusagbar Zaehlbestand
-	public static final String FIELDNAME_QtyExpectedSurplus_AtDate = I_MD_Cockpit.COLUMNNAME_QtyExpectedSurplus_AtDate;
-	@ViewColumn(fieldName = FIELDNAME_QtyExpectedSurplus_AtDate, //
-			captionKey = FIELDNAME_QtyExpectedSurplus_AtDate, //
+	public static final String FIELDNAME_QtyExpectedSurplus = I_MD_Cockpit.COLUMNNAME_QtyExpectedSurplus;
+	@ViewColumn(fieldName = FIELDNAME_QtyExpectedSurplus, //
+			captionKey = FIELDNAME_QtyExpectedSurplus, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 260, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 250, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final BigDecimal qtyExpectedSurplusAtDate;
+	private final BigDecimal qtyExpectedSurplus;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Stock.COLUMNNAME_QtyOnHand, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 270) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 260) })
 	@Getter // note that we use the getter for testing
 	private final BigDecimal qtyOnHandStock;
 
@@ -353,27 +335,25 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
-			final Quantity qtyDemandSalesOrderAtDate,
 			final Quantity qtyDemandSalesOrder,
-			final Quantity qtyDemandPPOrderAtDate,
-			final Quantity qtyDemandDDOrderAtDate,
-			final Quantity pmmQtyPromisedAtDate,
-			final Quantity qtyDemandSumAtDate,
-			final Quantity qtySupplyPPOrderAtDate,
-			final Quantity qtySupplyPurchaseOrderAtDate,
+			final Quantity qtyDemandPPOrder,
+			final Quantity qtyDemandDDOrder,
+			final Quantity pmmQtyPromised,
+			final Quantity qtyDemandSum,
+			final Quantity qtySupplyPPOrder,
 			final Quantity qtySupplyPurchaseOrder,
-			final Quantity qtySupplyDDOrderAtDate,
-			final Quantity qtySupplySumAtDate,
-			final Quantity qtySupplyRequiredAtDate,
-			final Quantity qtySupplyToScheduleAtDate,
-			final Quantity qtyMaterialentnahmeAtDate,
-			final Quantity qtyStockEstimateCountAtDate,
-			final Instant qtyStockEstimateTimeAtDate,
-			@Nullable final Integer qtyStockEstimateSeqNoAtDate,
-			final Quantity qtyInventoryCountAtDate,
-			final Instant qtyInventoryTimeAtDate,
-			final Quantity qtyExpectedSurplusAtDate,
-			final Quantity qtyStockCurrentAtDate,
+			final Quantity qtySupplyDDOrder,
+			final Quantity qtySupplySum,
+			final Quantity qtySupplyRequired,
+			final Quantity qtySupplyToSchedule,
+			final Quantity qtyMaterialentnahme,
+			final Quantity qtyStockEstimateCount,
+			final Instant qtyStockEstimateTime,
+			@Nullable final Integer qtyStockEstimateSeqNo,
+			final Quantity qtyInventoryCount,
+			final Instant qtyInventoryTime,
+			final Quantity qtyExpectedSurplus,
+			final Quantity qtyStockCurrent,
 			final Quantity qtyOnHandStock,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate date,
@@ -407,7 +387,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = productRecord.getName();
 		this.productCategoryOrSubRowName = productCategoryRecord.getName();
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
+		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
 		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 
@@ -422,46 +402,42 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.includedRows = includedRows;
 
-		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(pmmQtyPromisedAtDate);
-		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(qtyDemandSalesOrderAtDate);
+		this.pmmQtyPromised = Quantity.toBigDecimal(pmmQtyPromised);
 		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
-		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(qtyDemandDDOrderAtDate);
-		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(qtyDemandPPOrderAtDate);
-		this.qtyDemandSumAtDate = Quantity.toBigDecimal(qtyDemandSumAtDate);
-		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(qtySupplyPPOrderAtDate);
-		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(qtySupplyPurchaseOrderAtDate);
+		this.qtyDemandDDOrder = Quantity.toBigDecimal(qtyDemandDDOrder);
+		this.qtyDemandPPOrder = Quantity.toBigDecimal(qtyDemandPPOrder);
+		this.qtyDemandSum = Quantity.toBigDecimal(qtyDemandSum);
+		this.qtySupplyPPOrder = Quantity.toBigDecimal(qtySupplyPPOrder);
 		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
-		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(qtySupplyDDOrderAtDate);
-		this.qtySupplySumAtDate = Quantity.toBigDecimal(qtySupplySumAtDate);
-		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(qtySupplyRequiredAtDate);
-		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(qtySupplyToScheduleAtDate);
-		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(qtyMaterialentnahmeAtDate);
-		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(qtyStockCurrentAtDate);
-		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(qtyExpectedSurplusAtDate);
+		this.qtySupplyDDOrder = Quantity.toBigDecimal(qtySupplyDDOrder);
+		this.qtySupplySum = Quantity.toBigDecimal(qtySupplySum);
+		this.qtySupplyRequired = Quantity.toBigDecimal(qtySupplyRequired);
+		this.qtySupplyToSchedule = Quantity.toBigDecimal(qtySupplyToSchedule);
+		this.qtyMaterialentnahme = Quantity.toBigDecimal(qtyMaterialentnahme);
+		this.qtyStockCurrent = Quantity.toBigDecimal(qtyStockCurrent);
+		this.qtyExpectedSurplus = Quantity.toBigDecimal(qtyExpectedSurplus);
 		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
-		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
-		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
-		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
+		this.qtyStockEstimateCount = Quantity.toBigDecimal(qtyStockEstimateCount);
+		this.qtyStockEstimateTime = qtyStockEstimateTime;
+		this.qtyStockEstimateSeqNo = qtyStockEstimateSeqNo;
+		this.qtyInventoryCount = Quantity.toBigDecimal(qtyInventoryCount);
+		this.qtyInventoryTime = qtyInventoryTime;
 
 		final List<Quantity> quantitiesToVerify = Arrays.asList(
-				pmmQtyPromisedAtDate,
-				qtyDemandSalesOrderAtDate,
+				pmmQtyPromised,
 				qtyDemandSalesOrder,
-				qtySupplyPurchaseOrderAtDate,
 				qtySupplyPurchaseOrder,
-				qtySupplyPPOrderAtDate,
-				qtySupplyDDOrderAtDate,
-				qtySupplySumAtDate,
-				qtySupplyRequiredAtDate,
-				qtySupplyToScheduleAtDate,
-				qtyMaterialentnahmeAtDate,
-				qtyDemandPPOrderAtDate,
-				qtyDemandDDOrderAtDate,
-				qtyDemandSumAtDate,
-				qtyStockCurrentAtDate,
-				qtyExpectedSurplusAtDate,
+				qtySupplyPPOrder,
+				qtySupplyDDOrder,
+				qtySupplySum,
+				qtySupplyRequired,
+				qtySupplyToSchedule,
+				qtyMaterialentnahme,
+				qtyDemandPPOrder,
+				qtyDemandDDOrder,
+				qtyDemandSum,
+				qtyStockCurrent,
+				qtyExpectedSurplus,
 				qtyOnHandStock);
 		assertNullOrCommonUomId(quantitiesToVerify);
 
@@ -477,31 +453,39 @@ public class MaterialCockpitRow implements IViewRow
 		Check.errorIf(notOK, "Some of the given quantities have different UOMs; quantities={}", quantitiesToVerify);
 	}
 
+	private static LocalDate extractDate(@NonNull final List<MaterialCockpitRow> includedRows)
+	{
+		return CollectionUtils.extractSingleElement(includedRows, row -> row.date);
+	}
+
+	private static int extractProductId(@NonNull final List<MaterialCockpitRow> includedRows)
+	{
+		return CollectionUtils.extractSingleElement(includedRows, MaterialCockpitRow::getProductId);
+	}
+
 	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
 	private MaterialCockpitRow(
 			final int productId,
 			final LocalDate date,
 			@NonNull final DimensionSpecGroup dimensionGroup,
-			final Quantity pmmQtyPromisedAtDate,
-			final Quantity qtyDemandSalesOrderAtDate,
+			final Quantity pmmQtyPromised,
 			final Quantity qtyDemandSalesOrder,
-			final Quantity qtyDemandDDOrderAtDate,
-			final Quantity qtyDemandSumAtDate,
-			final Quantity qtySupplyPPOrderAtDate,
-			final Quantity qtySupplyPurchaseOrderAtDate,
+			final Quantity qtyDemandDDOrder,
+			final Quantity qtyDemandSum,
+			final Quantity qtySupplyPPOrder,
 			final Quantity qtySupplyPurchaseOrder,
-			final Quantity qtySupplyDDOrderAtDate,
-			final Quantity qtySupplySumAtDate,
-			final Quantity qtySupplyRequiredAtDate,
-			final Quantity qtySupplyToScheduleAtDate,
-			final Quantity qtyMaterialentnahmeAtDate,
-			final Quantity qtyDemandPPOrderAtDate,
-			final Quantity qtyStockEstimateCountAtDate,
-			final Instant qtyStockEstimateTimeAtDate,
-			@Nullable final Integer qtyStockEstimateSeqNoAtDate,
-			final Quantity qtyInventoryCountAtDate,
-			final Instant qtyInventoryTimeAtDate,
-			final Quantity qtyExpectedSurplusAtDate,
+			final Quantity qtySupplyDDOrder,
+			final Quantity qtySupplySum,
+			final Quantity qtySupplyRequired,
+			final Quantity qtySupplyToSchedule,
+			final Quantity qtyMaterialentnahme,
+			final Quantity qtyDemandPPOrder,
+			final Quantity qtyStockEstimateCount,
+			final Instant qtyStockEstimateTime,
+			@Nullable final Integer qtyStockEstimateSeqNo,
+			final Quantity qtyInventoryCount,
+			final Instant qtyInventoryTime,
+			final Quantity qtyExpectedSurplus,
 			final Quantity qtyOnHandStock,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
@@ -528,7 +512,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = productRecord.getName();
 		this.productCategoryOrSubRowName = dimensionGroupName;
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
+		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
 		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 		this.uom = () -> lookupFactory
@@ -545,30 +529,28 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.includedRows = ImmutableList.of();
 
-		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(pmmQtyPromisedAtDate);
-		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(qtyDemandSalesOrderAtDate);
+		this.pmmQtyPromised = Quantity.toBigDecimal(pmmQtyPromised);
 		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
-		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(qtyDemandDDOrderAtDate);
-		this.qtyDemandSumAtDate = Quantity.toBigDecimal(qtyDemandSumAtDate);
-		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(qtyDemandPPOrderAtDate);
-		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(qtyMaterialentnahmeAtDate);
+		this.qtyDemandDDOrder = Quantity.toBigDecimal(qtyDemandDDOrder);
+		this.qtyDemandSum = Quantity.toBigDecimal(qtyDemandSum);
+		this.qtyDemandPPOrder = Quantity.toBigDecimal(qtyDemandPPOrder);
+		this.qtyMaterialentnahme = Quantity.toBigDecimal(qtyMaterialentnahme);
 
-		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(qtySupplyPurchaseOrderAtDate);
 		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
-		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(qtySupplyPPOrderAtDate);
-		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(qtySupplyDDOrderAtDate);
-		this.qtySupplySumAtDate = Quantity.toBigDecimal(qtySupplySumAtDate);
-		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(qtySupplyRequiredAtDate);
-		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(qtySupplyToScheduleAtDate);
+		this.qtySupplyPPOrder = Quantity.toBigDecimal(qtySupplyPPOrder);
+		this.qtySupplyDDOrder = Quantity.toBigDecimal(qtySupplyDDOrder);
+		this.qtySupplySum = Quantity.toBigDecimal(qtySupplySum);
+		this.qtySupplyRequired = Quantity.toBigDecimal(qtySupplyRequired);
+		this.qtySupplyToSchedule = Quantity.toBigDecimal(qtySupplyToSchedule);
 
-		this.qtyStockCurrentAtDate = null;
+		this.qtyStockCurrent = null;
 		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
-		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(qtyExpectedSurplusAtDate);
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
-		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
-		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
-		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
+		this.qtyExpectedSurplus = Quantity.toBigDecimal(qtyExpectedSurplus);
+		this.qtyStockEstimateCount = Quantity.toBigDecimal(qtyStockEstimateCount);
+		this.qtyStockEstimateTime = qtyStockEstimateTime;
+		this.qtyStockEstimateSeqNo = qtyStockEstimateSeqNo;
+		this.qtyInventoryCount = Quantity.toBigDecimal(qtyInventoryCount);
+		this.qtyInventoryTime = qtyInventoryTime;
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
@@ -578,15 +560,13 @@ public class MaterialCockpitRow implements IViewRow
 	private MaterialCockpitRow(
 			final int productId,
 			final LocalDate date,
-			@Nullable final ResourceId plantId,
-			@Nullable final Quantity qtyDemandSalesOrder,
-			@Nullable final Quantity qtySupplyPurchaseOrder,
-			@Nullable final Quantity qtyStockEstimateCountAtDate,
-			@Nullable final Instant qtyStockEstimateTimeAtDate,
-			@Nullable final Integer qtyStockEstimateSeqNoAtDate,
-			@Nullable final Quantity qtyInventoryCountAtDate,
-			@Nullable final Instant qtyInventoryTimeAtDate,
-			@Nullable final Quantity qtyStockCurrentAtDate,
+			final int plantId,
+			@Nullable final Quantity qtyStockEstimateCount,
+			@Nullable final Instant qtyStockEstimateTime,
+			@Nullable final Integer qtyStockEstimateSeqNo,
+			@Nullable final Quantity qtyInventoryCount,
+			@Nullable final Instant qtyInventoryTime,
+			@Nullable final Quantity qtyStockCurrent,
 			@Nullable final Quantity qtyOnHandStock,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
@@ -596,9 +576,10 @@ public class MaterialCockpitRow implements IViewRow
 		this.dimensionGroupOrNull = null;
 
 		final String plantName;
-		if (plantId != null)
+		if (plantId > 0)
 		{
-			plantName = ResourceService.Legacy.getResourceName(plantId);
+			final I_S_Resource plant = loadOutOfTrx(plantId, I_S_Resource.class);
+			plantName = plant.getName();
 		}
 		else
 		{
@@ -622,7 +603,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = productRecord.getName();
 		this.productCategoryOrSubRowName = plantName;
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
+		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
 		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 		this.uom = () -> lookupFactory
@@ -638,28 +619,26 @@ public class MaterialCockpitRow implements IViewRow
 		this.date = date;
 		this.includedRows = ImmutableList.of();
 
-		this.pmmQtyPromisedAtDate = null;
-		this.qtyDemandSalesOrderAtDate = null;
-		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
-		this.qtyDemandDDOrderAtDate = null;
-		this.qtyDemandSumAtDate = null;
-		this.qtySupplyPPOrderAtDate = null;
-		this.qtySupplyPurchaseOrderAtDate = null;
-		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
-		this.qtyMaterialentnahmeAtDate = null;
-		this.qtyDemandPPOrderAtDate = null;
-		this.qtySupplyDDOrderAtDate = null;
-		this.qtySupplySumAtDate = null;
-		this.qtySupplyRequiredAtDate = null;
-		this.qtySupplyToScheduleAtDate = null;
-		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(qtyStockCurrentAtDate);
+		this.pmmQtyPromised = null;
+		this.qtyDemandSalesOrder = null;
+		this.qtyDemandDDOrder = null;
+		this.qtyDemandSum = null;
+		this.qtySupplyPPOrder = null;
+		this.qtySupplyPurchaseOrder = null;
+		this.qtyMaterialentnahme = null;
+		this.qtyDemandPPOrder = null;
+		this.qtySupplyDDOrder = null;
+		this.qtySupplySum = null;
+		this.qtySupplyRequired = null;
+		this.qtySupplyToSchedule = null;
+		this.qtyStockCurrent = Quantity.toBigDecimal(qtyStockCurrent);
 		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
-		this.qtyExpectedSurplusAtDate = null;
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
-		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
-		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
-		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
+		this.qtyExpectedSurplus = null;
+		this.qtyStockEstimateCount = Quantity.toBigDecimal(qtyStockEstimateCount);
+		this.qtyStockEstimateTime = qtyStockEstimateTime;
+		this.qtyStockEstimateSeqNo = qtyStockEstimateSeqNo;
+		this.qtyInventoryCount = Quantity.toBigDecimal(qtyInventoryCount);
+		this.qtyInventoryTime = qtyInventoryTime;
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);

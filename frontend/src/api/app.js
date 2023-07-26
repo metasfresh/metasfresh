@@ -38,7 +38,6 @@ export function queryPathsRequest(query, limit, child) {
     config.API_URL +
       '/menu/queryPaths?nameQuery=' +
       query +
-      '&silentError=true' +
       (limit ? '&childrenLimit=' + limit : '') +
       (child ? '&childrenInclusive=true' : '')
   );

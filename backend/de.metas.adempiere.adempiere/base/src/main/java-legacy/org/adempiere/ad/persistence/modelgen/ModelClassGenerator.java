@@ -159,7 +159,7 @@ public class ModelClassGenerator
 		for (final ColumnInfo columnInfo : columnInfos)
 		{
 			// Skip standard columns because for those we already have methods in org.compiere.model.PO
-			if (isSkipColumn(columnInfo))
+			if (COLUMNNAMES_STANDARD.contains(columnInfo.getColumnName()))
 			{
 				continue;
 			}
@@ -425,6 +425,7 @@ public class ModelClassGenerator
 			final int hash = s.hashCode();
 			s = s.replace(PLACEHOLDER_serialVersionUID, String.valueOf(hash));
 			sb = new StringBuilder(s);
+			System.out.println("" + fileName + ": hash=" + hash);
 		}
 
 		try
@@ -453,11 +454,14 @@ public class ModelClassGenerator
 			}
 			fw.flush();
 			fw.close();
-			log.info("Wrote {} ({} bytes)", out.getAbsolutePath(), out.length());
+			float size = out.length();
+			size /= 1024;
+			log.info(out.getAbsolutePath() + " - " + size + " kB");
 		}
 		catch (final Exception ex)
 		{
-			throw new RuntimeException("Failed saving " + fileName, ex);
+			log.error(fileName, ex);
+			throw new RuntimeException(ex);
 		}
 	}
 
@@ -531,11 +535,5 @@ public class ModelClassGenerator
 			sb.append("import ").append(name).append(";").append(NL);
 		}
 		sb.append(NL);
-	}
-
-	private static boolean isSkipColumn(@NonNull final ColumnInfo columnInfo)
-	{
-		return columnInfo.isRestAPICustomColumn()
-			|| COLUMNNAMES_STANDARD.contains(columnInfo.getColumnName());
 	}
 }

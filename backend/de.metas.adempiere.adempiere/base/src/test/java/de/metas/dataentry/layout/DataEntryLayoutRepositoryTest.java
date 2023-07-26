@@ -1,7 +1,20 @@
 package de.metas.dataentry.layout;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Table;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import de.metas.dataentry.model.I_DataEntry_Field;
 import de.metas.dataentry.model.I_DataEntry_Line;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
@@ -10,16 +23,6 @@ import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.X_DataEntry_Field;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_Table;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -43,17 +46,27 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-@ExtendWith(SnapshotExtension.class)
 public class DataEntryLayoutRepositoryTest
 {
-	private static DataEntryLayoutRepository dataEntryLayoutRepository;
-	private Expect expect;
+	private DataEntryLayoutRepository dataEntryLayoutRepository;
 
-	@BeforeAll
-	public static void init()
+	@Before
+	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		dataEntryLayoutRepository = new DataEntryLayoutRepository();
+	}
+
+	@BeforeClass
+	public static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterClass
+	public static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
@@ -65,7 +78,7 @@ public class DataEntryLayoutRepositoryTest
 		// invoke the method under test
 		final DataEntryLayout layout = dataEntryLayoutRepository.getByWindowId(windowId_1);
 
-		expect.serializer("orderedJson").toMatchSnapshot(layout.getTabs());
+		expect(layout.getTabs()).toMatchSnapshot();
 	}
 
 	private I_DataEntry_Tab createRecords()
@@ -78,7 +91,7 @@ public class DataEntryLayoutRepositoryTest
 
 		final I_AD_Tab tabRecord_1 = newInstance(I_AD_Tab.class);
 		tabRecord_1.setAD_Window_ID(windowId_1.getRepoId());
-		tabRecord_1.setAD_Table_ID(tableRecord_1.getAD_Table_ID());
+		tabRecord_1.setAD_Table(tableRecord_1);
 		saveRecord(tabRecord_1);
 
 		// tab

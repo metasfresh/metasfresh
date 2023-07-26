@@ -69,14 +69,6 @@ public class OLCandAggregation
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean isSplitByDiscriminatorColumn(@NonNull final String columnName)
-	{
-		return getSplitOrderDiscriminatorColumns()
-				.stream()
-				.map(OLCandAggregationColumn::getColumnName)
-				.anyMatch(name -> name.equals(columnName));
-	}
-
 	private Comparator<OLCand> createOrderingComparator()
 	{
 		return getOrderByColumns()

@@ -1,8 +1,5 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import au.com.origin.snapshots.Expect;
-
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -12,9 +9,8 @@ import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryTestHelper;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregator;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.MultipleHUInventoryLineAggregator;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.SingleHUInventoryLineAggregator;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.MultipleHUInventoryLineAggregator;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.SingleHUInventoryLineAggregator;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.material.event.commons.AttributesKey;
@@ -30,6 +26,8 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +40,9 @@ import static de.metas.handlingunits.inventory.InventoryTestHelper.AV1_ID;
 import static de.metas.handlingunits.inventory.InventoryTestHelper.AV2_ID;
 import static de.metas.handlingunits.inventory.InventoryTestHelper.AV3_ID;
 import static de.metas.handlingunits.inventory.InventoryTestHelper.createStorageFor;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -69,7 +70,6 @@ import static org.assertj.core.api.Assertions.*;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-@ExtendWith(SnapshotExtension.class)
 class DraftInventoryLinesCreatorTest
 {
 	private final ProductId PRODUCT_ID_40 = ProductId.ofRepoId(40);
@@ -86,7 +86,17 @@ class DraftInventoryLinesCreatorTest
 
 	private InventoryRepository inventoryRepo;
 
-	private Expect expect;
+	@BeforeAll
+	static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
+	}
 
 	@BeforeEach
 	public void beforeEach()
@@ -142,7 +152,7 @@ class DraftInventoryLinesCreatorTest
 		new DraftInventoryLinesCreator(ctx).execute();
 
 		final Inventory result = inventoryRepo.getById(inventoryId);
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	@Test
@@ -150,7 +160,7 @@ class DraftInventoryLinesCreatorTest
 	{
 		final Inventory result = execute_MultipleHUInventoryLineAggregator_performTest();
 
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	/** Verifies that the creator also works if an inventory already has some lines/HUs*/
@@ -178,7 +188,7 @@ class DraftInventoryLinesCreatorTest
 				HuId.ofRepoId(200),
 				HuId.ofRepoId(300),
 				HuId.ofRepoId(305)/*newly added*/);
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	private Inventory execute_MultipleHUInventoryLineAggregator_performTest()

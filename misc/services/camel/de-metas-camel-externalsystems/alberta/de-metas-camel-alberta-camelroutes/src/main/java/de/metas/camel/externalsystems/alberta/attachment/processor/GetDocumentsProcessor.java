@@ -22,9 +22,9 @@
 
 package de.metas.camel.externalsystems.alberta.attachment.processor;
 
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DocumentApi;
 import io.swagger.client.model.Document;

@@ -22,7 +22,16 @@ package de.metas.handlingunits.pporder.api.impl;
  * #L%
  */
 
+import java.util.Collection;
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUStatusBL;
@@ -34,13 +43,6 @@ import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.ReceiptCostCollectorCandidate;
-
-import java.util.Collection;
-import java.util.List;
 
 public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 {
@@ -56,7 +58,7 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 		//
 		// Create & process the receipt cost collector
 		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(ppCostCollectorBL.createReceipt(candidate), I_PP_Cost_Collector.class);
-		
+
 		// Assign the HU to cost collector
 		assignHUs(cc, ImmutableList.of(hu));
 
@@ -87,7 +89,8 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 	public List<I_M_HU> getTopLevelHUs(final org.eevolution.model.I_PP_Cost_Collector cc)
 	{
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		return huAssignmentDAO.retrieveTopLevelHUsForModel(cc);
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(cc);
+		return hus;
 	}
 
 	@Override

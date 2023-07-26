@@ -1,2 +1,0 @@
-mail: example@mail.com # Email address used for ACME-letsencrypt registration
-server: https://acme-v02.api.letsencrypt.org/directory

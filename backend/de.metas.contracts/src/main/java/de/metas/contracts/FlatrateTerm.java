@@ -23,7 +23,6 @@
 package de.metas.contracts;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
@@ -46,8 +45,10 @@ public class FlatrateTerm
 
 	@NonNull OrgId orgId;
 
-	@NonNull BPartnerLocationAndCaptureId  billPartnerLocationAndCaptureId;
-	@NonNull BPartnerLocationAndCaptureId  dropshipPartnerLocationAndCaptureId;
+	@NonNull BPartnerId billPartnerID;
+
+	@NonNull
+	private BPartnerLocationId billLocationId;
 
 	@Nullable
 	private BPartnerId shipToBPartnerId;

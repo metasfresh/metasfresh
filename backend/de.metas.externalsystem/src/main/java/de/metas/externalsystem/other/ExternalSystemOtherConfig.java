@@ -23,22 +23,17 @@
 package de.metas.externalsystem.other;
 
 import de.metas.externalsystem.IExternalSystemChildConfig;
-import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
-import java.util.Optional;
 
 @Value
 public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 {
-	public static final String OTHER_EXTERNAL_SYSTEM_CHILD_VALUE = "OtherChildSysValue";
-
 	ExternalSystemOtherConfigId id;
-	ExternalSystemOtherValue value;
 	List<ExternalSystemOtherConfigParameter> parameters;
 
 	@Builder
@@ -48,7 +43,6 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 	{
 		this.id = id;
 		this.parameters = parameters;
-		this.value = ExternalSystemOtherValue.of(id.getExternalSystemParentConfigId());
 	}
 
 	@NonNull
@@ -60,42 +54,6 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 	@Override
 	public String getValue()
 	{
-		return value.getStringValue();
-	}
-
-	public boolean isSyncBudgetProjectsEnabled()
-	{
-		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_BUDGET_PROJECT.getDbName());
-	}
-
-	public boolean isSyncWOProjectsEnabled()
-	{
-		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_WO_PROJECT.getDbName());
-	}
-
-	public boolean isSyncBPartnerEnabled()
-	{
-		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_BPARTNER.getDbName());
-	}
-
-	public boolean isAutoSendDefaultShippingAddress()
-	{
-		return getBooleanValueForParam(ExternalSystemOtherKnownParams.AUTO_EXPORT_DEFAULT_SHIPPING_ADDRESS.getDbName());
-	}
-
-	@NonNull
-	private Optional<ExternalSystemOtherConfigParameter> getParameterByName(@NonNull final String name)
-	{
-		return parameters.stream()
-				.filter(parameter -> parameter.getName().equals(name))
-				.findFirst();
-	}
-
-	private boolean getBooleanValueForParam(@NonNull final String paramName)
-	{
-		return getParameterByName(paramName)
-				.map(ExternalSystemOtherConfigParameter::getValue)
-				.map(value -> StringUtils.toBoolean(value, false))
-				.orElse(false);
+		throw new UnsupportedOperationException("getValue() not supported for external system Other");
 	}
 }

@@ -140,9 +140,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		super(result,
 				true, // complete=true
 				parameters.getMovementDateRule(),
-				parameters.getExternalInfoByReceiptScheduleId(),
-				parameters.getForexContractRef(),
-				parameters.getDeliveryPlanningId());
+				parameters.getExternalInfoByReceiptScheduleId());
 
 		this.selectedHUIds = parameters.getSelectedHuIds();
 		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {}", selectedHUIds);
@@ -476,15 +474,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		receiptLine.setQualityNote(qualityNote);
 		receiptLine.setIsInDispute(isInDispute);
 
-		// Copy C_Project_ID from order.
-		// Avoid overriding because the project might be already set from M_ReceiptSchedule (via DimensionService copy)
-		if(receiptLine.getC_Project_ID() <= 0)
+		final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
+		if (orderLine != null)
 		{
-			final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
-			if (orderLine != null)
-			{
-				receiptLine.setC_Project_ID(orderLine.getC_Project_ID());
-			}
+			receiptLine.setC_Project_ID(orderLine.getC_Project_ID());
 		}
 
 		//
@@ -571,6 +564,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 * Transfer handling units from <code>allocs</code> to <code>receiptLine</code>.
 	 * <p>
 	 * Also collect the packing materials.
+	 *
+	 * @param rs
+	 * @param allocs
+	 * @param receiptLine
 	 */
 	private void transferHandlingUnits(
 			final IHUContext huContext,
@@ -719,9 +716,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 * @param hu top level HU (LU, TU, VHU)
 	 */
 	private void transferHandlingUnit(final IHUContext huContext,
-									  final I_M_ReceiptSchedule rs,
-									  final I_M_HU hu,
-									  final I_M_InOutLine receiptLine)
+			final I_M_ReceiptSchedule rs,
+			final I_M_HU hu,
+			final I_M_InOutLine receiptLine)
 	{
 		//
 		// Assign it to Receipt Line
@@ -730,7 +727,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		//
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
-		executor.run(huContext1 -> {
+		executor.run((IHUContextProcessor)huContext1 -> {
 			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
 			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
 			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);

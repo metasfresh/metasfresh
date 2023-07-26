@@ -1,6 +1,5 @@
 package de.metas.handlingunits.allocation.strategy;
 
-import de.metas.acct.api.ProductActivityProvider;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUTestHelper;
@@ -22,7 +21,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
-import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -337,8 +335,6 @@ public class UniformAllocationStrategyTest
 		@BeforeEach
 		public void beforeEach()
 		{
-			Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
-
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
 
@@ -382,7 +378,6 @@ public class UniformAllocationStrategyTest
 		@BeforeEach
 		public void beforeEach()
 		{
-			Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
 

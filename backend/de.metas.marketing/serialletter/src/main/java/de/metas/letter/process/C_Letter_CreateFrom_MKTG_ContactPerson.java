@@ -1,5 +1,11 @@
 package de.metas.letter.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.util.Set;
+
+import org.compiere.Adempiere;
+
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
@@ -11,11 +17,6 @@ import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.Adempiere;
-
-import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -95,10 +96,12 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_Letter_CreateFromMKTG_ContactPerson_Async.class);
-		queue.newWorkPackage()
+		queue.newBlock()
+				.setContext(getCtx())
+				.newWorkpackage()
 				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
 				.addElement(campaignContactPerson)
 				.setUserInChargeId(getUserId())
-				.buildAndEnqueue();
+				.build();
 	}
 }

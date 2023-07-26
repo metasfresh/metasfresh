@@ -1,7 +1,7 @@
 package de.metas.acct.vatcode.impl;
 
-import de.metas.acct.model.I_C_VAT_Code;
-import de.metas.acct.vatcode.VATCode;
+import java.util.Date;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Tax;
@@ -9,7 +9,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import java.util.Date;
+import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.vatcode.VATCode;
 
 /*
  * #%L
@@ -61,7 +62,6 @@ public class C_VAT_Code_Builder
 		vatCode.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		vatCode.setValidTo(TimeUtil.asTimestamp(validTo));
 		vatCode.setVATCode(code == null ? null : code.getCode());
-		vatCode.setC_VAT_Code_ID(code == null ? null : code.getVatCodeId().getRepoId());
 		InterfaceWrapperHelper.save(vatCode);
 		return vatCode;
 	}

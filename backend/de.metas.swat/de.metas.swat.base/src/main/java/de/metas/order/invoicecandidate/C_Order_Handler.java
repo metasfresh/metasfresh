@@ -1,8 +1,18 @@
 package de.metas.order.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoice.filter.GenerateInvoiceCandidateForModelAggregateFilter;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -11,18 +21,6 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.order.IOrderDAO;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Order;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L
@@ -55,15 +53,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 {
 	@Override
-	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
+	public boolean isCreateMissingCandidatesAutomatically()
 	{
-		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
+		return true;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
-		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
+		return true;
 	}
 
 	/**
@@ -72,11 +70,10 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	 * @see C_OrderLine_Handler#getModelForInvoiceCandidateGenerateScheduling(Object)
 	 */
 	@Override
-	public List<InvoiceCandidateGenerateRequest> expandRequest(@NonNull final InvoiceCandidateGenerateRequest request)
+	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
 	{
 		final IC_OrderLine_HandlerDAO orderLineHandlerDAO = Services.get(IC_OrderLine_HandlerDAO.class);
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-		final GenerateInvoiceCandidateForModelAggregateFilter eligibilityAggregateFilter = SpringContextHolder.instance.getBean(GenerateInvoiceCandidateForModelAggregateFilter.class);
 
 		final I_C_Order order = request.getModel(I_C_Order.class);
 
@@ -84,14 +81,10 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 		// Retrieve order lines
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-
 		final List<I_C_OrderLine> orderLines = orderLineHandlerDAO.retrieveMissingOrderLinesQuery(ctx, trxName)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.create()
-				.stream(I_C_OrderLine.class)
-				.filter(eligibilityAggregateFilter::isEligible)
-				.collect(ImmutableList.toImmutableList());
-
+				.list(I_C_OrderLine.class);
 		if (orderLines.isEmpty())
 		{
 			return ImmutableList.of();
@@ -103,14 +96,15 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Create the order line requests and return them
-		return InvoiceCandidateGenerateRequest.ofAll(orderLineHandlers, orderLines);
+		final List<InvoiceCandidateGenerateRequest> of = InvoiceCandidateGenerateRequest.ofAll(orderLineHandlers, orderLines);
+		return of;
 	}
 
 	/**
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_C_Order> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<I_C_Order> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Collections.emptyIterator();
 	}

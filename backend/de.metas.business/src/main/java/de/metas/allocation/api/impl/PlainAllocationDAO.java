@@ -32,6 +32,7 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -73,7 +74,7 @@ public class PlainAllocationDAO extends AllocationDAO
 						lineAmt, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx().toInstant(), // ConvDate
+						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
 						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 						ClientId.ofRepoId(line.getAD_Client_ID()), 
 						OrgId.ofRepoId(line.getAD_Org_ID()));
@@ -114,7 +115,7 @@ public class PlainAllocationDAO extends AllocationDAO
 						lineAmt, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx().toInstant(), // ConvDate
+						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
 						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 						ClientId.ofRepoId(line.getAD_Client_ID()), 
 						OrgId.ofRepoId(line.getAD_Org_ID()));
@@ -155,7 +156,7 @@ public class PlainAllocationDAO extends AllocationDAO
 						lineWriteOff, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx().toInstant(), // ConvDate
+						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
 						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 						ClientId.ofRepoId(line.getAD_Client_ID()),
 						OrgId.ofRepoId(line.getAD_Org_ID()));

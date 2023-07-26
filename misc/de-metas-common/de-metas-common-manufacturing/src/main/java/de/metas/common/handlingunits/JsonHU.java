@@ -22,123 +22,40 @@
 
 package de.metas.common.handlingunits;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import de.metas.common.util.Check;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.With;
-import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
 @Builder
-@Jacksonized
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonDeserialize(builder = JsonHU.JsonHUBuilder.class)
 public class JsonHU
 {
 	@NonNull String id;
 	@NonNull String huStatus;
-	@NonNull String huStatusCaption;
-
-	@NonNull String displayName;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	JsonHUQRCode qrCode;
+	@Nullable String warehouseValue;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	String warehouseValue;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable
-	String locatorValue;
-
-	int numberOfAggregatedHUs;
+	@Nullable String locatorValue;
 
 	@NonNull
 	@Singular
 	List<JsonHUProduct> products;
 
-	/**
-	 * Just a simple map of attribute code and values.
-	 * In the next versions of the API it will be replaced by {@link #attributes2}.
-	 */
-	@Deprecated
 	@NonNull
-	JsonHUAttributeCodeAndValues attributes;
+	JsonHUAttributes attributes;
 
-	@NonNull
-	JsonHUAttributes attributes2;
-
-	@Nullable
-	JsonClearanceStatusInfo clearanceStatus;
-
-	@Nullable
-	String clearanceNote;
-
-	@Nullable
-	JsonHUType jsonHUType;
-
-	@Nullable
-	List<JsonHU> includedHUs;
-
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses;
-
-	@With
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	Boolean isDisposalPending;
-
-	public JsonHU(
-			@NonNull final String id,
-			@NonNull final String huStatus,
-			@NonNull final String huStatusCaption,
-			@NonNull final String displayName,
-			@Nullable final JsonHUQRCode qrCode,
-			@Nullable final String warehouseValue,
-			@Nullable final String locatorValue,
-			final int numberOfAggregatedHUs,
-			@NonNull final List<JsonHUProduct> products,
-			@Nullable final JsonHUAttributeCodeAndValues attributes,
-			@Nullable final JsonHUAttributes attributes2,
-			@Nullable final JsonClearanceStatusInfo clearanceStatus,
-			@Nullable final String clearanceNote,
-			@Nullable final JsonHUType jsonHUType,
-			@Nullable final List<JsonHU> includedHUs,
-			@Nullable final JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses,
-			final Boolean isDisposalPending)
-	{
-		this.id = id;
-		this.huStatus = huStatus;
-		this.huStatusCaption = huStatusCaption;
-		this.displayName = displayName;
-		this.qrCode = qrCode;
-		this.warehouseValue = warehouseValue;
-		this.locatorValue = locatorValue;
-		this.numberOfAggregatedHUs = numberOfAggregatedHUs;
-		this.products = products;
-		this.clearanceStatus = clearanceStatus;
-		this.clearanceNote = clearanceNote;
-		this.jsonHUType = jsonHUType;
-		this.includedHUs = includedHUs;
-		this.allowedHUClearanceStatuses = allowedHUClearanceStatuses;
-		this.isDisposalPending = isDisposalPending;
-
-		if(attributes2 == null)
-		{
-			Check.assumeNotNull(attributes, "attributes is not null");
-			this.attributes2 = JsonHUAttributes.ofJsonHUAttributeCodeAndValues(attributes);
-		}
-		else
-		{
-			this.attributes2 = attributes2;
-		}
-
-		this.attributes = attributes != null ? attributes : this.attributes2.toJsonHUAttributeCodeAndValues();
-	}
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonHUBuilder {}
 }

@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
-import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import de.metas.logging.LogManager;
@@ -69,7 +68,7 @@ class JSONDocumentReferencesEventPublisher
 	{
 		try
 		{
-			sseEmiter.send(JSONDocumentReferencesEvent.partialResult(group), MediaType.APPLICATION_JSON);
+			sseEmiter.send(JSONDocumentReferencesEvent.partialResult(group));
 		}
 		catch (final IOException ex)
 		{
@@ -81,7 +80,7 @@ class JSONDocumentReferencesEventPublisher
 	{
 		try
 		{
-			sseEmiter.send(JSONDocumentReferencesEvent.COMPLETED, MediaType.APPLICATION_JSON);
+			sseEmiter.send(JSONDocumentReferencesEvent.COMPLETED);
 			sseEmiter.complete();
 		}
 		catch (final IOException ex)
@@ -94,7 +93,7 @@ class JSONDocumentReferencesEventPublisher
 	{
 		try
 		{
-			sseEmiter.send(JSONDocumentReferencesEvent.COMPLETED, MediaType.APPLICATION_JSON);
+			sseEmiter.send(JSONDocumentReferencesEvent.COMPLETED);
 			sseEmiter.completeWithError(ex);
 		}
 		catch (final IOException ioe)

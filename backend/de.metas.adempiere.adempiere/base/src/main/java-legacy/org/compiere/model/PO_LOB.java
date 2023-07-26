@@ -16,17 +16,16 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import com.google.common.io.BaseEncoding;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.DB;
-import org.compiere.util.Ini;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
-
 import java.io.Serializable;
 import java.sql.PreparedStatement;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TrxRunnable;
 
 /**
  * 	Persistent Object LOB.
@@ -36,7 +35,7 @@ import java.sql.PreparedStatement;
  *  @author Jorg Janke
  *  @version $Id: PO_LOB.java,v 1.2 2006/07/30 00:58:04 jjanke Exp $
  */
-class PO_LOB implements Serializable
+public class PO_LOB implements Serializable
 {
 	/**
 	 * 
@@ -127,27 +126,28 @@ class PO_LOB implements Serializable
 				log.warn("[" + trxName + "] - not updated - " + sql);
 			return true;
 		}
-
-		final String sql;
-		final Object[] sqlParams;
-		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
-		{
-			final String valueBase64enc = BaseEncoding.base64().encode((byte[])m_value);
-			sql = "UPDATE " + m_tableName + " SET " + m_columnName + "=DECODE(" + DB.TO_STRING(valueBase64enc) + ", 'base64') WHERE " + m_whereClause;
-			sqlParams = new Object[] {};
-		}
-		else
-		{
-			sql = "UPDATE " + m_tableName + " SET " + m_columnName + "=? WHERE " + m_whereClause;
-			sqlParams = new Object[]{m_value};
-		}
-
+		
+		StringBuilder sql = new StringBuilder("UPDATE ")
+			.append(m_tableName)
+			.append(" SET ").append(m_columnName)
+			.append("=? WHERE ").append(m_whereClause);
+		//
+		
+		log.debug("[" + trxName + "] - Local - " + m_value);
+		
 		PreparedStatement pstmt = null;
 		boolean success = true;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, trxName);
-			DB.setParameters(pstmt, sqlParams);
+			pstmt = DB.prepareStatement(sql.toString(), trxName);
+			if (m_displayType == DisplayType.TextLong)
+			{
+				pstmt.setString(1, (String)m_value);
+			}
+			else
+			{
+				pstmt.setBytes(1, (byte[])m_value);
+			}
 			final int no = pstmt.executeUpdate();
 			if (no != 1)
 			{

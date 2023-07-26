@@ -14,8 +14,8 @@ SELECT
                 ELSE NULL::CHARACTER VARYING
         END) AS POReference
      , (CASE
-            WHEN COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered) IS NOT NULL /* task 09182: if there is an orderDate, then export it */
-                THEN COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered)
+            WHEN COALESCE(i.DateOrdered, o.DateOrdered) IS NOT NULL /* task 09182: if there is an orderDate, then export it */
+                THEN COALESCE(i.DateOrdered, o.DateOrdered)
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END) AS DateOrdered
      , (CASE dt.DocBaseType
@@ -37,8 +37,8 @@ SELECT
      , i.GrandTotal
      , i.TotalLines
     /* IF docSubType is CS, the we don't reference the original shipment*/
-     , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(desadv.MovementDate, s.MovementDate, iomd.movementdate) END AS MovementDate
-     , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(desadv.DocumentNo, s.DocumentNo, iodn.documentno) END AS Shipment_DocumentNo
+     , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(desadv.MovementDate, s.MovementDate) END AS MovementDate
+     , CASE WHEN dt.DocSubType='CS' THEN NULL ELSE COALESCE(desadv.DocumentNo, s.DocumentNo) END AS Shipment_DocumentNo
      , t.TotalVAT
      , t.TotalTaxBaseAmt
      , COALESCE(rbp.EdiInvoicRecipientGLN, rl.GLN) AS ReceiverGLN
@@ -100,30 +100,4 @@ FROM C_Invoice i
     GROUP BY C_InvoiceTax.C_Invoice_ID
 ) t ON t.C_Invoice_ID = i.C_Invoice_ID
          LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
-         LEFT JOIN LATERAL ( --only add values if there is only one unique value
-    SELECT i.c_invoice_id, min(o.dateordered) AS dateordered
-    FROM c_invoice i
-             INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id
-             INNER JOIN c_orderline ol ON il.c_orderline_id = ol.c_orderline_id
-             INNER JOIN c_order o ON ol.c_order_id = o.c_order_id
-    GROUP BY i.c_invoice_id HAVING count(DISTINCT ol.dateordered)=1
-    ) ol ON ol.c_invoice_id = i.c_invoice_id
-         LEFT JOIN LATERAL (
-    SELECT i.c_invoice_id, min(io.movementdate) AS movementdate
-    FROM c_invoice i
-             INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id
-             INNER JOIN c_orderline ol ON il.c_orderline_id = ol.c_orderline_id
-             INNER JOIN c_order o ON ol.c_order_id = o.c_order_id
-             INNER JOIN M_InOut io ON o.c_order_id = io.c_order_id AND io.DocStatus IN ('CO', 'CL')
-    GROUP BY i.c_invoice_id HAVING count(DISTINCT io.movementdate)=1
-    ) iomd ON iomd.c_invoice_id = i.c_invoice_id
-         LEFT JOIN LATERAL (
-    SELECT i.c_invoice_id, min(io.documentno) AS documentno
-    FROM c_invoice i
-             INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id
-             INNER JOIN c_orderline ol ON il.c_orderline_id = ol.c_orderline_id
-             INNER JOIN c_order o ON ol.c_order_id = o.c_order_id
-             INNER JOIN M_InOut io ON o.c_order_id = io.c_order_id AND io.DocStatus IN ('CO', 'CL')
-    GROUP BY i.c_invoice_id HAVING count(DISTINCT io.documentno)=1
-    ) iodn ON iodn.c_invoice_id = i.c_invoice_id
 ;

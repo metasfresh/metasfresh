@@ -1,18 +1,15 @@
 package de.metas.shipper.gateway.spi.model;
 
-import de.metas.async.AsyncBatchId;
-import de.metas.common.util.CoalesceUtil;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Set;
+
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Set;
 
 /*
  * #%L
@@ -47,24 +44,21 @@ public class DeliveryOrderCreateRequest
 	LocalDate pickupDate;
 	LocalTime timeFrom;
 	LocalTime timeTo;
-	AsyncBatchId asyncBatchId;
 
 	@Builder
 	public DeliveryOrderCreateRequest(
 			@NonNull final LocalDate pickupDate,
 			@NonNull @Singular final Set<Integer> packageIds,
 			final ShipperTransportationId shipperTransportationId,
-			@NonNull final String shipperGatewayId,
- 			@Nullable final LocalTime timeFrom,
-			@Nullable final LocalTime timeTo,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@NonNull String shipperGatewayId,
+			@NonNull final LocalTime timeFrom,
+			@NonNull final LocalTime timeTo)
 	{
 		this.pickupDate = pickupDate;
 		this.packageIds = Check.assumeNotEmpty(packageIds, "packageIds is not empty");
 		this.shipperTransportationId = shipperTransportationId;
 		this.shipperGatewayId = shipperGatewayId;
-		this.timeFrom = CoalesceUtil.coalesceNotNull(timeFrom, LocalTime.MIN);
-		this.timeTo = CoalesceUtil.coalesceNotNull(timeTo, LocalTime.MAX);
-		this.asyncBatchId = asyncBatchId;
+		this.timeFrom = timeFrom;
+		this.timeTo = timeTo;
 	}
 }

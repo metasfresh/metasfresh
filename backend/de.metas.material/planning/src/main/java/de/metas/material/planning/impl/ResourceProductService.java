@@ -1,19 +1,21 @@
 package de.metas.material.planning.impl;
 
+import java.time.temporal.TemporalUnit;
+
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.ResourceType;
+import de.metas.material.planning.ResourceTypeId;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.resource.ResourceService;
-import de.metas.resource.ResourceType;
-import de.metas.resource.ResourceTypeId;
+import de.metas.uom.UOMUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_Resource;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -38,28 +40,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 public class ResourceProductService implements IResourceProductService
 {
-	private ResourceService _resourceService;
-
-	private ResourceService resourceService()
-	{
-		ResourceService resourceService = this._resourceService;
-		if (resourceService == null)
-		{
-			resourceService = this._resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
-		}
-		return resourceService;
-	}
-
 	@Override
 	public ResourceType getResourceTypeById(final ResourceTypeId resourceTypeId)
 	{
-		return resourceService().getResourceTypeById(resourceTypeId);
+		return Services.get(IResourceDAO.class).getResourceTypeById(resourceTypeId);
 	}
 
 	@Override
 	public ResourceType getResourceTypeByResourceId(final ResourceId resourceId)
 	{
-		return resourceService().getResourceTypeByResourceId(resourceId);
+		return Services.get(IResourceDAO.class).getResourceTypeByResourceId(resourceId);
 	}
 
 	@Override
@@ -79,8 +69,17 @@ public class ResourceProductService implements IResourceProductService
 	}
 
 	@Override
-	public I_S_Resource getById(@NonNull final ResourceId resourceId)
+	public TemporalUnit getResourceTemporalUnit(final ResourceId resourceId)
 	{
-		return loadOutOfTrx(resourceId, I_S_Resource.class);
+		final ProductId resourceProductId = getProductIdByResourceId(resourceId);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(resourceProductId);
+		return UOMUtil.toTemporalUnit(uom);
+	}
+
+	@Override
+	public I_C_UOM getResoureUOM(final ResourceId resourceId)
+	{
+		final I_M_Product product = Services.get(IResourceProductService.class).getProductByResourceId(resourceId);
+		return Services.get(IProductBL.class).getStockUOM(product);
 	}
 }

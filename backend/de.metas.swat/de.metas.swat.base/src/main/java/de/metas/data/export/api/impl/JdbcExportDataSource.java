@@ -33,7 +33,7 @@ import java.util.NoSuchElementException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;

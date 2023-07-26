@@ -181,33 +181,13 @@ public class ReferenceListAwareEnums
 					throw Check.mkEx("Field " + field.getName() + " is expected to be static");
 				}
 
-				final Class<?> fieldType = field.getType();
-				final int adReferenceId;
-				if (int.class.equals(fieldType) || Integer.class.equals(fieldType))
-				{
-					adReferenceId = field.getInt(null);
-				}
-				// NOTE: because ReferenceId is not available here, we have to use RepoIdAware
-				else if (RepoIdAware.class.isAssignableFrom(fieldType))
-				{
-					final RepoIdAware id = (RepoIdAware)field.get(null);
-					if (id == null)
-					{
-						throw Check.mkEx("Field " + field.getName() + " is expected to be set");
-					}
-					adReferenceId = id.getRepoId();
-				}
-				else
-				{
-					throw Check.mkEx("Field " + field.getName() + " has unsupported type: " + fieldType);
-				}
-
+				final int adReferenceId = field.getInt(null);
 				if (adReferenceId <= 0)
 				{
 					throw Check.mkEx("Field " + field.getName() + "is expected to have a positive value");
 				}
-				return adReferenceId;
 
+				return adReferenceId;
 			}
 		}
 
@@ -273,7 +253,6 @@ public class ReferenceListAwareEnums
 
 	@Value
 	@Builder
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private static class ReferenceListAwareDescriptor
 	{
 		@NonNull Function<String, ReferenceListAwareEnum> ofCodeFunction;
@@ -299,12 +278,7 @@ public class ReferenceListAwareEnums
 		@Nullable
 		public T ofNullableCode(@Nullable final String code)
 		{
-			return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
-		}
-
-		public Optional<T> optionalOfNullableCode(@Nullable final String code)
-		{
-			return Optional.ofNullable(ofNullableCode(code));
+			return Check.isNotBlank(code) ? ofCode(code) : null;
 		}
 
 		public T ofCode(@NonNull final String code)

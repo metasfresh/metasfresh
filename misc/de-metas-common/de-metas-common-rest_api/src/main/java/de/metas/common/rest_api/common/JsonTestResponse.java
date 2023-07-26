@@ -27,21 +27,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(builder = JsonTestResponse.JsonTestResponseBuilder.class)
 public class JsonTestResponse
 {
-	@Nullable
+	@NonNull
 	String messageBody;
 
 	@Builder
 	@JsonCreator
-	private JsonTestResponse(@JsonProperty("messageBody") @Nullable final String messageBody)
+	private JsonTestResponse(@JsonProperty("messageBody") @NonNull final String messageBody)
 	{
 		this.messageBody = messageBody;
 	}

@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -11,7 +12,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
-import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 
@@ -42,24 +42,19 @@ import java.util.Comparator;
 public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggregationKey>
 {
 	OrgId orgId;
-	
-	@Nullable
 	ExternalId externalId;
-	
-	@Nullable
-	String poReference;
-	
 	WarehouseId warehouseId;
 	BPartnerId vendorId;
 	ZonedDateTime datePromised;
 	ForecastLineId forecastLineId;
+	Dimension dimension;
 	String externalPurchaseOrderUrl;
 
 	private static final Comparator<PurchaseOrderAggregationKey> COMPARATOR = Comparator.comparing(PurchaseOrderAggregationKey::getOrgId)
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
 			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
-			.thenComparing(PurchaseOrderAggregationKey::getPoReference, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(PurchaseOrderAggregationKey::getDimension)
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()));
 
@@ -72,8 +67,8 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.vendorId(purchaseOrderItem.getVendorId())
 				.datePromised(purchaseOrderItem.getDatePromised())
 				.forecastLineId(purchaseOrderItem.getForecastLineId())
+				.dimension(purchaseOrderItem.getDimension())
 				.externalPurchaseOrderUrl(purchaseOrderItem.getExternalPurchaseOrderUrl())
-				.poReference(purchaseOrderItem.getPOReference())
 				.build();
 	}
 
@@ -82,11 +77,11 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(purchaseCandidate.getOrgId())
 				.externalId(purchaseCandidate.getExternalHeaderId())
-				.poReference(purchaseCandidate.getPOReference())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.vendorId(purchaseCandidate.getVendorId())
 				.datePromised(purchaseCandidate.getPurchaseDatePromised())
 				.forecastLineId(purchaseCandidate.getForecastLineId())
+				.dimension(purchaseCandidate.getDimension())
 				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
 				.build();
 	}

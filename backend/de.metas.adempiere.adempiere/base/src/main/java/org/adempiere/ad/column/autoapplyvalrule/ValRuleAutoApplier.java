@@ -1,27 +1,27 @@
 package org.adempiere.ad.column.autoapplyvalrule;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.ad_reference.ADRefTable;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.Collection;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.MinimalColumnInfo;
-import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Column;
 
-import java.util.Collection;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -48,67 +48,66 @@ import java.util.Collection;
 @ToString
 public class ValRuleAutoApplier
 {
-	// services
-	private final IADTableDAO adTableDAO;
-	private final ADReferenceService adReferenceService;
+	@Getter
+	private final String tableName;
 
-	@Getter private final String tableName;
-	private final ImmutableList<MinimalColumnInfo> columns;
+	private final ImmutableMap<String, I_AD_Column> columns;
 
-	@Builder
-	private ValRuleAutoApplier(
-			@NonNull final ADReferenceService adReferenceService,
-			@NonNull final IADTableDAO adTableDAO,
+	public ValRuleAutoApplier(
 			@NonNull final String tableName,
-			@NonNull final Collection<MinimalColumnInfo> columns)
+			@NonNull final Collection<I_AD_Column> columns)
 	{
-		this.adReferenceService = adReferenceService;
-		this.adTableDAO = adTableDAO;
-
 		this.tableName = tableName;
-		this.columns = ImmutableList.copyOf(columns);
+		this.columns = Maps.uniqueIndex(columns, I_AD_Column::getColumnName);
 	}
 
 	/**
+	 *
 	 * @param recordModel the record in question; generally not yet be persisted in DB.
 	 */
 	public void handleRecord(@NonNull final Object recordModel)
 	{
-		columns.forEach((column) -> handleColumn(recordModel, column));
+		for (final String columnName : columns.keySet())
+		{
+			handleColumn(recordModel, columnName);
+		}
 	}
 
 	private void handleColumn(
 			@NonNull final Object recordModel,
-			@NonNull final MinimalColumnInfo column)
+			@NonNull final String columnName)
 	{
-		if (!InterfaceWrapperHelper.isNullOrEmpty(recordModel, column.getColumnName()))
+		if (!InterfaceWrapperHelper.isNullOrEmpty(recordModel, columnName))
 		{
 			return;
 		}
 
-		final int resultId = retrieveFirstValRuleResultId(recordModel, column, adReferenceService);
+		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
 
-		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(column.getColumnName());
+		final I_AD_Column column = columns.get(columnName);
+		final IColumnInfo columnInfo = lookupDAO.retrieveColumnInfo(column.getAD_Column_ID());
+
+		final int resultId = retrieveFirstValRuleResultId(recordModel, column);
+
+		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(columnInfo.getColumnName());
 		if (resultId >= firstValidId)
 		{
-			InterfaceWrapperHelper.setValue(recordModel, column.getColumnName(), resultId);
+			InterfaceWrapperHelper.setValue(recordModel, columnInfo.getColumnName(), resultId);
 		}
 	}
 
-	private static int retrieveFirstValRuleResultId(
+	private int retrieveFirstValRuleResultId(
 			@NonNull final Object recordModel,
-			@NonNull final MinimalColumnInfo column,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final I_AD_Column column)
 	{
-		final ADRefTable tableRefInfo = extractTableRefInfo(column, adReferenceService);
+		final TableRefInfo tableRefInfo = extractTableRefInfo(column);
 
 		final IQueryBuilder<Object> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(tableRefInfo.getTableName());
 
-		final AdValRuleId adValRuleId = column.getAdValRuleId();
-		if (adValRuleId != null)
+		if (column.getAD_Val_Rule_ID() > 0)
 		{
-			final ValidationRuleQueryFilter<Object> validationRuleQueryFilter = new ValidationRuleQueryFilter<>(recordModel, adValRuleId);
+			final ValidationRuleQueryFilter<Object> validationRuleQueryFilter = new ValidationRuleQueryFilter<>(recordModel, column.getAD_Val_Rule_ID());
 			queryBuilder.filter(validationRuleQueryFilter);
 		}
 		final IQuery<Object> query = queryBuilder
@@ -118,18 +117,28 @@ public class ValRuleAutoApplier
 		final String orderByClause = tableRefInfo.getOrderByClause();
 		if (query instanceof TypedSqlQuery && !Check.isEmpty(orderByClause, true))
 		{
-			@SuppressWarnings("rawtypes") final TypedSqlQuery sqlQuery = (TypedSqlQuery)query;
+			@SuppressWarnings("rawtypes")
+			final TypedSqlQuery sqlQuery = (TypedSqlQuery)query;
 			sqlQuery.setOrderBy(orderByClause);
 		}
 
-		return query.firstId();
+		final int resultId = query.firstId();
+		return resultId;
 	}
 
-	private static ADRefTable extractTableRefInfo(@NonNull final MinimalColumnInfo column, @NonNull final ADReferenceService adReferenceService)
+	private TableRefInfo extractTableRefInfo(@NonNull final I_AD_Column column)
 	{
-		final ReferenceId adReferenceValueId = column.getAdReferenceValueId();
-		return adReferenceValueId != null
-				? adReferenceService.retrieveTableRefInfo(adReferenceValueId)
-				: adReferenceService.getTableDirectRefInfo(column.getColumnName());
+		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+
+		final TableRefInfo tableRefInfo;
+		if (column.getAD_Reference_Value_ID() > 0)
+		{
+			tableRefInfo = lookupDAO.retrieveTableRefInfo(column.getAD_Reference_Value_ID());
+		}
+		else
+		{
+			tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(column.getColumnName());
+		}
+		return tableRefInfo;
 	}
 }

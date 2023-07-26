@@ -22,33 +22,28 @@ package de.metas.activity.model.validator;
  * #L%
  */
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
 {
-	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-	private final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
-	private final IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
@@ -63,7 +58,9 @@ public class C_OrderLine
 			return;
 		}
 
-		setActivityFromCompensationGroup(orderLine);
+		final ActivityId groupActivityId = getGroupActivityId(orderLine);
+
+		orderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
 
 		if (orderLine.getC_Activity_ID() > 0)
 		{
@@ -77,13 +74,12 @@ public class C_OrderLine
 		}
 
 		// IsDiverse flag
+		final IProductBL productBL = Services.get(IProductBL.class);
 		orderLine.setIsDiverse(productBL.isDiverse(productId));
 
 		// Activity
-		final ActivityId productActivityId = productActivityProvider.getActivityForAcct(
-				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
-				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-				productId);
+		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).getProductActivityId(productId);
+
 		if (productActivityId == null)
 		{
 			return;
@@ -122,21 +118,5 @@ public class C_OrderLine
 		}
 
 		return group.getActivityId();
-	}
-
-	private void setActivityFromCompensationGroup(@NonNull final I_C_OrderLine orderLine)
-	{
-		final I_C_OrderLine old = InterfaceWrapperHelper.createOld(orderLine, I_C_OrderLine.class);
-
-		final boolean isCompensationGroupChanged = old.getC_Order_CompensationGroup_ID() != orderLine.getC_Order_CompensationGroup_ID();
-
-		if (!isCompensationGroupChanged)
-		{
-			return;
-		}
-
-		final ActivityId groupActivityId = getGroupActivityId(orderLine);
-
-		orderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
 	}
 }

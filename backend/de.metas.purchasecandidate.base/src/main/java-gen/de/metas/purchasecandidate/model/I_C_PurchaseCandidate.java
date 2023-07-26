@@ -571,27 +571,6 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_IsRequisitionCreated = "IsRequisitionCreated";
 
 	/**
-	 * Set Simulated.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsSimulated (boolean IsSimulated);
-
-	/**
-	 * Get Simulated.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSimulated();
-
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsSimulated = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsSimulated", null);
-	String COLUMNNAME_IsSimulated = "IsSimulated";
-
-	/**
 	 * Set Price incl. Tax.
 	 * Tax is included in the price
 	 *
@@ -740,49 +719,6 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
 
 	/**
-	 * Set Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPOReference (@Nullable String POReference);
-
-	/**
-	 * Get Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getPOReference();
-
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_POReference = new ModelColumn<>(I_C_PurchaseCandidate.class, "POReference", null);
-	String COLUMNNAME_POReference = "POReference";
-
-	/**
-	 * Set Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrice_UOM_ID (int Price_UOM_ID);
-
-	/**
-	 * Get Price Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPrice_UOM_ID();
-
-	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
-
-	/**
 	 * Set Price diff..
 	 *
 	 * <br>Type: CostPrice
@@ -892,29 +828,6 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Processed = new ModelColumn<>(I_C_PurchaseCandidate.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
-
-	/**
-	 * Set Product Description.
-	 * Product Description
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setProductDescription (@Nullable java.lang.String ProductDescription);
-
-	/**
-	 * Get Product Description.
-	 * Product Description
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getProductDescription();
-
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProductDescription = new ModelColumn<>(I_C_PurchaseCandidate.class, "ProductDescription", null);
-	String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
 	 * Set Purchase net.

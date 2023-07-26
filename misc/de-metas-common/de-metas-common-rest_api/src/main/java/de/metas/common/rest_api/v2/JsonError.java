@@ -24,16 +24,14 @@ package de.metas.common.rest_api.v2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
@@ -46,19 +44,12 @@ public class JsonError
 		return JsonError.builder().error(item).build();
 	}
 
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonMetasfreshId requestId;
-
 	List<JsonErrorItem> errors;
 
-	@Builder(toBuilder = true)
+	@Builder
 	@JsonCreator
-	private JsonError(
-			@JsonProperty("requestId") @Nullable final JsonMetasfreshId requestId,
-			@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
 	{
 		this.errors = errors;
-		this.requestId = requestId;
 	}
 }

@@ -98,7 +98,8 @@ class MasterWidget extends PureComponent {
 
     let entity = viewId ? 'documentView' : this.props.entity;
     let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
-    let isEdit = !!viewId;
+    let ret = null;
+    let isEdit = viewId ? true : false;
     const tableId = getTableId({
       windowId,
       viewId,
@@ -128,7 +129,7 @@ class MasterWidget extends PureComponent {
       (widgetType === 'ProductAttributes' || widgetType === 'Quantity') &&
       updatePropertyValue(updateOptions);
 
-    const ret = patch(
+    ret = patch(
       entity,
       windowId,
       dataId,
@@ -161,7 +162,7 @@ class MasterWidget extends PureComponent {
    * @param {*} property
    * @param {*} val
    */
-  handleChange = (property, val) => {
+  handleChange = async (property, val) => {
     const {
       updatePropertyValue,
       tabId,
@@ -179,7 +180,7 @@ class MasterWidget extends PureComponent {
     } = this.props;
 
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
-    val = widgetType === 'Date' ? formatDateWithZeros(val) : val;
+    val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
     let fieldName = widgetData[0] ? widgetData[0].field : '';
     this.setState({ edited: true, value: val }, () => {
       if (

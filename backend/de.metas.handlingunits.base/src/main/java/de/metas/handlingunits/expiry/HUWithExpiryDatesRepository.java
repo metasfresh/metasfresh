@@ -112,13 +112,4 @@ public class HUWithExpiryDatesRepository
 				.createQuery()
 				.iterateIds(HuId::ofRepoId);
 	}
-
-	public Iterator<HuId> getAllWithEndStorageDate()
-	{
-		return handlingUnitsDAO.createHUQueryBuilder()
-				.addOnlyWithAttributeNotNull(AttributeConstants.ATTR_endStorageDate)
-				.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses())
-				.createQuery()
-				.iterateIds(HuId::ofRepoId);
-	}
 }

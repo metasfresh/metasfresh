@@ -55,20 +55,17 @@ public class MaterialDispoDataItem
 
 	BusinessCaseDetail businessCaseDetail;
 
-	boolean simulated;
-
 	public static MaterialDispoDataItem of(
-			@NonNull final Candidate dataCandidate,
+			@NonNull final Candidate dataCanddiate,
 			@NonNull final Candidate stockCandidate)
 	{
 		return MaterialDispoDataItem.builder()
-				.materialDescriptor(dataCandidate.getMaterialDescriptor())
-				.candidateId(dataCandidate.getId())
-				.type(dataCandidate.getType())
-				.businessCase(dataCandidate.getBusinessCase())
-				.businessCaseDetail(dataCandidate.getBusinessCaseDetail())
+				.materialDescriptor(dataCanddiate.getMaterialDescriptor())
+				.candidateId(dataCanddiate.getId())
+				.type(dataCanddiate.getType())
+				.businessCase(dataCanddiate.getBusinessCase())
+				.businessCaseDetail(dataCanddiate.getBusinessCaseDetail())
 				.atp(stockCandidate.getMaterialDescriptor().getQuantity())
-				.simulated(dataCandidate.isSimulated())
 				.build();
 	}
 }

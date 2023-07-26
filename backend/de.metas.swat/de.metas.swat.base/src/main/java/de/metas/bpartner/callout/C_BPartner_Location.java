@@ -22,12 +22,13 @@ package de.metas.bpartner.callout;
  * #L%
  */
 
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.compiere.model.I_C_BPartner_Location;
+
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.util.Services;
 
 @Callout(I_C_BPartner_Location.class)
 public class C_BPartner_Location
@@ -93,21 +94,4 @@ public class C_BPartner_Location
 		bpartnerBL.setAddress(bpLocation);
 	}
 
-	@CalloutMethod(columnNames = { I_C_BPartner_Location.COLUMNNAME_ValidFrom})
-	public void updatePreviousId(final I_C_BPartner_Location bpLocation)
-	{
-		final int bPartnerId = bpLocation.getC_BPartner_ID();
-		if (bPartnerId <= 0)
-		{
-			return;
-		}
-
-		if (bpLocation.getValidFrom() == null)
-		{
-			return;
-		}
-
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		bpartnerBL.setPreviousIdIfPossible(bpLocation);
-	}
 }

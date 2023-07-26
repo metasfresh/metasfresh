@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_OrgChange_History
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_OrgChange_History extends org.compiere.model.PO implements I_AD_OrgChange_History, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1044968022L;
+	private static final long serialVersionUID = -1755835842L;
 
     /** Standard Constructor */
     public X_AD_OrgChange_History (final Properties ctx, final int AD_OrgChange_History_ID, @Nullable final String trxName)
@@ -146,17 +146,5 @@ public class X_AD_OrgChange_History extends org.compiere.model.PO implements I_A
 	public java.sql.Timestamp getDate_OrgChange() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_Date_OrgChange);
-	}
-
-	@Override
-	public void setIsCloseInvoiceCandidate (final boolean IsCloseInvoiceCandidate)
-	{
-		set_Value (COLUMNNAME_IsCloseInvoiceCandidate, IsCloseInvoiceCandidate);
-	}
-
-	@Override
-	public boolean isCloseInvoiceCandidate() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsCloseInvoiceCandidate);
 	}
 }

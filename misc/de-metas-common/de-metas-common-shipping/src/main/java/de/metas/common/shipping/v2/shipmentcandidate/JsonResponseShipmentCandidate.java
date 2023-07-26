@@ -25,11 +25,12 @@ package de.metas.common.shipping.v2.shipmentcandidate;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.shipping.v2.JsonProduct;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -40,73 +41,76 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Schema(description = "Single shipment candidate; basically this is a ship-TODO item. It translates to a particular `M_ShipmentSchedule` record in metasfresh.")
+@ApiModel(description = "Single shipment candidate; basically this is a ship-TODO item. It translates to a particular `M_ShipmentSchedule` record in metasfresh.")
 @Value
 public class JsonResponseShipmentCandidate
 {
-	@Schema(required = true)
+	@ApiModelProperty(position = 10, required = true)
 	JsonMetasfreshId id;
 
-	@Schema(required = true)
+	@ApiModelProperty(position = 30, required = true)
 	String orgCode;
 
-	@Schema(description = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
+	@ApiModelProperty(position = 40,
+			value = "The the `C_Order.DocumentNo` of the shipment schedule's sales order - if any")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String orderDocumentNo;
 
-	@Schema
+	@ApiModelProperty(position = 50)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String poReference;
 
-	@Schema
+	@ApiModelProperty(position = 60)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	LocalDateTime dateOrdered;
 
-	@Schema(description = "This is the number of overall exportable items that would end up in the same shipment.\n"
+	@ApiModelProperty(position = 70,
+			value = "This is the number of overall exportable items that would end up in the same shipment.\n"
 					+ "Useful if due to `limit`, not all items of one shipment are exported in one invocation.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Integer numberOfItemsForSameShipment;
 
-	@Schema(required = true)
+	@ApiModelProperty(position = 80, required = true)
 	JsonProduct product;
 
-	@Schema
+	@ApiModelProperty(position = 90)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@Schema(required = true)
+	@ApiModelProperty(position = 100, required = true)
 	JsonCustomer shipBPartner;
 
-	@Schema
+	@ApiModelProperty(position = 105)
 	JsonCustomer billBPartner;
 
-	@Schema(required = true,
-			description = "The shipment schedule's quantity to deliver, possibly in different UOMs")
+	@ApiModelProperty(position = 110, required = true,
+			value = "The shipment schedule's quantity to deliver, possibly in different UOMs")
 	List<JsonQuantity> quantities;
 
-	@Schema(required = true,
-			description = "The shipment schedule's ordered quantity, possibly in different UOMs")
+	@ApiModelProperty(position = 120, required = true,
+			value = "The shipment schedule's ordered quantity, possibly in different UOMs")
 	List<JsonQuantity> orderedQty;
 
-	@Schema(description = "The internal search key of the assigned shipper")
+	@ApiModelProperty(position = 130,
+			value = "The internal search key of the assigned shipper")
 	String shipperInternalSearchKey;
 
-	@Schema(description = "The net price of the ordered quantity")
+	@ApiModelProperty(position = 140,
+			value = "The net price of the ordered quantity")
 	BigDecimal orderedQtyNetPrice;
 
-	@Schema(description = "The net price of the quantity currently to deliver")
+	@ApiModelProperty(position = 150,
+			value = "The net price of the quantity currently to deliver")
 	@Nullable
 	BigDecimal qtyToDeliverNetPrice;
 
-	@Schema(description = "The net price of the delivered quantity ")
+	@ApiModelProperty(position = 160,
+			value = "The net price of the delivered quantity ")
 	BigDecimal deliveredQtyNetPrice;
 
-	@Schema(description = "Delivery information")
+	@ApiModelProperty(position = 170,
+			value = "Delivery information")
 	String deliveryInfo;
-
-	@Schema(description = "`AD_InputDataSource.InternalName` of the `AD_InputDataSource` record that tells where this candidate's original OLCand came from.\n"
-					+ " In the unlikely case that the shipment candidate has multiple OLCands, this property contains the internal name of the fist `C_OLCand`'s (lowest `C_OLCand_ID`) `AD_InputDataSource` that has a non-empty internal name.")
-	String orderDataSourceInternalName;
 
 	@JsonCreator
 	@Builder
@@ -127,8 +131,7 @@ public class JsonResponseShipmentCandidate
 			@JsonProperty("deliveredQtyNetPrice") @Nullable final BigDecimal deliveredQtyNetPrice,
 			@JsonProperty("qtyToDeliverNetPrice") @Nullable final BigDecimal qtyToDeliverNetPrice,
 			@JsonProperty("orderedQtyNetPrice") @Nullable final BigDecimal orderedQtyNetPrice,
-			@JsonProperty("deliveryInfo") @Nullable final String deliveryInfo,
-			@JsonProperty("orderDataSourceInternalName") @Nullable final String orderDataSourceInternalName)
+			@JsonProperty("deliveryInfo") @Nullable final String deliveryInfo)
 	{
 		this.id = id;
 		this.orgCode = orgCode;
@@ -147,7 +150,6 @@ public class JsonResponseShipmentCandidate
 		this.qtyToDeliverNetPrice = qtyToDeliverNetPrice;
 		this.orderedQtyNetPrice = orderedQtyNetPrice;
 		this.deliveryInfo = deliveryInfo;
-		this.orderDataSourceInternalName = orderDataSourceInternalName;
 	}
 }
 

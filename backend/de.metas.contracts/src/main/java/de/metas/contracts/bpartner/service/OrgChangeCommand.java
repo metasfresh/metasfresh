@@ -25,8 +25,6 @@ package de.metas.contracts.bpartner.service;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -35,21 +33,19 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.bpartner.service.CloneBPartnerRequest;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermPricing;
-import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.repository.OrgMappingRepository;
-import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -57,7 +53,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.ICountryDAO;
-import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplate;
@@ -171,7 +166,7 @@ public class OrgChangeCommand
 
 		final BPartnerId newBPartnerId = getOrCreateCounterpartBPartner(request, orgMappingId);
 
-		// gets the partner with all the active and inactive locations, users, bank accounts & credit limits
+		// gets the partner with all the active and inactive locations, users and bank accounts
 		BPartnerComposite destinationBPartnerComposite = bpCompositeRepo.getById(newBPartnerId);
 		{
 			destinationBPartnerComposite.getBpartner().setActive(true);
@@ -179,16 +174,14 @@ public class OrgChangeCommand
 			final List<BPartnerLocation> newLocations = getOrCreateLocations(bpartnerAndSubscriptions, destinationBPartnerComposite);
 			final List<BPartnerContact> newContacts = getOrCreateContacts(bpartnerAndSubscriptions, destinationBPartnerComposite);
 			final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(bpartnerAndSubscriptions, destinationBPartnerComposite);
-			final List<BPartnerCreditLimit> newBPCreditLimits = getOrCreateBPCreditLimits(bpartnerAndSubscriptions, destinationBPartnerComposite);
 
 			destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
 					.toBuilder()
 					.locations(newLocations)
 					.contacts(newContacts)
 					.bankAccounts(newBPBankAccounts)
-					.creditLimits(newBPCreditLimits)
 					.build();
-			bpCompositeRepo.save(destinationBPartnerComposite, false);
+			bpCompositeRepo.save(destinationBPartnerComposite);
 		}
 
 		bpartnerBL.updateNameAndGreetingFromContacts(newBPartnerId);
@@ -224,7 +217,7 @@ public class OrgChangeCommand
 	{
 		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
 				.changeDate(Objects.requireNonNull(TimeUtil.asTimestamp(request.getStartDate())))
-				.isCloseInvoiceCandidate(request.isCloseInvoiceCandidate())
+				.isCloseInvoiceCandidate(true)
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_OrgChange)
 				.isCreditOpenInvoices(false)
 				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)
@@ -350,13 +343,7 @@ public class OrgChangeCommand
 			term.setPlannedQtyPerUnit(plannedQtyPerUnit == null ? BigDecimal.ZERO : plannedQtyPerUnit.toBigDecimal());
 			term.setC_UOM_ID(plannedQtyPerUnit == null ? -1 : plannedQtyPerUnit.getUomId().getRepoId());
 
-			final BPartnerLocationAndCaptureId dropshipLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
-					BPartnerId.toRepoId(shipBPartnerLocation.getId().getBpartnerId()),
-					BPartnerLocationId.toRepoId(shipBPartnerLocation.getId()),
-					LocationId.toRepoId(shipBPartnerLocation.getExistingLocationId()));
-
-			ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(term)
-					.setFrom(dropshipLocationId);
+			term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
 
 			term.setDeliveryRule(sourceSubscription.getDeliveryRule() == null ? null : sourceSubscription.getDeliveryRule().getCode());
 			term.setDeliveryViaRule(sourceSubscription.getDeliveryViaRule() == null ? null : sourceSubscription.getDeliveryViaRule().getCode());
@@ -469,7 +456,6 @@ public class OrgChangeCommand
 
 				matchingContact.setContactType(newContactType);
 				matchingContact.setGreetingId(sourceContact.getGreetingId());
-				matchingContact.setTitleId(sourceContact.getTitleId());
 				matchingContact.setFirstName(sourceContact.getFirstName());
 				matchingContact.setLastName(sourceContact.getLastName());
 				matchingContact.setMembershipContact(sourceContact.isMembershipContact());
@@ -697,60 +683,6 @@ public class OrgChangeCommand
 				.build();
 	}
 
-	@NonNull
-	private List<BPartnerCreditLimit> getOrCreateBPCreditLimits(
-			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
-			@NonNull final BPartnerComposite destinationBPartnerComposite)
-	{
-		final List<BPartnerCreditLimit> sourceCreditLimits = orgChangeBPartnerComposite.getCreditLimits();
-
-		final List<BPartnerCreditLimit> existingCreditLimitsInDestinationPartner = destinationBPartnerComposite.getCreditLimits();
-
-		final List<BPartnerCreditLimit> updatedDestinationCreditLimits = new ArrayList<>();
-
-		for (final BPartnerCreditLimit sourceCreditLimit : sourceCreditLimits)
-		{
-			final OrgMappingId creditLimitOrgMappingId = orgMappingRepo.getCreateOrgMappingId(sourceCreditLimit);
-
-			sourceCreditLimit.setOrgMappingId(creditLimitOrgMappingId);
-
-			final BPartnerCreditLimit matchingCreditLimit_Updated = existingCreditLimitsInDestinationPartner.stream()
-					.filter(bpartnerCreditLimit -> OrgMappingId.equals(creditLimitOrgMappingId, bpartnerCreditLimit.getOrgMappingId()))
-					.findFirst()
-					.map(matchingCreditLimit -> matchingCreditLimit.toBuilder()
-							.amount(sourceCreditLimit.getAmount())
-							.creditLimitTypeId(sourceCreditLimit.getCreditLimitTypeId())
-							.dateFrom(sourceCreditLimit.getDateFrom())
-							.processed(sourceCreditLimit.isProcessed())
-							.active(true)
-							.build())
-					.orElse(null);
-
-			if (matchingCreditLimit_Updated != null)
-			{
-				loggable.addLog("Credit Limit {} from the existing partner {} was preserved.",
-								matchingCreditLimit_Updated,
-								destinationBPartnerComposite.getBpartner());
-
-				updatedDestinationCreditLimits.add(matchingCreditLimit_Updated);
-			}
-			else
-			{
-				final BPartnerCreditLimit newCreditLimit = sourceCreditLimit.toBuilder()
-						.id(null)
-						.active(true)
-						.build();
-
-				updatedDestinationCreditLimits.add(newCreditLimit);
-
-				loggable.addLog("Credit Limit {} was created for the destination partner {}.",
-								newCreditLimit,
-								destinationBPartnerComposite.getBpartner());
-			}
-		}
-		return updatedDestinationCreditLimits;
-	}
-
 	private void unmarkDefaultLocationsFromDestination(@NonNull final DefaultLocations sourceDefaultLocations,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
@@ -818,7 +750,7 @@ public class OrgChangeCommand
 	{
 		final BPartnerComposite bPartnerComposite = bpartnerAndSubscriptions.getBPartnerComposite();
 		bPartnerComposite.getBpartner().setOrgMappingId(bpartnerAndSubscriptions.getBPartnerOrgMappingId());
-		bpCompositeRepo.save(bPartnerComposite, false);
+		bpCompositeRepo.save(bPartnerComposite);
 	}
 
 	private void createOrgSwitchRequest(@NonNull final OrgChangeHistoryId orgChangeHistoryId)

@@ -23,23 +23,18 @@
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.common.CommonAlbertaConstants;
-import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
 import de.metas.camel.externalsystems.alberta.ordercandidate.NextImportSinceTimestamp;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
-import de.metas.common.bpartner.v2.response.JsonResponseComposite;
-import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
-import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderLineInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -56,35 +51,14 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat.formatExternalId;
-import static de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants.ROUTE_PROPERTY_CURRENT_ORDER;
-import static de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static org.threeten.bp.temporal.ChronoField.EPOCH_DAY;
 
 public class JsonOLCandCreateRequestProcessor implements Processor
 {
-	public static void prepareBPartnerInfoForPatientRequest(@NonNull final Exchange exchange)
-	{
-		final Order order = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CURRENT_ORDER, Order.class);
-
-		final JsonMetasfreshId externalSystemConfigId = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID, JsonMetasfreshId.class);
-
-		final Integer adPInstanceId = exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class);
-
-		final BPRetrieveCamelRequest retrieveCamelRequest = BPRetrieveCamelRequest.builder()
-				.bPartnerIdentifier(formatExternalId(order.getPatientId()))
-				.externalSystemConfigId(externalSystemConfigId)
-				.adPInstanceId(JsonMetasfreshId.of(adPInstanceId))
-				.build();
-
-		exchange.getIn().setBody(retrieveCamelRequest);
-	}
-
-	public static void processUpsertDeliveryAddressResponse(@NonNull final Exchange exchange)
+	@Override
+	public void process(final Exchange exchange)
 	{
 		final JsonResponseUpsert deliveryAddressUpsertResponse = exchange.getIn().getBody(JsonResponseUpsert.class);
 
@@ -93,22 +67,13 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 			throw new RuntimeException("No deliveryJsonResponseUpsert found!");
 		}
 
-		final JsonMetasfreshId deliveryAddressId = extractDeliveryAddressMFId(deliveryAddressUpsertResponse);
-
-		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_DELIVERY_ADDRESS_METASFRESH_ID, deliveryAddressId);
-	}
-
-	@Override
-	public void process(final Exchange exchange)
-	{
-		final JsonResponseComposite bpartnerResponseComposite = exchange.getIn().getBody(JsonResponseComposite.class);
-
 		final Order order = ProcessorHelper.getPropertyOrThrowError(exchange, GetOrdersRouteConstants.ROUTE_PROPERTY_CURRENT_ORDER, Order.class);
 		final String orgCode = ProcessorHelper.getPropertyOrThrowError(exchange, GetOrdersRouteConstants.ROUTE_PROPERTY_ORG_CODE, String.class);
-		final JsonMetasfreshId deliveryAddressId = ProcessorHelper.getPropertyOrThrowError(exchange, GetOrdersRouteConstants.ROUTE_PROPERTY_DELIVERY_ADDRESS_METASFRESH_ID, JsonMetasfreshId.class);
+
+		final JsonMetasfreshId deliveryAddressId = extractDeliveryAddressMFId(deliveryAddressUpsertResponse);
 
 		final JsonOLCandCreateBulkRequest olCandCreateBulkRequest =
-				buildJsonCandCreateBulkRequest(orgCode, order, deliveryAddressId, bpartnerResponseComposite);
+				buildJsonCandCreateBulkRequest(orgCode, order, deliveryAddressId);
 
 		computeNextImportDate(exchange, order);
 
@@ -119,25 +84,19 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 	private JsonOLCandCreateBulkRequest buildJsonCandCreateBulkRequest(
 			@NonNull final String orgCode,
 			@NonNull final Order order,
-			@NonNull final JsonMetasfreshId deliveryAddressId,
-			@NonNull final JsonResponseComposite jsonResponseComposite)
+			@NonNull final JsonMetasfreshId deliveryAddressId)
 	{
 		final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandRequestBuilder = JsonOLCandCreateRequest.builder();
 		olCandRequestBuilder
 				.orgCode(orgCode)
 				.externalHeaderId(order.getId())
-				.bpartner(getBPartnerIdentifiers(jsonResponseComposite, deliveryAddressId))
+				.bpartner(getBPartnerIdentifiers(order, deliveryAddressId))
 				.dataSource(CommonAlbertaConstants.ALBERTA_DATA_INPUT_SOURCE)
 				.poReference(CoalesceUtil.firstNotEmptyTrimmed(order.getSalesId(), order.getId()))
 				.dateRequired(asJavaLocalDate(order.getDeliveryDate()));
 
-		DataMapper.pharmacyToDropShipBPartner(order.getPharmacyId()).ifPresent(olCandRequestBuilder::dropShipBPartner);
-
-		getBillToBPartner(jsonResponseComposite).ifPresent(olCandRequestBuilder::billBPartner);
-
 		final JsonAlbertaOrderInfo.JsonAlbertaOrderInfoBuilder albertaOrderInfoBuilder = JsonAlbertaOrderInfo.builder();
 		albertaOrderInfoBuilder
-				.externalId(order.getId())
 				.rootId(order.getRootId())
 				.creationDate(asInstant(order.getCreationDate()))
 				.startDate(asJavaLocalDate(order.getStartDate()))
@@ -156,22 +115,22 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 				.annotation(order.getAnnotation())
 
 				.therapy(order.getTherapyId() != null ? String.valueOf(order.getTherapyId()) : null)
-				.therapyTypes(extractTherapyTypes(order))
-
-				.deliveryInformation(order.getDeliveryInformation())
-				.deliveryNote(order.getDeliveryNote());
+				.therapyTypes(extractTherapyTypes(order));
 
 		return processLines(olCandRequestBuilder, albertaOrderInfoBuilder, order);
 	}
 
 	@NonNull
-	private JsonRequestBPartnerLocationAndContact getBPartnerIdentifiers(
-			@NonNull final JsonResponseComposite jsonResponseComposite,
-			@NonNull final JsonMetasfreshId deliveryAddressId)
+	private JsonRequestBPartnerLocationAndContact getBPartnerIdentifiers(@NonNull final Order order, @NonNull final JsonMetasfreshId deliveryAddressId)
 	{
+		if (order.getPatientId() == null)
+		{
+			throw new RuntimeException("Missing mandatory data! Order: " + order);
+		}
+
 		return JsonRequestBPartnerLocationAndContact.builder()
-				.bPartnerIdentifier(JsonMetasfreshId.toValueStr(jsonResponseComposite.getBpartner().getMetasfreshId()))
-				.bPartnerLocationIdentifier(JsonMetasfreshId.toValueStr(deliveryAddressId))
+				.bPartnerIdentifier(ExternalIdentifierFormat.formatExternalId(order.getPatientId()))
+				.bPartnerLocationIdentifier(String.valueOf(deliveryAddressId.getValue()))
 				.build();
 	}
 
@@ -205,26 +164,22 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 						throw new RuntimeException("Missing articleId! OrderedArticleId: " + orderedArticle.getId());
 					}
 
-					final JsonAlbertaOrderLineInfo.JsonAlbertaOrderLineInfoBuilder albertaOrderLineInfoBuilder = JsonAlbertaOrderLineInfo.builder();
-
 					if (orderedArticle.getDuration() != null)
 					{
-						albertaOrderLineInfoBuilder.durationAmount(orderedArticle.getDuration().getAmount());
-						albertaOrderLineInfoBuilder.timePeriod(orderedArticle.getDuration().getTimePeriod());
+						albertaInfoBuilder.durationAmount(orderedArticle.getDuration().getAmount());
+						albertaInfoBuilder.timePeriod(orderedArticle.getDuration().getTimePeriod());
 					}
 
-					albertaOrderLineInfoBuilder
-							.externalId(orderedArticle.getId())
+					final JsonAlbertaOrderInfo albertaOrderInfo = albertaInfoBuilder
 							.salesLineId(orderedArticle.getSalesLineId())
 							.unit(orderedArticle.getUnit())
 							.isRentalEquipment(orderedArticle.isIsRentalEquipment())
 							.isPrivateSale(orderedArticle.isIsPrivateSale())
-							.updated(asInstant(orderedArticle.getUpdated()));
-
-					albertaInfoBuilder.jsonAlbertaOrderLineInfo(albertaOrderLineInfoBuilder.build());
+							.updated(asInstant(orderedArticle.getUpdated()))
+							.build();
 
 					return requestBuilder
-							.albertaOrderInfo(albertaInfoBuilder.build())
+							.albertaOrderInfo(albertaOrderInfo)
 							.externalLineId(orderedArticle.getId())
 							.productIdentifier(ExternalIdentifierFormat.formatExternalId(orderedArticle.getArticleId()))
 							.qty(orderedArticle.getQuantity())
@@ -274,7 +229,7 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 	}
 
 	@NonNull
-	private static JsonMetasfreshId extractDeliveryAddressMFId(@NonNull final JsonResponseUpsert deliveryAddressUpsertResponse)
+	private JsonMetasfreshId extractDeliveryAddressMFId(@NonNull final JsonResponseUpsert deliveryAddressUpsertResponse)
 	{
 		final JsonResponseUpsertItem responseUpsertItem = Check.singleElement(deliveryAddressUpsertResponse.getResponseItems());
 
@@ -302,24 +257,5 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 		{
 			currentNextImportSinceDate.setDate(nextImportSinceDateCandidate);
 		}
-	}
-
-	@NonNull
-	private static Optional<JsonRequestBPartnerLocationAndContact> getBillToBPartner(@NonNull final JsonResponseComposite jsonResponseComposite)
-	{
-		final Optional<JsonResponseLocation> billingAddressLocation = jsonResponseComposite.getLocations()
-				.stream()
-				.filter(JsonResponseLocation::isBillTo)
-				.findFirst();
-
-		if (billingAddressLocation.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(JsonRequestBPartnerLocationAndContact.builder()
-								   .bPartnerIdentifier(JsonMetasfreshId.toValueStr(jsonResponseComposite.getBpartner().getMetasfreshId()))
-								   .bPartnerLocationIdentifier(JsonMetasfreshId.toValueStr(billingAddressLocation.get().getMetasfreshId()))
-								   .build());
 	}
 }

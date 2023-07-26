@@ -1,20 +1,18 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for I_Inventory
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_I_Inventory 
 {
 
-	String Table_Name = "I_Inventory";
+    /** TableName=I_Inventory */
+    public static final String Table_Name = "I_Inventory";
 
-//	/** AD_Table_ID=572 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=572 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -25,9 +23,10 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Issues.
@@ -36,7 +35,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Issue_ID (int AD_Issue_ID);
+	public void setAD_Issue_ID (int AD_Issue_ID);
 
 	/**
 	 * Get Issues.
@@ -45,9 +44,16 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Issue_ID();
+	public int getAD_Issue_ID();
 
-	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+	public org.compiere.model.I_AD_Issue getAD_Issue();
+
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue);
+
+    /** Column definition for AD_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_AD_Issue>(I_I_Inventory.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name AD_Issue_ID */
+    public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
 	/**
 	 * Set Organisation.
@@ -57,7 +63,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -67,9 +73,10 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Attribute Code 1.
@@ -78,7 +85,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributeCode1 (@Nullable java.lang.String AttributeCode1);
+	public void setAttributeCode1 (java.lang.String AttributeCode1);
 
 	/**
 	 * Get Attribute Code 1.
@@ -87,10 +94,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAttributeCode1();
+	public java.lang.String getAttributeCode1();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode1 = new ModelColumn<>(I_I_Inventory.class, "AttributeCode1", null);
-	String COLUMNNAME_AttributeCode1 = "AttributeCode1";
+    /** Column definition for AttributeCode1 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode1 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeCode1", null);
+    /** Column name AttributeCode1 */
+    public static final String COLUMNNAME_AttributeCode1 = "AttributeCode1";
 
 	/**
 	 * Set Attribute Code 2.
@@ -99,7 +108,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributeCode2 (@Nullable java.lang.String AttributeCode2);
+	public void setAttributeCode2 (java.lang.String AttributeCode2);
 
 	/**
 	 * Get Attribute Code 2.
@@ -108,10 +117,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAttributeCode2();
+	public java.lang.String getAttributeCode2();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode2 = new ModelColumn<>(I_I_Inventory.class, "AttributeCode2", null);
-	String COLUMNNAME_AttributeCode2 = "AttributeCode2";
+    /** Column definition for AttributeCode2 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode2 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeCode2", null);
+    /** Column name AttributeCode2 */
+    public static final String COLUMNNAME_AttributeCode2 = "AttributeCode2";
 
 	/**
 	 * Set Attribute Code 3.
@@ -120,7 +131,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributeCode3 (@Nullable java.lang.String AttributeCode3);
+	public void setAttributeCode3 (java.lang.String AttributeCode3);
 
 	/**
 	 * Get Attribute Code 3.
@@ -129,10 +140,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAttributeCode3();
+	public java.lang.String getAttributeCode3();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode3 = new ModelColumn<>(I_I_Inventory.class, "AttributeCode3", null);
-	String COLUMNNAME_AttributeCode3 = "AttributeCode3";
+    /** Column definition for AttributeCode3 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode3 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeCode3", null);
+    /** Column name AttributeCode3 */
+    public static final String COLUMNNAME_AttributeCode3 = "AttributeCode3";
 
 	/**
 	 * Set Attribute Code 4.
@@ -141,7 +154,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributeCode4 (@Nullable java.lang.String AttributeCode4);
+	public void setAttributeCode4 (java.lang.String AttributeCode4);
 
 	/**
 	 * Get Attribute Code 4.
@@ -150,10 +163,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAttributeCode4();
+	public java.lang.String getAttributeCode4();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode4 = new ModelColumn<>(I_I_Inventory.class, "AttributeCode4", null);
-	String COLUMNNAME_AttributeCode4 = "AttributeCode4";
+    /** Column definition for AttributeCode4 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeCode4 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeCode4", null);
+    /** Column name AttributeCode4 */
+    public static final String COLUMNNAME_AttributeCode4 = "AttributeCode4";
 
 	/**
 	 * Set Attribute Value String 1.
@@ -162,7 +177,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributeValueString1 (@Nullable java.lang.String AttributeValueString1);
+	public void setAttributeValueString1 (java.lang.String AttributeValueString1);
 
 	/**
 	 * Get Attribute Value String 1.
@@ -171,10 +186,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAttributeValueString1();
+	public java.lang.String getAttributeValueString1();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString1 = new ModelColumn<>(I_I_Inventory.class, "AttributeValueString1", null);
-	String COLUMNNAME_AttributeValueString1 = "AttributeValueString1";
+    /** Column definition for AttributeValueString1 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString1 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeValueString1", null);
+    /** Column name AttributeValueString1 */
+    public static final String COLUMNNAME_AttributeValueString1 = "AttributeValueString1";
 
 	/**
 	 * Set Attribute Value String 2.
@@ -183,7 +200,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributeValueString2 (@Nullable java.lang.String AttributeValueString2);
+	public void setAttributeValueString2 (java.lang.String AttributeValueString2);
 
 	/**
 	 * Get Attribute Value String 2.
@@ -192,10 +209,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAttributeValueString2();
+	public java.lang.String getAttributeValueString2();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString2 = new ModelColumn<>(I_I_Inventory.class, "AttributeValueString2", null);
-	String COLUMNNAME_AttributeValueString2 = "AttributeValueString2";
+    /** Column definition for AttributeValueString2 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString2 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeValueString2", null);
+    /** Column name AttributeValueString2 */
+    public static final String COLUMNNAME_AttributeValueString2 = "AttributeValueString2";
 
 	/**
 	 * Set Attribute Value String 3.
@@ -204,7 +223,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributeValueString3 (@Nullable java.lang.String AttributeValueString3);
+	public void setAttributeValueString3 (java.lang.String AttributeValueString3);
 
 	/**
 	 * Get Attribute Value String 3.
@@ -213,10 +232,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAttributeValueString3();
+	public java.lang.String getAttributeValueString3();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString3 = new ModelColumn<>(I_I_Inventory.class, "AttributeValueString3", null);
-	String COLUMNNAME_AttributeValueString3 = "AttributeValueString3";
+    /** Column definition for AttributeValueString3 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString3 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeValueString3", null);
+    /** Column name AttributeValueString3 */
+    public static final String COLUMNNAME_AttributeValueString3 = "AttributeValueString3";
 
 	/**
 	 * Set Attribute Value String 4.
@@ -225,7 +246,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAttributeValueString4 (@Nullable java.lang.String AttributeValueString4);
+	public void setAttributeValueString4 (java.lang.String AttributeValueString4);
 
 	/**
 	 * Get Attribute Value String 4.
@@ -234,10 +255,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAttributeValueString4();
+	public java.lang.String getAttributeValueString4();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString4 = new ModelColumn<>(I_I_Inventory.class, "AttributeValueString4", null);
-	String COLUMNNAME_AttributeValueString4 = "AttributeValueString4";
+    /** Column definition for AttributeValueString4 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_AttributeValueString4 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "AttributeValueString4", null);
+    /** Column name AttributeValueString4 */
+    public static final String COLUMNNAME_AttributeValueString4 = "AttributeValueString4";
 
 	/**
 	 * Set Data import.
@@ -246,7 +269,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_DataImport_ID (int C_DataImport_ID);
+	public void setC_DataImport_ID (int C_DataImport_ID);
 
 	/**
 	 * Get Data import.
@@ -255,14 +278,16 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_DataImport_ID();
+	public int getC_DataImport_ID();
 
-	@Nullable org.compiere.model.I_C_DataImport getC_DataImport();
+	public org.compiere.model.I_C_DataImport getC_DataImport();
 
-	void setC_DataImport(@Nullable org.compiere.model.I_C_DataImport C_DataImport);
+	public void setC_DataImport(org.compiere.model.I_C_DataImport C_DataImport);
 
-	ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new ModelColumn<>(I_I_Inventory.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
-	String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+    /** Column definition for C_DataImport_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport>(I_I_Inventory.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
+    /** Column name C_DataImport_ID */
+    public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
 
 	/**
 	 * Set Data Import Run.
@@ -271,7 +296,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_DataImport_Run_ID (int C_DataImport_Run_ID);
+	public void setC_DataImport_Run_ID (int C_DataImport_Run_ID);
 
 	/**
 	 * Get Data Import Run.
@@ -280,14 +305,16 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_DataImport_Run_ID();
+	public int getC_DataImport_Run_ID();
 
-	@Nullable org.compiere.model.I_C_DataImport_Run getC_DataImport_Run();
+	public org.compiere.model.I_C_DataImport_Run getC_DataImport_Run();
 
-	void setC_DataImport_Run(@Nullable org.compiere.model.I_C_DataImport_Run C_DataImport_Run);
+	public void setC_DataImport_Run(org.compiere.model.I_C_DataImport_Run C_DataImport_Run);
 
-	ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport_Run> COLUMN_C_DataImport_Run_ID = new ModelColumn<>(I_I_Inventory.class, "C_DataImport_Run_ID", org.compiere.model.I_C_DataImport_Run.class);
-	String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
+    /** Column definition for C_DataImport_Run_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport_Run> COLUMN_C_DataImport_Run_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_C_DataImport_Run>(I_I_Inventory.class, "C_DataImport_Run_ID", org.compiere.model.I_C_DataImport_Run.class);
+    /** Column name C_DataImport_Run_ID */
+    public static final String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
 
 	/**
 	 * Set Cost Price.
@@ -296,7 +323,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCostPrice (@Nullable BigDecimal CostPrice);
+	public void setCostPrice (java.math.BigDecimal CostPrice);
 
 	/**
 	 * Get Cost Price.
@@ -305,10 +332,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getCostPrice();
+	public java.math.BigDecimal getCostPrice();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_CostPrice = new ModelColumn<>(I_I_Inventory.class, "CostPrice", null);
-	String COLUMNNAME_CostPrice = "CostPrice";
+    /** Column definition for CostPrice */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_CostPrice = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "CostPrice", null);
+    /** Column name CostPrice */
+    public static final String COLUMNNAME_CostPrice = "CostPrice";
 
 	/**
 	 * Get Created.
@@ -318,10 +347,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_Created = new ModelColumn<>(I_I_Inventory.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -331,55 +362,60 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Date last inventory count.
-	 * Date of Last Inventory Count
+	 * Set Datum der letzten Inventur.
+	 * Datum der letzten Inventur
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDateLastInventory (@Nullable java.sql.Timestamp DateLastInventory);
+	public void setDateLastInventory (java.sql.Timestamp DateLastInventory);
 
 	/**
-	 * Get Date last inventory count.
-	 * Date of Last Inventory Count
+	 * Get Datum der letzten Inventur.
+	 * Datum der letzten Inventur
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateLastInventory();
+	public java.sql.Timestamp getDateLastInventory();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_DateLastInventory = new ModelColumn<>(I_I_Inventory.class, "DateLastInventory", null);
-	String COLUMNNAME_DateLastInventory = "DateLastInventory";
+    /** Column definition for DateLastInventory */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_DateLastInventory = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "DateLastInventory", null);
+    /** Column name DateLastInventory */
+    public static final String COLUMNNAME_DateLastInventory = "DateLastInventory";
 
 	/**
-	 * Set Date received.
-	 * Date a product was received
+	 * Set Eingangsdatum.
+	 * Datum, zu dem ein Produkt empfangen wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDateReceived (@Nullable java.sql.Timestamp DateReceived);
+	public void setDateReceived (java.sql.Timestamp DateReceived);
 
 	/**
-	 * Get Date received.
-	 * Date a product was received
+	 * Get Eingangsdatum.
+	 * Datum, zu dem ein Produkt empfangen wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateReceived();
+	public java.sql.Timestamp getDateReceived();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_DateReceived = new ModelColumn<>(I_I_Inventory.class, "DateReceived", null);
-	String COLUMNNAME_DateReceived = "DateReceived";
+    /** Column definition for DateReceived */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_DateReceived = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "DateReceived", null);
+    /** Column name DateReceived */
+    public static final String COLUMNNAME_DateReceived = "DateReceived";
 
 	/**
 	 * Set Description.
@@ -388,7 +424,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -397,31 +433,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_Description = new ModelColumn<>(I_I_Inventory.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Override Cost Price.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setExplicitCostPrice (java.lang.String ExplicitCostPrice);
-
-	/**
-	 * Get Override Cost Price.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getExplicitCostPrice();
-
-	ModelColumn<I_I_Inventory, Object> COLUMN_ExplicitCostPrice = new ModelColumn<>(I_I_Inventory.class, "ExplicitCostPrice", null);
-	String COLUMNNAME_ExplicitCostPrice = "ExplicitCostPrice";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set External Header ID.
@@ -430,7 +447,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalHeaderId (@Nullable java.lang.String ExternalHeaderId);
+	public void setExternalHeaderId (java.lang.String ExternalHeaderId);
 
 	/**
 	 * Get External Header ID.
@@ -439,10 +456,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalHeaderId();
+	public java.lang.String getExternalHeaderId();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_I_Inventory.class, "ExternalHeaderId", null);
-	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
+    /** Column definition for ExternalHeaderId */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_ExternalHeaderId = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "ExternalHeaderId", null);
+    /** Column name ExternalHeaderId */
+    public static final String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
 
 	/**
 	 * Set External Line ID.
@@ -451,7 +470,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalLineId (@Nullable java.lang.String ExternalLineId);
+	public void setExternalLineId (java.lang.String ExternalLineId);
 
 	/**
 	 * Get External Line ID.
@@ -460,10 +479,35 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalLineId();
+	public java.lang.String getExternalLineId();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_I_Inventory.class, "ExternalLineId", null);
-	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+    /** Column definition for ExternalLineId */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_ExternalLineId = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "ExternalLineId", null);
+    /** Column name ExternalLineId */
+    public static final String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
+	 * Set HU best before date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate);
+
+	/**
+	 * Get HU best before date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getHU_BestBeforeDate();
+
+    /** Column definition for HU_BestBeforeDate */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_HU_BestBeforeDate = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "HU_BestBeforeDate", null);
+    /** Column name HU_BestBeforeDate */
+    public static final String COLUMNNAME_HU_BestBeforeDate = "HU_BestBeforeDate";
 
 	/**
 	 * Set HU aggregation.
@@ -473,7 +517,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setHUAggregationType (@Nullable java.lang.String HUAggregationType);
+	public void setHUAggregationType (java.lang.String HUAggregationType);
 
 	/**
 	 * Get HU aggregation.
@@ -483,31 +527,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getHUAggregationType();
+	public java.lang.String getHUAggregationType();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_HUAggregationType = new ModelColumn<>(I_I_Inventory.class, "HUAggregationType", null);
-	String COLUMNNAME_HUAggregationType = "HUAggregationType";
-
-	/**
-	 * Set HU best before date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHU_BestBeforeDate (@Nullable java.sql.Timestamp HU_BestBeforeDate);
-
-	/**
-	 * Get HU best before date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getHU_BestBeforeDate();
-
-	ModelColumn<I_I_Inventory, Object> COLUMN_HU_BestBeforeDate = new ModelColumn<>(I_I_Inventory.class, "HU_BestBeforeDate", null);
-	String COLUMNNAME_HU_BestBeforeDate = "HU_BestBeforeDate";
+    /** Column definition for HUAggregationType */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_HUAggregationType = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "HUAggregationType", null);
+    /** Column name HUAggregationType */
+    public static final String COLUMNNAME_HUAggregationType = "HUAggregationType";
 
 	/**
 	 * Set Import Error Message.
@@ -517,7 +542,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setI_ErrorMsg (@Nullable java.lang.String I_ErrorMsg);
+	public void setI_ErrorMsg (java.lang.String I_ErrorMsg);
 
 	/**
 	 * Get Import Error Message.
@@ -527,33 +552,37 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getI_ErrorMsg();
+	public java.lang.String getI_ErrorMsg();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_I_ErrorMsg = new ModelColumn<>(I_I_Inventory.class, "I_ErrorMsg", null);
-	String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
+    /** Column definition for I_ErrorMsg */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_ErrorMsg = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_ErrorMsg", null);
+    /** Column name I_ErrorMsg */
+    public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 
 	/**
-	 * Set Import Inventory.
+	 * Set Import - Warenbestand.
 	 * Import Inventory Transactions
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setI_Inventory_ID (int I_Inventory_ID);
+	public void setI_Inventory_ID (int I_Inventory_ID);
 
 	/**
-	 * Get Import Inventory.
+	 * Get Import - Warenbestand.
 	 * Import Inventory Transactions
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getI_Inventory_ID();
+	public int getI_Inventory_ID();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_I_Inventory_ID = new ModelColumn<>(I_I_Inventory.class, "I_Inventory_ID", null);
-	String COLUMNNAME_I_Inventory_ID = "I_Inventory_ID";
+    /** Column definition for I_Inventory_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_Inventory_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_Inventory_ID", null);
+    /** Column name I_Inventory_ID */
+    public static final String COLUMNNAME_I_Inventory_ID = "I_Inventory_ID";
 
 	/**
 	 * Set Imported.
@@ -563,7 +592,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setI_IsImported (boolean I_IsImported);
+	public void setI_IsImported (boolean I_IsImported);
 
 	/**
 	 * Get Imported.
@@ -573,10 +602,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isI_IsImported();
+	public boolean isI_IsImported();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_I_IsImported = new ModelColumn<>(I_I_Inventory.class, "I_IsImported", null);
-	String COLUMNNAME_I_IsImported = "I_IsImported";
+    /** Column definition for I_IsImported */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_IsImported", null);
+    /** Column name I_IsImported */
+    public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 
 	/**
 	 * Set Import Line Content.
@@ -585,7 +616,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setI_LineContent (@Nullable java.lang.String I_LineContent);
+	public void setI_LineContent (java.lang.String I_LineContent);
 
 	/**
 	 * Get Import Line Content.
@@ -594,10 +625,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getI_LineContent();
+	public java.lang.String getI_LineContent();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_I_LineContent = new ModelColumn<>(I_I_Inventory.class, "I_LineContent", null);
-	String COLUMNNAME_I_LineContent = "I_LineContent";
+    /** Column definition for I_LineContent */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_LineContent = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_LineContent", null);
+    /** Column name I_LineContent */
+    public static final String COLUMNNAME_I_LineContent = "I_LineContent";
 
 	/**
 	 * Set Import Line No.
@@ -606,7 +639,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setI_LineNo (int I_LineNo);
+	public void setI_LineNo (int I_LineNo);
 
 	/**
 	 * Get Import Line No.
@@ -615,10 +648,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getI_LineNo();
+	public int getI_LineNo();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_I_LineNo = new ModelColumn<>(I_I_Inventory.class, "I_LineNo", null);
-	String COLUMNNAME_I_LineNo = "I_LineNo";
+    /** Column definition for I_LineNo */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_I_LineNo = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "I_LineNo", null);
+    /** Column name I_LineNo */
+    public static final String COLUMNNAME_I_LineNo = "I_LineNo";
 
 	/**
 	 * Set Date of inventory.
@@ -628,7 +663,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInventoryDate (@Nullable java.sql.Timestamp InventoryDate);
+	public void setInventoryDate (java.sql.Timestamp InventoryDate);
 
 	/**
 	 * Get Date of inventory.
@@ -638,10 +673,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getInventoryDate();
+	public java.sql.Timestamp getInventoryDate();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_InventoryDate = new ModelColumn<>(I_I_Inventory.class, "InventoryDate", null);
-	String COLUMNNAME_InventoryDate = "InventoryDate";
+    /** Column definition for InventoryDate */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_InventoryDate = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "InventoryDate", null);
+    /** Column name InventoryDate */
+    public static final String COLUMNNAME_InventoryDate = "InventoryDate";
 
 	/**
 	 * Set Active.
@@ -651,7 +688,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -661,10 +698,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_IsActive = new ModelColumn<>(I_I_Inventory.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Lot Blocked.
@@ -673,7 +712,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsLotBlocked (boolean IsLotBlocked);
+	public void setIsLotBlocked (boolean IsLotBlocked);
 
 	/**
 	 * Get Lot Blocked.
@@ -682,31 +721,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isLotBlocked();
+	public boolean isLotBlocked();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_IsLotBlocked = new ModelColumn<>(I_I_Inventory.class, "IsLotBlocked", null);
-	String COLUMNNAME_IsLotBlocked = "IsLotBlocked";
-
-	/**
-	 * Set Update Qty Booked From FactAcct.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsUpdateQtyBookedFromFactAcct (boolean IsUpdateQtyBookedFromFactAcct);
-
-	/**
-	 * Get Update Qty Booked From FactAcct.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isUpdateQtyBookedFromFactAcct();
-
-	ModelColumn<I_I_Inventory, Object> COLUMN_IsUpdateQtyBookedFromFactAcct = new ModelColumn<>(I_I_Inventory.class, "IsUpdateQtyBookedFromFactAcct", null);
-	String COLUMNNAME_IsUpdateQtyBookedFromFactAcct = "IsUpdateQtyBookedFromFactAcct";
+    /** Column definition for IsLotBlocked */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_IsLotBlocked = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "IsLotBlocked", null);
+    /** Column name IsLotBlocked */
+    public static final String COLUMNNAME_IsLotBlocked = "IsLotBlocked";
 
 	/**
 	 * Set Locator Key.
@@ -716,7 +736,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLocatorValue (@Nullable java.lang.String LocatorValue);
+	public void setLocatorValue (java.lang.String LocatorValue);
 
 	/**
 	 * Get Locator Key.
@@ -726,31 +746,37 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getLocatorValue();
+	public java.lang.String getLocatorValue();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_LocatorValue = new ModelColumn<>(I_I_Inventory.class, "LocatorValue", null);
-	String COLUMNNAME_LocatorValue = "LocatorValue";
+    /** Column definition for LocatorValue */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_LocatorValue = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "LocatorValue", null);
+    /** Column name LocatorValue */
+    public static final String COLUMNNAME_LocatorValue = "LocatorValue";
 
 	/**
-	 * Set Lot No..
+	 * Set Los-Nr..
+	 * Los-Nummer (alphanumerisch)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLot (@Nullable java.lang.String Lot);
+	public void setLot (java.lang.String Lot);
 
 	/**
-	 * Get Lot No..
+	 * Get Los-Nr..
+	 * Los-Nummer (alphanumerisch)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getLot();
+	public java.lang.String getLot();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_Lot = new ModelColumn<>(I_I_Inventory.class, "Lot", null);
-	String COLUMNNAME_Lot = "Lot";
+    /** Column definition for Lot */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Lot = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Lot", null);
+    /** Column name Lot */
+    public static final String COLUMNNAME_Lot = "Lot";
 
 	/**
 	 * Set Attributes.
@@ -760,7 +786,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
 	 * Get Attributes.
@@ -770,14 +796,16 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_AttributeSetInstance_ID();
+	public int getM_AttributeSetInstance_ID();
 
-	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-	ModelColumn<I_I_Inventory, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_I_Inventory.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+    /** Column definition for M_AttributeSetInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_AttributeSetInstance>(I_I_Inventory.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeSetInstance_ID */
+    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Phys. Inventory.
@@ -787,7 +815,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Inventory_ID (int M_Inventory_ID);
+	public void setM_Inventory_ID (int M_Inventory_ID);
 
 	/**
 	 * Get Phys. Inventory.
@@ -797,14 +825,16 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Inventory_ID();
+	public int getM_Inventory_ID();
 
-	@Nullable org.compiere.model.I_M_Inventory getM_Inventory();
+	public org.compiere.model.I_M_Inventory getM_Inventory();
 
-	void setM_Inventory(@Nullable org.compiere.model.I_M_Inventory M_Inventory);
+	public void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory);
 
-	ModelColumn<I_I_Inventory, org.compiere.model.I_M_Inventory> COLUMN_M_Inventory_ID = new ModelColumn<>(I_I_Inventory.class, "M_Inventory_ID", org.compiere.model.I_M_Inventory.class);
-	String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
+    /** Column definition for M_Inventory_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_Inventory> COLUMN_M_Inventory_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_Inventory>(I_I_Inventory.class, "M_Inventory_ID", org.compiere.model.I_M_Inventory.class);
+    /** Column name M_Inventory_ID */
+    public static final String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
 
 	/**
 	 * Set Phys.Inventory Line.
@@ -814,7 +844,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_InventoryLine_ID (int M_InventoryLine_ID);
+	public void setM_InventoryLine_ID (int M_InventoryLine_ID);
 
 	/**
 	 * Get Phys.Inventory Line.
@@ -824,14 +854,16 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_InventoryLine_ID();
+	public int getM_InventoryLine_ID();
 
-	@Nullable org.compiere.model.I_M_InventoryLine getM_InventoryLine();
+	public org.compiere.model.I_M_InventoryLine getM_InventoryLine();
 
-	void setM_InventoryLine(@Nullable org.compiere.model.I_M_InventoryLine M_InventoryLine);
+	public void setM_InventoryLine(org.compiere.model.I_M_InventoryLine M_InventoryLine);
 
-	ModelColumn<I_I_Inventory, org.compiere.model.I_M_InventoryLine> COLUMN_M_InventoryLine_ID = new ModelColumn<>(I_I_Inventory.class, "M_InventoryLine_ID", org.compiere.model.I_M_InventoryLine.class);
-	String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
+    /** Column definition for M_InventoryLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_InventoryLine> COLUMN_M_InventoryLine_ID = new org.adempiere.model.ModelColumn<I_I_Inventory, org.compiere.model.I_M_InventoryLine>(I_I_Inventory.class, "M_InventoryLine_ID", org.compiere.model.I_M_InventoryLine.class);
+    /** Column name M_InventoryLine_ID */
+    public static final String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
 
 	/**
 	 * Set Locator.
@@ -841,7 +873,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Locator_ID (int M_Locator_ID);
+	public void setM_Locator_ID (int M_Locator_ID);
 
 	/**
 	 * Get Locator.
@@ -851,9 +883,10 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Locator_ID();
+	public int getM_Locator_ID();
 
-	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+    /** Column name M_Locator_ID */
+    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
 	 * Set Product.
@@ -863,7 +896,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID (int M_Product_ID);
+	public void setM_Product_ID (int M_Product_ID);
 
 	/**
 	 * Get Product.
@@ -873,9 +906,10 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Product_ID();
+	public int getM_Product_ID();
 
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Warehouse.
@@ -885,7 +919,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
 	 * Get Warehouse.
@@ -895,9 +929,10 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Warehouse_ID();
+	public int getM_Warehouse_ID();
 
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Processed.
@@ -906,7 +941,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProcessed (boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/**
 	 * Get Processed.
@@ -915,10 +950,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessed();
+	public boolean isProcessed();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_Processed = new ModelColumn<>(I_I_Inventory.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Process Now.
@@ -927,7 +964,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProcessing (boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/**
 	 * Get Process Now.
@@ -936,31 +973,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessing();
+	public boolean isProcessing();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_Processing = new ModelColumn<>(I_I_Inventory.class, "Processing", null);
-	String COLUMNNAME_Processing = "Processing";
-
-	/**
-	 * Set Product Account Value.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setProductAcctValue (@Nullable java.lang.String ProductAcctValue);
-
-	/**
-	 * Get Product Account Value.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getProductAcctValue();
-
-	ModelColumn<I_I_Inventory, Object> COLUMN_ProductAcctValue = new ModelColumn<>(I_I_Inventory.class, "ProductAcctValue", null);
-	String COLUMNNAME_ProductAcctValue = "ProductAcctValue";
+    /** Column definition for Processing */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Processing", null);
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Product Value.
@@ -971,7 +989,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductValue (@Nullable java.lang.String ProductValue);
+	public void setProductValue (java.lang.String ProductValue);
 
 	/**
 	 * Get Product Value.
@@ -982,10 +1000,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getProductValue();
+	public java.lang.String getProductValue();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_ProductValue = new ModelColumn<>(I_I_Inventory.class, "ProductValue", null);
-	String COLUMNNAME_ProductValue = "ProductValue";
+    /** Column definition for ProductValue */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "ProductValue", null);
+    /** Column name ProductValue */
+    public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
 	 * Set Qty Count.
@@ -994,7 +1014,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQtyCount (@Nullable BigDecimal QtyCount);
+	public void setQtyCount (java.math.BigDecimal QtyCount);
 
 	/**
 	 * Get Qty Count.
@@ -1003,53 +1023,58 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyCount();
+	public java.math.BigDecimal getQtyCount();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_QtyCount = new ModelColumn<>(I_I_Inventory.class, "QtyCount", null);
-	String COLUMNNAME_QtyCount = "QtyCount";
+    /** Column definition for QtyCount */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_QtyCount = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "QtyCount", null);
+    /** Column name QtyCount */
+    public static final String COLUMNNAME_QtyCount = "QtyCount";
 
 	/**
-	 * Set Serial No.
+	 * Set Serien-Nr..
 	 * Product Serial Number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSerNo (@Nullable java.lang.String SerNo);
+	public void setSerNo (java.lang.String SerNo);
 
 	/**
-	 * Get Serial No.
+	 * Get Serien-Nr..
 	 * Product Serial Number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getSerNo();
+	public java.lang.String getSerNo();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_SerNo = new ModelColumn<>(I_I_Inventory.class, "SerNo", null);
-	String COLUMNNAME_SerNo = "SerNo";
+    /** Column definition for SerNo */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_SerNo = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "SerNo", null);
+    /** Column name SerNo */
+    public static final String COLUMNNAME_SerNo = "SerNo";
 
 	/**
-	 * Set Vendor.
+	 * Set Geschäftspartner.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSubProducer_BPartner_ID (int SubProducer_BPartner_ID);
+	public void setSubProducer_BPartner_ID (int SubProducer_BPartner_ID);
 
 	/**
-	 * Get Vendor.
+	 * Get Geschäftspartner.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getSubProducer_BPartner_ID();
+	public int getSubProducer_BPartner_ID();
 
-	String COLUMNNAME_SubProducer_BPartner_ID = "SubProducer_BPartner_ID";
+    /** Column name SubProducer_BPartner_ID */
+    public static final String COLUMNNAME_SubProducer_BPartner_ID = "SubProducer_BPartner_ID";
 
 	/**
 	 * Set SubProducerBPartner_Value.
@@ -1058,7 +1083,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSubProducerBPartner_Value (@Nullable java.lang.String SubProducerBPartner_Value);
+	public void setSubProducerBPartner_Value (java.lang.String SubProducerBPartner_Value);
 
 	/**
 	 * Get SubProducerBPartner_Value.
@@ -1067,10 +1092,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getSubProducerBPartner_Value();
+	public java.lang.String getSubProducerBPartner_Value();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_SubProducerBPartner_Value = new ModelColumn<>(I_I_Inventory.class, "SubProducerBPartner_Value", null);
-	String COLUMNNAME_SubProducerBPartner_Value = "SubProducerBPartner_Value";
+    /** Column definition for SubProducerBPartner_Value */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_SubProducerBPartner_Value = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "SubProducerBPartner_Value", null);
+    /** Column name SubProducerBPartner_Value */
+    public static final String COLUMNNAME_SubProducerBPartner_Value = "SubProducerBPartner_Value";
 
 	/**
 	 * Set TE.
@@ -1079,7 +1106,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setTE (@Nullable java.lang.String TE);
+	public void setTE (java.lang.String TE);
 
 	/**
 	 * Get TE.
@@ -1088,10 +1115,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getTE();
+	public java.lang.String getTE();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_TE = new ModelColumn<>(I_I_Inventory.class, "TE", null);
-	String COLUMNNAME_TE = "TE";
+    /** Column definition for TE */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_TE = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "TE", null);
+    /** Column name TE */
+    public static final String COLUMNNAME_TE = "TE";
 
 	/**
 	 * Set UPC.
@@ -1101,7 +1130,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUPC (@Nullable java.lang.String UPC);
+	public void setUPC (java.lang.String UPC);
 
 	/**
 	 * Get UPC.
@@ -1111,10 +1140,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUPC();
+	public java.lang.String getUPC();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_UPC = new ModelColumn<>(I_I_Inventory.class, "UPC", null);
-	String COLUMNNAME_UPC = "UPC";
+    /** Column definition for UPC */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_UPC = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "UPC", null);
+    /** Column name UPC */
+    public static final String COLUMNNAME_UPC = "UPC";
 
 	/**
 	 * Get Updated.
@@ -1124,10 +1155,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_Updated = new ModelColumn<>(I_I_Inventory.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -1137,9 +1170,10 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Warehouse Locator Identifier.
@@ -1149,7 +1183,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setWarehouseLocatorIdentifier (@Nullable java.lang.String WarehouseLocatorIdentifier);
+	public void setWarehouseLocatorIdentifier (java.lang.String WarehouseLocatorIdentifier);
 
 	/**
 	 * Get Warehouse Locator Identifier.
@@ -1159,10 +1193,12 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getWarehouseLocatorIdentifier();
+	public java.lang.String getWarehouseLocatorIdentifier();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_WarehouseLocatorIdentifier = new ModelColumn<>(I_I_Inventory.class, "WarehouseLocatorIdentifier", null);
-	String COLUMNNAME_WarehouseLocatorIdentifier = "WarehouseLocatorIdentifier";
+    /** Column definition for WarehouseLocatorIdentifier */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_WarehouseLocatorIdentifier = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "WarehouseLocatorIdentifier", null);
+    /** Column name WarehouseLocatorIdentifier */
+    public static final String COLUMNNAME_WarehouseLocatorIdentifier = "WarehouseLocatorIdentifier";
 
 	/**
 	 * Set Warehouse Key.
@@ -1172,7 +1208,7 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setWarehouseValue (@Nullable java.lang.String WarehouseValue);
+	public void setWarehouseValue (java.lang.String WarehouseValue);
 
 	/**
 	 * Get Warehouse Key.
@@ -1182,98 +1218,108 @@ public interface I_I_Inventory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getWarehouseValue();
+	public java.lang.String getWarehouseValue();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_WarehouseValue = new ModelColumn<>(I_I_Inventory.class, "WarehouseValue", null);
-	String COLUMNNAME_WarehouseValue = "WarehouseValue";
+    /** Column definition for WarehouseValue */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_WarehouseValue = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "WarehouseValue", null);
+    /** Column name WarehouseValue */
+    public static final String COLUMNNAME_WarehouseValue = "WarehouseValue";
 
 	/**
 	 * Set Aisle.
-	 * X dimension, e.g., Aisle
+	 * X-Dimension, z.B. Gang
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setX (@Nullable java.lang.String X);
+	public void setX (java.lang.String X);
 
 	/**
 	 * Get Aisle.
-	 * X dimension, e.g., Aisle
+	 * X-Dimension, z.B. Gang
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getX();
+	public java.lang.String getX();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_X = new ModelColumn<>(I_I_Inventory.class, "X", null);
-	String COLUMNNAME_X = "X";
+    /** Column definition for X */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_X = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "X", null);
+    /** Column name X */
+    public static final String COLUMNNAME_X = "X";
 
 	/**
-	 * Set Rack.
+	 * Set Regal.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setX1 (@Nullable java.lang.String X1);
+	public void setX1 (java.lang.String X1);
 
 	/**
-	 * Get Rack.
+	 * Get Regal.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getX1();
+	public java.lang.String getX1();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_X1 = new ModelColumn<>(I_I_Inventory.class, "X1", null);
-	String COLUMNNAME_X1 = "X1";
+    /** Column definition for X1 */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_X1 = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "X1", null);
+    /** Column name X1 */
+    public static final String COLUMNNAME_X1 = "X1";
 
 	/**
 	 * Set Tray.
-	 * Y dimension, e.g., Bin
+	 * Y-Dimension, z.B. Fach
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setY (@Nullable java.lang.String Y);
+	public void setY (java.lang.String Y);
 
 	/**
 	 * Get Tray.
-	 * Y dimension, e.g., Bin
+	 * Y-Dimension, z.B. Fach
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getY();
+	public java.lang.String getY();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_Y = new ModelColumn<>(I_I_Inventory.class, "Y", null);
-	String COLUMNNAME_Y = "Y";
+    /** Column definition for Y */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Y = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Y", null);
+    /** Column name Y */
+    public static final String COLUMNNAME_Y = "Y";
 
 	/**
 	 * Set Level.
-	 * Z dimension, e.g., Level
+	 * Z-Dimension, z.B. Ebene
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setZ (@Nullable java.lang.String Z);
+	public void setZ (java.lang.String Z);
 
 	/**
 	 * Get Level.
-	 * Z dimension, e.g., Level
+	 * Z-Dimension, z.B. Ebene
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getZ();
+	public java.lang.String getZ();
 
-	ModelColumn<I_I_Inventory, Object> COLUMN_Z = new ModelColumn<>(I_I_Inventory.class, "Z", null);
-	String COLUMNNAME_Z = "Z";
+    /** Column definition for Z */
+    public static final org.adempiere.model.ModelColumn<I_I_Inventory, Object> COLUMN_Z = new org.adempiere.model.ModelColumn<I_I_Inventory, Object>(I_I_Inventory.class, "Z", null);
+    /** Column name Z */
+    public static final String COLUMNNAME_Z = "Z";
 }

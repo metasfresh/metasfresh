@@ -43,7 +43,6 @@ class ColumnInfo
 	int adTableId;
 	boolean isIdentifier;
 	String tableIdColumnName;
-	boolean isRestAPICustomColumn;
 
 	@Builder
 	private ColumnInfo(
@@ -69,8 +68,7 @@ class ColumnInfo
 			final boolean lazyLoading,
 			final int seqNo,
 			final int adTableId,
-			final String tableIdColumnName,
-			final boolean isRestAPICustomColumn)
+			final String tableIdColumnName)
 	{
 		this.repository = repository;
 		this.tableName = tableName;
@@ -95,7 +93,6 @@ class ColumnInfo
 		this.seqNo = seqNo;
 		this.adTableId = adTableId;
 		this.tableIdColumnName = tableIdColumnName;
-		this.isRestAPICustomColumn = isRestAPICustomColumn;
 	}
 
 	/**

@@ -74,20 +74,17 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final OrderProductProposalsService orderProductProposalsService;
 	private final MoneyService moneyService;
-	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	protected OtherSalePricesProductsProposalViewFactory(
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
 			@NonNull final OrderProductProposalsService orderProductProposalsService,
-			@NonNull final MoneyService moneyService,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final MoneyService moneyService)
 	{
 		super(WINDOW_ID);
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
 		this.orderProductProposalsService = orderProductProposalsService;
 		this.moneyService = moneyService;
-		this.lookupDataSourceFactory = lookupDataSourceFactory;
 	}
 
 	@Override
@@ -135,7 +132,6 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 		final ProductsProposalRowsData rowsData = RowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.moneyService(moneyService)
-				.lookupDataSourceFactory(lookupDataSourceFactory)
 				//
 				.excludeBPartnerId(parentView.getBpartnerId().orElse(null))
 				.productIds(productIds)
@@ -173,8 +169,8 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 	{
 		private final BPartnerProductStatsService bpartnerProductStatsService;
 		private final MoneyService moneyService;
-		private final LookupDataSource bpartnerLookup;
-		private final LookupDataSource productLookup;
+		private final LookupDataSource bpartnerLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+		private final LookupDataSource productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
 
 		private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
 
@@ -188,7 +184,6 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 		private RowsLoader(
 				@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
 				@NonNull final MoneyService moneyService,
-				@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 				//
 				@Nullable final BPartnerId excludeBPartnerId,
 				@NonNull final Set<ProductId> productIds,
@@ -198,9 +193,6 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 
 			this.bpartnerProductStatsService = bpartnerProductStatsService;
 			this.moneyService = moneyService;
-
-			this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
-			this.productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
 
 			this.excludeBPartnerId = excludeBPartnerId;
 			this.productIds = ImmutableSet.copyOf(productIds);

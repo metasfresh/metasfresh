@@ -22,13 +22,14 @@ package de.metas.handlingunits.pporder.api;
  * #L%
  */
 
+import java.util.Collection;
+import java.util.List;
+
+import org.eevolution.api.ReceiptCostCollectorCandidate;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.util.ISingletonService;
-import org.eevolution.api.ReceiptCostCollectorCandidate;
-
-import java.util.Collection;
-import java.util.List;
 
 public interface IHUPPCostCollectorBL extends ISingletonService
 {
@@ -37,27 +38,37 @@ public interface IHUPPCostCollectorBL extends ISingletonService
 	 * 
 	 * Also turns the planning HU to active.
 	 * 
+	 * @param candidate
+	 * @param hu
 	 * @return receipt cost collector; never returns null
 	 */
 	I_PP_Cost_Collector createReceipt(ReceiptCostCollectorCandidate candidate, I_M_HU hu);
 
 	/**
 	 * Assign given HUs to specified cost collector.
+	 *
+	 * @param cc
+	 * @param husToAssign
 	 */
 	void assignHUs(org.eevolution.model.I_PP_Cost_Collector cc, Collection<I_M_HU> husToAssign);
 
 	/**
 	 * Asserts there are no HU assignments to given cost collector
+	 * 
+	 * @param cc
 	 */
 	void assertNoHUAssignments(org.eevolution.model.I_PP_Cost_Collector cc);
 
 	/**
+	 * @param cc
 	 * @return top level HUs which were assigned to given cost collector
 	 */
 	List<I_M_HU> getTopLevelHUs(org.eevolution.model.I_PP_Cost_Collector cc);
 
 	/**
 	 * Restores the assigned HUs from {@link I_PP_Cost_Collector#getSnapshot_UUID()}.
+	 * 
+	 * @param costCollector
 	 */
 	void restoreTopLevelHUs(I_PP_Cost_Collector costCollector);
 }

@@ -1,12 +1,26 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process;
 
-import de.metas.bpartner.GLN;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.Mutable;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.MimeType;
+import org.springframework.context.annotation.Profile;
+
+import de.metas.bpartner.GLN;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
-import de.metas.invoice.InvoiceId;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
@@ -26,19 +40,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceR
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo.InvoiceResponseRepoException;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.Mutable;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.MimeType;
-import org.springframework.context.annotation.Profile;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 /*
  * #%L

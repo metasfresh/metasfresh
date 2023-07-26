@@ -1,30 +1,29 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Printing_Queue
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
-@SuppressWarnings("unused")
-public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Printing_Queue, org.compiere.model.I_Persistent 
+@SuppressWarnings("javadoc")
+public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Printing_Queue, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 658998957L;
+	private static final long serialVersionUID = 1545749413L;
 
-    /** Standard Constructor */
-    public X_C_Printing_Queue (final Properties ctx, final int C_Printing_Queue_ID, @Nullable final String trxName)
-    {
-      super (ctx, C_Printing_Queue_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_C_Printing_Queue (final Properties ctx, final int C_Printing_Queue_ID, final String trxName)
+	{
+		super (ctx, C_Printing_Queue_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_C_Printing_Queue (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_C_Printing_Queue (final Properties ctx, final ResultSet rs, final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -67,7 +66,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	 */
 	public static final int AD_LANGUAGE_AD_Reference_ID=106;
 	@Override
-	public void setAD_Language (final @Nullable java.lang.String AD_Language)
+	public void setAD_Language (final java.lang.String AD_Language)
 	{
 		set_Value (COLUMNNAME_AD_Language, AD_Language);
 	}
@@ -247,21 +246,6 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public void setBill_User_ID (final int Bill_User_ID)
-	{
-		if (Bill_User_ID < 1) 
-			set_Value (COLUMNNAME_Bill_User_ID, null);
-		else 
-			set_Value (COLUMNNAME_Bill_User_ID, Bill_User_ID);
-	}
-
-	@Override
-	public int getBill_User_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
-	}
-
-	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
 		if (C_Async_Batch_ID < 1)
@@ -349,7 +333,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public void setDeliveryDate (final @Nullable java.sql.Timestamp DeliveryDate)
+	public void setDeliveryDate (final java.sql.Timestamp DeliveryDate)
 	{
 		set_Value (COLUMNNAME_DeliveryDate, DeliveryDate);
 	}
@@ -414,7 +398,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	/** Versand/Wareneingang = Versand/Wareneingang */
 	public static final String ITEMNAME_VersandWareneingang = "Versand/Wareneingang";
 	@Override
-	public void setItemName (final @Nullable java.lang.String ItemName)
+	public void setItemName (final java.lang.String ItemName)
 	{
 		set_Value (COLUMNNAME_ItemName, ItemName);
 	}
@@ -426,7 +410,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public void setPrintingQueueAggregationKey (final @Nullable java.lang.String PrintingQueueAggregationKey)
+	public void setPrintingQueueAggregationKey (final java.lang.String PrintingQueueAggregationKey)
 	{
 		set_Value (COLUMNNAME_PrintingQueueAggregationKey, PrintingQueueAggregationKey);
 	}

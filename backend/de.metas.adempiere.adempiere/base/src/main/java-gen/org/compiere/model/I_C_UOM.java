@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_UOM
  *  @author metasfresh (generated) 
@@ -333,7 +332,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setX12DE355 (@Nullable java.lang.String X12DE355);
+	void setX12DE355 (java.lang.String X12DE355);
 
 	/**
 	 * Get Kodierung der Mengeneinheit.

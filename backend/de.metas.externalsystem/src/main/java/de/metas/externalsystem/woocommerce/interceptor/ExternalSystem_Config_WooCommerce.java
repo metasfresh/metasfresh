@@ -25,7 +25,6 @@ package de.metas.externalsystem.woocommerce.interceptor;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -41,14 +40,10 @@ import java.util.UUID;
 public class ExternalSystem_Config_WooCommerce
 {
 	public final ExternalSystemConfigRepo externalSystemConfigRepo;
-	public final ExternalServices externalServices;
 
-	public ExternalSystem_Config_WooCommerce(
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
-			@NonNull final ExternalServices externalServices)
+	public ExternalSystem_Config_WooCommerce(@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo)
 	{
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
-		this.externalServices = externalServices;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -71,13 +66,5 @@ public class ExternalSystem_Config_WooCommerce
 		{
 			woocommerceConfig.setCamelHttpResourceAuthKey(UUID.randomUUID().toString());
 		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
-	public void createExternalSystemInstance(final I_ExternalSystem_Config_WooCommerce woocommerceConfig)
-	{
-		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(woocommerceConfig.getExternalSystem_Config_ID());
-
-		externalServices.initializeServiceInstancesIfRequired(parentConfigId);
 	}
 }

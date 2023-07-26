@@ -22,25 +22,25 @@
 
 package de.metas.audit.apirequest.config;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_API_Audit_Config;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(SnapshotExtension.class)
 public class ApiAuditConfigRepositoryTest
 {
 	private ApiAuditConfigRepository apiAuditConfigRepository;
-	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -49,46 +49,56 @@ public class ApiAuditConfigRepositoryTest
 		apiAuditConfigRepository = new ApiAuditConfigRepository();
 	}
 
+	@BeforeAll
+	static void initStatic()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
+	}
+
 	@Test
-	public void getActiveConfigsByOrgId()
+	public void getAllConfigsByOrgId()
 	{
 		//given
-		final OrgId targetOrgId = OrgId.ofRepoId(1);
-		final OrgId otherOrgId = OrgId.ofRepoId(2);
+		final int targetOrgId = 1;
+		final int otherOrgId = 2;
 
 		createMockAuditConfig(targetOrgId, true);
 		createMockAuditConfig(targetOrgId, false);
 		createMockAuditConfig(otherOrgId, true);
 
 		//when
-		final ImmutableList<ApiAuditConfig> configs = apiAuditConfigRepository.getActiveConfigsByOrgId(targetOrgId);
+		final ImmutableList<ApiAuditConfig> configs = apiAuditConfigRepository.getAllConfigsByOrgId(OrgId.ofRepoId(targetOrgId));
 
 		//then
 		assertThat(configs.size()).isEqualTo(1);
-		expect.serializer("orderedJson").toMatchSnapshot(configs);
+		expect(configs).toMatchSnapshot();
 	}
 
-	private void createMockAuditConfig(final OrgId orgId, final boolean isActive)
+	private I_API_Audit_Config createMockAuditConfig(final int orgId, final boolean isActive)
 	{
 		final I_API_Audit_Config config = InterfaceWrapperHelper.newInstance(I_API_Audit_Config.class);
 
-		config.setAD_Org_ID(orgId.getRepoId());
+		config.setAD_Org_ID(orgId);
 		config.setAD_UserGroup_InCharge_ID(1);
 		config.setIsActive(isActive);
-		config.setIsForceProcessedAsync(true);
+		config.setIsInvokerWaitsForResult(true);
 		config.setKeepRequestBodyDays(100);
 		config.setKeepRequestDays(101);
 		config.setKeepResponseBodyDays(102);
 		config.setKeepResponseDays(103);
-		config.setKeepErroredRequestDays(104);
 		config.setMethod(HttpMethod.PUT.getCode());
 		config.setNotifyUserInCharge(NotificationTriggerType.ALWAYS.getCode());
 		config.setPathPrefix("pathPrefix");
 		config.setSeqNo(10);
-		config.setIsSynchronousAuditLoggingEnabled(true);
-		config.setIsWrapApiResponse(true);
 
 		InterfaceWrapperHelper.saveRecord(config);
 
+		return config;
 	}
 }

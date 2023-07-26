@@ -2,17 +2,15 @@
 
 @Library('misc')
 import de.metas.jenkins.MvnConf
-import de.metas.jenkins.Misc
 
 Map build(final MvnConf mvnConf) {
-    final artifactURLs = [:]
+    final artifactURLs = [:];
 
     stage('Resolve all distribution artifacts')
             {
                 final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
-                final String GH_METASFRESH_DOCKER_BRANCH = "master_gh82_java_to_17"
 
-                final Misc misc = new Misc()
+                final def misc = new de.metas.jenkins.Misc();
 
                 mvnUpdateParentPomVersion mvnConf
 
@@ -21,16 +19,14 @@ Map build(final MvnConf mvnConf) {
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
                 // gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
-//                final String metasfreshAdminPropertyParam = '-Dproperty=metasfresh-admin.version -DallowDowngrade=true'
-//                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${VERSIONS_PLUGIN}:update-property"
+                final String metasfreshAdminPropertyParam = '-Dproperty=metasfresh-admin.version -DallowDowngrade=true'
+                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${VERSIONS_PLUGIN}:update-property"
                 final String metasfreshWebFrontEndUpdatePropertyParam = '-Dproperty=metasfresh-webui-frontend.version -DallowDowngrade=true'
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
-                final String metasfreshMobileFrontEndUpdatePropertyParam = '-Dproperty=metasfresh-mobile-frontend.version -DallowDowngrade=true'
-                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshMobileFrontEndUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
-//                final String metasfreshWebApiUpdatePropertyParam = '-Dproperty=metasfresh-webui-api.version -DallowDowngrade=true'
-//                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
-//                final String metasfreshProcurementWebuiUpdatePropertyParam = '-Dproperty=metasfresh-procurement-webui.version -DallowDowngrade=true'
-//                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
+                final String metasfreshWebApiUpdatePropertyParam = '-Dproperty=metasfresh-webui-api.version -DallowDowngrade=true'
+                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
+                final String metasfreshProcurementWebuiUpdatePropertyParam = '-Dproperty=metasfresh-procurement-webui.version -DallowDowngrade=true'
+                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
                 // set the artifact version of everything below the parent ${mvnConf.pomFile}
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
@@ -41,7 +37,7 @@ Map build(final MvnConf mvnConf) {
 
                 // now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
                 final def mavenProps = readProperties file: 'app.properties'
-                final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps)
+                final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
                 // echo "DONE calling misc.urlEncodeMapValues"
 
                 artifactURLs['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
@@ -50,34 +46,7 @@ Map build(final MvnConf mvnConf) {
                 artifactURLs['metasfresh-procurement-webui'] = "${mvnConf.resolveRepoURL}/de/metas/procurement/de.metas.procurement.webui/${urlEncodedMavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${urlEncodedMavenProps['metasfresh-procurement-webui.version']}.jar"
                 artifactURLs['metasfresh-webui-api'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh.version']}.jar"
                 artifactURLs['metasfresh-webui-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${urlEncodedMavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${urlEncodedMavenProps['metasfresh-webui-frontend.version']}.tar.gz"
-                artifactURLs['metasfresh-mobile-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-mobile-frontend/${urlEncodedMavenProps['metasfresh-mobile-frontend.version']}/metasfresh-mobile-frontend-${urlEncodedMavenProps['metasfresh-mobile-frontend.version']}.tar.gz"
-
                 echo "DONE populating artifactURLs"
-
-                // create and push kubernetes-helm values.yaml file
-                def valuesFileSrc = 'kubernetes/minikube/metasfresh-helm/values.yaml'
-                def valuesFileDes = 'kubernetes/minikube/values.yaml'
-                def valuesData = readYaml file: valuesFileSrc
-
-                valuesData.webui.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh-webui-frontend.version'])}"
-                valuesData.app.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-app:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
-                valuesData.webapi.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-api:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
-                valuesData.db.imageInit = "nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-14-2:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
-                valuesData.db.urlMigrationScript = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(mavenProps['metasfresh.version'])}/metasfresh-dist-dist-${misc.urlEncode(mavenProps['metasfresh.version'])}-sql-only.tar.gz"
-
-                // fix missing quotes after readYaml
-                valuesData.app.debug.suspend = "\"n\""
-                valuesData.app.debug.printBashCmds = "\"n\""
-                valuesData.db.debug.printBashCmds = "\"n\""
-
-                writeYaml file: valuesFileDes, data: valuesData
-
-                String helmValuesGroupId='de.metas.kubernetes'
-                String helmValuesArtifactId='helm'
-                String helmValuesClassifier='values'
-                withMaven(jdk: 'java-17', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-                    sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=kubernetes/minikube/values.yaml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=${helmValuesGroupId} -DartifactId=${helmValuesArtifactId} -Dversion=${env.MF_VERSION} -Dclassifier=${helmValuesClassifier} -Dpackaging=yaml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
-                }
 
                 final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
                 // echo "DONE calling misc.extractReleaseVersion"
@@ -86,10 +55,10 @@ Map build(final MvnConf mvnConf) {
                 // See
                 //  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
                 //  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
-                String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithTextAndBranch(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/, GH_METASFRESH_DOCKER_BRANCH)}</li>"
+                String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>";
                 if (env.BRANCH_NAME == 'release') {
                     releaseLinkWithText = """	${releaseLinkWithText}
-<li>..aaand ${misc.createWeeklyReleaseLinkWithTextAndBranch(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/, GH_METASFRESH_DOCKER_BRANCH)}</li>"""
+<li>..aaand ${misc.createWeeklyReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>"""
                 }
                 // echo "DONE calling misc.createReleaseLinkWithText"
 
@@ -125,18 +94,15 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_IMAGE_FULL_NAME=${latestE2eDockerImageName}&MF_DOCKER_REGISTRY=&MF_DOCKER_IMAGE=&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using this branch's latest e2e-docker image.</li>
 </ul>
 <p>
-<h3>Kubernetes</h3>
-this build's minikube helm <a href="${mvnConf.deployRepoURL}/de/metas/kubernetes/${helmValuesArtifactId}/${misc.urlEncode(env.MF_VERSION)}/${helmValuesArtifactId}-${misc.urlEncode(env.MF_VERSION)}-${helmValuesClassifier}.yaml">values.yaml</a>
-<p>
 <h3>Additional notes</h3>
 <ul>
   <li>The artifacts on <a href="${mvnConf.mvnDeployRepoBaseURL}">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
     Therefore the artifacts that are linked to by the URLs above might already have been deleted.</li>
   <li>It is important to note that both the <i>"metasfresh-dist"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
 </ul>
-"""
+""";
             }
-    return artifactURLs
+    return artifactURLs;
 }
 
-return this
+return this;

@@ -48,8 +48,6 @@ public class MacAddressGenerator implements IComponentGenerator
 {
 	private static final int NUMBER_OF_DIGITS = 12;
 
-	private static final String EMPTY_MAC_ADDRESS = "-";
-
 	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
 			AttributeConstants.RouterMAC1,
 			AttributeConstants.RouterMAC2,
@@ -113,8 +111,7 @@ public class MacAddressGenerator implements IComponentGenerator
 		{
 			return ImmutableAttributeSet.EMPTY;
 		}
-		final int availableSize = attributesAvailableToGenerate.size();
-		if (countRemainingToGenerate > availableSize)
+		if (countRemainingToGenerate > attributesAvailableToGenerate.size())
 		{
 			throw new AdempiereException("We still have to generate " + countRemainingToGenerate + " but only " + attributesAvailableToGenerate + " are available and not already generated");
 		}
@@ -130,13 +127,6 @@ public class MacAddressGenerator implements IComponentGenerator
 
 			result.attributeValue(attributeCode, macAddress.getAddress());
 		}
-
-		for (int i = countRemainingToGenerate; i < availableSize; i++)
-		{
-			final AttributeCode attributeCode = attributesAvailableToGenerate.get(i);
-			result.attributeValue(attributeCode, EMPTY_MAC_ADDRESS);
-		}
-
 		return result.build();
 	}
 
@@ -193,6 +183,7 @@ public class MacAddressGenerator implements IComponentGenerator
 
 		return MacAddress.of(result.toUpperCase());
 	}
+
 
 	@NonNull
 	private static String detectGroupSeparator(@Nullable final String prefix)

@@ -42,8 +42,7 @@ public enum InvoiceRule implements ReferenceListAwareEnum
 	AfterOrderDelivered(X_C_Order.INVOICERULE_AfterOrderDelivered), //
 	CustomerScheduleAfterDelivery(X_C_Order.INVOICERULE_CustomerScheduleAfterDelivery), //
 	Immediate(X_C_Order.INVOICERULE_Immediate),
-	OrderCompletelyDelivered(X_C_Order.INVOICERULE_OrderCompletelyDelivered),//
-	AfterPick(X_C_Order.INVOICERULE_AfterPick)//
+	OrderCompletelyDelivered(X_C_Order.INVOICERULE_OrderCompletelyDelivered)//
 	;
 
 	@Getter

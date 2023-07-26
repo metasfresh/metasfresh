@@ -1,6 +1,11 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import de.metas.handlingunits.picking.PackToSpec;
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -8,10 +13,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-
-import java.util.List;
-import java.util.Set;
 
 /*
  * #%L
@@ -41,19 +42,19 @@ public class SetHuPackingInstructionIdCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final Set<PickingCandidateId> pickingCandidateIds;
-	private final PackToSpec packToSpec;
+	private final HuPackingInstructionsId huPackingInstructionsId;
 
 	@Builder
 	private SetHuPackingInstructionIdCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final Set<PickingCandidateId> pickingCandidateIds,
-			@NonNull final PackToSpec packToSpec)
+			@NonNull final HuPackingInstructionsId huPackingInstructionsId)
 	{
 		Check.assumeNotEmpty(pickingCandidateIds, "pickingCandidateIds is not empty");
 
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.pickingCandidateIds = pickingCandidateIds;
-		this.packToSpec = packToSpec;
+		this.huPackingInstructionsId = huPackingInstructionsId;
 	}
 
 	public List<PickingCandidate> perform()
@@ -73,7 +74,7 @@ public class SetHuPackingInstructionIdCommand
 
 	private void processPickingCandidate(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.packTo(packToSpec);
+		pickingCandidate.packTo(huPackingInstructionsId);
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 }

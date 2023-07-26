@@ -1,24 +1,27 @@
 package de.metas.dataentry.data.json;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
-import de.metas.CreatedUpdatedInfo;
+
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
+import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecordField;
 import de.metas.dataentry.data.DataEntryRecordFieldDate;
 import de.metas.dataentry.data.DataEntryRecordFieldListValue;
 import de.metas.dataentry.data.DataEntryRecordFieldNumber;
 import de.metas.dataentry.data.DataEntryRecordFieldString;
 import de.metas.dataentry.data.DataEntryRecordFieldYesNo;
+import de.metas.dataentry.data.json.JSONDataEntryRecord.JSONDataEntryRecordBuilder;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /*
  * #%L
@@ -49,7 +52,7 @@ public class JSONDataEntryRecordMapper
 
 	public String serialize(@NonNull final List<DataEntryRecordField<?>> fields)
 	{
-		final JSONDataEntryRecord.JSONDataEntryRecordBuilder record = JSONDataEntryRecord.builder();
+		final JSONDataEntryRecordBuilder record = JSONDataEntryRecord.builder();
 		for (final DataEntryRecordField<?> field : fields)
 		{
 			record.createdUpdatedInfo(field.getDataEntryFieldId().getRepoId(), field.getCreatedUpdatedInfo());
@@ -94,7 +97,7 @@ public class JSONDataEntryRecordMapper
 		final ImmutableList.Builder<DataEntryRecordField<?>> result = ImmutableList.builder();
 
 		final JSONDataEntryRecord record = delegate.readValue(recordString);
-		final Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos = record.getCreatedUpdatedInfos();
+		final Map<Integer, DataEntryCreatedUpdatedInfo> createdUpdatedInfos = record.getCreatedUpdatedInfos();
 
 		for (final Entry<Integer, LocalDate> data : record.getDates().entrySet())
 		{

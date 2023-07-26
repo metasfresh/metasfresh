@@ -22,23 +22,14 @@
 
 package de.metas.camel.externalsystems.shopware6.product;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
-import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
-import de.metas.camel.externalsystems.shopware6.tax.TaxCategoryProvider;
-import de.metas.camel.externalsystems.shopware6.unit.UOMInfoProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.externalsystem.JsonUOM;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Data
@@ -46,41 +37,16 @@ import java.time.Instant;
 public class ImportProductsRouteContext
 {
 	@NonNull
-	private final ShopwareClient shopwareClient;
+	@Setter(AccessLevel.NONE)
+	private ShopwareClient shopwareClient;
 
 	@NonNull
-	private final JsonExternalSystemRequest externalSystemRequest;
-
-	@NonNull
-	private final String orgCode;
-
-	@NonNull
-	private final UOMInfoProvider shopwareUomInfoProvider;
-
-	@NonNull
-	private final CurrencyInfoProvider currencyInfoProvider;
-
-	@NonNull
-	private final ImmutableMap<String, JsonUOM> uomMappings;
-
-	@NonNull
-	private final TaxCategoryProvider taxCategoryProvider;
-
-	@Nullable
-	private final PriceListBasicInfo priceListBasicInfo;
+	@Setter(AccessLevel.NONE)
+	private JsonExternalSystemRequest externalSystemRequest;
 
 	@NonNull
 	@Setter(AccessLevel.NONE)
 	private Instant nextImportStartingTimestamp;
-
-	@Nullable
-	@Getter(AccessLevel.NONE)
-	private JsonProduct jsonProduct;
-
-	@Nullable
-	@Getter(AccessLevel.NONE)
-	private JsonProduct parentJsonProduct;
-
 
 	public void setNextImportStartingTimestamp(@NonNull final Instant candidate)
 	{
@@ -88,28 +54,5 @@ public class ImportProductsRouteContext
 		{
 			nextImportStartingTimestamp = candidate;
 		}
-	}
-
-	@Nullable
-	public Integer getPInstanceId()
-	{
-		return JsonMetasfreshId.toValue(externalSystemRequest.getAdPInstanceId());
-	}
-
-	@NonNull
-	public JsonProduct getJsonProduct()
-	{
-		if (jsonProduct == null)
-		{
-			throw new RuntimeException("getJsonProduct() called before assigning a product!");
-		}
-
-		return jsonProduct;
-	}
-
-	@Nullable
-	public JsonProduct getParentJsonProduct()
-	{
-		return parentJsonProduct;
 	}
 }

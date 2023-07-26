@@ -3,7 +3,6 @@ package de.metas.attachments;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.listener.TableAttachmentListenerService;
-import de.metas.common.util.FileUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -17,11 +16,6 @@ import org.compiere.model.X_AD_AttachmentEntry;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -134,15 +128,15 @@ public class AttachmentEntryRepository
 	public byte[] retrieveAttachmentEntryData(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry record = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
-		return getBinaryData(record);
+
+		return record.getBinaryData();
 	}
 
 	public AttachmentEntryDataResource retrieveAttachmentEntryDataResource(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry record = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
-
 		return AttachmentEntryDataResource.builder()
-				.source(getBinaryData(record))
+				.source(record.getBinaryData())
 				.filename(record.getFileName())
 				.description(record.getDescription())
 				.build();
@@ -229,8 +223,6 @@ public class AttachmentEntryRepository
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final I_AD_AttachmentEntry attachmententryRecord)
 	{
-		tableAttachmentListenerService.fireBeforeRecordLinked(attachmentEntry);
-
 		final Set<TableRecordReference> attachmentReferences = new HashSet<>(attachmentEntry.getLinkedRecords());
 
 		// delete superflous
@@ -298,35 +290,5 @@ public class AttachmentEntryRepository
 				.addEqualsFilter(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID, attachmentEntry.getId())
 				.create()
 				.delete();
-	}
-
-	private static byte[] getBinaryDataFromLocalFileURL(@NonNull final URI uri){
-		try
-		{
-			final URL url = uri.toURL();
-
-			final Path filePath = FileUtil.getFilePath(url);
-
-			return Files.readAllBytes(filePath);
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException("Could not get binary data from url " + uri, e);
-		}
-	}
-
-	private static byte[] getBinaryData(@NonNull final I_AD_AttachmentEntry record)
-	{
-		final AttachmentEntryType type = AttachmentEntryType.ofCode(record.getType());
-
-		if (AttachmentEntryType.LocalFileURL.equals(type))
-		{
-			Check.assumeNotNull(record.getURL(), "AD_AttachmentEntry.URL cannot be null for type = {}, AD_AttachmentEntry_ID = {}",
-								AttachmentEntryType.LocalFileURL.getCode(), record.getAD_AttachmentEntry_ID());
-
-			return getBinaryDataFromLocalFileURL(URI.create(record.getURL()));
-		}
-
-		return record.getBinaryData();
 	}
 }
