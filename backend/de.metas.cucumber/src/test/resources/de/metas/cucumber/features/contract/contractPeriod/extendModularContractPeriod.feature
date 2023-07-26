@@ -50,7 +50,12 @@ Feature: Extend Modular Contract Period
       | Identifier        | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
       | modularCntrTerm_1 | modularCntrConditions_1             | bp_modularCntrPeriod        | 2021-10-31 | 2022-10-30 | module_log_product          |
 
-    Then extend C_Flatrate_Term identified by modularCntrTerm_1 starting from 2022-10-31 will fail with message "Verlängerung nicht zulässig"
+    And add I_AD_PInstance with id 240720231
+
+    Then extend C_Flatrate_Term:
+      | C_Flatrate_Term_ID.Identifier | StartDate  | AD_PInstance_ID | OPT.ErrorMessage            |
+      | modularCntrTerm_1             | 2022-10-31 | 240720231       | Verlängerung nicht zulässig |
+
 
   @from:cucumber
   Scenario:  Regression - Extend Contract Period with any Contract Term had OnFlatrateTermExtend = Ex (Extension Not Allowed)
@@ -98,8 +103,10 @@ Feature: Extend Modular Contract Period
       | Identifier    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier |
       | aboCntrTerm_1 | abo_test_23072023_1                 | bp_abo_customer_1           | 2021-10-31 | 2022-10-30 | product_1                   | bp_abo_customer_1                   |
 
-    And add I_AD_PInstance with id 24072023
+    And add I_AD_PInstance with id 240720232
 
-    When extend C_Flatrate_Term identified by aboCntrTerm_1 starting from 2022-10-31 with PInstanceID 24072023
+    When extend C_Flatrate_Term:
+      | C_Flatrate_Term_ID.Identifier | StartDate  | AD_PInstance_ID |
+      | aboCntrTerm_1                 | 2022-10-31 | 240720232       |
 
     Then C_Flatrate_Term identified by aboCntrTerm_1 is extended

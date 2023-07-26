@@ -58,13 +58,13 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -79,6 +79,7 @@ import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_T
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_StartDate;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -353,64 +354,37 @@ public class C_Flatrate_Term_StepDef
 						.firstOnlyNotNull(I_C_Flatrate_Term.class));
 	}
 
-	@Then("^extend C_Flatrate_Term identified by (.*) starting from (.*) will fail with message \"(.*)\"$")
-	public void failWithMessageWhenExtendingC_Flatrate_TermsStartingFromWithMessage(@NonNull final String contractIdentifier, @NonNull final String startingDate, @NonNull final String message)
+	@Then("extend C_Flatrate_Term:")
+	public void extend_C_Flatrate_Term(@NonNull final DataTable dataTable)
 	{
-		assertThat(message).isNotBlank();
-		assertThat(contractIdentifier).isNotBlank();
-		assertThat(startingDate).isNotBlank();
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		final Map<String, String> row = tableRows.get(0);
+
+		final String contractIdentifier = row.get(COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+		assertThat(contractIdentifier).as(COLUMNNAME_C_Flatrate_Term_ID + "is a mandatory column").isNotBlank();
 
 		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
-		assertThat(contract).isNotNull();
+		assertThat(contract).as("No Contract Period found for Identifier {}", contractIdentifier).isNotNull();
 
-		final Timestamp nextStartDate = TimeUtil.parseTimestamp(startingDate);
-		assertThat(nextStartDate).isNotNull();
+		final Timestamp startDate = DataTableUtil.extractDateTimestampForColumnName(row, COLUMNNAME_StartDate);
+		assertThat(startDate).as(COLUMNNAME_StartDate + "is a mandatory column").isNotNull();
 
-		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
-				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
-				.contract(contract)
-				.forceExtend(true)
-				.forceComplete(false)
-				.nextTermStartDate(nextStartDate)
-				.build();
-
-		try
-		{
-			flatrateBL.extendContractAndNotifyUser(contractExtendingRequest);
-		}
-		catch (final Exception e)
-		{
-			assertThat(e).isNotNull();
-			assertThat(e).isExactlyInstanceOf(AdempiereException.class);
-			assertThat(e.getMessage()).isEqualTo(message); // "Extension Not Allowed"
-		}
-
-	}
-
-	@Then("^extend C_Flatrate_Term identified by (.*) starting from (.*) with PInstanceID (.*)$")
-	public void extendFlatrateTermStartingFromIsPossible(@NonNull final String contractIdentifier, @NonNull final String startDate, @NonNull final String pInstanceID)
-	{
-		assertThat(contractIdentifier).isNotBlank();
-		assertThat(startDate).isNotBlank();
-		assertThat(pInstanceID).isNotBlank();
-
-		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
-		assertThat(contract).isNotNull();
+		final Integer pInstanceID = DataTableUtil.extractIntForColumnName(row, I_AD_PInstance.COLUMNNAME_AD_PInstance_ID);
+		assertThat(pInstanceID).as(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID + "is a mandatory column").isNotNull();
 
 		assertThat(contract.getC_FlatrateTerm_Next()).isNull();  // contract not extended yet
 
-		final Timestamp nextStartDate = TimeUtil.parseTimestamp(startDate);
-		assertThat(nextStartDate).isNotNull();
+		final Integer ad_PInstance_ID = Integer.valueOf(pInstanceID);
+		assertThat(ad_PInstance_ID).isNotNull();
 
-		final Integer pinstance_ID = Integer.valueOf(pInstanceID);
-		assertThat(pinstance_ID).isNotNull();
+		final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + "ErrorMessage");
 
 		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
-				.AD_PInstance_ID(PInstanceId.ofRepoId(pinstance_ID))
+				.AD_PInstance_ID(PInstanceId.ofRepoId(ad_PInstance_ID))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(false)
-				.nextTermStartDate(nextStartDate)
+				.nextTermStartDate(startDate)
 				.build();
 
 		try
@@ -419,7 +393,17 @@ public class C_Flatrate_Term_StepDef
 		}
 		catch (final Exception exception)
 		{
-			fail(exception.getMessage(), exception);
+			if (errorMessage != null)
+			{
+				assertThat(exception).isNotNull();
+				assertThat(exception).isExactlyInstanceOf(AdempiereException.class);
+				assertThat(exception.getMessage()).isEqualTo(errorMessage);
+			}
+			else
+			{
+				fail(exception.getMessage(), exception);
+			}
+
 		}
 
 	}
@@ -434,6 +418,5 @@ public class C_Flatrate_Term_StepDef
 
 		final I_C_Flatrate_Term nextContract = contract.getC_FlatrateTerm_Next();
 		assertThat(nextContract).isNotNull(); // next term created & contract extended
-
 	}
 }
