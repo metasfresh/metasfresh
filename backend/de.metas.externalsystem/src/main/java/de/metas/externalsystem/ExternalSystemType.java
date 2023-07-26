@@ -60,7 +60,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	@Getter
 	private final String externalSystemProcessClassName;
 
-	ExternalSystemType(@NonNull final String code, final String name, final String externalSystemProcessClassName)
+	ExternalSystemType(@NonNull final String code, final String name, @Nullable final String externalSystemProcessClassName)
 	{
 		this.code = code;
 		this.name = name;

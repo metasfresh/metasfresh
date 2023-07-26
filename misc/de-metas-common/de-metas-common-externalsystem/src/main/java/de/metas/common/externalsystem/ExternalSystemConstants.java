@@ -30,7 +30,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_API_KEY = "APIKey";
 	public static final String PARAM_BASE_PATH = "BasePath";
 	public static final String PARAM_TENANT = "Tenant";
-	public static final String PARAM_BPARTNER_GROUP = "BPartnerGroup";
+
 	public static final String PARAM_UPDATED_AFTER = "UpdatedAfter";
 	public static final String PARAM_UPDATE_AFTER_DOCUMENT = "UpdatedAfterDocument";
 	public static final String PARAM_UPDATE_AFTER_ATTACHMENT = "UpdatedAfterAttachment";
@@ -40,7 +40,6 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_JSON_PATH_CONSTANT_METASFRESH_ID = "JSONPathConstantMetasfreshID";
 	public static final String PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID = "JSONPathConstantShopwareID";
-	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_ID = "JSONPathConstantBPartnerID";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID = "JSONPathConstantBPartnerLocationID";
 	public static final String PARAM_JSON_PATH_SALES_REP_ID = "JSONPathConstantSalesRepID";
 	public static final String PARAM_JSON_PATH_EMAIL = "JSONPathEmail";

@@ -25,7 +25,6 @@ package de.metas.common.rest_api.v2.printing.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import java.util.List;

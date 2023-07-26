@@ -23,6 +23,7 @@
 package de.metas.printing;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -35,6 +36,7 @@ import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import de.metas.printing.printingdata.PrintingSegment;
 import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -132,7 +134,9 @@ public class PrintOutputFacade
 					{
 						throw new AdempiereException(ERROR_MSG_EXTERNAL_SYSTEM_CONFIG).markAsUserValidationError();
 					}
-					final int firstExternalSystemId = printingDataForExternalSystems.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId().getRepoId();
+					final ExternalSystemParentConfigId configId = printingDataForExternalSystems.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
+					Check.assumeNotNull(configId,"ExternalSystemParentConfigId shouldn't be null");
+					final int firstExternalSystemId = configId.getRepoId();
 					final PrintingClientRequest request = PrintingClientRequest.builder()
 							.printingQueueId(item.getC_Printing_Queue_ID())
 							.orgId(item.getAD_Org_ID())
@@ -149,13 +153,16 @@ public class PrintOutputFacade
 
 	private boolean hasMultipleExternalSystemConfigs(@NonNull final List<PrintingData> printingDataList)
 	{
-
-		final int firstExternalSystemId = printingDataList.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId().getRepoId();
+		final ExternalSystemParentConfigId configId = printingDataList.get(0).getSegments().get(0).getPrinter().getExternalSystemParentConfigId();
+		Check.assumeNotNull(configId,"ExternalSystemParentConfigId shouldn't be null");
+		final int firstExternalSystemId = configId.getRepoId();
 		for (final PrintingData printingData : printingDataList)
 		{
 			for (final PrintingSegment segment : printingData.getSegments())
 			{
-				if (firstExternalSystemId != segment.getPrinter().getExternalSystemParentConfigId().getRepoId())
+				final ExternalSystemParentConfigId segmentConfigId = segment.getPrinter().getExternalSystemParentConfigId();
+				Check.assumeNotNull(segmentConfigId,"ExternalSystemParentConfigId shouldn't be null");
+				if (firstExternalSystemId != segmentConfigId.getRepoId())
 				{
 					return true;
 				}
