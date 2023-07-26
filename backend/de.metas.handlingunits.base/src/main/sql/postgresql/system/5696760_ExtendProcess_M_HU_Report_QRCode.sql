@@ -78,3 +78,48 @@ UPDATE AD_Process SET Classname='de.metas.report.jasper.client.process.JasperRep
 UPDATE AD_Process SET Classname='de.metas.report.jasper.client.process.JasperReportStarter', Type='JasperReportsSQL',Updated=TO_TIMESTAMP('2023-07-25 17:20:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585289
 ;
 
+
+-- Process: M_HU_QRCode_PDF_S(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-07-26T06:50:47.178Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='QR Etikett - klein',Updated=TO_TIMESTAMP('2023-07-26 09:50:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585289
+;
+
+-- Value: M_HU_QRCode_PDF_S
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/QR_Label_S.jasper
+-- 2023-07-26T06:50:52.029Z
+UPDATE AD_Process SET Description='', Help=NULL, Name='QR Etikett - klein',Updated=TO_TIMESTAMP('2023-07-26 09:50:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585289
+;
+
+-- Process: M_HU_QRCode_PDF_S(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-07-26T06:50:52.022Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='QR Etikett - klein',Updated=TO_TIMESTAMP('2023-07-26 09:50:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585289
+;
+
+-- Process: M_HU_QRCode_PDF_S(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-07-26T06:50:59.658Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='HU QR barcode Small',Updated=TO_TIMESTAMP('2023-07-26 09:50:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585289
+;
+
+-- Value: M_HU_QRCode_PDF_L
+-- Classname: de.metas.report.jasper.client.process.JasperReportStarter
+-- JasperReport: @PREFIX@de/metas/docs/label/QR_Label_L.jasper
+-- 2023-07-26T06:51:31.146Z
+UPDATE AD_Process SET Description='', Help=NULL, Name='QR Etikett - groß',Updated=TO_TIMESTAMP('2023-07-26 09:51:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585290
+;
+
+-- Process: M_HU_QRCode_PDF_L(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-07-26T06:51:31.137Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='QR Etikett - groß',Updated=TO_TIMESTAMP('2023-07-26 09:51:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585290
+;
+
+-- Process: M_HU_QRCode_PDF_L(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-07-26T06:51:36.693Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-07-26 09:51:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585290
+;
+
+-- Process: M_HU_QRCode_PDF_L(de.metas.report.jasper.client.process.JasperReportStarter)
+-- 2023-07-26T06:51:41.515Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='QR Etikett - groß',Updated=TO_TIMESTAMP('2023-07-26 09:51:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585290
+;
+
