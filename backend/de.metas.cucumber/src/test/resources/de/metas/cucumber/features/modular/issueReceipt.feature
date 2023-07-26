@@ -106,12 +106,14 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
 
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.Modular_Flatrate_Term_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
-      | ppOrder_manufacturing  | MMO         | manufacturingProduct    | 10         | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | moduleLogContract_1                     | warehouse                     |
+      | ppOrder_manufacturing  | MMO         | manufacturingProduct    | 10         | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | N                | moduleLogContract_1                     | warehouse                     |
 
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppOrderBOMLine_1               | ppOrder_manufacturing  | componentProduct        | 10           | true            | PCE               | CO            |
       | ppOrderBOMLine_2               | ppOrder_manufacturing  | coProduct               | -1.5         | true            | PCE               | CP            |
+
+    And the manufacturing order identified by ppOrder_manufacturing is completed
 
     And select M_HU to be issued for productionOrder
       | M_HU_ID.Identifier | PP_Order_Qty_ID.Identifier | PP_Order_BOMLine_ID.Identifier | OPT.MovementDate     |
