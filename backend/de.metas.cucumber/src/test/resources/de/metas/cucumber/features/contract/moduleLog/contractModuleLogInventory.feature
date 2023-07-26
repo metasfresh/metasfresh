@@ -32,12 +32,12 @@ Feature: Modular contract log from inventory
       | locator                 | locator_12012023_1 | warehouse                 |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year                 | 2022       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
@@ -100,12 +100,12 @@ Feature: Modular contract log from inventory
       | locator                 | locator_12012023_1 | warehouse                 |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year                 | 2022       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
@@ -172,12 +172,12 @@ Feature: Modular contract log from inventory
       | locator                 | locator_12012023_1 | warehouse                 |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year                 | 2022       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
