@@ -66,10 +66,7 @@ public class M_HU_Report_QRCode extends JavaProcess
 		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
 		final AdProcessId adProcessId = AdProcessId.ofRepoId(processId);
 
-		final ImmutableList<ProcessInfoParameter> processParams = ImmutableList.of(
-				ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId()));
-
-		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes,processParams,adProcessId);
+		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes,getPinstanceId(),adProcessId);
 		if(isDirectPrint)
 		{
 			huQRCodesService.print(pdf);

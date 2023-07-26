@@ -32,48 +32,48 @@ public class CreatePDFCommand
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final ImmutableList<PrintableQRCode> qrCodes;
-	private final ImmutableList<ProcessInfoParameter> processParams;
+	private PInstanceId pInstanceId;
 	private AdProcessId qrCodeProcessId ;
 
 	@Builder
 	private CreatePDFCommand(
 			@NonNull final List<PrintableQRCode> qrCodes,
-			@NonNull final List<ProcessInfoParameter> processParams,
+			@Nullable final PInstanceId pInstanceId,
 			@NonNull final AdProcessId qrCodeProcessId)
 	{
 		Check.assumeNotEmpty(qrCodes, "qrCodes is not empty");
 		this.qrCodes = ImmutableList.copyOf(qrCodes);
-		this.processParams = ImmutableList.copyOf(processParams);
+		this.pInstanceId = pInstanceId;
 		this.qrCodeProcessId = qrCodeProcessId;
 
 	}
 
 	public QRCodePDFResource execute()
 	{
-		PInstanceId pinstanceId;
+		ImmutableList<ProcessInfoParameter> processParams;
 		if (adProcessDAO.isJasperJSONProcess(qrCodeProcessId))
 		{
-			pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
-					PInstanceRequest.builder()
-							.processId(qrCodeProcessId)
-							.processParams(ImmutableList.of(
-									ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, toJsonString(qrCodes))
-							))
-							.build());
+
+			processParams = ImmutableList.of(
+					ProcessInfoParameter.of(ReportConstants.REPORT_PARAM_JSON_DATA, toJsonString(qrCodes)));
 		}
 		else
 		{
-			pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
-					PInstanceRequest.builder()
-							.processId(qrCodeProcessId)
-							.processParams(processParams)
-							.build());
+			processParams = ImmutableList.of(
+					ProcessInfoParameter.of("AD_PInstance_ID", pInstanceId));
+
 		}
+
+		final PInstanceId processPInstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(
+				PInstanceRequest.builder()
+						.processId(qrCodeProcessId)
+						.processParams(processParams)
+						.build());
 
 		final ProcessInfo reportProcessInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(qrCodeProcessId)
-				.setPInstanceId(pinstanceId)
+				.setPInstanceId(processPInstanceId)
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
 
@@ -82,7 +82,7 @@ public class CreatePDFCommand
 		return QRCodePDFResource.builder()
 				.data(report.getReportContent())
 				.filename(report.getReportFilename())
-				.pinstanceId(pinstanceId)
+				.pinstanceId(processPInstanceId)
 				.processId(qrCodeProcessId)
 				.build();
 	}
