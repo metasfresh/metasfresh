@@ -44,7 +44,7 @@ public class ShipmentScheduleQtyOnHandStorageFactory
 		this.providers = providers;
 	}
 
-	public final ShipmentScheduleQtyOnHandStorageHolder ofOlAndScheds(@NonNull final List<OlAndSched> lines)
+	public final ShipmentScheduleQtyOnHandStorageHolder getHolderForOlAndSched(@NonNull final List<OlAndSched> lines)
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = lines
 				.stream()

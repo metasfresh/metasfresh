@@ -461,7 +461,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		//
 		// Load QtyOnHand in scope for our lines
 		// i.e. iterate all lines to cache the required storage info and to subtract the quantities that can't be allocated from the storage allocation.
-		final ShipmentScheduleQtyOnHandStorageHolder qtyOnHands = shipmentScheduleQtyOnHandStorageFactory.ofOlAndScheds(lines);
+		final ShipmentScheduleQtyOnHandStorageHolder qtyOnHands = shipmentScheduleQtyOnHandStorageFactory.getHolderForOlAndSched(lines);
 
 		//
 		// Iterate and try to allocate the QtyOnHand

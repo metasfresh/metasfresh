@@ -41,7 +41,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		}
 
 		final OlAndSched olAndSched = OlAndSched.builder().shipmentSchedule(shipmentSchedule).build();
-		final ShipmentScheduleQtyOnHandStorageHolder storagesContainer = shipmentScheduleQtyOnHandStorageFactory.ofOlAndScheds(Collections.singletonList(olAndSched));
+		final ShipmentScheduleQtyOnHandStorageHolder storagesContainer = shipmentScheduleQtyOnHandStorageFactory.getHolderForOlAndSched(Collections.singletonList(olAndSched));
 		final ShipmentScheduleAvailableStock storageDetails = storagesContainer.getStockDetailsMatching(olAndSched);
 
 		addLog("@QtyOnHand@ (@Total@): " + storageDetails.getTotalQtyAvailable());
