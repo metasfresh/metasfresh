@@ -4,9 +4,6 @@ import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.report.DocumentReportFlavor;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -14,7 +11,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 
 @Service

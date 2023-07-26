@@ -10,7 +10,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.NonNull;
