@@ -40,14 +40,12 @@ public class M_HU_Report_QRCode extends JavaProcess
 
 
 	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
-	private static final String PARAM_IsDirectPrint = "IsDirectPrint";
 
 	@Param(parameterName = PARAM_AD_Process_ID)
 	private int processId;
 
-	@Param(parameterName = PARAM_IsDirectPrint)
-	private boolean isDirectPrint;
-
+	@Param(parameterName = "IsPrintPreview")
+	private boolean isPrintPreview;
 
 	@Override
 	@RunOutOfTrx
