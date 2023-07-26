@@ -44,14 +44,14 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-@Service
+@Repository
 public class ModularContractLogDAO
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -164,6 +164,15 @@ public class ModularContractLogDAO
 		save(reversedLog);
 
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
+	}
+
+	public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordReference)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, recordReference.getAdTableId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, recordReference.getRecord_ID())
+				.create()
+				.anyMatch();
 	}
 
 	@NonNull

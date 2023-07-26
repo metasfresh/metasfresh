@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -52,6 +53,8 @@ import org.compiere.model.I_M_Product;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Stream;
+
 
 public interface IFlatrateBL extends ISingletonService
 {
@@ -238,4 +241,6 @@ public interface IFlatrateBL extends ISingletonService
 	 * @return
 	 */
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
+
+	Stream<I_C_Flatrate_Term> streamModularFlatrateTerms(ModularFlatrateTermRequest request);
 }
