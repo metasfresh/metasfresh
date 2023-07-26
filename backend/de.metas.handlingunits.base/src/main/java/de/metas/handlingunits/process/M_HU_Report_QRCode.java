@@ -11,6 +11,7 @@ import de.metas.handlingunits.report.HUReportService;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
 import de.metas.report.server.OutputType;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -42,6 +43,7 @@ import org.compiere.SpringContextHolder;
  * It takes M_HU_IDs from T_Selection, gets/generates QR-Codes for them
  * and then generate the PDF.
  */
+
 public class M_HU_Report_QRCode extends JavaProcess
 {
 	private final HUReportService huReportService = HUReportService.get();
@@ -57,6 +59,7 @@ public class M_HU_Report_QRCode extends JavaProcess
 	private boolean isPrintPreview;
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
 		final ImmutableSet<HuId> huIds = huReportService.getHuIdsFromSelection(getPinstanceId());
