@@ -24,11 +24,21 @@ package de.metas.handlingunits.inout;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.reservation.HUReservation;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.order.OrderLineId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.inout.util.IShipmentScheduleQtyOnHandStorage;
@@ -38,7 +48,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Util;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -51,62 +60,38 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 	private final CCache<Util.ArrayKey, StockDataQuery> cachedMaterialQueries = CCache.newLRUCache("QtyReservedCachedMaterialQueries", 200, CCache.EXPIREMINUTES_Never);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull final ImmutableList<ShipmentScheduleAvailableStockDetail> stockDetails;
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-	public ShipmentScheduleQtyReservedStorage(final @NonNull ImmutableList<ShipmentScheduleAvailableStockDetail> stockDetails)
+	private final HUReservationRepository huReservationRepository;
+
+	public ShipmentScheduleQtyReservedStorage(final HUReservationRepository huReservationRepository)
 	{
-		this.stockDetails = stockDetails;
+		this.huReservationRepository = huReservationRepository;
 	}
 
 	@Override
+	@NonNull
 	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(final @NonNull I_M_ShipmentSchedule sched)
 	{
-		if (stockDetails.isEmpty())
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(sched.getC_OrderLine_ID());
+
+		if (orderLineId == null)
 		{
 			return Collections.emptyList();
 		}
 		else
 		{
-			//
 			// Reserved qty shall always be in VHUs, no need for picking BOM.
-			final StockDataQuery mainProductQuery = toQuery(sched);
-			return new ArrayList<>(getStockDetailsMatching(mainProductQuery));
+			return huReservationRepository.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
+					.map(huRes -> toShipmentScheduleAvailableStockDetail(huRes, sched))
+					.orElse(ImmutableList.of());
 		}
-	}
-
-	private ImmutableList<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final StockDataQuery query)
-	{
-		return stockDetails
-				.stream()
-				.filter(stockDetail -> matching(query, stockDetail))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private static boolean matching(final StockDataQuery query, final ShipmentScheduleAvailableStockDetail stockDetail)
-	{
-		//
-		// Product
-		if (!ProductId.equals(query.getProductId(), stockDetail.getProductId()))
-		{
-			return false;
-		}
-
-		//
-		// Warehouse
-		final Set<WarehouseId> queryWarehouseIds = query.getWarehouseIds();
-		if (!queryWarehouseIds.isEmpty() && !queryWarehouseIds.contains(stockDetail.getWarehouseId()))
-		{
-			return false;
-		}
-
-		//
-		// Attributes
-		final boolean queryMatchesAll = query.getStorageAttributesKey().isAll();
-		final boolean queryMatchesStockDetail = AttributesKey.equals(query.getStorageAttributesKey(), stockDetail.getStorageAttributesKey());
-		return queryMatchesAll || queryMatchesStockDetail;
 	}
 
 	@Override
+	@NonNull
 	public StockDataQuery toQuery(final @NonNull I_M_ShipmentSchedule sched)
 	{
 		final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(sched);
@@ -119,6 +104,7 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 		return cachedMaterialQueries.getOrLoad(materialQueryCacheKey, k -> toQuery0(sched));
 	}
 
+	@NonNull
 	private StockDataQuery toQuery0(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final WarehouseId shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
@@ -131,4 +117,31 @@ public class ShipmentScheduleQtyReservedStorage implements IShipmentScheduleQtyO
 				.productId(productId)
 				.build();
 	}
+
+	private ImmutableList<ShipmentScheduleAvailableStockDetail> toShipmentScheduleAvailableStockDetail(@NonNull final HUReservation huRes, @NonNull final I_M_ShipmentSchedule sched)
+	{
+		return huRes.getVhuIds()
+				.stream()
+				.map(vhuId -> toShipmentScheduleAvailableStockDetail(vhuId, huRes, sched))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ShipmentScheduleAvailableStockDetail toShipmentScheduleAvailableStockDetail(@NonNull final HuId vhuId, final @NonNull HUReservation huRes, @NonNull final I_M_ShipmentSchedule sched)
+	{
+		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(productDAO.getById(productId).getC_UOM_ID());
+		final WarehouseId warehouseId = handlingUnitsDAO.getWarehouseIdForHuId(vhuId);
+
+
+		final Quantity reservedQtyByVhuId = huRes.getReservedQtyByVhuId(vhuId);
+		final Quantity quantityInProductUom = uomConversionBL.convertQuantityTo(reservedQtyByVhuId, productId, uomId);
+		return ShipmentScheduleAvailableStockDetail.builder()
+				.productId(productId)
+				.qtyOnHand(quantityInProductUom.toBigDecimal())
+				.warehouseId(warehouseId)
+				.storageAttributesKey(AttributesKey.ALL) // it's reserved, don't care about attributes at this point
+				.build();
+
+	}
 }
+

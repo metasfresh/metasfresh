@@ -45,7 +45,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Locator;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
@@ -306,6 +306,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * Retrieve all the child HUs of the given item, both active and not active
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
+
+	WarehouseId getWarehouseIdForHuId(@NonNull HuId huId);
 
 	/**
 	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs

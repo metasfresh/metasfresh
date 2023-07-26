@@ -21,7 +21,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 	private I_M_ShipmentSchedule shipmentSchedule;
 
 	private final transient ShipmentScheduleQtyOnHandStorageFactory //
-	shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
+			shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
 
 	@Override
 	protected void prepare()

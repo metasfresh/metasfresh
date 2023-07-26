@@ -22,12 +22,12 @@
 
 package org.adempiere.inout.util;
 
-import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 
 import java.util.List;
 
 public interface IShipmentScheduleQtyOnHandProvider
 {
-	IShipmentScheduleQtyOnHandStorage ofOlAndScheds(@NonNull List<OlAndSched> lines);
+	IShipmentScheduleQtyOnHandStorage getStorageFor(@NonNull List<I_M_ShipmentSchedule> lines);
 }

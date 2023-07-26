@@ -22,16 +22,11 @@
 
 package de.metas.handlingunits.inout;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.reservation.HUReservation;
-import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 import org.adempiere.inout.util.IShipmentScheduleQtyOnHandProvider;
 import org.adempiere.inout.util.IShipmentScheduleQtyOnHandStorage;
-import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,25 +47,9 @@ public class ShipmentScheduleQtyReservedProvider implements IShipmentScheduleQty
 	}
 
 	@Override
-	public IShipmentScheduleQtyOnHandStorage ofOlAndScheds(@NonNull final List<OlAndSched> lines)
+	public IShipmentScheduleQtyOnHandStorage getStorageFor(@NonNull final List<I_M_ShipmentSchedule> lines)
 	{
-		final ImmutableList.Builder<ShipmentScheduleAvailableStockDetail> builder = ImmutableList.builder();
-
-		for (final OlAndSched line : lines)
-		{
-			line.getOrderLineId().flatMap(orderLineId -> huReservationRepository.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
-					.map(huRes -> toShipmentScheduleAvailableStockDetail(huRes, line.getSched())))
-					.ifPresent(builder::add);
-
-		}
-
-		return new ShipmentScheduleQtyReservedStorage(builder.build());
-	}
-
-	private ShipmentScheduleAvailableStockDetail toShipmentScheduleAvailableStockDetail(@NonNull final HUReservation huRes, @NonNull final I_M_ShipmentSchedule sched)
-	{
-		//FIXME astefan add implementation
-		return null;
+		return new ShipmentScheduleQtyReservedStorage(huReservationRepository);
 	}
 
 }

@@ -2,6 +2,7 @@ package org.adempiere.inout.util;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -45,8 +46,13 @@ public class ShipmentScheduleQtyOnHandStorageFactory
 
 	public final ShipmentScheduleQtyOnHandStorageHolder ofOlAndScheds(@NonNull final List<OlAndSched> lines)
 	{
+		final List<I_M_ShipmentSchedule> shipmentSchedules = lines
+				.stream()
+				.map(OlAndSched::getSched)
+				.collect(ImmutableList.toImmutableList());
+
 		final ImmutableList<IShipmentScheduleQtyOnHandStorage> shipmentScheduleQtyOnHandStorages = providers.stream()
-				.map(provider -> provider.ofOlAndScheds(lines))
+				.map(provider -> provider.getStorageFor(shipmentSchedules))
 				.collect(ImmutableList.toImmutableList());
 		return ShipmentScheduleQtyOnHandStorageHolder.of(shipmentScheduleQtyOnHandStorages);
 	}

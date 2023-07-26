@@ -22,8 +22,6 @@
 
 package org.adempiere.inout.util;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockRepository;
 import lombok.NonNull;
@@ -42,11 +40,8 @@ public class ShipmentScheduleQtyOnHandProvider implements IShipmentScheduleQtyOn
 	}
 
 	@Override
-	public final ShipmentScheduleQtyOnHandStorage ofOlAndScheds(@NonNull final List<OlAndSched> lines)
+	public final ShipmentScheduleQtyOnHandStorage getStorageFor(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = lines.stream()
-				.map(OlAndSched::getSched)
-				.collect(ImmutableList.toImmutableList());
 		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules, stockRepository);
 	}
 }
