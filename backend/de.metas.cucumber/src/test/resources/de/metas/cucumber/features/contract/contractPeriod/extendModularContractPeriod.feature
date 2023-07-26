@@ -1,3 +1,4 @@
+@dev:cloneFeature
 Feature: Extend Modular Contract Period
 
   Background:
@@ -11,8 +12,8 @@ Feature: Extend Modular Contract Period
       | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear | OPT.C_Calendar_ID.Identifier |
-      | y2022                | 2022       | harvesting_calendar          |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | y2022                | 2022       | harvesting_calendar      |
 
 
   @from:cucumber
@@ -50,7 +51,7 @@ Feature: Extend Modular Contract Period
       | Identifier        | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
       | modularCntrTerm_1 | modularCntrConditions_1             | bp_modularCntrPeriod        | 2021-10-31 | 2022-10-30 | module_log_product          |
 
-    When extend C_Flatrate_Term identified by modularCntrTerm_1 starting from 2022-10-31 will fail with message Verlängerung nicht zulässig
+    Then extend C_Flatrate_Term identified by modularCntrTerm_1 starting from 2022-10-31 will fail with message "Verlängerung nicht zulässig"
 
   @from:cucumber
   Scenario:  Regression - Extend Contract Period with any Contract Term had OnFlatrateTermExtend = Ex (Extension Not Allowed)

@@ -15,9 +15,9 @@ Feature: Clone Modular Contract Term
       | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear | OPT.C_Calendar_ID.Identifier |
-      | y2022                | 2022       | harvesting_calendar          |
-      | y2023                | 2023       | harvesting_calendar          |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | y2022                | 2022       | harvesting_calendar      |
+      | y2023                | 2023       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
@@ -44,19 +44,22 @@ Feature: Clone Modular Contract Term
   - validate modular contract term can be edited (`Draft`)
   - validate modular contract settings cloned for the harvest year 2023
 
-    When clone C_Flatrate_Conditions identified by modularContractTerm_2022 for year identified by y2023
+    When clone C_Flatrate_Conditions:
+      | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier
+      | modularContractTerm_2022            | y2023                | clonedModularContractTerm_2022
 
     Then validate cloned C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                          | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.DocStatus |
-      | cloned_flatrate_conditions          | modularContractTerm_2022_2023 | ModularContract | Ex                       | DR            |
+      | clonedModularContractTerm_2022      | modularContractTerm_2022_2023 | ModularContract | Ex                       | DR            |
 
     And validate cloned ModCntr_Settings had harvest year y2023
 
 
   @from:cucumber
+  @dev:cloneFeature
   Scenario: Clone fail - for Modular Contract Terms with an existing harvest year
   - Modular Contract term already exists  for harvest year 2022
   - clone the Modular Contract for harvest year 2022
   - fail with message "Einstellungen mit demselben Jahr sind bereits vorhanden"
 
-    Then fail with message Einstellungen mit demselben Jahr sind bereits vorhanden when clonning C_Flatrate_Conditions identified by modularContractTerm_2022 for year identified by y2022
+    Then fail with message "Einstellungen mit demselben Jahr sind bereits vorhanden" when clonning C_Flatrate_Conditions identified by modularContractTerm_2022 for year identified by y2022
