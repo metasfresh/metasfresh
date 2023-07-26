@@ -31,7 +31,6 @@ import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductDAO;
@@ -51,6 +50,7 @@ import java.util.List;
 
 /**
  * This class shall hold details of external property VHUs that are reserved for an OrderLine and ready to be shipped.
+ * These should never show up in {@code MD_Stock} and as such would never be picked up by the qtyonHand logic.
  */
 public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentScheduleQtyOnHandStorage
 {
@@ -90,12 +90,12 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 	{
 		return huRes.getVhuIds()
 				.stream()
-				.filter(this::isExternalPropertyReservation)
+				.filter(this::isExternalPropertyVHU)
 				.map(vhuId -> toShipmentScheduleAvailableStockDetail(vhuId, huRes, sched))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private boolean isExternalPropertyReservation(final HuId vhuId)
+	private boolean isExternalPropertyVHU(final HuId vhuId)
 	{
 		final ImmutableList<HUDescriptor> huDescriptors = huDescriptorService.createHuDescriptors(vhuId);
 		Check.assumeEquals(huDescriptors.size(), 1, "VHU {} should be associated with exactly 1 M_HU_Storage", vhuId);
@@ -115,7 +115,6 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 				.productId(productId)
 				.qtyOnHand(quantityInProductUom.toBigDecimal())
 				.warehouseId(warehouseId)
-				.storageAttributesKey(AttributesKey.ALL) // it's reserved, don't care about attributes at this point
 				.build();
 
 	}
