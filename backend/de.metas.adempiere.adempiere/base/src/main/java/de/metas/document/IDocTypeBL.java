@@ -72,4 +72,6 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isInternalVendorInvoice(DocTypeId docTypeId);
 
 	void save(I_C_DocType dt);
+
+	boolean isModularManufacturingOrder(@NonNull DocTypeId docTypeId);
 }
