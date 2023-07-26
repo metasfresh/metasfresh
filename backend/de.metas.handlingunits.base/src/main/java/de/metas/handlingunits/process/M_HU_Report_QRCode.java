@@ -49,14 +49,12 @@ public class M_HU_Report_QRCode extends JavaProcess
 
 
 	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
-	private static final String PARAM_IsDirectPrint = "IsDirectPrint";
 
 	@Param(parameterName = PARAM_AD_Process_ID)
 	private int processId;
 
-	@Param(parameterName = PARAM_IsDirectPrint)
-	private boolean isDirectPrint;
-
+	@Param(parameterName = "IsPrintPreview")
+	private boolean isPrintPreview;
 
 	@Override
 	protected String doIt()
@@ -66,13 +64,15 @@ public class M_HU_Report_QRCode extends JavaProcess
 		final AdProcessId adProcessId = AdProcessId.ofRepoId(processId);
 
 		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes,getPinstanceId(),adProcessId);
-		if(isDirectPrint)
+
+		// print preview was set by the flag IsPrintPreview
+		if(getProcessInfo().isPrintPreview())
 		{
-			huQRCodesService.print(pdf);
+			getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
 		}
 		else
 		{
-			getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
+			huQRCodesService.print(pdf);
 		}
 
 		return MSG_OK;
