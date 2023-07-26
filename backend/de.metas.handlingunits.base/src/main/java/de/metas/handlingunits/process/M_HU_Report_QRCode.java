@@ -2,16 +2,18 @@ package de.metas.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUReportService;
+import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.report.server.OutputType;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.springframework.core.io.Resource;
 
 /*
  * #%L
@@ -45,14 +47,33 @@ public class M_HU_Report_QRCode extends JavaProcess
 	private final HUReportService huReportService = HUReportService.get();
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
+
+	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
+	private static final String PARAM_IsDirectPrint = "IsDirectPrint";
+
+	@Param(parameterName = PARAM_AD_Process_ID)
+	private int processId;
+
+	@Param(parameterName = PARAM_IsDirectPrint)
+	private boolean isDirectPrint;
+
+
 	@Override
 	protected String doIt()
 	{
 		final ImmutableSet<HuId> huIds = huReportService.getHuIdsFromSelection(getPinstanceId());
 		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
+		final AdProcessId adProcessId = AdProcessId.ofRepoId(processId);
 
-		final Resource pdf = huQRCodesService.createPDF(qrCodes);
-		getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
+		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes,getPinstanceId(),adProcessId);
+		if(isDirectPrint)
+		{
+			huQRCodesService.print(pdf);
+		}
+		else
+		{
+			getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
+		}
 
 		return MSG_OK;
 	}

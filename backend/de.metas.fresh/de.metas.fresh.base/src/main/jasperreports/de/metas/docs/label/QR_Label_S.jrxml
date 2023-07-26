@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="QR Label" printOrder="Horizontal" pageWidth="170" pageHeight="110" columnWidth="162" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" resourceBundle="de/metas/docs/label/report" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[select t.* , s.T_Selection_id as hu
+from T_Selection s
+                    join "de.metas.handlingunits".hu_label(s.T_Selection_id) as t on 1=1
+where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
+	</queryString>
+	<field name="prod_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="prod_name"/>
+	</field>
+	<field name="prod_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="prod_value"/>
+	</field>
+	<field name="prod_desc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="prod_desc"/>
+	</field>
+	<field name="displayableqrcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="displayableqrcode"/>
+	</field>
+	<field name="renderedqrcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="renderedqrcode"/>
+	</field>
+	<field name="vendorname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vendorname"/>
+	</field>
+	<field name="purchaseorderno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="purchaseorderno"/>
+	</field>
+	<field name="receiptdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="receiptdate"/>
+	</field>
+	<field name="proddate" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="proddate"/>
+	</field>
+	<field name="hu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="hu"/>
+	</field>
+	<detail>
+		<band height="100" splitType="Stretch">
+			<componentElement>
+				<reportElement positionType="Float" x="8" y="18" width="70" height="70" uuid="8e1e65e5-36d3-4f4c-853d-118d34f0253e">
+					<property name="com.jaspersoft.studio.unit.margin" value="mm"/>
+				</reportElement>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" margin="0" errorCorrectionLevel="M">
+					<jr:codeExpression><![CDATA[$F{renderedqrcode}]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="83" y="45" width="80" height="16" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{hu}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
