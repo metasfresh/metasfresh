@@ -17,28 +17,28 @@ INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,C
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543525 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
--- 2023-07-21T10:36:00.691145100Z
-UPDATE C_DocType SET Name='Modular Order',Updated=TO_TIMESTAMP('2023-07-21 13:36:00.687','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=1000037
+-- 2023-07-26T17:04:20.289819600Z
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541107,TO_TIMESTAMP('2023-07-26 20:04:20.262','YYYY-MM-DD HH24:MI:SS.US'),100,'MMO',1,'de.metas.swat',1000000,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Modular Order','Modular Order',TO_TIMESTAMP('2023-07-26 20:04:20.262','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
--- 2023-07-21T10:36:00.704140Z
-UPDATE C_DocType_Trl trl SET Name='Modular Order' WHERE C_DocType_ID=1000037 AND (IsTranslated='N' OR AD_Language='de_DE')
+-- 2023-07-26T17:04:20.382505400Z
+INSERT INTO C_DocType_Trl (AD_Language,C_DocType_ID, Description,DocumentNote,Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.C_DocType_ID, t.Description,t.DocumentNote,t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, C_DocType t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.C_DocType_ID=541107 AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_DocType_ID=t.C_DocType_ID)
 ;
 
--- 2023-07-21T10:36:04.705876600Z
-UPDATE C_DocType SET PrintName='Modular Order',Updated=TO_TIMESTAMP('2023-07-21 13:36:04.705','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=1000037
+-- 2023-07-26T17:04:20.390503300Z
+INSERT INTO AD_Document_Action_Access (AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) (SELECT 1000000,0,'Y', now(),100, now(),100, doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID FROM AD_Client client INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) WHERE client.AD_Client_ID=1000000 AND doctype.C_DocType_ID=541107 AND rol.IsManual='N')
 ;
 
--- 2023-07-21T10:36:04.711880800Z
-UPDATE C_DocType_Trl trl SET PrintName='Modular Order' WHERE C_DocType_ID=1000037 AND (IsTranslated='N' OR AD_Language='de_DE')
+-- 2023-07-26T17:04:25.830586800Z
+UPDATE C_DocType SET DocumentCopies=0,Updated=TO_TIMESTAMP('2023-07-26 20:04:25.83','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541107
 ;
 
--- 2023-07-21T10:36:09.632098900Z
-UPDATE C_DocType SET DocBaseType='MMO',Updated=TO_TIMESTAMP('2023-07-21 13:36:09.632','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=1000037
+-- 2023-07-26T17:04:43.003040100Z
+UPDATE C_DocType SET DocNoSequence_ID=545473,Updated=TO_TIMESTAMP('2023-07-26 20:04:43.003','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541107
 ;
 
--- 2023-07-21T10:36:13.730983500Z
-UPDATE C_DocType SET IsDefault='N',Updated=TO_TIMESTAMP('2023-07-21 13:36:13.729','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=1000037
+-- 2023-07-26T17:05:39.964205Z
+UPDATE C_DocType SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2023-07-26 20:05:39.964','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541107
 ;
 
 -- Name: C_DocType MFG

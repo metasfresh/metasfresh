@@ -14,7 +14,7 @@ UPDATE AD_Message_Trl SET MsgText='The quantity {0} of the product {1} was issue
 
 -- Column: PP_Order.Modular_Flatrate_Term_ID
 -- 2023-07-25T10:00:43.620686700Z
-UPDATE AD_Column SET MandatoryLogic='@C_DocTypeTarget_ID@=1000037',Updated=TO_TIMESTAMP('2023-07-25 13:00:43.62','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587163
+UPDATE AD_Column SET MandatoryLogic='@C_DocTypeTarget_ID@=541107',Updated=TO_TIMESTAMP('2023-07-25 13:00:43.62','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587163
 ;
 
 -- Name: Modular_Flatrate_Term_For_ManufacturingOrder
