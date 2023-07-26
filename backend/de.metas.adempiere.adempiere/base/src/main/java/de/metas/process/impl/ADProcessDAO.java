@@ -623,10 +623,9 @@ public class ADProcessDAO implements IADProcessDAO
 
 
 	@Override
-	public boolean isJasperJSONProcess(@NonNull final AdProcessId processId)
+	public ProcessType retrieveProcessType(@NonNull final AdProcessId processId)
 	{
 		final I_AD_Process process =  InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
-		final ProcessType type = ProcessType.ofCode(process.getType());
-		return type.isJasperJSON();
+		return ProcessType.ofCode(process.getType());
 	}
 }

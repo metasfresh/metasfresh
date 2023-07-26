@@ -11,6 +11,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessType;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportConstants;
@@ -32,8 +33,8 @@ public class CreatePDFCommand
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final ImmutableList<PrintableQRCode> qrCodes;
-	private PInstanceId pInstanceId;
-	private AdProcessId qrCodeProcessId ;
+	private final PInstanceId pInstanceId;
+	private final AdProcessId qrCodeProcessId ;
 
 	@Builder
 	private CreatePDFCommand(
@@ -51,7 +52,8 @@ public class CreatePDFCommand
 	public QRCodePDFResource execute()
 	{
 		ImmutableList<ProcessInfoParameter> processParams;
-		if (adProcessDAO.isJasperJSONProcess(qrCodeProcessId))
+		final ProcessType processType = adProcessDAO.retrieveProcessType (qrCodeProcessId);
+		if (processType.isJasperJSON())
 		{
 
 			processParams = ImmutableList.of(

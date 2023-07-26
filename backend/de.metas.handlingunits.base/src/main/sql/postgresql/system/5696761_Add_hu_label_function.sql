@@ -50,7 +50,7 @@ FROM M_HU tu
              LEFT OUTER JOIN M_HU_Item lui ON lui.M_HU_Item_ID = tu.M_HU_Item_Parent_ID AND lui.isActive = 'Y'
              LEFT OUTER JOIN M_HU lu ON lu.M_HU_ID = lui.M_HU_ID
              LEFT OUTER JOIN M_HU_PI_Version piv
-                             ON piv.M_HU_PI_Version_ID = lu.M_HU_PI_Version_ID AND piv.isActive = 'Y'
+                             ON piv.M_HU_PI_Version_ID = lu.M_HU_PI_Version_ID
              LEFT OUTER JOIN M_HU thu ON thu.M_HU_ID = COALESCE(lu.M_HU_ID, tu.M_HU_ID)
              LEFT OUTER JOIN M_HU_Assignment hf_a ON thu.M_HU_ID = hf_a.M_HU_ID
              LEFT JOIN M_ReceiptSchedule rs ON hf_a.Record_ID = rs.M_ReceiptSchedule_ID
