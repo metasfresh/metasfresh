@@ -22,6 +22,12 @@ package de.metas.inout.api.impl;
  * #L%
  */
 
+
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOutLine;
+
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
@@ -31,10 +37,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOutLine;
-
-import java.util.List;
 
 public class InOutInvoiceCandidateBL implements IInOutInvoiceCandidateBL
 {
@@ -49,8 +51,8 @@ public class InOutInvoiceCandidateBL implements IInOutInvoiceCandidateBL
 			isAllowToInvoice = true;
 		}
 
-		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
-		if(docStatus.isCompletedOrClosed())
+		final DocStatus inoutDocStatus = DocStatus.ofCode(inOut.getDocStatus());
+		if(inoutDocStatus.isCompletedOrClosed())
 		{
 			isAllowToInvoice = true;
 		}

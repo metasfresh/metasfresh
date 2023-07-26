@@ -22,13 +22,10 @@
 
 package de.metas.rest_api.v2.externlasystem.dto;
 
-import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.externalsystem.ExternalSystemType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -42,7 +39,4 @@ public class InvokeExternalSystemProcessRequest
 
 	@NonNull
 	String request;
-
-	@Nullable
-	JsonInvokeExternalSystemParams jsonInvokeExternalSystemParams;
 }

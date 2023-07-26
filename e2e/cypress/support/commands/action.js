@@ -4,9 +4,7 @@ import { humanReadableNow } from '../utils/utils';
 
 function executeHeaderAction(actionName) {
   checkIfWindowCanExecuteActions();
-  cy.get('.indicator-pending').should('not.exist');
   cy.get('.header-container .btn-square .meta-icon-more').click();
-  cy.get('.indicator-pending').should('not.exist');
   cy.get('.subheader-container').should('exist');
   cy.get(`#headerAction_${actionName}`).click();
 }

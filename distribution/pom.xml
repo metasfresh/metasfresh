@@ -20,13 +20,12 @@
 		See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
-		<!-- 10.0.0 is the version that is build and installed to our local repo by the IDE or if we run maven from the command line -->
+		<!-- 10.0.0 is the version that is build and installed to our local repo bei eclipse or if we run maven from the command line -->
 		<metasfresh.version>10.0.0</metasfresh.version>
-<!--		<metasfresh-procurement-webui.version>10.0.0</metasfresh-procurement-webui.version>-->
-<!--		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>-->
+		<metasfresh-procurement-webui.version>10.0.0</metasfresh-procurement-webui.version>
+		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>
 		<metasfresh-webui-frontend.version>10.0.0</metasfresh-webui-frontend.version>
-		<metasfresh-mobile-frontend.version>10.0.0</metasfresh-mobile-frontend.version>
-<!--		<procurement-webui-backend.version>10.0.0</procurement-webui-backend.version>-->
+		<procurement-webui-backend.version>10.0.0</procurement-webui-backend.version>
 	</properties>
 
 	<dependencies>
@@ -51,35 +50,27 @@ Since we now work with a range, we now declare the dependencies here where range
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.ui.web</groupId>
-			<artifactId>metasfresh-mobile-frontend</artifactId>
-			<version>${metasfresh-mobile-frontend.version}</version>
-			<type>tar.gz</type>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.webui</artifactId>
+			<version>${metasfresh-procurement-webui.version}</version>
+			<type>jar</type>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>procurement-webui-backend</artifactId>
+			<version>${procurement-webui-backend.version}</version>
+			<type>jar</type>
+		</dependency>
 
-		<!--		<dependency>-->
-<!--			<groupId>de.metas.procurement</groupId>-->
-<!--			<artifactId>de.metas.procurement.webui</artifactId>-->
-<!--			<version>${metasfresh-procurement-webui.version}</version>-->
-<!--			<type>jar</type>-->
-<!--		</dependency>-->
-
-<!--		<dependency>-->
-<!--			<groupId>de.metas.procurement</groupId>-->
-<!--			<artifactId>procurement-webui-backend</artifactId>-->
-<!--			<version>${procurement-webui-backend.version}</version>-->
-<!--			<type>jar</type>-->
-<!--		</dependency>-->
-
-<!--		&lt;!&ndash; https://github.com/metasfresh/metasfresh/issues/1471 &ndash;&gt;-->
-<!--		<dependency>-->
-<!--			<groupId>de.metas.admin</groupId>-->
-<!--			<artifactId>metasfresh-admin</artifactId>-->
-<!--			<version>${metasfresh-admin.version}</version>-->
-<!--			<type>jar</type>-->
-<!--			<scope>provided</scope> &lt;!&ndash; we need this dependency here to update the version property&ndash;&gt;-->
-<!--		</dependency>-->
+		<!-- https://github.com/metasfresh/metasfresh/issues/1471 -->
+		<dependency>
+			<groupId>de.metas.admin</groupId>
+			<artifactId>metasfresh-admin</artifactId>
+			<version>${metasfresh-admin.version}</version>
+			<type>jar</type>
+			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
+		</dependency>
 
 	</dependencies>
 
@@ -103,22 +94,22 @@ Since we now work with a range, we now declare the dependencies here where range
 						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968
 							declare the the version properties of related artifacts which we can to set in the dist module
 						-->
-<!--						<property>-->
-<!--							<name>metasfresh-webui-frontend.version</name>-->
-<!--							<searchReactor>false</searchReactor>-->
-<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
-<!--						</property>-->
-<!--						<property>-->
-<!--							<name>metasfresh-procurement-webui.version</name>-->
-<!--							<searchReactor>false</searchReactor>-->
-<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
-<!--						</property>-->
-<!--						<property>-->
-<!--							&lt;!&ndash; metasfresh/metasfresh#1471 &ndash;&gt;-->
-<!--							<name>metasfresh-admin.version</name>-->
-<!--							<searchReactor>false</searchReactor>-->
-<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
-<!--						</property>-->
+						<property>
+							<name>metasfresh-webui-frontend.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<name>metasfresh-procurement-webui.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<!-- metasfresh/metasfresh#1471 -->
+							<name>metasfresh-admin.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
 					</properties>
 				</configuration>
 			</plugin>

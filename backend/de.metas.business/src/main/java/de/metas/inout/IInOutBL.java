@@ -1,14 +1,7 @@
 package de.metas.inout;
 
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.document.engine.DocStatus;
-import de.metas.money.Money;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
@@ -17,16 +10,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_R_Request;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -59,8 +50,6 @@ public interface IInOutBL extends ISingletonService
 {
 	I_M_InOut getById(@NonNull InOutId inoutId);
 
-	List<I_M_InOut> getByOrderId(@NonNull OrderId orderId);
-
 	void save(I_M_InOut inout);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
@@ -77,21 +66,13 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
 
-	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
-
-	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
-
-	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
-
-	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
-
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
 	 * <p>
 	 * When picking the pricing system, first check if the given <code>inOutLine</code>'s <code>M_InOut</code>'s bpartner has an pricingsystem set directly in its <code>C_BPartner</code> record that matches the <code>M_InOut.IsSOTrx</code>.
 	 * <p>
 	 * If the bpartner's <code>C_BPartner.M_PricingSystem_ID</code> (for <code>M_InOut.IsSOTrx='Y'</code>) or <code>C_BPartner.PO_PricingSystem_ID</code> (for <code>M_InOut.IsSOTrx='N'</code>) is <code>NULL</code>,<br>
-	 * <i>and</i> if <code>M_OnOut.MovementType</code> is a "returning-type",<br>
+	 * <i>and</i> if <code>M_OnOut.MovementType</code> is a "returning-type" (see {@link #isReturnMovementType(String)}),<br>
 	 * then also check for the opposite pricing system of the BPartner.
 	 * <p>
 	 * For example, if a bpartner is both customer and vendor, has <b>no</b> <code>M_PricingSystem</code>,<br>
@@ -156,6 +137,11 @@ public interface IInOutBL extends ISingletonService
 	 */
 	boolean getSOTrxFromMovementType(String movementType);
 
+	/**
+	 * @return true if Customer or Vendor Returns
+	 */
+	boolean isReturnMovementType(String movementType);
+
 	BigDecimal negateIfReturnMovmenType(I_M_InOutLine iol, BigDecimal qty);
 
 	/**
@@ -164,6 +150,16 @@ public interface IInOutBL extends ISingletonService
 	 * @return sorted lines
 	 */
 	List<I_M_InOutLine> sortLines(I_M_InOut inOut);
+
+	/**
+	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOut}.
+	 */
+	void deleteMatchInvs(I_M_InOut inout);
+
+	/**
+	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOutLine}.
+	 */
+	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
 
 	/**
 	 * @return the given <code>iol</code>'s <code>MovementQty</code> or its negation, based on the inOut's <code>MovementType</code>.
@@ -185,26 +181,4 @@ public interface IInOutBL extends ISingletonService
 	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_M_InOut inOut);
 
 	I_R_Request createRequestFromInOut(I_M_InOut inOut);
-
-	LocalDate retrieveMovementDate(I_M_InOut inOut);
-
-	void updateDescriptionAndDescriptionBottomFromDocType(@NonNull I_M_InOut inOut);
-
-	String getLocationEmail(InOutId ofRepoId);
-
-	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
-
-	DocStatus getDocStatus(InOutId inOutId);
-
-	CurrencyConversionContext getCurrencyConversionContext(InOutId inoutId);
-
-	CurrencyConversionContext getCurrencyConversionContext(I_M_InOut inout);
-
-	List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull OrderLineId orderLineId);
-
-	Instant getDateAcct(InOutId inoutId);
-
-	Money getCOGSBySalesOrderId(
-			@NonNull OrderLineId salesOrderLineId,
-			@NonNull AcctSchemaId acctSchemaId);
 }

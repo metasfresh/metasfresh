@@ -1,13 +1,7 @@
 package de.metas.inventory;
 
-import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
-import de.metas.product.ProductId;
-import lombok.NonNull;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -54,10 +48,6 @@ public interface IInventoryDAO extends ISingletonService
 	boolean hasLines(InventoryId inventoryId);
 
 	void setInventoryLinesProcessed(InventoryId inventoryId, boolean processed);
-
-	Set<ProductId> retrieveUsedProductsByInventoryIds(@NonNull Collection<InventoryId> inventoryIds);
-
-	Optional<Instant> getMinInventoryDate(@NonNull Collection<InventoryId> inventoryIds);
 
 	void save(I_M_InventoryLine inventoryLine);
 }

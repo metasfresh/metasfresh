@@ -1,9 +1,5 @@
 package de.metas.handlingunits.inout.impl;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuPackingMaterial;
-import de.metas.handlingunits.HuPackingMaterialId;
-import de.metas.handlingunits.inout.HuPackingMaterialQuery;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -13,18 +9,19 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.mpackage.PackageId;
-import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -107,31 +104,6 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.heightInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getHeight()).orElse(BigDecimal.ONE).intValue())
 				.lengthInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getLength()).orElse(BigDecimal.ONE).intValue())
 				.widthInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getWidth()).orElse(BigDecimal.ONE).intValue())
-				.build();
-	}
-
-	@Override
-	public List<HuPackingMaterial> retrieveBy(final @NonNull HuPackingMaterialQuery query)
-	{
-		final IQueryBuilder<I_M_HU_PackingMaterial> builder = iQueryBL.createQueryBuilder(I_M_HU_PackingMaterial.class)
-				.addOnlyActiveRecordsFilter();
-		if (query.getProductId() != null)
-		{
-			builder.addEqualsFilter(I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, query.getProductId());
-		}
-
-		return builder.create().stream()
-				.map(this::toHuPackingMaterial)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private HuPackingMaterial toHuPackingMaterial(final I_M_HU_PackingMaterial packingMaterial)
-	{
-		return HuPackingMaterial.builder()
-				.id(HuPackingMaterialId.ofRepoId(packingMaterial.getM_HU_PackingMaterial_ID()))
-				.productId(ProductId.ofRepoIdOrNull(packingMaterial.getM_Product_ID()))
-				.name(packingMaterial.getName())
-				.isInvoiceable(packingMaterial.isInvoiceable())
 				.build();
 	}
 }

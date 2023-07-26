@@ -24,13 +24,12 @@ package de.metas.ui.web.ddorder.process;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
-import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -38,7 +37,8 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
-import de.metas.distribution.ddorder.DDOrderLineId;
+import org.eevolution.api.DDOrderLineId;
+import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_OrderLine;
 
 import static de.metas.ui.web.ddorder.HUsToMoveViewFactory.WINDOW_ID;
@@ -48,7 +48,7 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 {
 
 	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
-	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
@@ -68,7 +68,7 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 
 	@Override protected String doIt() throws Exception
 	{
-		final I_DD_OrderLine ddOrderLine = ddOrderService.getLineById(DDOrderLineId.ofRepoId(getRecord_ID()));
+		final I_DD_OrderLine ddOrderLine = ddOrderDAO.getLineById(DDOrderLineId.ofRepoId(getRecord_ID()));
 
 		final IView husToMove = createHUEditor(ddOrderLine);
 

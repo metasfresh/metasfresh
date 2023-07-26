@@ -1,9 +1,7 @@
 package org.adempiere.service.impl;
 
-import de.metas.logging.LogManager;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -13,7 +11,9 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import java.util.Properties;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -40,7 +40,6 @@ import java.util.Properties;
 public class ValuePreferenceDAO implements IValuePreferenceDAO
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public boolean remove(final Properties ctx, final String attribute, final int adClientId, final int adOrgId, final int adUserId, final int adWindowId)
@@ -131,14 +130,5 @@ public class ValuePreferenceDAO implements IValuePreferenceDAO
 		{
 			return value.toString();
 		}
-	}
-
-	@Override
-	public void deleteUserPreferenceByUserId(final UserId userId)
-	{
-		queryBL.createQueryBuilder(I_AD_Preference.class)
-				.addEqualsFilter(I_AD_Preference.COLUMNNAME_AD_User_ID, userId)
-				.create()
-				.delete();
 	}
 }

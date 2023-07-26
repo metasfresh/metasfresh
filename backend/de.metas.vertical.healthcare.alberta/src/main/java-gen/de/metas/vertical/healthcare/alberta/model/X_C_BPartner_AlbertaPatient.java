@@ -1,8 +1,29 @@
+/*
+ * #%L
+ * de.metas.vertical.healthcare.alberta
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package de.metas.vertical.healthcare.alberta.model;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -10,10 +31,10 @@ import java.util.Properties;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_BPartner_AlbertaPatient extends org.compiere.model.PO implements I_C_BPartner_AlbertaPatient, org.compiere.model.I_Persistent
+public class X_C_BPartner_AlbertaPatient extends org.compiere.model.PO implements I_C_BPartner_AlbertaPatient, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1665336452L;
+	private static final long serialVersionUID = 1264888881L;
 
     /** Standard Constructor */
     public X_C_BPartner_AlbertaPatient (final Properties ctx, final int C_BPartner_AlbertaPatient_ID, @Nullable final String trxName)
@@ -141,31 +162,6 @@ public class X_C_BPartner_AlbertaPatient extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setCareDegree (final @Nullable BigDecimal CareDegree)
-	{
-		set_Value (COLUMNNAME_CareDegree, CareDegree);
-	}
-
-	@Override
-	public BigDecimal getCareDegree() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CareDegree);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setClassification (final @Nullable String Classification)
-	{
-		set_Value (COLUMNNAME_Classification, Classification);
-	}
-
-	@Override
-	public String getClassification()
-	{
-		return get_ValueAsString(COLUMNNAME_Classification);
-	}
-
-	@Override
 	public void setCopaymentFrom (final @Nullable java.sql.Timestamp CopaymentFrom)
 	{
 		set_Value (COLUMNNAME_CopaymentFrom, CopaymentFrom);
@@ -202,13 +198,13 @@ public class X_C_BPartner_AlbertaPatient extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setDeactivationComment (final @Nullable String DeactivationComment)
+	public void setDeactivationComment (final @Nullable java.lang.String DeactivationComment)
 	{
 		set_Value (COLUMNNAME_DeactivationComment, DeactivationComment);
 	}
 
 	@Override
-	public String getDeactivationComment()
+	public java.lang.String getDeactivationComment() 
 	{
 		return get_ValueAsString(COLUMNNAME_DeactivationComment);
 	}
@@ -241,13 +237,13 @@ public class X_C_BPartner_AlbertaPatient extends org.compiere.model.PO implement
 	/** Sonstiges = 4 */
 	public static final String DEACTIVATIONREASON_Sonstiges = "4";
 	@Override
-	public void setDeactivationReason (final @Nullable String DeactivationReason)
+	public void setDeactivationReason (final @Nullable java.lang.String DeactivationReason)
 	{
 		set_Value (COLUMNNAME_DeactivationReason, DeactivationReason);
 	}
 
 	@Override
-	public String getDeactivationReason()
+	public java.lang.String getDeactivationReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_DeactivationReason);
 	}
@@ -289,13 +285,13 @@ public class X_C_BPartner_AlbertaPatient extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setNumberOfInsured (final @Nullable String NumberOfInsured)
+	public void setNumberOfInsured (final @Nullable java.lang.String NumberOfInsured)
 	{
 		set_Value (COLUMNNAME_NumberOfInsured, NumberOfInsured);
 	}
 
 	@Override
-	public String getNumberOfInsured()
+	public java.lang.String getNumberOfInsured() 
 	{
 		return get_ValueAsString(COLUMNNAME_NumberOfInsured);
 	}
@@ -318,13 +314,13 @@ public class X_C_BPartner_AlbertaPatient extends org.compiere.model.PO implement
 	/** Andere = 5 */
 	public static final String PAYERTYPE_Andere = "5";
 	@Override
-	public void setPayerType (final @Nullable String PayerType)
+	public void setPayerType (final @Nullable java.lang.String PayerType)
 	{
 		set_Value (COLUMNNAME_PayerType, PayerType);
 	}
 
 	@Override
-	public String getPayerType()
+	public java.lang.String getPayerType() 
 	{
 		return get_ValueAsString(COLUMNNAME_PayerType);
 	}

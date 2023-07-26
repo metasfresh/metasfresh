@@ -1,7 +1,6 @@
 package de.metas.material.cockpit.availableforsales;
 
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,9 +42,6 @@ public class AvailableForSalesResult
 
 	@NonNull
 	AttributesKey storageAttributesKey;
-
-	@NonNull
-	OrgId orgId;
 
 	@NonNull
 	Quantities quantities;

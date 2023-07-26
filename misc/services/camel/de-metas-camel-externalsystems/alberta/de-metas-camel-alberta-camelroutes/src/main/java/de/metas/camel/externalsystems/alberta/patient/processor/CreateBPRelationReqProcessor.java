@@ -22,10 +22,10 @@
 
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
 import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bprelation.JsonBPRelationRole;

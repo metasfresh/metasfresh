@@ -1,16 +1,18 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.util.List;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
 
-import java.util.List;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import io.swagger.annotations.ApiModel;
+import lombok.Value;
 
 /*
  * #%L
@@ -38,7 +40,7 @@ import java.util.List;
 @Value
 public class JSONPatchEvent<PathType>
 {
-	@Schema(description = "operation")
+	@ApiModel("operation")
 	public static enum JSONOperation
 	{
 		replace;

@@ -1,20 +1,22 @@
 package de.metas.dlm.exception;
 
-import de.metas.util.Services;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.adempiere.ad.table.TableRecordIdDescriptor;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.MTable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -86,15 +88,24 @@ public class DLMExceptionWrapperTests
 	public void testTableNameCases()
 	{
 		//
-		// Set up the information that the DLMReferenceExceptionWrapper shall look up
-		{
-			// By just simply querying by TableNames and ColumnNames
-			// we expect the Junit versions of those repositories to create those table/columns on the fly
-			// and to create them with the correct upper/lower case.
-			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-			adTableDAO.retrieveAdTableId(I_AD_Window.Table_Name);
-			adTableDAO.getMinimalColumnInfo(I_AD_Tab.Table_Name, I_AD_Tab.COLUMNNAME_AD_Window_ID);
-		}
+		// set up the information that the DLMReferenceExceptionWrapper shall look up
+		final int windowTableId = MTable.getTable_ID(I_AD_Window.Table_Name);
+		final I_AD_Table windowTable = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
+		windowTable.setTableName(I_AD_Window.Table_Name);
+		windowTable.setAD_Table_ID(windowTableId);
+		InterfaceWrapperHelper.save(windowTable);
+
+		final int tabTableId = MTable.getTable_ID(I_AD_Tab.Table_Name);
+		final I_AD_Table tabTable = InterfaceWrapperHelper.newInstance(I_AD_Table.class);
+		tabTable.setTableName(I_AD_Tab.Table_Name);
+		tabTable.setAD_Table_ID(tabTableId);
+		InterfaceWrapperHelper.save(tabTable);
+
+		final I_AD_Column column = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
+		column.setColumnName(I_AD_Tab.COLUMNNAME_AD_Window_ID);
+		column.setAD_Table_ID(tabTable.getAD_Table_ID());
+		column.setIsActive(true);
+		InterfaceWrapperHelper.save(column);
 
 		// set up the infos the exception shall provide to the wrapper
 		final PSQLException mockedPSQLException = Mockito.mock(PSQLException.class);

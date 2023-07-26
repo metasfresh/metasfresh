@@ -3,18 +3,18 @@ Feature: API Audit PUT http method
 
   Background:
     Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the API audit data is reset
 
   @from:cucumber
   Scenario: Testcase 100, normal PUT and caller waits for result
-    And the following API_Audit_Config records are created:
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | PUT        | api/v2/test    | N                     | Y                                | Y                 |
+    And the following API_Audit_Config record is set
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | PUT        | api/v2/test    | Y                       |
 
     When invoke 'PUT' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '200'
 
-    Then the actual response body is
+    And the actual response body is
     """
    {
 	"messageBody": "\"test-endpoint was called\""
@@ -34,42 +34,44 @@ Feature: API Audit PUT http method
 
   @from:cucumber
   Scenario: Testcase 110, normal PUT and caller does not wait for result
-    And the following API_Audit_Config records are created:
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | PUT        | api/v2/test    | Y                     | Y                                | Y                 |
+    And the following API_Audit_Config record is set
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | PUT        | api/v2/test    | N                       |
 
     When invoke 'PUT' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '202'
 
-    # We call the test endpoint and instruct it to wait for 1 seconds before returning, and we have IsForceProcessedAsync=Y
-    # So when we check right after the call, we can expect an audit record to be created and the request to be "received", but not yet "processed"
-    Then there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status    |
-      | PUT    | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen |
+      | PUT    | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen OR Verarbeitet |
 
-    And there are no records in API_Request_Audit_Log for the API_Request_Audit from context
+    And there are no records in API_Request_Audit_Log
+      | Logmessage | AD_Issue.Summary |
 
-    And there are no records in API_Response_Audit for the API_Request_Audit from context
+    And there are no records in API_Response_Audit
+      | HttpCode | Body |
 
-    And after not more than 60s, there are added records in API_Request_Audit
+    And we wait for 2000 ms
+
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status      |
       | PUT    | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
-    And after not more than 60s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
       | Endpoint invoked; returning httpCode: 200 | null             |
 
-    And after not more than 60s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
   @from:cucumber
   Scenario: Testcase 120, failing PUT and caller waits for result
-    And the following API_Audit_Config records are created:
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | PUT        | api/v2/test    | N                     | Y                                | Y                 |
+    And the following API_Audit_Config record is set
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | PUT        | api/v2/test    | Y                       |
 
     When invoke 'PUT' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
-    Then the actual response body is
+    And the actual response body is
     """
    {
 	"messageBody": "\"test-endpoint was called\""
@@ -90,40 +92,42 @@ Feature: API Audit PUT http method
 
   @from:cucumber
   Scenario: Testcase 130, failing PUT and caller does not wait for result
-    And the following API_Audit_Config records are created:
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | PUT        | api/v2/test    | Y                     | Y                                | Y                 |
+    And the following API_Audit_Config record is set
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | PUT        | api/v2/test    | N                       |
 
     When invoke 'PUT' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '202'
 
-    # We call the test endpoint and instruct it to wait for 1 seconds before returning, and we have IsForceProcessedAsync=Y
-    # So when we check right after the call, we can expect an audit record to be created and the request to be "received", but not yet "processed"
-    Then there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status    |
-      | PUT    | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Empfangen |
+      | PUT    | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Empfangen OR Verarbeitet |
 
-    And there are no records in API_Request_Audit_Log for the API_Request_Audit from context
+    And there are no records in API_Request_Audit_Log
+      | Logmessage | AD_Issue.Summary |
 
-    And there are no records in API_Response_Audit for the API_Request_Audit from context
+    And there are no records in API_Response_Audit
+      | HttpCode | Body |
 
-    And after not more than 60s, there are added records in API_Request_Audit
+    And we wait for 2000 ms
+
+    And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status |
       | PUT    | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Fehler |
 
-    And after not more than 60s, there are added records in API_Request_Audit_Log
+    And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary               |
       | Endpoint invoked; returning httpCode: 404 | null                           |
       | Endpoint invoked; log ad_issue            | Endpoint invoked; log ad_issue |
 
-    And after not more than 60s, there are added records in API_Response_Audit
+    And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
   @from:cucumber
   Scenario: Testcase 140, failing PUT and replay
-    And the following API_Audit_Config records are created:
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_1        | 10    | PUT        | api/v2/test    | N                     | Y                                | Y                 |
+    And the following API_Audit_Config record is set
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1                            | 10    | PUT        | api/v2/test    | Y                       |
 
     And invoke 'PUT' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
 
@@ -141,7 +145,7 @@ Feature: API Audit PUT http method
 
     When invoke replay audit
 
-    Then there are added records in API_Request_Audit
+    And there are added records in API_Request_Audit
       | Method | Path                                                                         | AD_User.Name | Status      |
       | PUT    | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
@@ -158,6 +162,6 @@ Feature: API Audit PUT http method
   @from:cucumber
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset
-    And the following API_Audit_Config records are created:
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
-      | c_100      | 9980  | null       | null           | N                     | Y                                | Y                 |
+    And the following API_Audit_Config record is set
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_100      | 9980  | null       | null           | Y                       |

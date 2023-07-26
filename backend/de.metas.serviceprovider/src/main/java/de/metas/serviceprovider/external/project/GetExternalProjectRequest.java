@@ -22,7 +22,6 @@
 
 package de.metas.serviceprovider.external.project;
 
-import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,7 +39,4 @@ public class GetExternalProjectRequest
 
 	@NonNull
 	String externalProjectOwner;
-
-	@NonNull
-	OrgId orgId;
 }

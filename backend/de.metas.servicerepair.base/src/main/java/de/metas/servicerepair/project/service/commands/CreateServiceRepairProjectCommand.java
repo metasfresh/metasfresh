@@ -41,7 +41,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
-import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
+import de.metas.project.service.CreateProjectRequest;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestBL;
@@ -102,7 +102,7 @@ public class CreateServiceRepairProjectCommand
 		final ZonedDateTime customerReturnDate = TimeUtil.asZonedDateTime(customerReturn.getMovementDate(), orgDAO.getTimeZone(orgId));
 		final PricingInfo pricingInfo = getPricingInfo(bpartnerInfo.toBPartnerLocationAndCaptureId(), customerReturnDate);
 
-		final ProjectId projectId = projectService.createProjectHeader(CreateServiceOrRepairProjectRequest.builder()
+		final ProjectId projectId = projectService.createProjectHeader(CreateProjectRequest.builder()
 				.orgId(orgId)
 				.projectCategory(ProjectCategory.ServiceOrRepair)
 				.bpartnerAndLocationId(bpartnerInfo.getBpartnerLocationId())

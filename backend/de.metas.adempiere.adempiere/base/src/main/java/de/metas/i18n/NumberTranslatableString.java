@@ -1,13 +1,15 @@
 package de.metas.i18n;
 
-import com.google.common.collect.ImmutableSet;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import org.compiere.util.DisplayType;
-
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Set;
+
+import org.compiere.util.DisplayType;
+
+import com.google.common.collect.ImmutableSet;
+
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,11 +46,6 @@ final class NumberTranslatableString implements ITranslatableString
 		return new NumberTranslatableString(BigDecimal.valueOf(valueInt), DisplayType.Integer);
 	}
 
-	static NumberTranslatableString of(final long valueLong)
-	{
-		return new NumberTranslatableString(BigDecimal.valueOf(valueLong), DisplayType.Integer);
-	}
-
 	private final BigDecimal valueBD;
 	private final int displayType;
 
@@ -74,14 +71,16 @@ final class NumberTranslatableString implements ITranslatableString
 	{
 		final Language language = Language.getLanguage(adLanguage);
 		final DecimalFormat numberFormat = DisplayType.getNumberFormat(displayType, language);
-		return numberFormat.format(valueBD);
+		final String valueStr = numberFormat.format(valueBD);
+		return valueStr;
 	}
 
 	@Override
 	public String getDefaultValue()
 	{
 		final DecimalFormat numberFormat = DisplayType.getNumberFormat(displayType);
-		return numberFormat.format(valueBD);
+		final String valueStr = numberFormat.format(valueBD);
+		return valueStr;
 	}
 
 	@Override

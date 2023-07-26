@@ -8,15 +8,14 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
+import com.google.common.util.concurrent.AtomicDouble;
 import de.metas.event.EventBusConfig;
-import de.metas.event.EventEnqueuer;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.event.jmx.JMXEventBusManager;
-import de.metas.event.log.EventLogService;
 import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import io.micrometer.core.instrument.Counter;
@@ -66,24 +65,15 @@ public class EventBusFactory implements IEventBusFactory
 
 	private final IEventBusRemoteEndpoint remoteEndpoint;
 	private final MeterRegistry meterRegistry;
-	private final EventEnqueuer eventEnqueuer;
-	private final EventBusMonitoringService eventBusMonitoringService;
-	private final EventLogService eventLogService;
 
 	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
 
 	public EventBusFactory(
 			@NonNull final IEventBusRemoteEndpoint remoteEndpoint,
-			@NonNull final MeterRegistry meterRegistry,
-			@NonNull final EventEnqueuer eventEnqueuer,
-			@NonNull final EventBusMonitoringService eventBusMonitoringService,
-			@NonNull final EventLogService eventLogService)
+			@NonNull final MeterRegistry meterRegistry)
 	{
 		this.remoteEndpoint = remoteEndpoint;
 		this.meterRegistry = meterRegistry;
-		this.eventEnqueuer = eventEnqueuer;
-		this.eventBusMonitoringService = eventBusMonitoringService;
-		this.eventLogService = eventLogService;
 		logger.info("Using remote endpoint: {}", remoteEndpoint);
 
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
@@ -100,7 +90,15 @@ public class EventBusFactory implements IEventBusFactory
 	{
 		try
 		{
-			return topic2eventBus.get(topic);
+			EventBus eventBus = topic2eventBus.get(topic);
+
+			final boolean typeMismatchBetweenTopicAndBus = topic.getType().equals(Type.REMOTE) && !eventBus.getType().equals(Type.REMOTE);
+			if (typeMismatchBetweenTopicAndBus)
+			{
+				topic2eventBus.invalidate(topic);
+				eventBus = topic2eventBus.get(topic); // 2nd try
+			}
+			return eventBus;
 		}
 		catch (final ExecutionException e)
 		{
@@ -149,7 +147,22 @@ public class EventBusFactory implements IEventBusFactory
 		final MicrometerEventBusStatsCollector statsCollector = createMicrometerEventBusStatsCollector(topic, meterRegistry);
 
 		// Create the event bus
-		final EventBus eventBus = new EventBus(topic, createExecutorOrNull(topic), statsCollector, eventEnqueuer, eventBusMonitoringService, eventLogService);
+		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic), statsCollector);
+
+		// Bind the EventBus to remote endpoint (only if the system is enabled).
+		// If is not enabled we will use only local event buses,
+		// because if we would return null or fail here a lot of BLs could fail.
+		if (Type.REMOTE.equals(topic.getType()))
+		{
+			if (!EventBusConfig.isEnabled())
+			{
+				logger.warn("Remote events are disabled via EventBusConstants. Creating local-only eventBus for topic={}", topic);
+			}
+			else if (remoteEndpoint.bindIfNeeded(eventBus))
+			{
+				eventBus.setTypeRemote();
+			}
+		}
 
 		// Add our global listeners
 		final Set<IEventListener> globalListeners = globalEventListeners.get(topic);
@@ -208,18 +221,18 @@ public class EventBusFactory implements IEventBusFactory
 			@NonNull final Topic topic,
 			@NonNull final IEventListener listener)
 	{
-		// Register the listener to EventBus
-		getEventBus(topic).subscribe(listener);
-
-		// Add the listener to our global listeners-multimap.
-		// Note that getEventBus(topic) creates the bus on the fly if needed **and subscribes all global listeners to it**
-		// Therefore we need to add this listener to the global map *after* having gotten and possibly on-the-fly-created the event bus.
+		//
+		// Add the listener to our global listeners multimap.
 		if (!globalEventListeners.put(topic, listener))
 		{
 			// listener already exists => do nothing
 			return;
 		}
 		logger.info("Registered global listener to {}: {}", topic, listener);
+
+		//
+		// Also register the listener to EventBus
+		getEventBus(topic).subscribe(listener);
 	}
 
 	@Override

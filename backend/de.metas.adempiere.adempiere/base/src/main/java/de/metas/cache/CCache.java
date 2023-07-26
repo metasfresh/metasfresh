@@ -73,7 +73,7 @@ public class CCache<K, V> implements CacheInterface
 	 * @param expireAfterMinutes if positive, the entries will expire after given number of minutes
 	 * @return new cache instance
 	 */
-	public static <K, V> CCache<K, V> newLRUCache(final String cacheName, final int maxSize, final int expireAfterMinutes)
+	public static final <K, V> CCache<K, V> newLRUCache(final String cacheName, final int maxSize, final int expireAfterMinutes)
 	{
 		return CCache.<K, V> builder()
 				.cacheName(cacheName)
@@ -88,9 +88,8 @@ public class CCache<K, V> implements CacheInterface
 	 * Similar to {@link #newLRUCache(String, int, int)}.
 	 *
 	 * @param cacheName cache name; shall respect the current naming conventions, see {@link #extractTableNameForCacheName(String)}
-	 * @   
 	 */
-	public static <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
+	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
 	{
 		return CCache.<K, V> builder()
 				.cacheName(cacheName)
@@ -157,8 +156,6 @@ public class CCache<K, V> implements CacheInterface
 
 	private final CacheAdditionListener<K, V> additionListener;
 
-	private final boolean allowDisablingCacheByThreadLocal;
-
 	/**
 	 * Metasfresh Cache - expires after 2 hours
 	 *
@@ -213,7 +210,7 @@ public class CCache<K, V> implements CacheInterface
 			if (tableName == null)
 			{
 				this.cacheName = "$NoCacheName$" + cacheId;
-				tableNameEffective = CacheLabel.NO_TABLENAME_PREFIX + cacheId;
+				tableNameEffective = "$NoTableName$" + cacheId;
 			}
 			else
 			{
@@ -264,8 +261,6 @@ public class CCache<K, V> implements CacheInterface
 			this.debugId = null; // N/A
 		}
 
-		this.allowDisablingCacheByThreadLocal = ThreadLocalCacheController.computeAllowDisablingCache(this.cacheName, this.labels);
-
 		//
 		// Register it to CacheMgt
 		CacheMgt.get().register(this);
@@ -276,11 +271,11 @@ public class CCache<K, V> implements CacheInterface
 	 *
 	 * NOTE: we assume cacheName has following format: TableName#by#ColumnName1#ColumnName2...
 	 *
+	 * @param cacheName
 	 * @return tableName or null
 	 */
 	// NOTE: public for testing
-	@Nullable
-	public static String extractTableNameForCacheName(final String cacheName)
+	public static final String extractTableNameForCacheName(final String cacheName)
 	{
 		if (cacheName == null || cacheName.isEmpty())
 		{
@@ -301,7 +296,6 @@ public class CCache<K, V> implements CacheInterface
 		return tableName;
 	}
 
-	@NonNull
 	private static ImmutableSet<CacheLabel> buildCacheLabels(@NonNull final String tableName, final Set<String> additionalTableNamesToResetFor)
 	{
 		final ImmutableSet.Builder<CacheLabel> builder = ImmutableSet.<CacheLabel> builder();
@@ -599,11 +593,6 @@ public class CCache<K, V> implements CacheInterface
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			if (isNoCache())
-			{
-				remove(key);
-			}
-
 			if (valueInitializer == null)
 			{
 				return cache.getIfPresent(key);
@@ -678,11 +667,6 @@ public class CCache<K, V> implements CacheInterface
 			{
 				logger.debug("getAllOrLoad - Given keys is empty; -> return empty list");
 				return ImmutableList.of();
-			}
-
-			if (isNoCache())
-			{
-				removeAll(keys);
 			}
 
 			//
@@ -849,11 +833,6 @@ public class CCache<K, V> implements CacheInterface
 	public CCacheStats stats()
 	{
 		return new CCacheStats(cacheId, cacheName, cache.size(), cache.stats());
-	}
-
-	private boolean isNoCache()
-	{
-		return allowDisablingCacheByThreadLocal && ThreadLocalCacheController.instance.isNoCache();
 	}
 
 	@SuppressWarnings("serial")

@@ -8,6 +8,7 @@ import de.metas.security.permissions.Access;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -98,7 +99,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	public static final CtxName PARAM_FilterSqlWithoutWildcards = CtxNames.parse("FilterSqlWithoutWildcards");
 	public static final CtxName PARAM_ViewId = CtxNames.parse("ViewId");
 	public static final CtxName PARAM_ViewSize = CtxNames.parse("ViewSize");
-	private static final CtxName PARAM_ContextTableName = CtxNames.parse(IValidationContext.PARAMETER_ContextTableName);
 
 	@Nullable private final String lookupTableName;
 	@NonNull private final ImmutableMap<String, Object> parameterValues;
@@ -288,7 +288,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				return TimeUtil.asDate(value);
 			}
 		}
-		catch (final Exception ex)
+		catch (Exception ex)
 		{
 			logger.warn("Cannot convert '{}' ({}) to to Date. Returning default value: {}.", value, value.getClass(), defaultValue, ex);
 			return defaultValue;
@@ -320,7 +320,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	}
 
 	@NonNull
-	public IdsToFilter getIdsToFilter() {return idsToFilter;}
+	public IdsToFilter getIdsToFilter() { return idsToFilter; }
 
 	@Nullable
 	public Object getSingleIdToFilterAsObject()
@@ -475,7 +475,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			//
 			// Collect all values required by the post-query predicate
 			// failIfNotFound=false because it might be that NOT all postQueryPredicate's parameters are mandatory!
-			collectContextValues(CtxNames.parseAll(postQueryPredicate.getParameters(getContextTableName())), false);
+			collectContextValues(CtxNames.parseAll(postQueryPredicate.getParameters()), false);
 
 			//
 			// Build the effective context
@@ -581,9 +581,10 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
-		private void putValue(final CtxName name, @Nullable final Object value)
+		private Builder putValue(final CtxName name, @Nullable final Object value)
 		{
 			name2value.put(name.getName(), value);
+			return this;
 		}
 
 		public Builder putFilter(final String filter, final int offset, final int limit)
@@ -630,6 +631,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return DB.TO_STRING(searchSql);
 		}
 
+
 		public Builder putFilterById(@NonNull final IdsToFilter idsToFilter)
 		{
 			this.idsToFilter = idsToFilter;
@@ -638,8 +640,8 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 		public Builder putShowInactive(final boolean showInactive)
 		{
-			final String sqlShowInactive = showInactive ? SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_Yes : SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_No;
-			putValue(SqlForFetchingLookups.SQL_PARAM_ShowInactive, sqlShowInactive);
+			final String sqlShowInactive = showInactive ? SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_Yes : SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_No;
+			putValue(SqlLookupDescriptor.SQL_PARAM_ShowInactive, sqlShowInactive);
 			return this;
 		}
 
@@ -700,8 +702,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 					&& !Check.isBlank(lookupTableName)
 					&& UserRolePermissionsKey.fromContextOrNull(ctx) != null)
 			{
-				return Env.getUserRolePermissions(ctx).getOrgWhere(lookupTableName, Access.READ)
-						.orElse("true");
+				return Env.getUserRolePermissions(ctx).getOrgWhere(lookupTableName, Access.READ);
 			}
 
 			// Fallback to document evaluatee
@@ -722,23 +723,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 			// Value not found
 			return null;
-		}
-
-		@Nullable
-		private String getContextTableName()
-		{
-			try
-			{
-				collectContextValue(PARAM_ContextTableName, false);
-				final Object contextTableNameObj = valuesCollected.get(PARAM_ContextTableName.getName());
-				return contextTableNameObj != null ? contextTableNameObj.toString() : null;
-			}
-			catch (final Exception e)
-			{
-				logger.warn(e.getMessage());
-				return null;
-			}
-
 		}
 	}
 }

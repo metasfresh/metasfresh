@@ -7,6 +7,7 @@ import de.metas.edi.model.I_C_Invoice;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;

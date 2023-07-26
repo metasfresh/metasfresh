@@ -146,7 +146,7 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 				.collect(ImmutableSet.toImmutableSet());
 
 		huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
-		huQueryBuilder.addOnlyInLocatorRepoIds(locatorIds);
+		huQueryBuilder.addOnlyInLocatorIds(locatorIds);
 		if (onlyStockedProducts != null)
 		{
 			huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);

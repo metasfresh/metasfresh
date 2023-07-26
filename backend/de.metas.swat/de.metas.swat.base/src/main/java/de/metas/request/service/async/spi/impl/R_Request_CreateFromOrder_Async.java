@@ -81,7 +81,7 @@ public class R_Request_CreateFromOrder_Async extends WorkpackageProcessorAdapter
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		// retrieve the order and generate requests
-		queueDAO.retrieveAllItems(workPackage, I_C_Order.class)
+		queueDAO.retrieveItems(workPackage, I_C_Order.class, localTrxName)
 				.forEach(requestBL::createRequestFromOrder);
 
 		return Result.SUCCESS;

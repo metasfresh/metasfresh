@@ -1,13 +1,11 @@
 package de.metas.marketing.base.process;
 
-import de.metas.marketing.base.PlatformSyncService;
-import de.metas.marketing.base.model.I_MKTG_Platform;
-import de.metas.marketing.base.model.PlatformId;
-import de.metas.marketing.base.model.SyncDirection;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.process.Process;
-import org.compiere.SpringContextHolder;
+import java.util.List;
+
+import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.SyncResult;
+import de.metas.marketing.base.spi.PlatformClient;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -31,18 +29,13 @@ import org.compiere.SpringContextHolder;
  * #L%
  */
 
-@Process(requiresCurrentRecordWhenCalledFromGear = false)
-public class MKTG_Campaign_Platform_Import_From extends JavaProcess
+public class MKTG_Campaign_Platform_Import_From extends MKTG_Campaign_Platform_Base
 {
-	private final PlatformSyncService syncService = SpringContextHolder.instance.getBean(PlatformSyncService.class);
-
-	@Param(mandatory = true, parameterName = I_MKTG_Platform.COLUMNNAME_MKTG_Platform_ID)
-	private PlatformId platformId;
-
 	@Override
-	protected String doIt()
+	protected List<? extends SyncResult> invokeClientMethod(
+			@NonNull final List<Campaign> locallyExistingCampaigns,
+			@NonNull final PlatformClient platformClient)
 	{
-		syncService.syncCampaigns(platformId, SyncDirection.REMOTE_TO_LOCAL);
-		return MSG_OK;
+		return platformClient.syncCampaignsRemoteToLocal(locallyExistingCampaigns);
 	}
 }

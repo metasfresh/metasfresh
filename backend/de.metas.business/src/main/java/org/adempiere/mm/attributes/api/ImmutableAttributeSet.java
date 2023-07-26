@@ -14,7 +14,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
@@ -194,11 +193,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return attributesById.keySet();
 	}
 
-	public AttributeId getAttributeIdByCode(@NonNull final AttributeCode attributeCode)
-	{
-		return AttributeId.ofRepoId(getAttributeByCode(attributeCode).getM_Attribute_ID());
-	}
-
 	@Override
 	public boolean hasAttribute(final AttributeCode attributeCode)
 	{
@@ -239,27 +233,11 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return attributesById.get(attributeId);
 	}
 
-	public I_M_Attribute getAttributeByCode(final @NonNull AttributeCode attributeCode)
-	{
-		final I_M_Attribute attribute = attributesByCode.get(attributeCode);
-		if (attribute == null)
-		{
-			throw new AdempiereException("Attribute does not exist: " + attributeCode);
-		}
-		return attribute;
-	}
-
 	@Override
 	public String getAttributeValueType(@NonNull final I_M_Attribute attribute)
 	{
 		assertAttributeExists(AttributeCode.ofString(attribute.getValue()));
 		return attribute.getAttributeValueType();
-	}
-
-	public AttributeValueType getAttributeValueType(@NonNull final AttributeCode attributeCode)
-	{
-		final I_M_Attribute attribute = getAttributeByCode(attributeCode);
-		return AttributeValueType.ofCode(attribute.getAttributeValueType());
 	}
 
 	@Override
@@ -438,13 +416,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	{
 		final Object valueObj = getValue(attributeCode);
 		return valueObj != null ? valueObj.toString() : null;
-	}
-
-	@Override
-	@Nullable
-	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
-	{
-		return getValueAsString(attributeCode);
 	}
 
 	public Optional<String> getValueAsStringIfExists(final AttributeCode attributeCode)

@@ -20,10 +20,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -32,7 +32,9 @@ import static de.metas.i18n.Language.asLanguage;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /*
  * #%L
@@ -61,8 +63,8 @@ public class CampaignServiceTest
 	private CampaignService campaignService;
 	private UserRepository userRepository;
 
-	@BeforeEach
-	public void beforeEach()
+	@Before
+	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -86,8 +88,46 @@ public class CampaignServiceTest
 		final I_MKTG_Consent consentRecord = getConsentRecord();
 		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();
 
-		assertThat(consentRecord).isNotNull();
-		assertThat(contactPerson).isNotNull();
+		assertNotNull(consentRecord);
+		assertNotNull(contactPerson);
+	}
+
+	@Test
+	public void removeFromNewsletter_ExistingConsent()
+	{
+		de.metas.common.util.time.SystemTime.setFixedTimeSource("2017-11-10T19:04:04+01:00");
+
+		final User user = createUser("User1", "mail@mail.mail");
+
+		final I_MKTG_Platform platform = createPlatform();
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		campaignService.addToCampaignIfHasEmailAddress(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+
+		final I_MKTG_Consent consent = getConsentRecord();
+		campaignService.removeUserFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+
+		refresh(consent);
+
+		assertTrue(SystemTime.asTimestamp().equals(consent.getConsentRevokedOn()));
+
+	}
+
+	@Test
+	public void removeFromNewsletter_NoConsent()
+	{
+		final User user = createUser("User1", "mail@mail.mail");
+
+		final I_MKTG_Platform platform = createPlatform();
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		campaignService.removeUserFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
+
+		final I_MKTG_Consent consentRecord = getConsentRecord();
+		final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();
+
+		assertNull(consentRecord);
+		assertNull(contactPerson);
 	}
 
 	private I_MKTG_Consent getConsentRecord()
@@ -106,7 +146,6 @@ public class CampaignServiceTest
 				.firstOnly(I_MKTG_Campaign_ContactPerson.class);
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	private User createUser(final String name, final String mail)
 	{
 		final User user = User.builder()
@@ -122,7 +161,6 @@ public class CampaignServiceTest
 		final I_MKTG_Campaign campaign = newInstance(I_MKTG_Campaign.class);
 
 		campaign.setMKTG_Platform_ID(platform.getMKTG_Platform_ID());
-		campaign.setName("Campaign for " + platform.getName());
 		save(campaign);
 
 		return campaign;
@@ -137,7 +175,250 @@ public class CampaignServiceTest
 
 	}
 
-	@SuppressWarnings("SameParameterValue")
+	@Test
+	public void addAsContactPersonsToCampaign_NullDefaultAddressType_ExistingBill()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
+		bpLocation.setIsBillToDefault(true);
+		save(bpLocation);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(true);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = null;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.size() == 1);
+		assertTrue(existingContactPersons.get(0).getC_BPartner_Location_ID() == bpLocation.getC_BPartner_Location_ID());
+
+	}
+
+	@Test
+	public void addAsContactPersonsToCampaign_NullDefaultAddressType_NonExistingBill_MandatoryLocation()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		createBPartnerLocation(partner1);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(true);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = null;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.isEmpty());
+	}
+
+	@Test
+	public void addAsContactPersonsToCampaign_NullDefaultAddressType_NonExistingBill_NotMandatoryLocation()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		createBPartnerLocation(partner1);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(false);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = null;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.size() == 1);
+	}
+
+	@Test
+	public void addAsContactPersonsToCampaign_BillToDefaultAddressType_Existing()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
+		bpLocation.setIsBillToDefault(true);
+		save(bpLocation);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(true);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = DefaultAddressType.BillToDefault;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.size() == 1);
+		assertTrue(existingContactPersons.get(0).getC_BPartner_Location_ID() == bpLocation.getC_BPartner_Location_ID());
+	}
+
+	@Test
+	public void addAsContactPersonsToCampaign_BillToDefaultAddressType_NotExisting_MandatoryLocation()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		createBPartnerLocation(partner1);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(true);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = DefaultAddressType.BillToDefault;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.isEmpty());
+	}
+
+	@Test
+	public void addAsContactPersonsToCampaign_BillToDefaultAddressType_NotExisting_NotMandatoryLocation()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		createBPartnerLocation(partner1);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(false);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = DefaultAddressType.BillToDefault;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.isEmpty());
+	}
+
+	@Test
+	public void addAsContactPersonsToCampaign_ShipToDefaultAddressType_Existing()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
+		bpLocation.setIsShipToDefault(true);
+		save(bpLocation);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(true);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = DefaultAddressType.ShipToDefault;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.size() == 1);
+		assertTrue(existingContactPersons.get(0).getC_BPartner_Location_ID() == bpLocation.getC_BPartner_Location_ID());
+	}
+
+	@Test
+	public void addAsContactPersonsToCampaign_ShipToDefaultAddressType_NotExisting_MandatoryLocation()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		createBPartnerLocation(partner1);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(true);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = DefaultAddressType.ShipToDefault;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.isEmpty());
+	}
+
+	@Test
+	public void addAsContactPersonsToCampaign_ShipToDefaultAddressType_NotExisting_NotMandatoryLocation()
+	{
+		final I_C_BPartner partner1 = createBPartner("Partner1");
+		createBPartnerLocation(partner1);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
+
+		final Stream<User> users = Collections.singletonList(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId)).stream();
+
+		final I_MKTG_Platform platform = createPlatform();
+		platform.setIsRequiredLocation(false);
+		save(platform);
+
+		final I_MKTG_Campaign campaignRecord = createCampaign(platform);
+
+		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+
+		final DefaultAddressType defaultAddressType = DefaultAddressType.ShipToDefault;
+
+		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
+
+		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
+		assertTrue(existingContactPersons.isEmpty());
+	}
+
 	private I_C_BPartner createBPartner(final String name)
 	{
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -172,7 +453,6 @@ public class CampaignServiceTest
 		return location;
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	private User createUserForPartner(final String name, final String mail, final BPartnerId bpartnerId)
 	{
 		final User user = User.builder()
@@ -190,295 +470,5 @@ public class CampaignServiceTest
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_MKTG_ContactPerson.class);
-	}
-
-	@Nested
-	class removeFromNewsletter
-	{
-		@Test
-		public void existingConsent()
-		{
-			de.metas.common.util.time.SystemTime.setFixedTimeSource("2017-11-10T19:04:04+01:00");
-
-			final User user = createUser("User1", "mail@mail.mail");
-
-			final I_MKTG_Platform platform = createPlatform();
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			campaignService.addToCampaignIfHasEmailAddress(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
-
-			final I_MKTG_Consent consent = getConsentRecord();
-			campaignService.removeUserFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
-
-			refresh(consent);
-
-			assertThat(SystemTime.asTimestamp().equals(consent.getConsentRevokedOn())).isTrue();
-
-		}
-
-		@Test
-		public void noConsent()
-		{
-			final User user = createUser("User1", "mail@mail.mail");
-
-			final I_MKTG_Platform platform = createPlatform();
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			campaignService.removeUserFromCampaign(user, CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()));
-
-			final I_MKTG_Consent consentRecord = getConsentRecord();
-			final I_MKTG_Campaign_ContactPerson contactPerson = getContactPerson();
-
-			assertThat(consentRecord).isNull();
-			assertThat(contactPerson).isNull();
-		}
-	}
-
-	@Nested
-	class addAsContactPersonsToCampaign
-	{
-		@Test
-		public void NullDefaultAddressType_ExistingBill()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
-			bpLocation.setIsBillToDefault(true);
-			save(bpLocation);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(true);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = null;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).hasSize(1);
-			assertThat(existingContactPersons.get(0).getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
-
-		}
-
-		@Test
-		public void NullDefaultAddressType_NonExistingBill_MandatoryLocation()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			createBPartnerLocation(partner1);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(true);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = null;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).isEmpty();
-		}
-
-		@Test
-		public void NullDefaultAddressType_NonExistingBill_NotMandatoryLocation()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			createBPartnerLocation(partner1);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(false);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = null;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).hasSize(1);
-		}
-
-		@Test
-		public void BillToDefaultAddressType_Existing()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
-			bpLocation.setIsBillToDefault(true);
-			save(bpLocation);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(true);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = DefaultAddressType.BillToDefault;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).hasSize(1);
-			assertThat(existingContactPersons.get(0).getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
-		}
-
-		@Test
-		public void BillToDefaultAddressType_NotExisting_MandatoryLocation()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			createBPartnerLocation(partner1);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(true);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = DefaultAddressType.BillToDefault;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).isEmpty();
-		}
-
-		@Test
-		public void BillToDefaultAddressType_NotExisting_NotMandatoryLocation()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			createBPartnerLocation(partner1);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(false);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = DefaultAddressType.BillToDefault;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).isEmpty();
-		}
-
-		@Test
-		public void ShipToDefaultAddressType_Existing()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
-			bpLocation.setIsShipToDefault(true);
-			save(bpLocation);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(true);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = DefaultAddressType.ShipToDefault;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).hasSize(1);
-			assertThat(existingContactPersons.get(0).getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
-		}
-
-		@Test
-		public void ShipToDefaultAddressType_NotExisting_MandatoryLocation()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			createBPartnerLocation(partner1);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(true);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = DefaultAddressType.ShipToDefault;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).isEmpty();
-		}
-
-		@Test
-		public void ShipToDefaultAddressType_NotExisting_NotMandatoryLocation()
-		{
-			final I_C_BPartner partner1 = createBPartner("Partner1");
-			createBPartnerLocation(partner1);
-
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner1.getC_BPartner_ID());
-
-			final Stream<User> users = Stream.of(createUserForPartner("User1", "testmail@testmail.testmail", bpartnerId));
-
-			final I_MKTG_Platform platform = createPlatform();
-			platform.setIsRequiredLocation(false);
-			save(platform);
-
-			final I_MKTG_Campaign campaignRecord = createCampaign(platform);
-
-			final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
-
-			final DefaultAddressType defaultAddressType = DefaultAddressType.ShipToDefault;
-
-			campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
-
-			final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-			assertThat(existingContactPersons).isEmpty();
-		}
 	}
 }

@@ -33,5 +33,4 @@ public interface I_T_Lock
 	String COLUMNNAME_Owner = "Owner";
 	String COLUMNNAME_IsAllowMultipleOwners = "IsAllowMultipleOwners";
 	String COLUMNNAME_IsAutoCleanup = "IsAutoCleanup";
-	String COLUMNNAME_Created = "Created";
 }

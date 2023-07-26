@@ -1,6 +1,6 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
@@ -76,10 +76,10 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 	@RunOutOfTrx // the service we invoke creates its own transaction
 	protected String doIt()
 	{
-		final ImmutableSet<HuId> selectedReservedHUs = streamSelectedHUIds(HUEditorRowFilter.ALL)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableList<HuId> selectedReservedHUs = streamSelectedHUIds(HUEditorRowFilter.ALL)
+				.collect(ImmutableList.toImmutableList());
 
-		huReservationService.deleteReservationsByVHUIds(selectedReservedHUs);
+		huReservationService.deleteReservations(selectedReservedHUs);
 
 		return MSG_OK;
 	}

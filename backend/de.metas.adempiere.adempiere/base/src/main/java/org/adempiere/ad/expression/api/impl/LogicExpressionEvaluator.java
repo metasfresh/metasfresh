@@ -24,11 +24,11 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 {
 	public static final LogicExpressionEvaluator instance = new LogicExpressionEvaluator();
 
-	private static final Logger logger = LogManager.getLogger(LogicExpressionEvaluator.class);
+	private static final transient Logger logger = LogManager.getLogger(LogicExpressionEvaluator.class);
 
 	/* Internal marker for value not found */
 	@SuppressWarnings("StringOperationCanBeSimplified")
-	static final String VALUE_NotFound = new String("<<NOT FOUND>>"); // new String to make sure it's unique
+	static final transient String VALUE_NotFound = new String("<<NOT FOUND>>"); // new String to make sure it's unique
 
 	/* package */interface BooleanValueSupplier
 	{
@@ -191,7 +191,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	{
 		final ExpressionEvaluationContext ctx = new ExpressionEvaluationContext(params, onVariableNotFound);
 		final Boolean value = evaluateOrNull(ctx, expr);
-		final boolean valueFinal = value != null && value;
+		final boolean valueFinal = value == null ? false : value;
 		logger.trace("Evaluated {} => {} => {}", expr, value, valueFinal);
 
 		return valueFinal;
@@ -432,7 +432,8 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	 * @return string without quotes
 	 */
 	@Nullable
-	public static String stripQuotes(@Nullable final String s)
+	@VisibleForTesting
+	/* package */ static String stripQuotes(final String s)
 	{
 		if (s == null || s.isEmpty())
 		{
@@ -440,7 +441,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		}
 
 		final int len = s.length();
-		if (len == 1)
+		if (len <= 1)
 		{
 			return s;
 		}
@@ -581,7 +582,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		public String getValue(final Object operand) throws ExpressionEvaluationException
 		{
 			//
-			// Case: we deal with a parameter (which we will need to get it from context/source)
+			// Case: we deal with with a parameter (which we will need to get it from context/source)
 			if (operand instanceof CtxName)
 			{
 				final CtxName ctxName = (CtxName)operand;

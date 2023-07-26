@@ -1,13 +1,14 @@
 package de.metas.i18n;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableMap;
-import lombok.EqualsAndHashCode;
-import lombok.Singular;
-
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableMap;
+
+import lombok.EqualsAndHashCode;
+import lombok.Singular;
 
 /*
  * #%L
@@ -35,6 +36,7 @@ import java.util.Set;
  * Immutable {@link ITranslatableString} implementation.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @EqualsAndHashCode
 public final class ImmutableTranslatableString implements ITranslatableString
@@ -47,26 +49,8 @@ public final class ImmutableTranslatableString implements ITranslatableString
 			@Nullable @Singular final Map<String, String> trls,
 			@Nullable final String defaultValue)
 	{
-		this.trlMap = normalizeTrlsMap(trls);
+		this.trlMap = trls == null ? ImmutableMap.of() : ImmutableMap.copyOf(trls);
 		this.defaultValue = defaultValue == null ? "" : defaultValue;
-	}
-
-	private static ImmutableMap<String, String> normalizeTrlsMap(@Nullable final Map<String, String> trls)
-	{
-		if (trls == null || trls.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-		else if (trls.containsValue(null))
-		{
-			ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
-			trls.forEach((adLanguage, trl) -> builder.put(adLanguage, trl != null ? trl : ""));
-			return builder.build();
-		}
-		else
-		{
-			return ImmutableMap.copyOf(trls);
-		}
 	}
 
 	@Override
@@ -92,12 +76,5 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	public Set<String> getAD_Languages()
 	{
 		return trlMap.keySet();
-	}
-
-	@JsonIgnore // needed for snapshot testing
-	public boolean isEmpty()
-	{
-		return defaultValue.isEmpty()
-				&& trlMap.values().stream().allMatch(String::isEmpty);
 	}
 }

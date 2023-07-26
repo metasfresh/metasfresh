@@ -1243,33 +1243,4 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 			 return 0;
 		return ii.intValue();
 	}
-
-
-	@Override
-	public org.compiere.model.I_M_SectionCode getM_SectionCode()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
-	}
-
-	@Override
-	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
-	{
-		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
-	}
-
-	@Override
-	public void setM_SectionCode_ID (final int M_SectionCode_ID)
-	{
-		if (M_SectionCode_ID < 1)
-			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else
-			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
-	}
-
-	@Override
-	public int getM_SectionCode_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
-	}
-
 }

@@ -22,15 +22,16 @@ package org.adempiere.ad.persistence;
  * #L%
  */
 
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.model.InterfaceWrapperHelper;
 
 /**
  * Used to fetch {@link IModelClassInfo}s from model classes.
@@ -42,7 +43,7 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 {
 	public static final IModelClassIntrospector instance = new ModelClassIntrospector();
 
-	public static IModelClassIntrospector getInstance()
+	public static final IModelClassIntrospector getInstance()
 	{
 		return instance;
 	}
@@ -53,7 +54,6 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 	{
 	}
 
-	@Nullable
 	@Override
 	public IModelClassInfo getModelClassInfo(@Nullable final Class<?> clazz)
 	{
@@ -67,7 +67,7 @@ public final class ModelClassIntrospector implements IModelClassIntrospector
 				.orElse(null);
 	}
 
-	private Optional<IModelClassInfo> createModelClassInfo(final Class<?> clazz)
+	private final Optional<IModelClassInfo> createModelClassInfo(final Class<?> clazz)
 	{
 		final String tableName = getTableNameOrNull(clazz);
 		if (tableName != null || clazz.isInterface())

@@ -3,7 +3,6 @@ package de.metas.allocation.api.impl;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -11,8 +10,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -50,7 +47,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class AllocationDAO implements IAllocationDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
 	public void save(@NonNull final I_C_AllocationHdr allocationHdr)
@@ -65,15 +61,13 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public final Money retrieveOpenAmtInInvoiceCurrency(
+	public final BigDecimal retrieveOpenAmt(
 			@NonNull final I_C_Invoice invoice,
 			final boolean creditMemoAdjusted)
 	{
-		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-
 		if (invoice.isPaid())
 		{
-			return Money.of(BigDecimal.ZERO, invoiceCurrencyId);
+			return BigDecimal.ZERO;
 		}
 
 		final BigDecimal openAmt;
@@ -88,14 +82,13 @@ public class AllocationDAO implements IAllocationDAO
 			openAmt = invoice.getGrandTotal();
 		}
 
-		if (creditMemoAdjusted && invoiceBL.isCreditMemo(invoice))
+		if (creditMemoAdjusted && Services.get(IInvoiceBL.class).isCreditMemo(invoice))
 		{
-			return Money.of(openAmt.negate(), invoiceCurrencyId);
+			return openAmt.negate();
 		}
-
-		return Money.of(openAmt, invoiceCurrencyId);
+		return openAmt;
 	}
-	
+
 	@Override
 	public final List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Invoice invoice)
 	{
@@ -327,7 +320,7 @@ public class AllocationDAO implements IAllocationDAO
 
 		// Check if there are fact accounts created for each document
 		final IQuery<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
 				.create();
 
 		// Query builder for the allocation header
@@ -402,22 +395,5 @@ public class AllocationDAO implements IAllocationDAO
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						record -> PaymentId.ofRepoId(record.getC_Payment_ID()),
 						record -> InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID())));
-	}
-
-	@Override
-	public @NonNull I_C_AllocationHdr getById(@NonNull final PaymentAllocationId allocationId)
-	{
-		return InterfaceWrapperHelper.load(allocationId, I_C_AllocationHdr.class);
-	}
-
-	@Override
-	@NonNull
-	public List<I_C_AllocationLine> retrieveAllPaymentAllocationLines(final @NonNull PaymentId paymentId)
-	{
-		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
-				.create()
-				.list();
 	}
 }

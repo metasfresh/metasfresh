@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,41 +43,50 @@ import java.math.BigDecimal;
 @JsonDeserialize(builder = JsonRemittanceAdviceLine.JsonRemittanceAdviceLineBuilder.class)
 public class JsonRemittanceAdviceLine
 {
-	@Schema(required = true,
-			description = "This translates to InvoiceIdentifier")
+	@ApiModelProperty(required = true,
+			dataType = "java.lang.String",
+			value = "This translates to InvoiceIdentifier")
 	@NonNull
 	String invoiceIdentifier;
 
-	@Schema(required = true,
-			description = "This translates to RemittanceAmt")
+	@ApiModelProperty(required = true,
+			dataType = "java.math.BigDecimal",
+			value = "This translates to RemittanceAmt")
 	@NonNull
 	BigDecimal remittedAmount;
 
-	@Schema(description = "This translates to InvoiceDate")
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates to InvoiceDate")
 	@Nullable
 	String dateInvoiced;
 
-	@Schema(description= "This translates to Service_BPartner_ID")
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates to Service_BPartner_ID")
 	@Nullable
 	String bpartnerIdentifier;
 
-	@Schema(description = "This translates to ExternalInvoiceDocBaseType")
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates to ExternalInvoiceDocBaseType")
 	@Nullable
 	String invoiceBaseDocType;
 
-	@Schema(description = "This translates as InvoiceGrossAmount")
+	@ApiModelProperty(dataType = "java.math.BigDecimal",
+			value = "This translates as InvoiceGrossAmount")
 	@Nullable
 	BigDecimal invoiceGrossAmount;
 
-	@Schema(description = "This translates to PaymentDiscountAmt")
+	@ApiModelProperty(dataType = "java.math.BigDecimal",
+			value = "This translates to PaymentDiscountAmt")
 	@Nullable
 	BigDecimal paymentDiscountAmount;
 
-	@Schema(description = "This translates to ServiceFeeAmount")
+	@ApiModelProperty(dataType = "java.math.BigDecimal",
+			value = "This translates to ServiceFeeAmount")
 	@Nullable
 	BigDecimal serviceFeeAmount;
 
-	@Schema(description = "This translates to ServiceFeeVatRate")
+	@ApiModelProperty(dataType = "java.math.BigDecimal",
+			value = "This translates to ServiceFeeVatRate")
 	@Nullable
 	BigDecimal serviceFeeVatRate;
 

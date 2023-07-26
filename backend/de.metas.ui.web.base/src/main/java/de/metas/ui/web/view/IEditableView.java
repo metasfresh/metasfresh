@@ -1,18 +1,18 @@
 package de.metas.ui.web.view;
 
-import de.metas.security.IUserRolePermissions;
+import java.util.List;
+
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.List;
 
 /*
  * #%L
@@ -51,6 +51,7 @@ public interface IEditableView extends IView
 		}
 	}
 
+
 	void patchViewRow(RowEditingContext ctx, List<JSONDocumentChangedEvent> fieldChangeRequests);
 
 	LookupValuesPage getFieldTypeahead(RowEditingContext ctx, String fieldName, String query);
@@ -62,8 +63,9 @@ public interface IEditableView extends IView
 	@ToString(exclude = "documentsCollection")
 	class RowEditingContext
 	{
-		@NonNull private final DocumentId rowId;
-		@NonNull private final DocumentCollection documentsCollection;
-		@NonNull private final IUserRolePermissions userRolePermissions;
+		@NonNull
+		private final DocumentId rowId;
+		@NonNull
+		private final DocumentCollection documentsCollection;
 	}
 }

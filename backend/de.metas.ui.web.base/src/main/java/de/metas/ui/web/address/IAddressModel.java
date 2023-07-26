@@ -30,32 +30,32 @@ public interface IAddressModel
 {
 	//@formatter:off
 	String COLUMNNAME_Address1 = "Address1";
-	String getAddress1();
-	void setAddress1(String address);
+	public String getAddress1();
+	public void setAddress1(String address);
 	//@formatter:on
 
 	//@formatter:off
 	String COLUMNNAME_Address2 = "Address2";
-	String getAddress2();
-	void setAddress2(String address);
+	public String getAddress2();
+	public void setAddress2(String address);
 	//@formatter:on
 
 	//@formatter:off
 	String COLUMNNAME_Address3 = "Address3";
-	String getAddress3();
-	void setAddress3(String address);
+	public String getAddress3();
+	public void setAddress3(String address);
 	//@formatter:on
 
 	//@formatter:off
 	String COLUMNNAME_Address4 = "Address4";
-	String getAddress4();
-	void setAddress4(String address);
+	public String getAddress4();
+	public void setAddress4(String address);
 	//@formatter:on
 
 	//@formatter:off
 	String COLUMNNAME_Postal = "Postal";
-	String getPostal();
-	void setPostal(String postal);
+	public String getPostal();
+	public void setPostal(String postal);
 	//@formatter:on
 
 	//@formatter:off
@@ -92,34 +92,4 @@ public interface IAddressModel
 	I_C_Postal getC_Postal();
 	//@formatter:on
 
-	//@formatter:off
-	String COLUMNNAME_POBox = "POBox";
-	void setPOBox(String POBox);
-	String getPOBox();
-	//@formatter:on
-
-	//@formatter:off
-	String COLUMNNAME_IsPOBoxNum = "IsPOBoxNum";
-	void setIsPOBoxNum(boolean isPOBoxNum);
-	boolean isPOBoxNum();
-	//@formatter:on
-
-	//@formatter:off
-	String COLUMNNAME_Street = "Street";
-	void setStreet (String Street);
-    String getStreet();
-	//@formatter:on
-
-
-	//@formatter:off
-	String COLUMNNAME_DHL_PostId = "DHL_PostId";
-	void setDHL_PostId (String DHL_PostId);
-	String getDHL_PostId();
-	//@formatter:on
-
-	//@formatter:off
-	String COLUMNNAME_HouseNumber = "HouseNumber";
-	void setHouseNumber (String HouseNumber);
-	String getHouseNumber();
-	//@formatter:on
 }

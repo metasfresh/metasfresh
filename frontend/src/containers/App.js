@@ -1,9 +1,9 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector, useStore } from 'react-redux';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 
-import '../assets/css/styles.scss';
+import '../assets/css/styles.css';
 import {
   initCurrentActiveLocale,
   setCurrentActiveLocale,
@@ -16,45 +16,28 @@ import {
   setLanguages,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
-import { connectionError } from '../actions/AppActions';
+import { noConnection } from '../actions/WindowActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
 import history from '../services/History';
 import Routes from '../routes';
-import { NO_CONNECTION_ERROR } from '../constants/Constants';
+
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
-import { getDocSummaryDataFromState } from '../reducers/windowHandlerUtils';
+import configureStore from '../store/configureStore';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
+const store = configureStore();
 // const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
-const computeTitleFromState = (state) => {
-  if (state?.appHandler?.isLogged) {
-    const breadcrumb = state?.menuHandler?.breadcrumb;
-    if (breadcrumb?.length > 0) {
-      const lastElement = breadcrumb.slice(-1)[0];
-      const caption = lastElement?.caption;
-      if (caption) {
-        let title = caption;
-        const docSummary = getDocSummaryDataFromState(state)?.value;
-        if (docSummary) {
-          title += ' / ' + docSummary;
-        }
-        return title;
-      }
-    }
-
-    return 'metasfresh';
-  } else {
-    return 'Login';
-  }
-};
+if (window.Cypress) {
+  window.store = store;
+}
 
 /**
  * @file Functional component.
@@ -66,8 +49,6 @@ const App = () => {
   // const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
   const auth = useAuth();
   const dispatch = useDispatch();
-  const store = useStore();
-  const language = useSelector((state) => state.appHandler.me.language);
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);
@@ -97,7 +78,7 @@ const App = () => {
         }
 
         if (!error || !error.response || !error.response.status) {
-          dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
+          dispatch(noConnection(true));
         }
 
         /*
@@ -111,51 +92,24 @@ const App = () => {
             dispatch(setProcessSaved());
 
             auth.setRedirectRoute(location.pathname);
-
-            // we got not authenticated error, but locally still have the authenticated flag truthy
-            // (ie user logged out in another window, or session timed out)
-            if (auth.isLoggedIn || store.getState().appHandler.isLogged) {
-              auth.logout().finally(() => {
-                history.push('/login');
-              });
-            } else {
+            auth.logout().finally(() => {
               history.push('/login');
-            }
+            });
           }
         } else if (
           error.response.status === 500 &&
           error.response.data.path.includes('/authenticate')
         ) {
           /*
-           * User already logged in on the backend side or wrong
-           * login token
+           * User already logged in
            */
-
-          // if user types in incorrect token, there's no way for us to tell if he's
-          // already authenticated or not. So it's safest to reset the login process
-          if (error.response.data.message.includes('Invalid token')) {
-            return auth
-              .logout()
-              .then(() => {
-                history.push('/login');
-              })
-              .catch((err) => {
-                console.error('App.checkAuthentication error: ', err);
-              });
-          }
-
-          //if not logged in
-          if (!auth.isLoggedIn && !store.getState().appHandler.isLogged) {
-            return auth.checkAuthentication().then((authenticated) => {
-              if (authenticated) {
-                history.push(location.pathname);
-              }
-            });
-          }
-        } else if (error.response.status == 502) {
-          return; // silent error for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
+          auth.checkAuthentication().then((authenticated) => {
+            if (authenticated) {
+              history.push(location.pathname);
+            }
+          });
         } else if (error.response.status == 503) {
-          dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
+          dispatch(noConnection(true));
         } else if (error.response.status != 404) {
           if (auth.isLoggedIn) {
             const errorMessenger = (code) => {
@@ -218,8 +172,7 @@ const App = () => {
     getAvailableLang().then((response) => {
       const { defaultValue, values } = response.data;
       const valuesFlatten = values.map((item) => Object.keys(item)[0]);
-
-      if (!language) {
+      if (!store.getState().appHandler.me.language) {
         dispatch(setLanguages(values));
       }
       const lang =
@@ -289,11 +242,6 @@ const App = () => {
   // if (APP_PLUGINS.length && pluginsLoading) {
   //   return null;
   // }
-
-  const title = useSelector((state) => computeTitleFromState(state));
-  useEffect(() => {
-    document.title = title;
-  }, [title]);
 
   return (
     <ShortcutProvider>

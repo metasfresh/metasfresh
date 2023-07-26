@@ -22,15 +22,16 @@
 package org.compiere.util;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.ILanguageDAO;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -41,6 +42,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
@@ -52,7 +54,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
@@ -60,13 +62,16 @@ import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.db.Database;
 import org.compiere.dbPort.Convert;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.MSequence;
 import org.compiere.model.Null;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
+import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import javax.sql.RowSet;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -93,7 +98,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * General Database Interface
@@ -155,6 +161,57 @@ public class DB
 	 * SQL Statement Separator "; "
 	 */
 	public final String SQLSTATEMENT_SEPARATOR = "; ";
+
+	/**************************************************************************
+	 * Check need for post Upgrade
+	 *
+	 * @param ctx context
+	 * @return true if post upgrade ran - false if there was no need
+	 */
+	@Deprecated
+	public boolean afterMigration(final Properties ctx)
+	{
+		// UPDATE AD_System SET IsJustMigrated='Y'
+		final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
+		if (!system.isJustMigrated())
+		{
+			return false;
+		}
+		// Role update
+		log.info("After migration: running role access update for all roles");
+		try
+		{
+			Services.get(IUserRolePermissionsDAO.class).updateAccessRecordsForAllRoles();
+		}
+		catch (final Exception ex)
+		{
+			log.error("Role access update failed. Ignored.", ex);
+		}
+
+		// Release Specif stuff & Print Format
+		try
+		{
+			final Class<?> clazz = Class.forName("org.compiere.MigrateData");
+			clazz.newInstance();
+		}
+		catch (final Exception e)
+		{
+			log.error("After migration: migrate data failed", e);
+		}
+
+		// Language check
+		log.info("After migration: Language maintainance");
+		Services.get(ILanguageDAO.class).addAllMissingTranslations();
+
+		// Sequence check
+		log.info("After migration: Sequence check");
+		SequenceCheck.validate(ctx);
+
+		// Reset Flag
+		system.setIsJustMigrated(false);
+		save(system);
+		return true;
+	}    // afterMigration
 
 	/**************************************************************************
 	 * Set connection.
@@ -504,7 +561,7 @@ public class DB
 	 */
 	@Deprecated
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType, final int resultSetConcurrency)
+			final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
 	}    // prepareStatement
@@ -519,9 +576,9 @@ public class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType,
-											   final int resultSetConcurrency,
-											   final String trxName)
+			final int resultSetType,
+			final int resultSetConcurrency,
+			final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{
@@ -685,10 +742,6 @@ public class DB
 		else if (param instanceof ReferenceListAwareEnum)
 		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
-		}
-		else if (param instanceof byte[])
-		{
-			pstmt.setBytes(index, (byte[])param);
 		}
 		else
 		{
@@ -1027,10 +1080,10 @@ public class DB
 	}
 
 	public int executeUpdateAndThrowExceptionOnFail(final String sql,
-							   final Object[] params,
-							   final String trxName,
-							   final int timeOut,
-							   final ISqlUpdateReturnProcessor updateReturnProcessor)
+			final Object[] params,
+			final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
 				.sql(sql)
@@ -1151,6 +1204,35 @@ public class DB
 	}    // commit
 
 	/**
+	 * Get Row Set. When a Rowset is closed, it also closes the underlying connection. If the created RowSet is transfered by RMI, closing it makes no difference
+	 *
+	 * @param sql sql
+	 * @return row set or null
+	 */
+	public RowSet getRowSet(final String sql, final List<Object> sqlParams)
+	{
+		// Bugfix Gunther Hoppe, 02.09.2005, vpj-cd e-evolution
+		final String sqlConverted = DB.getDatabase().convertStatement(sql);
+		final String trxName = ITrx.TRXNAME_None;
+		final CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, sqlConverted, trxName);
+		final CPreparedStatement stmt = statementsFactory.newCPreparedStatement(info);
+		try
+		{
+			setParameters(stmt, sqlParams);
+			final RowSet retValue = stmt.getRowSet();
+			return retValue;
+		}
+		catch (final SQLException e)
+		{
+			throw new DBException(e, sql, sqlParams);
+		}
+		finally
+		{
+			close(stmt);
+		}
+	}    // getRowSet
+
+	/**
 	 * Get int Value from sql
 	 *
 	 * @param trxName trx
@@ -1186,6 +1268,8 @@ public class DB
 		finally
 		{
 			close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 		return retValue;
 	}
@@ -1214,7 +1298,7 @@ public class DB
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int getSQLValue(@Nullable final String trxName, final String sql, final Object... params)
+	public int getSQLValue(final String trxName, final String sql, final Object... params)
 	{
 		int retValue = -1;
 		try
@@ -1552,7 +1636,8 @@ public class DB
 
 			if (rs.next())
 			{
-				@SuppressWarnings("unchecked") final T[] arr = (T[])rs.getArray(1).getArray();
+				@SuppressWarnings("unchecked")
+				final T[] arr = (T[])rs.getArray(1).getArray();
 				return arr;
 			}
 			else
@@ -1798,13 +1883,6 @@ public class DB
 		return CConnection.get().getDatabase().TO_SEQUENCE_NEXTVAL(sequenceName);
 	}
 
-	public String TO_ARRAY(@NonNull final Collection<?> values, @NonNull final List<Object> paramsOut)
-	{
-		final String sql = "ARRAY[" + values.stream().map(value -> "?").collect(Collectors.joining(",")) + "]";
-		paramsOut.addAll(values);
-		return sql;
-	}
-
 	/**
 	 * Is this a remote client connection.
 	 * <p>
@@ -1856,10 +1934,6 @@ public class DB
 		else if (param instanceof RepoIdAware)
 		{
 			return String.valueOf(((RepoIdAware)param).getRepoId());
-		}
-		else if (param instanceof ReferenceListAwareEnum)
-		{
-			return TO_STRING(((ReferenceListAwareEnum)param).getCode());
 		}
 		else if (param instanceof BigDecimal)
 		{
@@ -2164,7 +2238,7 @@ public class DB
 	// Following methods are kept for BeanShell compatibility.
 	// See BF [ 2030233 ] Remove duplicate code from DB class
 	// TODO: remove this when BeanShell will support varargs methods
-	public int getSQLValue(@Nullable final String trxName, final String sql)
+	public int getSQLValue(final String trxName, final String sql)
 	{
 		return getSQLValue(trxName, sql, new Object[] {});
 	}
@@ -2202,7 +2276,7 @@ public class DB
 	/**
 	 * Create persistent selection in T_Selection table
 	 */
-	public void createT_Selection(@NonNull final PInstanceId pinstanceId, @NonNull final Iterable<Integer> selection, @Nullable final String trxName)
+	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final int pinstanceRepoId = pinstanceId.getRepoId();
 
@@ -2241,14 +2315,14 @@ public class DB
 	 *
 	 * @return generated AD_PInstance_ID that can be used to identify the selection
 	 */
-	public PInstanceId createT_Selection(@NonNull final Iterable<Integer> selection, @Nullable final String trxName)
+	public PInstanceId createT_Selection(final Iterable<Integer> selection, final String trxName)
 	{
 		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		createT_Selection(pinstanceId, selection, trxName);
 		return pinstanceId;
 	}
 
-	public PInstanceId createT_Selection(@NonNull final Set<? extends RepoIdAware> selection, @Nullable final String trxName)
+	public PInstanceId createT_Selection(final Set<? extends RepoIdAware> selection, final String trxName)
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
 		return createT_Selection(ids, trxName);
@@ -2286,7 +2360,7 @@ public class DB
 	 * @param trxName
 	 * @return number of records that were deleted
 	 */
-	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
+	public int deleteT_Selection(final PInstanceId pinstanceId, final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { pinstanceId }, trxName);
@@ -2712,7 +2786,8 @@ public class DB
 		}
 		else if (RepoIdAware.class.isAssignableFrom(returnType))
 		{
-			@SuppressWarnings("unchecked") final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
+			@SuppressWarnings("unchecked")
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
 			value = (AT)RepoIdAwares.ofRepoIdOrNull(rs.getInt(columnIndex), repoIdAwareType);
 		}
 		else
@@ -2780,9 +2855,7 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		final ImmutableList.Builder<T> rows = ImmutableList.builder();
-		retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader, rows::add);
-		return rows.build();
+		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
 	}
 
 	@NonNull
@@ -2791,20 +2864,44 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		final ImmutableList.Builder<T> rows = ImmutableList.builder();
-		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
-		return rows.build();
+		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
 	}
 
 	@NonNull
-	public static <T> ImmutableSet<T> retrieveUniqueRows(
+	private static <T> ImmutableList<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
+			@Nullable final String trxName,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		final ImmutableSet.Builder<T> rows = ImmutableSet.builder();
-		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
-		return rows.build();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql.toString(), trxName);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final ImmutableList.Builder<T> rows = ImmutableList.builder();
+			while (rs.next())
+			{
+				final T row = loader.retrieveRowOrNull(rs);
+				if (row != null)
+				{
+					rows.add(row);
+				}
+			}
+
+			return rows.build();
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
 	}
 
 	public <T> T retrieveFirstRowOrNull(
@@ -2826,40 +2923,6 @@ public class DB
 			else
 			{
 				return null;
-			}
-		}
-		catch (final SQLException ex)
-		{
-			throw new DBException(ex, sql, sqlParams);
-		}
-		finally
-		{
-			close(rs, pstmt);
-		}
-	}
-
-	private static <T> void retrieveRows(
-			@NonNull final CharSequence sql,
-			@Nullable final List<Object> sqlParams,
-			@Nullable final String trxName,
-			@NonNull final ResultSetRowLoader<T> loader,
-			@NonNull final Consumer<T> collector)
-	{
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = prepareStatement(sql.toString(), trxName);
-			setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-
-			while (rs.next())
-			{
-				final T row = loader.retrieveRowOrNull(rs);
-				if (row != null)
-				{
-					collector.accept(row);
-				}
 			}
 		}
 		catch (final SQLException ex)

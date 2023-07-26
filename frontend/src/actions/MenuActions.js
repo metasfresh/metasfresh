@@ -32,7 +32,8 @@ export function getWindowBreadcrumb(id) {
   return (dispatch) => {
     elementPathRequest('window', id)
       .then((response) => {
-        return flattenOneLine(response.data);
+        let pathData = flattenOneLine(response.data);
+        return pathData;
       })
       .then((item) => {
         dispatch(setBreadcrumb(item.reverse()));
@@ -47,9 +48,16 @@ export function getWindowBreadcrumb(id) {
 export function getElementBreadcrumb(entity, id) {
   return (dispatch) => {
     elementPathRequest(entity, id)
-      .then((response) => flattenOneLine(response.data))
-      .then((item) => dispatch(setBreadcrumb(item.reverse())))
-      .catch(() => dispatch(setBreadcrumb([])));
+      .then((response) => {
+        let pathData = flattenOneLine(response.data);
+        return pathData;
+      })
+      .then((item) => {
+        dispatch(setBreadcrumb(item.reverse()));
+      })
+      .catch(() => {
+        dispatch(setBreadcrumb([]));
+      });
   };
 }
 

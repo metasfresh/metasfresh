@@ -6,7 +6,6 @@
         "productIdentifier": "ext-Shopware6-!!productId!!",
         "externalVersion": null,
         "externalReferenceUrl": null,
-        "externalSystemConfigId": 1,
         "requestProduct": {
           "code": "!!productNumber!!",
           "codeSet": true,
@@ -14,7 +13,7 @@
           "nameSet": true,
           "type": "ITEM",
           "typeSet": true,
-          "uomCode": "CM",
+          "uomCode": "PCE",
           "uomCodeSet": true,
           "ean": "!!ean!!",
           "eanSet": true,

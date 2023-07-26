@@ -31,23 +31,39 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Value
-@Builder
 public class CurrencyRate
 {
-	@NonNull CurrencyId fromCurrencyId;
-	@NonNull CurrencyPrecision fromCurrencyPrecision;
+	CurrencyId fromCurrencyId;
+	CurrencyPrecision fromCurrencyPrecision;
 
-	@NonNull CurrencyId toCurrencyId;
-	@NonNull CurrencyPrecision toCurrencyPrecision;
+	CurrencyId toCurrencyId;
+	CurrencyPrecision toCurrencyPrecision;
 
-	@NonNull BigDecimal conversionRate;
-	@NonNull Instant conversionDate;
-	@NonNull CurrencyConversionTypeId conversionTypeId;
+	BigDecimal conversionRate;
+	LocalDate conversionDate;
+	CurrencyConversionTypeId conversionTypeId;
 
-	public BigDecimal toBigDecimal() {return getConversionRate();}
+	@Builder
+	private CurrencyRate(
+			@NonNull final BigDecimal conversionRate,
+			@NonNull final CurrencyId fromCurrencyId,
+			@NonNull final CurrencyId toCurrencyId,
+			@NonNull final CurrencyPrecision toCurrencyPrecision,
+			@NonNull final CurrencyPrecision fromCurrencyPrecision,
+			@NonNull final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final LocalDate conversionDate)
+	{
+		this.conversionRate = conversionRate;
+		this.fromCurrencyId = fromCurrencyId;
+		this.toCurrencyId = toCurrencyId;
+		this.conversionTypeId = conversionTypeId;
+		this.conversionDate = conversionDate;
+		this.toCurrencyPrecision = toCurrencyPrecision;
+		this.fromCurrencyPrecision = fromCurrencyPrecision;
+	}
 
 	@NonNull
 	public BigDecimal convertAmount(final BigDecimal amount)
@@ -80,28 +96,18 @@ public class CurrencyRate
 	 */
 	public Money convertAmount(@NonNull final Money amount)
 	{
-		if (CurrencyId.equals(amount.getCurrencyId(), toCurrencyId))
+		if (amount.getCurrencyId().equals(toCurrencyId))
 		{
 			return amount;
 		}
 
-		if (!CurrencyId.equals(amount.getCurrencyId(), fromCurrencyId))
+		if (!amount.getCurrencyId().equals(fromCurrencyId))
 		{
 			throw new AdempiereException("Cannot convert " + amount + " to " + toCurrencyId + " using " + this);
 		}
 
 		final BigDecimal convertedAmount = convertAmount(amount.toBigDecimal());
 		return Money.of(convertedAmount, toCurrencyId);
-	}
-
-	public Money convertAmount(@NonNull final Money amount, @NonNull final CurrencyId toCurrencyId)
-	{
-		if (!CurrencyId.equals(this.toCurrencyId, toCurrencyId))
-		{
-			throw new AdempiereException("Cannot convert " + amount + " to " + toCurrencyId + " using " + this);
-		}
-
-		return convertAmount(amount);
 	}
 
 	/**
@@ -121,12 +127,12 @@ public class CurrencyRate
 	 */
 	public Money reverseConvertAmount(@NonNull final Money amount)
 	{
-		if (CurrencyId.equals(amount.getCurrencyId(), fromCurrencyId))
+		if (amount.getCurrencyId().equals(fromCurrencyId))
 		{
 			return amount;
 		}
 
-		if (!CurrencyId.equals(amount.getCurrencyId(), toCurrencyId))
+		if (!amount.getCurrencyId().equals(toCurrencyId))
 		{
 			throw new AdempiereException("Cannot convert " + amount + " to " + fromCurrencyId + " using " + this);
 		}

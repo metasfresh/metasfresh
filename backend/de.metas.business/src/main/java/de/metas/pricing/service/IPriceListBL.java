@@ -64,7 +64,7 @@ public interface IPriceListBL extends ISingletonService
 			CountryId countryId,
 			ZonedDateTime date,
 			@Nullable SOTrx soTrx,
-			@Nullable Boolean processedPLVFiltering);
+			Boolean processedPLVFiltering);
 
 	/**
 	 * Please keep in sync with {@link #updateAllPLVName(String, PriceListId)} )}

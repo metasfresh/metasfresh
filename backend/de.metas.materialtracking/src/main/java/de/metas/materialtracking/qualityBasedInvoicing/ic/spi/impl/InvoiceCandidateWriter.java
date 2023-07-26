@@ -23,6 +23,7 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
@@ -44,14 +45,12 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -77,19 +76,19 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import java.util.Properties;
 
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
  *
  * @author tsa
+ *
  */
 public class InvoiceCandidateWriter
 {
 	// Services
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final transient IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
+	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -101,7 +100,7 @@ public class InvoiceCandidateWriter
 	private int invoiceDocTypeId = -1;
 	/**
 	 * Original invoice candidates that need to be cleared when a new invoice candidate is created by this builder.
-	 * <p>
+	 *
 	 * NOTE: please don't use this object in other scope then clearing. If you want more invoicing informations, please take them from {@link #_vendorInvoicingInfo}.
 	 */
 	private List<I_C_Invoice_Candidate> _invoiceCandidatesToClear;
@@ -158,7 +157,7 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * Sets which group types will be accepted and saved.
-	 * <p>
+	 *
 	 * Also, the {@link IQualityInvoiceLineGroup}s will be sorted exactly by the order of given types.
 	 *
 	 * @param types
@@ -589,13 +588,14 @@ public class InvoiceCandidateWriter
 	}
 
 	/**
+	 *
 	 * @param invoiceCandidate
 	 * @task 07442
 	 */
 	@VisibleForTesting
 	protected void setC_Activity_ID(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final ActivityId activityId = productActivityProvider.getActivityForAcct(
+		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
 				ClientId.ofRepoId(invoiceCandidate.getAD_Client_ID()),
 				OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID()),
 				ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()));
@@ -608,15 +608,16 @@ public class InvoiceCandidateWriter
 	{
 		final IContextAware contextProvider = getContext();
 
+		final Properties ctx = contextProvider.getCtx();
 		final TaxCategoryId taxCategoryId = pricingResult.getTaxCategoryId();
 
 		// TODO: we should use shipPartnerLocation
 		final BPartnerLocationAndCaptureId billToLocation = InvoiceCandidateLocationAdapterFactory
 				.billLocationAdapter(ic)
 				.getBPartnerLocationAndCaptureId();
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
 
 		final TaxId taxID = taxBL.getTaxNotNull(
+				ctx,
 				ic,
 				taxCategoryId,
 				ic.getM_Product_ID(),
@@ -624,8 +625,7 @@ public class InvoiceCandidateWriter
 				OrgId.ofRepoId(ic.getAD_Org_ID()),
 				(WarehouseId)null,
 				billToLocation, // shipPartnerLocation TODO
-				SOTrx.PURCHASE,
-				vatCodeId);
+				SOTrx.PURCHASE);
 		ic.setC_Tax_ID(taxID.getRepoId());
 	}
 }

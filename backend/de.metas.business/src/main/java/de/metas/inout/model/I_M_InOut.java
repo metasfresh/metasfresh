@@ -2,8 +2,6 @@ package de.metas.inout.model;
 
 import de.metas.shipping.model.I_M_ShipperTransportation;
 
-import java.math.BigDecimal;
-
 public interface I_M_InOut extends org.compiere.model.I_M_InOut
 {
 	// @formatter:off

@@ -43,10 +43,7 @@ public enum PaymentRule implements ReferenceListAwareEnum
 	OnCredit(X_C_Order.PAYMENTRULE_OnCredit), // P
 	DirectDebit(X_C_Order.PAYMENTRULE_DirectDebit), //
 	Mixed(X_C_Order.PAYMENTRULE_Mixed), // M
-	PayPal(X_C_Order.PAYMENTRULE_PayPal), // L
-	PayPalExtern(X_C_Order.PAYMENTRULE_PayPalExtern), // V
-	CreditCardExtern(X_C_Order.PAYMENTRULE_KreditkarteExtern), // U
-	InstantBankTransfer(X_C_Order.PAYMENTRULE_Sofortueberweisung) // R
+	PayPal(X_C_Order.PAYMENTRULE_PayPal) // L
 	;
 
 	@Getter
@@ -57,7 +54,6 @@ public enum PaymentRule implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
-	@Nullable
 	public static PaymentRule ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
@@ -70,7 +66,7 @@ public enum PaymentRule implements ReferenceListAwareEnum
 
 	public static PaymentRule ofCode(@NonNull final String code)
 	{
-		final PaymentRule type = typesByCode.get(code);
+		PaymentRule type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + PaymentRule.class + " found for code: " + code);
@@ -78,8 +74,7 @@ public enum PaymentRule implements ReferenceListAwareEnum
 		return type;
 	}
 
-	@Nullable
-	public static String toCodeOrNull(@Nullable final PaymentRule type)
+	public static String toCodeOrNull(final PaymentRule type)
 	{
 		return type != null ? type.getCode() : null;
 	}

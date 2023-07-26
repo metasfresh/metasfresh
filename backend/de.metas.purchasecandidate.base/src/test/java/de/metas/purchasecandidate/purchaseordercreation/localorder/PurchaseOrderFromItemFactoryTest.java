@@ -1,32 +1,23 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.BPartnerId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.i18n.ADMessageAndParams;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderAndLineId;
-import de.metas.order.event.OrderUserNotifications;
-import de.metas.order.event.OrderUserNotifications.NotificationRequest;
-import de.metas.order.impl.OrderLineBL;
 import de.metas.order.impl.OrderLineDetailRepository;
-import de.metas.order.model.I_C_Order;
-import de.metas.organization.OrgId;
-import de.metas.pricing.conditions.PricingConditions;
-import de.metas.product.ProductAndCategoryAndManufacturerId;
-import de.metas.product.ProductId;
-import de.metas.purchasecandidate.DemandGroupReference;
-import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateTestTool;
-import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -37,21 +28,30 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.event.OrderUserNotifications;
+import de.metas.order.event.OrderUserNotifications.NotificationRequest;
+import de.metas.order.impl.OrderLineBL;
+import de.metas.order.model.I_C_Order;
+import de.metas.organization.OrgId;
+import de.metas.pricing.conditions.PricingConditions;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateTestTool;
+import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -243,7 +243,7 @@ public class PurchaseOrderFromItemFactoryTest
 		return PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
-				.orgId(OrgId.ofRepoId(Env.CTXVALUE_AD_Org_ID_Any))
+				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())

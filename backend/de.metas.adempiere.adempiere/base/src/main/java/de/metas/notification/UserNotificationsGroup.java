@@ -1,12 +1,13 @@
 package de.metas.notification;
 
+import java.util.Set;
+
 import com.google.common.collect.ImmutableSet;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import java.util.Set;
 
 /*
  * #%L
@@ -33,7 +34,7 @@ import java.util.Set;
 @Value
 public class UserNotificationsGroup
 {
-	public static UserNotificationsGroup.UserNotificationsGroupBuilder prepareDefault()
+	public static UserNotificationsGroupBuilder prepareDefault()
 	{
 		return UserNotificationsGroup.builder().groupInternalName(DEFAULT_GroupInternalName);
 	}

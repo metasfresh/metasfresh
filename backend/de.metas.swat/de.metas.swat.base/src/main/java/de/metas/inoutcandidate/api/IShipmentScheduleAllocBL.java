@@ -28,8 +28,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 
-import java.util.List;
-
 public interface IShipmentScheduleAllocBL extends ISingletonService
 {
 	/**
@@ -45,6 +43,4 @@ public interface IShipmentScheduleAllocBL extends ISingletonService
 	boolean isDelivered(I_M_ShipmentSchedule_QtyPicked alloc);
 
 	Quantity retrieveQtyPickedAndUnconfirmed(I_M_ShipmentSchedule shipmentScheduleRecord);
-
-	void deleteRecords(List<? extends I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords);
 }

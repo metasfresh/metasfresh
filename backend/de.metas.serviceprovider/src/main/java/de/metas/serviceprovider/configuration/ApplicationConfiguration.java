@@ -24,6 +24,7 @@ package de.metas.serviceprovider.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.i18n.IMsgBL;
@@ -36,6 +37,8 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -101,4 +104,18 @@ public class ApplicationConfiguration
 	{
 		return Services.get(IMsgBL.class);
 	}
+
+	@Bean
+	public IModelCacheInvalidationService modelCacheInvalidationService()
+	{
+		return Services.get(IModelCacheInvalidationService .class);
+	}
+
+	@Bean
+	public IADReferenceDAO referenceDAO()
+	{
+		return Services.get(IADReferenceDAO.class);
+	}
+
+
 }

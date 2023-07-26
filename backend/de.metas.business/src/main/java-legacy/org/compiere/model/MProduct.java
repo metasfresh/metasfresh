@@ -21,42 +21,39 @@
  */
 package org.compiere.model;
 
-import de.metas.common.util.CoalesceUtil;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
+import java.sql.ResultSet;
+import java.util.Properties;
+
 import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductType;
-import de.metas.product.ResourceId;
-import de.metas.resource.ResourceGroupId;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 
-import javax.annotation.Nullable;
-import java.sql.ResultSet;
-import java.util.Properties;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 
 /**
  * Product Model
  *
  * @author Jorg Janke
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>FR [ 1885153 ] Refactor: getMMPolicy code <li>BF [ 1885414 ] ASI should be always mandatory if CostingLevel is Batch/Lot <li>FR [ 2093551 ]
- * Refactor/Add org.compiere.model.MProduct.getCostingLevel <li>FR [ 2093569 ] Refactor/Add org.compiere.model.MProduct.getCostingMethod <li>BF [ 2824795 ] Deleting Resource product should be
- * forbidden https://sourceforge.net/tracker/?func=detail&aid=2824795&group_id=176962&atid=879332
- * @author Mark Ostermann (mark_o), metas consult GmbH <li>BF [ 2814628 ] Wrong evaluation of Product inactive in beforeSave()
  * @version $Id: MProduct.java,v 1.5 2006/07/30 00:51:05 jjanke Exp $
+ *
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>FR [ 1885153 ] Refactor: getMMPolicy code <li>BF [ 1885414 ] ASI should be always mandatory if CostingLevel is Batch/Lot <li>FR [ 2093551 ]
+ *         Refactor/Add org.compiere.model.MProduct.getCostingLevel <li>FR [ 2093569 ] Refactor/Add org.compiere.model.MProduct.getCostingMethod <li>BF [ 2824795 ] Deleting Resource product should be
+ *         forbidden https://sourceforge.net/tracker/?func=detail&aid=2824795&group_id=176962&atid=879332
+ *
+ * @author Mark Ostermann (mark_o), metas consult GmbH <li>BF [ 2814628 ] Wrong evaluation of Product inactive in beforeSave()
  */
 public class MProduct extends X_M_Product
 {
 	private static final long serialVersionUID = 285926961771269935L;
 
 	@Deprecated
-	@Nullable
-	public static MProduct get(final Properties ctx_IGNORED, final int M_Product_ID)
+	public static MProduct get(Properties ctx_IGNORED, int M_Product_ID)
 	{
 		if (M_Product_ID <= 0)
 		{
@@ -66,7 +63,7 @@ public class MProduct extends X_M_Product
 		// NOTE: we rely on table cache config
 		final I_M_Product product = Services.get(IProductDAO.class).getById(M_Product_ID);
 		return LegacyAdapters.convertToPO(product);
-	}    // get
+	}	// get
 
 	/**************************************************************************
 	 * Standard Constructor
@@ -75,46 +72,131 @@ public class MProduct extends X_M_Product
 	 * @param M_Product_ID id
 	 * @param trxName transaction
 	 */
-	public MProduct(final Properties ctx, final int M_Product_ID, final String trxName)
+	public MProduct(Properties ctx, int M_Product_ID, String trxName)
 	{
 		super(ctx, M_Product_ID, trxName);
-		if (is_new())
+		if (M_Product_ID == 0)
 		{
 			// setValue (null);
 			// setName (null);
 			// setM_Product_Category_ID (0);
 			// setC_UOM_ID (0);
 			//
-			setProductType(PRODUCTTYPE_Item);    // I
-			setIsBOM(false);    // N
+			setProductType(PRODUCTTYPE_Item);	// I
+			setIsBOM(false);	// N
 			setIsInvoicePrintDetails(false);
 			setIsPickListPrintDetails(false);
-			setIsPurchased(true);    // Y
-			setIsSold(true);    // Y
-			setIsStocked(true);    // Y
+			setIsPurchased(true);	// Y
+			setIsSold(true);	// Y
+			setIsStocked(true);	// Y
 			setIsSummary(false);
-			setIsVerified(false);    // N
+			setIsVerified(false);	// N
 			setIsWebStoreFeatured(false);
 			setIsSelfService(true);
 			setIsExcludeAutoDelivery(false);
-			setProcessing(false);    // N
+			setProcessing(false);	// N
 			setLowLevel(0);
 		}
-	}    // MProduct
+	}	// MProduct
 
 	/**
 	 * Load constructor
 	 *
-	 * @param ctx     context
-	 * @param rs      result set
+	 * @param ctx context
+	 * @param rs result set
 	 * @param trxName transaction
 	 */
-	public MProduct(final Properties ctx, final ResultSet rs, final String trxName)
+	public MProduct(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}    // MProduct
+	}	// MProduct
 
-	@Nullable private UOMPrecision _precision = null; // lazy
+	/**
+	 * Parent Constructor
+	 *
+	 * @param et parent
+	 */
+	MProduct(MExpenseType et)
+	{
+		this(et.getCtx(), 0, et.get_TrxName());
+		setProductType(X_M_Product.PRODUCTTYPE_ExpenseType);
+		setExpenseType(et);
+	}	// MProduct
+
+//	/**
+//	 * Parent Constructor
+//	 *
+//	 * @param resource parent
+//	 * @param resourceType resource type
+//	 */
+//	public MProduct(MResource resource, MResourceType resourceType)
+//	{
+//		this(resource.getCtx(), 0, resource.get_TrxName());
+//		setAD_Org_ID(resource.getAD_Org_ID());
+//		setProductType(X_M_Product.PRODUCTTYPE_Resource);
+//		setResource(resource);
+//		setResource(resourceType);
+//	}	// MProduct
+
+
+	/**
+	 * Set Expense Type
+	 *
+	 * @param parent expense type
+	 * @return true if changed
+	 */
+	boolean setExpenseType(MExpenseType parent)
+	{
+		boolean changed = false;
+		if (!PRODUCTTYPE_ExpenseType.equals(getProductType()))
+		{
+			setProductType(PRODUCTTYPE_ExpenseType);
+			changed = true;
+		}
+		if (parent.getS_ExpenseType_ID() != getS_ExpenseType_ID())
+		{
+			setS_ExpenseType_ID(parent.getS_ExpenseType_ID());
+			changed = true;
+		}
+		if (parent.isActive() != isActive())
+		{
+			setIsActive(parent.isActive());
+			changed = true;
+		}
+		//
+		if (!parent.getValue().equals(getValue()))
+		{
+			setValue(parent.getValue());
+			changed = true;
+		}
+		if (!parent.getName().equals(getName()))
+		{
+			setName(parent.getName());
+			changed = true;
+		}
+		if ((parent.getDescription() == null && getDescription() != null)
+				|| (parent.getDescription() != null && !parent.getDescription().equals(getDescription())))
+		{
+			setDescription(parent.getDescription());
+			changed = true;
+		}
+		if (parent.getC_UOM_ID() != getC_UOM_ID())
+		{
+			setC_UOM_ID(parent.getC_UOM_ID());
+			changed = true;
+		}
+		if (parent.getM_Product_Category_ID() != getM_Product_Category_ID())
+		{
+			setM_Product_Category_ID(parent.getM_Product_Category_ID());
+			changed = true;
+		}
+
+		// metas 05129 end
+		return changed;
+	}	// setExpenseType
+
+	/** UOM Precision */
+	private UOMPrecision m_precision = null;
 
 	/**
 	 * Get UOM Standard Precision
@@ -125,22 +207,22 @@ public class MProduct extends X_M_Product
 	@Deprecated
 	public int getUOMPrecision()
 	{
-		UOMPrecision precision = this._precision;
+		UOMPrecision precision = m_precision;
 		if (precision == null)
 		{
 			final UomId uomId = UomId.ofRepoIdOrNull(getC_UOM_ID());
 			if (uomId == null)
 			{
-				precision = UOMPrecision.ZERO;    // EA
+				precision = UOMPrecision.ZERO;	// EA
 				// NOTE: don't cache the precision (i.e. don't set m_precision)
 			}
 			else
 			{
-				precision = this._precision = Services.get(IUOMDAO.class).getStandardPrecision(uomId);
+				precision = m_precision = Services.get(IUOMDAO.class).getStandardPrecision(uomId);
 			}
 		}
 		return precision.toInt();
-	}    // getUOMPrecision
+	}	// getUOMPrecision
 
 	/**
 	 * Create Asset for this product
@@ -153,7 +235,7 @@ public class MProduct extends X_M_Product
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
 		return pc.getA_Asset_Group_ID() > 0;
-	}    // isCreated
+	}	// isCreated
 
 	/**
 	 * Create One Asset Per UOM
@@ -169,49 +251,41 @@ public class MProduct extends X_M_Product
 		{
 			return false;
 		}
-		final MAssetGroup ag = MAssetGroup.get(getCtx(), pc.getA_Asset_Group_ID());
+		MAssetGroup ag = MAssetGroup.get(getCtx(), pc.getA_Asset_Group_ID());
 		return ag.isOneAssetPerUOM();
-	}    // isOneAssetPerUOM
+	}	// isOneAssetPerUOM
 
 	@Override
 	public String toString()
 	{
-		return "MProduct[" + get_ID() + "-" + getValue() + "_" + getName() + "]";
-	}
+		StringBuffer sb = new StringBuffer("MProduct[");
+		sb.append(get_ID()).append("-").append(getValue()).append("_").append(getName())
+				.append("]");
+		return sb.toString();
+	}	// toString
 
 	@Override
-	protected boolean beforeSave(final boolean newRecord)
+	protected boolean beforeSave(boolean newRecord)
 	{
 		// Reset Stocked if not Item
 		// AZ Goodwill: Bug Fix isStocked always return false
 		// if (isStocked() && !PRODUCTTYPE_Item.equals(getProductType()))
-		final ProductType productType = ProductType.ofCode(getProductType());
-		if (!productType.isItem())
+		if (!PRODUCTTYPE_Item.equals(getProductType()))
 		{
 			setIsStocked(false);
 		}
 
-		if (productType.isResource())
-		{
-			final ResourceId resourceId = ResourceId.ofRepoIdOrNull(getS_Resource_ID());
-			final ResourceGroupId resourceGroupId = ResourceGroupId.ofRepoIdOrNull(getS_Resource_Group_ID());
-			if (CoalesceUtil.countNotNulls(resourceId, resourceGroupId) != 1)
-			{
-				throw new AdempiereException("In case of resource products the resource or the resource group shall be set (one and only one)");
-			}
-		}
-
 		// UOM reset
-		if (is_ValueChanged(COLUMNNAME_C_UOM_ID))
+		if (m_precision != null && is_ValueChanged("C_UOM_ID"))
 		{
-			this._precision = null;
+			m_precision = null;
 		}
 
 		return true;
-	}
+	}	// beforeSave
 
 	@Override
-	protected boolean afterSave(final boolean newRecord, final boolean success)
+	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (!success)
 		{
@@ -227,25 +301,26 @@ public class MProduct extends X_M_Product
 		// Name/Description Change in Asset MAsset.setValueNameDescription
 		if (!newRecord && (is_ValueChanged("Name") || is_ValueChanged("Description")))
 		{
-			final String sql = DB.convertSqlToNative("UPDATE A_Asset a "
+			String sql = DB.convertSqlToNative("UPDATE A_Asset a "
 					+ "SET (Name, Description)="
 					+ "(SELECT SUBSTR((SELECT bp.Name FROM C_BPartner bp WHERE bp.C_BPartner_ID=a.C_BPartner_ID) || ' - ' || p.Name,1,60), p.Description "
 					+ "FROM M_Product p "
 					+ "WHERE p.M_Product_ID=a.M_Product_ID) "
 					+ "WHERE IsActive='Y'"
+					// + " AND GuaranteeDate > now()"
 					+ "  AND M_Product_ID=" + getM_Product_ID());
-			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Asset Description updated #" + no);
 		}
 
 		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
-			if(!this.isCopying())
+			if (this.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
 			{
 				insert_Accounting(I_M_Product_Acct.Table_Name,
-						I_M_Product_Category_Acct.Table_Name,
-						"p.M_Product_Category_ID=" + getM_Product_Category_ID());
+								  I_M_Product_Category_Acct.Table_Name,
+								  "p.M_Product_Category_ID=" + getM_Product_Category_ID());
 			}
 			else
 			{
@@ -253,27 +328,20 @@ public class MProduct extends X_M_Product
 			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
-
+		
 		return true;
-	}    // afterSave
+	}	// afterSave
+	
 
 	@Override
 	protected boolean beforeDelete()
 	{
-		final ProductType productType = ProductType.ofCode(getProductType());
-		if (productType.isResource() && getS_Resource_ID() > 0)
+		if (PRODUCTTYPE_Resource.equals(getProductType()) && getS_Resource_ID() > 0)
 		{
-			final ResourceId resourceId = ResourceId.ofRepoIdOrNull(getS_Resource_ID());
-			final ResourceGroupId resourceGroupId = ResourceGroupId.ofRepoIdOrNull(getS_Resource_Group_ID());
-			if (CoalesceUtil.countNotNulls(resourceId, resourceGroupId) > 0)
-			{
-				throw new AdempiereException("Resource products cannot be deleted by user");
-			}
+			throw new AdempiereException("@S_Resource_ID@<>0");
 		}
 
 		//
-		delete_Accounting("M_Product_Acct");
-
-		return true;
-	}
+		return delete_Accounting("M_Product_Acct");
+	}	// beforeDelete
 }

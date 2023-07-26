@@ -4,9 +4,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.DeleteResult;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.function.Function;
 
 import static java.math.BigDecimal.ZERO;
 
@@ -108,13 +107,13 @@ public class SupplyCandidateHandler implements CandidateHandler
 				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate())
 				.getCandidate();
 
-		final SaveResult deltaToApplyToLaterStockCandidates = SaveResult.builder()
+		final SaveResult deltaToApplyToLaterStockCandiates = SaveResult.builder()
 				.candidate(savedCandidate)
 				.previousQty(candidateSaveResult.getPreviousQty())
 				.previousTime(candidateSaveResult.getPreviousTime())
 				.build();
 
-		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandidates);
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(deltaToApplyToLaterStockCandiates);
 
 		// set the stock candidate as parent for the supply candidate
 		candidateRepositoryWriteService.updateCandidateById(
@@ -131,8 +130,9 @@ public class SupplyCandidateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
-		final CandidateRepositoryWriteService.DeleteResult stockDeleteResult = deleteCandidateFunc.apply(candidate.getId());
+		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+
+		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(candidate.getParentId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 
@@ -140,9 +140,9 @@ public class SupplyCandidateHandler implements CandidateHandler
 
 		final SaveResult applyDeltaRequest = SaveResult.builder()
 				.candidate(candidate
-								   .withQuantity(ZERO)
-								   .withDate(timeOfDeletedStock.getDate())
-								   .withSeqNo(timeOfDeletedStock.getSeqNo()))
+						.withQuantity(ZERO)
+						.withDate(timeOfDeletedStock.getDate())
+						.withSeqNo(timeOfDeletedStock.getSeqNo()))
 				.previousQty(previousQty)
 				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(applyDeltaRequest);

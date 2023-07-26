@@ -15,7 +15,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 
 import java.sql.Timestamp;
@@ -103,10 +102,10 @@ public class ChangeRecipient
 			@NonNull final I_C_SubscriptionProgress subscriptionProgress,
 			@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(subscriptionProgress.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = subscriptionProgress.getM_ShipmentSchedule();
 
 		ShipmentScheduleDocumentLocationAdapterFactory
-				.mainLocationAdapter(shipmentSchedule)
+				.mainLocationAdapter(subscriptionProgress.getM_ShipmentSchedule())
 				.setFrom(extractDropShipLocation(changeRecipientsRequest));
 
 		save(shipmentSchedule);

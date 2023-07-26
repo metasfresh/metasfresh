@@ -23,11 +23,7 @@
 package de.metas.camel.externalsystems.core.restapi.auth;
 
 import com.sun.istack.NotNull;
-import de.metas.camel.externalsystems.common.RestServiceRoutes;
-import de.metas.camel.externalsystems.core.restapi.processing.ToEmptyRequestBodyFilter;
-import lombok.NonNull;
 import org.apache.camel.ProducerTemplate;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,7 +33,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import static de.metas.camel.externalsystems.core.restapi.auth.preauthenticated.ActuatorIdentity.ACTUATOR_AUTHORITY;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_WOOCOMMERCE_PATH;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY;
 
 @Configuration
 @EnableWebSecurity
@@ -46,16 +43,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 {
 	private final TokenAuthProvider tokenAuthProvider;
 	private final ProducerTemplate producerTemplate;
-	private final ApplicationContext context;
 
 	public WebSecurityConfig(
 			@NotNull final TokenAuthProvider tokenAuthProvider,
-			@NotNull final ProducerTemplate producerTemplate,
-			@NonNull final ApplicationContext context)
+			@NotNull final ProducerTemplate producerTemplate)
 	{
 		this.tokenAuthProvider = tokenAuthProvider;
 		this.producerTemplate = producerTemplate;
-		this.context = context;
 	}
 
 	@Override
@@ -66,22 +60,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 				.csrf()
 				  .disable()
 				.authorizeRequests()
-				  .antMatchers("/**" + RestServiceRoutes.WOO.getPath()).hasAuthority(RestServiceRoutes.WOO.getStringAuthority())
-				  .antMatchers("/**" + RestServiceRoutes.GRS.getPath()).hasAuthority(RestServiceRoutes.GRS.getStringAuthority())
-				  .antMatchers("/**" + RestServiceRoutes.METASFRESH.getPath()).hasAuthority(RestServiceRoutes.METASFRESH.getStringAuthority())
-				  .antMatchers("/actuator/**/*").hasAuthority(ACTUATOR_AUTHORITY)
-				.anyRequest()
+				  .antMatchers("/**" + REST_WOOCOMMERCE_PATH).hasAuthority(WOOCOMMERCE_AUTHORITY)
+				  .anyRequest()
 				  .authenticated();
 		//@formatter:on
 
-		http.addFilterBefore(new AuthenticationFilter(this.context.getBean(AuthenticationManager.class)), BasicAuthenticationFilter.class);
+		http.addFilterBefore(new AuthenticationFilter(authenticationManager()), BasicAuthenticationFilter.class);
 		http.addFilterAfter(new AuditTrailFilter(producerTemplate), AuthenticationFilter.class);
-		http.addFilterAfter(new ToEmptyRequestBodyFilter(), AuthenticationFilter.class);
 	}
 
 	@Bean
 	@Override
-	public AuthenticationManager authenticationManagerBean() throws Exception
+	public AuthenticationManager authenticationManager() throws Exception
 	{
 		return super.authenticationManagerBean();
 	}

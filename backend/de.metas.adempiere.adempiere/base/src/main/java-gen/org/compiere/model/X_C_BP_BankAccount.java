@@ -432,18 +432,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setSwiftCode (final @Nullable java.lang.String SwiftCode)
-	{
-		set_Value (COLUMNNAME_SwiftCode, SwiftCode);
-	}
-
-	@Override
-	public java.lang.String getSwiftCode()
-	{
-		return get_ValueAsString(COLUMNNAME_SwiftCode);
-	}
-
-	@Override
 	public void setIsACH (final boolean IsACH)
 	{
 		set_Value (COLUMNNAME_IsACH, IsACH);

@@ -170,7 +170,7 @@ public class EMailDialog
 		{
 			final int WindowNo = getWindowNo();
 			final int AD_Column_ID = 0;
-			final Lookup lookup = MLookupFactory.newInstance().get(ctx, WindowNo,
+			final Lookup lookup = MLookupFactory.get(ctx, WindowNo,
 					AD_Column_ID, DisplayType.Search,
 					null, // tableName
 					"AD_User_ID",

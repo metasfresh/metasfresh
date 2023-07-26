@@ -15,13 +15,13 @@ import lombok.Value;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.compiere.model.I_C_TaxCategory;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
 
 public interface ITaxDAO extends ISingletonService
 {
+
 
 	Tax getTaxById(int taxRepoId);
 
@@ -68,15 +68,7 @@ public interface ITaxDAO extends ISingletonService
 
 	Percent getRateById(@NonNull TaxId taxId);
 
-	/**
-	 * Get tax category by criteria.
-	 * IF a VatCodeId is provided, and that code is associated with a {@code C_Tax} whose category is marked as IsManualTax, then that tax is used regardless of other query parameters.
-	 */
-	@Nullable
 	Tax getBy(final TaxQuery taxQuery);
-
-	@Nullable
-	Tax getTaxFromVatCodeIfManualOrNull(@Nullable VatCodeId vatCodeId);
 
 	@Builder
 	@Value

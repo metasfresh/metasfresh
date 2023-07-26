@@ -6,11 +6,9 @@ import de.metas.async.spi.IWorkpackageProcessor2;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 public final class WorkpackageProcessor2Wrapper extends WorkpackageProcessorAdapter implements IWorkpackageProcessor2
 {
-	public static IWorkpackageProcessor2 wrapIfNeeded(final IWorkpackageProcessor workpackageProcessor)
+	public static final IWorkpackageProcessor2 wrapIfNeeded(final IWorkpackageProcessor workpackageProcessor)
 	{
 		if (workpackageProcessor instanceof IWorkpackageProcessor2)
 		{
@@ -29,7 +27,7 @@ public final class WorkpackageProcessor2Wrapper extends WorkpackageProcessorAdap
 	}
 
 	@Override
-	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String localTrxName)
+	public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
 	{
 		return delegate.processWorkPackage(workpackage, localTrxName);
 	}

@@ -16,13 +16,50 @@
  *****************************************************************************/
 package org.compiere.apps.search;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.user.api.IUserSortPrefDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Vector;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import javax.swing.BorderFactory;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.RootPaneContainer;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -67,43 +104,28 @@ import org.compiere.util.MSort;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Vector;
-import java.util.concurrent.locks.ReentrantLock;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.user.api.IUserSortPrefDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Search Information and return selection - Base Class.
- * <p>
+ *
  * To create a new instance, please use {@link InfoBuilder}.
  *
  * @author Jorg Janke
- * @author Teo Sarca
- * <ul>
- * <li>FR [ 2846869 ] Info class - add more helper methods https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2846869&group_id=176962
- * <li>FR [ 2847305 ] Info class improvements https://sourceforge.net/tracker/?func=detail&aid=2847305&group_id=176962&atid=879335
- * <li>BF [ 2860556 ] Info class throws false error https://sourceforge.net/tracker/?func=detail&aid=2860556&group_id=176962&atid=879332
- * </ul>
  * @version $Id: Info.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
+ *
+ * @author Teo Sarca
+ *         <ul>
+ *         <li>FR [ 2846869 ] Info class - add more helper methods https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2846869&group_id=176962
+ *         <li>FR [ 2847305 ] Info class improvements https://sourceforge.net/tracker/?func=detail&aid=2847305&group_id=176962&atid=879335
+ *         <li>BF [ 2860556 ] Info class throws false error https://sourceforge.net/tracker/?func=detail&aid=2860556&group_id=176962&atid=879332
+ *         </ul>
  */
 public abstract class Info extends Component
 		implements ActionListener, ListSelectionListener, MouseListener, IWindowNoAware
@@ -118,22 +140,29 @@ public abstract class Info extends Component
 
 	private static final String SORTPREF_Action = X_AD_User_SortPref_Hdr.ACTION_Info_Fenster;
 
-	/**
-	 * Window Width
-	 */
+	/** Window Width */
 	// metas: changed from protected to public
 	public static final int INFO_WIDTH = 800;
 
-	/**
-	 * Default icon name to be used for Info windows
-	 */
+	/** Default icon name to be used for Info windows */
 	public static final String DEFAULT_IconName = "Info16";
 
 	private Window _window = null;
 
+	/**************************************************************************
+	 * Detail Constructor
+	 *
+	 * @param frame parent frame
+	 * @param modal modal
+	 * @param WindowNo window no
+	 * @param tableName table name
+	 * @param keyColumn key column name
+	 * @param multiSelection multiple selection
+	 * @param whereClause where clause
+	 */
 	protected Info(final Frame owner, final boolean modal, final int WindowNo,
-				   final String tableName, final String keyColumn,
-				   final boolean multiSelection, final String whereClause)
+			final String tableName, final String keyColumn,
+			final boolean multiSelection, final String whereClause)
 	{
 		this(owner, modal);
 
@@ -172,9 +201,9 @@ public abstract class Info extends Component
 
 	/**
 	 * Display this info window on screen.
-	 * <p>
+	 *
 	 * If the Info window will be displayed maximized or centered is up to implementing class.
-	 * <p>
+	 *
 	 * By default, the Info window will be shown centered but not maximized.
 	 */
 	public void showWindow()
@@ -189,12 +218,12 @@ public abstract class Info extends Component
 	}
 
 	@OverridingMethodsMustInvokeSuper
-		/* package */void init(final boolean modal,
-							   final int WindowNo,
-							   final String tableName,
-							   final String keyColumn,
-							   final boolean multiSelection,
-							   final String whereClause)
+	/* package */void init(final boolean modal,
+			final int WindowNo,
+			final String tableName,
+			final String keyColumn,
+			final boolean multiSelection,
+			final String whereClause)
 	{
 		// metas: end
 		log.info("WinNo=" + p_WindowNo + " " + whereClause);
@@ -246,107 +275,61 @@ public abstract class Info extends Component
 		}
 	} // Info
 
-	/**
-	 * Master (owning) Window
-	 */
+	/** Master (owning) Window */
 	private int p_WindowNo;
-	/**
-	 * true if WindowNo was created locally
-	 */
+	/** true if WindowNo was created locally */
 	private boolean localWindowNo = false;
 
-	/**
-	 * Table Name
-	 */
+	/** Table Name */
 	private String p_tableName;
-	/**
-	 * Key Column Name
-	 */
+	/** Key Column Name */
 	private String p_keyColumn;
-	/**
-	 * Enable more than one selection
-	 */
+	/** Enable more than one selection */
 	private boolean p_multiSelection;
-	/**
-	 * Specify if the records should be checked(selected) by default (multi selection mode only)
-	 */
+	/** Specify if the records should be checked(selected) by default (multi selection mode only) */
 	private boolean p_isDefaultSelected = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_INFO_DEFAULTSELECTED, false, getCtxAD_Client_ID());
-	/**
-	 * True if double click on a row toggles if row is selected (multi selection mode only)
-	 */
+	/** True if double click on a row toggles if row is selected (multi selection mode only) */
 	private boolean p_doubleClickTogglesSelection = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_INFO_DOUBLECLICKTOGGLESSELECTION, false, getCtxAD_Client_ID());
-	/**
-	 * Initial WHERE Clause
-	 */
+	/** Initial WHERE Clause */
 	protected String p_whereClause = "";
 
-	/**
-	 * Table
-	 */
+	/** Table */
 	protected MiniTable p_table = new MiniTable();
-	/**
-	 * Model Index of Key Column
-	 */
+	/** Model Index of Key Column */
 	private int m_keyColumnIndex = -1;
-	/**
-	 * OK pressed
-	 */
+	/** OK pressed */
 	private boolean m_ok = false;
-	/**
-	 * Cancel pressed - need to differentiate between OK - Cancel - Exit
-	 */
+	/** Cancel pressed - need to differentiate between OK - Cancel - Exit */
 	private boolean m_cancel = false;
-	/**
-	 * Result IDs
-	 */
+	/** Result IDs */
 	private final ArrayList<Integer> m_results = new ArrayList<>(3);
 
-	/**
-	 * Layout of Grid
-	 */
+	/** Layout of Grid */
 	protected Info_Column[] p_layout;
-	/**
-	 * Main SQL Statement
-	 */
+	/** Main SQL Statement */
 	private String m_sqlMain;
-	/**
-	 * Count SQL Statement
-	 */
+	/** Count SQL Statement */
 	private String m_sqlCount;
-	/**
-	 * Order By Clause
-	 */
+	/** Order By Clause */
 	private String m_sqlOrder;
 
-	/**
-	 * Loading success indicator
-	 */
+	/** Loading success indicator */
 	protected boolean p_loadedOK = false;
-	/**
-	 * SO Zoom Window
-	 */
+	/** SO Zoom Window */
 	private AdWindowId m_SO_Window_ID = null;
-	/**
-	 * PO Zoom Window
-	 */
+	/** PO Zoom Window */
 	private AdWindowId m_PO_Window_ID = null;
 
-	/**
-	 * Worker
-	 */
+	/** Worker */
 	private Worker m_worker = null;
 
-	/**
-	 * Logger
-	 */
+	/** Logger */
 	protected Logger log = LogManager.getLogger(getClass());
 
 	// Overrides isLoading().
 	private boolean ignoreLoading = false;
 
-	/**
-	 * Static Layout
-	 */
+	/** Static Layout */
 	private final CPanel southPanel = new CPanel();
 	protected final ConfirmPanel confirmPanel = ConfirmPanel.builder()
 			.withCancelButton(true)
@@ -360,9 +343,7 @@ public abstract class Info extends Component
 	protected final CPanel addonPanel = new CPanel();
 	protected final StatusBar statusBar = new StatusBar();
 	protected final CPanel parameterPanel = new CPanel();
-	/**
-	 * {@link #p_table}'s scroll pane container
-	 */
+	/** {@link #p_table}'s scroll pane container */
 	private final JScrollPane scrollPane = new JScrollPane();
 	//
 	private final JPopupMenu popup = new JPopupMenu();
@@ -485,7 +466,7 @@ public abstract class Info extends Component
 	/**
 	 * Set Status Line
 	 *
-	 * @param text  text
+	 * @param text text
 	 * @param error error
 	 */
 	public void setStatusLine(final String text, final boolean error)
@@ -635,6 +616,7 @@ public abstract class Info extends Component
 	/**
 	 * Can be overridden by implementing classes
 	 *
+	 * @param ctx
 	 * @return ID of the current instance's info window
 	 */
 	protected int getAD_InfoWindow_ID()
@@ -668,8 +650,8 @@ public abstract class Info extends Component
 	 * Execute our query and load the data, using a worker thread.<br>
 	 * If the loading is already in progress then the method makes sure that the load will be repeated.
 	 *
-	 * @task 08755
 	 * @see #isWorkerRepeatLoadData()
+	 * @task 08755
 	 */
 	public void executeQuery()
 	{
@@ -703,18 +685,18 @@ public abstract class Info extends Component
 	/**
 	 * Lock used to synchronize the access to {@link #_workerIsRunning} and {@link #_workerShallRunAgain} which are accessed by both the worker thread and UI threads.
 	 *
-	 * @task 08775
 	 * @see #isWorkerRepeatLoadData()
 	 * @see #executeQuery()
+	 * @task 08775
 	 */
 	private final ReentrantLock _workerRepeatLoadData = new ReentrantLock();
 
 	/**
 	 * Only accessed within areas that are synchronized by {@link #_workerRepeatLoadData}.
 	 *
-	 * @task 08775
 	 * @see #isWorkerRepeatLoadData()
 	 * @see #executeQuery()
+	 * @task 08775
 	 */
 	private volatile boolean _workerShallRunAgain = false;
 
@@ -722,9 +704,9 @@ public abstract class Info extends Component
 	 * Only accessed within areas that are synchronized by {@link #_workerRepeatLoadData}. Note that we use this variable instead of relying on {@link Thread#isAlive()} because the thread might still
 	 * be alive after having exited its internal loop and therefore won't be able to repeat the work. This member is <code>true</code> only while the worker can still be made to repeat its work.
 	 *
-	 * @task 08775
 	 * @see #isWorkerRepeatLoadData()
 	 * @see #executeQuery()
+	 * @task 08775
 	 */
 	private volatile boolean _workerIsRunning = false;
 
@@ -734,12 +716,14 @@ public abstract class Info extends Component
 	 * 1. it checks the value of {@link #_workerShallRunAgain} and returns it. If this method returns <code>true</code> then we expect the {@link Worker} thread to perform {@link Worker#loadData()}
 	 * once more.
 	 * <p>
-	 * 2. if the value of {@link #_workerShallRunAgain} is <code>true</code>, then this method sets the value to <code>false</code>. This means that the worker will run one more time and then finish.
+	 * 2. if the value of {@link #_workerShallRunAgain} is <code>true</code>, then this method sets the value to <code>false</code>. This means that the worker will run one more time and then finish,
+	 * unless someone calls {@link #setWorkerShallRunAgain()} once more.
 	 * <p>
 	 * 3. if the value of {@link #_workerShallRunAgain} is <code>false</code>, then this method sets {@link #_workerIsRunning} to <code>false</code>, because the worker thread did the actual work and
 	 * because it is not requested to repeat the work, it will soon finish.
 	 *
-	 * @implSpec task 08775
+	 * @return
+	 * @task 08775
 	 */
 	private boolean isWorkerRepeatLoadData()
 	{
@@ -763,7 +747,7 @@ public abstract class Info extends Component
 
 	/**
 	 * Called when Info window is opened.
-	 * <p>
+	 *
 	 * By default this method it's just executing {@link #executeQuery()} (only on first invocation) but developer is free to change it in extending classes.
 	 */
 	protected void executeQueryOnInit()
@@ -921,6 +905,7 @@ public abstract class Info extends Component
 	} // getSelectedRowKey
 
 	/**
+	 *
 	 * @param rowIndexModel
 	 * @return row key or -1
 	 */
@@ -1175,7 +1160,7 @@ public abstract class Info extends Component
 	 * Zoom to target
 	 *
 	 * @param adWindowId window id
-	 * @param zoomQuery  zoom query
+	 * @param zoomQuery zoom query
 	 */
 	protected void zoom(final AdWindowId adWindowId, final MQuery zoomQuery)
 	{
@@ -1292,6 +1277,7 @@ public abstract class Info extends Component
 	} // dispose
 
 	/**
+	 *
 	 * @return true if this window is currently disposing or it was already disposed
 	 */
 	public final boolean isDisposed()
@@ -1396,7 +1382,7 @@ public abstract class Info extends Component
 	/**
 	 * Set Parameters for Query To be overwritten by concrete classes
 	 *
-	 * @param pstmt    statement
+	 * @param pstmt statement
 	 * @param forCount for counting records
 	 * @throws SQLException
 	 */
@@ -1482,7 +1468,7 @@ public abstract class Info extends Component
 	 * Get Zoom Window
 	 *
 	 * @param tableName table name
-	 * @param isSOTrx   sales trx
+	 * @param isSOTrx sales trx
 	 * @return AD_Window_ID
 	 */
 	protected AdWindowId getAD_Window_ID(final String tableName, final boolean isSOTrx)
@@ -1529,6 +1515,7 @@ public abstract class Info extends Component
 	} // getAD_Window_ID
 
 	/**
+	 *
 	 * @return Index of Key Column
 	 */
 	protected int getKeyColumnIndex()
@@ -1537,6 +1524,7 @@ public abstract class Info extends Component
 	}
 
 	/**
+	 *
 	 * @return true if OK button was pressed
 	 */
 	public boolean isOkPressed()
@@ -1545,6 +1533,7 @@ public abstract class Info extends Component
 	}
 
 	/**
+	 *
 	 * @return true if Cancel button was pressed
 	 */
 	public boolean isCancelPressed()
@@ -1675,11 +1664,12 @@ public abstract class Info extends Component
 
 		/**
 		 * Do Work (load data). This method repeatedly calls {@link #loadData()}, until it mananages to finish before another thread requests another run by calling {@link Info#executeQuery()}.
+		 *
 		 */
 		@Override
 		public void run()
 		{
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));    // will be reset in the finally block
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));	// will be reset in the finally block
 			try
 			{
 				do
@@ -1967,7 +1957,7 @@ public abstract class Info extends Component
 
 	/**
 	 * task 09961
-	 * <p>
+	 *
 	 * Method to tell which row is to be selected after loading.
 	 * By default, the selected row will be the first one
 	 */
@@ -2158,11 +2148,11 @@ public abstract class Info extends Component
 
 	/**
 	 * Injects the tree panel component in Info window layout.
-	 * <p>
+	 *
 	 * Under the hood, this method will create a split pane, will add the grid table in it's right component and it will add the tree panel in it's left component. We are creating the split pane only
 	 * when we know that we have to display something in it's left side (i.e. the tree panel) because else it will draw some borders which are not looking nice.
 	 *
-	 * @param treePanel       tree panel component to be set in the left side of the split pane.
+	 * @param treePanel tree panel component to be set in the left side of the split pane.
 	 * @param dividerLocation split pane's divider location
 	 */
 	protected final void setTreePanel(final Component treePanel, final int dividerLocation)
@@ -2234,6 +2224,7 @@ public abstract class Info extends Component
 	}
 
 	/**
+	 *
 	 * @param row
 	 * @return true if given row is a data row (e.g. not a totals row)
 	 */

@@ -13,8 +13,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.IQuery;
 
 import com.google.common.collect.ImmutableMap;

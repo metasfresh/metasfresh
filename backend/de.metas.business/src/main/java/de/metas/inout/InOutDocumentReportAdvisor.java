@@ -26,11 +26,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
-import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
-import de.metas.report.DocumentReportInfo;
 import de.metas.report.PrintFormatId;
+import de.metas.report.DocumentReportInfo;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -70,7 +69,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 	@Override
 	public @NonNull DocumentReportInfo getDocumentReportInfo(
 			@NonNull final TableRecordReference recordRef,
-			@Nullable final PrintFormatId adPrintFormatToUseId, final AdProcessId reportProcessIdToUse)
+			@Nullable final PrintFormatId adPrintFormatToUseId)
 	{
 		final InOutId inoutId = recordRef.getIdAssumingTableName(I_M_InOut.Table_Name, InOutId::ofRepoId);
 		final I_M_InOut inout = inoutBL.getById(inoutId);
@@ -96,6 +95,7 @@ public class InOutDocumentReportAdvisor implements DocumentReportAdvisor
 
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_M_InOut.Table_Name, inoutId))
+				.printFormatId(printFormatId)
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
 				.copies(util.getDocumentCopies(bpartner, docType))
 				.documentNo(inout.getDocumentNo())

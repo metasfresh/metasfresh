@@ -22,6 +22,18 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.engine.IDocument;
@@ -40,16 +52,6 @@ import de.metas.dunning.spi.IDunningAggregator;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
 
 public class DefaultDunningProducer implements IDunningProducer
 {
@@ -158,7 +160,6 @@ public class DefaultDunningProducer implements IDunningProducer
 		doc.setProcessed(false);
 		doc.setDocStatus(X_C_DunningDoc.DOCSTATUS_InProgress);
 		doc.setDocAction(X_C_DunningDoc.DOCACTION_Complete);
-		doc.setM_SectionCode_ID(candidate.getM_SectionCode_ID());
 
 		return doc;
 	}

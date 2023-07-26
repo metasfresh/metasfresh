@@ -36,11 +36,9 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.i18n.AdMessageKey;
 import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -63,6 +61,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -70,11 +69,10 @@ import java.util.Set;
  * But nevertheless, I am writing the implementation similar with the Vendor Return part, to have them structured and to allow the possibility to perform the return from customer also from a POS.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class MultiCustomerHUReturnsInOutProducer
 {
-	private static final AdMessageKey MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION = AdMessageKey.of("MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION");
-
 	public static MultiCustomerHUReturnsInOutProducer newInstance()
 	{
 		return new MultiCustomerHUReturnsInOutProducer();
@@ -87,7 +85,6 @@ public class MultiCustomerHUReturnsInOutProducer
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	//
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -237,8 +234,10 @@ public class MultiCustomerHUReturnsInOutProducer
 	 */
 	private CustomerReturnsInOutProducer createCustomerReturnInOutProducer(final BPartnerId bpartnerId, final WarehouseId warehouseId, final I_C_Order originOrder)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final Properties ctx = Env.getCtx();
 		final I_C_BPartner partner = bpartnerDAO.getById(bpartnerId);
-		final I_C_BPartner_Location shipFromLocation = retrieveShipFromLocation(bpartnerId);
+		final I_C_BPartner_Location shipFromLocation = bpartnerDAO.retrieveShipToLocation(ctx, bpartnerId.getRepoId(), ITrx.TRXNAME_None);
 		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
 
 		final CustomerReturnsInOutProducer producer = CustomerReturnsInOutProducer.newInstance();
@@ -290,26 +289,6 @@ public class MultiCustomerHUReturnsInOutProducer
 	{
 		_husToReturn.addAll(hus);
 		return this;
-	}
-
-	@NonNull
-	private I_C_BPartner_Location retrieveShipFromLocation(@NonNull final BPartnerId bpartnerId)
-	{
-		final IBPartnerDAO.BPartnerLocationQuery query = IBPartnerDAO.BPartnerLocationQuery.builder()
-				.bpartnerId(bpartnerId)
-				.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
-				.build();
-
-		final I_C_BPartner_Location shipFromLocation = bpartnerDAO.retrieveBPartnerLocation(query);
-
-		if (shipFromLocation == null)
-		{
-			final I_C_BPartner bPartner = bpartnerDAO.getById(bpartnerId);
-
-			throw new AdempiereException(MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION, bPartner.getName(), bPartner.getValue()).markAsUserValidationError();
-		}
-
-		return shipFromLocation;
 	}
 
 }

@@ -10,7 +10,6 @@ import de.metas.order.compensationGroup.GroupMatcherFactory;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLineType;
 import de.metas.order.compensationGroup.OrderGroupRepositoryAdvisor;
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -106,22 +105,9 @@ public class ContractsCompensationGroupAdvisor implements OrderGroupRepositoryAd
 		private final ConditionsId contractConditionsId;
 
 		@Override
-		public boolean isMatching(@NonNull final Group group)
+		public boolean isMatching(final Group group)
 		{
-			return Objects.equals(contractConditionsId, group.getContractConditionsId());
-
-			// if i just this instead:
-			// 
-			// return ConditionsId.equals(contractConditionsId, group.getContractConditionsId());
-			//
-			// then i get this build error in intellij
-			// /home/tobi/work-metas_2/metasfresh/backend/de.metas.contracts/src/main/java/de/metas/contracts/compensationGroup/ContractsCompensationGroupAdvisor.java:111:32
-			// java: no suitable method found for equals(de.metas.contracts.ConditionsId,de.metas.contracts.ConditionsId)
-			// method java.lang.Object.equals(java.lang.Object) is not applicable
-			// 	(actual and formal argument lists differ in length)
-			// method de.metas.contracts.ConditionsId.equals(java.lang.Object) is not applicable
-			// 	(actual and formal argument lists differ in length)
-			
+			return ConditionsId.equals(contractConditionsId, group.getContractConditionsId());
 		}
 	}
 }

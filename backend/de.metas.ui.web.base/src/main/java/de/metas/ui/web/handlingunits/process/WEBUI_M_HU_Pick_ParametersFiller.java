@@ -22,6 +22,8 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -62,7 +64,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 
-public final class WEBUI_M_HU_Pick_ParametersFiller
+final class WEBUI_M_HU_Pick_ParametersFiller
 {
 	public static final String PARAM_M_PickingSlot_ID = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID;
 	public static final String PARAM_M_ShipmentSchedule_ID = I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
@@ -77,7 +79,7 @@ public final class WEBUI_M_HU_Pick_ParametersFiller
 			final OrderLineId salesOrderLineId)
 	{
 		this.salesOrderLineId = salesOrderLineId;
-		this.shipmentScheduleDataSource = createShipmentScheduleDataSource(LookupDataSourceFactory.sharedInstance(), huId);
+		this.shipmentScheduleDataSource = createShipmentScheduleDataSource(huId);
 		this.shipmentScheduleId = null;
 	}
 
@@ -95,14 +97,15 @@ public final class WEBUI_M_HU_Pick_ParametersFiller
 				.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10));
 	}
 
-	private static LookupDataSource createShipmentScheduleDataSource(LookupDataSourceFactory lookupDataSourceFactory, final HuId huId)
+	private static LookupDataSource createShipmentScheduleDataSource(final HuId huId)
 	{
-		return lookupDataSourceFactory.getLookupDataSource(builder -> builder
+		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
 				.setCtxColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 				.setDisplayType(DisplayType.Search)
 				.addValidationRule(createShipmentSchedulesValidationRule(huId))
-				.buildForDefaultScope());
+				.buildForDefaultScope();
+		return LookupDataSourceFactory.instance.createLookupDataSource(lookupDescriptor);
 	}
 
 	private static IValidationRule createShipmentSchedulesValidationRule(final HuId huId)

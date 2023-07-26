@@ -41,6 +41,6 @@ public class GLN
 		Check.assumeNotEmpty(value, "The given GLN value may not be empty");
 
 		this.value = value.replaceAll(" ", "");
-		Check.assume(this.value.matches("[0-9]{13}"), "A GLN value needs to consist of 13 digits; given value={}", value);
+		Check.assume(this.value.matches("[0-9]{13}"), "The given GLN value needs to consist of 13 digits");
 	}
 }

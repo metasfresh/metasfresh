@@ -1,23 +1,25 @@
 package de.metas.order.voidorderandrelateddocs;
 
-import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.util.List;
+
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -65,23 +67,20 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 
 		for (final I_C_Order orderRecord : orderRecordsToHandle)
 		{
-			// update the old orders' documentNo
+			// update the old orders' documentno
 			final String documentNo = setVoidedOrderNewDocumenTNo(request.getVoidedOrderDocumentNoPrefix(), orderRecord, 1);
 
 			final I_C_Order copiedOrderRecord = newInstance(I_C_Order.class);
 			InterfaceWrapperHelper.copyValues(orderRecord, copiedOrderRecord);
 			copiedOrderRecord.setDocumentNo(documentNo);
-			copiedOrderRecord.setDatePromised(orderRecord.getDatePromised());
-			copiedOrderRecord.setDateOrdered(orderRecord.getDateOrdered());
-			copiedOrderRecord.setPreparationDate(orderRecord.getPreparationDate());
-			copiedOrderRecord.setDateAcct(orderRecord.getDateAcct());
 			saveRecord(copiedOrderRecord);
 
 			// copy-with-details, set orderRecord's previous DocumentNo
-			CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name)
-					.copyChildren(
-							LegacyAdapters.convertToPO(copiedOrderRecord),
-							LegacyAdapters.convertToPO(orderRecord));
+			CopyRecordFactory
+					.getCopyRecordSupport(I_C_Order.Table_Name)
+					.setParentPO(LegacyAdapters.convertToPO(copiedOrderRecord))
+					.setBase(true)
+					.copyRecord(LegacyAdapters.convertToPO(orderRecord), ITrx.TRXNAME_ThreadInherited);
 
 			documentBL.processEx(orderRecord, IDocument.ACTION_Void);
 			saveRecord(orderRecord);
@@ -91,7 +90,7 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 	private String setVoidedOrderNewDocumenTNo(
 			@NonNull final String voidedOrderDocumentNoPrefix,
 			@NonNull final I_C_Order orderRecord,
-			final int attemptCount)
+			int attemptCount)
 	{
 		final String prefixToUse;
 		if (attemptCount <= 1)

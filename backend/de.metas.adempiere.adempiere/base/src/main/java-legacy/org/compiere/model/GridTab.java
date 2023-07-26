@@ -57,6 +57,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
@@ -95,8 +96,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Tab Model.
@@ -284,6 +283,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	public static final String CTX_TabLevel = CTX_Prefix + "TabLevel";
 	public static final String CTX_AccessLevel = CTX_Prefix + "AccessLevel";
 	public static final String CTX_AD_Tab_ID = CTX_Prefix + "AD_Tab_ID";
+	public static final String CTX_Name = CTX_Prefix + "Name";
 	public static final String CTX_AD_Table_ID = CTX_Prefix + "AD_Table_ID";
 	public static final String CTX_FindSQL = CTX_Prefix + "FindSQL";
 	public static final String CTX_SQL = CTX_Prefix + "SQL";
@@ -2770,8 +2770,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	@Override
 	public <T> T getModelBeforeChanges(final Class<T> modelClass)
 	{
-		final T model = InterfaceWrapperHelper.create(this, modelClass);
-		return InterfaceWrapperHelper.createOld(model, modelClass);
+		return InterfaceWrapperHelper.createOld(this, modelClass);
 	}
 
 	/**
@@ -3834,7 +3833,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		return m_vo.getMaxQueryRecords();
 	}
 
-	private int getMaxQueryRecordsActual(final GridTabMaxRows maxQueryRecords)
+	private final int getMaxQueryRecordsActual(final GridTabMaxRows maxQueryRecords)
 	{
 		return GridTabMaxRowsRestrictionChecker.builder()
 				.setAD_Tab(this)
@@ -4021,6 +4020,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	private DataNewCopyMode _dataNewCopyMode = null;
 	/** Tables suggested by user for copy with details */
+	private List<CopyRecordSupportTableInfo> m_suggestedCopyWithDetailsList = null;
 
 	/**
 	 * Returns if we are in record copying mode.
@@ -4039,7 +4039,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 * @param dataNewCopyMode
 	 */
-	private void setDataNewCopyMode(final DataNewCopyMode dataNewCopyMode)
+	private final void setDataNewCopyMode(final DataNewCopyMode dataNewCopyMode)
 	{
 		Check.assumeNotNull(dataNewCopyMode, "dataNewCopyMode not null");
 		this._dataNewCopyMode = dataNewCopyMode;
@@ -4048,9 +4048,24 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	/**
 	 * Reset currently active copy mode
 	 */
-	private void resetDataNewCopyMode()
+	private final void resetDataNewCopyMode()
 	{
 		this._dataNewCopyMode = null;
+	}
+
+	public final void setSuggestedCopyWithDetailsList(final List<CopyRecordSupportTableInfo> suggestedCopyWithDetailsList)
+	{
+		this.m_suggestedCopyWithDetailsList = ImmutableList.copyOf(suggestedCopyWithDetailsList);
+	}
+
+	public final void resetSuggestedCopyWithDetailsList()
+	{
+		this.m_suggestedCopyWithDetailsList = null;
+	}
+
+	public final List<CopyRecordSupportTableInfo> getSuggestedCopyWithDetailsList()
+	{
+		return m_suggestedCopyWithDetailsList;
 	}
 
 	/**
@@ -4058,7 +4073,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 * This method won't remove those special variables (i.e. those who start with {@link #CTX_Prefix}).
 	 */
-	private void clearTabContext()
+	private final void clearTabContext()
 	{
 		final Properties ctx = getCtx();
 		final int windowNo = getWindowNo();
@@ -4380,17 +4395,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		public <T> List<T> getSelectedModels(final Class<T> modelClass)
 		{
 			// backward compatibility
-			return streamSelectedModels(modelClass)
-					.collect(ImmutableList.toImmutableList());
+			final T model = getSelectedModel(modelClass);
+			return ImmutableList.of(model);
 		}
 
-		@NonNull
-		@Override
-		public <T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass)
-		{
-			return Stream.of(getSelectedModel(modelClass));
-		}
-		
 		@Override
 		public int getSingleSelectedRecordId()
 		{

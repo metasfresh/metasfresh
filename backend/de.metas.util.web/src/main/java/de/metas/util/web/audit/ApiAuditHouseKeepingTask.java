@@ -2,7 +2,7 @@
  * #%L
  * de.metas.util.web
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +22,9 @@
 
 package de.metas.util.web.audit;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
+import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
-import de.metas.audit.apirequest.request.Status;
-import de.metas.audit.request.ApiRequestIterator;
-import de.metas.audit.request.ApiRequestQuery;
 import lombok.NonNull;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.springframework.stereotype.Component;
@@ -48,13 +46,7 @@ public class ApiAuditHouseKeepingTask implements IStartupHouseKeepingTask
 	@Override
 	public void executeTask()
 	{
-		final ApiRequestQuery apiRequestQuery = ApiRequestQuery.builder()
-				.apiRequestStatusSet(ImmutableSet.of(Status.ERROR, Status.RECEIVED))
-				.isErrorAcknowledged(false)
-				.orderByTimeAscending(true)
-				.build();
-
-		final ApiRequestIterator timeWiseSortedApiRequests = apiRequestAuditRepository.getByQuery(apiRequestQuery);
+		final ImmutableList<ApiRequestAudit> timeWiseSortedApiRequests = apiRequestAuditRepository.getAllFailingTimeWiseSorted();
 
 		apiRequestReplayService.replayApiRequests(timeWiseSortedApiRequests);
 	}

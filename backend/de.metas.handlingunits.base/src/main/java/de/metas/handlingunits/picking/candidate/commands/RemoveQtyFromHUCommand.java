@@ -120,7 +120,6 @@ public class RemoveQtyFromHUCommand
 			}
 			else
 			{
-				candidate.assertNotApproved();
 				candidate.pick(newQtyPickedOnThisCandidate);
 				pickingCandidateRepository.save(candidate);
 			}

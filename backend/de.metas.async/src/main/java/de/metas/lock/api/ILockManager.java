@@ -22,15 +22,13 @@ package de.metas.lock.api;
  * #L%
  */
 
-import de.metas.lock.exceptions.LockFailedException;
-import de.metas.lock.spi.ExistingLockInfo;
-import de.metas.util.ISingletonService;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 
-import java.util.List;
+import de.metas.lock.exceptions.LockFailedException;
+import de.metas.util.ISingletonService;
 
 /**
  * Lock manager - this is the starting point for manipulating the locks
@@ -150,12 +148,6 @@ public interface ILockManager extends ISingletonService
 	 * Note that the query builder does not specify any ordering.
 	 */
 	<T> IQueryBuilder<T> getLockedRecordsQueryBuilder(Class<T> modelClass, Object contextProvider);
-
-	<T> List<T> retrieveAndLockMultipleRecords(IQuery<T> query, Class<T> clazz);
-
-	<T> IQuery<T> addNotLockedClause(IQuery<T> query);
 	
 	int removeAutoCleanupLocks();
-
-	ExistingLockInfo getLockInfo(TableRecordReference tableRecordReference, LockOwner lockOwner);
 }

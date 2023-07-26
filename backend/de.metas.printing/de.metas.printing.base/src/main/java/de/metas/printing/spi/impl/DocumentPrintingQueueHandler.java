@@ -1,5 +1,18 @@
 package de.metas.printing.spi.impl;
 
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -15,18 +28,6 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
 import de.metas.util.Services;
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
 
 /**
  *
@@ -62,7 +63,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 
 		//
 		// try to set the C_BPartner_ID for our queueItem
-		if (archive.getC_BPartner_ID() > 0 && queueItem.getC_BPartner_ID()<=0)
+		if (archive.getC_BPartner_ID() > 0)
 		{
 			logger.debug("Setting column of C_Printing_Queue {} from AD_Archive {}: [C_BPartner_ID={}]",
 					new Object[] { queueItem, archive, archive.getC_BPartner_ID() });
@@ -77,7 +78,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			return;
 		}
 
-		if (queueItem.getC_BPartner_ID()<=0 && archive.getC_BPartner_ID() < 0 && InterfaceWrapperHelper.hasModelColumnName(archiveRefencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID))
+		if (archive.getC_BPartner_ID() < 0 && InterfaceWrapperHelper.hasModelColumnName(archiveRefencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID))
 		{
 			// the archive itself did not reference a C_BPartner_ID, so we try the object that is referenced by the archive
 			final Optional<Integer> bpartnerID = InterfaceWrapperHelper.getValue(archiveRefencedModel, I_C_BPartner.COLUMNNAME_C_BPartner_ID);
@@ -204,16 +205,9 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	private void handleInvoices(final I_C_Printing_Queue queueItem, final I_C_Invoice invoice)
 	{
 		queueItem.setBill_BPartner_ID(invoice.getC_BPartner_ID());
-		queueItem.setBill_User_ID(invoice.getAD_User_ID());
 		queueItem.setBill_Location_ID(invoice.getC_BPartner_Location_ID());
-
-		// set drop ship partner only if was not already set
-		if (queueItem.getC_BPartner_ID()<=0)
-		{
-			queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
-			queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
-		}
-
+		queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
+		queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());

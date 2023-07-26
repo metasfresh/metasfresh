@@ -3,13 +3,12 @@ package de.metas.material.dispo.commons;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.IdConstants;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.Dimension;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -23,14 +22,10 @@ import de.metas.material.event.ddorder.DDOrderLine.DDOrderLineBuilder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderData;
+import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderLineData;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
-import de.metas.order.OrderLine;
-import de.metas.order.OrderLineId;
-import de.metas.order.OrderLineRepository;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.util.collections.CollectionUtils;
@@ -39,10 +34,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -70,16 +63,13 @@ public class RequestMaterialOrderService
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final PostMaterialEventService materialEventService;
-	private final OrderLineRepository orderLineRepository;
 
 	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final OrderLineRepository orderLineRepository)
+			@NonNull final PostMaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;
-		this.orderLineRepository = orderLineRepository;
 	}
 
 	/**
@@ -87,9 +77,7 @@ public class RequestMaterialOrderService
 	 *
 	 * @param groupId of the candidates that are used to derive the material order to be requested.
 	 */
-	public void requestMaterialOrderForCandidates(
-			@NonNull final MaterialDispoGroupId groupId,
-			@Nullable final String traceId)
+	public void requestMaterialOrderForCandidates(@NonNull final MaterialDispoGroupId groupId)
 	{
 		List<Candidate> groupOfCandidates = null;
 		try
@@ -107,10 +95,10 @@ public class RequestMaterialOrderService
 					createAndFirePPOrderRequestedEvent(groupOfCandidates);
 					break;
 				case DISTRIBUTION:
-					createAndFireDDOrderRequestedEvent(groupOfCandidates, traceId);
+					createAndFireDDOrderRequestedEvent(groupOfCandidates);
 					break;
 				case PURCHASE:
-					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates, traceId);
+					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates);
 					break;
 				case FORECAST:
 					createAndFireForecastRequestedEvent(groupOfCandidates);
@@ -130,14 +118,15 @@ public class RequestMaterialOrderService
 	}
 
 	/**
+	 *
 	 * @param group a non-empty list of candidates that all have {@link CandidateBusinessCase#PRODUCTION},
-	 *              all have the same {@link Candidate#getGroupId()}
-	 *              and all have appropriate not-null {@link Candidate#getBusinessCaseDetail()}s that need to be {@link ProductionDetail} instances.
+	 *            all have the same {@link Candidate#getGroupId()}
+	 *            and all have appropriate not-null {@link Candidate#getBusinessCaseDetail()}s that need to be {@link ProductionDetail} instances.
 	 */
 	private void createAndFirePPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
-		materialEventService.enqueueEventNow(ppOrderRequestEvent);
+		materialEventService.postEventAsync(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
@@ -145,25 +134,13 @@ public class RequestMaterialOrderService
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' may not be an empty list");
 
-		final PPOrder.PPOrderBuilder ppOrderBuilder = PPOrder.builder();
-		final PPOrderData.PPOrderDataBuilder ppOrderDataBuilder = PPOrderData.builder();
+		final PPOrderBuilder ppOrderBuilder = PPOrder.builder();
 
 		for (final Candidate groupMember : group)
 		{
-			if (groupMember.getDemandDetail() != null)
+			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
 			{
-				final int orderLineId = IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId());
-
-				if (orderLineId > 0)
-				{
-					ppOrderDataBuilder.orderLineId(orderLineId);
-					ppOrderDataBuilder.packingMaterialId(getPackingMaterialId(orderLineId));
-				}
-
-				if (groupMember.getDemandDetail().getShipmentScheduleId() > 0)
-				{
-					ppOrderDataBuilder.shipmentScheduleId(groupMember.getDemandDetail().getShipmentScheduleId());
-				}
+				ppOrderBuilder.orderLineId(IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId()));
 			}
 
 			final ProductionDetail prodDetail = ProductionDetail.cast(groupMember.getBusinessCaseDetail());
@@ -171,11 +148,10 @@ public class RequestMaterialOrderService
 			if (prodDetail.getProductBomLineId() <= 0)
 			{
 				// we talk about a ppOrder (header)
-				ppOrderDataBuilder
+				ppOrderBuilder
 						.clientAndOrgId(groupMember.getClientAndOrgId())
 						.productPlanningId(prodDetail.getProductPlanningId())
 						.datePromised(groupMember.getDate())
-						.dateStartSchedule(groupMember.getDate())
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
 						.bpartnerId(materialDescriptor.getCustomerId())
@@ -187,47 +163,45 @@ public class RequestMaterialOrderService
 				final boolean receipt = groupMember.getType() == CandidateType.SUPPLY;
 				if (receipt)
 				{
-					ppOrderDataBuilder.datePromised(groupMember.getDate());
+					ppOrderBuilder.datePromised(groupMember.getDate());
 				}
 				else
 				{
-					ppOrderDataBuilder.dateStartSchedule(groupMember.getDate());
+					ppOrderBuilder.dateStartSchedule(groupMember.getDate());
 				}
 
 				ppOrderBuilder.line(
 						PPOrderLine.builder()
-								.ppOrderLineData(PPOrderLineData.builder()
-														 .description(prodDetail.getDescription())
-														 .productBomLineId(prodDetail.getProductBomLineId())
-														 .issueOrReceiveDate(groupMember.getDate())
-														 .productDescriptor(materialDescriptor)
-														 .qtyRequired(groupMember.getQuantity())
-														 .productBomLineId(prodDetail.getProductBomLineId())
-														 .receipt(receipt)
-														 .build())
+								.description(prodDetail.getDescription())
+								.productBomLineId(prodDetail.getProductBomLineId())
+								.issueOrReceiveDate(groupMember.getDate())
+								.productDescriptor(materialDescriptor)
+								.qtyRequired(groupMember.getQuantity())
+								.productBomLineId(prodDetail.getProductBomLineId())
+								.receipt(receipt)
 								.build());
 			}
 		}
 
 		final Candidate firstGroupMember = group.get(0);
 
-		ppOrderDataBuilder.materialDispoGroupId(firstGroupMember.getEffectiveGroupId());
+		ppOrderBuilder.materialDispoGroupId(firstGroupMember.getEffectiveGroupId());
 
 		return PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientAndOrgId()))
 				.dateOrdered(de.metas.common.util.time.SystemTime.asInstant())
-				.ppOrder(ppOrderBuilder.ppOrderData(ppOrderDataBuilder.build()).build())
+				.ppOrder(ppOrderBuilder.build())
 				.build();
 	}
 
-	private void createAndFireDDOrderRequestedEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
+	private void createAndFireDDOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group, traceId);
-		materialEventService.enqueueEventNow(ddOrderRequestEvent);
+		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
+		materialEventService.postEventAsync(ddOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	DDOrderRequestedEvent createDDOrderRequestEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
+	DDOrderRequestedEvent createDDOrderRequestEvent(@NonNull final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -241,9 +215,7 @@ public class RequestMaterialOrderService
 
 		for (final Candidate groupMember : group)
 		{
-			ddOrderBuilder.orgId(groupMember.getOrgId())
-					.simulated(groupMember.isSimulated());
-
+			ddOrderBuilder.orgId(groupMember.getOrgId());
 			if (groupMember.getType() == CandidateType.SUPPLY)
 			{
 				endDate = groupMember.getDate();
@@ -269,8 +241,7 @@ public class RequestMaterialOrderService
 			ddOrderBuilder
 					.plantId(distributionDetail.getPlantId())
 					.productPlanningId(distributionDetail.getProductPlanningId())
-					.shipperId(distributionDetail.getShipperId())
-					.materialDispoGroupId(groupMember.getEffectiveGroupId());
+					.shipperId(distributionDetail.getShipperId());
 
 			ddOrderLineBuilder
 					.networkDistributionLineId(distributionDetail.getNetworkDistributionLineId());
@@ -281,30 +252,30 @@ public class RequestMaterialOrderService
 		final Candidate firstGroupMember = group.get(0);
 
 		return DDOrderRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(firstGroupMember.getClientAndOrgId(), traceId))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientAndOrgId()))
 				.dateOrdered(SystemTime.asInstant())
 				.ddOrder(ddOrderBuilder
-								 .line(ddOrderLineBuilder
-											   .durationDays(durationDays)
-											   .build())
-								 .build())
+						.line(ddOrderLineBuilder
+								.durationDays(durationDays)
+								.build())
+						.build())
 				.build();
 	}
 
-	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
+	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group, traceId);
-		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group);
+		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
-	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
+	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final Candidate singleCandidate = CollectionUtils.singleElement(group);
 
 		final Dimension dimension = singleCandidate.getDimension();
 
-		return PurchaseCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(singleCandidate.getClientAndOrgId(), traceId))
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
@@ -324,14 +295,15 @@ public class RequestMaterialOrderService
 				.userElementString5(dimension.getUserElementString5())
 				.userElementString6(dimension.getUserElementString6())
 				.userElementString7(dimension.getUserElementString7())
-				.simulated(singleCandidate.isSimulated())
 				.build();
+
+		return purchaseCandidateRequestedEvent;
 	}
 
 	private void createAndFireForecastRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForecastRequestedEvent(group);
-		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createForecastRequestedEvent(@NonNull final List<Candidate> group)
@@ -340,7 +312,7 @@ public class RequestMaterialOrderService
 
 		final Dimension dimension = singleCandidate.getDimension();
 
-		return PurchaseCandidateRequestedEvent.builder()
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
@@ -362,16 +334,7 @@ public class RequestMaterialOrderService
 
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.build();
-	}
 
-	@Nullable
-	private HUPIItemProductId getPackingMaterialId(final int demandOrderLineId)
-	{
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(IdConstants.toRepoId(demandOrderLineId));
-
-		return Optional.ofNullable(orderLineId)
-				.map(orderLineRepository::getById)
-				.map(OrderLine::getHuPIItemProductId)
-				.orElse(null);
+		return purchaseCandidateRequestedEvent;
 	}
 }

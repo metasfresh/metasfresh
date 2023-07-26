@@ -12,7 +12,6 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.Optional;
 
 /*
  * #%L
@@ -54,13 +53,7 @@ public class X12DE355
 	@Nullable
 	public static X12DE355 ofNullableCode(@Nullable final String code)
 	{
-		return code != null && !Check.isBlank(code) ? ofCode(code) : null;
-	}
-
-	@NonNull
-	public static Optional<X12DE355> ofCodeOrOptional(@Nullable final String code)
-	{
-		return Optional.ofNullable(ofNullableCode(code));
+		return !Check.isBlank(code) ? ofCode(code) : null;
 	}
 
 	@NonNull
@@ -74,53 +67,57 @@ public class X12DE355
 		return x12de355;
 	}
 
-	public static final X12DE355 EACH;
-	public static final X12DE355 KILOGRAM;
-	public static final X12DE355 TU;
-	public static final X12DE355 COLI;
-	public static final X12DE355 CENTIMETRE;
-	public static final X12DE355 DAY;
-	public static final X12DE355 SECOND;
-	public static final X12DE355 MONTH;
-	public static final X12DE355 MINUTE;
-	public static final X12DE355 HOUR;
-	public static final X12DE355 DAY_WORK;
-	public static final X12DE355 WEEK;
+	public static final X12DE355 EACH = new X12DE355("PCE");
+	public static final X12DE355 KILOGRAM = new X12DE355("KGM");
+	public static final X12DE355 TU = new X12DE355("TU");
+	public static final X12DE355 COLI = new X12DE355("COLI");
+	public static final X12DE355 CENTIMETRE = new X12DE355("CM");
+	public static final X12DE355 DAY = new X12DE355("DA", ChronoUnit.DAYS);
+	public static final X12DE355 SECOND = new X12DE355("03", ChronoUnit.SECONDS);
+	public static final X12DE355 MONTH = new X12DE355("MO", ChronoUnit.MONTHS);
+	public static final X12DE355 MINUTE = new X12DE355("MJ", ChronoUnit.MINUTES);
+	public static final X12DE355 HOUR = new X12DE355("HR", ChronoUnit.HOURS);
+	public static final X12DE355 DAY_WORK = new X12DE355("WD" /* , ChronoUnit.? */);
+	public static final X12DE355 WEEK = new X12DE355("WK", ChronoUnit.WEEKS);
 	/**
 	 * X12 Element 355 Code Work Month (20 days / 4 weeks)
 	 */
-	public static final X12DE355 MONTH_WORK;
-	public static final X12DE355 YEAR;
+	public static final X12DE355 MONTH_WORK = new X12DE355("WM" /* , ChronoUnit.? */);
+	public static final X12DE355 YEAR = new X12DE355("YR", ChronoUnit.YEARS);
 
 	private static final ImmutableList<X12DE355> ALL = ImmutableList.of(
-			EACH = new X12DE355("PCE"),
-			KILOGRAM = new X12DE355("KGM"),
-			TU = new X12DE355("TU"),
-			COLI = new X12DE355("COLI"),
-			CENTIMETRE = new X12DE355("CM"),
-			DAY = new X12DE355("DA", ChronoUnit.DAYS),
-			SECOND = new X12DE355("03", ChronoUnit.SECONDS),
-			MONTH = new X12DE355("MO", ChronoUnit.MONTHS),
-			MINUTE = new X12DE355("MJ", ChronoUnit.MINUTES),
-			HOUR = new X12DE355("HR", ChronoUnit.HOURS),
-			DAY_WORK = new X12DE355("WD" /* , ChronoUnit.? */),
-			WEEK = new X12DE355("WK", ChronoUnit.WEEKS),
-			MONTH_WORK = new X12DE355("WM" /* , ChronoUnit.? */),
-			YEAR = new X12DE355("YR", ChronoUnit.YEARS));
+			EACH,
+			KILOGRAM,
+			TU,
+			COLI,
+			CENTIMETRE,
+			DAY,
+			SECOND,
+			MONTH,
+			MINUTE,
+			HOUR,
+			DAY_WORK,
+			WEEK,
+			MONTH_WORK,
+			YEAR);
 
 	private static final ImmutableMap<String, X12DE355> cacheByCode = ALL.stream()
-			.collect(ImmutableMap.toImmutableMap(X12DE355::getCode, x12de355 -> x12de355));
+			.collect(ImmutableMap.toImmutableMap(
+					x12de355 -> x12de355.getCode(),
+					x12de355 -> x12de355));
 
 	private static final ImmutableMap<TemporalUnit, X12DE355> cacheByTemporalUnit = ALL.stream()
 			.filter(X12DE355::isTemporalUnit)
-			.collect(ImmutableMap.toImmutableMap(X12DE355::getTemporalUnit, x12de355 -> x12de355));
+			.collect(ImmutableMap.toImmutableMap(
+					x12de355 -> x12de355.getTemporalUnit(),
+					x12de355 -> x12de355));
 
 	private final String code;
 	private final TemporalUnit temporalUnit;
 
 	private X12DE355(@NonNull final String code)
 	{
-		this(code, null);
+		this(code, (TemporalUnit)null);
 	}
 
 	private X12DE355(

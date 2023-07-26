@@ -59,7 +59,7 @@ public class PurchaseOrderPriceCalculator
 
 	private IEditablePricingContext createPricingContext()
 	{
-		final IEditablePricingContext context = pricingBL.createPricingContext()
+		return pricingBL.createPricingContext()
 				.setFailIfNotCalculated()
 				.setOrgId(pricingInfo.getOrgId())
 				.setProductId(pricingInfo.getProductId())
@@ -67,17 +67,7 @@ public class PurchaseOrderPriceCalculator
 				.setQty(pricingInfo.getQuantity())
 				.setConvertPriceToContextUOM(true)
 				.setSOTrx(SOTrx.PURCHASE)
-				.setCountryId(pricingInfo.getCountryId())
-				.setManualPriceEnabled(pricingInfo.getIsManualPrice());
-
-		if (pricingInfo.getIsManualPrice())
-		{
-			context.setUomId(pricingInfo.getPriceEnteredUomId())
-					.setCurrencyId(pricingInfo.getCurrencyId())
-					.setManualPrice(pricingInfo.getPriceEntered());
-		}
-
-		return context;
+				.setCountryId(pricingInfo.getCountryId());
 	}
 
 }

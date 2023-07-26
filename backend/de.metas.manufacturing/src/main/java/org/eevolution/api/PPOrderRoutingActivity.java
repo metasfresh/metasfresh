@@ -1,14 +1,11 @@
 package org.eevolution.api;
 
+import com.google.common.base.Objects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
-import de.metas.material.planning.pporder.PPRoutingActivityType;
-import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -25,8 +22,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.Objects;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -50,7 +46,7 @@ import java.util.Objects;
  * #L%
  */
 
-@Builder(toBuilder = true)
+@Builder
 @EqualsAndHashCode
 @ToString
 @Getter
@@ -60,17 +56,13 @@ public final class PPOrderRoutingActivity
 	private static final Logger logger = LogManager.getLogger(PPOrderRoutingActivity.class);
 
 	@Nullable private PPOrderRoutingActivityId id;
-	@NonNull private final PPRoutingActivityType type;
 	@NonNull private final PPOrderRoutingActivityCode code;
-	@NonNull private final String name;
 	@NonNull private final PPRoutingActivityId routingActivityId;
 
 	private final boolean subcontracting;
-	@Nullable private final BPartnerId subcontractingVendorId;
+	private final BPartnerId subcontractingVendorId;
 
 	private final boolean milestone;
-	@NonNull private final PPAlwaysAvailableToUser alwaysAvailableToUser;
-	@Nullable private final UserInstructions userInstructions;
 
 	@Nullable private PPRoutingActivityTemplateId activityTemplateId;
 
@@ -107,18 +99,12 @@ public final class PPOrderRoutingActivity
 	@NonNull private Quantity qtyDelivered;
 	@NonNull private Quantity qtyScrapped;
 	@NonNull private Quantity qtyRejected;
-	@Nullable private Instant dateStart;
-	@Nullable private Instant dateFinish;
-
-	//
-	// Data needed for PPRoutingActivityType.CallExternalSystem and other steps which are about scanning QR codes
-	@Setter @Nullable private GlobalQRCode scannedQRCode;
-
-	public PPOrderRoutingActivity copy() {return toBuilder().build();}
+	@Nullable private LocalDateTime dateStart;
+	@Nullable private LocalDateTime dateFinish;
 
 	public PPOrderId getOrderId()
 	{
-		return Objects.requireNonNull(getId()).getOrderId();
+		return getId().getOrderId();
 	}
 
 	public Quantity getQtyToDeliver()
@@ -131,7 +117,7 @@ public final class PPOrderRoutingActivity
 		return getSetupTimeRequired().minus(getSetupTimeReal());
 	}
 
-	public Duration getDurationTotalBooked() {return getSetupTimeReal().plus(getDurationReal());}
+	public Duration getDurationTotalBooked() { return getSetupTimeReal().plus(getDurationReal());}
 
 	public boolean isSomethingProcessed()
 	{
@@ -157,7 +143,7 @@ public final class PPOrderRoutingActivity
 		}
 	}
 
-	public void changeStatusTo(@NonNull final PPOrderRoutingActivityStatus newStatus)
+	private void changeStatusTo(@NonNull final PPOrderRoutingActivityStatus newStatus)
 	{
 		final PPOrderRoutingActivityStatus currentStatus = getStatus();
 		if (currentStatus.equals(newStatus))
@@ -215,10 +201,10 @@ public final class PPOrderRoutingActivity
 
 		if (getDateFinish() != null)
 		{
-			setDateFinish(SystemTime.asInstant());
+			setDateFinish(de.metas.common.util.time.SystemTime.asLocalDateTime());
 		}
 
-		if (!Objects.equals(getDurationRequired(), getDurationReal()))
+		if (!Objects.equal(getDurationRequired(), getDurationReal()))
 		{
 			// addDescription(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@closed@ ( @Duration@ :" + getDurationRequiered() + ") ( @QtyRequiered@ :" + getQtyRequiered() + ")"));
 			setDurationRequired(getDurationReal());
@@ -252,13 +238,13 @@ public final class PPOrderRoutingActivity
 		setDurationRequired(Duration.ZERO);
 	}
 
-	public void completeIt()
+	void completeIt()
 	{
 		changeStatusTo(PPOrderRoutingActivityStatus.COMPLETED);
 
 		if (getDateFinish() == null)
 		{
-			setDateFinish(SystemTime.asInstant());
+			setDateFinish(SystemTime.asLocalDateTime());
 		}
 	}
 

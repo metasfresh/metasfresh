@@ -1,9 +1,16 @@
 package de.metas.uom;
 
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.NoUOMConversionException;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.common.util.CoalesceUtil;
+
 import de.metas.product.ProductId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -11,11 +18,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.NoUOMConversionException;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -44,31 +46,22 @@ public class UOMConversionsMap
 {
 	public static final UOMConversionsMap EMPTY = new UOMConversionsMap();
 
-	ProductId productId;
-	
+	private final ProductId productId;
 	@Getter(AccessLevel.NONE)
-	ImmutableMap<FromAndToUomIds, UOMConversionRate> rates;
+	private final ImmutableMap<FromAndToUomIds, UOMConversionRate> rates;
 
-	/**
-	 * {@code true} if this map is about a productId *and* contains at least one mapping besides the trivial times-one-mapping to and from the product's own stocking-UOM.
-	 */
-	boolean hasRatesForNonStockingUOMs;
-	
 	@Builder
 	private UOMConversionsMap(
 			@Nullable final ProductId productId,
-			@Nullable final Boolean hasRatesForNonStockingUOMs,
 			@NonNull @Singular final List<UOMConversionRate> rates)
 	{
 		this.productId = productId;
-		this.hasRatesForNonStockingUOMs = CoalesceUtil.coalesceNotNull(hasRatesForNonStockingUOMs, false);
-		this.rates = Maps.uniqueIndex(rates, UOMConversionsMap::toFromAndToUomIds);
+		this.rates = Maps.uniqueIndex(rates, conversion -> toFromAndToUomIds(conversion));
 	}
 
 	private UOMConversionsMap()
 	{
 		productId = null;
-		hasRatesForNonStockingUOMs = false;
 		rates = ImmutableMap.of();
 	}
 
@@ -87,7 +80,6 @@ public class UOMConversionsMap
 		return Optional.ofNullable(getRateOrNull(fromUomId, toUomId));
 	}
 
-	@Nullable
 	private UOMConversionRate getRateOrNull(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
 	{
 		if (fromUomId.equals(toUomId))

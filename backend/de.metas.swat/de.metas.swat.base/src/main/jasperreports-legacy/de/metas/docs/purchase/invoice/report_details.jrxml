@@ -60,7 +60,7 @@ SELECT 	p.upc, il.ad_client_id, il.ad_org_id, i.c_doctype_id, il.isactive, il.cr
         CASE
             WHEN il.linenetamt <> 0::numeric OR il.m_product_id IS NOT NULL THEN il.linenetamt
             ELSE NULL::numeric
-        END AS linenetamt, il.m_attributesetinstance_id, asi.m_attributeset_id, p.description AS productdescription, p.imageurl, il.c_campaign_id, il.c_project_id, il.c_activity_id, il.c_projectphase_id, il.c_projecttask_id,
+        END AS linenetamt, il.m_attributesetinstance_id, asi.m_attributeset_id, asi.serno, asi.lot, asi.m_lot_id, asi.guaranteedate, p.description AS productdescription, p.imageurl, il.c_campaign_id, il.c_project_id, il.c_activity_id, il.c_projectphase_id, il.c_projecttask_id,
 case
   when cur.cursymbol is null then cur.iso_code
   else cur.cursymbol
@@ -119,7 +119,7 @@ end as source
 UNION
 -----------------------------------------------------------
 
- SELECT p.upc, il.ad_client_id, il.ad_org_id, null,  il.isactive, il.created, il.createdby, il.updated, il.updatedby, 'de_DE' AS ad_language, il.c_invoice_id, il.c_invoiceline_id, il.c_tax_id, il.taxamt, il.linetotalamt, t.taxindicator, il.line + b.line / 100::numeric AS line, p.m_product_id, il.qtyinvoiced * b.bomqty AS qtyinvoiced, il.qtyentered * b.bomqty AS qtyentered, uom.uomsymbol, p.name, b.description, p.documentnote, p.upc, p.sku, p.value AS productvalue, NULL::"unknown" AS resourcedescription, NULL::"unknown" AS pricelist, NULL::"unknown" AS priceenteredlist, NULL::"unknown" AS discount, NULL::"unknown" AS priceactual, NULL::"unknown" AS priceentered, NULL::"unknown" AS linenetamt, il.m_attributesetinstance_id, asi.m_attributeset_id, p.description AS productdescription, p.imageurl, il.c_campaign_id, il.c_project_id, il.c_activity_id, il.c_projectphase_id, il.c_projecttask_id,
+ SELECT p.upc, il.ad_client_id, il.ad_org_id, null,  il.isactive, il.created, il.createdby, il.updated, il.updatedby, 'de_DE' AS ad_language, il.c_invoice_id, il.c_invoiceline_id, il.c_tax_id, il.taxamt, il.linetotalamt, t.taxindicator, il.line + b.line / 100::numeric AS line, p.m_product_id, il.qtyinvoiced * b.bomqty AS qtyinvoiced, il.qtyentered * b.bomqty AS qtyentered, uom.uomsymbol, p.name, b.description, p.documentnote, p.upc, p.sku, p.value AS productvalue, NULL::"unknown" AS resourcedescription, NULL::"unknown" AS pricelist, NULL::"unknown" AS priceenteredlist, NULL::"unknown" AS discount, NULL::"unknown" AS priceactual, NULL::"unknown" AS priceentered, NULL::"unknown" AS linenetamt, il.m_attributesetinstance_id, asi.m_attributeset_id, asi.serno, asi.lot, asi.m_lot_id, asi.guaranteedate, p.description AS productdescription, p.imageurl, il.c_campaign_id, il.c_project_id, il.c_activity_id, il.c_projectphase_id, il.c_projecttask_id,
 null, null, null, null,
 null, null, null, null, null, null, null,
 'BO' as source
@@ -135,7 +135,7 @@ null, null, null, null, null, null, null,
 UNION
 -----------------------------------------------------------
 
- SELECT NULL::"unknown" AS upc, c_invoice.ad_client_id, c_invoice.ad_org_id, c_invoice.c_doctype_id, c_invoice.isactive, c_invoice.created, c_invoice.createdby, c_invoice.updated, c_invoice.updatedby, 'de_DE' AS ad_language, c_invoice.c_invoice_id, NULL::"unknown" AS c_invoiceline_id, NULL::"unknown" AS c_tax_id, NULL::"unknown" AS taxamt, NULL::"unknown" AS linetotalamt, NULL::"unknown" AS taxindicator, 9998 AS line, NULL::"unknown" AS m_product_id, NULL::"unknown" AS qtyinvoiced, NULL::"unknown" AS qtyentered, NULL::"unknown" AS uomsymbol, NULL::"unknown" AS name, NULL::"unknown" AS description, NULL::"unknown" AS documentnote, NULL::"unknown" AS upc, NULL::"unknown" AS sku, NULL::"unknown" AS productvalue, NULL::"unknown" AS resourcedescription, NULL::"unknown" AS pricelist, NULL::"unknown" AS priceenteredlist, NULL::"unknown" AS discount, NULL::"unknown" AS priceactual, NULL::"unknown" AS priceentered, NULL::"unknown" AS linenetamt, NULL::"unknown" AS m_attributesetinstance_id, NULL::"unknown" AS m_attributeset_id, NULL::"unknown" AS productdescription, NULL::"unknown" AS imageurl, NULL::"unknown" AS c_campaign_id, NULL::"unknown" AS c_project_id, NULL::"unknown" AS c_activity_id, NULL::"unknown" AS c_projectphase_id, NULL::"unknown" AS c_projecttask_id,
+ SELECT NULL::"unknown" AS upc, c_invoice.ad_client_id, c_invoice.ad_org_id, c_invoice.c_doctype_id, c_invoice.isactive, c_invoice.created, c_invoice.createdby, c_invoice.updated, c_invoice.updatedby, 'de_DE' AS ad_language, c_invoice.c_invoice_id, NULL::"unknown" AS c_invoiceline_id, NULL::"unknown" AS c_tax_id, NULL::"unknown" AS taxamt, NULL::"unknown" AS linetotalamt, NULL::"unknown" AS taxindicator, 9998 AS line, NULL::"unknown" AS m_product_id, NULL::"unknown" AS qtyinvoiced, NULL::"unknown" AS qtyentered, NULL::"unknown" AS uomsymbol, NULL::"unknown" AS name, NULL::"unknown" AS description, NULL::"unknown" AS documentnote, NULL::"unknown" AS upc, NULL::"unknown" AS sku, NULL::"unknown" AS productvalue, NULL::"unknown" AS resourcedescription, NULL::"unknown" AS pricelist, NULL::"unknown" AS priceenteredlist, NULL::"unknown" AS discount, NULL::"unknown" AS priceactual, NULL::"unknown" AS priceentered, NULL::"unknown" AS linenetamt, NULL::"unknown" AS m_attributesetinstance_id, NULL::"unknown" AS m_attributeset_id, NULL::"unknown" AS serno, NULL::"unknown" AS lot, NULL::"unknown" AS m_lot_id, NULL::"unknown" AS guaranteedate, NULL::"unknown" AS productdescription, NULL::"unknown" AS imageurl, NULL::"unknown" AS c_campaign_id, NULL::"unknown" AS c_project_id, NULL::"unknown" AS c_activity_id, NULL::"unknown" AS c_projectphase_id, NULL::"unknown" AS c_projecttask_id,
 case
   when cur.cursymbol is null then cur.iso_code
   else cur.cursymbol
@@ -161,7 +161,7 @@ UNION
         CASE
             WHEN it.istaxincluded = 'Y'::bpchar THEN NULL::numeric
             ELSE it.taxamt
-        END AS linenetamt, NULL::"unknown" AS m_attributesetinstance_id, NULL::"unknown" AS m_attributeset_id, NULL::"unknown" AS productdescription, NULL::"unknown" AS imageurl, NULL::"unknown" AS c_campaign_id, NULL::"unknown" AS c_project_id, NULL::"unknown" AS c_activity_id, NULL::"unknown" AS c_projectphase_id, NULL::"unknown" AS c_projecttask_id,
+        END AS linenetamt, NULL::"unknown" AS m_attributesetinstance_id, NULL::"unknown" AS m_attributeset_id, NULL::"unknown" AS serno, NULL::"unknown" AS lot, NULL::"unknown" AS m_lot_id, NULL::"unknown" AS guaranteedate, NULL::"unknown" AS productdescription, NULL::"unknown" AS imageurl, NULL::"unknown" AS c_campaign_id, NULL::"unknown" AS c_project_id, NULL::"unknown" AS c_activity_id, NULL::"unknown" AS c_projectphase_id, NULL::"unknown" AS c_projecttask_id,
 case
   when cur.cursymbol is null then cur.iso_code
   else cur.cursymbol
@@ -218,7 +218,7 @@ UNION
         CASE
             WHEN il.linenetamt <> 0::numeric OR il.m_product_id IS NOT NULL THEN il.linenetamt
             ELSE NULL::numeric
-        END AS linenetamt, il.m_attributesetinstance_id, asi.m_attributeset_id, pt.description AS productdescription, p.imageurl, il.c_campaign_id, il.c_project_id, il.c_activity_id, il.c_projectphase_id, il.c_projecttask_id,
+        END AS linenetamt, il.m_attributesetinstance_id, asi.m_attributeset_id, asi.serno, asi.lot, asi.m_lot_id, asi.guaranteedate, pt.description AS productdescription, p.imageurl, il.c_campaign_id, il.c_project_id, il.c_activity_id, il.c_projectphase_id, il.c_projecttask_id,
 case
   when cur.cursymbol is null then cur.iso_code
   else cur.cursymbol
@@ -280,7 +280,7 @@ end as source
 UNION
 -----------------------------------------------------------
 
- SELECT p.upc, il.ad_client_id, il.ad_org_id, null, il.isactive, il.created, il.createdby, il.updated, il.updatedby, uom.ad_language, il.c_invoice_id, il.c_invoiceline_id, il.c_tax_id, il.taxamt, il.linetotalamt, t.taxindicator, il.line + b.line / 100::numeric AS line, p.m_product_id, il.qtyinvoiced * b.bomqty AS qtyinvoiced, il.qtyentered * b.bomqty AS qtyentered, uom.uomsymbol, COALESCE(pt.name, p.name) AS name, b.description, COALESCE(pt.documentnote, p.documentnote) AS documentnote, p.upc, p.sku, p.value AS productvalue, NULL::"unknown" AS resourcedescription, NULL::"unknown" AS pricelist, NULL::"unknown" AS priceenteredlist, NULL::"unknown" AS discount, NULL::"unknown" AS priceactual, NULL::"unknown" AS priceentered, NULL::"unknown" AS linenetamt, il.m_attributesetinstance_id, asi.m_attributeset_id, pt.description AS productdescription, p.imageurl, il.c_campaign_id, il.c_project_id, il.c_activity_id, il.c_projectphase_id, il.c_projecttask_id,
+ SELECT p.upc, il.ad_client_id, il.ad_org_id, null, il.isactive, il.created, il.createdby, il.updated, il.updatedby, uom.ad_language, il.c_invoice_id, il.c_invoiceline_id, il.c_tax_id, il.taxamt, il.linetotalamt, t.taxindicator, il.line + b.line / 100::numeric AS line, p.m_product_id, il.qtyinvoiced * b.bomqty AS qtyinvoiced, il.qtyentered * b.bomqty AS qtyentered, uom.uomsymbol, COALESCE(pt.name, p.name) AS name, b.description, COALESCE(pt.documentnote, p.documentnote) AS documentnote, p.upc, p.sku, p.value AS productvalue, NULL::"unknown" AS resourcedescription, NULL::"unknown" AS pricelist, NULL::"unknown" AS priceenteredlist, NULL::"unknown" AS discount, NULL::"unknown" AS priceactual, NULL::"unknown" AS priceentered, NULL::"unknown" AS linenetamt, il.m_attributesetinstance_id, asi.m_attributeset_id, asi.serno, asi.lot, asi.m_lot_id, asi.guaranteedate, pt.description AS productdescription, p.imageurl, il.c_campaign_id, il.c_project_id, il.c_activity_id, il.c_projectphase_id, il.c_projecttask_id,
 null, null, null, null,
 null, null, null, null, null, null, null,
 'BO' as source
@@ -297,7 +297,7 @@ null, null, null, null, null, null, null,
 UNION
 -----------------------------------------------------------
 
- SELECT NULL::"unknown" AS upc, i.ad_client_id, i.ad_org_id, i.c_doctype_id, i.isactive, i.created, i.createdby, i.updated, i.updatedby, l.ad_language, i.c_invoice_id, NULL::"unknown" AS c_invoiceline_id, NULL::"unknown" AS c_tax_id, NULL::"unknown" AS taxamt, NULL::"unknown" AS linetotalamt, NULL::"unknown" AS taxindicator, 9998 AS line, NULL::"unknown" AS m_product_id, NULL::"unknown" AS qtyinvoiced, NULL::"unknown" AS qtyentered, NULL::"unknown" AS uomsymbol, NULL::"unknown" AS name, NULL::"unknown" AS description, NULL::"unknown" AS documentnote, NULL::"unknown" AS upc, NULL::"unknown" AS sku, NULL::"unknown" AS productvalue, NULL::"unknown" AS resourcedescription, NULL::"unknown" AS pricelist, NULL::"unknown" AS priceenteredlist, NULL::"unknown" AS discount, NULL::"unknown" AS priceactual, NULL::"unknown" AS priceentered, NULL::"unknown" AS linenetamt, NULL::"unknown" AS m_attributesetinstance_id, NULL::"unknown" AS m_attributeset_id, NULL::"unknown" AS productdescription, NULL::"unknown" AS imageurl, NULL::"unknown" AS c_campaign_id, NULL::"unknown" AS c_project_id, NULL::"unknown" AS c_activity_id, NULL::"unknown" AS c_projectphase_id, NULL::"unknown" AS c_projecttask_id,
+ SELECT NULL::"unknown" AS upc, i.ad_client_id, i.ad_org_id, i.c_doctype_id, i.isactive, i.created, i.createdby, i.updated, i.updatedby, l.ad_language, i.c_invoice_id, NULL::"unknown" AS c_invoiceline_id, NULL::"unknown" AS c_tax_id, NULL::"unknown" AS taxamt, NULL::"unknown" AS linetotalamt, NULL::"unknown" AS taxindicator, 9998 AS line, NULL::"unknown" AS m_product_id, NULL::"unknown" AS qtyinvoiced, NULL::"unknown" AS qtyentered, NULL::"unknown" AS uomsymbol, NULL::"unknown" AS name, NULL::"unknown" AS description, NULL::"unknown" AS documentnote, NULL::"unknown" AS upc, NULL::"unknown" AS sku, NULL::"unknown" AS productvalue, NULL::"unknown" AS resourcedescription, NULL::"unknown" AS pricelist, NULL::"unknown" AS priceenteredlist, NULL::"unknown" AS discount, NULL::"unknown" AS priceactual, NULL::"unknown" AS priceentered, NULL::"unknown" AS linenetamt, NULL::"unknown" AS m_attributesetinstance_id, NULL::"unknown" AS m_attributeset_id, NULL::"unknown" AS serno, NULL::"unknown" AS lot, NULL::"unknown" AS m_lot_id, NULL::"unknown" AS guaranteedate, NULL::"unknown" AS productdescription, NULL::"unknown" AS imageurl, NULL::"unknown" AS c_campaign_id, NULL::"unknown" AS c_project_id, NULL::"unknown" AS c_activity_id, NULL::"unknown" AS c_projectphase_id, NULL::"unknown" AS c_projecttask_id,
 case
   when cur.cursymbol is null then cur.iso_code
   else cur.cursymbol
@@ -326,7 +326,7 @@ UNION
         CASE
             WHEN it.istaxincluded = 'Y'::bpchar THEN NULL::numeric
             ELSE it.taxamt
-        END AS linenetamt, NULL::"unknown" AS m_attributesetinstance_id, NULL::"unknown" AS m_attributeset_id, NULL::"unknown" AS productdescription, NULL::"unknown" AS imageurl, NULL::"unknown" AS c_campaign_id, NULL::"unknown" AS c_project_id, NULL::"unknown" AS c_activity_id, NULL::"unknown" AS c_projectphase_id, NULL::"unknown" AS c_projecttask_id,
+        END AS linenetamt, NULL::"unknown" AS m_attributesetinstance_id, NULL::"unknown" AS m_attributeset_id, NULL::"unknown" AS serno, NULL::"unknown" AS lot, NULL::"unknown" AS m_lot_id, NULL::"unknown" AS guaranteedate, NULL::"unknown" AS productdescription, NULL::"unknown" AS imageurl, NULL::"unknown" AS c_campaign_id, NULL::"unknown" AS c_project_id, NULL::"unknown" AS c_activity_id, NULL::"unknown" AS c_projectphase_id, NULL::"unknown" AS c_projecttask_id,
 case
   when cur.cursymbol is null then cur.iso_code
   else cur.cursymbol
@@ -380,6 +380,10 @@ order by invoiceline.line
 	<field name="linenetamt" class="java.math.BigDecimal"/>
 	<field name="m_attributesetinstance_id" class="java.math.BigDecimal"/>
 	<field name="m_attributeset_id" class="java.math.BigDecimal"/>
+	<field name="serno" class="java.lang.String"/>
+	<field name="lot" class="java.lang.String"/>
+	<field name="m_lot_id" class="java.math.BigDecimal"/>
+	<field name="guaranteedate" class="java.sql.Timestamp"/>
 	<field name="productdescription" class="java.lang.String"/>
 	<field name="imageurl" class="java.lang.String"/>
 	<field name="c_campaign_id" class="java.math.BigDecimal"/>

@@ -1,11 +1,31 @@
 package de.metas.contracts.refund;
 
+import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.X_C_Aggregation;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
@@ -14,36 +34,15 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.dimension.DimensionFactory;
-import de.metas.document.dimension.DimensionService;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
-import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -176,14 +175,8 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(FIFTEEN); // guard
 
 		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
-		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(assignableRecord.getBill_BPartner_ID(),
-																											assignableRecord.getBill_Location_ID(),
-																											assignableRecord.getBill_Location_Value_ID());
-
-		ContractDocumentLocationAdapterFactory
-				.billLocationAdapter(contractRecord)
-				.setFrom(bpartnerLocationId);
-
+		contractRecord.setBill_BPartner_ID(assignableRecord.getBill_BPartner_ID());
+		contractRecord.setBill_Location_ID(assignableRecord.getBill_Location_ID());
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
 		contractRecord.setStartDate(TimeUtil.asTimestamp(NOW));

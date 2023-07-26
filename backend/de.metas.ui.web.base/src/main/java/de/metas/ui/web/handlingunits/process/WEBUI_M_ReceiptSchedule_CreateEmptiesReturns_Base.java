@@ -1,5 +1,12 @@
 package de.metas.ui.web.handlingunits.process;
 
+import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_M_InOut;
+
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -13,11 +20,6 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_M_InOut;
 
 /*
  * #%L
@@ -99,8 +101,7 @@ import org.compiere.model.I_M_InOut;
 		}
 		else
 		{
-			final I_M_InOut emptiesInOut = huEmptiesService.createDraftEmptiesInOutFromReceiptSchedule(receiptSchedule, getReturnMovementType());
-			emptiesInOutId = emptiesInOut == null ? -1 : emptiesInOut.getM_InOut_ID();
+			emptiesInOutId = createDraftEmptiesInOutFromReceiptSchedule(receiptSchedule);
 		}
 
 		//
@@ -130,5 +131,24 @@ import org.compiere.model.I_M_InOut;
 		});
 
 		return documentId.toInt();
+	}
+
+	private int createDraftEmptiesInOutFromReceiptSchedule(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		//
+		// Create a draft "empties inout" without any line;
+		// Lines will be created manually by the user.
+		final I_M_InOut emptiesInOut = huEmptiesService.newReturnsInOutProducer(getCtx())
+				.setMovementType(getReturnMovementType())
+				.setMovementDate(SystemTime.asDayTimestamp())
+				.setC_BPartner(receiptScheduleBL.getC_BPartner_Effective(receiptSchedule))
+				.setC_BPartner_Location(receiptScheduleBL.getC_BPartner_Location_Effective(receiptSchedule))
+				.setM_Warehouse(receiptScheduleBL.getM_Warehouse_Effective(receiptSchedule))
+				.setC_Order(receiptSchedule.getC_Order())
+				//
+				.dontComplete()
+				.create();
+
+		return emptiesInOut == null ? -1 : emptiesInOut.getM_InOut_ID();
 	}
 }

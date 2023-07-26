@@ -1,23 +1,18 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Date;
+
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
-import org.adempiere.mm.attributes.api.LotNoContext;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,7 +46,7 @@ public class LotNumberBL implements ILotNumberBL
 
 		final int weekNumber = TimeUtil.getWeekNumber(date);
 
-		if (weekNumber < 10)
+		if(weekNumber < 10)
 		{
 			lotNumber.append(0);
 		}
@@ -62,23 +57,7 @@ public class LotNumberBL implements ILotNumberBL
 
 		lotNumber.append(dayOfWeek);
 
-		return lotNumber.toString();
-	}
-
-	@Override
-	public Optional<String> getAndIncrementLotNo(@NonNull final LotNoContext context)
-	{
-		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-
-		final String lotNo = documentNoFactory.forSequenceId(context.getSequenceId())
-				.setFailOnError(true)
-				.setClientId(context.getClientId())
-				.setEvaluationContext(Evaluatees.empty())
-				.build();
-
-		return lotNo != null && !Objects.equals(lotNo, IDocumentNoBuilder.NO_DOCUMENTNO)
-				? Optional.of(lotNo)
-				: Optional.empty();
+		return  lotNumber.toString();
 	}
 
 	@Override
@@ -95,7 +74,7 @@ public class LotNumberBL implements ILotNumberBL
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asiId, lotNumberAttrId);
 
-		if (lotNumberAI == null)
+		if(lotNumberAI == null)
 		{
 			return null;
 		}

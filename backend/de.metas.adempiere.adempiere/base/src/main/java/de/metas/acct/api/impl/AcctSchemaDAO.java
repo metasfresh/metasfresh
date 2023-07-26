@@ -39,7 +39,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import de.metas.acct.Account;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
@@ -63,7 +62,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 {
 	private static final Logger logger = LogManager.getLogger(AcctSchemaDAO.class);
 
-	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap>builder()
+	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap> builder()
 			.initialCapacity(1)
 			.tableName(I_C_AcctSchema.Table_Name)
 			.additionalTableNameToResetFor(I_C_AcctSchema_Default.Table_Name)
@@ -88,7 +87,6 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
-	@NonNull
 	public final AcctSchema getByClientAndOrg(final ClientId clientId, final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrg(clientId, orgId);
@@ -105,9 +103,9 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		}
 		return getById(acctSchemaId);
 	}
-
+	
 	@Override
-	public @NonNull AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
 		if (acctSchemaId == null)
@@ -117,9 +115,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return acctSchemaId;
 	}
 
-	@Override
-	@Nullable
-	public AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	protected AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
 	}
@@ -144,42 +140,6 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final IClientDAO clientDAO = Services.get(IClientDAO.class);
 		final I_AD_ClientInfo clientInfo = clientDAO.retrieveClientInfo(Env.getCtx(), clientId.getRepoId());
 		return AcctSchemaId.ofRepoIdOrNull(clientInfo.getC_AcctSchema1_ID());
-	}
-
-	@Override
-	public List<AcctSchema> getByChartOfAccountsId(@NonNull final ChartOfAccountsId chartOfAccountsId)
-	{
-		return getAcctSchemasMap().getByChartOfAccountsId(chartOfAccountsId);
-	}
-
-	@Override
-	@NonNull
-	public AcctSchema getByClientAndName(
-			@NonNull final ClientId clientId,
-			@NonNull final String name)
-	{
-		final ImmutableList<AcctSchema> schemas = getAllByClient(clientId)
-				.stream()
-				.filter(schema -> name.equals(schema.getName()))
-				.collect(ImmutableList.toImmutableList());
-
-		if (schemas.isEmpty())
-		{
-			throw new AdempiereException("No AcctSchema record found for ClientID and Name!")
-					.appendParametersToMessage()
-					.setParameter("ClientID", clientId)
-					.setParameter("Name", name);
-		}
-
-		if (schemas.size() > 1)
-		{
-			throw new AdempiereException("Multiple AcctSchema records found for ClientID and Name!")
-					.appendParametersToMessage()
-					.setParameter("ClientID", clientId)
-					.setParameter("Name", name);
-		}
-
-		return schemas.get(0);
 	}
 
 	private AcctSchemasMap getAcctSchemasMap()
@@ -238,8 +198,6 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.postTradeDiscount(acctSchemaRecord.isTradeDiscountPosted())
 				.postServices(acctSchemaRecord.isPostServices())
 				.postIfSameClearingAccounts(acctSchemaRecord.isPostIfClearingEqual())
-				.isAllowMultiDebitAndCredit(acctSchemaRecord.isAllowMultiDebitAndCredit())
-				//
 				.isAutoSetDebtoridAndCreditorid(acctSchemaRecord.isAutoSetDebtoridAndCreditorid())
 				.debtorIdPrefix(acctSchemaRecord.getDebtorIdPrefix())
 				.creditorIdPrefix(acctSchemaRecord.getCreditorIdPrefix())
@@ -262,7 +220,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return AcctSchemaCosting.builder()
 				.costingPrecision(costingPrecision)
 				.costTypeId(CostTypeId.ofRepoId(acctSchemaRecord.getM_CostType_ID()))
-				.costingLevel(CostingLevel.ofCode(acctSchemaRecord.getCostingLevel()))
+				.costingLevel(CostingLevel.forCode(acctSchemaRecord.getCostingLevel()))
 				.costingMethod(CostingMethod.ofCode(acctSchemaRecord.getCostingMethod()))
 				.postOnlyCostElementIds(postOnlyCostElementIds)
 				.build();
@@ -299,29 +257,25 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	private AcctSchemaGeneralLedger toAcctSchemaGeneralLedger(final I_C_AcctSchema_GL acctSchemaGL)
 	{
 		final boolean suspenseBalancing = acctSchemaGL.isUseSuspenseBalancing() && acctSchemaGL.getSuspenseBalancing_Acct() > 0;
-		final Account suspenseBalancingAcct = suspenseBalancing 
-				? Account.of(AccountId.ofRepoId(acctSchemaGL.getSuspenseBalancing_Acct()), I_C_AcctSchema_GL.COLUMNNAME_SuspenseBalancing_Acct) 
-				: null;
+		final AccountId suspenseBalancingAcctId = suspenseBalancing ? AccountId.ofRepoId(acctSchemaGL.getSuspenseBalancing_Acct()) : null;
 
 		final boolean useCurrencyBalancing = acctSchemaGL.isUseCurrencyBalancing();
-		final Account currencyBalancingAcct = useCurrencyBalancing 
-				? Account.of(AccountId.ofRepoId(acctSchemaGL.getCurrencyBalancing_Acct()), I_C_AcctSchema_GL.COLUMNNAME_CurrencyBalancing_Acct) 
-				: null;
+		final AccountId currencyBalancingAcctId = useCurrencyBalancing ? AccountId.ofRepoId(acctSchemaGL.getCurrencyBalancing_Acct()) : null;
 
 		return AcctSchemaGeneralLedger.builder()
 				.suspenseBalancing(suspenseBalancing)
-				.suspenseBalancingAcct(suspenseBalancingAcct)
+				.suspenseBalancingAcctId(suspenseBalancingAcctId)
 				//
 				.currencyBalancing(useCurrencyBalancing)
-				.currencyBalancingAcct(currencyBalancingAcct)
+				.currencyBalancingAcctId(currencyBalancingAcctId)
 				//
-				.intercompanyDueToAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueTo_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IntercompanyDueTo_Acct))
-				.intercompanyDueFromAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueFrom_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IntercompanyDueFrom_Acct))
+				.intercompanyDueToAcctId(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueTo_Acct()))
+				.intercompanyDueFromAcctId(AccountId.ofRepoId(acctSchemaGL.getIntercompanyDueFrom_Acct()))
 				//
-				.incomeSummaryAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getIncomeSummary_Acct()), I_C_AcctSchema_GL.COLUMNNAME_IncomeSummary_Acct))
-				.retainedEarningAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getRetainedEarning_Acct()), I_C_AcctSchema_GL.COLUMNNAME_RetainedEarning_Acct))
+				.incomeSummaryAcctId(AccountId.ofRepoId(acctSchemaGL.getIncomeSummary_Acct()))
+				.retainedEarningAcctId(AccountId.ofRepoId(acctSchemaGL.getRetainedEarning_Acct()))
 				//
-				.purchasePriceVarianceOffsetAcct(Account.of(AccountId.ofRepoId(acctSchemaGL.getPPVOffset_Acct()), I_C_AcctSchema_GL.COLUMNNAME_PPVOffset_Acct))
+				.purchasePriceVarianceOffsetAcctId(AccountId.ofRepoId(acctSchemaGL.getPPVOffset_Acct()))
 				//
 				.build();
 	}
@@ -350,10 +304,10 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	private static AcctSchemaDefaultAccounts toAcctSchemaDefaults(@NonNull final I_C_AcctSchema_Default record)
 	{
 		return AcctSchemaDefaultAccounts.builder()
-				.realizedGainAcct(Account.of(AccountId.ofRepoId(record.getRealizedGain_Acct()), I_C_AcctSchema_Default.COLUMNNAME_RealizedGain_Acct))
-				.realizedLossAcct(Account.of(AccountId.ofRepoId(record.getRealizedLoss_Acct()), I_C_AcctSchema_Default.COLUMNNAME_RealizedLoss_Acct))
-				.unrealizedGainAcct(Account.of(AccountId.ofRepoId(record.getUnrealizedGain_Acct()), I_C_AcctSchema_Default.COLUMNNAME_UnrealizedGain_Acct))
-				.unrealizedLossAcct(Account.of(AccountId.ofRepoId(record.getUnrealizedLoss_Acct()), I_C_AcctSchema_Default.COLUMNNAME_UnrealizedLoss_Acct))
+				.realizedGainAcctId(AccountId.ofRepoId(record.getRealizedGain_Acct()))
+				.realizedLossAcctId(AccountId.ofRepoId(record.getRealizedLoss_Acct()))
+				.unrealizedGainAcctId(AccountId.ofRepoId(record.getUnrealizedGain_Acct()))
+				.unrealizedLossAcctId(AccountId.ofRepoId(record.getUnrealizedLoss_Acct()))
 				.build();
 	}
 
@@ -401,7 +355,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.build();
 		if (element.isMandatory() && element.getDefaultValue() <= 0)
 		{
-			logger.error("No default value for {}", element);
+			logger.error("No default value for " + element);
 		}
 		return element;
 	}
@@ -571,14 +525,6 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 			}
 
 			return result.build();
-		}
-
-		public List<AcctSchema> getByChartOfAccountsId(@NonNull final ChartOfAccountsId chartOfAccountsId)
-		{
-			return acctSchemas.values()
-					.stream()
-					.filter(acctSchema -> ChartOfAccountsId.equals(acctSchema.getChartOfAccountsId(), chartOfAccountsId))
-					.collect(ImmutableList.toImmutableList());
 		}
 	}
 }

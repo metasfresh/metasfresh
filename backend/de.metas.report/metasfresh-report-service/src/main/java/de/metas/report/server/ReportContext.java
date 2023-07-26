@@ -1,6 +1,14 @@
 package de.metas.report.server;
 
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.util.Env;
+
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -9,15 +17,9 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessType;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.util.Env;
-
-import java.util.List;
-import java.util.Properties;
 
 /*
  * #%L
@@ -41,7 +43,6 @@ import java.util.Properties;
  * #L%
  */
 
-@ToString(exclude = { "ctx" })
 public final class ReportContext
 {
 	public static Builder builder()
@@ -49,12 +50,11 @@ public final class ReportContext
 		return new Builder();
 	}
 
-	@Getter
 	private final Properties ctx;
 	private final AdProcessId AD_Process_ID;
 	private final PInstanceId pinstanceId;
 	private final String AD_Language;
-	private final OutputType outputType;
+	private OutputType outputType;
 	private final int AD_Table_ID;
 	private final int Record_ID;
 	private final ImmutableList<ProcessInfoParameter> processInfoParameters;
@@ -83,6 +83,31 @@ public final class ReportContext
 		applySecuritySettings = builder.applySecuritySettings;
 		JSONPath = builder.JSONPath;
 		type = builder.type;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("AD_Process_ID", AD_Process_ID)
+				.add("pinstanceId", pinstanceId)
+				.add("AD_Language", AD_Language)
+				.add("outputType", outputType)
+				.add("AD_Table_ID", AD_Table_ID)
+				.add("Record_ID", Record_ID)
+				.add("processInfoParameters", processInfoParameters)
+				.add("reportTemplatePath", reportTemplatePath)
+				.add("sqlStatement", sqlStatement)
+				.add("applySecuritySettings", applySecuritySettings)
+				.add("JSONPath", JSONPath)
+				.add("type", type)
+				.toString();
+	}
+
+	public Properties getCtx()
+	{
+		return ctx;
 	}
 
 	public OrgId getOrgId()
@@ -118,6 +143,11 @@ public final class ReportContext
 	public OutputType getOutputType()
 	{
 		return outputType;
+	}
+
+	public void setOutputType(final OutputType outputType)
+	{
+		this.outputType = outputType;
 	}
 
 	public String getTableNameOrNull()
@@ -255,12 +285,12 @@ public final class ReportContext
 			return this;
 		}
 
-		private ImmutableList<ProcessInfoParameter> getProcessInfoParameters()
+		private List<ProcessInfoParameter> getProcessInfoParameters()
 		{
 			return Services.get(IADPInstanceDAO.class).retrieveProcessInfoParameters(pinstanceId)
 					.stream()
 					.map(this::transformProcessInfoParameter)
-					.collect(ImmutableList.toImmutableList());
+					.collect(GuavaCollectors.toImmutableList());
 		}
 
 		private ProcessInfoParameter transformProcessInfoParameter(final ProcessInfoParameter piParam)

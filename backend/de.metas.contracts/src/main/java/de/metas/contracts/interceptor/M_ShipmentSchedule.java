@@ -22,16 +22,17 @@
 
 package de.metas.contracts.interceptor;
 
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import java.math.BigDecimal;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 
-import java.math.BigDecimal;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Updates the {@link I_C_SubscriptionProgress} record's status on shipment schedule changes.
@@ -91,7 +92,7 @@ public class M_ShipmentSchedule
 		}
 
 		subscriptionProgress.setProcessed(false);
-		subscriptionProgress.setM_ShipmentSchedule_ID(0);
+		subscriptionProgress.setM_ShipmentSchedule(null);
 		subscriptionProgress.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 		InterfaceWrapperHelper.save(subscriptionProgress);
 	}

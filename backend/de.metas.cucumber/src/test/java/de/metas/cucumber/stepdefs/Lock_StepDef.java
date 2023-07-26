@@ -27,10 +27,11 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.LockException;
-import de.metas.lock.spi.ExistingLockInfo;
+import de.metas.lock.spi.impl.SqlLockDatabase;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -91,7 +92,7 @@ public class Lock_StepDef
 		assertThat(lastThrowable.getClass().getSimpleName()).isEqualTo(exceptionSimpleClassName);
 
 		final TableRecordReference expectedLockedRecord = TableRecordReference.of(tableName, recordId);
-		final ImmutableList<ExistingLockInfo> existingLocks = ((LockException)lastThrowable).getExistingLocks();
+		final ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks = ((LockException)lastThrowable).getExistingLocks();
 
 		assertThat(existingLocks).anyMatch(l -> l.getLockedRecord().equals(expectedLockedRecord) && l.getOwnerName().startsWith(lockOwnerPrefix));
 	}

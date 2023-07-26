@@ -1,16 +1,17 @@
 package de.metas.money;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.JsonObjectMapperHolder;
-import lombok.NonNull;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.JsonObjectMapperHolder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -125,31 +126,5 @@ public class MoneyTest
 		assertThat(money_2EUR.isLessThanOrEqualTo(money_1EUR)).isFalse();
 
 		assertThatThrownBy(() -> money_1EUR.isLessThanOrEqualTo(money_2CHF)).isNotNull();
-	}
-
-	@Nested
-	public class abs
-	{
-		@Test
-		void zero()
-		{
-			final Money zero = Money.zero(EUR);
-			assertThat(zero.abs()).isSameAs(zero);
-		}
-
-		@Test
-		void positive()
-		{
-			final Money amt = Money.of(123, EUR);
-			assertThat(amt.abs()).isSameAs(amt);
-		}
-
-		@Test
-		void negative()
-		{
-			final Money amt = Money.of(-123, EUR);
-			assertThat(amt.abs()).isEqualTo(Money.of(123, EUR));
-		}
-
 	}
 }

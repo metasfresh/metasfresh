@@ -24,17 +24,16 @@ package de.metas.ordercandidate.api.async;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IEnqueueResult;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class OlCandEnqueueResult implements IEnqueueResult
+public class OlCandEnqueueResult
 {
-	int workpackageEnqueuedCount;
+	ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds;
 
 	public OlCandEnqueueResult(@NonNull final ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds)
 	{
-		this.workpackageEnqueuedCount = enqueuedWorkPackageIds.size();
+		this.enqueuedWorkPackageIds = enqueuedWorkPackageIds;
 	}
 }

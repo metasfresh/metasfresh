@@ -29,10 +29,10 @@ import de.metas.common.bprelation.response.JsonResponseBPRelationComposite;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
@@ -64,20 +64,20 @@ public class BpartnerRelationRestController
 		this.bpRelationsService = bpRelationsService;
 	}
 
-	@Operation(summary = "Returns all relations for the given bpartner the current user's organisation.")
+	@ApiOperation("Returns all relations for the given bpartner the current user's organisation.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Successfully retrieved all relations"),
-			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
-			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
+			@ApiResponse(code = 200, message = "Successfully retrieved all relations"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{orgCode}/{bpartnerIdentifier}")
 	public ResponseEntity<JsonResponseBPRelationComposite> retrieveBPartner(
-			@Parameter(required = true, description = ORG_CODE_PARAMETER_DOC)
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode, // may be null if called from other metasfresh-code
 			
-			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
@@ -88,15 +88,15 @@ public class BpartnerRelationRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "Successfully created or updated bpartner relation(s)"),
-			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
-			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
+			@ApiResponse(code = 201, message = "Successfully created or updated bpartner relation(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@PutMapping(value = "{bpartnerIdentifier}", consumes = "application/json")
 	public ResponseEntity<String> createOrUpdateBPartnerRelation(
 
-			@Parameter(required = true, description = BPARTNER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr,
 			@RequestBody @NonNull final JsonRequestBPRelationsUpsert bpartnerUpsertRequest)

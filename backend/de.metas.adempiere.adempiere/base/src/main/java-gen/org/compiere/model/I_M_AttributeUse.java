@@ -1,235 +1,185 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_AttributeUse
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_M_AttributeUse 
 {
 
-	String Table_Name = "M_AttributeUse";
+    /** TableName=M_AttributeUse */
+    public static final String Table_Name = "M_AttributeUse";
 
-//	/** AD_Table_ID=563 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=563 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_Client>(I_M_AttributeUse.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_Org>(I_M_AttributeUse.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_Created = new ModelColumn<>(I_M_AttributeUse.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_AttributeUse, Object>(I_M_AttributeUse.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_User>(I_M_AttributeUse.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_IsActive = new ModelColumn<>(I_M_AttributeUse.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Mandatory for Manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMandatoryOnManufacturing (@Nullable java.lang.String MandatoryOnManufacturing);
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_AttributeUse, Object>(I_M_AttributeUse.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Mandatory for Manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMandatoryOnManufacturing();
-
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_MandatoryOnManufacturing = new ModelColumn<>(I_M_AttributeUse.class, "MandatoryOnManufacturing", null);
-	String COLUMNNAME_MandatoryOnManufacturing = "MandatoryOnManufacturing";
-
-	/**
-	 * Set Mandatory for Picking.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMandatoryOnPicking (@Nullable java.lang.String MandatoryOnPicking);
-
-	/**
-	 * Get Mandatory for Picking.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMandatoryOnPicking();
-
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_MandatoryOnPicking = new ModelColumn<>(I_M_AttributeUse.class, "MandatoryOnPicking", null);
-	String COLUMNNAME_MandatoryOnPicking = "MandatoryOnPicking";
-
-	/**
-	 * Set Mandatory for Receipt.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMandatoryOnReceipt (@Nullable java.lang.String MandatoryOnReceipt);
-
-	/**
-	 * Get Mandatory for Receipt.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMandatoryOnReceipt();
-
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_MandatoryOnReceipt = new ModelColumn<>(I_M_AttributeUse.class, "MandatoryOnReceipt", null);
-	String COLUMNNAME_MandatoryOnReceipt = "MandatoryOnReceipt";
-
-	/**
-	 * Set Mandatory for Shipping.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMandatoryOnShipment (@Nullable java.lang.String MandatoryOnShipment);
-
-	/**
-	 * Get Mandatory for Shipping.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMandatoryOnShipment();
-
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_MandatoryOnShipment = new ModelColumn<>(I_M_AttributeUse.class, "MandatoryOnShipment", null);
-	String COLUMNNAME_MandatoryOnShipment = "MandatoryOnShipment";
-
-	/**
-	 * Set Attribute.
-	 * Produkt-Merkmal
+	 * Set Merkmal.
+	 * Product Attribute
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Attribute_ID (int M_Attribute_ID);
+	public void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
-	 * Get Attribute.
-	 * Produkt-Merkmal
+	 * Get Merkmal.
+	 * Product Attribute
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Attribute_ID();
+	public int getM_Attribute_ID();
 
-	String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
+	public org.compiere.model.I_M_Attribute getM_Attribute();
+
+	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute);
+
+    /** Column definition for M_Attribute_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_M_Attribute> COLUMN_M_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_M_Attribute>(I_M_AttributeUse.class, "M_Attribute_ID", org.compiere.model.I_M_Attribute.class);
+    /** Column name M_Attribute_ID */
+    public static final String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
 	/**
-	 * Set Attribute Set.
+	 * Set Merkmals-Satz.
 	 * Product Attribute Set
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_AttributeSet_ID (int M_AttributeSet_ID);
+	public void setM_AttributeSet_ID (int M_AttributeSet_ID);
 
 	/**
-	 * Get Attribute Set.
+	 * Get Merkmals-Satz.
 	 * Product Attribute Set
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_AttributeSet_ID();
+	public int getM_AttributeSet_ID();
 
-	org.compiere.model.I_M_AttributeSet getM_AttributeSet();
+	public org.compiere.model.I_M_AttributeSet getM_AttributeSet();
 
-	void setM_AttributeSet(org.compiere.model.I_M_AttributeSet M_AttributeSet);
+	public void setM_AttributeSet(org.compiere.model.I_M_AttributeSet M_AttributeSet);
 
-	ModelColumn<I_M_AttributeUse, org.compiere.model.I_M_AttributeSet> COLUMN_M_AttributeSet_ID = new ModelColumn<>(I_M_AttributeUse.class, "M_AttributeSet_ID", org.compiere.model.I_M_AttributeSet.class);
-	String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
+    /** Column definition for M_AttributeSet_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_M_AttributeSet> COLUMN_M_AttributeSet_ID = new org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_M_AttributeSet>(I_M_AttributeUse.class, "M_AttributeSet_ID", org.compiere.model.I_M_AttributeSet.class);
+    /** Column name M_AttributeSet_ID */
+    public static final String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
 
 	/**
 	 * Set M_AttributeUse.
@@ -238,7 +188,7 @@ public interface I_M_AttributeUse
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_AttributeUse_ID (int M_AttributeUse_ID);
+	public void setM_AttributeUse_ID (int M_AttributeUse_ID);
 
 	/**
 	 * Get M_AttributeUse.
@@ -247,13 +197,15 @@ public interface I_M_AttributeUse
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_AttributeUse_ID();
+	public int getM_AttributeUse_ID();
 
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_M_AttributeUse_ID = new ModelColumn<>(I_M_AttributeUse.class, "M_AttributeUse_ID", null);
-	String COLUMNNAME_M_AttributeUse_ID = "M_AttributeUse_ID";
+    /** Column definition for M_AttributeUse_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, Object> COLUMN_M_AttributeUse_ID = new org.adempiere.model.ModelColumn<I_M_AttributeUse, Object>(I_M_AttributeUse.class, "M_AttributeUse_ID", null);
+    /** Column name M_AttributeUse_ID */
+    public static final String COLUMNNAME_M_AttributeUse_ID = "M_AttributeUse_ID";
 
 	/**
-	 * Set SeqNo.
+	 * Set Reihenfolge.
 	 * Method of ordering records;
  lowest number comes first
 	 *
@@ -261,10 +213,10 @@ public interface I_M_AttributeUse
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setSeqNo (int SeqNo);
+	public void setSeqNo (int SeqNo);
 
 	/**
-	 * Get SeqNo.
+	 * Get Reihenfolge.
 	 * Method of ordering records;
  lowest number comes first
 	 *
@@ -272,33 +224,40 @@ public interface I_M_AttributeUse
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getSeqNo();
+	public int getSeqNo();
 
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_SeqNo = new ModelColumn<>(I_M_AttributeUse.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_M_AttributeUse, Object>(I_M_AttributeUse.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_Updated = new ModelColumn<>(I_M_AttributeUse.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_AttributeUse, Object>(I_M_AttributeUse.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_AttributeUse, org.compiere.model.I_AD_User>(I_M_AttributeUse.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

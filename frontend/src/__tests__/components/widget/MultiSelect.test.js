@@ -42,7 +42,7 @@ describe('MultiSelect component', () => {
       expect(wrapper.find('.input-checkbox-tick').html()).not.toContain('checked');
     });
   });
-  
+
   describe('functional tests', () => {
     it('the function should be called', () => {
       const handlePatchSpy = jest.fn();

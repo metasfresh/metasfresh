@@ -24,61 +24,40 @@ package de.metas.contracts.pricing.trade_margin;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
-import de.metas.contracts.commission.commissioninstance.businesslogic.margin.MarginConfig;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
-import de.metas.contracts.commission.commissioninstance.services.margin.MarginCommissionConfigFactory;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.lang.SOTrx;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.PlainTriggerDocumentId;
+import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceService;
+import de.metas.contracts.commission.commissioninstance.services.CommissionPointsService;
+import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
+import de.metas.logging.TableRecordMDC;
 import de.metas.money.Money;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
-import de.metas.organization.OrgId;
+import de.metas.money.MoneyService;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.IPricingRule;
-import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
+import de.metas.quantity.Quantitys;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import lombok.Builder;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 /**
@@ -88,50 +67,21 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(CustomerTradeMarginPricingRule.class);
 
-	private final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
-
 	private final CustomerTradeMarginService customerTradeMarginService = SpringContextHolder.instance.getBean(CustomerTradeMarginService.class);
-	private final MarginCommissionConfigFactory marginCommissionConfigFactory = SpringContextHolder.instance.getBean(MarginCommissionConfigFactory.class);
 
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final CommissionInstanceService commissionInstanceService = SpringContextHolder.instance.getBean(CommissionInstanceService.class);
 
-	// loaded by applies, used by compute
-	private MarginConfig marginConfig;
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
 	@Override
 	public boolean applies(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		if (!result.isCalculated())
 		{
 			loggable.addLog("applies - pricingResult.isCalculated=false -> return false");
 			return false;
 		}
-
-		final Object referencedObj = pricingCtx.getReferencedObject();
-		if (referencedObj == null)
-		{
-			loggable.addLog("applies - there is no referenced object in order to obtain salesRepId; -> return false");
-			return false;
-		}
-
-		final OrgId orgId = pricingCtx.getOrgId();
-		if (orgId == null)
-		{
-			loggable.addLog("applies - OrgId is null; -> return false");
-			return false;
-		}
-
-		final Optional<BPartnerId> salesRepId = getSalesRepId(referencedObj);
-		if (!salesRepId.isPresent())
-		{
-			loggable.addLog("applies - SalesRepId is null for referenced object={}; -> return false", pricingCtx.getReferencedObject());
-			return false;
-		}
-
 		final BPartnerId customerId = pricingCtx.getBPartnerId();
 		if (customerId == null)
 		{
@@ -139,336 +89,158 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 			return false;
 		}
 
-		final ProductId productId = pricingCtx.getProductId();
-		if (productId == null)
+		final BPartnerId salesRepId = Services.get(IBPartnerBL.class).getBPartnerSalesRepId(customerId);
+		if (salesRepId == null)
 		{
-			loggable.addLog("applies - ProductId is null; -> return false");
+			loggable.addLog("applies - SalesRepId is null for customerId={}; -> return false",customerId.getRepoId());
 			return false;
 		}
 
-		final UomId uomId = result.getPriceUomId();
-		if (uomId == null)
+		final CustomerTradeMarginSearchCriteria customerTradeMarginSearchCriteria = CustomerTradeMarginSearchCriteria.builder()
+				.customerId(customerId)
+				.salesRepId(salesRepId)
+				.requestedDate(pricingCtx.getPriceDate())
+				.build();
+
+		if (!customerTradeMarginService.getCustomerTradeMarginForCriteria(customerTradeMarginSearchCriteria).isPresent())
 		{
-			loggable.addLog("applies - priceUomId is null; -> return false");
+			loggable.addLog("applies - missing customer trade margins; customerTradeMarginSearchCriteria={}; -> return false", customerTradeMarginSearchCriteria);
 			return false;
 		}
 
-		final CurrencyId currencyId = result.getCurrencyId();
-		if (currencyId == null)
-		{
-			loggable.addLog("applies - CurrencyId is null; -> return false");
-			return false;
-		}
-
-		final TaxCategoryId taxCategoryId = result.getTaxCategoryId();
-		if (taxCategoryId == null)
-		{
-			loggable.addLog("applies - TaxCategoryId is null; -> return false");
-			return false;
-		}
-
-		final Optional<MarginConfig> marginConfig = getMarginConfig(
-				salesRepId.get(),
-				pricingCtx);
-		if (!marginConfig.isPresent())
-		{
-			loggable.addLog("applies - salesrep has no MarginConfig; -> return false");
-			return false;
-		}
-
-		this.marginConfig = marginConfig.get();
+		loggable.addLog("applies  customerTradeMarginSearchCriteria={}; -> return true", customerTradeMarginSearchCriteria);
 		return true;
 	}
 
 	@Override
-	public void calculate(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
+	public void calculate(IPricingContext pricingCtx, IPricingResult result)
 	{
-		if (!applies(pricingCtx, result))
-		{
-			return;
-		}
+		final BPartnerId customerId = pricingCtx.getBPartnerId();
 
-		final Object referencedObj = Objects.requireNonNull(pricingCtx.getReferencedObject());
+		final BPartnerId salesRepId = Services.get(IBPartnerBL.class).getBPartnerSalesRepId(customerId);
 
-		final Optional<BPartnerLocationAndCaptureId> bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(referencedObj);
-
-		if (!bPartnerLocationAndCaptureId.isPresent())
-		{
-			loggable.addLog("calculate - no bPartnerLocationAndCaptureId could be found for customer; -> skipping!");
-			return;
-		}
-
-		final BPartnerId salesRepId = getSalesRepId(referencedObj)
-				.orElseThrow(() -> new AdempiereException("PricingRule.applies() should've taken care of this!"));
-
-		final CustomerPricingContext customerPricingContext = CustomerPricingContext.builder()
-				.pricingContext(pricingCtx)
-				.pricingResult(result)
-				.bPartnerLocationAndCaptureId(bPartnerLocationAndCaptureId.get())
-				.build();
-
-		calculateCustomerPrice(customerPricingContext, salesRepId);
-	}
-
-	private void calculateCustomerPrice(@NonNull final CustomerPricingContext customerPricingContext, @NonNull final BPartnerId salesRepId)
-	{
-		final Optional<ProductPrice> salesRepNetUnitPriceOpt = getSalesRepNetUnitPrice(customerPricingContext, salesRepId);
-		if (!salesRepNetUnitPriceOpt.isPresent())
-		{
-			loggable.addLog("calculate - Not applying! salesRep price could not be computed in customer currency, salesRepId={}" + salesRepId);
-			return;
-		}
-
-		final BigDecimal newCustomerPrice = calculateNewCustomerPriceStd(
-				customerPricingContext,
-				salesRepNetUnitPriceOpt.get(),
-				marginConfig /*was loaded by applies() method*/);
-
-		final IPricingResult pricingResult = customerPricingContext.getPricingResult();
-
-		pricingResult.setPriceStd(newCustomerPrice);
-		pricingResult.setCalculated(true);
-		pricingResult.setPriceEditable(false);
-	}
-
-	@NonNull
-	private Optional<ProductPrice> getSalesRepNetUnitPrice(
-			@NonNull final CustomerPricingContext customerPricingContext,
-			@NonNull final BPartnerId salesRepId)
-	{
-		final I_C_UOM priceUOM = uomDao.getById(customerPricingContext.getResultUomId());
-
-		final ComputeSalesRepPriceRequest request = ComputeSalesRepPriceRequest.builder()
+		final CustomerTradeMarginSearchCriteria customerTradeMarginSearchCriteria = CustomerTradeMarginSearchCriteria.builder()
+				.customerId(customerId)
 				.salesRepId(salesRepId)
-				.soTrx(SOTrx.SALES)
-				.productId(customerPricingContext.getProductId())
-				.qty(Quantity.of(BigDecimal.ONE, priceUOM))
-				.customerCurrencyId(customerPricingContext.getResultCurrencyId())
-				.commissionDate(customerPricingContext.getResultPriceDate())
+				.requestedDate(pricingCtx.getPriceDate())
 				.build();
 
-		return customerTradeMarginService.calculateSalesRepNetUnitPrice(request);
+		final Optional<CustomerTradeMarginSettings> customerTradeMarginSettings = customerTradeMarginService.getCustomerTradeMarginForCriteria(customerTradeMarginSearchCriteria);
+
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+		if (!customerTradeMarginSettings.isPresent())
+		{
+			loggable.addLog("calculate - missing customer trade margins; customerTradeMarginSearchCriteria={}; -> return", customerTradeMarginSearchCriteria);
+			return;
+		}
+
+		final ProductPrice priceBeforeApplyingRule = ProductPrice
+				.builder()
+				.productId(pricingCtx.getProductId())
+				.money(Money.of(result.getPriceStd(), result.getCurrencyId()))
+				.uomId(result.getPriceUomId())
+				.build();
+
+		final Optional<CommissionInstance> forecastCommissionInstance = createForecastCommissionInstanceForOneQtyInPriceUOM(pricingCtx, priceBeforeApplyingRule, salesRepId, customerId);
+
+		if (!forecastCommissionInstance.isPresent())
+		{
+			loggable.addLog("calculate - Not applying! Forecast commission instance couldn't be created!");
+			return;
+		}
+
+		if (forecastCommissionInstance.get().hasSimulationContracts())
+		{
+			loggable.addLog("calculate - Not applying! Forecast commission instance contains simulation contracts!");
+			return;
+		}
+
+		final Map<CommissionShare, CommissionPoints> share2TradedCommissionPoints = customerTradeMarginService
+				.getTradedCommissionPointsFor(
+						customerTradeMarginSettings.get(),
+						forecastCommissionInstance.get().getShares());
+
+		if (share2TradedCommissionPoints.isEmpty())
+		{
+			loggable.addLog("calculate - Not applying! tradedCommissionPointsPerPriceUOM couldn't be calculated");
+			return;
+		}
+
+		Money customerTradeMarginPerPriceUOMSum = Money.zero(result.getCurrencyId());
+
+		for (final Entry<CommissionShare, CommissionPoints> shareAndPoints : share2TradedCommissionPoints.entrySet())
+		{
+			final CommissionShare share = shareAndPoints.getKey();
+			try (final MDCCloseable shareMDC = TableRecordMDC.putTableRecordReference(I_C_Commission_Share.Table_Name, share.getId()))
+			{
+				final CommissionContract salesRepCommissionContract = share.getContract();
+				final CommissionPoints tradedCommissionPointsPerPriceUOM = shareAndPoints.getValue();
+
+				final CommissionPointsService commissionPointsService = SpringContextHolder.instance.getBean(CommissionPointsService.class);
+				final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+
+				final Optional<Money> tradedCommissionPointsValue = commissionPointsService
+						.getCommissionPointsValue(
+								tradedCommissionPointsPerPriceUOM,
+								salesRepCommissionContract.getId(),
+								pricingCtx.getPriceDate());
+
+				if (!tradedCommissionPointsValue.isPresent())
+				{
+					loggable.addLog("calculate - Not applying! tradedCommissionPoints monetary amount couldn't be calculated");
+					return;
+				}
+
+				final Money customerTradeMarginPerPriceUOM = moneyService
+						.convertMoneyToCurrency(tradedCommissionPointsValue.get(), result.getCurrencyId());
+
+				customerTradeMarginPerPriceUOMSum = customerTradeMarginPerPriceUOMSum.add(customerTradeMarginPerPriceUOM);
+			}
+		}
+
+		result.setBaseCommissionPointsPerPriceUOM(forecastCommissionInstance.get().getCurrentTriggerData().getForecastedBasePoints().toBigDecimal());
+		result.setTradedCommissionPercent(Percent.of(customerTradeMarginSettings.get().getMarginPercent()));
+
+		result.setPriceStd(priceBeforeApplyingRule.toBigDecimal().subtract(customerTradeMarginPerPriceUOMSum.toBigDecimal()));
+		result.setCalculated(true);
+
+		loggable
+				.addLog("calculate - Price before applying rule: {} currencyID: {}, Price after applying rule: {} currencyID :{}",
+						priceBeforeApplyingRule.toBigDecimal(), priceBeforeApplyingRule.getCurrencyId().getRepoId(),
+						result.getPriceStd(), result.getCurrencyId().getRepoId());
 	}
-	
-	private Optional<MarginConfig> getMarginConfig(
-			@NonNull final BPartnerId salesRepId, 
-			@NonNull final IPricingContext pricingCtx)
+
+	private Optional<CommissionInstance> createForecastCommissionInstanceForOneQtyInPriceUOM(
+			@NonNull final IPricingContext pricingCtx,
+			@NonNull final ProductPrice productPrice,
+			@NonNull final BPartnerId salesRepId,
+			@NonNull final BPartnerId customerId)
 	{
-		final CommissionConfigProvider.ConfigRequestForNewInstance configRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
+		// we need the commission points per one qty of product in pricing UOM
+		final Quantity forecastQty = Quantitys.create(BigDecimal.ONE, productPrice.getUomId());
+		final Money forecastNetAmt = moneyService.multiply(forecastQty, productPrice);
+
+		final CommissionTriggerDocument commissionTriggerDocument = CommissionTriggerDocument
+				.builder()
+				.triggerType(CommissionTriggerType.Plain)
 				.orgId(pricingCtx.getOrgId())
+				.id(PlainTriggerDocumentId.INSTANCE)
 				.salesRepBPartnerId(salesRepId)
-				.commissionTriggerType(CommissionTriggerType.Plain)
-				.salesProductId(pricingCtx.getProductId())
-				.customerBPartnerId(pricingCtx.getBPartnerId())
-				.commissionHierarchy(Hierarchy.EMPTY_HIERARCHY)
+				.customerBPartnerId(customerId)
+				.productId(pricingCtx.getProductId())
 				.commissionDate(pricingCtx.getPriceDate())
+				.updated(SystemTime.asInstant())
+				.forecastCommissionPoints(CommissionPoints.of(forecastNetAmt.toBigDecimal()))
+				.commissionPointsToInvoice(CommissionPoints.ZERO)
+				.invoicedCommissionPoints(CommissionPoints.ZERO)
+				.tradedCommissionPercent(Percent.ZERO)
 				.build();
 
-		final List<CommissionConfig> marginCommissionConfig = marginCommissionConfigFactory.createForNewCommissionInstances(configRequest);
-
-		if (marginCommissionConfig.isEmpty())
+		final Optional<CommissionInstance> commissionInstance = commissionInstanceService.createCommissionInstance(commissionTriggerDocument);
+		if (!commissionInstance.isPresent())
 		{
 			return Optional.empty();
 		}
-
-		final MarginConfig marginConfig = MarginConfig.cast(CollectionUtils.singleElement(marginCommissionConfig));
-		return Optional.of(marginConfig);
+		return Optional.of(commissionInstance.get());
 	}
-
-	@NonNull
-	private Optional<BPartnerId> getSalesRepId(@NonNull final Object referencedObj)
-	{
-		if (InterfaceWrapperHelper.isInstanceOf(referencedObj, I_C_OrderLine.class))
-		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(referencedObj, I_C_OrderLine.class);
-
-			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()), I_C_Order.class);
-
-			if (order.getC_BPartner_SalesRep_ID() <= 0)
-			{
-				loggable.addLog("applies - there is no bPartnerSalesRepId on orderId={}; " + OrderId.ofRepoId(order.getC_Order_ID()));
-				return Optional.empty();
-			}
-
-			return Optional.of(BPartnerId.ofRepoId(order.getC_BPartner_SalesRep_ID()));
-		}
-		else if (InterfaceWrapperHelper.isInstanceOf(referencedObj, I_C_InvoiceLine.class))
-		{
-			final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(referencedObj, I_C_InvoiceLine.class);
-
-			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
-
-			if (invoice.getC_BPartner_SalesRep_ID() <= 0)
-			{
-				loggable.addLog("applies - there is no bPartnerSalesRepId on invoiceId={}; " + InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
-				return Optional.empty();
-			}
-
-			return Optional.of(BPartnerId.ofRepoId(invoice.getC_BPartner_SalesRep_ID()));
-		}
-
-		return Optional.empty();
-	}
-
-	@NonNull
-	private Tax getCustomerPriceTax(@NonNull final CustomerPricingContext customerPricingContext)
-	{
-		final VatCodeId vatCodeId = null;
-		final TaxId taxId = taxBL.getTaxNotNull(
-				null,
-				customerPricingContext.getResultTaxCategory(),
-				customerPricingContext.getProductId().getRepoId(),
-				Objects.requireNonNull(TimeUtil.asTimestamp(customerPricingContext.getResultPriceDate())),
-				customerPricingContext.getOrgId(),
-				null /*WarehouseId*/,
-				customerPricingContext.getBPartnerLocationAndCaptureId(),
-				SOTrx.SALES,
-				vatCodeId);
-
-		return taxDAO.getTaxById(taxId);
-	}
-
-	@NonNull
-	private Optional<BPartnerLocationAndCaptureId> getBPartnerLocationAndCaptureId(@NonNull final Object referencedObj)
-	{
-
-		BPartnerLocationId bPartnerLocationId = null;
-		if (InterfaceWrapperHelper.isInstanceOf(referencedObj, I_C_OrderLine.class))
-		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(referencedObj, I_C_OrderLine.class);
-
-			bPartnerLocationId = BPartnerLocationId.ofRepoId(orderLine.getC_BPartner_ID(), orderLine.getC_BPartner_Location_ID());
-		}
-		else if (InterfaceWrapperHelper.isInstanceOf(referencedObj, I_C_InvoiceLine.class))
-		{
-			final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(referencedObj, I_C_InvoiceLine.class);
-
-			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
-
-			bPartnerLocationId = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
-		}
-
-		return Optional.ofNullable(bPartnerLocationId)
-				.map(BPartnerLocationAndCaptureId::ofNullableLocationWithUnknownCapture);
-	}
-
-	@NonNull
-	private BigDecimal calculateNewCustomerPriceStd(
-			@NonNull final CustomerPricingContext customerPricingContext,
-			@NonNull final ProductPrice salesRepNetUnitPrice,
-			@NonNull final MarginConfig marginConfig)
-	{
-		final ProductPrice customerProductPrice = customerPricingContext.getProductPrice();
-
-		Check.assume(salesRepNetUnitPrice.getCurrencyId().equals(customerProductPrice.getCurrencyId()), "Sales rep unit price and customer unit price are in the same currency.");
-		Check.assume(salesRepNetUnitPrice.getUomId().equals(customerProductPrice.getUomId()), "Sales rep unit price and customer unit price are calculated for the same UOM.");
-
-		final BigDecimal customerNetUnitPrice;
-		Tax customerPriceTax = null;
-		if (!customerPricingContext.isTaxIncluded())
-		{
-			customerNetUnitPrice = customerProductPrice.toBigDecimal();
-		}
-		else
-		{
-			customerPriceTax = getCustomerPriceTax(customerPricingContext);
-			customerNetUnitPrice = customerPriceTax
-					.calculateBaseAmt(customerProductPrice.toBigDecimal(), true, marginConfig.getPointsPrecision());
-		}
-
-		final BigDecimal salesRepMargin = customerNetUnitPrice.compareTo(salesRepNetUnitPrice.toBigDecimal()) <= 0
-				? BigDecimal.ZERO
-				: customerNetUnitPrice.subtract(salesRepNetUnitPrice.toBigDecimal());
-
-		final BigDecimal tradedMargin = marginConfig
-				.getTradedPercent()
-				.computePercentageOf(salesRepMargin, marginConfig.getPointsPrecision());
-
-		final BigDecimal newNetPrice = customerNetUnitPrice.subtract(tradedMargin);
-		final BigDecimal newCustomerPrice = customerPriceTax == null
-				? newNetPrice
-				: customerPriceTax.calculateGross(newNetPrice, marginConfig.getPointsPrecision());
-
-		loggable.addLog("calculate - Price before applying margin: {} currencyID: {}, Price after applying margin: {}",
-						customerProductPrice.toBigDecimal(), customerProductPrice.getCurrencyId().getRepoId(), newCustomerPrice);
-
-		return newCustomerPrice;
-	}
-
-	@Value
-	@Builder
-	private static class CustomerPricingContext
-	{
-		@NonNull
-		IPricingResult pricingResult;
-		@NonNull
-		IPricingContext pricingContext;
-		@NonNull
-		BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId;
-
-		@NonNull
-		public ProductId getProductId()
-		{
-			return (ProductId)assumeNotNull(pricingContext.getProductId());
-		}
-
-		@NonNull
-		public BPartnerId getBPartnerId()
-		{
-			return (BPartnerId)assumeNotNull(pricingContext.getBPartnerId());
-		}
-
-		@NonNull
-		public OrgId getOrgId()
-		{
-			return (OrgId)assumeNotNull(pricingContext.getOrgId());
-		}
-
-		@NonNull
-		public CurrencyId getResultCurrencyId()
-		{
-			return (CurrencyId)assumeNotNull(pricingResult.getCurrencyId());
-		}
-
-		@NonNull
-		public UomId getResultUomId()
-		{
-			return (UomId)assumeNotNull(pricingResult.getPriceUomId());
-		}
-
-		@NonNull
-		public TaxCategoryId getResultTaxCategory()
-		{
-			return (TaxCategoryId)assumeNotNull(pricingResult.getTaxCategoryId());
-		}
-
-		@NonNull
-		public LocalDate getResultPriceDate()
-		{
-			return pricingResult.getPriceDate();
-		}
-
-		public boolean isTaxIncluded()
-		{
-			return pricingResult.isTaxIncluded();
-		}
-
-		@NonNull
-		public ProductPrice getProductPrice()
-		{
-			return ProductPrice.builder()
-					.productId(getProductId())
-					.uomId(getResultUomId())
-					.money(Money.of(pricingResult.getPriceStd(), getResultCurrencyId()))
-					.build();
-		}
-
-		private static Object assumeNotNull(@Nullable final Object arg)
-		{
-			Check.assumeNotNull(arg, "applies() - should've taken care of this!");
-
-			return arg;
-		}
-	}
-
 }

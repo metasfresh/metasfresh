@@ -1,7 +1,9 @@
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
+import currentDevice from 'current-device';
 import counterpart from 'counterpart';
+
 import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
 import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
@@ -13,6 +15,10 @@ import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
 import Table from './Table';
 import TablePagination from './TablePagination';
+
+const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
+const isMobileOrTablet =
+  currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
 class TableWrapper extends PureComponent {
   constructor(props) {
@@ -291,7 +297,7 @@ class TableWrapper extends PureComponent {
    * @method fwdUpdateHeight
    * @summary - Forward the update height to the child component Table.
    *            This is needed to call the table height update from within TableContextMenu
-   * @param {number} height
+   * @param {integer} height
    */
   fwdUpdateHeight = (height) => {
     this.table.updateHeight(height);
@@ -315,8 +321,7 @@ class TableWrapper extends PureComponent {
       tabIndex,
       isModal,
       queryLimitHit,
-      quickInputSupport,
-      newRecordInputMode,
+      supportQuickInput,
       tabInfo,
       allowShortcut,
       disablePaginationShortcuts,
@@ -331,12 +336,14 @@ class TableWrapper extends PureComponent {
       onHandleAdvancedEdit,
       onOpenTableModal,
       supportOpenRecord,
-      pending,
     } = this.props;
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
 
     let showPagination = !!(page && pageLength);
+    if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
+      showPagination = false;
+    }
 
     this.rowRefs = {};
 
@@ -389,9 +396,7 @@ class TableWrapper extends PureComponent {
                 docId,
                 tabIndex,
                 isBatchEntry,
-                quickInputSupport,
-                newRecordInputMode,
-                pending,
+                supportQuickInput,
               }}
               docType={windowId}
               tabId={tabId}
@@ -410,6 +415,7 @@ class TableWrapper extends PureComponent {
             rowRefs={this.rowRefs}
             ref={this.setTableRef}
           />
+
           {
             // Other 'table-flex-wrapped' components
             // like selection attributes
@@ -483,6 +489,14 @@ class TableWrapper extends PureComponent {
             handleToggleQuickInput={this.handleBatchEntryToggle}
             handleToggleExpand={toggleFullScreen}
           />
+        )}
+        {isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT && (
+          <span className="text-danger">
+            {counterpart.translate('view.limitTo', {
+              limit: MOBILE_TABLE_SIZE_LIMIT,
+              total: rows.length,
+            })}
+          </span>
         )}
       </div>
     );

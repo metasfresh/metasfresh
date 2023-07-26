@@ -1,7 +1,36 @@
 package de.metas.handlingunits.allocation.impl;
 
+import java.util.Objects;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -16,12 +45,6 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
-
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Loading Unit(LU) loader instance. It creates and wraps one loading unit {@link I_M_HU} to which it can add TU, if they match. Used by {@link LULoader}.
@@ -64,8 +87,7 @@ import java.util.TreeSet;
 			final int bpartnerLocationId,
 			final LocatorId locatorId,
 			final String huStatus,
-			final I_M_HU_PI_Version tuPIVersion,
-			final ClearanceStatusInfo huClearanceStatusInfo)
+			final I_M_HU_PI_Version tuPIVersion)
 	{
 		this.huContext = huContext;
 		this.bpartnerId = bpartnerId;
@@ -92,7 +114,6 @@ import java.util.TreeSet;
 		huBuilder.setC_BPartner_Location_ID(bpartnerLocationId);
 		huBuilder.setLocatorId(locatorId);
 		huBuilder.setHUStatus(huStatus);
-		huBuilder.setHUClearanceStatusInfo(huClearanceStatusInfo);
 		// set up a little custom anonymous listener so that if the huBuilder created a HU item (*not* an aggregate one), it shall be added to this LULoaderInstance's HU
 		huBuilder.setListener(new HUIteratorListenerAdapter()
 		{
@@ -126,7 +147,7 @@ import java.util.TreeSet;
 		return luHU;
 	}
 
-	private static void assertUnitTypeOrNull(final I_M_HU_PI_Version piVersion, final String expectedUnitType)
+	private static final void assertUnitTypeOrNull(final I_M_HU_PI_Version piVersion, final String expectedUnitType)
 	{
 		final String unitType = piVersion.getHU_UnitType();
 		if (Check.isEmpty(unitType))

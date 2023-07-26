@@ -22,8 +22,23 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerLocationId;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import de.metas.business.BusinessTestHelper;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.TimeUtil;
+
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
@@ -31,27 +46,14 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
-import de.metas.material.MovementType;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 /**
  * The general scenario if these tests is a duplicated receipt, i.e. 50 were ordered and then two inouts of 50 each were received. In this scenario, the user wants to set
  * <code>QtyToInvoice_Override</code> to make sure that only the desired Qty of 50 is actually invoiced.
+
  */
 public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggregationEngineTests
 {
@@ -91,9 +93,10 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 		return Collections.singletonList(ic1);
 	}
 
-	final boolean config_IsSOTrx() {return false;}
-
-	private MovementType config_MovementType() {return config_IsSOTrx() ? MovementType.CustomerShipment : MovementType.VendorReceipts;}
+	boolean config_IsSOTrx()
+	{
+		return false;
+	}
 
 	abstract BigDecimal config_GetQtyToInvoice_Override();
 
@@ -105,7 +108,7 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 		// Deliver 50 via Wareneingang pos
 		{
 			final String inOutDocumentNo = "11";
-			inOut11 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo, config_MovementType());
+			inOut11 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
 			iol111 = createInvoiceCandidateInOutLine(ic1, inOut11, qtysDelivered, inOutDocumentNo + "_1");
 			completeInOut(inOut11);
 		}
@@ -113,7 +116,7 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 		// ..and now, accidentally deliver another 50
 		{
 			final String inOutDocumentNo = "12";
-			inOut12 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo, config_MovementType());
+			inOut12 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
 			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, qtysDelivered, inOutDocumentNo + "_1");
 			completeInOut(inOut12);
 		}

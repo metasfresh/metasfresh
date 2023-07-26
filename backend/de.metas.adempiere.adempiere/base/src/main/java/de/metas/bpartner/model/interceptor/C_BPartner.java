@@ -1,25 +1,9 @@
 package de.metas.bpartner.model.interceptor;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.interfaces.I_C_BPartner;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import de.metas.logging.LogManager;
-import de.metas.security.Principal;
-import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.PermissionIssuer;
-import de.metas.security.permissions.record_access.RecordAccessConfigService;
-import de.metas.security.permissions.record_access.RecordAccessFeature;
-import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
-import de.metas.security.permissions.record_access.RecordAccessService;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -27,9 +11,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -40,10 +22,19 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_BPartner_Product_Stats;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerPOCopyRecordSupport;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -71,20 +62,18 @@ import java.util.List;
 public class C_BPartner
 {
 	private static final String MSG_CycleDetectedError = "CycleDetectedError";
+
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-
-	private final static Logger logger = LogManager.getLogger(C_BPartner.class);
-
-	private final RecordAccessConfigService recordAccessConfigService = SpringContextHolder.instance.getBean(RecordAccessConfigService.class);
-	private final RecordAccessService recordAccessService = SpringContextHolder.instance.getBean(RecordAccessService.class);
+	private final static transient Logger logger = LogManager.getLogger(C_BPartner.class);
 
 	@Init
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_C_BPartner.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_C_BPartner.Table_Name, BPartnerPOCopyRecordSupport.class);
 
 		Services.get(ITabCalloutFactory.class)
 				.registerTabCalloutForTable(I_C_BPartner.Table_Name, de.metas.bpartner.callout.C_BPartner_TabCallout.class);
@@ -215,40 +204,5 @@ public class C_BPartner
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(partner.getC_BPartner_SalesRep_ID());
 		bPartnerBL.validateSalesRep(bPartnerId, salesRepId);
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
-	public void afterSave(@NonNull final I_C_BPartner partner)
-	{
-		if (recordAccessConfigService.isFeatureEnabled(RecordAccessFeature.BPARTNER_HIERARCHY))
-		{
-			recordAccessService.grantAccess(
-					RecordAccessGrantRequest.builder()
-							.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, partner.getC_BPartner_ID()))
-							.principal(Principal.userId(UserId.ofRepoId(partner.getCreatedBy())))
-							.permission(Access.READ)
-							.permission(Access.WRITE)
-							.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
-							.requestedBy(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM))
-							.description("grant permissions to creator")
-							.build());
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_M_SectionCode_ID)
-	public void updateStatsSectionCode(@NonNull final I_C_BPartner bpartner)
-	{
-		Services.get(IBPartnerStatisticsUpdater.class).updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-																						.bpartnerId(bpartner.getC_BPartner_ID())
-																						.build());
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void setIsManuallyCreated(@NonNull final org.compiere.model.I_C_BPartner record)
-	{
-		if (InterfaceWrapperHelper.isUIAction(record))
-		{
-			record.setIsManuallyCreated(true);
-		}
 	}
 }

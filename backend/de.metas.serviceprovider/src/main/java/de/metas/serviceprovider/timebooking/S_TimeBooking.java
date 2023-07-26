@@ -128,8 +128,8 @@ public class S_TimeBooking
 			externalReferenceRepository.updateOrgIdByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalServiceReferenceType.TIME_BOOKING_ID, OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_S_TimeBooking.COLUMNNAME_BookedDate, I_S_TimeBooking.COLUMNNAME_HoursAndMinutes })
+	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE},
+			     ifColumnsChanged = {I_S_TimeBooking.COLUMNNAME_BookedDate,I_S_TimeBooking.COLUMNNAME_HoursAndMinutes})
 	public void addIssueProgress(@NonNull final I_S_TimeBooking record)
 	{
 		record.setBookedSeconds(BigDecimal.valueOf(HmmUtils.hmmToSeconds(record.getHoursAndMinutes())));

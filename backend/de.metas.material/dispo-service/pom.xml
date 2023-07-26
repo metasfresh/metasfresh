@@ -75,12 +75,6 @@
             <version>${metasfresh.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>de.metas.material</groupId>
-            <artifactId>metasfresh-material-planning</artifactId>
-            <version>${metasfresh.version}</version>
-        </dependency>
-
         <!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE:
             if you don't need fancy things like @SneakyThrows then scope 'provided' it's
             totally fine Also note that the version is managed by spring-boot. -->
@@ -119,23 +113,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>${byte-buddy.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-            <version>${byte-buddy.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-            <version>${objenesis.version}</version>
             <scope>test</scope>
         </dependency>
 

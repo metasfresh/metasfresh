@@ -22,15 +22,14 @@
 
 package de.metas.common.rest_api.v2.invoice;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -41,103 +40,74 @@ import java.util.function.Function;
 
 @Value
 @Builder
-@Jacksonized
+@JsonDeserialize(builder = JsonInvoicePaymentCreateRequest.JsonInvoicePaymentCreateRequestBuilder.class)
 public class JsonInvoicePaymentCreateRequest
 {
-	@Schema(required = true,
-			description = "Identifier of the bPartner in question. Can be\n"
+	@ApiModelProperty(required = true, //
+			dataType = "java.lang.String", //
+			value = "Identifier of the bPartner in question. Can be\n"
 					+ "* a plain `<C_BPartner_ID>`\n"
 					+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n")
 	@NonNull
 	String bpartnerIdentifier;
 
-	@Schema(required = true)
+	@ApiModelProperty(required = true, //
+			dataType = "java.lang.String")
 	@NonNull
 	String currencyCode;
 
-	@NonNull
-	@Schema(required = true, //
-			description = "Specifies the direction of the payment: Inbound or Outbound.")
-	@Builder.Default
-	JsonPaymentDirection type = JsonPaymentDirection.INBOUND;
-
-	@Schema(description = "Optional, to specify the `AD_Org_ID`.\n"
+	@ApiModelProperty(value = "Optional, to specify the `AD_Org_ID`.\n"
 			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 			+ "or the invoking user needs to belong to an organisation, which is then used.")
 	@Nullable
 	String orgCode;
 
-	@Schema(required = true)
+	@ApiModelProperty(required = true, //
+			dataType = "java.lang.String")
 	@Nullable
 	String targetIBAN;
 
-	@Schema(required = true, //
-			description = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`")
+	@ApiModelProperty(required = true, //
+			dataType = "java.lang.String", //
+			value = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`")
 	@Nullable
 	String externalPaymentId;
 
-	@Schema(description = "If this is sent, it is used for both `accounting date` and `payment date`.")
+	@ApiModelProperty(dataType = "java.time.LocalDate",
+			value = "If this is sent, it is used for both `accounting date` and `payment date`.")
 	@Nullable
 	LocalDate transactionDate;
 
-	@Schema(description = "List of payment allocations")
+	@ApiModelProperty(value = "List of payment allocations")
 	@Nullable
 	@JsonProperty("lines")
 	List<JsonPaymentAllocationLine> lines;
 
-	@JsonIgnore
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonInboundPaymentInfoBuilder
+	{
+	}
+
 	public BigDecimal getAmount()
 	{
 		return getAmount(JsonPaymentAllocationLine::getAmount);
 	}
 
-	@JsonIgnore
 	public BigDecimal getDiscountAmt()
 	{
 		return getAmount(JsonPaymentAllocationLine::getDiscountAmt);
 	}
 
-	@JsonIgnore
 	public BigDecimal getWriteOffAmt()
 	{
 		return getAmount(JsonPaymentAllocationLine::getWriteOffAmt);
 	}
 
-	@JsonIgnore
-	public LocalDate getTransactionDateOr(@NonNull final LocalDate defaultDate)
-	{
-		return transactionDate != null ? transactionDate : defaultDate;
-	}
-
-	@NonNull
 	private BigDecimal getAmount(final Function<JsonPaymentAllocationLine, BigDecimal> lineToPayAmt)
 	{
+
 		final List<JsonPaymentAllocationLine> lines = getLines();
-		return lines == null
-				? BigDecimal.ZERO
-				: lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
-	}
-
-	@NonNull
-	@JsonIgnore
-	public ImmutableMap<JsonPaymentAllocationLine.InvoiceIdentifier, JsonPaymentAllocationLine> getAggregatedLines()
-	{
-		if (lines == null)
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableListMultimap<JsonPaymentAllocationLine.InvoiceIdentifier, JsonPaymentAllocationLine> invoiceIdentifier2Allocation = lines.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(JsonPaymentAllocationLine::getInvIdentifier, Function.identity()));
-
-		return invoiceIdentifier2Allocation.keySet()
-				.stream()
-				.map(invoiceIdentifier -> {
-					final List<JsonPaymentAllocationLine> lines = invoiceIdentifier2Allocation.get(invoiceIdentifier);
-
-					return lines.stream().reduce(JsonPaymentAllocationLine::aggregate).orElse(null);
-				})
-				.filter(Objects::nonNull)
-				.collect(ImmutableMap.toImmutableMap(JsonPaymentAllocationLine::getInvIdentifier, Function.identity()));
+		return lines == null ? BigDecimal.ZERO : lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

@@ -22,12 +22,13 @@ package de.metas.ordercandidate.spi.impl;
  * #L%
  */
 
-import de.metas.ordercandidate.api.OLCand;
-import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import de.metas.ordercandidate.api.OLCand;
+import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 
 @Component
 public class DefaultGroupingProvider implements IOLCandGroupingProvider

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-02-22T14:59:54 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -20,54 +21,20 @@
 FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD_ID}, $P{ad_language} )
 ;]]>
 	</queryString>
-	<field name="description" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="description"/>
-	</field>
-	<field name="documentno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
-	</field>
-	<field name="movementdate" class="java.sql.Timestamp">
-		<property name="com.jaspersoft.studio.field.label" value="movementdate"/>
-	</field>
-	<field name="reference" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="reference"/>
-	</field>
-	<field name="bp_value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
-	</field>
-	<field name="eori" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="eori"/>
-	</field>
-	<field name="cont_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="cont_name"/>
-	</field>
-	<field name="cont_phone" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="cont_phone"/>
-	</field>
-	<field name="cont_fax" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="cont_fax"/>
-	</field>
-	<field name="cont_email" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="cont_email"/>
-	</field>
-	<field name="sr_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="sr_name"/>
-	</field>
-	<field name="sr_phone" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="sr_phone"/>
-	</field>
-	<field name="sr_fax" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="sr_fax"/>
-	</field>
-	<field name="sr_email" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="sr_email"/>
-	</field>
-	<field name="printname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="printname"/>
-	</field>
-	<field name="order_docno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="order_docno"/>
-	</field>
+	<field name="description" class="java.lang.String"/>
+	<field name="documentno" class="java.lang.String"/>
+	<field name="movementdate" class="java.sql.Timestamp"/>
+	<field name="reference" class="java.lang.String"/>
+	<field name="bp_value" class="java.lang.String"/>
+	<field name="cont_name" class="java.lang.String"/>
+	<field name="cont_phone" class="java.lang.String"/>
+	<field name="cont_fax" class="java.lang.String"/>
+	<field name="cont_email" class="java.lang.String"/>
+	<field name="sr_name" class="java.lang.String"/>
+	<field name="sr_phone" class="java.lang.String"/>
+	<field name="sr_fax" class="java.lang.String"/>
+	<field name="sr_email" class="java.lang.String"/>
+	<field name="printname" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -139,7 +106,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
@@ -167,7 +134,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
@@ -196,36 +163,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 					<font fontName="SansSerif" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-14" x="37" y="163" width="136" height="13" uuid="0a1e7dff-1ba5-4aff-bd24-0211785aaea2">
-					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{EORI}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="172" y="163" width="91" height="13" uuid="d7f0d6bd-a5c7-49d5-b670-f0d0c864934b">
-					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

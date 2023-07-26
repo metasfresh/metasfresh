@@ -1,231 +1,257 @@
 package de.metas.datev.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DATEV_ExportLine
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_DATEV_ExportLine 
 {
 
-	String Table_Name = "DATEV_ExportLine";
+    /** TableName=DATEV_ExportLine */
+    public static final String Table_Name = "DATEV_ExportLine";
 
-//	/** AD_Table_ID=540935 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540935 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Set activityname.
+	 * Set Activity Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setActivityName (@Nullable java.lang.String ActivityName);
+	public void setActivityName (java.lang.String ActivityName);
 
 	/**
-	 * Get activityname.
+	 * Get Activity Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getActivityName();
+	public java.lang.String getActivityName();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_ActivityName = new ModelColumn<>(I_DATEV_ExportLine.class, "ActivityName", null);
-	String COLUMNNAME_ActivityName = "ActivityName";
+    /** Column definition for ActivityName */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_ActivityName = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "ActivityName", null);
+    /** Column name ActivityName */
+    public static final String COLUMNNAME_ActivityName = "ActivityName";
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_AD_Client>(I_DATEV_ExportLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_AD_Org>(I_DATEV_ExportLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Amount.
-	 * Amount
+	 * Set Betrag.
+	 * Betrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAmt (BigDecimal Amt);
+	public void setAmt (java.math.BigDecimal Amt);
 
 	/**
-	 * Get Amount.
-	 * Amount
+	 * Get Betrag.
+	 * Betrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getAmt();
+	public java.math.BigDecimal getAmt();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Amt = new ModelColumn<>(I_DATEV_ExportLine.class, "Amt", null);
-	String COLUMNNAME_Amt = "Amt";
+    /** Column definition for Amt */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Amt = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "Amt", null);
+    /** Column name Amt */
+    public static final String COLUMNNAME_Amt = "Amt";
 
 	/**
 	 * Set Name.
+	 * Name des Sponsors.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBPName (@Nullable java.lang.String BPName);
+	public void setBPName (java.lang.String BPName);
 
 	/**
 	 * Get Name.
+	 * Name des Sponsors.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getBPName();
+	public java.lang.String getBPName();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_BPName = new ModelColumn<>(I_DATEV_ExportLine.class, "BPName", null);
-	String COLUMNNAME_BPName = "BPName";
+    /** Column definition for BPName */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_BPName = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "BPName", null);
+    /** Column name BPName */
+    public static final String COLUMNNAME_BPName = "BPName";
 
 	/**
-	 * Set Partner Value.
+	 * Set Nr..
+	 * Sponsor-Nr.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBPValue (@Nullable java.lang.String BPValue);
+	public void setBPValue (java.lang.String BPValue);
 
 	/**
-	 * Get Partner Value.
+	 * Get Nr..
+	 * Sponsor-Nr.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getBPValue();
+	public java.lang.String getBPValue();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_BPValue = new ModelColumn<>(I_DATEV_ExportLine.class, "BPValue", null);
-	String COLUMNNAME_BPValue = "BPValue";
+    /** Column definition for BPValue */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_BPValue = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "BPValue", null);
+    /** Column name BPValue */
+    public static final String COLUMNNAME_BPValue = "BPValue";
 
 	/**
-	 * Set Activity.
-	 * Business Activity
+	 * Set Kostenstelle.
+	 * Kostenstelle
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Activity_ID (int C_Activity_ID);
+	public void setC_Activity_ID (int C_Activity_ID);
 
 	/**
-	 * Get Activity.
-	 * Business Activity
+	 * Get Kostenstelle.
+	 * Kostenstelle
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Activity_ID();
+	public int getC_Activity_ID();
 
-	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+	public org.compiere.model.I_C_Activity getC_Activity();
+
+	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
+
+    /** Column definition for C_Activity_ID */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_C_Activity>(I_DATEV_ExportLine.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
+    /** Column name C_Activity_ID */
+    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Business Partner.
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Business Partner.
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_ID();
+	public int getC_BPartner_ID();
 
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	public org.compiere.model.I_C_BPartner getC_BPartner();
 
-	/**
-	 * Set Name der Belegart.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DocType_Name (@Nullable java.lang.String C_DocType_Name);
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_C_BPartner>(I_DATEV_ExportLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Get Name der Belegart.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getC_DocType_Name();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_C_DocType_Name = new ModelColumn<>(I_DATEV_ExportLine.class, "C_DocType_Name", null);
-	String COLUMNNAME_C_DocType_Name = "C_DocType_Name";
-
-	/**
-	 * Set Invoice.
+	 * Set Rechnung.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Invoice_ID (int C_Invoice_ID);
+	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/**
-	 * Get Invoice.
+	 * Get Rechnung.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Invoice_ID();
+	public int getC_Invoice_ID();
 
-	@Nullable org.compiere.model.I_C_Invoice getC_Invoice();
+	public org.compiere.model.I_C_Invoice getC_Invoice();
 
-	void setC_Invoice(@Nullable org.compiere.model.I_C_Invoice C_Invoice);
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
 
-	ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_DATEV_ExportLine.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
-	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+    /** Column definition for C_Invoice_ID */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_C_Invoice>(I_DATEV_ExportLine.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
 	 * Set Credit Account.
@@ -234,7 +260,7 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCR_Account (java.lang.String CR_Account);
+	public void setCR_Account (java.lang.String CR_Account);
 
 	/**
 	 * Get Credit Account.
@@ -243,102 +269,67 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getCR_Account();
+	public java.lang.String getCR_Account();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_CR_Account = new ModelColumn<>(I_DATEV_ExportLine.class, "CR_Account", null);
-	String COLUMNNAME_CR_Account = "CR_Account";
+    /** Column definition for CR_Account */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_CR_Account = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "CR_Account", null);
+    /** Column name CR_Account */
+    public static final String COLUMNNAME_CR_Account = "CR_Account";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Created = new ModelColumn<>(I_DATEV_ExportLine.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Steuersatz.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Tax_Rate (@Nullable BigDecimal C_Tax_Rate);
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_AD_User>(I_DATEV_ExportLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Get Steuersatz.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getC_Tax_Rate();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_C_Tax_Rate = new ModelColumn<>(I_DATEV_ExportLine.class, "C_Tax_Rate", null);
-	String COLUMNNAME_C_Tax_Rate = "C_Tax_Rate";
-
-	/**
-	 * Set Currency.
-	 * Maintain Currencies
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCurrency (@Nullable java.lang.String Currency);
-
-	/**
-	 * Get Currency.
-	 * Maintain Currencies
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCurrency();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Currency = new ModelColumn<>(I_DATEV_ExportLine.class, "Currency", null);
-	String COLUMNNAME_Currency = "Currency";
-
-	/**
-	 * Set Accounting Date.
+	 * Set Buchungsdatum.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDateAcct (@Nullable java.sql.Timestamp DateAcct);
+	public void setDateAcct (java.sql.Timestamp DateAcct);
 
 	/**
-	 * Get Accounting Date.
+	 * Get Buchungsdatum.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateAcct();
+	public java.sql.Timestamp getDateAcct();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DateAcct = new ModelColumn<>(I_DATEV_ExportLine.class, "DateAcct", null);
-	String COLUMNNAME_DateAcct = "DateAcct";
+    /** Column definition for DateAcct */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "DateAcct", null);
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
 	 * Set DATEV Export.
@@ -347,7 +338,7 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDATEV_Export_ID (int DATEV_Export_ID);
+	public void setDATEV_Export_ID (int DATEV_Export_ID);
 
 	/**
 	 * Get DATEV Export.
@@ -356,14 +347,16 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getDATEV_Export_ID();
+	public int getDATEV_Export_ID();
 
-	de.metas.datev.model.I_DATEV_Export getDATEV_Export();
+	public de.metas.datev.model.I_DATEV_Export getDATEV_Export();
 
-	void setDATEV_Export(de.metas.datev.model.I_DATEV_Export DATEV_Export);
+	public void setDATEV_Export(de.metas.datev.model.I_DATEV_Export DATEV_Export);
 
-	ModelColumn<I_DATEV_ExportLine, de.metas.datev.model.I_DATEV_Export> COLUMN_DATEV_Export_ID = new ModelColumn<>(I_DATEV_ExportLine.class, "DATEV_Export_ID", de.metas.datev.model.I_DATEV_Export.class);
-	String COLUMNNAME_DATEV_Export_ID = "DATEV_Export_ID";
+    /** Column definition for DATEV_Export_ID */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, de.metas.datev.model.I_DATEV_Export> COLUMN_DATEV_Export_ID = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, de.metas.datev.model.I_DATEV_Export>(I_DATEV_ExportLine.class, "DATEV_Export_ID", de.metas.datev.model.I_DATEV_Export.class);
+    /** Column name DATEV_Export_ID */
+    public static final String COLUMNNAME_DATEV_Export_ID = "DATEV_Export_ID";
 
 	/**
 	 * Set DATEV Export Line.
@@ -372,7 +365,7 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDATEV_ExportLine_ID (int DATEV_ExportLine_ID);
+	public void setDATEV_ExportLine_ID (int DATEV_ExportLine_ID);
 
 	/**
 	 * Get DATEV Export Line.
@@ -381,98 +374,83 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getDATEV_ExportLine_ID();
+	public int getDATEV_ExportLine_ID();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DATEV_ExportLine_ID = new ModelColumn<>(I_DATEV_ExportLine.class, "DATEV_ExportLine_ID", null);
-	String COLUMNNAME_DATEV_ExportLine_ID = "DATEV_ExportLine_ID";
-
-	/**
-	 * Set Debit/Credit Indicator.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDebitOrCreditIndicator (boolean DebitOrCreditIndicator);
+    /** Column definition for DATEV_ExportLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DATEV_ExportLine_ID = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "DATEV_ExportLine_ID", null);
+    /** Column name DATEV_ExportLine_ID */
+    public static final String COLUMNNAME_DATEV_ExportLine_ID = "DATEV_ExportLine_ID";
 
 	/**
-	 * Get Debit/Credit Indicator.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isDebitOrCreditIndicator();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DebitOrCreditIndicator = new ModelColumn<>(I_DATEV_ExportLine.class, "DebitOrCreditIndicator", null);
-	String COLUMNNAME_DebitOrCreditIndicator = "DebitOrCreditIndicator";
-
-	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Description = new ModelColumn<>(I_DATEV_ExportLine.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Document Base Type.
-	 * Logical type of document
+	 * Set Dokument Basis Typ.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocBaseType (@Nullable java.lang.String DocBaseType);
+	public void setDocBaseType (java.lang.String DocBaseType);
 
 	/**
-	 * Get Document Base Type.
-	 * Logical type of document
+	 * Get Dokument Basis Typ.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocBaseType();
+	public java.lang.String getDocBaseType();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DocBaseType = new ModelColumn<>(I_DATEV_ExportLine.class, "DocBaseType", null);
-	String COLUMNNAME_DocBaseType = "DocBaseType";
+    /** Column definition for DocBaseType */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DocBaseType = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "DocBaseType", null);
+    /** Column name DocBaseType */
+    public static final String COLUMNNAME_DocBaseType = "DocBaseType";
 
 	/**
-	 * Set Document No.
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Document No.
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocumentNo();
+	public java.lang.String getDocumentNo();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DocumentNo = new ModelColumn<>(I_DATEV_ExportLine.class, "DocumentNo", null);
-	String COLUMNNAME_DocumentNo = "DocumentNo";
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Debit Account.
@@ -481,7 +459,7 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDR_Account (java.lang.String DR_Account);
+	public void setDR_Account (java.lang.String DR_Account);
 
 	/**
 	 * Get Debit Account.
@@ -490,33 +468,37 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDR_Account();
+	public java.lang.String getDR_Account();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DR_Account = new ModelColumn<>(I_DATEV_ExportLine.class, "DR_Account", null);
-	String COLUMNNAME_DR_Account = "DR_Account";
+    /** Column definition for DR_Account */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DR_Account = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "DR_Account", null);
+    /** Column name DR_Account */
+    public static final String COLUMNNAME_DR_Account = "DR_Account";
 
 	/**
-	 * Set Due Date.
-	 * Date when the payment is due
+	 * Set Datum Fälligkeit.
+	 * Datum, zu dem Zahlung fällig wird
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDueDate (@Nullable java.sql.Timestamp DueDate);
+	public void setDueDate (java.sql.Timestamp DueDate);
 
 	/**
-	 * Get Due Date.
-	 * Date when the payment is due
+	 * Get Datum Fälligkeit.
+	 * Datum, zu dem Zahlung fällig wird
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDueDate();
+	public java.sql.Timestamp getDueDate();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DueDate = new ModelColumn<>(I_DATEV_ExportLine.class, "DueDate", null);
-	String COLUMNNAME_DueDate = "DueDate";
+    /** Column definition for DueDate */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_DueDate = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "DueDate", null);
+    /** Column name DueDate */
+    public static final String COLUMNNAME_DueDate = "DueDate";
 
 	/**
 	 * Set Accounting Fact.
@@ -525,7 +507,7 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setFact_Acct_ID (int Fact_Acct_ID);
+	public void setFact_Acct_ID (int Fact_Acct_ID);
 
 	/**
 	 * Get Accounting Fact.
@@ -534,106 +516,69 @@ public interface I_DATEV_ExportLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getFact_Acct_ID();
+	public int getFact_Acct_ID();
 
-	@Nullable org.compiere.model.I_Fact_Acct getFact_Acct();
+	public org.compiere.model.I_Fact_Acct getFact_Acct();
 
-	void setFact_Acct(@Nullable org.compiere.model.I_Fact_Acct Fact_Acct);
+	public void setFact_Acct(org.compiere.model.I_Fact_Acct Fact_Acct);
 
-	ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_Fact_Acct> COLUMN_Fact_Acct_ID = new ModelColumn<>(I_DATEV_ExportLine.class, "Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
-	String COLUMNNAME_Fact_Acct_ID = "Fact_Acct_ID";
-
-	/**
-	 * Set Grand Total.
-	 * Total amount of document
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setGrandTotal (@Nullable BigDecimal GrandTotal);
+    /** Column definition for Fact_Acct_ID */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_Fact_Acct> COLUMN_Fact_Acct_ID = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_Fact_Acct>(I_DATEV_ExportLine.class, "Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
+    /** Column name Fact_Acct_ID */
+    public static final String COLUMNNAME_Fact_Acct_ID = "Fact_Acct_ID";
 
 	/**
-	 * Get Grand Total.
-	 * Total amount of document
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getGrandTotal();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_GrandTotal = new ModelColumn<>(I_DATEV_ExportLine.class, "GrandTotal", null);
-	String COLUMNNAME_GrandTotal = "GrandTotal";
-
-	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_IsActive = new ModelColumn<>(I_DATEV_ExportLine.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Tax Amount.
-	 * Tax Amount for Credit Card transaction
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTaxAmt (@Nullable BigDecimal TaxAmt);
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Tax Amount.
-	 * Tax Amount for Credit Card transaction
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getTaxAmt();
-
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_TaxAmt = new ModelColumn<>(I_DATEV_ExportLine.class, "TaxAmt", null);
-	String COLUMNNAME_TaxAmt = "TaxAmt";
-
-	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Updated = new ModelColumn<>(I_DATEV_ExportLine.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, Object>(I_DATEV_ExportLine.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DATEV_ExportLine, org.compiere.model.I_AD_User>(I_DATEV_ExportLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

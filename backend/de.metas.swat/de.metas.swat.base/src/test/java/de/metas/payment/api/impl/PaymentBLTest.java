@@ -5,18 +5,25 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.invoice.interceptor.C_Invoice;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
+import de.metas.payment.processor.PaymentProcessorService;
+import de.metas.payment.reservation.PaymentReservationCaptureRepository;
+import de.metas.payment.reservation.PaymentReservationRepository;
+import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -40,12 +47,12 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -254,7 +261,7 @@ public class PaymentBLTest
 			// Called manually because we can't test properly with "creditMemoAdjusted" true
 			paymentBL.onPayAmtChange(payment, /* creditMemoAdjusted */false);
 
-			Assertions.assertEquals(0, new BigDecimal("120.0").compareTo(payment.getPayAmt()), "Incorrect payment amount in CHF");
+			Assertions.assertTrue(new BigDecimal("120.0").compareTo(payment.getPayAmt()) == 0, "Incorrect payment amount in CHF");
 
 			payment.setC_Invoice_ID(0);
 			payment.setC_Order_ID(order.getC_Order_ID());
@@ -275,7 +282,6 @@ public class PaymentBLTest
 		public void noCurrencyConversionDefined()
 		{
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
-			payment.setDateTrx(SystemTime.asDayTimestamp());
 			payment.setAD_Org_ID(1);
 			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
@@ -487,23 +493,32 @@ public class PaymentBLTest
 	{
 		private I_C_DocType prepayDocType;
 		private I_C_DocType salesOrderDocType;
+		private C_Invoice c_invoiceInterceptor;
 
 		@BeforeEach
 		void beforeEach()
 		{
 			AdempiereTestHelper.get().init();
 
-			prepayDocType = createDocType(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
-			salesOrderDocType = createDocType(DocBaseType.SalesOrder, null);
+			prepayDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
+			salesOrderDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
+
+			final @NonNull PaymentReservationRepository reservationsRepo = new PaymentReservationRepository();
+			final @NonNull PaymentReservationCaptureRepository capturesRepo = new PaymentReservationCaptureRepository();
+			final @NonNull PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.empty());
+			c_invoiceInterceptor = new C_Invoice(
+					new PaymentReservationService(reservationsRepo, capturesRepo, paymentProcessors),
+					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
 		}
 
+		@SuppressWarnings("ConstantConditions")
 		@NonNull
 		protected I_C_DocType createDocType(
-				@NonNull final DocBaseType baseType,
+				@NonNull final String baseType,
 				@Nullable final String subType)
 		{
 			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
-			docType.setDocBaseType(baseType.getCode());
+			docType.setDocBaseType(baseType);
 			docType.setDocSubType(subType);
 			saveRecord(docType);
 			return docType;
@@ -567,6 +582,7 @@ public class PaymentBLTest
 			Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
 		}
 
+		@SuppressWarnings("ConstantConditions")
 		@NonNull
 		private I_C_Payment createPayment(@Nullable final ExternalId externalOrderId)
 		{
@@ -577,6 +593,7 @@ public class PaymentBLTest
 			return payment;
 		}
 
+		@SuppressWarnings("ConstantConditions")
 		@NonNull
 		private de.metas.adempiere.model.I_C_Order createSalesOrder(
 				@Nullable final ExternalId externalOrderId,

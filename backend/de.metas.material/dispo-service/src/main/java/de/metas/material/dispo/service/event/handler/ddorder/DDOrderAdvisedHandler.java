@@ -17,7 +17,6 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
@@ -121,7 +120,7 @@ public class DDOrderAdvisedHandler
 
 		for (final MaterialDispoGroupId groupId : groupIds)
 		{
-			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor().getTraceId());
+			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId);
 		}
 	}
 
@@ -144,10 +143,6 @@ public class DDOrderAdvisedHandler
 			if (supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() > 0)
 			{
 				return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
-			}
-			else
-			{
-				return CandidatesQuery.FALSE;
 			}
 		}
 
@@ -174,17 +169,12 @@ public class DDOrderAdvisedHandler
 				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
 				.build();
 
-		final SimulatedQueryQualifier simulatedQueryQualifier = ddOrder.isSimulated()
-				? SimulatedQueryQualifier.ONLY_SIMULATED
-				: SimulatedQueryQualifier.EXCLUDE_SIMULATED;
-
 		return CandidatesQuery.builder()
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.demandDetailsQuery(demandDetailsQuery)
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.distributionDetailsQuery(distributionDetailsQuery)
-				.simulatedQueryQualifier(simulatedQueryQualifier)
 				.build();
 	}
 

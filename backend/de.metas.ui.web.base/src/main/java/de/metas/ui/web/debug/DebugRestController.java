@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
@@ -60,7 +59,6 @@ import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewResult;
-import de.metas.ui.web.websocket.WebsocketConfig;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -71,9 +69,9 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -107,7 +105,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-@ApiResponses(value = { @ApiResponse(responseCode = "401", description = "Unauthorized") })
+@ApiResponses(value = { @ApiResponse(code = 401, message = "Unauthorized") })
 @RestController
 @RequestMapping(value = DebugRestController.ENDPOINT)
 public class DebugRestController
@@ -139,15 +137,12 @@ public class DebugRestController
 	@Lazy
 	private ObjectMapper sharedJsonObjectMapper;
 
-	@Autowired
-	private LookupDataSourceFactory lookupDataSourceFactory;
-
 	private JSONOptions newJSONOptions()
 	{
 		return JSONOptions.of(userSession);
 	}
 
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "cache reset done") })
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "cache reset done") })
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public JSONCacheResetResult cacheReset(
 			@RequestParam(name = "forgetNotSavedDocuments", defaultValue = "false", required = false) final boolean forgetNotSavedDocuments)
@@ -270,9 +265,9 @@ public class DebugRestController
 	{
 		userSession.assertLoggedIn();
 
-		return lookupDataSourceFactory.getCacheStats()
+		return LookupDataSourceFactory.instance.getCacheStats()
 				.stream()
-				.map(CCache.CCacheStats::toString)
+				.map(stats -> stats.toString())
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -354,7 +349,7 @@ public class DebugRestController
 	public enum LoggingModule
 	{
 		websockets_and_invalidation(
-				WebsocketConfig.class.getPackage().getName(),
+				de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName(),
 				de.metas.ui.web.window.invalidation.DocumentCacheInvalidationDispatcher.class.getName()),
 		view(de.metas.ui.web.view.IView.class.getPackage().getName()),
 		cache(
@@ -448,7 +443,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("http.cache.maxAge")
-	public Map<String, Object> setHttpCacheMaxAge(@RequestParam("value") @Parameter(description = "Cache-control's max age in seconds") final int httpCacheMaxAge)
+	public Map<String, Object> setHttpCacheMaxAge(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") final int httpCacheMaxAge)
 	{
 		userSession.assertLoggedIn();
 
@@ -458,7 +453,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("http.use.AcceptLanguage")
-	public Map<String, Object> setUseHttpAcceptLanguage(@RequestParam("value") @Parameter(description = "Cache-control's max age in seconds") final boolean useHttpAcceptLanguage)
+	public Map<String, Object> setUseHttpAcceptLanguage(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") final boolean useHttpAcceptLanguage)
 	{
 		userSession.assertLoggedIn();
 

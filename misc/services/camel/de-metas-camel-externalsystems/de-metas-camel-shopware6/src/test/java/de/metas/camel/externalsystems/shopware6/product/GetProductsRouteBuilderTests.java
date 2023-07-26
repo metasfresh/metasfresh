@@ -25,24 +25,19 @@ package de.metas.camel.externalsystems.shopware6.product;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
-import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
-import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
-import de.metas.camel.externalsystems.shopware6.unit.UOMInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -61,17 +56,12 @@ import java.time.Instant;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CURRENCY_ID;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UNIT_CODE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UNIT_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.ATTACH_CONTEXT_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.GET_PRODUCTS_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.GET_PRODUCTS_ROUTE_ID;
-import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.PROCESS_PRODUCT_ROUTE_ID;
-import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.UPSERT_PRODUCT_PRICE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -79,15 +69,13 @@ import static org.mockito.ArgumentMatchers.eq;
 
 public class GetProductsRouteBuilderTests extends CamelTestSupport
 {
-	private static final String MOCK_UPSERT_PRODUCT = "mock:UpsertProduct";
-	private static final String MOCK_UPSERT_PRODUCT_PRICE = "mock:UpsertProductPrice";
+	private static final String MOCK_PRODUCT_UPSERT = "mock:productUpsert";
 	private static final String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
 
 	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "10_JsonExternalSystemRequest.json";
 	private static final String JSON_PRODUCTS_RESOURCE_PATH = "20_JsonProducts.json";
 	private static final String JSON_UPSERT_PRODUCT_REQUEST = "30_CamelUpsertProductRequest.json";
-	private static final String JSON_UPSERT_PRODUCT_PRICE_REQUEST = "40_UpsertProductPriceList.json";
-	private static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = "50_JsonESRuntimeParameterUpsertRequest.json";
+	private static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = "40_JsonESRuntimeParameterUpsertRequest.json";
 
 	private final static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -110,8 +98,7 @@ public class GetProductsRouteBuilderTests extends CamelTestSupport
 	protected RouteBuilder createRouteBuilder()
 	{
 		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
-		final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
-		return new GetProductsRouteBuilder(processLogger, producerTemplate);
+		return new GetProductsRouteBuilder(processLogger);
 	}
 
 	@Override
@@ -124,23 +111,17 @@ public class GetProductsRouteBuilderTests extends CamelTestSupport
 	void happyFlow() throws Exception
 	{
 		final MockUpsertProductProcessor mockUpsertProductProcessor = new MockUpsertProductProcessor();
-		final MockUpsertPriceProcessor mockUpsertPriceProcessor = new MockUpsertPriceProcessor();
 		final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
 
 		//given
 		prepareRouteForTesting(mockUpsertProductProcessor,
-							   runtimeParamsProcessor,
-							   mockUpsertPriceProcessor);
+							   runtimeParamsProcessor);
 
 		context.start();
 
 		final InputStream expectedUpsertProductRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST);
-		final MockEndpoint productMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT);
+		final MockEndpoint productMockEndpoint = getMockEndpoint(MOCK_PRODUCT_UPSERT);
 		productMockEndpoint.expectedBodiesReceived(mapper.readValue(expectedUpsertProductRequestIS, ProductUpsertCamelRequest.class));
-
-		final InputStream expectedUpsertProductPriceRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_PRICE_REQUEST);
-		final MockEndpoint productPriceMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT_PRICE);
-		productPriceMockEndpoint.expectedBodiesReceived(mapper.readValue(expectedUpsertProductPriceRequestIS, UpsertProductPriceList.class));
 
 		final InputStream expectedRuntimeParamIS = this.getClass().getResourceAsStream(JSON_UPSERT_RUNTIME_PARAMS_REQUEST);
 		final MockEndpoint mockUpsertRuntimeParamEP = getMockEndpoint(MOCK_UPSERT_RUNTIME_PARAMETERS);
@@ -155,36 +136,34 @@ public class GetProductsRouteBuilderTests extends CamelTestSupport
 		//then
 		assertMockEndpointsSatisfied();
 		assertThat(mockUpsertProductProcessor.called).isEqualTo(1);
-		assertThat(mockUpsertPriceProcessor.called).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 	}
 
 	private void prepareRouteForTesting(final MockUpsertProductProcessor mockUpsertProductProcessor,
-			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
-			final MockUpsertPriceProcessor mockUpsertPriceProcessor) throws Exception
+			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_PRODUCTS_ROUTE_ID,
-							  advice -> advice.weaveById(ATTACH_CONTEXT_PROCESSOR_ID)
-									  .replace()
-									  .process(new BuildContextMockProcessor()));
+							  advice -> {
+								  advice.weaveById(ATTACH_CONTEXT_PROCESSOR_ID)
+										  .replace()
+										  .process(new BuildContextMockProcessor());
 
-		AdviceWith.adviceWith(context, PROCESS_PRODUCT_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + MF_UPSERT_PRODUCT_V2_CAMEL_URI)
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_UPSERT_PRODUCT)
-									  .process(mockUpsertProductProcessor));
+								  advice.weaveById(GET_PRODUCTS_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_PRODUCT_UPSERT);
 
-		AdviceWith.adviceWith(context, UPSERT_PRODUCT_PRICE_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI)
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_UPSERT_PRODUCT_PRICE)
-									  .process(mockUpsertPriceProcessor));
+								  advice.interceptSendToEndpoint("direct:" + MF_UPSERT_PRODUCT_V2_CAMEL_URI)
+										  .skipSendToOriginalEndpoint()
+										  .process(mockUpsertProductProcessor);
 
-		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_UPSERT_RUNTIME_PARAMETERS)
-									  .process(runtimeParamsProcessor));
+								  advice.weaveById(UPSERT_RUNTIME_PARAMS_ROUTE_ID)
+										  .after()
+										  .to(MOCK_UPSERT_RUNTIME_PARAMETERS);
+
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .process(runtimeParamsProcessor);
+							  });
 	}
 
 	public static class BuildContextMockProcessor implements Processor
@@ -192,42 +171,30 @@ public class GetProductsRouteBuilderTests extends CamelTestSupport
 		@Override
 		public void process(final Exchange exchange) throws JsonProcessingException
 		{
+
 			final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 			final ShopwareClient shopwareClient = prepareShopwareClientMock();
 
-			final String updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
-
-			final UOMInfoProvider shopwareUomInfoProvider = UOMInfoProvider.builder()
-					.unitId2Code(ImmutableMap.of(MOCK_UNIT_ID, MOCK_UNIT_CODE))
-					.build();
-
-			final CurrencyInfoProvider currencyInfoProvider = CurrencyInfoProvider.builder()
-					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
-					.build();
+			final String updatedAfter = CoalesceUtil.coalesceNotNull(
+					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
+					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+					Instant.ofEpochSecond(0).toString());
 
 			final ImportProductsRouteContext productsContext = ImportProductsRouteContext.builder()
 					.shopwareClient(shopwareClient)
 					.externalSystemRequest(request)
-					.orgCode(request.getOrgCode())
 					.nextImportStartingTimestamp(Instant.parse(updatedAfter))
-					.shopwareUomInfoProvider(shopwareUomInfoProvider)
-					.currencyInfoProvider(currencyInfoProvider)
-					.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
-					.uomMappings(GetProductsRouteHelper.getUOMMappingRules(request))
-					.taxCategoryProvider(GetProductsRouteHelper.getTaxCategoryProvider(request))
 					.build();
 
+			exchange.getIn().setHeader(HEADER_ORG_CODE, request.getOrgCode());
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT, productsContext);
 		}
 
 		@NonNull
 		private ShopwareClient prepareShopwareClientMock() throws JsonProcessingException
 		{
-			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
-			final PInstanceLogger pInstanceLogger = PInstanceLogger.of(processLogger);
-
-			final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com", pInstanceLogger);
+			final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com");
 			final ShopwareClient shopwareClientSpy = Mockito.spy(dumbShopwareClient);
 
 			Mockito.doNothing().when(shopwareClientSpy).refreshTokenIfExpired();
@@ -252,18 +219,6 @@ public class GetProductsRouteBuilderTests extends CamelTestSupport
 	}
 
 	private static class MockUpsertProductProcessor implements Processor
-	{
-		@Getter
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			called++;
-		}
-	}
-
-	private static class MockUpsertPriceProcessor implements Processor
 	{
 		@Getter
 		private int called = 0;

@@ -1,6 +1,5 @@
 package de.metas.ui.web.picking;
 
-import de.metas.common.util.WindowConstants;
 import de.metas.i18n.AdMessageKey;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.experimental.UtilityClass;
@@ -30,7 +29,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class PickingConstants
 {
-	public static final WindowId WINDOWID_PackageableView = WindowId.of(WindowConstants.PACKAGEABLE_VIEW_AD_WINDOW_ID); // FIXME: HARDCODED
+	public static final WindowId WINDOWID_PackageableView = WindowId.of(540345); // FIXME: HARDCODED
 	public static final String WINDOWID_PickingView_String = "540350"; // FIXME: HARDCODED
 	public static final WindowId WINDOWID_PickingView = WindowId.fromJson(WINDOWID_PickingView_String);
 	public static final String WINDOWID_PickingSlotView_String = "pickingSlot";

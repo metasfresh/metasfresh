@@ -25,7 +25,7 @@ package de.metas.document;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 
 import de.metas.util.ISingletonService;
 

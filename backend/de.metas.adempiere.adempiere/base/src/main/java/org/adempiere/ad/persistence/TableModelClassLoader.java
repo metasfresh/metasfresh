@@ -22,32 +22,36 @@ package org.adempiere.ad.persistence;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-import org.adempiere.ad.table.api.impl.TableIdsCache;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Phase;
-import org.compiere.model.I_C_Task;
-import org.compiere.model.MAccount;
-import org.compiere.model.MKCategory;
-import org.compiere.model.MRequestCategory;
-import org.compiere.model.MTree_Base;
-import org.compiere.model.M_Element;
-import org.compiere.model.PO;
-import org.slf4j.Logger;
-
 import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+
+import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Phase;
+import org.compiere.model.I_C_Task;
+import org.compiere.model.MAccount;
+import org.compiere.model.MGLCategory;
+import org.compiere.model.MKCategory;
+import org.compiere.model.MRequestCategory;
+import org.compiere.model.MTree_Base;
+import org.compiere.model.M_Element;
+import org.compiere.model.M_Registration;
+import org.compiere.model.PO;
+import org.slf4j.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Class responsible for loading model classes by given Table Name.
@@ -129,8 +133,10 @@ public class TableModelClassLoader
 				});
 
 		specialTableName2className.put("AD_Element", M_Element.class.getName());
+		specialTableName2className.put("AD_Registration", M_Registration.class.getName());
 		specialTableName2className.put("AD_Tree", MTree_Base.class.getName());
 		specialTableName2className.put("R_Category", MRequestCategory.class.getName());
+		specialTableName2className.put("GL_Category", MGLCategory.class.getName());
 		specialTableName2className.put("K_Category", MKCategory.class.getName());
 		specialTableName2className.put("C_ValidCombination", MAccount.class.getName());
 		specialTableName2className.put("C_Phase", I_C_Phase.class.getName());

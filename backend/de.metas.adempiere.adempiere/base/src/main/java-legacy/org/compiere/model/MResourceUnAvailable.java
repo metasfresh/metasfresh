@@ -1,18 +1,33 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
+ *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.common.util.time.SystemTime;
-import de.metas.util.Check;
-import lombok.NonNull;
+import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import java.sql.ResultSet;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Properties;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Resource Unavailable
@@ -32,15 +47,16 @@ public class MResourceUnAvailable extends X_S_ResourceUnAvailable
 	/**
 	 * Check if a resource is not available
 	 */
-	public static boolean isUnAvailable(final int resourceRepoId, @NonNull Instant date)
+	public static boolean isUnAvailable(final int resourceRepoId, @NonNull LocalDateTime dateTime)
 	{
 		Check.assumeGreaterThanZero(resourceRepoId, "resourceRepoId");
 
+		final LocalDate date = dateTime.toLocalDate();
 		final String whereClause = COLUMNNAME_S_Resource_ID + "=?"
-				+ " AND TRUNC(" + COLUMNNAME_DateFrom + ") <= TRUNC(?)"
-				+ " AND TRUNC(" + COLUMNNAME_DateTo + ") >= TRUNC(?)";
+				+ " AND TRUNC(" + COLUMNNAME_DateFrom + ") <= ?"
+				+ " AND TRUNC(" + COLUMNNAME_DateTo + ") >= ?";
 		return new Query(Env.getCtx(), MResourceUnAvailable.Table_Name, whereClause, ITrx.TRXNAME_ThreadInherited)
-				.setParameters(resourceRepoId, date, date)
+				.setParameters(new Object[] { resourceRepoId, date, date })
 				.anyMatch();
 	}
 
@@ -81,14 +97,15 @@ public class MResourceUnAvailable extends X_S_ResourceUnAvailable
 
 	/**
 	 * Check if the resource is unavailable for date
+	 * 
+	 * @param date
 	 * @return true if valid
 	 */
-	public boolean isUnAvailable(final Instant dateTime)
+	public boolean isUnAvailable(final LocalDateTime dateTime)
 	{
-		final ZoneId zoneId = SystemTime.zoneId();
-		LocalDate date = dateTime.atZone(zoneId).toLocalDate();
-		LocalDate dateFrom = TimeUtil.asLocalDate(getDateFrom(), zoneId);
-		LocalDate dateTo = TimeUtil.asLocalDate(getDateTo(), zoneId);
+		LocalDate date = dateTime.toLocalDate();
+		LocalDate dateFrom = TimeUtil.asLocalDate(getDateFrom());
+		LocalDate dateTo = TimeUtil.asLocalDate(getDateTo());
 
 		if (dateFrom != null && date.isBefore(dateFrom))
 			return false;

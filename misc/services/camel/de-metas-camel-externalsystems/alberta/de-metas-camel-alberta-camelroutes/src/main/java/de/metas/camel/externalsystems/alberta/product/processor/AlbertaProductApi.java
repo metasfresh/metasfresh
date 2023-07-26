@@ -59,7 +59,7 @@ public class AlbertaProductApi
 	{
 		try
 		{
-			return defaultApi.updateArticle(connectionDetails.getApiKey(), article.getCustomerNumber(), article);
+			return defaultApi.updateArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article.getCustomerNumber(), article);
 		}
 		catch (final ApiException exception)
 		{
@@ -79,7 +79,7 @@ public class AlbertaProductApi
 	{
 		try
 		{
-			return defaultApi.addArticle(connectionDetails.getApiKey(), article);
+			return defaultApi.addArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article);
 		}
 		catch (final ApiException exception)
 		{
@@ -98,7 +98,7 @@ public class AlbertaProductApi
 	{
 		try
 		{
-			return defaultApi.updateArticle(connectionDetails.getApiKey(), article.getCustomerNumber(), article);
+			return defaultApi.updateArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article.getCustomerNumber(), article);
 		}
 		catch (final ApiException e)
 		{
@@ -110,7 +110,7 @@ public class AlbertaProductApi
 	{
 		try
 		{
-			return defaultApi.addArticle(connectionDetails.getApiKey(), article);
+			return defaultApi.addArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article);
 		}
 		catch (final ApiException e)
 		{

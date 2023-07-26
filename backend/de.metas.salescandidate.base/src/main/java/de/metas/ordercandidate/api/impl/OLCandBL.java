@@ -24,8 +24,6 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
-import de.metas.order.compensationGroup.GroupCompensationOrderBy;
-import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -47,9 +45,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.process.PInstanceId;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -508,8 +504,6 @@ public class OLCandBL implements IOLCandBL
 		final DocTypeId orderDocTypeId = getOrderDocTypeId(orderDefaults, olCandRecord);
 		final Quantity qtyItemCapacity = effectiveValuesBL.getQtyItemCapacity_Effective(olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
-		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
-		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
 
 		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
 				? null
@@ -519,7 +513,6 @@ public class OLCandBL implements IOLCandBL
 				.isGroupingError(olCandRecord.isGroupingError())
 				.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
 				.discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
-				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(olCandRecord.getCompensationGroupOrderBy()))
 				.build();
 
 		return OLCand.builder()
@@ -537,17 +530,10 @@ public class OLCandBL implements IOLCandBL
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
 				.orderLineGroup(orderLineGroup)
-				.salesRepInternalId(salesRepInternalId)
-				.assignSalesRepRule(assignSalesRepRule)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
 				.qtyItemCapacityEff(qtyItemCapacity)
-				.bpartnerName(olCandRecord.getBPartnerName())
-				.email(olCandRecord.getEMail())
-				.phone(olCandRecord.getPhone())
-				.projectId(ProjectId.ofRepoIdOrNull(olCandRecord.getC_Project_ID()))
 				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
 				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
-				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(olCandRecord.getM_SectionCode_ID()))
 				.build();
 	}
 

@@ -46,7 +46,7 @@ import lombok.NonNull;
 public class HULockBL implements IHULockBL
 {
 	/**
-	 * Task https://github.com/metasfresh/metasfresh/issues/1861
+	 * @task https://github.com/metasfresh/metasfresh/issues/1861
 	 */
 	private static final String SYS_CONFIG_LOCK_VIA_VIRTUAL_COLUMN = "de.metas.handlingunits.HULockBL.UseVirtualColumn";
 
@@ -61,7 +61,7 @@ public class HULockBL implements IHULockBL
 	}
 
 	/**
-	 * Task https://github.com/metasfresh/metasfresh/issues/1861
+	 * @task https://github.com/metasfresh/metasfresh/issues/1861
 	 */
 	private boolean isUseVirtualColumn()
 	{
@@ -152,7 +152,7 @@ public class HULockBL implements IHULockBL
 	{
 		Preconditions.checkNotNull(hu, "hu is null");
 		Preconditions.checkNotNull(lockOwner, "lockOwner is null");
-		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "%s not allowed", lockOwner);
+		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
 
 		final int huId = hu.getM_HU_ID();
 		unlock0(huId, lockOwner);
@@ -168,7 +168,7 @@ public class HULockBL implements IHULockBL
 			final int huId,
 			@NonNull final LockOwner lockOwner)
 	{
-		Preconditions.checkArgument(huId > 0, "huId shall be > 0");
+		Preconditions.checkNotNull(huId > 0, "huId shall be > 0");
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
 
 		Services.get(ITrxManager.class)
@@ -180,7 +180,7 @@ public class HULockBL implements IHULockBL
 
 	}
 
-	private void unlock0(final int huId, final LockOwner lockOwner)
+	private final void unlock0(final int huId, final LockOwner lockOwner)
 	{
 		Services.get(ILockManager.class)
 				.unlock()

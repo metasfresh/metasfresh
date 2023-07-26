@@ -24,9 +24,7 @@ package de.metas.project;
 
 import de.metas.cache.CCache;
 import de.metas.document.sequence.DocSequenceId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,9 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ProjectType;
 import org.springframework.stereotype.Repository;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
 
 @Repository
 public class ProjectTypeRepository
@@ -47,44 +42,26 @@ public class ProjectTypeRepository
 			.tableName(I_C_ProjectType.Table_Name)
 			.build();
 
-	@Nullable
-	public ProjectType getByIdOrNull(@NonNull final ProjectTypeId id)
+	public ProjectType getById(@NonNull final ProjectTypeId id)
 	{
 		return projectTypes.getOrLoad(id, this::retrieveById);
 	}
 
-	@NonNull
-	public ProjectType getById(@NonNull final ProjectTypeId id)
-	{
-		final ProjectType result = projectTypes.getOrLoad(id, this::retrieveById);
-		return Check.assumeNotNull(result, "Missing C_ProjectType for C_ProjectType_ID={}", id.getRepoId());
-	}
-
-	@Nullable
 	private ProjectType retrieveById(@NonNull final ProjectTypeId id)
 	{
 		final I_C_ProjectType record = InterfaceWrapperHelper.loadOutOfTrx(id, I_C_ProjectType.class);
 		return toProjectType(record);
 	}
 
-	@Nullable
-	public static ProjectType toProjectType(@Nullable final I_C_ProjectType record)
+	private static ProjectType toProjectType(@NonNull final I_C_ProjectType record)
 	{
-		if(record == null)
-		{
-			return null;
-		}
 		return ProjectType.builder()
 				.id(ProjectTypeId.ofRepoId(record.getC_ProjectType_ID()))
 				.projectCategory(ProjectCategory.ofCode(record.getProjectCategory()))
-				.requestStatusCategoryId(RequestStatusCategoryId.ofRepoId(record.getR_StatusCategory_ID()))
 				.docSequenceId(DocSequenceId.ofRepoIdOrNull(record.getAD_Sequence_ProjectValue_ID()))
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
-				.name(record.getName())
 				.build();
 	}
 
-	@NonNull
 	public ProjectTypeId getFirstIdByProjectCategoryAndOrg(
 			@NonNull final ProjectCategory projectCategory,
 			@NonNull final OrgId orgId)
@@ -108,20 +85,4 @@ public class ProjectTypeRepository
 		return projectTypeId;
 	}
 
-	@NonNull
-	public Optional<ProjectType> getByName(@NonNull final String name)
-	{
-		final I_C_ProjectType projectTypeRecord = queryBL.createQueryBuilder(I_C_ProjectType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_ProjectType.COLUMNNAME_Name, name)
-				.create()
-				.firstOnlyNotNull(I_C_ProjectType.class);
-
-		return Optional.ofNullable(toProjectType(projectTypeRecord));
-	}
-
-	public boolean isReservationOrder(@NonNull final ProjectTypeId projectTypeId)
-	{
-		return getById(projectTypeId).isReservation();
-	}
 }

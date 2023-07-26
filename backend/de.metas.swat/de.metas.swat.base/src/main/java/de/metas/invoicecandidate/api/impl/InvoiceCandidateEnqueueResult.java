@@ -52,6 +52,8 @@ import de.metas.util.Services;
 			final BigDecimal totalNetAmtToInvoiceChecksum,
 			final ILock lock)
 	{
+		super();
+
 		Check.assume(invoiceCandidateEnqueuedCount >= 0, "invoiceCandidateEnqueuedCount > 0");
 		this.invoiceCandidateEnqueuedCount = invoiceCandidateEnqueuedCount;
 

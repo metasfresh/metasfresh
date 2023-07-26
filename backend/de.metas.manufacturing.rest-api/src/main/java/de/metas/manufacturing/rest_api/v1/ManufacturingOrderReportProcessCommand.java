@@ -25,7 +25,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -275,7 +274,7 @@ class ManufacturingOrderReportProcessCommand
 							.sourceHUs(possibleHUsToIssue)
 							.productId(productId)
 							.qtyCU(fixedQtyToIssue)
-							.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+							.onlyFromUnreservedHUs(true)
 							.build());
 		}
 		else

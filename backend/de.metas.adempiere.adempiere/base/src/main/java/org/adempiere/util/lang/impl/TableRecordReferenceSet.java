@@ -1,16 +1,5 @@
 package org.adempiere.util.lang.impl;
 
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimaps;
-import de.metas.util.lang.RepoIdAware;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.exceptions.AdempiereException;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -23,6 +12,19 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
+
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
+
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -193,27 +195,5 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	public int size()
 	{
 		return recordRefs.size();
-	}
-
-	@NonNull
-	public AdTableId getSingleTableId()
-	{
-		final ImmutableSet<AdTableId> tableIds = recordRefs.stream()
-				.map(TableRecordReference::getAD_Table_ID)
-				.map(AdTableId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (tableIds.isEmpty())
-		{
-			throw new AdempiereException("No AD_Table_ID");
-		}
-		else if (tableIds.size() == 1)
-		{
-			return tableIds.iterator().next();
-		}
-		else
-		{
-			throw new AdempiereException("More than one AD_Table_ID found: " + tableIds);
-		}
 	}
 }

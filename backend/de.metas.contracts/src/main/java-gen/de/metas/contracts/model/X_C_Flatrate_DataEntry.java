@@ -1,272 +1,480 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Flatrate_DataEntry
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C_Flatrate_DataEntry, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -915094046L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1237507434L;
 
     /** Standard Constructor */
-    public X_C_Flatrate_DataEntry (final Properties ctx, final int C_Flatrate_DataEntry_ID, @Nullable final String trxName)
+    public X_C_Flatrate_DataEntry (Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
     {
       super (ctx, C_Flatrate_DataEntry_ID, trxName);
+      /** if (C_Flatrate_DataEntry_ID == 0)
+        {
+			setC_Flatrate_DataEntry_ID (0);
+			setC_Flatrate_Term_ID (0);
+			setC_Period_ID (0);
+			setC_UOM_ID (0);
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
+			setM_Product_DataEntry_ID (0);
+			setProcessed (false); // N
+			setProcessing (false); // N
+			setType (null);
+        } */
     }
 
     /** Load Constructor */
-    public X_C_Flatrate_DataEntry (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_Flatrate_DataEntry (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
 
+	/** Set Istmenge.
+		@param ActualQty 
+		Tatsächliche Menge der erbrachten Leistung (z.B gelieferte Teile)
+	  */
 	@Override
-	public void setActualQty (final @Nullable BigDecimal ActualQty)
+	public void setActualQty (java.math.BigDecimal ActualQty)
 	{
 		set_Value (COLUMNNAME_ActualQty, ActualQty);
 	}
 
+	/** Get Istmenge.
+		@return Tatsächliche Menge der erbrachten Leistung (z.B gelieferte Teile)
+	  */
 	@Override
-	public BigDecimal getActualQty() 
+	public java.math.BigDecimal getActualQty () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualQty);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Diff. Menge.
+		@param ActualQtyDiffAbs 
+		Absolute Differenz zwischen Plan- und Istmenge
+	  */
 	@Override
-	public void setActualQtyDiffAbs (final @Nullable BigDecimal ActualQtyDiffAbs)
+	public void setActualQtyDiffAbs (java.math.BigDecimal ActualQtyDiffAbs)
 	{
 		set_Value (COLUMNNAME_ActualQtyDiffAbs, ActualQtyDiffAbs);
 	}
 
+	/** Get Diff. Menge.
+		@return Absolute Differenz zwischen Plan- und Istmenge
+	  */
 	@Override
-	public BigDecimal getActualQtyDiffAbs() 
+	public java.math.BigDecimal getActualQtyDiffAbs () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualQtyDiffAbs);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyDiffAbs);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Diff. Menge %.
+		@param ActualQtyDiffPercent 
+		Prozentuale Abweichung zwischen Plan- und Istmenge
+	  */
 	@Override
-	public void setActualQtyDiffPercent (final @Nullable BigDecimal ActualQtyDiffPercent)
+	public void setActualQtyDiffPercent (java.math.BigDecimal ActualQtyDiffPercent)
 	{
 		set_Value (COLUMNNAME_ActualQtyDiffPercent, ActualQtyDiffPercent);
 	}
 
+	/** Get Diff. Menge %.
+		@return Prozentuale Abweichung zwischen Plan- und Istmenge
+	  */
 	@Override
-	public BigDecimal getActualQtyDiffPercent() 
+	public java.math.BigDecimal getActualQtyDiffPercent () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualQtyDiffPercent);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyDiffPercent);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Diff. Menge % eff..
+		@param ActualQtyDiffPercentEff 
+		Prozentuale Abweichung, ggf. verringert um den Korridor-Prozentbetrag. Dieser wert ist der prozentuale Auf- oder Abschlag auf den Pauschalenbetrag
+	  */
 	@Override
-	public void setActualQtyDiffPercentEff (final @Nullable BigDecimal ActualQtyDiffPercentEff)
+	public void setActualQtyDiffPercentEff (java.math.BigDecimal ActualQtyDiffPercentEff)
 	{
 		set_Value (COLUMNNAME_ActualQtyDiffPercentEff, ActualQtyDiffPercentEff);
 	}
 
+	/** Get Diff. Menge % eff..
+		@return Prozentuale Abweichung, ggf. verringert um den Korridor-Prozentbetrag. Dieser wert ist der prozentuale Auf- oder Abschlag auf den Pauschalenbetrag
+	  */
 	@Override
-	public BigDecimal getActualQtyDiffPercentEff() 
+	public java.math.BigDecimal getActualQtyDiffPercentEff () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualQtyDiffPercentEff);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyDiffPercentEff);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Differenz/Maßeinheit.
+		@param ActualQtyDiffPerUOM 
+		Differenz zwischen Plan- und Istmenge pro Maßeinheit
+	  */
 	@Override
-	public void setActualQtyDiffPerUOM (final @Nullable BigDecimal ActualQtyDiffPerUOM)
+	public void setActualQtyDiffPerUOM (java.math.BigDecimal ActualQtyDiffPerUOM)
 	{
 		set_Value (COLUMNNAME_ActualQtyDiffPerUOM, ActualQtyDiffPerUOM);
 	}
 
+	/** Get Differenz/Maßeinheit.
+		@return Differenz zwischen Plan- und Istmenge pro Maßeinheit
+	  */
 	@Override
-	public BigDecimal getActualQtyDiffPerUOM() 
+	public java.math.BigDecimal getActualQtyDiffPerUOM () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualQtyDiffPerUOM);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyDiffPerUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Istmenge/Maßeinheit.
+		@param ActualQtyPerUnit 
+		Tatsächliche Menge der erbrachten Leistung (z.B "Stück geliefert") pro pauschal abgerechnete Einheit (z.B. pro Pflegetag).
+	  */
 	@Override
-	public void setActualQtyPerUnit (final @Nullable BigDecimal ActualQtyPerUnit)
+	public void setActualQtyPerUnit (java.math.BigDecimal ActualQtyPerUnit)
 	{
 		set_Value (COLUMNNAME_ActualQtyPerUnit, ActualQtyPerUnit);
 	}
 
+	/** Get Istmenge/Maßeinheit.
+		@return Tatsächliche Menge der erbrachten Leistung (z.B "Stück geliefert") pro pauschal abgerechnete Einheit (z.B. pro Pflegetag).
+	  */
 	@Override
-	public BigDecimal getActualQtyPerUnit() 
+	public java.math.BigDecimal getActualQtyPerUnit () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualQtyPerUnit);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyPerUnit);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override
-	public void setAD_User_Reported_ID (final int AD_User_Reported_ID)
+	public org.compiere.model.I_AD_User getAD_User_Reported() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_Reported_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setAD_User_Reported(org.compiere.model.I_AD_User AD_User_Reported)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_Reported_ID, org.compiere.model.I_AD_User.class, AD_User_Reported);
+	}
+
+	/** Set Gemeldet durch.
+		@param AD_User_Reported_ID 
+		Ansprechpartner auf Kunden-Seite, der die Pauschalen-Menge gemeldet hat.
+	  */
+	@Override
+	public void setAD_User_Reported_ID (int AD_User_Reported_ID)
 	{
 		if (AD_User_Reported_ID < 1) 
 			set_Value (COLUMNNAME_AD_User_Reported_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_Reported_ID, AD_User_Reported_ID);
+			set_Value (COLUMNNAME_AD_User_Reported_ID, Integer.valueOf(AD_User_Reported_ID));
 	}
 
+	/** Get Gemeldet durch.
+		@return Ansprechpartner auf Kunden-Seite, der die Pauschalen-Menge gemeldet hat.
+	  */
 	@Override
-	public int getAD_User_Reported_ID() 
+	public int getAD_User_Reported_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_User_Reported_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_Reported_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Currency_ID (final int C_Currency_ID)
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
 	@Override
-	public int getC_Currency_ID() 
+	public int getC_Currency_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Abrechnungssatz.
+		@param C_Flatrate_DataEntry_ID Abrechnungssatz	  */
 	@Override
-	public void setC_Flatrate_DataEntry_ID (final int C_Flatrate_DataEntry_ID)
+	public void setC_Flatrate_DataEntry_ID (int C_Flatrate_DataEntry_ID)
 	{
 		if (C_Flatrate_DataEntry_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_DataEntry_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Flatrate_DataEntry_ID, C_Flatrate_DataEntry_ID);
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_DataEntry_ID, Integer.valueOf(C_Flatrate_DataEntry_ID));
 	}
 
+	/** Get Abrechnungssatz.
+		@return Abrechnungssatz	  */
 	@Override
-	public int getC_Flatrate_DataEntry_ID() 
+	public int getC_Flatrate_DataEntry_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Flatrate_DataEntry_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_DataEntry_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term()
+	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Term(final de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term)
+	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, C_Flatrate_Term);
 	}
 
+	/** Set Pauschale - Vertragsperiode.
+		@param C_Flatrate_Term_ID Pauschale - Vertragsperiode	  */
 	@Override
-	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
+	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID)
 	{
 		if (C_Flatrate_Term_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, Integer.valueOf(C_Flatrate_Term_ID));
 	}
 
+	/** Get Pauschale - Vertragsperiode.
+		@return Pauschale - Vertragsperiode	  */
 	@Override
-	public int getC_Flatrate_Term_ID() 
+	public int getC_Flatrate_Term_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Invoice_Candidate_Corr_ID (final int C_Invoice_Candidate_Corr_ID)
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate_Corr() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_Corr_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public void setC_Invoice_Candidate_Corr(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate_Corr)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_Candidate_Corr_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class, C_Invoice_Candidate_Corr);
+	}
+
+	/** Set Rechnungskand. Nachzahlung/Erstattung.
+		@param C_Invoice_Candidate_Corr_ID Rechnungskand. Nachzahlung/Erstattung	  */
+	@Override
+	public void setC_Invoice_Candidate_Corr_ID (int C_Invoice_Candidate_Corr_ID)
 	{
 		if (C_Invoice_Candidate_Corr_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_Candidate_Corr_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_Candidate_Corr_ID, C_Invoice_Candidate_Corr_ID);
+			set_Value (COLUMNNAME_C_Invoice_Candidate_Corr_ID, Integer.valueOf(C_Invoice_Candidate_Corr_ID));
 	}
 
+	/** Get Rechnungskand. Nachzahlung/Erstattung.
+		@return Rechnungskand. Nachzahlung/Erstattung	  */
 	@Override
-	public int getC_Invoice_Candidate_Corr_ID() 
+	public int getC_Invoice_Candidate_Corr_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_Corr_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_Corr_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Invoice_Candidate_ID (final int C_Invoice_Candidate_ID)
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public void setC_Invoice_Candidate(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class, C_Invoice_Candidate);
+	}
+
+	/** Set Rechnungskandidat.
+		@param C_Invoice_Candidate_ID 
+		Eindeutige Identifikationsnummer eines Rechnungskandidaten
+	  */
+	@Override
+	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
 	{
 		if (C_Invoice_Candidate_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_Candidate_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_Candidate_ID, C_Invoice_Candidate_ID);
+			set_Value (COLUMNNAME_C_Invoice_Candidate_ID, Integer.valueOf(C_Invoice_Candidate_ID));
 	}
 
+	/** Get Rechnungskandidat.
+		@return Eindeutige Identifikationsnummer eines Rechnungskandidaten
+	  */
 	@Override
-	public int getC_Invoice_Candidate_ID() 
+	public int getC_Invoice_Candidate_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_C_Period getC_Period()
+	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
 	}
 
 	@Override
-	public void setC_Period(final org.compiere.model.I_C_Period C_Period)
+	public void setC_Period(org.compiere.model.I_C_Period C_Period)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class, C_Period);
 	}
 
+	/** Set Periode.
+		@param C_Period_ID 
+		Periode des Kalenders
+	  */
 	@Override
-	public void setC_Period_ID (final int C_Period_ID)
+	public void setC_Period_ID (int C_Period_ID)
 	{
 		if (C_Period_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Period_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Period_ID, C_Period_ID);
+			set_ValueNoCheck (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
 	}
 
+	/** Get Periode.
+		@return Periode des Kalenders
+	  */
 	@Override
-	public int getC_Period_ID() 
+	public int getC_Period_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Period_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Gemeldet am.
+		@param Date_Reported 
+		Datum, an dem die Pauschalen-Zahl von Seiten des Kunden gemeldet wurde
+	  */
 	@Override
-	public void setDate_Reported (final @Nullable java.sql.Timestamp Date_Reported)
+	public void setDate_Reported (java.sql.Timestamp Date_Reported)
 	{
 		set_Value (COLUMNNAME_Date_Reported, Date_Reported);
 	}
 
+	/** Get Gemeldet am.
+		@return Datum, an dem die Pauschalen-Zahl von Seiten des Kunden gemeldet wurde
+	  */
 	@Override
-	public java.sql.Timestamp getDate_Reported() 
+	public java.sql.Timestamp getDate_Reported () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_Date_Reported);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_Date_Reported);
 	}
 
 	/** 
@@ -302,18 +510,24 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
-	/** UnClose = UC */
-	public static final String DOCACTION_UnClose = "UC";
+	/** Set Belegverarbeitung.
+		@param DocAction 
+		Der zukünftige Status des Belegs
+	  */
 	@Override
-	public void setDocAction (final java.lang.String DocAction)
+	public void setDocAction (java.lang.String DocAction)
 	{
+
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
+	/** Get Belegverarbeitung.
+		@return Der zukünftige Status des Belegs
+	  */
 	@Override
-	public java.lang.String getDocAction() 
+	public java.lang.String getDocAction () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocAction);
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
 	/** 
@@ -345,143 +559,258 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param DocStatus 
+		The current status of the document
+	  */
 	@Override
-	public void setDocStatus (final java.lang.String DocStatus)
+	public void setDocStatus (java.lang.String DocStatus)
 	{
+
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
+	/** Get Belegstatus.
+		@return The current status of the document
+	  */
 	@Override
-	public java.lang.String getDocStatus() 
+	public java.lang.String getDocStatus () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
+	/** Set Pauschalenbetrag.
+		@param FlatrateAmt 
+		Pauschal zu Zahlender Betrag, ohne Berücksichtigung der Korrektur wegen Über- oder Unterschreibung.
+	  */
 	@Override
-	public void setFlatrateAmt (final @Nullable BigDecimal FlatrateAmt)
+	public void setFlatrateAmt (java.math.BigDecimal FlatrateAmt)
 	{
 		set_Value (COLUMNNAME_FlatrateAmt, FlatrateAmt);
 	}
 
+	/** Get Pauschalenbetrag.
+		@return Pauschal zu Zahlender Betrag, ohne Berücksichtigung der Korrektur wegen Über- oder Unterschreibung.
+	  */
 	@Override
-	public BigDecimal getFlatrateAmt() 
+	public java.math.BigDecimal getFlatrateAmt () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FlatrateAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatrateAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Nachzahlung/Erstattung.
+		@param FlatrateAmtCorr 
+		Aufgrund von Über-/Unterschreitung der Planmenge zusätzlich zu zahlender bzw. gutzuschreibender Betrag.
+	  */
 	@Override
-	public void setFlatrateAmtCorr (final @Nullable BigDecimal FlatrateAmtCorr)
+	public void setFlatrateAmtCorr (java.math.BigDecimal FlatrateAmtCorr)
 	{
 		set_Value (COLUMNNAME_FlatrateAmtCorr, FlatrateAmtCorr);
 	}
 
+	/** Get Nachzahlung/Erstattung.
+		@return Aufgrund von Über-/Unterschreitung der Planmenge zusätzlich zu zahlender bzw. gutzuschreibender Betrag.
+	  */
 	@Override
-	public BigDecimal getFlatrateAmtCorr() 
+	public java.math.BigDecimal getFlatrateAmtCorr () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FlatrateAmtCorr);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatrateAmtCorr);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Betrag/Maßeinheit.
+		@param FlatrateAmtPerUOM Betrag/Maßeinheit	  */
 	@Override
-	public void setFlatrateAmtPerUOM (final @Nullable BigDecimal FlatrateAmtPerUOM)
+	public void setFlatrateAmtPerUOM (java.math.BigDecimal FlatrateAmtPerUOM)
 	{
 		set_Value (COLUMNNAME_FlatrateAmtPerUOM, FlatrateAmtPerUOM);
 	}
 
+	/** Get Betrag/Maßeinheit.
+		@return Betrag/Maßeinheit	  */
 	@Override
-	public BigDecimal getFlatrateAmtPerUOM() 
+	public java.math.BigDecimal getFlatrateAmtPerUOM () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FlatrateAmtPerUOM);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatrateAmtPerUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Planspiel.
+		@param IsSimulation Planspiel	  */
 	@Override
-	public void setIsSimulation (final boolean IsSimulation)
+	public void setIsSimulation (boolean IsSimulation)
 	{
 		throw new IllegalArgumentException ("IsSimulation is virtual column");	}
 
+	/** Get Planspiel.
+		@return Planspiel	  */
 	@Override
-	public boolean isSimulation() 
+	public boolean isSimulation () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSimulation);
+		Object oo = get_Value(COLUMNNAME_IsSimulation);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
-	public void setM_Product_DataEntry_ID (final int M_Product_DataEntry_ID)
+	public org.compiere.model.I_M_Product getM_Product_DataEntry() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_DataEntry_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product_DataEntry(org.compiere.model.I_M_Product M_Product_DataEntry)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_DataEntry_ID, org.compiere.model.I_M_Product.class, M_Product_DataEntry);
+	}
+
+	/** Set Produkt.
+		@param M_Product_DataEntry_ID 
+		Produkt, zu dem die Depotgebühr erhoben wird
+	  */
+	@Override
+	public void setM_Product_DataEntry_ID (int M_Product_DataEntry_ID)
 	{
 		if (M_Product_DataEntry_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_DataEntry_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_DataEntry_ID, M_Product_DataEntry_ID);
+			set_Value (COLUMNNAME_M_Product_DataEntry_ID, Integer.valueOf(M_Product_DataEntry_ID));
 	}
 
+	/** Get Produkt.
+		@return Produkt, zu dem die Depotgebühr erhoben wird
+	  */
 	@Override
-	public int getM_Product_DataEntry_ID() 
+	public int getM_Product_DataEntry_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_DataEntry_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_DataEntry_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Notiz.
+		@param Note 
+		Optional weitere Information für ein Dokument
+	  */
 	@Override
-	public void setNote (final @Nullable java.lang.String Note)
+	public void setNote (java.lang.String Note)
 	{
 		set_Value (COLUMNNAME_Note, Note);
 	}
 
+	/** Get Notiz.
+		@return Optional weitere Information für ein Dokument
+	  */
 	@Override
-	public java.lang.String getNote() 
+	public java.lang.String getNote () 
 	{
-		return get_ValueAsString(COLUMNNAME_Note);
+		return (java.lang.String)get_Value(COLUMNNAME_Note);
 	}
 
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public void setProcessed (final boolean Processed)
+	public void setProcessed (boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Processed);
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Processed);
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Process Now.
+		@param Processing Process Now	  */
 	@Override
-	public void setProcessing (final boolean Processing)
+	public void setProcessing (boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Processing);
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
+	/** Get Process Now.
+		@return Process Now	  */
 	@Override
-	public boolean isProcessing() 
+	public boolean isProcessing () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Processing);
+		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Geplante Menge.
+		@param Qty_Planned 
+		Vorab eingeplante Pauschalen-Menge
+	  */
 	@Override
-	public void setQty_Planned (final @Nullable BigDecimal Qty_Planned)
+	public void setQty_Planned (java.math.BigDecimal Qty_Planned)
 	{
 		set_Value (COLUMNNAME_Qty_Planned, Qty_Planned);
 	}
 
+	/** Get Geplante Menge.
+		@return Vorab eingeplante Pauschalen-Menge
+	  */
 	@Override
-	public BigDecimal getQty_Planned() 
+	public java.math.BigDecimal getQty_Planned () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty_Planned);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Planned);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Gemeldete Menge.
+		@param Qty_Reported 
+		Vom Kunden gemeldete Menge, die ggf. als Pauschale in Rechnung gestellt wird.
+	  */
 	@Override
-	public void setQty_Reported (final @Nullable BigDecimal Qty_Reported)
+	public void setQty_Reported (java.math.BigDecimal Qty_Reported)
 	{
 		set_Value (COLUMNNAME_Qty_Reported, Qty_Reported);
 	}
 
+	/** Get Gemeldete Menge.
+		@return Vom Kunden gemeldete Menge, die ggf. als Pauschale in Rechnung gestellt wird.
+	  */
 	@Override
-	public BigDecimal getQty_Reported() 
+	public java.math.BigDecimal getQty_Reported () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty_Reported);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Reported);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** 
@@ -495,15 +824,23 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	public static final String TYPE_Correction_PeriodBased = "CP";
 	/** Procurement_PeriodBased = PC */
 	public static final String TYPE_Procurement_PeriodBased = "PC";
+	/** Set Art.
+		@param Type 
+		Type of Validation (SQL, Java Script, Java Language)
+	  */
 	@Override
-	public void setType (final java.lang.String Type)
+	public void setType (java.lang.String Type)
 	{
+
 		set_ValueNoCheck (COLUMNNAME_Type, Type);
 	}
 
+	/** Get Art.
+		@return Type of Validation (SQL, Java Script, Java Language)
+	  */
 	@Override
-	public java.lang.String getType() 
+	public java.lang.String getType () 
 	{
-		return get_ValueAsString(COLUMNNAME_Type);
+		return (java.lang.String)get_Value(COLUMNNAME_Type);
 	}
 }

@@ -1,216 +1,224 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for C_DataImport
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_DataImport 
 {
 
-	String Table_Name = "C_DataImport";
+    /** TableName=C_DataImport */
+    public static final String Table_Name = "C_DataImport";
 
-//	/** AD_Table_ID=540950 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540950 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_Client>(I_C_DataImport.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Import Format.
+	 * Set Import-Format.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_ImpFormat_ID (int AD_ImpFormat_ID);
+	public void setAD_ImpFormat_ID (int AD_ImpFormat_ID);
 
 	/**
-	 * Get Import Format.
+	 * Get Import-Format.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_ImpFormat_ID();
+	public int getAD_ImpFormat_ID();
 
-	org.compiere.model.I_AD_ImpFormat getAD_ImpFormat();
+	public org.compiere.model.I_AD_ImpFormat getAD_ImpFormat();
 
-	void setAD_ImpFormat(org.compiere.model.I_AD_ImpFormat AD_ImpFormat);
+	public void setAD_ImpFormat(org.compiere.model.I_AD_ImpFormat AD_ImpFormat);
 
-	ModelColumn<I_C_DataImport, org.compiere.model.I_AD_ImpFormat> COLUMN_AD_ImpFormat_ID = new ModelColumn<>(I_C_DataImport.class, "AD_ImpFormat_ID", org.compiere.model.I_AD_ImpFormat.class);
-	String COLUMNNAME_AD_ImpFormat_ID = "AD_ImpFormat_ID";
+    /** Column definition for AD_ImpFormat_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_ImpFormat> COLUMN_AD_ImpFormat_ID = new org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_ImpFormat>(I_C_DataImport.class, "AD_ImpFormat_ID", org.compiere.model.I_AD_ImpFormat.class);
+    /** Column name AD_ImpFormat_ID */
+    public static final String COLUMNNAME_AD_ImpFormat_ID = "AD_ImpFormat_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_Org>(I_C_DataImport.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Data import.
+	 * Set Daten Import.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_DataImport_ID (int C_DataImport_ID);
+	public void setC_DataImport_ID (int C_DataImport_ID);
 
 	/**
-	 * Get Data import.
+	 * Get Daten Import.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_DataImport_ID();
+	public int getC_DataImport_ID();
 
-	ModelColumn<I_C_DataImport, Object> COLUMN_C_DataImport_ID = new ModelColumn<>(I_C_DataImport.class, "C_DataImport_ID", null);
-	String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+    /** Column definition for C_DataImport_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, Object> COLUMN_C_DataImport_ID = new org.adempiere.model.ModelColumn<I_C_DataImport, Object>(I_C_DataImport.class, "C_DataImport_ID", null);
+    /** Column name C_DataImport_ID */
+    public static final String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_DataImport, Object> COLUMN_Created = new ModelColumn<>(I_C_DataImport.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_DataImport, Object>(I_C_DataImport.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Data Import Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDataImport_ConfigType (java.lang.String DataImport_ConfigType);
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_User>(I_C_DataImport.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Get Data Import Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getDataImport_ConfigType();
-
-	ModelColumn<I_C_DataImport, Object> COLUMN_DataImport_ConfigType = new ModelColumn<>(I_C_DataImport.class, "DataImport_ConfigType", null);
-	String COLUMNNAME_DataImport_ConfigType = "DataImport_ConfigType";
-
-	/**
-	 * Set Internal Name.
+	 * Set Interner Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInternalName (@Nullable java.lang.String InternalName);
+	public void setInternalName (java.lang.String InternalName);
 
 	/**
-	 * Get Internal Name.
+	 * Get Interner Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getInternalName();
+	public java.lang.String getInternalName();
 
-	ModelColumn<I_C_DataImport, Object> COLUMN_InternalName = new ModelColumn<>(I_C_DataImport.class, "InternalName", null);
-	String COLUMNNAME_InternalName = "InternalName";
+    /** Column definition for InternalName */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_C_DataImport, Object>(I_C_DataImport.class, "InternalName", null);
+    /** Column name InternalName */
+    public static final String COLUMNNAME_InternalName = "InternalName";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_DataImport, Object> COLUMN_IsActive = new ModelColumn<>(I_C_DataImport.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_DataImport, Object>(I_C_DataImport.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_DataImport, Object> COLUMN_Updated = new ModelColumn<>(I_C_DataImport.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_DataImport, Object>(I_C_DataImport.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_DataImport, org.compiere.model.I_AD_User>(I_C_DataImport.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

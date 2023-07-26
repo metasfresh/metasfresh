@@ -2,14 +2,13 @@ package de.metas.banking.callout;
 
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
+import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.impl.BankStatementBL;
 import de.metas.currency.CurrencyRepository;
-import de.metas.currency.ICurrencyBL;
 import de.metas.money.MoneyService;
-import de.metas.util.Services;
 import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -51,7 +50,6 @@ import static org.assertj.core.api.Assertions.*;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-@SuppressWarnings("NewClassNamingConvention")
 public class C_BankStatementLine_Test
 {
 	private C_BankStatementLine callout;
@@ -66,10 +64,10 @@ public class C_BankStatementLine_Test
 		final BankStatementBL bankStatementBL = new BankStatementBL(
 				new BankAccountService(
 						bankRepo = new BankRepository(),
+						new BankAccountAcctRepository(),
 						new CurrencyRepository()),
 				new MoneyService(new CurrencyRepository()));
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		callout = new C_BankStatementLine(bankStatementBL, currencyConversionBL);
+		callout = new C_BankStatementLine(bankStatementBL);
 	}
 
 	@Builder(builderMethodName = "bankStatementLine", builderClassName = "$BankStatementLineBuilder")

@@ -39,13 +39,11 @@ package org.adempiere.inout.replenish.process;
  * #L%
  */
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.i18n.Msg;
-import de.metas.order.IOrderBL;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.product.IProductBL;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.util.Constants;
@@ -71,10 +69,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ReplenishInterface;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.Msg;
+import de.metas.order.IOrderBL;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  * Replenishment Report
@@ -594,12 +595,12 @@ public class ReplenishReport extends JavaProcess
 				info += " - " + move.getDocumentNo();
 			}
 			//	To
-			int M_LocatorTo_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(wh).getM_Locator_ID();
+			int M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID();
 			//	From: Look-up Storage
 			String MMPolicy = Services.get(IProductBL.class).getMMPolicy(replenish.getM_Product_ID());
 			MStorage[] storages = MStorage.getWarehouse(getCtx(),
 					whSource.getM_Warehouse_ID(), replenish.getM_Product_ID(), 0, 0,
-					true,
+					true, null,
 					MClient.MMPOLICY_FiFo.equals(MMPolicy), get_TrxName());
 			//
 			BigDecimal target = replenish.getQtyToOrder();

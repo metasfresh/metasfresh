@@ -1,22 +1,23 @@
 package de.metas.impexp;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_ImpFormat;
+import org.compiere.model.I_AD_ImpFormat_Row;
+import org.compiere.model.I_I_Product;
+
 import de.metas.impexp.format.ImpFormatColumnDataType;
 import de.metas.impexp.format.ImpFormatId;
 import de.metas.impexp.format.ImpFormatType;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_ImpFormat;
-import org.compiere.model.I_AD_ImpFormat_Row;
-
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -49,7 +50,6 @@ class ImportFormatBuilder
 
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	private final String importTableName;
 	@Getter
 	private final AdTableId importTableId;
 
@@ -61,8 +61,7 @@ class ImportFormatBuilder
 
 	private ImportFormatBuilder(@NonNull final String importTableName)
 	{
-		this.importTableName = importTableName;
-		this.importTableId = AdTableId.ofRepoId(tableDAO.retrieveTableId(importTableName));
+		importTableId = AdTableId.ofRepoId(tableDAO.retrieveTableId(I_I_Product.Table_Name));
 	}
 
 	public ImpFormatId build()
@@ -114,11 +113,11 @@ class ImportFormatBuilder
 
 	public ImportFormatBuilder column(final String columnName, final ImpFormatColumnDataType type)
 	{
-		final AdColumnId adColumnId = tableDAO.retrieveColumnId(importTableName, columnName);
+		final int adColumnId = tableDAO.retrieveColumn(importTableId, columnName).getAD_Column_ID();
 
 		final I_AD_ImpFormat_Row colRecord = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat_Row.class);
 		colRecord.setName("Value");
-		colRecord.setAD_Column_ID(adColumnId.getRepoId());
+		colRecord.setAD_Column_ID(adColumnId);
 		colRecord.setDataType(type.getCode());
 		colRecord.setStartNo(columnRecords.size() + 1);
 

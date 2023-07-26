@@ -40,13 +40,12 @@ describe('QuickActions standalone component', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .post(`/documentView/${data1.windowId}/${emptyViewId}/quickActions`)
+        .get(`/documentView/${data1.windowId}/${emptyViewId}/quickActions`)
         .reply(200, { data: { actions: [] } });
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .post(`/documentView/${data1.windowId}/${data1.viewId}/quickActions`, 
-        { selectedIds: data1.selected })
+        .get(`/documentView/${data1.windowId}/${data1.viewId}/quickActions?selectedIds=${data1.selected.join(',')}`)
         .reply(200, { data: { actions: fixtures.data } });
     });
 

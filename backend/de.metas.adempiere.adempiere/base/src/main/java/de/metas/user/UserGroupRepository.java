@@ -1,21 +1,23 @@
 package de.metas.user;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Range;
-import de.metas.cache.CCache;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.time.Instant;
+import java.util.Set;
+
 import de.metas.common.util.time.SystemTime;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_UserGroup;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
-import java.util.Set;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L

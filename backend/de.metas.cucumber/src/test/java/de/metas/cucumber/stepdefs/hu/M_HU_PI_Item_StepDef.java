@@ -57,18 +57,15 @@ public class M_HU_PI_Item_StepDef
 	private final M_HU_PI_StepDefData huPiTable;
 	private final M_HU_PI_Version_StepDefData huPiVersionTable;
 	private final M_HU_PI_Item_StepDefData huPiItemTable;
-	private final M_HU_PackingMaterial_StepDefData huPackingMaterialTable;
 
 	public M_HU_PI_Item_StepDef(
 			@NonNull final M_HU_PI_StepDefData huPiTable,
 			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
-			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
-			@NonNull final M_HU_PackingMaterial_StepDefData huPackingMaterialTable)
+			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable)
 	{
 		this.huPiTable = huPiTable;
 		this.huPiVersionTable = huPiVersionTable;
 		this.huPiItemTable = huPiItemTable;
-		this.huPackingMaterialTable = huPackingMaterialTable;
 	}
 
 	@And("metasfresh contains M_HU_PI_Item:")
@@ -86,6 +83,7 @@ public class M_HU_PI_Item_StepDef
 
 			final IQueryBuilder<I_M_HU_PI_Item> piItemQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_Version_ID, huPiVersion.getM_HU_PI_Version_ID())
+					.addEqualsFilter(COLUMNNAME_Qty, qty)
 					.addEqualsFilter(COLUMNNAME_ItemType, itemType)
 					.addEqualsFilter(COLUMNNAME_IsActive, active);
 
@@ -113,16 +111,6 @@ public class M_HU_PI_Item_StepDef
 			{
 				final I_M_HU_PI huPi = huPiTable.get(includedHuPiIdentifier);
 				huPiItemRecord.setIncluded_HU_PI_ID(huPi.getM_HU_PI_ID());
-			}
-
-			final String huPackingMaterialIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(huPackingMaterialIdentifier))
-			{
-				final int huPackingMaterialId = DataTableUtil.nullToken2Null(huPackingMaterialIdentifier) == null
-						? -1
-						: huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
-
-				huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
 			}
 
 			saveRecord(huPiItemRecord);

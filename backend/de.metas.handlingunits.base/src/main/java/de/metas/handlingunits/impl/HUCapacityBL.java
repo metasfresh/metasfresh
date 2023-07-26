@@ -22,6 +22,14 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -32,17 +40,11 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 
 public class HUCapacityBL implements IHUCapacityBL
 {
@@ -71,7 +73,7 @@ public class HUCapacityBL implements IHUCapacityBL
 		final ProductId productToUseId;
 		if (itemDefProduct.isAllowAnyProduct())
 		{
-			Check.assumeNotNull(productId, "M_HU_PI_Item_Produc_ID={} has AllowAnyProduct='Y', so the given productId not may not be null", itemDefProduct.getM_HU_PI_Item_Product_ID());
+			Check.assumeNotNull(productId, "productId not null");
 			productToUseId = productId;
 		}
 		else

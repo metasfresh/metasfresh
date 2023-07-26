@@ -22,16 +22,19 @@ package org.adempiere.ad.persistence;
  * #L%
  */
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import lombok.NonNull;
-import org.reflections.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.reflections.ReflectionUtils;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 class ModelClassInfo implements IModelClassInfo
 {
@@ -45,11 +48,14 @@ class ModelClassInfo implements IModelClassInfo
 
 	private Set<String> _definedColumnNames = null;
 
-	public ModelClassInfo(final ModelClassIntrospector introspector, @NonNull final Class<?> modelClass, final String tableName)
+	public ModelClassInfo(final ModelClassIntrospector introspector, final Class<?> modelClass, final String tableName)
 	{
+		super();
+
 		// shall not be null, but because it's created only from introspector, we are not checking it again
 		this.introspector = introspector;
 
+		Check.assumeNotNull(modelClass, "modelClass not null");
 		this.modelClass = modelClass;
 
 		// NOTE: could be null in case we are dealing with an interface which is not bounded to a TableName

@@ -72,7 +72,7 @@ public class AttributesKeyQueryHelperTest
 	}
 
 	@Nested
-	public class createFilter
+	public static class createFilter
 	{
 		@Test
 		public void empty()

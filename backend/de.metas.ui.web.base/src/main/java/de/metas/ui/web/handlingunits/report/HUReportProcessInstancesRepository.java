@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
-import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
@@ -24,7 +23,6 @@ import de.metas.ui.web.process.IProcessInstancesRepository;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
-import de.metas.ui.web.process.adprocess.ADProcessInstancesRepository;
 import de.metas.ui.web.process.descriptor.InternalName;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
@@ -43,7 +41,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Component;
 
@@ -91,8 +88,6 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.build();
 
-	private final ADProcessInstancesRepository processInstancesRepository = SpringContextHolder.instance.getBean(ADProcessInstancesRepository.class);
-
 	@Override
 	public String getProcessHandlerType()
 	{
@@ -126,15 +121,8 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.collect(ImmutableList.toImmutableList()));
 	}
 
-	private void addParametersEntityDescriptor(@NonNull final ProcessId processId, @NonNull final DocumentEntityDescriptor.Builder builder)
-	{
-		processInstancesRepository.addProcessParameters(processId,builder);
-	}
-
-
 	private WebuiHUProcessDescriptor toWebuiHUProcessDescriptor(@NonNull final HUProcessDescriptor huProcessDescriptor)
 	{
-
 		final AdProcessId reportADProcessId = huProcessDescriptor.getProcessId();
 		final ProcessId processId = ProcessId.of(PROCESS_HANDLER_TYPE, reportADProcessId.getRepoId());
 
@@ -143,19 +131,15 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		final ITranslatableString caption = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName());
 		final ITranslatableString description = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription());
 
-				final DocumentEntityDescriptor.Builder builder = DocumentEntityDescriptor.builder()
+		final DocumentEntityDescriptor parametersDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.Process, processId.toDocumentId())
 				.setCaption(caption)
 				.setDescription(description)
 				.disableDefaultTableCallouts()
-						.disableCallouts()
 				.addField(DocumentFieldDescriptor.builder(HUReportProcessInstance.PARAM_Copies)
 						.setCaption(Services.get(IMsgBL.class).translatable(HUReportProcessInstance.PARAM_Copies))
-						.setWidgetType(DocumentFieldWidgetType.Integer));
-
-		addParametersEntityDescriptor(processId, builder);
-
-		final DocumentEntityDescriptor parametersDescriptor = builder.build();
+						.setWidgetType(DocumentFieldWidgetType.Integer))
+				.build();
 
 		return WebuiHUProcessDescriptor.builder()
 				.huProcessDescriptor(huProcessDescriptor)
@@ -225,7 +209,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 
 	private static boolean checkApplies(final HUEditorRow row, final WebuiHUProcessDescriptor descriptor)
 	{
-		final HuUnitType huUnitType = row.getType().toHUUnitTypeOrNull();
+		final String huUnitType = row.getType().toHUUnitTypeOrNull();
 		return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
 	}
 

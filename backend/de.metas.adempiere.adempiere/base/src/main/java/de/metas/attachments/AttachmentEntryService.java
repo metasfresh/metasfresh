@@ -7,14 +7,12 @@ import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderServic
 import de.metas.attachments.listener.TableAttachmentListenerRepository;
 import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.attachments.migration.AttachmentMigrationService;
-import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +20,9 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -59,7 +55,6 @@ public class AttachmentEntryService
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
 
-	private static final AdMessageKey MSG_EXPECTED_ONE_ATTACHMENT_FOR_RECORD_REF = AdMessageKey.of("de.metas.attachments.ExpectedOneAttachmentForRecordRef");
 
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
@@ -76,7 +71,8 @@ public class AttachmentEntryService
 				attachmentLogRepository,
 				attachmentEntryFactory,
 				attachmentMigrationService,
-				attachmentHandlerRegistry);
+				attachmentHandlerRegistry,
+				tableAttachmentListenerService);
 	}
 
 	/**
@@ -89,7 +85,8 @@ public class AttachmentEntryService
 			@NonNull final AttachmentLogRepository attachmentLogRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
 			@NonNull final AttachmentMigrationService attachmentMigrationService,
-			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
+			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry,
+			@NonNull final TableAttachmentListenerService tableAttachmentListenerService)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentLogRepository = attachmentLogRepository;
@@ -108,13 +105,11 @@ public class AttachmentEntryService
 		return createNewAttachment(modelReference, request);
 	}
 
-	/**
-	 * Convenience method
-	 */
+	/** Convenience method */
 	public AttachmentEntry createNewAttachment(
 			@NonNull final Object referencedRecord,
 			@NonNull final String name,
-			final byte[] bytes)
+			@NonNull final byte[] bytes)
 	{
 		final TableRecordReference modelReference = TableRecordReference.of(referencedRecord);
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.fromByteArray(name, bytes);
@@ -146,7 +141,7 @@ public class AttachmentEntryService
 	}
 
 	/**
-	 * @param referencedRecords may be a single model object, a single {@link TableRecordReference} or a collection of both.
+	 * @param referencedRecords may be a single model object, a a single {@link TableRecordReference} or a collection of both.
 	 */
 	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(
@@ -191,12 +186,10 @@ public class AttachmentEntryService
 		return CollectionUtils.singleElement(entryWithReferencedRecords);
 	}
 
-	/**
-	 * Note: the given objects may be "record" models or {@link TableRecordReference}s.
-	 */
+	/** Note: the given objects may be "record" models or {@link TableRecordReference}s. */
 	public Collection<AttachmentEntry> createAttachmentLinks(
 			@NonNull final Collection<AttachmentEntry> entries,
-			@NonNull final Collection<?> referencedRecords)
+			@NonNull final Collection<? extends Object> referencedRecords)
 	{
 		final ImmutableList<AttachmentEntry> unsavedAttachmentsWithLinks = createAttachmentLinksDontSave(entries, referencedRecords);
 
@@ -208,8 +201,8 @@ public class AttachmentEntryService
 	 * Note: the given objects may be "record" models {@code I_C_Order} or {@link TableRecordReference}s.
 	 */
 	public Collection<AttachmentEntry> shareAttachmentLinks(
-			@NonNull final Collection<?> referencedRecordsSource,
-			@NonNull final Collection<?> referencedRecordsDest)
+			@NonNull final Collection<? extends Object> referencedRecordsSource,
+			@NonNull final Collection<? extends Object> referencedRecordsDest)
 	{
 		final ImmutableList.Builder<AttachmentEntry> destAttachmentEntries = ImmutableList.builder();
 
@@ -228,7 +221,7 @@ public class AttachmentEntryService
 	}
 
 	private Collection<AttachmentEntry> expandAndSave(
-			@NonNull final Collection<?> originalReferencedRecords,
+			@NonNull final Collection<? extends Object> originalReferencedRecords,
 			@NonNull final ImmutableList<AttachmentEntry> attachmentEntriesToSave)
 	{
 		if (attachmentEntriesToSave.isEmpty())
@@ -244,12 +237,13 @@ public class AttachmentEntryService
 						attachmentEntriesToSave,
 						additionalReferences.getAdditionalReferences());
 
-		return attachmentEntryRepository.saveAll(destAttachmentEntriesWithAdditionalRefs);
+		final Collection<AttachmentEntry> result = attachmentEntryRepository.saveAll(destAttachmentEntriesWithAdditionalRefs);
+		return result;
 	}
 
 	private ImmutableList<AttachmentEntry> createAttachmentLinksDontSave(
 			@NonNull final Collection<AttachmentEntry> entries,
-			@NonNull final Collection<?> referencedRecords)
+			@NonNull final Collection<? extends Object> referencedRecords)
 	{
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
 
@@ -335,14 +329,11 @@ public class AttachmentEntryService
 
 	public List<AttachmentEntry> getByQuery(@NonNull final AttachmentEntryQuery query)
 	{
-		final Comparator<AttachmentEntry> youngestFirst = (e1, e2) -> e2.getCreatedUpdatedInfo().getCreated().compareTo(e1.getCreatedUpdatedInfo().getCreated());
-		final Comparator<AttachmentEntry> biggestIdFirst = (e1, e2) -> Integer.compare(AttachmentEntryId.getRepoId(e2.getId()), AttachmentEntryId.getRepoId(e1.getId()));
 		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
 				.stream()
 				.filter(e -> e.getTags().hasAllTagsSetToTrue(query.getTagsSetToTrue()))
 				.filter(e -> e.getTags().hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
 				.filter(e -> Check.isEmpty(query.getMimeType(), true) || Objects.equals(e.getMimeType(), query.getMimeType()))
-				.sorted(youngestFirst.thenComparing(biggestIdFirst))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -378,7 +369,6 @@ public class AttachmentEntryService
 		return attachmentEntryRepository.retrieveAttachmentEntryDataResource(attachmentEntryId);
 	}
 
-	@Nullable
 	public AttachmentEntry getByFilenameOrNull(
 			@NonNull final Object referencedRecord,
 			@NonNull final String fileName)
@@ -395,38 +385,9 @@ public class AttachmentEntryService
 
 	public void updateData(
 			@NonNull final AttachmentEntryId attachmentEntryId,
-			final byte[] data)
+			@NonNull final byte[] data)
 	{
 		attachmentEntryRepository.updateAttachmentEntryData(attachmentEntryId, data);
-	}
-
-	@NonNull
-	public Optional<AttachmentEntry> getUniqueByReferenceRecord(@NonNull final TableRecordReference recordReference)
-	{
-		final List<AttachmentEntry> attachmentEntries = getByReferencedRecord(recordReference);
-
-		if (attachmentEntries.size() > 1)
-		{
-			throw new AdempiereException(MSG_EXPECTED_ONE_ATTACHMENT_FOR_RECORD_REF,
-										 recordReference.getTableName(),
-										 recordReference.getRecord_ID());
-		}
-
-		return Optional.of(attachmentEntries)
-				.filter(entries -> entries.size() == 1)
-				.map(entries -> entries.get(0));
-	}
-
-	@NonNull
-	public Stream<EmailAttachment> streamEmailAttachments(@NonNull final TableRecordReference recordRef, @Nullable final String tagName)
-	{
-		return attachmentEntryRepository.getByReferencedRecord(recordRef)
-				.stream()
-				.filter(attachmentEntry -> Check.isBlank(tagName) || attachmentEntry.getTags().hasTag(tagName))
-				.map(attachmentEntry -> EmailAttachment.builder()
-						.filename(attachmentEntry.getFilename())
-						.attachmentDataSupplier(() -> retrieveData(attachmentEntry.getId()))
-						.build());
 	}
 
 	/**

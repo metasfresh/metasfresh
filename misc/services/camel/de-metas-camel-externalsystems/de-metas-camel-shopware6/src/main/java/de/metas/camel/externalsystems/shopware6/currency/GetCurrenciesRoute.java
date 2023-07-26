@@ -23,12 +23,9 @@
 package de.metas.camel.externalsystems.shopware6.currency;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.camel.externalsystems.common.PInstanceLogger;
-import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrency;
-import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jcache.policy.JCachePolicy;
@@ -50,14 +47,6 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 public class GetCurrenciesRoute extends RouteBuilder
 {
 	public static final String GET_CURRENCY_ROUTE_ID = "Shopware6-getCurrencies";
-
-
-	private final ProcessLogger processLogger;
-
-	public GetCurrenciesRoute(@NonNull final ProcessLogger processLogger)
-	{
-		this.processLogger = processLogger;
-	}
 
 	@Override
 	public void configure()
@@ -88,10 +77,9 @@ public class GetCurrenciesRoute extends RouteBuilder
 		{
 			throw new RuntimeException("No getCurrenciesRequest provided!");
 		}
-		final PInstanceLogger pInstanceLogger = PInstanceLogger.of(processLogger);
 
 		final ShopwareClient shopwareClient = ShopwareClient
-				.of(getCurrenciesRequest.getClientId(), getCurrenciesRequest.getClientSecret(), getCurrenciesRequest.getBaseUrl(), pInstanceLogger);
+				.of(getCurrenciesRequest.getClientId(), getCurrenciesRequest.getClientSecret(), getCurrenciesRequest.getBaseUrl());
 
 		final JsonCurrencies currencies = shopwareClient.getCurrencies();
 

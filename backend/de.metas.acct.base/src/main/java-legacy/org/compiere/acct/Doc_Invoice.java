@@ -16,37 +16,17 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.acct.Account;
-import de.metas.acct.accounts.BPartnerCustomerAccountType;
-import de.metas.acct.accounts.BPartnerVendorAccountType;
-import de.metas.acct.accounts.InvoiceAccountProviderExtension;
-import de.metas.acct.accounts.ProductAcctType;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.costing.ChargeId;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.acct.InvoiceAcct;
-import de.metas.invoice.matchinv.MatchInvId;
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.order.OrderId;
-import de.metas.tax.api.TaxId;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,21 +35,27 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.MAccount;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.DocLine_Invoice;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.MatchInvId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
 
 /**
  * Post Invoice Documents.
@@ -81,69 +67,27 @@ import java.util.Set;
  *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
- * <li>BF: 2797257 Landed Cost Detail is not using allocation qty
+ *         <li>BF: 2797257 Landed Cost Detail is not using allocation qty
+ *
  * @version $Id: Doc_Invoice.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
-@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final MatchInvoiceService matchInvoiceService;
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
-	/**
-	 * Contained Optional Tax Lines
-	 */
+	/** Contained Optional Tax Lines */
 	private List<DocTax> _taxes = null;
-	/**
-	 * All lines are Service
-	 */
+	/** All lines are Service */
 	private boolean m_allLinesService = true;
-	/**
-	 * All lines are product item
-	 */
+	/** All lines are product item */
 	private boolean m_allLinesItem = true;
-	private Optional<InvoiceAcct> _invoiceAccounts = null; // lazy
-
-	private CurrencyConversionContext _invoiceCurrencyConversionCtx = null;
 
 	public Doc_Invoice(final AcctDocContext ctx)
 	{
 		super(ctx);
-		this.matchInvoiceService = ctx.getServices().getMatchInvoiceService();
-	}
-
-	Optional<InvoiceAcct> getInvoiceAccounts()
-	{
-		Optional<InvoiceAcct> invoiceAccounts = this._invoiceAccounts;
-		if (invoiceAccounts == null)
-		{
-			invoiceAccounts = this._invoiceAccounts = services.getInvoiceAcct(getInvoiceId());
-		}
-		return invoiceAccounts;
-	}
-
-	@Nullable
-	@Override
-	protected InvoiceAccountProviderExtension createAccountProviderExtension()
-	{
-		return createInvoiceAccountProviderExtension(null);
-	}
-
-	InvoiceAccountProviderExtension createInvoiceAccountProviderExtension(@Nullable final InvoiceLineId invoiceLineId)
-	{
-		return getInvoiceAccounts()
-				.map(invoiceAccounts -> InvoiceAccountProviderExtension.builder()
-						.accountDAO(services.getAccountDAO())
-						.invoiceAccounts(invoiceAccounts)
-						.clientId(getClientId())
-						.invoiceLineId(invoiceLineId)
-						.build())
-				.orElse(null);
-
 	}
 
 	@Override
@@ -172,8 +116,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	{
 		final String sql = "SELECT it.C_Tax_ID, t.Name, t.Rate, it.TaxBaseAmt, it.TaxAmt, t.IsSalesTax " // 1..6
 				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsTaxIncluded // 7
-				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsReverseCharge // 8
-				+ ", it." + I_C_InvoiceTax.COLUMNNAME_ReverseChargeTaxAmt // 9
 				+ " FROM C_Tax t, C_InvoiceTax it "
 				+ " WHERE t.C_Tax_ID=it.C_Tax_ID AND it.C_Invoice_ID=?";
 		final Object[] sqlParams = new Object[] { get_ID() };
@@ -189,18 +131,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final ImmutableList.Builder<DocTax> docTaxes = ImmutableList.builder();
 			while (rs.next())
 			{
-				final DocTax taxLine = DocTax.builder()
-						.accountProvider(getAccountProvider())
-						.taxId(TaxId.ofRepoId(rs.getInt(1)))
-						.taxName(rs.getString(2))
-						//.taxRate(rs.getBigDecimal(3))
-						.taxBaseAmt(rs.getBigDecimal(4))
-						.taxAmt(rs.getBigDecimal(5))
-						.salesTax(DisplayType.toBoolean(rs.getString(6)))
-						.taxIncluded(DisplayType.toBoolean(rs.getString(7)))
-						.isReverseCharge(StringUtils.toBoolean(rs.getString(8)))
-						.reverseChargeTaxAmt(rs.getBigDecimal(9))
-						.build();
+				final TaxId taxId = TaxId.ofRepoId(rs.getInt(1));
+				final String taxName = rs.getString(2);
+				final BigDecimal rate = rs.getBigDecimal(3);
+				final BigDecimal taxBaseAmt = rs.getBigDecimal(4);
+				final BigDecimal taxAmt = rs.getBigDecimal(5);
+				final boolean salesTax = DisplayType.toBoolean(rs.getString(6));
+				final boolean taxIncluded = DisplayType.toBoolean(rs.getString(7));
+				//
+				final DocTax taxLine = new DocTax(
+						taxId, taxName, rate,
+						taxBaseAmt, taxAmt, salesTax, taxIncluded);
 				docTaxes.add(taxLine);
 			}
 
@@ -213,8 +154,10 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
-	}    // loadTaxes
+	}	// loadTaxes
 
 	private List<DocLine_Invoice> loadLines(final I_C_Invoice invoice)
 	{
@@ -276,13 +219,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						docLine.setLineNetAmtDifference(diff);
 						break;
 					}
-				}    // for all lines
-			}    // tax difference
-		}    // for all taxes
+				} 	// for all lines
+			} 	// tax difference
+		} 	// for all taxes
 
 		//
 		return docLines;
-	}    // loadLines
+	}	// loadLines
 
 	public InvoiceId getInvoiceId()
 	{
@@ -291,7 +234,10 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 	public final boolean isCreditMemo()
 	{
-		return InvoiceDocBaseType.ofDocBaseType(getDocBaseType()).isCreditMemo();
+		final String docBaseType = getDocumentType();
+		final boolean cm = Doc.DOCTYPE_ARCredit.equals(docBaseType)
+				|| Doc.DOCTYPE_APCredit.equals(docBaseType);
+		return cm;
 	}
 
 	/**************************************************************************
@@ -339,13 +285,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				.orElse(null);
 	}
 
-	private Fact newFact(@NonNull final AcctSchema as)
-	{
-		return new Fact(this, as, getPostingType())
-				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance)
-				.setCurrencyConversionContext(getCurrencyConversionContext(as));
-	}
-
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
@@ -356,27 +295,27 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 
 		// ** ARI, ARF
-		final DocBaseType docBaseType = getDocBaseType();
-		if (DocBaseType.ARInvoice.equals(docBaseType)
-				|| DocBaseType.ARProFormaInvoice.equals(docBaseType))
+		final String docBaseType = getDocumentType();
+		if (DOCTYPE_ARInvoice.equals(docBaseType)
+				|| DOCTYPE_ARProForma.equals(docBaseType))
 		{
 			return createFacts_SalesInvoice(as);
 		}
 		// ARC
-		else if (DocBaseType.ARCreditMemo.equals(docBaseType))
+		else if (DOCTYPE_ARCredit.equals(docBaseType))
 		{
 			return createFacts_SalesCreditMemo(as);
 		}
 
 		// ** API
-		else if (DocBaseType.APInvoice.equals(docBaseType)
+		else if (DOCTYPE_APInvoice.equals(docBaseType)
 				|| InvoiceDocBaseType.AEInvoice.getDocBaseType().equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
 				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
 		}
 		// APC
-		else if (DocBaseType.APCreditMemo.equals(docBaseType))
+		else if (DOCTYPE_APCredit.equals(docBaseType))
 		{
 			return createFacts_PurchaseCreditMemo(as);
 		}
@@ -400,19 +339,19 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_SalesInvoice(final AcctSchema as)
 	{
-		final Fact fact = newFact(as);
+		final Fact fact = new Fact(this, as, PostingType.Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
 
 		//
 		// Header Charge CR
-		final ChargeId chargeId = getC_Charge_ID().orElse(null);
 		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
-		if (chargeId != null && chargeAmt != null && chargeAmt.signum() != 0)
+		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt))
+					.setAccount(getValidCombinationId(AccountType.Charge, as))
 					.setCurrencyId(getCurrencyId())
 					.setAmtSource(null, chargeAmt)
 					.buildAndAdd();
@@ -447,12 +386,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
 					fact.createLine(line,
-							line.getAccount(ProductAcctType.P_TradeDiscountGrant_Acct, as),
+							line.getAccount(ProductAcctType.TDiscountGrant, as),
 							getCurrencyId(), dAmt, null);
 				}
 			}
 			fact.createLine(line,
-					line.getAccount(ProductAcctType.P_Revenue_Acct, as),
+					line.getAccount(ProductAcctType.Revenue, as),
 					getCurrencyId(), null, lineAmt);
 			if (!line.isItem())
 			{
@@ -463,16 +402,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromOrg(fl.getOrgId(), true);      // from Loc
-			fl.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
+			fl.setLocationFromOrg(fl.getAD_Org_ID(), true);      // from Loc
+			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		});
 
 		// Receivables DR
-		final Account receivablesAccount = getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as);
-		final Account receivablesServices = getCustomerAccount(BPartnerCustomerAccountType.C_Receivable_Services, as);
+		final AccountId receivablesId = getValidCombinationId(AccountType.C_Receivable, as);
+		final AccountId receivablesServicesId = getValidCombinationId(AccountType.C_Receivable_Services, as);
 		if (m_allLinesItem
 				|| !as.isPostServices()
-				|| receivablesAccount.equals(receivablesServices))
+				|| AccountId.equals(receivablesId, receivablesServicesId))
 		{
 			grossAmt = getAmount(Doc.AMTTYPE_Gross);
 			serviceAmt = BigDecimal.ZERO;
@@ -486,14 +425,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// https://github.com/metasfresh/metasfresh/issues/4147
 		// we need this line later, even if it is zero
 		fact.createLine()
-				.setAccount(receivablesAccount)
+				.setAccount(receivablesId)
 				.setAmtSource(getCurrencyId(), grossAmt, null)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(receivablesServices)
+					.setAccount(receivablesServicesId)
 					.setAmtSource(getCurrencyId(), serviceAmt, null)
 					.alsoAddZeroLine()
 					.buildAndAdd();
@@ -513,19 +452,19 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_SalesCreditMemo(final AcctSchema as)
 	{
-		final Fact fact = newFact(as);
+		final Fact fact = new Fact(this, as, PostingType.Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
 
 		//
 		// Header Charge DR
-		final ChargeId chargeId = getC_Charge_ID().orElse(null);
 		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
-		if (chargeId != null && chargeAmt != null && chargeAmt.signum() != 0)
+		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt))
+					.setAccount(getValidCombinationId(AccountType.Charge, as))
 					.setCurrencyId(getCurrencyId())
 					.setAmtSource(chargeAmt, null)
 					.buildAndAdd();
@@ -550,7 +489,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		for (final DocLine_Invoice line : getDocLines())
 		{
 			BigDecimal lineAmt = line.getAmtSource();
-			BigDecimal dAmt;
+			BigDecimal dAmt = null;
 			if (as.isPostTradeDiscount())
 			{
 				final BigDecimal discount = line.getDiscount();
@@ -559,12 +498,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
 					fact.createLine(line,
-							line.getAccount(ProductAcctType.P_TradeDiscountGrant_Acct, as),
+							line.getAccount(ProductAcctType.TDiscountGrant, as),
 							getCurrencyId(), null, dAmt);
 				}
 			}
 			fact.createLine(line,
-					line.getAccount(ProductAcctType.P_Revenue_Acct, as),
+					line.getAccount(ProductAcctType.Revenue, as),
 					getCurrencyId(), lineAmt, null);
 			if (!line.isItem())
 			{
@@ -574,16 +513,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromOrg(fl.getOrgId(), true);      // from Loc
-			fl.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
+			fl.setLocationFromOrg(fl.getAD_Org_ID(), true);      // from Loc
+			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		});
 
 		// Receivables CR
-		final Account receivables = getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as);
-		final Account receivablesServices = getCustomerAccount(BPartnerCustomerAccountType.C_Receivable_Services, as);
+		final AccountId receivablesId = getValidCombinationId(AccountType.C_Receivable, as);
+		final AccountId receivablesServicesId = getValidCombinationId(AccountType.C_Receivable_Services, as);
 		if (m_allLinesItem
 				|| !as.isPostServices()
-				|| receivables.equals(receivablesServices))
+				|| AccountId.equals(receivablesId, receivablesServicesId))
 		{
 			grossAmt = getAmount(Doc.AMTTYPE_Gross);
 			serviceAmt = BigDecimal.ZERO;
@@ -597,14 +536,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// https://github.com/metasfresh/metasfresh/issues/4147
 		// we need this line later, even if it is zero
 		fact.createLine()
-				.setAccount(receivables)
+				.setAccount(receivablesId)
 				.setAmtSource(getCurrencyId(), null, grossAmt)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(receivablesServices)
+					.setAccount(receivablesServicesId)
 					.setAmtSource(getCurrencyId(), null, serviceAmt)
 					.alsoAddZeroLine()
 					.buildAndAdd();
@@ -619,27 +558,25 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 *      Payables                CR
 	 *      Charge          DR
 	 *      TaxCredit       DR
-	 *      TaxDue          DR               (if reverse charge)
 	 *      Expense         DR
 	 * </pre>
 	 */
 	private List<Fact> createFacts_PurchaseInvoice(final AcctSchema as)
 	{
-		final Fact fact = newFact(as);
+		final Fact fact = new Fact(this, as, PostingType.Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
-		final CurrencyId currencyId = getCurrencyId();
-		Money grossAmt = Money.of(getAmount(Doc.AMTTYPE_Gross), currencyId);
-		Money serviceAmt = Money.zero(currencyId);
+		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
+		BigDecimal serviceAmt = BigDecimal.ZERO;
 
 		//
 		// Charge DR
-		final ChargeId chargeId = getC_Charge_ID().orElse(null);
 		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
-		if (chargeId != null && chargeAmt != null && chargeAmt.signum() != 0)
+		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt))
-					.setCurrencyId(currencyId)
+					.setAccount(getValidCombinationId(AccountType.Charge, as))
+					.setCurrencyId(getCurrencyId())
 					.setAmtSource(chargeAmt, null)
 					.buildAndAdd();
 		}
@@ -648,85 +585,52 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxCredit DR
 		for (final DocTax docTax : getTaxes())
 		{
-			if (docTax.isReverseCharge())
+			final FactLine tl = fact.createLine(null,
+					docTax.getAccount(as),  // account
+					getCurrencyId(),
+					docTax.getTaxAmt(), null); // DR/CR
+			if (tl != null)
 			{
-				fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
-						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-				fact.createLine()
-						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt().negate(), null)
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-			}
-			else
-			{
-				fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
-						.setAmtSource(currencyId, docTax.getTaxAmt(), null)
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
+				tl.setC_Tax_ID(docTax.getC_Tax_ID());
 			}
 		}
 
 		// Expense/InventoryClearing DR
 		for (final DocLine_Invoice line : getDocLines())
 		{
-			Money amt = Money.of(line.getAmtSource(), currencyId);
+			BigDecimal amt = line.getAmtSource();
+			BigDecimal dAmt = null;
 			if (as.isPostTradeDiscount() && !line.isItem())
 			{
-				final BigDecimal discountBD = line.getDiscount();
-				if (discountBD != null && discountBD.signum() != 0)
+				final BigDecimal discount = line.getDiscount();
+				if (discount != null && discount.signum() != 0)
 				{
-					final Money discount = Money.of(discountBD, currencyId);
 					amt = amt.add(discount);
-					fact.createLine()
-							.setDocLine(line)
-							.setAccount(line.getAccount(ProductAcctType.P_TradeDiscountRec_Acct, as))
-							.setAmtSource(null, discount)
-							.buildAndAdd();
+					dAmt = discount;
+					final MAccount tradeDiscountReceived = line.getAccount(ProductAcctType.TDiscountRec, as);
+					fact.createLine(line, tradeDiscountReceived, getCurrencyId(), null, dAmt);
 				}
 			}
 
 			if (line.isItem())  // stockable item
 			{
-				final Money amtReceived = line.calculateAmtOfQtyReceived(amt);
-				fact.createLine()
-						.setDocLine(line)
-						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
-						.setAmtSource(amtReceived, null)
-						.setQty(line.getQtyReceivedAbs())
-						.buildAndAdd();
+				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
+				fact.createLine(line,
+						line.getAccount(ProductAcctType.InventoryClearing, as),
+						getCurrencyId(),
+						amtReceived, null,  // DR/CR
+						line.getQtyReceivedAbs());
 
-				final Money amtNotReceived = amt.subtract(amtReceived);
-				fact.createLine()
-						.setDocLine(line)
-						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
-						.setAmtSource(amtNotReceived, null)
-						.setQty(line.getQtyNotReceivedAbs())
-						.buildAndAdd();
+				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
+				fact.createLine(line,
+						line.getAccount(ProductAcctType.Expense, as),
+						getCurrencyId(),
+						amtNotReceived, null,  // DR/CR
+						line.getQtyNotReceivedAbs());
 			}
 			else // service
 			{
-				final Money costAmountMatched = line.getCostAmountMatched();
-				if (!costAmountMatched.isZero())
-				{
-					fact.createLine()
-							.setDocLine(line)
-							.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
-							.setAmtSource(costAmountMatched, null)
-							.setQty(line.getQtyReceivedAbs())
-							.buildAndAdd();
-				}
-
-				final Money expenseAmt = amt.subtract(costAmountMatched);
-				fact.createLine()
-						.setDocLine(line)
-						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
-						.setAmtSource(expenseAmt, null)
-						.buildAndAdd();
+				fact.createLine(line, line.getAccount(ProductAcctType.Expense, as), getCurrencyId(), amt, null);
 			}
 
 			if (!line.isItem())
@@ -737,38 +641,38 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
-			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
+			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), true);  // from Loc
+			fl.setLocationFromOrg(fl.getAD_Org_ID(), false);    // to Loc
 		});
 
 		// Liability CR
-		final Account payablesId = getVendorAccount(BPartnerVendorAccountType.V_Liability, as);
-		final Account payablesServicesId = getVendorAccount(BPartnerVendorAccountType.V_Liability_Services, as);
+		final AccountId payablesId = getValidCombinationId(AccountType.V_Liability, as);
+		final AccountId payablesServicesId = getValidCombinationId(AccountType.V_Liability_Services, as);
 		if (m_allLinesItem
 				|| !as.isPostServices()
-				|| payablesId.equals(payablesServicesId))
+				|| AccountId.equals(payablesId, payablesServicesId))
 		{
-			grossAmt = Money.of(getAmount(Doc.AMTTYPE_Gross), currencyId);
-			serviceAmt = Money.zero(currencyId);
+			grossAmt = getAmount(Doc.AMTTYPE_Gross);
+			serviceAmt = BigDecimal.ZERO;
 		}
 		else if (m_allLinesService)
 		{
-			serviceAmt = Money.of(getAmount(Doc.AMTTYPE_Gross), currencyId);
-			grossAmt = Money.zero(currencyId);
+			serviceAmt = getAmount(Doc.AMTTYPE_Gross);
+			grossAmt = BigDecimal.ZERO;
 		}
 
 		// https://github.com/metasfresh/metasfresh/issues/4147
 		// we need this line later, even if it is zero
 		fact.createLine()
 				.setAccount(payablesId)
-				.setAmtSource(null, grossAmt)
+				.setAmtSource(getCurrencyId(), null, grossAmt)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine()
 					.setAccount(payablesServicesId)
-					.setAmtSource(null, serviceAmt)
+					.setAmtSource(getCurrencyId(), null, serviceAmt)
 					.alsoAddZeroLine()
 					.buildAndAdd();
 		}
@@ -782,27 +686,25 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 *      Payables        DR
 	 *      Charge                  CR
 	 *      TaxCredit               CR
-	 *      TaxDue                  CR  (if reverse charge)
 	 *      Expense                 CR
 	 * </pre>
 	 */
 	private List<Fact> createFacts_PurchaseCreditMemo(final AcctSchema as)
 	{
-		final Fact fact = newFact(as);
+		final Fact fact = new Fact(this, as, PostingType.Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
-		final CurrencyId currencyId = getCurrencyId();
-		Money grossAmt = Money.of(getAmount(Doc.AMTTYPE_Gross), currencyId);
-		Money serviceAmt = Money.zero(currencyId);
+		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
+		BigDecimal serviceAmt = BigDecimal.ZERO;
 
 		//
 		// Charge CR
-		final ChargeId chargeId = getC_Charge_ID().orElse(null);
 		final BigDecimal chargeAmt = getAmount(Doc.AMTTYPE_Charge);
-		if (chargeId != null && chargeAmt != null && chargeAmt.signum() != 0)
+		if (chargeAmt != null && chargeAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(getAccountProvider().getChargeAccount(chargeId, as.getId(), chargeAmt))
-					.setCurrencyId(currencyId)
+					.setAccount(getValidCombinationId(AccountType.Charge, as))
+					.setCurrencyId(getCurrencyId())
 					.setAmtSource(null, chargeAmt)
 					.buildAndAdd();
 		}
@@ -811,74 +713,49 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// TaxCredit CR
 		for (final DocTax docTax : getTaxes())
 		{
-			if (docTax.isReverseCharge())
+			final FactLine tl = fact.createLine(null, docTax.getAccount(as),
+					getCurrencyId(), null, docTax.getTaxAmt());
+			if (tl != null)
 			{
-				fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
-						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-				fact.createLine()
-						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt().negate())
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-			}
-			else
-			{
-				fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
-						.setAmtSource(currencyId, null, docTax.getTaxAmt())
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
+				tl.setC_Tax_ID(docTax.getC_Tax_ID());
 			}
 		}
-
 		// Expense CR
 		for (final DocLine_Invoice line : getDocLines())
 		{
-			Money amt = Money.of(line.getAmtSource(), currencyId);
+			BigDecimal amt = line.getAmtSource();
+			BigDecimal dAmt = null;
 			if (as.isPostTradeDiscount() && !line.isItem())
 			{
-				final BigDecimal discountBD = line.getDiscount();
-				if (discountBD != null && discountBD.signum() != 0)
+				final BigDecimal discount = line.getDiscount();
+				if (discount != null && discount.signum() != 0)
 				{
-					final Money discount = Money.of(discountBD, currencyId);
 					amt = amt.add(discount);
-
-					fact.createLine()
-							.setDocLine(line)
-							.setAccount(line.getAccount(ProductAcctType.P_TradeDiscountRec_Acct, as))
-							.setAmtSource(discount, null)
-							.buildAndAdd();
+					dAmt = discount;
+					final MAccount tradeDiscountReceived = line.getAccount(ProductAcctType.TDiscountRec, as);
+					fact.createLine(line, tradeDiscountReceived, getCurrencyId(), dAmt, null);
 				}
 			}
 
 			if (line.isItem())  // stockable item
 			{
-				final Money amtReceived = line.calculateAmtOfQtyReceived(amt);
-				fact.createLine()
-						.setDocLine(line)
-						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
-						.setAmtSource(null, amtReceived)
-						.setQty(line.getQtyReceivedAbs())
-						.buildAndAdd();
+				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
+				fact.createLine(line,
+						line.getAccount(ProductAcctType.InventoryClearing, as),
+						getCurrencyId(),
+						null, amtReceived,  // DR/CR
+						line.getQtyReceivedAbs());
 
-				final Money amtNotReceived = amt.subtract(amtReceived);
-				fact.createLine()
-						.setDocLine(line)
-						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
-						.setAmtSource(null, amtNotReceived)
-						.setQty(line.getQtyNotReceivedAbs())
-						.buildAndAdd();
+				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
+				fact.createLine(line,
+						line.getAccount(ProductAcctType.Expense, as),
+						getCurrencyId(),
+						null, amtNotReceived,  // DR/CR
+						line.getQtyNotReceivedAbs());
 			}
 			else // service
 			{
-				fact.createLine()
-						.setDocLine(line)
-						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
-						.setAmtSource(null, amt)
-						.buildAndAdd();
+				fact.createLine(line, line.getAccount(ProductAcctType.Expense, as), getCurrencyId(), null, amt);
 			}
 
 			if (!line.isItem())
@@ -889,38 +766,38 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
-			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
+			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), true);  // from Loc
+			fl.setLocationFromOrg(fl.getAD_Org_ID(), false);    // to Loc
 		});
 
 		// Liability DR
-		final Account payables = getVendorAccount(BPartnerVendorAccountType.V_Liability, as);
-		final Account payablesServices = getVendorAccount(BPartnerVendorAccountType.V_Liability_Services, as);
+		final AccountId payablesId = getValidCombinationId(AccountType.V_Liability, as);
+		final AccountId payablesServicesId = getValidCombinationId(AccountType.V_Liability_Services, as);
 		if (m_allLinesItem
 				|| !as.isPostServices()
-				|| payables.equals(payablesServices))
+				|| AccountId.equals(payablesId, payablesServicesId))
 		{
-			grossAmt = Money.of(getAmount(Doc.AMTTYPE_Gross), currencyId);
-			serviceAmt = Money.zero(currencyId);
+			grossAmt = getAmount(Doc.AMTTYPE_Gross);
+			serviceAmt = BigDecimal.ZERO;
 		}
 		else if (m_allLinesService)
 		{
-			serviceAmt = Money.of(getAmount(Doc.AMTTYPE_Gross), currencyId);
-			grossAmt = Money.zero(currencyId);
+			serviceAmt = getAmount(Doc.AMTTYPE_Gross);
+			grossAmt = BigDecimal.ZERO;
 		}
 
 		// https://github.com/metasfresh/metasfresh/issues/4147
 		// we need this line later, even if it is zero
 		fact.createLine()
-				.setAccount(payables)
-				.setAmtSource(grossAmt, null)
+				.setAccount(payablesId)
+				.setAmtSource(getCurrencyId(), grossAmt, null)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine()
-					.setAccount(payablesServices)
-					.setAmtSource(serviceAmt, null)
+					.setAccount(payablesServicesId)
+					.setAmtSource(getCurrencyId(), serviceAmt, null)
 					.alsoAddZeroLine()
 					.buildAndAdd();
 		}
@@ -929,24 +806,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	}
 
 	@Override
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
-	{
-		CurrencyConversionContext invoiceCurrencyConversionCtx = this._invoiceCurrencyConversionCtx;
-		if (invoiceCurrencyConversionCtx == null)
-		{
-			final I_C_Invoice invoice = getModel(I_C_Invoice.class);
-			invoiceCurrencyConversionCtx = this._invoiceCurrencyConversionCtx = invoiceBL.getCurrencyConversionCtx(invoice);
-		}
-		return invoiceCurrencyConversionCtx;
-	}
-
-	@Override
 	protected void afterPost()
 	{
 		postDependingMatchInvsIfNeeded();
 	}
 
-	private void postDependingMatchInvsIfNeeded()
+	private final void postDependingMatchInvsIfNeeded()
 	{
 		if (!Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{
@@ -966,30 +831,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			return;
 		}
 
-		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInvoiceLineIds(invoiceLineIds);
+		final Set<MatchInvId> matchInvIds = matchInvDAO.retrieveIdsProcessedButNotPostedForInvoiceLines(invoiceLineIds);
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 
-	@Nullable
-	@Override
-	protected OrderId getSalesOrderId()
+	public static void unpost(final I_C_Invoice invoice)
 	{
-		final Optional<OrderId> optionalSalesOrderId = CollectionUtils.extractSingleElementOrDefault(
-				getDocLines(),
-				docLine -> Optional.ofNullable(docLine.getSalesOrderId()),
-				Optional.empty());
-
-		//noinspection DataFlowIssue
-		return optionalSalesOrderId.orElse(null);
-	}
-
-	public static void unpostIfNeeded(final I_C_Invoice invoice)
-	{
-		if (!invoice.isPosted())
-		{
-			return;
-		}
-
 		// Make sure the period is open
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		MPeriod.testPeriodOpen(ctx, invoice.getDateAcct(), invoice.getC_DocType_ID(), invoice.getAD_Org_ID());
@@ -998,23 +845,5 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		invoice.setPosted(false);
 		InterfaceWrapperHelper.save(invoice);
-	}
-
-	@NonNull
-	private PostingType getPostingType()
-	{
-		final DocTypeId docTypeId = getC_DocType_ID();
-
-		if(docTypeId == null)
-		{
-			return PostingType.Actual;
-		}
-
-		if(docTypeBL.isInternalVendorInvoice(docTypeId))
-		{
-			return PostingType.Statistical;
-		}
-
-		return PostingType.Actual;
 	}
 }   // Doc_Invoice

@@ -22,11 +22,21 @@ package org.adempiere.ad.service;
  * #L%
  */
 
+import java.util.Properties;
+
+import org.compiere.model.I_AD_System;
+
 import de.metas.util.ISingletonService;
 
 public interface ISystemBL extends ISingletonService
 {
-	ADSystemInfo get();
+	I_AD_System get(Properties ctx);
+
+	String getProfileInfo(boolean recalc);
+
+	String getStatisticsInfo(boolean recalc);
+
+	boolean setInfo(I_AD_System system);
 
 	/**
 	 * Evaluate a sysconfig value and check it's value:
@@ -35,13 +45,21 @@ public interface ISystemBL extends ISingletonService
 	 * <li>P - Allow remember the username and password (default for swing)
 	 * <li>N - None
 	 * </ul>
-	 *
+	 * 
 	 * @param sysConfigKey currently known/used values are {@code "SWING_LOGIN_ALLOW_REMEMBER_ME"} and {@code "ZK_LOGIN_ALLOW_REMEMBER_ME"} in a private legacy ZK UI.
+	 * @return
 	 */
 	boolean isRememberUserAllowed(String sysConfigKey);
 
 	/**
 	 * See {@link #isRememberUserAllowed(String)}.
+	 * 
+	 * @param sysConfigKey
+	 * @return
 	 */
 	boolean isRememberPasswordAllowed(String sysConfigKey);
+
+	boolean isValid();
+
+	boolean isAutoErrorReport();
 }

@@ -25,7 +25,6 @@ package de.metas.handlingunits.inout;
  * #L%
  */
 
-import de.metas.handlingunits.HuPackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
@@ -56,7 +55,6 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	 */
 	I_M_HU_PackingMaterial retrivePackingMaterialOfProduct(final I_M_Product product);
 
-	@Nullable
 	static I_M_Product extractProductOrNull(@NonNull final I_M_HU_PackingMaterial pm)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(pm.getM_Product_ID());
@@ -97,7 +95,5 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	 */
 	@NonNull
 	PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId);
-
-	List<HuPackingMaterial> retrieveBy(@NonNull final HuPackingMaterialQuery query);
 
 }

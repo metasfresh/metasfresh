@@ -16,9 +16,17 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Insets;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+
 import org.adempiere.ad.ui.ITable;
 import org.adempiere.ad.ui.ITableColorProvider;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -32,11 +40,10 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Table Cell Renderer based on DisplayType
@@ -136,6 +143,17 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 	/** Logger */
 	private static final transient Logger log = LogManager.getLogger(VCellRenderer.class);
 
+	/**
+	 * Get TableCell RendererComponent.
+	 * 
+	 * @param table table
+	 * @param value value
+	 * @param isSelected selected
+	 * @param hasFocus focus
+	 * @param row row
+	 * @param col col
+	 * @return component
+	 */
 	@Override
 	public Component getTableCellRendererComponent(final JTable table,
 			final Object value,
@@ -336,7 +354,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 			// Button
 			else if (m_displayType == DisplayType.Button)
 			{
-				if (IColumnBL.isRecordIdColumnName(m_columnName))
+				if (Services.get(IColumnBL.class).isRecordIdColumnName(m_columnName))
 					retValue = "#" + value + "#";
 				else
 					retValue = null;

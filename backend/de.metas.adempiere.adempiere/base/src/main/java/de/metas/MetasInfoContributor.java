@@ -1,16 +1,19 @@
 package de.metas;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import org.adempiere.ad.service.ADSystemInfo;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.adempiere.ad.service.ISystemBL;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_System;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -46,15 +49,16 @@ public class MetasInfoContributor implements InfoContributor
 	}
 
 	/**
-	 * Task https://github.com/metasfresh/metasfresh/issues/2601
+	 * @task https://github.com/metasfresh/metasfresh/issues/2601
 	 */
-	private static Map<String, String> retrieveADSystemInfo()
+	private static final Map<String, String> retrieveADSystemInfo()
 	{
 		final Map<String, String> adSystemInfo = new HashMap<>();
 		try
 		{
-			final ADSystemInfo adSystem = Services.get(ISystemBL.class).get();
-			adSystemInfo.put("dbVersion", adSystem.getDbVersion());
+			adSystemInfo.put("implementationVersion", Adempiere.getImplementationVersion());
+			final I_AD_System adSystem = Services.get(ISystemBL.class).get(Env.getCtx());
+			adSystemInfo.put("dbVersion", adSystem.getDBVersion());
 		}
 		catch (final Exception ex)
 		{

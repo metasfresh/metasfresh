@@ -1,1 +1,0 @@
-UPDATE ad_sysconfig SET  isactive = 'N' WHERE ad_sysconfig_id = 541440;

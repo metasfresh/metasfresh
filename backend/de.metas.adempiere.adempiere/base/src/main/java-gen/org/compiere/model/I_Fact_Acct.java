@@ -3,20 +3,27 @@ package org.compiere.model;
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /** Generated Interface for Fact_Acct
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_Fact_Acct 
 {
 
-	String Table_Name = "Fact_Acct";
+    /** TableName=Fact_Acct */
+    public static final String Table_Name = "Fact_Acct";
 
-//	/** AD_Table_ID=270 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=270 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
 	 * Set Asset.
@@ -26,7 +33,7 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setA_Asset_ID (int A_Asset_ID);
+	public void setA_Asset_ID (int A_Asset_ID);
 
 	/**
 	 * Get Asset.
@@ -36,675 +43,709 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getA_Asset_ID();
+	public int getA_Asset_ID();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_A_Asset_ID = new ModelColumn<>(I_Fact_Acct.class, "A_Asset_ID", null);
-	String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
+    /** Column definition for A_Asset_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_A_Asset_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "A_Asset_ID", null);
+    /** Column name A_Asset_ID */
+    public static final String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
 	/**
-	 * Set Account.
+	 * Set Konto.
 	 * Account used
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAccount_ID (int Account_ID);
+	public void setAccount_ID (int Account_ID);
 
 	/**
-	 * Get Account.
+	 * Get Konto.
 	 * Account used
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAccount_ID();
+	public int getAccount_ID();
 
-	String COLUMNNAME_Account_ID = "Account_ID";
+//	public org.compiere.model.I_C_ElementValue getAccount();
 
-	/**
-	 * Set Account conceptual name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAccountConceptualName (java.lang.String AccountConceptualName);
+//	public void setAccount(org.compiere.model.I_C_ElementValue Account);
+
+    /** Column definition for Account_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name Account_ID */
+    public static final String COLUMNNAME_Account_ID = "Account_ID";
 
 	/**
-	 * Get Account conceptual name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getAccountConceptualName();
-
-	ModelColumn<I_Fact_Acct, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct.class, "AccountConceptualName", null);
-	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
-
-	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Trx Organization.
+	 * Set Buchende Organisation.
 	 * Performing or initiating organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
+	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
 
 	/**
-	 * Get Trx Organization.
+	 * Get Buchende Organisation.
 	 * Performing or initiating organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_OrgTrx_ID();
+	public int getAD_OrgTrx_ID();
 
-	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
+	public org.compiere.model.I_AD_Org getAD_OrgTrx();
+
+	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
+
+    /** Column definition for AD_OrgTrx_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_OrgTrx_ID */
+    public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
-	 * Set Table.
+	 * Set DB-Tabelle.
 	 * Database Table information
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Table_ID (int AD_Table_ID);
+	public void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get Table.
+	 * Get DB-Tabelle.
 	 * Database Table information
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Table_ID();
+	public int getAD_Table_ID();
 
-	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	public org.compiere.model.I_AD_Table getAD_Table();
+
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
+
+    /** Column definition for AD_Table_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Credit.
+	 * Set Haben.
+	 * Ausgewiesener Forderungsbetrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAmtAcctCr (BigDecimal AmtAcctCr);
+	public void setAmtAcctCr (java.math.BigDecimal AmtAcctCr);
 
 	/**
-	 * Get Credit.
+	 * Get Haben.
+	 * Ausgewiesener Forderungsbetrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getAmtAcctCr();
+	public java.math.BigDecimal getAmtAcctCr();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_AmtAcctCr = new ModelColumn<>(I_Fact_Acct.class, "AmtAcctCr", null);
-	String COLUMNNAME_AmtAcctCr = "AmtAcctCr";
+    /** Column definition for AmtAcctCr */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtAcctCr = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AmtAcctCr", null);
+    /** Column name AmtAcctCr */
+    public static final String COLUMNNAME_AmtAcctCr = "AmtAcctCr";
 
 	/**
-	 * Set Debit.
+	 * Set Soll.
+	 * Ausgewiesener Verbindlichkeitsbetrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAmtAcctDr (BigDecimal AmtAcctDr);
+	public void setAmtAcctDr (java.math.BigDecimal AmtAcctDr);
 
 	/**
-	 * Get Debit.
+	 * Get Soll.
+	 * Ausgewiesener Verbindlichkeitsbetrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getAmtAcctDr();
+	public java.math.BigDecimal getAmtAcctDr();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_AmtAcctDr = new ModelColumn<>(I_Fact_Acct.class, "AmtAcctDr", null);
-	String COLUMNNAME_AmtAcctDr = "AmtAcctDr";
+    /** Column definition for AmtAcctDr */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtAcctDr = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AmtAcctDr", null);
+    /** Column name AmtAcctDr */
+    public static final String COLUMNNAME_AmtAcctDr = "AmtAcctDr";
 
 	/**
-	 * Set Credit Source.
+	 * Set Ausgangsforderung.
+	 * Source Credit Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAmtSourceCr (BigDecimal AmtSourceCr);
+	public void setAmtSourceCr (java.math.BigDecimal AmtSourceCr);
 
 	/**
-	 * Get Credit Source.
+	 * Get Ausgangsforderung.
+	 * Source Credit Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getAmtSourceCr();
+	public java.math.BigDecimal getAmtSourceCr();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_AmtSourceCr = new ModelColumn<>(I_Fact_Acct.class, "AmtSourceCr", null);
-	String COLUMNNAME_AmtSourceCr = "AmtSourceCr";
+    /** Column definition for AmtSourceCr */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtSourceCr = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AmtSourceCr", null);
+    /** Column name AmtSourceCr */
+    public static final String COLUMNNAME_AmtSourceCr = "AmtSourceCr";
 
 	/**
-	 * Set Debit Source.
+	 * Set Ausgangsverbindlichkeit.
+	 * Source Debit Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAmtSourceDr (BigDecimal AmtSourceDr);
+	public void setAmtSourceDr (java.math.BigDecimal AmtSourceDr);
 
 	/**
-	 * Get Debit Source.
+	 * Get Ausgangsverbindlichkeit.
+	 * Source Debit Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getAmtSourceDr();
+	public java.math.BigDecimal getAmtSourceDr();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_AmtSourceDr = new ModelColumn<>(I_Fact_Acct.class, "AmtSourceDr", null);
-	String COLUMNNAME_AmtSourceDr = "AmtSourceDr";
+    /** Column definition for AmtSourceDr */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_AmtSourceDr = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "AmtSourceDr", null);
+    /** Column name AmtSourceDr */
+    public static final String COLUMNNAME_AmtSourceDr = "AmtSourceDr";
 
 	/**
-	 * Set Accounting Schema.
+	 * Set Buchführungs-Schema.
 	 * Rules for accounting
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_AcctSchema_ID (int C_AcctSchema_ID);
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID);
 
 	/**
-	 * Get Accounting Schema.
+	 * Get Buchführungs-Schema.
 	 * Rules for accounting
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_AcctSchema_ID();
+	public int getC_AcctSchema_ID();
 
-	org.compiere.model.I_C_AcctSchema getC_AcctSchema();
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema();
+//
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
-	void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
-
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_Fact_Acct.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
-	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+    /** Column definition for C_AcctSchema_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+    /** Column name C_AcctSchema_ID */
+    public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
-	 * Set Activity.
-	 * Business Activity
+	 * Set Kostenstelle.
+	 * Kostenstelle
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Kostenstelle.
+	 * Kostenstelle
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Activity_ID();
+
+	public org.compiere.model.I_C_Activity getC_Activity();
+
+	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
+
+    /** Column definition for C_Activity_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
+    /** Column name C_Activity_ID */
+    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Geschäftspartner.
+	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Activity_ID (int C_Activity_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Activity.
-	 * Business Activity
+	 * Get Geschäftspartner.
+	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Activity_ID();
+	public int getC_BPartner_ID();
 
-	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Business Partner.
+	 * Set Werbemassnahme.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Campaign_ID (int C_Campaign_ID);
+
+	/**
+	 * Get Werbemassnahme.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Campaign_ID();
+
+	public org.compiere.model.I_C_Campaign getC_Campaign();
+
+	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
+
+    /** Column definition for C_Campaign_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+    /** Column name C_Campaign_ID */
+    public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+
+	/**
+	 * Set Währung.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+//	public org.compiere.model.I_C_Currency getC_Currency();
+//
+//	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Business Partner.
+	 * Get Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_ID();
+	public int getC_DocType_ID();
 
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	public org.compiere.model.I_C_DocType getC_DocType();
+
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
+
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Location.
+	 * Set Von Ort.
+	 * Location that inventory was moved from
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	public void setC_LocFrom_ID (int C_LocFrom_ID);
 
 	/**
-	 * Get Location.
+	 * Get Von Ort.
+	 * Location that inventory was moved from
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_Location_ID();
+	public int getC_LocFrom_ID();
 
-	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	public org.compiere.model.I_C_Location getC_LocFrom();
 
-	/**
-	 * Set Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner2_ID (int C_BPartner2_ID);
+	public void setC_LocFrom(org.compiere.model.I_C_Location C_LocFrom);
+
+    /** Column definition for C_LocFrom_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
+    /** Column name C_LocFrom_ID */
+    public static final String COLUMNNAME_C_LocFrom_ID = "C_LocFrom_ID";
 
 	/**
-	 * Get Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner2_ID();
-
-	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
-
-	/**
-	 * Set Campaign.
-	 * Marketing Campaign
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Campaign_ID (int C_Campaign_ID);
-
-	/**
-	 * Get Campaign.
-	 * Marketing Campaign
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Campaign_ID();
-
-	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
-
-	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
-
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_Fact_Acct.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
-	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
-
-	/**
-	 * Set Currency.
-	 * The Currency for this record
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Currency_ID (int C_Currency_ID);
-
-	/**
-	 * Get Currency.
-	 * The Currency for this record
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Currency_ID();
-
-	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/**
-	 * Set Document Type.
-	 * Document type or rules
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DocType_ID (int C_DocType_ID);
-
-	/**
-	 * Get Document Type.
-	 * Document type or rules
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DocType_ID();
-
-	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
-	/**
-	 * Set Location From.
-	 * Location that inventory was moved from
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_LocFrom_ID (int C_LocFrom_ID);
-
-	/**
-	 * Get Location From.
-	 * Location that inventory was moved from
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_LocFrom_ID();
-
-	@Nullable org.compiere.model.I_C_Location getC_LocFrom();
-
-	void setC_LocFrom(@Nullable org.compiere.model.I_C_Location C_LocFrom);
-
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new ModelColumn<>(I_Fact_Acct.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
-	String COLUMNNAME_C_LocFrom_ID = "C_LocFrom_ID";
-
-	/**
-	 * Set Location To.
+	 * Set Nach Ort.
 	 * Location that inventory was moved to
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_LocTo_ID (int C_LocTo_ID);
+	public void setC_LocTo_ID (int C_LocTo_ID);
 
 	/**
-	 * Get Location To.
+	 * Get Nach Ort.
 	 * Location that inventory was moved to
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_LocTo_ID();
+	public int getC_LocTo_ID();
 
-	@Nullable org.compiere.model.I_C_Location getC_LocTo();
+	public org.compiere.model.I_C_Location getC_LocTo();
 
-	void setC_LocTo(@Nullable org.compiere.model.I_C_Location C_LocTo);
+	public void setC_LocTo(org.compiere.model.I_C_Location C_LocTo);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new ModelColumn<>(I_Fact_Acct.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
-	String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
-
-	/**
-	 * Set Sales Order.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_OrderSO_ID (int C_OrderSO_ID);
+    /** Column definition for C_LocTo_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
+    /** Column name C_LocTo_ID */
+    public static final String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
 
 	/**
-	 * Get Sales Order.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_OrderSO_ID();
-
-	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
-
-	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
-
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_Fact_Acct.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
-
-	/**
-	 * Set Period.
+	 * Set Periode.
 	 * Period of the Calendar
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Period_ID (int C_Period_ID);
+	public void setC_Period_ID (int C_Period_ID);
 
 	/**
-	 * Get Period.
+	 * Get Periode.
 	 * Period of the Calendar
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Period_ID();
+	public int getC_Period_ID();
 
-	org.compiere.model.I_C_Period getC_Period();
+	public org.compiere.model.I_C_Period getC_Period();
 
-	void setC_Period(org.compiere.model.I_C_Period C_Period);
+	public void setC_Period(org.compiere.model.I_C_Period C_Period);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new ModelColumn<>(I_Fact_Acct.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
-	String COLUMNNAME_C_Period_ID = "C_Period_ID";
+    /** Column definition for C_Period_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+    /** Column name C_Period_ID */
+    public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/**
-	 * Set Project.
+	 * Set Projekt.
 	 * Financial Project
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Project_ID (int C_Project_ID);
+	public void setC_Project_ID (int C_Project_ID);
 
 	/**
-	 * Get Project.
+	 * Get Projekt.
 	 * Financial Project
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Project_ID();
+	public int getC_Project_ID();
 
-	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+	public org.compiere.model.I_C_Project getC_Project();
+
+	public void setC_Project(org.compiere.model.I_C_Project C_Project);
+
+    /** Column definition for C_Project_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
+    /** Column name C_Project_ID */
+    public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Project Phase.
+	 * Set Projekt-Phase.
 	 * Phase of a Project
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_ProjectPhase_ID (int C_ProjectPhase_ID);
+	public void setC_ProjectPhase_ID (int C_ProjectPhase_ID);
 
 	/**
-	 * Get Project Phase.
+	 * Get Projekt-Phase.
 	 * Phase of a Project
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_ProjectPhase_ID();
+	public int getC_ProjectPhase_ID();
 
-	@Nullable org.compiere.model.I_C_ProjectPhase getC_ProjectPhase();
+	public org.compiere.model.I_C_ProjectPhase getC_ProjectPhase();
 
-	void setC_ProjectPhase(@Nullable org.compiere.model.I_C_ProjectPhase C_ProjectPhase);
+	public void setC_ProjectPhase(org.compiere.model.I_C_ProjectPhase C_ProjectPhase);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectPhase> COLUMN_C_ProjectPhase_ID = new ModelColumn<>(I_Fact_Acct.class, "C_ProjectPhase_ID", org.compiere.model.I_C_ProjectPhase.class);
-	String COLUMNNAME_C_ProjectPhase_ID = "C_ProjectPhase_ID";
+    /** Column definition for C_ProjectPhase_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectPhase> COLUMN_C_ProjectPhase_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_ProjectPhase_ID", org.compiere.model.I_C_ProjectPhase.class);
+    /** Column name C_ProjectPhase_ID */
+    public static final String COLUMNNAME_C_ProjectPhase_ID = "C_ProjectPhase_ID";
 
 	/**
-	 * Set Project Task.
+	 * Set Projekt-Aufgabe.
 	 * Actual Project Task in a Phase
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_ProjectTask_ID (int C_ProjectTask_ID);
+	public void setC_ProjectTask_ID (int C_ProjectTask_ID);
 
 	/**
-	 * Get Project Task.
+	 * Get Projekt-Aufgabe.
 	 * Actual Project Task in a Phase
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_ProjectTask_ID();
+	public int getC_ProjectTask_ID();
 
-	@Nullable org.compiere.model.I_C_ProjectTask getC_ProjectTask();
+	public org.compiere.model.I_C_ProjectTask getC_ProjectTask();
 
-	void setC_ProjectTask(@Nullable org.compiere.model.I_C_ProjectTask C_ProjectTask);
+	public void setC_ProjectTask(org.compiere.model.I_C_ProjectTask C_ProjectTask);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectTask> COLUMN_C_ProjectTask_ID = new ModelColumn<>(I_Fact_Acct.class, "C_ProjectTask_ID", org.compiere.model.I_C_ProjectTask.class);
-	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
+    /** Column definition for C_ProjectTask_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ProjectTask> COLUMN_C_ProjectTask_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_ProjectTask_ID", org.compiere.model.I_C_ProjectTask.class);
+    /** Column name C_ProjectTask_ID */
+    public static final String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
-	 * Set Sales Region.
+	 * Set Vertriebsgebiet.
 	 * Sales coverage region
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_SalesRegion_ID (int C_SalesRegion_ID);
+	public void setC_SalesRegion_ID (int C_SalesRegion_ID);
 
 	/**
-	 * Get Sales Region.
+	 * Get Vertriebsgebiet.
 	 * Sales coverage region
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_SalesRegion_ID();
+	public int getC_SalesRegion_ID();
 
-	@Nullable org.compiere.model.I_C_SalesRegion getC_SalesRegion();
+	public org.compiere.model.I_C_SalesRegion getC_SalesRegion();
 
-	void setC_SalesRegion(@Nullable org.compiere.model.I_C_SalesRegion C_SalesRegion);
+	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new ModelColumn<>(I_Fact_Acct.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
-	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+    /** Column definition for C_SalesRegion_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
+    /** Column name C_SalesRegion_ID */
+    public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
 	/**
-	 * Set Sub Account.
+	 * Set Unter-Konto.
 	 * Sub account for Element Value
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_SubAcct_ID (int C_SubAcct_ID);
+	public void setC_SubAcct_ID (int C_SubAcct_ID);
 
 	/**
-	 * Get Sub Account.
+	 * Get Unter-Konto.
 	 * Sub account for Element Value
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_SubAcct_ID();
+	public int getC_SubAcct_ID();
 
-	@Nullable org.compiere.model.I_C_SubAcct getC_SubAcct();
+	public org.compiere.model.I_C_SubAcct getC_SubAcct();
 
-	void setC_SubAcct(@Nullable org.compiere.model.I_C_SubAcct C_SubAcct);
+	public void setC_SubAcct(org.compiere.model.I_C_SubAcct C_SubAcct);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SubAcct> COLUMN_C_SubAcct_ID = new ModelColumn<>(I_Fact_Acct.class, "C_SubAcct_ID", org.compiere.model.I_C_SubAcct.class);
-	String COLUMNNAME_C_SubAcct_ID = "C_SubAcct_ID";
+    /** Column definition for C_SubAcct_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_SubAcct> COLUMN_C_SubAcct_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_SubAcct_ID", org.compiere.model.I_C_SubAcct.class);
+    /** Column name C_SubAcct_ID */
+    public static final String COLUMNNAME_C_SubAcct_ID = "C_SubAcct_ID";
 
 	/**
-	 * Set Tax.
+	 * Set Steuer.
 	 * Tax identifier
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Tax_ID (int C_Tax_ID);
+	public void setC_Tax_ID (int C_Tax_ID);
 
 	/**
-	 * Get Tax.
+	 * Get Steuer.
 	 * Tax identifier
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Tax_ID();
+	public int getC_Tax_ID();
 
-	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+	public org.compiere.model.I_C_Tax getC_Tax();
+
+	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
+
+    /** Column definition for C_Tax_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
+    /** Column name C_Tax_ID */
+    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
-	 * Set UOM.
+	 * Set Maßeinheit.
 	 * Unit of Measure
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_UOM_ID (int C_UOM_ID);
+	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get UOM.
+	 * Get Maßeinheit.
 	 * Unit of Measure
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_UOM_ID();
+	public int getC_UOM_ID();
 
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Counterpart Accounting Fact.
@@ -713,7 +754,7 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCounterpart_Fact_Acct_ID (int Counterpart_Fact_Acct_ID);
+	public void setCounterpart_Fact_Acct_ID (int Counterpart_Fact_Acct_ID);
 
 	/**
 	 * Get Counterpart Accounting Fact.
@@ -722,194 +763,217 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getCounterpart_Fact_Acct_ID();
+	public int getCounterpart_Fact_Acct_ID();
 
-	@Nullable org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct();
+	public org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct();
 
-	void setCounterpart_Fact_Acct(@Nullable org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct);
+	public void setCounterpart_Fact_Acct(org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_Fact_Acct> COLUMN_Counterpart_Fact_Acct_ID = new ModelColumn<>(I_Fact_Acct.class, "Counterpart_Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
-	String COLUMNNAME_Counterpart_Fact_Acct_ID = "Counterpart_Fact_Acct_ID";
+    /** Column definition for Counterpart_Fact_Acct_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_Fact_Acct> COLUMN_Counterpart_Fact_Acct_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Counterpart_Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
+    /** Column name Counterpart_Fact_Acct_ID */
+    public static final String COLUMNNAME_Counterpart_Fact_Acct_ID = "Counterpart_Fact_Acct_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Created = new ModelColumn<>(I_Fact_Acct.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Currency Rate.
+	 * Set Wechselkurs.
+	 * Wechselkurs für Währung
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCurrencyRate (@Nullable BigDecimal CurrencyRate);
+	public void setCurrencyRate (java.math.BigDecimal CurrencyRate);
 
 	/**
-	 * Get Currency Rate.
+	 * Get Wechselkurs.
+	 * Wechselkurs für Währung
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getCurrencyRate();
+	public java.math.BigDecimal getCurrencyRate();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_CurrencyRate = new ModelColumn<>(I_Fact_Acct.class, "CurrencyRate", null);
-	String COLUMNNAME_CurrencyRate = "CurrencyRate";
+    /** Column definition for CurrencyRate */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_CurrencyRate = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "CurrencyRate", null);
+    /** Column name CurrencyRate */
+    public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
 
 	/**
-	 * Set Accounting Date.
+	 * Set Buchungsdatum.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateAcct (java.sql.Timestamp DateAcct);
+	public void setDateAcct (java.sql.Timestamp DateAcct);
 
 	/**
-	 * Get Accounting Date.
+	 * Get Buchungsdatum.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDateAcct();
+	public java.sql.Timestamp getDateAcct();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_DateAcct = new ModelColumn<>(I_Fact_Acct.class, "DateAcct", null);
-	String COLUMNNAME_DateAcct = "DateAcct";
+    /** Column definition for DateAcct */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DateAcct", null);
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
-	 * Set Date.
+	 * Set Vorgangsdatum.
 	 * Transaction Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateTrx (java.sql.Timestamp DateTrx);
+	public void setDateTrx (java.sql.Timestamp DateTrx);
 
 	/**
-	 * Get Date.
+	 * Get Vorgangsdatum.
 	 * Transaction Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDateTrx();
+	public java.sql.Timestamp getDateTrx();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_DateTrx = new ModelColumn<>(I_Fact_Acct.class, "DateTrx", null);
-	String COLUMNNAME_DateTrx = "DateTrx";
+    /** Column definition for DateTrx */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DateTrx", null);
+    /** Column name DateTrx */
+    public static final String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Description = new ModelColumn<>(I_Fact_Acct.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Document Base Type.
-	 * Logical type of document
+	 * Set Dokument Basis Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocBaseType (@Nullable java.lang.String DocBaseType);
+	public void setDocBaseType (java.lang.String DocBaseType);
 
 	/**
-	 * Get Document Base Type.
-	 * Logical type of document
+	 * Get Dokument Basis Typ.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocBaseType();
+	public java.lang.String getDocBaseType();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_DocBaseType = new ModelColumn<>(I_Fact_Acct.class, "DocBaseType", null);
-	String COLUMNNAME_DocBaseType = "DocBaseType";
+    /** Column definition for DocBaseType */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocBaseType = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DocBaseType", null);
+    /** Column name DocBaseType */
+    public static final String COLUMNNAME_DocBaseType = "DocBaseType";
 
 	/**
-	 * Set Status.
+	 * Set Belegstatus.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (@Nullable java.lang.String DocStatus);
+	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Status.
+	 * Get Belegstatus.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocStatus();
+	public java.lang.String getDocStatus();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_DocStatus = new ModelColumn<>(I_Fact_Acct.class, "DocStatus", null);
-	String COLUMNNAME_DocStatus = "DocStatus";
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Document No.
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Document No.
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocumentNo();
+	public java.lang.String getDocumentNo();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_DocumentNo = new ModelColumn<>(I_Fact_Acct.class, "DocumentNo", null);
-	String COLUMNNAME_DocumentNo = "DocumentNo";
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Accounting Fact.
@@ -918,7 +982,7 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setFact_Acct_ID (int Fact_Acct_ID);
+	public void setFact_Acct_ID (int Fact_Acct_ID);
 
 	/**
 	 * Get Accounting Fact.
@@ -927,87 +991,95 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getFact_Acct_ID();
+	public int getFact_Acct_ID();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Fact_Acct_ID = new ModelColumn<>(I_Fact_Acct.class, "Fact_Acct_ID", null);
-	String COLUMNNAME_Fact_Acct_ID = "Fact_Acct_ID";
+    /** Column definition for Fact_Acct_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Fact_Acct_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Fact_Acct_ID", null);
+    /** Column name Fact_Acct_ID */
+    public static final String COLUMNNAME_Fact_Acct_ID = "Fact_Acct_ID";
 
 	/**
 	 * Set Budget.
 	 * General Ledger Budget
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGL_Budget_ID (int GL_Budget_ID);
+	public void setGL_Budget_ID (int GL_Budget_ID);
 
 	/**
 	 * Get Budget.
 	 * General Ledger Budget
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getGL_Budget_ID();
+	public int getGL_Budget_ID();
 
-	@Nullable org.compiere.model.I_GL_Budget getGL_Budget();
+	public org.compiere.model.I_GL_Budget getGL_Budget();
 
-	void setGL_Budget(@Nullable org.compiere.model.I_GL_Budget GL_Budget);
+	public void setGL_Budget(org.compiere.model.I_GL_Budget GL_Budget);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new ModelColumn<>(I_Fact_Acct.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
-	String COLUMNNAME_GL_Budget_ID = "GL_Budget_ID";
+    /** Column definition for GL_Budget_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
+    /** Column name GL_Budget_ID */
+    public static final String COLUMNNAME_GL_Budget_ID = "GL_Budget_ID";
 
 	/**
-	 * Set GL Category.
+	 * Set Hauptbuch - Kategorie.
 	 * General Ledger Category
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setGL_Category_ID (int GL_Category_ID);
+	public void setGL_Category_ID (int GL_Category_ID);
 
 	/**
-	 * Get GL Category.
+	 * Get Hauptbuch - Kategorie.
 	 * General Ledger Category
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getGL_Category_ID();
+	public int getGL_Category_ID();
 
-	org.compiere.model.I_GL_Category getGL_Category();
+	public org.compiere.model.I_GL_Category getGL_Category();
 
-	void setGL_Category(org.compiere.model.I_GL_Category GL_Category);
+	public void setGL_Category(org.compiere.model.I_GL_Category GL_Category);
 
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new ModelColumn<>(I_Fact_Acct.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
-	String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
+    /** Column definition for GL_Category_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
+    /** Column name GL_Category_ID */
+    public static final String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_IsActive = new ModelColumn<>(I_Fact_Acct.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Line ID.
@@ -1017,7 +1089,7 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLine_ID (int Line_ID);
+	public void setLine_ID (int Line_ID);
 
 	/**
 	 * Get Line ID.
@@ -1027,173 +1099,145 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getLine_ID();
+	public int getLine_ID();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Line_ID = new ModelColumn<>(I_Fact_Acct.class, "Line_ID", null);
-	String COLUMNNAME_Line_ID = "Line_ID";
-
-	/**
-	 * Set Cost Element.
-	 * Product Cost Element
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_CostElement_ID (int M_CostElement_ID);
+    /** Column definition for Line_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Line_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Line_ID", null);
+    /** Column name Line_ID */
+    public static final String COLUMNNAME_Line_ID = "Line_ID";
 
 	/**
-	 * Get Cost Element.
-	 * Product Cost Element
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_CostElement_ID();
-
-	@Nullable org.compiere.model.I_M_CostElement getM_CostElement();
-
-	void setM_CostElement(@Nullable org.compiere.model.I_M_CostElement M_CostElement);
-
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_Fact_Acct.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
-	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
-
-	/**
-	 * Set Locator.
+	 * Set Lagerort.
 	 * Warehouse Locator
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Locator_ID (int M_Locator_ID);
+	public void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Locator.
+	 * Get Lagerort.
 	 * Warehouse Locator
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Locator_ID();
+	public int getM_Locator_ID();
 
-	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+	public org.compiere.model.I_M_Locator getM_Locator();
+
+	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
+
+    /** Column definition for M_Locator_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
+    /** Column name M_Locator_ID */
+    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID (int M_Product_ID);
+	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Product_ID();
+	public int getM_Product_ID();
 
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	public org.compiere.model.I_M_Product getM_Product();
 
-	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_Fact_Acct.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
-
-	/**
-	 * Set Posting Type.
+	 * Set Buchungsart.
+	 * The type of posted amount for the transaction
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPostingType (java.lang.String PostingType);
+	public void setPostingType (java.lang.String PostingType);
 
 	/**
-	 * Get Posting Type.
+	 * Get Buchungsart.
+	 * The type of posted amount for the transaction
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getPostingType();
+	public java.lang.String getPostingType();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_PostingType = new ModelColumn<>(I_Fact_Acct.class, "PostingType", null);
-	String COLUMNNAME_PostingType = "PostingType";
+    /** Column definition for PostingType */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_PostingType = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "PostingType", null);
+    /** Column name PostingType */
+    public static final String COLUMNNAME_PostingType = "PostingType";
 
 	/**
-	 * Set Quantity.
+	 * Set Menge.
 	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setQty (@Nullable BigDecimal Qty);
+	public void setQty (java.math.BigDecimal Qty);
 
 	/**
-	 * Get Quantity.
+	 * Get Menge.
 	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQty();
+	public java.math.BigDecimal getQty();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Qty = new ModelColumn<>(I_Fact_Acct.class, "Qty", null);
-	String COLUMNNAME_Qty = "Qty";
+    /** Column definition for Qty */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Qty", null);
+    /** Column name Qty */
+    public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set Record ID.
+	 * Set Datensatz-ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setRecord_ID (int Record_ID);
+	public void setRecord_ID (int Record_ID);
 
 	/**
-	 * Get Record ID.
+	 * Get Datensatz-ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getRecord_ID();
+	public int getRecord_ID();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Record_ID = new ModelColumn<>(I_Fact_Acct.class, "Record_ID", null);
-	String COLUMNNAME_Record_ID = "Record_ID";
+    /** Column definition for Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Record_ID", null);
+    /** Column name Record_ID */
+    public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set SubLine ID.
@@ -1203,7 +1247,7 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSubLine_ID (int SubLine_ID);
+	public void setSubLine_ID (int SubLine_ID);
 
 	/**
 	 * Get SubLine ID.
@@ -1213,123 +1257,173 @@ public interface I_Fact_Acct
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getSubLine_ID();
+	public int getSubLine_ID();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_SubLine_ID = new ModelColumn<>(I_Fact_Acct.class, "SubLine_ID", null);
-	String COLUMNNAME_SubLine_ID = "SubLine_ID";
+    /** Column definition for SubLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_SubLine_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "SubLine_ID", null);
+    /** Column name SubLine_ID */
+    public static final String COLUMNNAME_SubLine_ID = "SubLine_ID";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Updated = new ModelColumn<>(I_Fact_Acct.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set User List 1.
+	 * Set Nutzer 1.
 	 * User defined list element #1
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUser1_ID (int User1_ID);
+	public void setUser1_ID (int User1_ID);
 
 	/**
-	 * Get User List 1.
+	 * Get Nutzer 1.
 	 * User defined list element #1
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getUser1_ID();
+	public int getUser1_ID();
 
-	String COLUMNNAME_User1_ID = "User1_ID";
+	public org.compiere.model.I_C_ElementValue getUser1();
+
+	public void setUser1(org.compiere.model.I_C_ElementValue User1);
+
+    /** Column definition for User1_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name User1_ID */
+    public static final String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
-	 * Set User 2.
+	 * Set Nutzer 2.
+	 * User defined list element #2
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUser2_ID (int User2_ID);
+	public void setUser2_ID (int User2_ID);
 
 	/**
-	 * Get User 2.
+	 * Get Nutzer 2.
+	 * User defined list element #2
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getUser2_ID();
+	public int getUser2_ID();
 
-	String COLUMNNAME_User2_ID = "User2_ID";
+	public org.compiere.model.I_C_ElementValue getUser2();
+
+	public void setUser2(org.compiere.model.I_C_ElementValue User2);
+
+    /** Column definition for User2_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name User2_ID */
+    public static final String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
-	 * Set User Element 1.
+	 * Set Nutzer-Element 1.
 	 * User defined accounting Element
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElement1_ID (int UserElement1_ID);
+	public void setUserElement1_ID (int UserElement1_ID);
 
 	/**
-	 * Get User Element 1.
+	 * Get Nutzer-Element 1.
 	 * User defined accounting Element
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getUserElement1_ID();
+	public int getUserElement1_ID();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement1_ID = new ModelColumn<>(I_Fact_Acct.class, "UserElement1_ID", null);
-	String COLUMNNAME_UserElement1_ID = "UserElement1_ID";
+    /** Column definition for UserElement1_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement1_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "UserElement1_ID", null);
+    /** Column name UserElement1_ID */
+    public static final String COLUMNNAME_UserElement1_ID = "UserElement1_ID";
 
 	/**
-	 * Set User Element 2.
+	 * Set Nutzer-Element 2.
 	 * User defined accounting Element
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElement2_ID (int UserElement2_ID);
+	public void setUserElement2_ID (int UserElement2_ID);
 
 	/**
-	 * Get User Element 2.
+	 * Get Nutzer-Element 2.
 	 * User defined accounting Element
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getUserElement2_ID();
+	public int getUserElement2_ID();
 
-	ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement2_ID = new ModelColumn<>(I_Fact_Acct.class, "UserElement2_ID", null);
-	String COLUMNNAME_UserElement2_ID = "UserElement2_ID";
+    /** Column definition for UserElement2_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_UserElement2_ID = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "UserElement2_ID", null);
+    /** Column name UserElement2_ID */
+    public static final String COLUMNNAME_UserElement2_ID = "UserElement2_ID";
+
+	/**
+	 * Set VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setVATCode (java.lang.String VATCode);
+
+	/**
+	 * Get VAT Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVATCode();
+
+    /** Column definition for VATCode */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_VATCode = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "VATCode", null);
+    /** Column name VATCode */
+    public static final String COLUMNNAME_VATCode = "VATCode";
 
 	/**
 	 * Set UserElementString1.
@@ -1477,67 +1571,4 @@ public interface I_Fact_Acct
 
 	ModelColumn<I_Fact_Acct, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_Fact_Acct.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
-
-	/**
-	 * Set VAT Code.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setVATCode (@Nullable java.lang.String VATCode);
-
-	/**
-	 * Get VAT Code.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getVATCode();
-
-	ModelColumn<I_Fact_Acct, Object> COLUMN_VATCode = new ModelColumn<>(I_Fact_Acct.class, "VATCode", null);
-	String COLUMNNAME_VATCode = "VATCode";
-
-	/**
-	 * Set From Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setUserElementDate1 (@Nullable java.sql.Timestamp UserElementDate1);
-
-	/**
-	 * Get From Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getUserElementDate1();
-
-	ModelColumn<I_Fact_Acct, Object> COLUMN_UserElementDate1 = new ModelColumn<>(I_Fact_Acct.class, "UserElementDate1", null);
-	String COLUMNNAME_UserElementDate1 = "UserElementDate1";
-
-	/**
-	 * Set To Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setUserElementDate2 (@Nullable java.sql.Timestamp UserElementDate2);
-
-	/**
-	 * Get To Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getUserElementDate2();
-
-	ModelColumn<I_Fact_Acct, Object> COLUMN_UserElementDate2 = new ModelColumn<>(I_Fact_Acct.class, "UserElementDate2", null);
-	String COLUMNNAME_UserElementDate2 = "UserElementDate2";
 }

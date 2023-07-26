@@ -28,7 +28,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Language;
-import de.metas.process.AdProcessId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
@@ -52,7 +51,6 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 
 	@Override
 	@Deprecated
-	@NonNull
 	public String getHandledTableName()
 	{
 		throw new UnsupportedOperationException();
@@ -69,8 +67,7 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 	@NonNull
 	public DocumentReportInfo getDocumentReportInfo(
 			@NonNull final TableRecordReference recordRef,
-			@Nullable final PrintFormatId adPrintFormatToUseId,
-			@Nullable final AdProcessId reportProcessIdToUse)
+			@Nullable final PrintFormatId adPrintFormatToUseId)
 	{
 		final Object record = recordRef.getModel(Object.class);
 
@@ -83,28 +80,20 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 				? util.getBPartnerLanguage(bpartner).orElse(null)
 				: null;
 
-		final AdProcessId reportProcessId;
-		if (reportProcessIdToUse != null)
-		{
-			reportProcessId = reportProcessIdToUse;
-		}
-		else
-		{
-			final PrintFormatId printFormatId = CoalesceUtil.coalesceSuppliers(
-					() -> adPrintFormatToUseId,
-					() -> getBPPrintFormatOrNull(bpartnerId, docTypeId, recordRef.getAdTableId()),
-					() -> getDocTypePrintFormatOrNull(docType));
-			if (printFormatId == null)
-			{
-				throw new AdempiereException(("@NotFound@ @AD_PrintFormat_ID@"));
-			}
+		final PrintFormatId printFormatId = CoalesceUtil.coalesceSuppliers(
+				() -> adPrintFormatToUseId,
+				() -> getBPPrintFormatOrNull(bpartnerId, docTypeId, recordRef.getAdTableId()),
+				() -> getDocTypePrintFormatOrNull(docType));
 
-			reportProcessId = util.getReportProcessIdByPrintFormatId(printFormatId);
+		if (printFormatId == null)
+		{
+			throw new AdempiereException(("@NotFound@ @AD_PrintFormat_ID@"));
 		}
 
 		return DocumentReportInfo.builder()
 				.recordRef(recordRef)
-				.reportProcessId(reportProcessId)
+				.printFormatId(printFormatId)
+				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
 				.copies(util.getDocumentCopies(bpartner, docType))
 				.documentNo(documentNo)
 				.bpartnerId(bpartnerId)

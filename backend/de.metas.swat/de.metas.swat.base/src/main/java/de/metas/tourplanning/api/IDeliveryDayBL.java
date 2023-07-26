@@ -10,7 +10,7 @@ import de.metas.tourplanning.spi.IDeliveryDayHandler;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IContextAware;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 
 import java.time.ZonedDateTime;
 import java.util.Date;

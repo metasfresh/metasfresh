@@ -1,7 +1,31 @@
 package org.adempiere.test;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -9,9 +33,8 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Watches current test and dumps the database to console in case of failure.
@@ -104,6 +127,9 @@ public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecut
 	 * Put given variable to context.
 	 *
 	 * In case the test will fail, all context variables will be printed to console.
+	 *
+	 * @param name
+	 * @param value
 	 */
 	public void putContext(final String name, final Object value)
 	{

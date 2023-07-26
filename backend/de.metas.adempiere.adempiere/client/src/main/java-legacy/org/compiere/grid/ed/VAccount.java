@@ -16,10 +16,23 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import javax.swing.AbstractButton;
+import javax.swing.JComponent;
+import javax.swing.LookAndFeel;
+
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
@@ -32,19 +45,13 @@ import org.compiere.model.MAccountLookup;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 /**
  * Account Control - Displays ValidCombination and launches Dialog
@@ -63,6 +70,16 @@ public final class VAccount extends JComponent
 	 */
 	private static final long serialVersionUID = -4177614835777620089L;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param columnName
+	 * @param mandatory
+	 * @param isReadOnly
+	 * @param isUpdateable
+	 * @param mAccount
+	 * @param title
+	 */
 	public VAccount(String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable,
 			MAccountLookup mAccount, String title)
 	{
@@ -309,7 +326,23 @@ public final class VAccount extends JComponent
 	 */
 	public void cmd_button()
 	{
-		throw new UnsupportedOperationException();
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		try
+		{
+			final AcctSchemaId acctSchemaId = getAcctSchemaId();
+			final VAccountDialog ad = new VAccountDialog(SwingUtils.getFrame(this), m_title, m_mAccount, acctSchemaId);
+			//
+			final Integer newValue = ad.getValue();
+			// if (newValue == null)
+			// return;
+
+			// set & redisplay & data binding (i.e. fire vetoable change)
+			setValue(newValue);
+		}
+		finally
+		{
+			setCursor(Cursor.getDefaultCursor());
+		}
 	}	// cmd_button
 
 	private AcctSchemaId getAcctSchemaId()

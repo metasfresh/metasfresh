@@ -39,7 +39,6 @@ import javax.swing.text.JTextComponent;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -49,6 +48,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
+import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.model.MTable;
 import org.compiere.util.DisplayType;
@@ -88,7 +88,8 @@ import de.metas.util.Services;
 		this.lookupInfo = lookupInfo;
 
 		final Properties ctx = Env.getCtx();
-		final MTable table = MTable.get(ctx, lookupInfo.getTableName().getAsString());
+		final String tableName = lookupInfo.getTableName();
+		final MTable table = MTable.get(ctx, tableName);
 
 		this.autocompleterValidationRule = createAutoCompleterValidationRule(table, lookupInfo);
 		this.validationRule = CompositeValidationRule.compose(lookupInfo.getValidationRule(), autocompleterValidationRule);
@@ -196,10 +197,10 @@ import de.metas.util.Services;
 			}
 
 			// Full generated identifier search
-			final String displayColumnSql = lookupInfo.getSqlQuery().getDisplayColumnSql().translate();
-			if (!Check.isBlank(displayColumnSql))
+			if (!Check.isEmpty(lookupInfo.getDisplayColumnSqlAsString(), true))
 			{
-				sqlWhere.append(" OR UPPER(" + DBConstants.FUNC_unaccent_string(displayColumnSql) + ") LIKE UPPER(" + DBConstants.FUNC_unaccent_string("?") + ")");
+				sqlWhere.append(" OR UPPER(" + DBConstants.FUNC_unaccent_string(lookupInfo.getDisplayColumnSqlAsString()) + ")"
+						+ " LIKE UPPER(" + DBConstants.FUNC_unaccent_string("?") + ")");
 				paramsTemplate.add(VLookupAutoCompleterValidationRule.SEARCHSQL_PLACEHOLDER);
 			}
 			//
@@ -222,17 +223,17 @@ import de.metas.util.Services;
 	@Override
 	protected Object fetchUserObject(final ResultSet rs) throws SQLException
 	{
-		final String name = rs.getString(MLookupInfo.SqlQuery.COLUMNINDEX_DisplayName);
-		final boolean isNumericKey = lookupInfo.getSqlQuery().isNumericKey();
+		final String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
+		// TODO see if this code is also used by the webui
 		final NamePair item;
-		if (isNumericKey)
+		if (lookupInfo.isNumericKey())
 		{
-			final int key = rs.getInt(MLookupInfo.SqlQuery.COLUMNINDEX_Key);
+			final int key = rs.getInt(MLookupFactory.COLUMNINDEX_Key);
 			item = KeyNamePair.of(key, name);
 		}
 		else
 		{
-			final String value = rs.getString(MLookupInfo.SqlQuery.COLUMNINDEX_Value);
+			final String value = rs.getString(MLookupFactory.COLUMNINDEX_Value);
 			item = ValueNamePair.of(value, name);
 		}
 
@@ -276,19 +277,21 @@ import de.metas.util.Services;
 	{
 		final String searchSQL = getSearchStringSQL(searchInput, caretPosition);
 
-		final MLookupInfo.SqlQuery sqlQuery = lookupInfo.getSqlQuery();
-		final String sqlSelect = sqlQuery.getSelectSqlPart().translate();
-		if (Check.isBlank(sqlSelect))
+		final String sqlSelect = lookupInfo.getSelectSqlPartAsString();
+		if (Check.isEmpty(sqlSelect, true))
 		{
 			log.warn("Empty SELECT SQL found for: {}", lookupInfo);
 			return null;
 		}
 
+		// final StringBuilder sql = new StringBuilder();
+		// sql.append(sqlSelect);
+
 		final StringBuilder sqlWhere = new StringBuilder();
 		{
-			if (!Check.isEmpty(sqlQuery.getSqlWhereClauseStatic()))
+			if (!Check.isEmpty(lookupInfo.getWhereClauseSqlPart()))
 			{
-				sqlWhere.append("(").append(sqlQuery.getSqlWhereClauseStatic()).append(")");
+				sqlWhere.append("(").append(lookupInfo.getWhereClauseSqlPart()).append(")");
 			}
 
 			final IStringExpression sqlWhereValRuleExpr = validationRule.getPrefilterWhereClause();
@@ -316,7 +319,7 @@ import de.metas.util.Services;
 			sqlBuilder.append(" WHERE ").append(sqlWhere);
 		}
 
-		final String sqlOrderBy = sqlQuery.getSqlOrderBy();
+		final String sqlOrderBy = lookupInfo.getOrderBySqlPart();
 		if (!Check.isEmpty(sqlOrderBy, true))
 		{
 			sqlBuilder.append(" ORDER BY ").append(sqlOrderBy);
@@ -324,14 +327,13 @@ import de.metas.util.Services;
 
 		// Add Security
 		final String sqlFinal;
-		if (sqlQuery.isSecurityDisabled())
+		if (lookupInfo.isSecurityDisabled())
 		{
 			sqlFinal = sqlBuilder.toString();
 		}
 		else
 		{
-			final TableName tableName = sqlQuery.getTableName();
-			sqlFinal = Env.getUserRolePermissions().addAccessSQL(sqlBuilder.toString(), tableName.getAsString(), IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
+			sqlFinal = Env.getUserRolePermissions().addAccessSQL(sqlBuilder.toString(), lookupInfo.getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		}
 
 		//

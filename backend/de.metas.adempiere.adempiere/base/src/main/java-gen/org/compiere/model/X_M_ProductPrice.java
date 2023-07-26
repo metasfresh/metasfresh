@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_ProductPrice
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_ProductPrice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1511391541L;
+	private static final long serialVersionUID = 2053135294L;
 
     /** Standard Constructor */
     public X_M_ProductPrice (final Properties ctx, final int M_ProductPrice_ID, @Nullable final String trxName)
@@ -159,6 +159,18 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	@Override
+	public void setMatchSeqNo (final int MatchSeqNo)
+	{
+		set_Value (COLUMNNAME_MatchSeqNo, MatchSeqNo);
+	}
+
+	@Override
+	public int getMatchSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MatchSeqNo);
+	}
+
+	@Override
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
@@ -210,17 +222,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	public int getM_DiscountSchemaLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_DiscountSchemaLine_ID);
-	}
-
-	@Override
-	public void setM_PriceList_ID (final int M_PriceList_ID)
-	{
-		throw new IllegalArgumentException ("M_PriceList_ID is virtual column");	}
-
-	@Override
-	public int getM_PriceList_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_PriceList_ID);
 	}
 
 	@Override
@@ -296,18 +297,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	@Override
-	public void setMatchSeqNo (final int MatchSeqNo)
-	{
-		set_Value (COLUMNNAME_MatchSeqNo, MatchSeqNo);
-	}
-
-	@Override
-	public int getMatchSeqNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_MatchSeqNo);
-	}
-
-	@Override
 	public void setPriceLimit (final BigDecimal PriceLimit)
 	{
 		set_Value (COLUMNNAME_PriceLimit, PriceLimit);
@@ -379,16 +368,5 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	public java.lang.String getUseScalePrice() 
 	{
 		return get_ValueAsString(COLUMNNAME_UseScalePrice);
-	}
-
-	@Override
-	public void setValidFrom (final @Nullable java.sql.Timestamp ValidFrom)
-	{
-		throw new IllegalArgumentException ("ValidFrom is virtual column");	}
-
-	@Override
-	public java.sql.Timestamp getValidFrom() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
 	}
 }

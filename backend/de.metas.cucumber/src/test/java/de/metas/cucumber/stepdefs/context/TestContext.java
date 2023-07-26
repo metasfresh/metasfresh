@@ -30,8 +30,7 @@ import java.util.Map;
 @Data
 public class TestContext
 {
-	private APIResponse apiResponse;
-	private String requestPayload;
-	private Map<String,String> httpHeaders;
-	private String endpointPath;
+	protected APIResponse apiResponse;
+	protected String requestPayload;
+	protected Map<String,String> httpHeaders;
 }

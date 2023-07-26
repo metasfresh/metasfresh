@@ -7,21 +7,15 @@
     "additionalDescription": "AlbertaAdditionalDecUpdated",
     "manufacturer": "myManufacturerName",
     "manufacturerNumber": "myNewManufacturerNumber",
-    "therapyIds": [
-      1,
-      2,
-      3
-    ],
+    "therapyIds": null,
     "billableTherapies": [
-      1,
-      3
+      "1"
     ],
     "productGroupId": "82d3d688-4035-48fa-90cb-d9d39b8975bd",
     "size": "20",
     "inventoryType": 1,
     "status": 2,
     "medicalAidPositionNumber": "myMedicalAidPositionNumberUpdated",
-    "unavailableFrom": "2021-06-07",
     "stars": 4,
     "assortmentType": 2,
     "pharmacyPrice": "1600.00",

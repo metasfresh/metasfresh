@@ -1,10 +1,6 @@
 package de.metas.ui.web.shipment_candidates_editor.process;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
@@ -17,6 +13,8 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /*
  * #%L

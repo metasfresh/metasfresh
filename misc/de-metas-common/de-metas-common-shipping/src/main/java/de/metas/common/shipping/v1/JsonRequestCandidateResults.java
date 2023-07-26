@@ -25,7 +25,8 @@ package de.metas.common.shipping.v1;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v1.JsonError;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,7 +36,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-@Schema(description = "Data which a an invoker of the Shipment candidate API can send back to metasfresh"
+@ApiModel(description = "Data which a an invoker of the Shipment candidate API can send back to metasfresh"
 		+ " to indicate if the exported data could be properly processed further down the road")
 public class JsonRequestCandidateResults
 {
@@ -48,7 +49,7 @@ public class JsonRequestCandidateResults
 	 */
 	JsonError error;
 
-	@Schema(description = "Optional field to communicate the data that was actually forwarded to the target system")
+	@ApiModelProperty("Optional field to communicate the data that was actually forwarded to the target system")
 	String forwardedData;
 
 	@JsonCreator

@@ -1,17 +1,18 @@
 package de.metas.marketing.base;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.marketing.base.model.PlatformGatewayId;
+
 import de.metas.marketing.base.spi.PlatformClientFactory;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 /*
  * #%L
@@ -38,7 +39,7 @@ import java.util.Optional;
 @Service
 public class PlatformClientFactoryRegistry
 {
-	private final ImmutableMap<PlatformGatewayId, PlatformClientFactory> clientFactoriesByGatewayId;
+	private final ImmutableMap<String, PlatformClientFactory> clientFactoriesByGatewayId;
 
 	public PlatformClientFactoryRegistry(@NonNull final Optional<List<PlatformClientFactory>> platformClientFactories)
 	{
@@ -48,14 +49,13 @@ public class PlatformClientFactoryRegistry
 				.collect(GuavaCollectors.toImmutableMapByKey(PlatformClientFactory::getPlatformGatewayId));
 	}
 
-	@NonNull
-	public PlatformClientFactory getPlatformClientFactory(@NonNull final PlatformGatewayId platformGatewayId)
+	public PlatformClientFactory getPlatformClientFactory(@NonNull final String platformGatewayId)
 	{
 		final PlatformClientFactory service = clientFactoriesByGatewayId.get(platformGatewayId);
 		return Check.assumeNotNull(service, "service shall exist for platformGatewayId={}", platformGatewayId);
 	}
 
-	public boolean hasGatewaySupport(@NonNull final PlatformGatewayId platformGatewayId)
+	public boolean hasGatewaySupport(@NonNull final String platformGatewayId)
 	{
 		return clientFactoriesByGatewayId.containsKey(platformGatewayId);
 	}

@@ -23,11 +23,8 @@
 package de.metas.rest_api.v2.shipping;
 
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
-import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inoutcandidate.ReceiptScheduleRepository;
@@ -110,8 +107,8 @@ class ReceiptCandidateAPIServiceTest
 
 		receiptCandidateAPIService = new ReceiptCandidateAPIService(
 				new ReceiptScheduleAuditRepository(),
-				new ReceiptScheduleRepository(ModelCacheInvalidationService.newInstanceForUnitTesting()),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository()),
+				new ReceiptScheduleRepository(),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}

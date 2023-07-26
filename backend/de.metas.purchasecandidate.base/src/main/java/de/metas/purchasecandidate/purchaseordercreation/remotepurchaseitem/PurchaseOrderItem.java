@@ -7,13 +7,10 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -22,7 +19,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -67,7 +63,6 @@ public class PurchaseOrderItem implements PurchaseItem
 		return (PurchaseOrderItem)purchaseItem;
 	}
 
-	@Nullable
 	public static PurchaseOrderItem castOrNull(final PurchaseItem purchaseItem)
 	{
 		return (purchaseItem instanceof PurchaseOrderItem) ? cast(purchaseItem) : null;
@@ -155,18 +150,11 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getId();
 	}
 
-	@NonNull
 	public ProductId getProductId()
 	{
 		return getPurchaseCandidate().getProductId();
 	}
 
-	@NonNull
-	public AttributeSetInstanceId getAttributeSetInstanceId()
-	{
-		return getPurchaseCandidate().getAttributeSetInstanceId();
-	}
-	
 	public int getUomId()
 	{
 		final Quantity purchasedQty = getPurchasedQty();
@@ -198,7 +186,6 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getPurchaseDatePromised();
 	}
 
-	@Nullable
 	public OrderId getSalesOrderId()
 	{
 		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineIdOrNull();
@@ -206,7 +193,6 @@ public class PurchaseOrderItem implements PurchaseItem
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
-	@Nullable
 	public ForecastLineId getForecastLineId()
 	{
 		return getPurchaseCandidate().getForecastLineId();
@@ -248,51 +234,23 @@ public class PurchaseOrderItem implements PurchaseItem
 		}
 	}
 
-	@Nullable
 	public BigDecimal getPrice()
 	{
 		return purchaseCandidate.getPriceEnteredEff();
 	}
 
-	@Nullable
 	public Percent getDiscount()
 	{
 		return purchaseCandidate.getDiscountEff();
 	}
 
-	@Nullable
 	public String getExternalPurchaseOrderUrl()
 	{
 		return purchaseCandidate.getExternalPurchaseOrderUrl();
 	}
 
-	@Nullable
 	public ExternalId getExternalHeaderId()
 	{
 		return purchaseCandidate.getExternalHeaderId();
-	}
-
-	@Nullable
-	public String getPOReference()
-	{
-		return purchaseCandidate.getPOReference();
-	}
-
-	@Nullable
-	public UomId getPriceUomId()
-	{
-		return purchaseCandidate.getPriceUomId();
-	}
-
-	@Nullable
-	public String getProductDescription()
-	{
-		return purchaseCandidate.getProductDescription();
-	}
-
-	@Nullable
-	public ActivityId getActivityId()
-	{
-		return purchaseCandidate.getActivityId();
 	}
 }

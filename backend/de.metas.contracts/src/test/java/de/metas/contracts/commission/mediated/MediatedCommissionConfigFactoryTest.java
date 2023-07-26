@@ -22,17 +22,14 @@
 
 package de.metas.contracts.commission.mediated;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContractBuilder;
-import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsId;
 import de.metas.contracts.commission.mediated.repository.MediatedCommissionSettingsRepo;
+import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -46,20 +43,19 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@ExtendWith(SnapshotExtension.class)
 public class MediatedCommissionConfigFactoryTest
 {
 	private MediatedCommissionConfigFactory mediatedCommissionConfigFactorySpy;
-	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
@@ -71,6 +67,7 @@ public class MediatedCommissionConfigFactoryTest
 	@BeforeAll
 	static void init()
 	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -110,7 +107,7 @@ public class MediatedCommissionConfigFactoryTest
 		final List<CommissionConfig> configs = mediatedCommissionConfigFactorySpy.createForNewCommissionInstances(requestForNewInstance);
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(configs);
+		expect(configs).toMatchSnapshot();
 	}
 
 	@Builder(builderMethodName = "contractAndComplementaryRecordsBuilder")
@@ -142,12 +139,18 @@ public class MediatedCommissionConfigFactoryTest
 		settingsLine.setIsActive(true);
 		saveRecord(settingsLine);
 
-		return TestCommissionContractBuilder.commissionContractBuilder()
-				.commissionProductId(commissionProductId)
-				.contractBPartnerId(vendorId)
-				.orgId(orgId)
-				.mediatedCommissionSettingsId(MediatedCommissionSettingsId.ofRepoId(mediatedCommissionSettings.getC_MediatedCommissionSettings_ID()))
-				.typeConditions(TypeConditions.MEDIATED_COMMISSION)
-				.build();
+		//contract
+		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
+		conditions.setC_MediatedCommissionSettings_ID(mediatedCommissionSettings.getC_MediatedCommissionSettings_ID());
+		InterfaceWrapperHelper.saveRecord(conditions);
+
+		final I_C_Flatrate_Term contract = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
+		contract.setBill_BPartner_ID(vendorId.getRepoId());
+		contract.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		contract.setType_Conditions(TypeConditions.MEDIATED_COMMISSION.getCode());
+		contract.setM_Product_ID(commissionProductId.getRepoId());
+		InterfaceWrapperHelper.saveRecord(contract);
+
+		return contract;
 	}
 }

@@ -14,10 +14,6 @@ FROM ad_table t
          INNER JOIN ad_tab tt ON tt.ad_table_id = t.ad_table_id AND tt.isactive = 'Y' AND tt.seqno = 10 AND tt.tablevel = 0
          INNER JOIN ad_window w ON w.ad_window_id = tt.ad_window_id AND w.isactive = 'Y'
 WHERE t.isactive = 'Y'
-  -- Not a placeholder window, i.e. tab has fields:
-  AND EXISTS(SELECT 1
-             FROM ad_field f
-             WHERE (f.ad_tab_id = tt.ad_tab_id OR f.ad_tab_id = tt.template_tab_id)
-               AND f.isactive = 'Y')
+  AND EXISTS(SELECT 1 FROM ad_field f WHERE f.ad_tab_id = tt.ad_tab_id AND f.isactive = 'Y') -- Not a placeholder window, i.e. tab has fields
 ;
 

@@ -13,7 +13,6 @@ import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
@@ -85,8 +84,7 @@ import java.util.function.Function;
 @EqualsAndHashCode
 public final class HUEditorRow implements IViewRow
 {
-	public static final String SYSCFG_PREFIX = "de.metas.ui.web.handlingunits.field";
-
+	private static final String SYSCFG_PREFIX = "de.metas.ui.web.handlingunits.field";
 
 	public static Builder builder(final WindowId windowId)
 	{
@@ -201,7 +199,6 @@ public final class HUEditorRow implements IViewRow
 			})
 	private final JSONLookupValue uom;
 
-
 	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
 	@ViewColumn(fieldName = FIELDNAME_HUStatus,//
 			widgetType = DocumentFieldWidgetType.Lookup, //
@@ -226,23 +223,6 @@ public final class HUEditorRow implements IViewRow
 	public static final String FIELDNAME_WeightGross = "WeightGross";
 	@ViewColumn(fieldName = FIELDNAME_WeightGross, widgetType = DocumentFieldWidgetType.Quantity, seqNo = 90, displayed = Displayed.FALSE)
 	private final BigDecimal weightGross;
-
-	public static final String FIELDNAME_ClearanceStatus = I_M_HU.COLUMNNAME_ClearanceStatus;
-	@ViewColumn(fieldName = FIELDNAME_ClearanceStatus, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
-	private final JSONLookupValue clearanceStatus;
-
-
-	public static final String FIELDNAME_PROJECT = I_M_HU.COLUMNNAME_C_Project_ID;
-	@ViewColumn(fieldName = FIELDNAME_PROJECT, //
-			captionKey = FIELDNAME_PROJECT, //
-			widgetType = DocumentFieldWidgetType.Text, //
-			layouts = {
-				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 95, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
-				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 95)
-			})
-	private final JSONLookupValue project;
-
 
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
@@ -279,9 +259,6 @@ public final class HUEditorRow implements IViewRow
 		qtyCU = builder.qtyCU;
 		weightGross = builder.getWeightGross();
 		bestBeforeDate = builder.getBestBeforeDate();
-		project = builder.project;
-
-		clearanceStatus = builder.clearanceStatus;
 
 		this.locatorId = builder.locatorId;
 		this.locator = locatorId != null
@@ -295,10 +272,10 @@ public final class HUEditorRow implements IViewRow
 		if (attributesProvider != null)
 		{
 			attributesSupplier = Optional.of(HUEditorRowAttributesSupplier.builder()
-					.viewRowId(rowId.toDocumentId())
-					.huId(huId)
-					.provider(attributesProvider)
-					.build());
+													 .viewRowId(rowId.toDocumentId())
+													 .huId(huId)
+													 .provider(attributesProvider)
+													 .build());
 		}
 		else
 		{
@@ -336,11 +313,6 @@ public final class HUEditorRow implements IViewRow
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
-	}
-
-	public JSONLookupValue getClearanceStatus()
-	{
-		return clearanceStatus;
 	}
 
 	public HUEditorRowId getHURowId()
@@ -484,11 +456,6 @@ public final class HUEditorRow implements IViewRow
 	public JSONLookupValue getHUStatusDisplay()
 	{
 		return huStatusDisplay;
-	}
-
-	public JSONLookupValue getProjectDisplay()
-	{
-		return project;
 	}
 
 	public boolean isHUStatusPlanning()
@@ -684,7 +651,6 @@ public final class HUEditorRow implements IViewRow
 
 		private String packingInfo;
 		private JSONLookupValue product;
-		private JSONLookupValue project;
 		private Boolean isOwnPalette;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
@@ -693,9 +659,6 @@ public final class HUEditorRow implements IViewRow
 		private LocatorId locatorId;
 		private String locatorCaption;
 		private BPartnerId bpartnerId;
-
-		@Nullable
-		private JSONLookupValue clearanceStatus;
 
 		private List<HUEditorRow> includedRows = null;
 		@Nullable
@@ -812,12 +775,6 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
-		public Builder setProject(final JSONLookupValue project)
-		{
-			this.project = project;
-			return this;
-		}
-
 		public Builder setIsOwnPalette(final Boolean isOwnPalette)
 		{
 			this.isOwnPalette = isOwnPalette;
@@ -914,12 +871,6 @@ public final class HUEditorRow implements IViewRow
 		{
 			orderLineReservation = orderLineId;
 			huReserved = orderLineId != null;
-			return this;
-		}
-
-		public Builder setClearanceStatus(@Nullable final JSONLookupValue clearanceStatusLookupValue)
-		{
-			clearanceStatus = clearanceStatusLookupValue;
 			return this;
 		}
 

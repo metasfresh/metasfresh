@@ -18,7 +18,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public class TestCommissionConfig
 	Boolean createShareForOwnRevenue = false;
 
 	@Singular
-	List<TestHierarchyCommissionContract> contractTestRecords;
+	List<TestCommissionContract> contractTestRecords;
 
 	@Singular
 	List<TestCommissionConfigLine> configLineTestRecords;
@@ -106,7 +106,7 @@ public class TestCommissionConfig
 		final ImmutableMap.Builder<String, BPartnerId> name2bpartnerId = ImmutableMap.builder();
 
 		final HashMap<String, I_C_BPartner> name2bpartnerRecord = new HashMap<>(); // used just locally in this method
-		for (final TestHierarchyCommissionContract contractTestRecord : contractTestRecords)
+		for (final TestCommissionContract contractTestRecord : contractTestRecords)
 		{
 			final I_C_Flatrate_Term termRecord = contractTestRecord.createContractData(
 					orgId,
@@ -122,7 +122,7 @@ public class TestCommissionConfig
 		}
 
 		// link sales reps into their hierarchy
-		for (final TestHierarchyCommissionContract contractTestRecord : contractTestRecords)
+		for (final TestCommissionContract contractTestRecord : contractTestRecords)
 		{
 			if (!isEmpty(contractTestRecord.getParentSalesRepName(), true))
 			{

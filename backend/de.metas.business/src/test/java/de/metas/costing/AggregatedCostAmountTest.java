@@ -1,19 +1,20 @@
 package de.metas.costing;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.costing.methods.CostAmountDetailed;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static org.assertj.core.api.Assertions.*;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -47,32 +48,19 @@ public class AggregatedCostAmountTest
 	{
 		final AggregatedCostAmount amt = AggregatedCostAmount.builder()
 				.costSegment(createCostSegment())
-				.amount(createCostElement(1, CostingMethod.AverageInvoice),  CostAmountDetailed.builder().mainAmt((CostAmount.of(1000, currencyId))).build())
-				.amount(createCostElement(2, CostingMethod.AveragePO), CostAmountDetailed.builder().mainAmt((CostAmount.of(100, currencyId))).build())
-				.amount(createCostElement(3, CostingMethod.AveragePO),  CostAmountDetailed.builder().mainAmt((CostAmount.of(10, currencyId))).build())
-				.amount(createCostElement(4, CostingMethod.AveragePO),  CostAmountDetailed.builder().mainAmt((CostAmount.of(1, currencyId))).build())
-				.amount(createCostElement(5, CostingMethod.MovingAverageInvoice),  CostAmountDetailed.builder().mainAmt((CostAmount.of(100, currencyId))).build())
-				.amount(createCostElement(6, CostingMethod.MovingAverageInvoice), CostAmountDetailed.builder().mainAmt(( CostAmount.of(10, currencyId))).build())
-				.amount(createCostElement(7, CostingMethod.MovingAverageInvoice),  CostAmountDetailed.builder().mainAmt((CostAmount.of(1, currencyId))).build())
+				.amount(createCostElement(1, CostingMethod.AverageInvoice), CostAmount.of(1000, currencyId))
+				.amount(createCostElement(2, CostingMethod.AveragePO), CostAmount.of(100, currencyId))
+				.amount(createCostElement(3, CostingMethod.AveragePO), CostAmount.of(10, currencyId))
+				.amount(createCostElement(4, CostingMethod.AveragePO), CostAmount.of(1, currencyId))
 				.build();
 
-		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, null).get().getMainAmt())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, null).get())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, ImmutableSet.of()).get().getMainAmt())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, ImmutableSet.of()).get())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, costElementIds(2, 4)).get().getMainAmt())
-				.isEqualTo(CostAmount.of(101, currencyId));
-
-
-		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, null).get().getMainAmt())
-				.isEqualTo(CostAmount.of(111, currencyId));
-
-		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, ImmutableSet.of()).get().getMainAmt())
-				.isEqualTo(CostAmount.of(111, currencyId));
-
-		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, costElementIds(5, 7)).get().getMainAmt())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, costElementIds(2, 4)).get())
 				.isEqualTo(CostAmount.of(101, currencyId));
 	}
 

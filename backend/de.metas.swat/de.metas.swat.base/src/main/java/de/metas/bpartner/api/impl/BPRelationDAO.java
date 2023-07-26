@@ -18,14 +18,11 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_C_BP_Relation;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -54,7 +51,6 @@ public class BPRelationDAO implements IBPRelationDAO
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	@Nullable
 	public I_C_BP_Relation retrieveHandoverBPRelation(final I_C_BPartner partner, final I_C_BPartner relationPartner)
 	{
 		final IQueryBuilder<I_C_BP_Relation> queryBuilder = Services.get(IQueryBL.class)
@@ -138,21 +134,6 @@ public class BPRelationDAO implements IBPRelationDAO
 				.build();
 	}
 
-	// TODO: create generic relation-query class etc
-	@Nullable
-	@Override
-	public Optional<BPartnerId> getLastUpdatedPreferredPharmacyByPartnerId(@NonNull final BPartnerId bpartnerId)
-	{
-		return queryBL.createQueryBuilder(org.compiere.model.I_C_BP_Relation.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMNNAME_Role, X_C_BP_Relation.ROLE_PreferredPharmacy)
-				.orderByDescending(org.compiere.model.I_C_BP_Relation.COLUMNNAME_Updated)
-				.create()
-				.firstOptional(org.compiere.model.I_C_BP_Relation.class)
-				.map(bpRelation -> BPartnerId.ofRepoId(bpRelation.getC_BPartnerRelation_ID()));
-	}
-	
 	@Override
 	public void saveOrUpdate(final @NonNull OrgId orgId, final BPRelation rel)
 	{
@@ -177,20 +158,20 @@ public class BPRelationDAO implements IBPRelationDAO
 		}
 		relation.setC_BPartnerRelation_ID(rel.getTargetBPartnerId().getRepoId());
 		relation.setC_BPartnerRelation_Location_ID(rel.getTargetBPLocationId().getRepoId());
-		relation.setName(coalesceNotNull(rel.getName(), relation.getName()));
+		relation.setName(coalesce(rel.getName(), relation.getName()));
 		relation.setDescription(coalesce(rel.getDescription(), relation.getDescription()));
 		relation.setRole(rel.getRole() != null ? rel.getRole().getCode() : relation.getRole());
 		if (rel.getExternalId() != null)
 		{
 			relation.setExternalId(rel.getExternalId().getValue());
 		}
-		relation.setIsActive(coalesceNotNull(rel.getActive(), relation.isActive(), true));
-		relation.setIsBillTo(coalesceNotNull(rel.getBillTo(), relation.isBillTo()));
-		relation.setIsFetchedFrom(coalesceNotNull(rel.getFetchedFrom(), relation.isFetchedFrom()));
-		relation.setIsHandOverLocation(coalesceNotNull(rel.getHandoverLocation(), relation.isHandOverLocation()));
-		relation.setIsPayFrom(coalesceNotNull(rel.getPayFrom(), relation.isPayFrom()));
-		relation.setIsRemitTo(coalesceNotNull(rel.getRemitTo(), relation.isRemitTo()));
-		relation.setIsShipTo(coalesceNotNull(rel.getShipTo(), relation.isShipTo()));
+		relation.setIsActive(coalesce(rel.getActive(), relation.isActive(), true));
+		relation.setIsBillTo(coalesce(rel.getBillTo(), relation.isBillTo()));
+		relation.setIsFetchedFrom(coalesce(rel.getFetchedFrom(), relation.isFetchedFrom()));
+		relation.setIsHandOverLocation(coalesce(rel.getHandoverLocation(), relation.isHandOverLocation()));
+		relation.setIsPayFrom(coalesce(rel.getPayFrom(), relation.isPayFrom()));
+		relation.setIsRemitTo(coalesce(rel.getRemitTo(), relation.isRemitTo()));
+		relation.setIsShipTo(coalesce(rel.getShipTo(), relation.isShipTo()));
 		InterfaceWrapperHelper.save(relation);
 	}
 

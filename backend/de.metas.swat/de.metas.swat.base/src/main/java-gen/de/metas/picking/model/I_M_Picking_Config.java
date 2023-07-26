@@ -1,101 +1,115 @@
 package de.metas.picking.model;
 
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Config
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_M_Picking_Config 
 {
 
-	String Table_Name = "M_Picking_Config";
+    /** TableName=M_Picking_Config */
+    public static final String Table_Name = "M_Picking_Config";
 
-//	/** AD_Table_ID=540873 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540873 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 4 - System
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_Picking_Config, Object> COLUMN_Created = new ModelColumn<>(I_M_Picking_Config.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_M_Picking_Config, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Config.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set IsAllowOverdelivery.
@@ -104,7 +118,7 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsAllowOverdelivery (boolean IsAllowOverdelivery);
+	public void setIsAllowOverdelivery (boolean IsAllowOverdelivery);
 
 	/**
 	 * Get IsAllowOverdelivery.
@@ -113,10 +127,12 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAllowOverdelivery();
+	public boolean isAllowOverdelivery();
 
-	ModelColumn<I_M_Picking_Config, Object> COLUMN_IsAllowOverdelivery = new ModelColumn<>(I_M_Picking_Config.class, "IsAllowOverdelivery", null);
-	String COLUMNNAME_IsAllowOverdelivery = "IsAllowOverdelivery";
+    /** Column definition for IsAllowOverdelivery */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_IsAllowOverdelivery = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "IsAllowOverdelivery", null);
+    /** Column name IsAllowOverdelivery */
+    public static final String COLUMNNAME_IsAllowOverdelivery = "IsAllowOverdelivery";
 
 	/**
 	 * Set IsAutoProcess.
@@ -125,7 +141,7 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsAutoProcess (boolean IsAutoProcess);
+	public void setIsAutoProcess (boolean IsAutoProcess);
 
 	/**
 	 * Get IsAutoProcess.
@@ -134,10 +150,12 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAutoProcess();
+	public boolean isAutoProcess();
 
-	ModelColumn<I_M_Picking_Config, Object> COLUMN_IsAutoProcess = new ModelColumn<>(I_M_Picking_Config.class, "IsAutoProcess", null);
-	String COLUMNNAME_IsAutoProcess = "IsAutoProcess";
+    /** Column definition for IsAutoProcess */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_IsAutoProcess = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "IsAutoProcess", null);
+    /** Column name IsAutoProcess */
+    public static final String COLUMNNAME_IsAutoProcess = "IsAutoProcess";
 
 	/**
 	 * Set Picking configuration.
@@ -146,7 +164,7 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Picking_Config_ID (int M_Picking_Config_ID);
+	public void setM_Picking_Config_ID (int M_Picking_Config_ID);
 
 	/**
 	 * Get Picking configuration.
@@ -155,35 +173,40 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Picking_Config_ID();
+	public int getM_Picking_Config_ID();
 
-	ModelColumn<I_M_Picking_Config, Object> COLUMN_M_Picking_Config_ID = new ModelColumn<>(I_M_Picking_Config.class, "M_Picking_Config_ID", null);
-	String COLUMNNAME_M_Picking_Config_ID = "M_Picking_Config_ID";
+    /** Column definition for M_Picking_Config_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_M_Picking_Config_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "M_Picking_Config_ID", null);
+    /** Column name M_Picking_Config_ID */
+    public static final String COLUMNNAME_M_Picking_Config_ID = "M_Picking_Config_ID";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_Picking_Config, Object> COLUMN_Updated = new ModelColumn<>(I_M_Picking_Config.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Picking terminal view profile.
@@ -192,7 +215,7 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setWEBUI_PickingTerminal_ViewProfile (java.lang.String WEBUI_PickingTerminal_ViewProfile);
+	public void setWEBUI_PickingTerminal_ViewProfile (java.lang.String WEBUI_PickingTerminal_ViewProfile);
 
 	/**
 	 * Get Picking terminal view profile.
@@ -201,8 +224,10 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getWEBUI_PickingTerminal_ViewProfile();
+	public java.lang.String getWEBUI_PickingTerminal_ViewProfile();
 
-	ModelColumn<I_M_Picking_Config, Object> COLUMN_WEBUI_PickingTerminal_ViewProfile = new ModelColumn<>(I_M_Picking_Config.class, "WEBUI_PickingTerminal_ViewProfile", null);
-	String COLUMNNAME_WEBUI_PickingTerminal_ViewProfile = "WEBUI_PickingTerminal_ViewProfile";
+    /** Column definition for WEBUI_PickingTerminal_ViewProfile */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Config, Object> COLUMN_WEBUI_PickingTerminal_ViewProfile = new org.adempiere.model.ModelColumn<I_M_Picking_Config, Object>(I_M_Picking_Config.class, "WEBUI_PickingTerminal_ViewProfile", null);
+    /** Column name WEBUI_PickingTerminal_ViewProfile */
+    public static final String COLUMNNAME_WEBUI_PickingTerminal_ViewProfile = "WEBUI_PickingTerminal_ViewProfile";
 }

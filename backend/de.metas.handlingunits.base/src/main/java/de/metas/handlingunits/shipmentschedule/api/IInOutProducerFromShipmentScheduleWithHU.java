@@ -1,23 +1,20 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.deliveryplanning.DeliveryPlanningId;
-import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
-import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
-import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * Interface responsible creating {@link I_M_InOut} shipments from {@link ShipmentScheduleWithHU}s.
+ *
+ *
  */
 public interface IInOutProducerFromShipmentScheduleWithHU
 {
@@ -27,6 +24,7 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 
 	/**
 	 * Determines if this producer shall explicitly invoke {@link IHUInOutBL#createPackingMaterialLines(org.compiere.model.I_M_InOut)} to create packing inOutLines.
+	 *
 	 * Notes:
 	 * <ul>
 	 * <li>if this is set to <code>true</code>, then packing lines will be created <b>before</b> the shipment's DocAction is processed
@@ -41,10 +39,4 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo);
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
-
-	IInOutProducerFromShipmentScheduleWithHU setForexContractRef(ForexContractRef forexContractRef);
-
-	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(DeliveryPlanningId deliveryPlanningId);
-
-	InOutProducerFromShipmentScheduleWithHU setB2BReceiptId(@Nullable InOutId b2bReceiptId);
 }

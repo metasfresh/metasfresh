@@ -26,9 +26,6 @@ admin_url=${METASFRESH_ADMIN_URL:-NONE}
 # app
 app_host=${APP_HOST:-app}
 
-# webui
-webui_frontend_url=${WEBUI_FRONTEND_URL:-NONE}
-
 echo_variable_values()
 {
  echo "Note: all these variables can be set using the -e parameter."
@@ -49,7 +46,6 @@ echo_variable_values()
  echo "ES_PORT=${es_port}"
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "APP_HOST=${app_host}"
- echo "WEBUI_FRONTEND_URL=${webui_frontend_url}"
 }
 
 
@@ -95,24 +91,12 @@ run_metasfresh()
 	metasfresh_admin_params=""
  fi
 
- if [ "$webui_frontend_url" != "NONE" ]; 
- then
-	webui_frontend_url_params="-Dwebui.frontend.url=${webui_frontend_url}"
- else
-	webui_frontend_url_params=""
- fi
-
  local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
  
  local rabbitmq_params="-Dspring.rabbitmq.host=${rabbitmq_host}\
  -Dspring.rabbitmq.port=${rabbitmq_port}\
  -Dspring.rabbitmq.username=${rabbitmq_user}\
  -Dspring.rabbitmq.password=${rabbitmq_password}"
-
-  # Allow loading jars from /opt/metasfresh/external-lib.
-  # This assumes that the webapi uses PropertiesLauncher (can be verified by opening the jar e.g. with 7-zip and checking META-INF/MANIFEST.MF)
-  # Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
- local external_lib_params="-Dloader.path=/opt/metasfresh/external-lib"
 
  # thx to https://medium.com/adorsys/jvm-memory-settings-in-a-container-environment-64b0840e1d9e
  #local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAM=$(( $(cat /sys/fs/cgroup/memory/memory.limit_in_bytes) * 100 / 70 )) -XX:MaxRAMFraction=1"
@@ -125,10 +109,8 @@ run_metasfresh()
  -Dsun.misc.URLClassPath.disableJarChecking=true \
  ${es_params} \
  ${rabbitmq_params} \
- ${external_lib_params} \
  ${metasfresh_admin_params} \
  ${metasfresh_db_connectionpool_params}\
- ${webui_frontend_url_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789 \

@@ -22,12 +22,12 @@
 package de.metas.letters.spi;
 
 import de.metas.async.model.I_C_Async_Batch;
-import lombok.NonNull;
 
 public interface INotifyAsyncBatch
 {
 	/**
 	 * Send note or email to the user who created the batch 
+	 * @param asyncBatch
 	 */
-	void sendNotifications(@NonNull I_C_Async_Batch asyncBatch);
+	void sendNotifications(I_C_Async_Batch asyncBatch);
 }

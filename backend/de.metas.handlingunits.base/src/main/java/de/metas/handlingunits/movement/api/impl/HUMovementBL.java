@@ -22,9 +22,32 @@
 
 package de.metas.handlingunits.movement.api.impl;
 
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimaps;
-import de.metas.common.util.time.SystemTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mmovement.api.IMovementDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -38,50 +61,21 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.movement.api.HUMovementResult;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
-import de.metas.handlingunits.movement.generate.HUMovementGenerator;
-import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
 
 public class HUMovementBL implements IHUMovementBL
 {
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Override
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
@@ -97,8 +91,8 @@ public class HUMovementBL implements IHUMovementBL
 		final OrgId orgId = OrgId.ofRepoId(movementLine.getAD_Org_ID());
 		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
 
-		final IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
-		final ActivityId productActivityId = productActivityProvider.getActivityForAcct(clientId, orgId, productId);
+		final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+		final ActivityId productActivityId = productAcctDAO.retrieveActivityForAcct(clientId, orgId, productId);
 
 		movementLine.setC_ActivityFrom_ID(ActivityId.toRepoId(productActivityId));
 		movementLine.setC_Activity_ID(ActivityId.toRepoId(productActivityId));
@@ -108,74 +102,101 @@ public class HUMovementBL implements IHUMovementBL
 
 	@Nullable
 	@Override
-	public LocatorId getDirectMoveLocatorId()
+	public I_M_Warehouse getDirectMove_Warehouse(final Properties ctx, final boolean throwEx)
 	{
 		//
 		// Get the M_Warehouse_ID
-		final Properties ctx = Env.getCtx();
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
-		final WarehouseId directMoveWarehouseId = WarehouseId.optionalOfRepoId(
-						sysConfigBL.getIntValue(
-								SYSCONFIG_DirectMove_Warehouse_ID, -1, // defaultValue,
-								adClientId, // AD_Client_ID
-								adOrgId // AD_Org_ID
-						))
-				.orElseThrow(() -> new AdempiereException("Missing AD_SysConfig record with Name = " + SYSCONFIG_DirectMove_Warehouse_ID + " for AD_Client_ID=" + adClientId + " and AD_Org_ID=" + adOrgId));
+		final int directMoveWarehouseId = Services.get(ISysConfigBL.class).getIntValue(
+				SYSCONFIG_DirectMove_Warehouse_ID, -1, // defaultValue,
+				Env.getAD_Client_ID(ctx), // AD_Client_ID
+				Env.getAD_Org_ID(ctx) // AD_Org_ID
+		);
 
-		return warehouseBL.getOrCreateDefaultLocatorId(directMoveWarehouseId);
+		if (directMoveWarehouseId <= 0)
+		{
+			if (throwEx)
+			{
+				Check.errorIf(true, "Missing AD_SysConfig record with Name = {} for AD_Client_ID={} and AD_Org_ID={}",
+						SYSCONFIG_DirectMove_Warehouse_ID, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+			}
+			return null;
+		}
+
+		// Load the warehouse (we assume the table level caching is enabled for
+		// warehouse)
+		final I_M_Warehouse directMoveWarehouse = InterfaceWrapperHelper.create(ctx, directMoveWarehouseId,
+				I_M_Warehouse.class, ITrx.TRXNAME_None);
+		if (directMoveWarehouse == null || directMoveWarehouse.getM_Warehouse_ID() <= 0)
+		{
+			if (throwEx)
+			{
+				throw new AdempiereException("No warehouse found for ID=" + directMoveWarehouseId + ". Check sysconfig "
+						+ SYSCONFIG_DirectMove_Warehouse_ID);
+			}
+			return null;
+		}
+
+		return directMoveWarehouse;
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUsToWarehouse(@NonNull final List<I_M_HU> hus, @NonNull final WarehouseId warehouseToId)
+	public HUMovementResult moveHUsToWarehouse(@NonNull final List<I_M_HU> hus,
+			@NonNull final I_M_Warehouse warehouseTo)
 	{
-		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
-		return moveHUsToLocator(hus, locatorToId);
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final I_M_Locator locatorTo = warehouseBL.getDefaultLocator(warehouseTo);
+		return moveHUsToLocator(hus, locatorTo);
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUs(@NonNull final HUMovementGenerateRequest request)
-	{
-		return new HUMovementGenerator(request).createMovement();
-	}
-
-	@Override
-	public HUMovementGeneratorResult moveHUsToLocator(@NonNull final List<I_M_HU> hus, @NonNull final LocatorId toLocatorId)
+	public HUMovementResult moveHUsToLocator(@NonNull final List<I_M_HU> hus, @NonNull final I_M_Locator locatorTo)
 	{
 		if (hus.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@ @M_HU_ID@");
 		}
 
-		HUMovementGeneratorResult result = HUMovementGeneratorResult.EMPTY;
+		final PlainContextAware initialContext = PlainContextAware.newWithThreadInheritedTrx();
 
-		final ImmutableSetMultimap<LocatorId, HuId> huIdsByLocatorId = hus.stream()
-				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
-						IHandlingUnitsBL::extractLocatorId,
-						hu -> HuId.ofRepoId(hu.getM_HU_ID())));
-		Multimaps.index(hus, IHandlingUnitsBL::extractLocatorId);
-		for (final LocatorId fromLocatorId : huIdsByLocatorId.keySet())
+		//
+		// iterate the HUs,
+		// create one builder per source warehouse
+		// add each HU to one builder
+		final Map<WarehouseId, HUMovementBuilder> warehouseId2builder = new HashMap<>();
+		for (final I_M_HU hu : hus)
 		{
-			final HUMovementGenerateRequest request = HUMovementGenerateRequest.builder()
-					.fromLocatorId(fromLocatorId)
-					.toLocatorId(toLocatorId)
-					.huIdsToMove(huIdsByLocatorId.get(fromLocatorId))
-					.movementDate(SystemTime.asInstant())
-					.build();
 
-			final HUMovementGeneratorResult currentResult = new HUMovementGenerator(request)
-					.considerPreloadedHUs(hus)
-					.createMovement();
+			final WarehouseId sourceWarehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
+			HUMovementBuilder movementBuilder = warehouseId2builder.get(sourceWarehouseId);
+			if (movementBuilder == null)
+			{
+				movementBuilder = new HUMovementBuilder();
+				movementBuilder.setContextInitial(initialContext);
+				movementBuilder.setLocatorFrom(IHandlingUnitsBL.extractLocator(hu));
+				movementBuilder.setLocatorTo(locatorTo);
 
-			result = result.combine(currentResult);
+				warehouseId2builder.put(sourceWarehouseId, movementBuilder);
+			}
+			movementBuilder.addHU(hu);
 		}
 
-		return result;
+		//
+		// create the movements
+		final HUMovementResult.Builder result = HUMovementResult.builder();
+		for (final HUMovementBuilder builder : warehouseId2builder.values())
+		{
+			final I_M_Movement movement = builder.createMovement();
+			if (movement != null)
+			{
+				result.addMovementAndHUs(movement, builder.getHUsMoved());
+			}
+		}
+		return result.build();
 	}
 
 	@Override
 	public void assignHU(final org.compiere.model.I_M_MovementLine movementLine, final I_M_HU hu,
-						 final boolean isTransferPackingMaterials, final String trxName)
+			final boolean isTransferPackingMaterials, final String trxName)
 	{
 		huAssignmentBL.assignHU(movementLine, hu, isTransferPackingMaterials, trxName);
 	}
@@ -186,12 +207,13 @@ public class HUMovementBL implements IHUMovementBL
 		huAssignmentBL.setAssignedHandlingUnits(movementLine, hus);
 	}
 
+
 	@Override
 	public void moveHandlingUnits(final I_M_Movement movement, final boolean doReversal)
 	{
 		final Date movementDate = movement.getMovementDate();
 
-		try (final ITemporaryDateTrx ignored = IHUContext.DateTrxProvider.temporarySet(movementDate))
+		try (final ITemporaryDateTrx dateTrx = IHUContext.DateTrxProvider.temporarySet(movementDate))
 		{
 			for (final I_M_MovementLine movementLine : movementDAO.retrieveLines(movement, I_M_MovementLine.class))
 			{
@@ -215,12 +237,13 @@ public class HUMovementBL implements IHUMovementBL
 			locatorTo = movementLine.getM_Locator();
 		}
 
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(movementLine);
 		for (final I_M_HU hu : hus)
 		{
 			final int huLocatorId = hu.getM_Locator_ID();
 			Check.assume(huLocatorId > 0
-							&& (huLocatorId == locatorFrom.getM_Locator_ID() || huLocatorId == locatorTo.getM_Locator_ID()),
+					&& (huLocatorId == locatorFrom.getM_Locator_ID() || huLocatorId == locatorTo.getM_Locator_ID()),
 					"HU Locator was supposed to be {} or {}, but was {}", locatorFrom, locatorTo, huLocatorId);
 
 			moveHandlingUnit(hu, LocatorId.ofRecord(locatorTo));
@@ -230,6 +253,7 @@ public class HUMovementBL implements IHUMovementBL
 	private void moveHandlingUnit(final I_M_HU hu, final LocatorId locatorToId)
 	{
 		final SourceHUsService sourceHuService = SourceHUsService.get();
+		final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
 
 		//
 		// Make sure hu's current locator is the locator from which we need to move
@@ -264,6 +288,10 @@ public class HUMovementBL implements IHUMovementBL
 		// trigger a movement to/from empties warehouse. In this case a movement is
 		// already created from a lager to another.
 		// So no HU leftovers.
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(hu);
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContext(contextProvider);
 

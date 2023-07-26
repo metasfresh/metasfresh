@@ -22,19 +22,12 @@
 
 package de.metas.document.references.related_documents.relation_type;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.ad_reference.ADRefList;
-import de.metas.ad_reference.ADRefListId;
-import de.metas.ad_reference.ADRefListItem;
-import de.metas.ad_reference.ADRefTable;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.AdRefListRepositoryMocked;
-import de.metas.ad_reference.AdRefTableRepositoryMocked;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Column;
@@ -43,14 +36,13 @@ import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.X_AD_Reference;
-import org.compiere.model.X_AD_RelationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
+import java.util.Map.Entry;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -85,7 +77,7 @@ public class RelationTypeRelatedDocumentsProvidersFactoryTest
 		final boolean isTableRecordIdTarget = true;
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null, referenceTarget);
 
-		final ADRefTable targetTableRefInfo = ADRefTable.builder()
+		final TableRefInfo targetTableRefInfo = TableRefInfo.builder()
 				.identifier(refTargetName)
 				.tableName(tableName)
 				.keyColumn(keyColumnName)
@@ -101,11 +93,10 @@ public class RelationTypeRelatedDocumentsProvidersFactoryTest
 				.autoComplete(false)
 				.build();
 
-		final ADReferenceService adReferenceService = newADReferenceService(ImmutableMap.of(ReferenceId.ofRepoId(referenceTarget.getAD_Reference_ID()), targetTableRefInfo));
+		setupLookupDAOMock(ImmutableMap.of(
+				referenceTarget.getAD_Reference_ID(), targetTableRefInfo));
 
-		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(
-				adReferenceService,
-				NullCustomizedWindowInfoMapRepository.instance);
+		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
 		final SpecificRelationTypeRelatedDocumentsProvider provider = relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType);
 
 		assertThat(provider.isTableRecordIdTarget()).isTrue();
@@ -134,7 +125,7 @@ public class RelationTypeRelatedDocumentsProvidersFactoryTest
 		final boolean isTableRecordIdTarget = false;
 
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, referenceSource, referenceTarget);
-		final ADRefTable targetTableRefInfo = ADRefTable.builder()
+		final TableRefInfo targetTableRefInfo = TableRefInfo.builder()
 				.identifier(refTargetName)
 				.tableName(tableName)
 				.keyColumn(keyColumnName)
@@ -150,7 +141,7 @@ public class RelationTypeRelatedDocumentsProvidersFactoryTest
 				.autoComplete(false)
 				.build();
 
-		final ADRefTable sourceTableRefInfo = ADRefTable.builder()
+		final TableRefInfo sourceTableRefInfo = TableRefInfo.builder()
 				.identifier(refTargetName)
 				.tableName(tableName)
 				.keyColumn(keyColumnName)
@@ -166,63 +157,49 @@ public class RelationTypeRelatedDocumentsProvidersFactoryTest
 				.autoComplete(false)
 				.build();
 
-		final ADReferenceService adReferenceService = newADReferenceService(ImmutableMap.of(
-				ReferenceId.ofRepoId(referenceTarget.getAD_Reference_ID()), targetTableRefInfo,
-				ReferenceId.ofRepoId(referenceSource.getAD_Reference_ID()), sourceTableRefInfo));
+		setupLookupDAOMock(ImmutableMap.of(
+				referenceTarget.getAD_Reference_ID(), targetTableRefInfo,
+				referenceSource.getAD_Reference_ID(), sourceTableRefInfo));
 
-		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(
-				adReferenceService,
-				NullCustomizedWindowInfoMapRepository.instance);
+		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
 		final SpecificRelationTypeRelatedDocumentsProvider provider = relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType);
 
 		assertThat(provider.isTableRecordIdTarget()).isFalse();
 	}
 
-	private ADRefList adRefList(int referenceRepoId, String name, String... values)
+	private void setupLookupDAOMock(final Map<Integer, TableRefInfo> idToRefInfo)
 	{
-		final ReferenceId referenceId = ReferenceId.ofRepoId(referenceRepoId);
+		final ILookupDAO lookupDao = Mockito.mock(ILookupDAO.class);
+		Services.registerService(ILookupDAO.class, lookupDao);
 
-		final AtomicInteger nextADRefListRepoId = new AtomicInteger(1);
-
-		return ADRefList.builder()
-				.referenceId(referenceId)
-				.name(name)
-				.items(Stream.of(values)
-						.map(value -> ADRefListItem.builder()
-								.referenceId(referenceId)
-								.refListId(ADRefListId.ofRepoId(nextADRefListRepoId.getAndIncrement()))
-								.value(value)
-								.valueName(value)
-								.name(TranslatableStrings.anyLanguage(value))
-								.build())
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-	}
-
-	private ADReferenceService newADReferenceService(final Map<ReferenceId, ADRefTable> idToRefInfo)
-	{
-		final AdRefTableRepositoryMocked adRefTableRepository = new AdRefTableRepositoryMocked();
-		idToRefInfo.forEach(adRefTableRepository::put);
-
-		final AdRefListRepositoryMocked adRefListRepository = new AdRefListRepositoryMocked();
-		adRefListRepository.put(adRefList(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, "ROLE_SOURCE", X_AD_RelationType.ROLE_SOURCE_Abo));
-
-		return new ADReferenceService(adRefListRepository, adRefTableRepository);
+		for (final Entry<Integer, TableRefInfo> entry : idToRefInfo.entrySet())
+		{
+			Mockito.doReturn(entry.getValue()).when(lookupDao).retrieveTableRefInfo(entry.getKey());
+		}
 	}
 
 	@Test
 	public void findRelatedDocumentsProvider_DefaultRelType_NoSource()
 	{
-		final I_AD_Reference referenceTarget = createReferenceSourceOrTarget("RefTargetName1", X_AD_Reference.VALIDATIONTYPE_TableValidation);
+		final String refTargetName = "RefTargetName1";
+		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
+		final I_AD_Reference referenceTarget = createReferenceSourceOrTarget(refTargetName, validationType);
+
+		final String tableName = "TableName";
+		final I_AD_Table table = createTable(tableName);
+
+		final String keyColumnName = "TableName_ID";
+		createColumn(table, keyColumnName);
+
+		createRefTable(referenceTarget, table);
+
 		final boolean isTableRecordIdTarget = false;
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null, referenceTarget);
 
-		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(
-				newADReferenceService(ImmutableMap.of()),
-				NullCustomizedWindowInfoMapRepository.instance);
+		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
 		assertThatThrownBy(() -> relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage("Assumption failure: sourceReferenceId is set");
+				.hasMessage("Assumption failure: sourceReferenceId > 0");
 	}
 
 	private void createColumn(final I_AD_Table table, final String columnname)

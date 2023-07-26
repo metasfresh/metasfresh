@@ -190,6 +190,7 @@ public class ESRDataLoaderUtil
 		importLine.setC_BPartner_ID(invoice.getC_BPartner_ID()); // 04582: no need to load the whole bpartner when we just need the ID
 		importLine.setOrg_ID(invoice.getAD_Org_ID());
 
+		InterfaceWrapperHelper.save(importLine);
 	}
 
 	/**
@@ -353,6 +354,7 @@ public class ESRDataLoaderUtil
 				}
 			}
 		}
+		InterfaceWrapperHelper.save(importLine);
 	}
 
 	/**

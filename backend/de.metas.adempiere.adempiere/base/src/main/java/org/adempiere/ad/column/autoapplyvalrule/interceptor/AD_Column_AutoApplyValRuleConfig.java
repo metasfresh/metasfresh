@@ -1,13 +1,8 @@
 package org.adempiere.ad.column.autoapplyvalrule.interceptor;
 
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
+import java.util.HashSet;
+import java.util.List;
+
 import org.adempiere.ad.column.autoapplyvalrule.ValRuleAutoApplier;
 import org.adempiere.ad.column.autoapplyvalrule.ValRuleAutoApplierService;
 import org.adempiere.ad.dao.IQueryBL;
@@ -16,20 +11,18 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
+
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -59,19 +52,12 @@ public class AD_Column_AutoApplyValRuleConfig
 {
 	private IModelValidationEngine engine;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	private final ITabCalloutFactory tabCalloutFactory = Services.get(ITabCalloutFactory.class);
-	private final ADReferenceService adReferenceService;
 	private final ValRuleAutoApplierService valRuleAutoApplierService;
 
 	private AD_Column_AutoApplyValRuleInterceptor autoApplyValRuleInterceptor;
 
-	public AD_Column_AutoApplyValRuleConfig(
-			@NonNull final ADReferenceService adReferenceService,
-			@NonNull final ValRuleAutoApplierService valRuleAutoApplierService)
+	public AD_Column_AutoApplyValRuleConfig(@NonNull final ValRuleAutoApplierService valRuleAutoApplierService)
 	{
-		this.adReferenceService = adReferenceService;
 		this.valRuleAutoApplierService = valRuleAutoApplierService;
 	}
 
@@ -90,7 +76,7 @@ public class AD_Column_AutoApplyValRuleConfig
 
 	private IQueryBuilder<I_AD_Column> createQueryBuilder()
 	{
-		return queryBL
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Column.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Column.COLUMN_IsAutoApplyValidationRule, true)
@@ -103,8 +89,12 @@ public class AD_Column_AutoApplyValRuleConfig
 			ifColumnsChanged = { I_AD_Column.COLUMNNAME_AD_Val_Rule_ID, I_AD_Column.COLUMNNAME_IsAutoApplyValidationRule })
 	public void resetModelInterceptor(@NonNull final I_AD_Column column)
 	{
-		final String tableName = adTableDAO.retrieveTableName(column.getAD_Table_ID());
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
+
 		valRuleAutoApplierService.unregisterForTableName(tableName);
+
+		final ITabCalloutFactory tabCalloutFactory = Services.get(ITabCalloutFactory.class);
+
 
 		// createAndRegisterForQuery might add it again
 		engine.removeModelChange(tableName, autoApplyValRuleInterceptor);
@@ -122,27 +112,21 @@ public class AD_Column_AutoApplyValRuleConfig
 	{
 		final HashSet<String> tableNamesWithRegisteredColumn = new HashSet<>();
 
-		final ImmutableSet<AdColumnId> allColumnIds = query.listIds(AdColumnId::ofRepoId);
-		final Collection<MinimalColumnInfo> allColumns = adTableDAO.getMinimalColumnInfosByIds(allColumnIds);
+		final List<I_AD_Column> columnsToHandle = query.list();
 
-		final ImmutableListMultimap<AdTableId, MinimalColumnInfo> tableId2columns = Multimaps.index(allColumns, MinimalColumnInfo::getAdTableId);
+		final ImmutableListMultimap<Integer, I_AD_Column> tableId2columns = Multimaps.index(columnsToHandle, I_AD_Column::getAD_Table_ID);
 
-		for (final AdTableId adTableId : tableId2columns.keySet())
+		for (final int adTableId : tableId2columns.keySet())
 		{
-			final String tableName = adTableDAO.retrieveTableName(adTableId);
-			final Collection<MinimalColumnInfo> columns = tableId2columns.get(adTableId);
+			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 
-			final ValRuleAutoApplier valRuleAutoApplier = ValRuleAutoApplier.builder()
-					.adTableDAO(adTableDAO)
-					.adReferenceService(adReferenceService)
-					.tableName(tableName)
-					.columns(columns)
-					.build();
+			final ValRuleAutoApplier valRuleAutoApplier = new ValRuleAutoApplier(tableName, tableId2columns.get(adTableId));
 			valRuleAutoApplierService.registerApplier(valRuleAutoApplier);
 
 			tableNamesWithRegisteredColumn.add(tableName);
 		}
 
+		final ITabCalloutFactory tabCalloutFactory = Services.get(ITabCalloutFactory.class);
 		tableNamesWithRegisteredColumn
 				.forEach(tableNameWithRegisteredColum -> {
 

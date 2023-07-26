@@ -22,18 +22,25 @@ package de.metas.migration.applier.impl;
  * #L%
  */
 
-import de.metas.migration.IScript;
-import de.metas.migration.applier.IScriptsApplierListener;
-import de.metas.migration.exception.ScriptExecutionException;
-import org.apache.commons.lang3.StringEscapeUtils;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.io.File;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.WindowConstants;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
+import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import java.awt.*;
-import java.io.File;
+import de.metas.migration.IScript;
+import de.metas.migration.applier.IScriptsApplierListener;
+import de.metas.migration.exception.ScriptExecutionException;
 
 public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 {
@@ -75,10 +82,10 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 				"<html><body>"
 						+ "Script failed to run. Shall we add it to ignore list?<br/><br/>"
 						+ "<pre>"
-						+ StringEscapeUtils.escapeHtml3(exceptionMessage)
+						+ StringEscapeUtils.escapeHtml(exceptionMessage)
 						+ "</pre>"
 						+ "<br/>"
-						+ "Script File: <a href=\"" + file.toURI() + "\">" + StringEscapeUtils.escapeHtml3(file.toString()) + "</a><br/>"
+						+ "Script File: <a href=\"" + file.toURI() + "\">" + StringEscapeUtils.escapeHtml(file.toString()) + "</a><br/>"
 						+ "</body></html>";
 
 		final ScriptFailedResolution response = uiAsk("Add script to ignore list?",
@@ -107,7 +114,7 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 			tp.addHyperlinkListener(DEFAULT_HyperlinkListener);
 
 			final JScrollPane jsp = new JScrollPane(tp);
-			jsp.setPreferredSize(new Dimension(1200, 500));
+			jsp.setPreferredSize(new Dimension(800, 500));
 			messageObj = jsp;
 		}
 		else

@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
@@ -86,18 +85,16 @@ public class PickingHURowsRepository
 	public PickingHURowsRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
 			@NonNull final PickingCandidateRepository pickingCandidatesRepo,
-			@NonNull final HUReservationService huReservationService,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final HUReservationService huReservationService)
 	{
 		this(
-				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService, adReferenceService),
+				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService),
 				pickingCandidatesRepo);
 	}
 
 	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HUReservationService huReservationService,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final HUReservationService huReservationService)
 	{
 		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
@@ -106,12 +103,13 @@ public class PickingHURowsRepository
 				//.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(true).build())
 				.sqlViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
-				.adReferenceService(adReferenceService)
 				.build();
 	}
 
 	/**
 	 * Creates an instance using the given {@code huEditorRepo}. Intended for testing.
+	 *
+	 * @param huEditorRepo
 	 */
 	@VisibleForTesting
 	PickingHURowsRepository(
@@ -129,6 +127,9 @@ public class PickingHURowsRepository
 
 	/**
 	 * Retrieve the union of all HUs that match any one of the given shipment schedule IDs and that are flagged to be fine picking source HUs.
+	 *
+	 * @param shipmentScheduleIds
+	 * @return
 	 */
 	public List<HUEditorRow> retrieveSourceHUs(@NonNull final PickingSlotRepoQuery query)
 	{
@@ -156,7 +157,7 @@ public class PickingHURowsRepository
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final WarehouseId effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : null;
-		builder.warehouseIds(ImmutableSet.of(effectiveWarehouseId));
+		builder.warehouseId(effectiveWarehouseId);
 		return builder.build();
 	}
 

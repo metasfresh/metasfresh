@@ -25,17 +25,10 @@ package de.metas.rest_api.v2.product;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
-import de.metas.sectionCode.SectionCode;
-import de.metas.sectionCode.SectionCodeId;
-import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,12 +37,10 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -64,14 +55,6 @@ public class ProductsServicesFacade
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IBPartnerProductDAO partnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	private final SectionCodeRepository sectionCodeRepository;
-
-	public ProductsServicesFacade(@NonNull final SectionCodeRepository sectionCodeRepository)
-	{
-		this.sectionCodeRepository = sectionCodeRepository;
-	}
 
 	public Stream<I_M_Product> streamAllProducts(@Nullable final Instant since)
 	{
@@ -83,25 +66,13 @@ public class ProductsServicesFacade
 		return productsRepo.getByIds(productIds);
 	}
 
-	@NonNull
-	public I_M_Product getProductById(@NonNull final ProductId productId)
-	{
-		return productsRepo.getById(productId);
-	}
-
 	public String getUOMSymbol(@NonNull final UomId uomId)
 	{
 		final I_C_UOM uom = uomsRepo.getById(uomId);
 		return uom.getUOMSymbol();
 	}
 
-	@NonNull
-	public SectionCode getSectionCode(@NonNull final SectionCodeId sectionCodeId)
-	{
-		return sectionCodeRepository.getById(sectionCodeId);
-	}
-
-	public List<I_C_BPartner_Product> getBPartnerProductRecords(final Set<ProductId> productIds)
+	public List<I_C_BPartner_Product> getBPartnerProductRecords(Set<ProductId> productIds)
 	{
 		return partnerProductsRepo.retrieveForProductIds(productIds);
 	}
@@ -117,18 +88,5 @@ public class ProductsServicesFacade
 				.addInArrayFilter(I_C_BPartner.COLUMN_C_BPartner_ID, manufacturerIds)
 				.create()
 				.list();
-	}
-
-	@NonNull
-	public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(@NonNull final I_M_Product_Category record)
-	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
-
-		return JsonCreatedUpdatedInfo.builder()
-				.created(TimeUtil.asZonedDateTime(record.getCreated(), orgZoneId))
-				.createdBy(UserId.optionalOfRepoId(record.getCreatedBy()).orElse(UserId.SYSTEM))
-				.updated(TimeUtil.asZonedDateTime(record.getUpdated(), orgZoneId))
-				.updatedBy(UserId.optionalOfRepoId(record.getUpdatedBy()).orElse(UserId.SYSTEM))
-				.build();
 	}
 }

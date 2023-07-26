@@ -42,6 +42,7 @@ import java.util.ArrayList;
 
 /**
  * Generate shipment for Vendor RMA.
+ * Based on {@link org.compiere.process.InOutGenerate}.
  *
  * @author Ashley Ramdass
  * @author Teo Sarca
@@ -188,8 +189,6 @@ public class InOutGenerateRMA extends JavaProcess
 		shipment.setC_Activity_ID(originalReceipt.getC_Activity_ID());
 		shipment.setUser1_ID(originalReceipt.getUser1_ID());
 		shipment.setUser2_ID(originalReceipt.getUser2_ID());
-		shipment.setEMail(originalReceipt.getEMail());
-		shipment.setAD_InputDataSource_ID(originalReceipt.getAD_InputDataSource_ID());
 
 		if (!shipment.save())
 		{
@@ -222,8 +221,6 @@ public class InOutGenerateRMA extends JavaProcess
 				shipLine.setC_Project_ID(rmaLine.getC_Project_ID());
 				shipLine.setC_Campaign_ID(rmaLine.getC_Campaign_ID());
 				shipLine.setC_Activity_ID(rmaLine.getC_Activity_ID());
-				shipLine.setC_Order_ID(rmaLine.getC_Order_ID());
-				shipLine.setM_SectionCode_ID(rmaLine.getM_SectionCode_ID());
 				shipLine.setC_ProjectPhase_ID(rmaLine.getC_ProjectPhase_ID());
 				shipLine.setC_ProjectTask_ID(rmaLine.getC_ProjectTask_ID());
 				shipLine.setUser1_ID(rmaLine.getUser1_ID());
@@ -236,8 +233,8 @@ public class InOutGenerateRMA extends JavaProcess
 				final MInvoiceLine invoiceLine = new Query(shipment.getCtx(), MInvoiceLine.Table_Name,
 														   MInvoiceLine.COLUMNNAME_M_RMALine_ID + "=?",
 														   shipment.get_TrxName())
-						.setParameters(rmaLine.getM_RMALine_ID())
-						.firstOnly(MInvoiceLine.class);
+						.setParameters(new Object[] { rmaLine.getM_RMALine_ID() })
+						.firstOnly();
 				if (invoiceLine != null)
 				{
 					invoiceLine.setM_InOutLine_ID(shipLine.getM_InOutLine_ID());

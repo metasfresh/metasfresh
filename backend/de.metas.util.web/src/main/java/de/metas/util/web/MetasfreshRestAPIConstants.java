@@ -45,6 +45,4 @@ public class MetasfreshRestAPIConstants
 	 * going to be renamed to {@code v2} soon, after some initial breaking changes were made
 	 */
 	public static final String ENDPOINT_API_V2 = "/api/v2";
-
-	public static final String WEBSOCKET_ENDPOINT_V2 = "/v2";
 }

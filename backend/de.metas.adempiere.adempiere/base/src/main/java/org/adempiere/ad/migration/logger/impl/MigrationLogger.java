@@ -22,12 +22,14 @@ package org.adempiere.ad.migration.logger.impl;
  * #L%
  */
 
-import de.metas.dao.selection.model.I_T_Query_Selection;
-import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
-import de.metas.logging.LogManager;
-import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
 import org.adempiere.ad.migration.model.I_AD_Migration;
@@ -63,9 +65,6 @@ import org.compiere.model.I_AD_Table_Access;
 import org.compiere.model.I_AD_Task_Access;
 import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow_Access;
-import org.compiere.model.I_API_Request_Audit;
-import org.compiere.model.I_API_Request_Audit_Log;
-import org.compiere.model.I_API_Response_Audit;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -74,13 +73,12 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
+import de.metas.logging.LogManager;
+import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MigrationLogger implements IMigrationLogger
 {
@@ -105,6 +103,9 @@ public class MigrationLogger implements IMigrationLogger
 		initTablesIgnoreList();
 	}
 
+	/**
+	 * Initializes {@link #tablesIgnoreSystem} with default tables that shall be ignored
+	 */
 	private void initTablesIgnoreList()
 	{
 		final List<String> tablesIgnoreListDefault = Arrays.asList(
@@ -131,9 +132,6 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_SCHEDULERLOG",
 				"AD_SESSION",
 				"AD_WORKFLOWPROCESSORLOG",
-				I_API_Request_Audit.Table_Name.toUpperCase(),
-				I_API_Request_Audit_Log.Table_Name.toUpperCase(),
-				I_API_Response_Audit.Table_Name.toUpperCase(),
 				"CM_WEBACCESSLOG",
 				"K_INDEXLOG",
 				"R_REQUESTPROCESSORLOG",
@@ -288,7 +286,7 @@ public class MigrationLogger implements IMigrationLogger
 	{
 		// ignore statistic updates
 		// TODO: metas: 02662: shall be deleted because it's handled by AD_Column.IsCalculated flag
-			if (pinfo.getTableName().equalsIgnoreCase("AD_Process") && !po.is_new() && po.is_ValueChanged("Statistic_Count"))
+		if (pinfo.getTableName().equalsIgnoreCase("AD_Process") && !po.is_new() && po.is_ValueChanged("Statistic_Count"))
 		{
 			return false;
 		}
@@ -317,7 +315,7 @@ public class MigrationLogger implements IMigrationLogger
 
 		final I_AD_MigrationData data = InterfaceWrapperHelper.create(po.getCtx(), I_AD_MigrationData.class, po.get_TrxName());
 		data.setColumnName(infoColumn.getColumnName());
-		data.setAD_Column_ID(infoColumn.getAD_Column_ID().getRepoId());
+		data.setAD_Column_ID(infoColumn.getAD_Column_ID());
 		boolean create = false;
 
 		//
@@ -365,6 +363,10 @@ public class MigrationLogger implements IMigrationLogger
 
 	/**
 	 * Create and set a short description about what was changed in this step
+	 *
+	 * @param po
+	 * @param migrationStep
+	 * @param stepDataList
 	 */
 	protected void setComments(final PO po, final I_AD_MigrationStep migrationStep, final List<I_AD_MigrationData> stepDataList)
 	{

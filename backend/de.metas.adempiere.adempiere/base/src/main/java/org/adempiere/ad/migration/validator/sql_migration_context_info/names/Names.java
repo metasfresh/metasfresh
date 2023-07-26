@@ -1,9 +1,9 @@
 package org.adempiere.ad.migration.validator.sql_migration_context_info.names;
 
+import de.metas.ad_reference.ADRefListId;
 import de.metas.i18n.AdMessageId;
 import de.metas.process.AdProcessId;
-import de.metas.ad_reference.ADRefListId;
-import de.metas.ad_reference.ReferenceId;
+import de.metas.reflist.ReferenceId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;

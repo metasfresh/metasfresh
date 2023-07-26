@@ -1,23 +1,17 @@
 package org.eevolution.process;
 
-import de.metas.common.util.time.SystemTime;
-import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.WorkingTime;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.product.ResourceId;
-import de.metas.quantity.Quantity;
-import de.metas.resource.Resource;
-import de.metas.resource.ResourceService;
-import de.metas.resource.ResourceType;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
+import org.compiere.model.I_S_Resource;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityScheduleChangeRequest;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityCode;
@@ -27,23 +21,31 @@ import org.eevolution.exceptions.CRPException;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.reasoner.CRPReasoner;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.Set;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.ResourceType;
+import de.metas.material.planning.ResourceTypeId;
+import de.metas.material.planning.WorkingTime;
+import org.eevolution.api.PPOrderId;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Capacity Requirement Planning
  *
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany (Original by Victor Perez, e-Evolution, S.C.)
- * @author Teo Sarca, www.arhipac.ro
  * @version 1.0, October 14th 2005
+ *
+ * @author Teo Sarca, www.arhipac.ro
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 public class CRP extends JavaProcess
 {
-	private final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+	private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final IPPOrderBL ordersService = Services.get(IPPOrderBL.class);
 	private final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
@@ -54,16 +56,12 @@ public class CRP extends JavaProcess
 	private ResourceId plantId;
 	private String p_ScheduleType;
 
-	/**
-	 * SysConfig parameter - maximum number of algorithm iterations
-	 */
+	/** SysConfig parameter - maximum number of algorithm iterations */
 	private int p_MaxIterationsNo = -1;
 	public static final String SYSCONFIG_MaxIterationsNo = "CRP.MaxIterationsNo";
 	public static final int DEFAULT_MaxIterationsNo = 1000;
 
-	/**
-	 * CRP Reasoner
-	 */
+	/** CRP Reasoner */
 	private CRPReasoner reasoner;
 
 	@Override
@@ -115,13 +113,13 @@ public class CRP extends JavaProcess
 			PPOrderScheduleChangeRequest changeRequest;
 			if (p_ScheduleType.equals(FORWARD_SCHEDULING))
 			{
-				final Instant orderDateStartSchedule = order.getDateStartSchedule().toInstant();
+				final LocalDateTime orderDateStartSchedule = TimeUtil.asLocalDateTime(order.getDateStartSchedule());
 				changeRequest = scheduleForward(orderRouting, orderDateStartSchedule);
 			}
 			// Schedule backward
 			else if (p_ScheduleType.equals(BACKWARD_SCHEDULING))
 			{
-				final Instant orderDateEndSchedule = order.getDateFinishSchedule().toInstant();
+				final LocalDateTime orderDateEndSchedule = TimeUtil.asLocalDateTime(order.getDateFinishSchedule());
 				changeRequest = scheduleBackward(orderRouting, orderDateEndSchedule);
 			}
 			else
@@ -139,14 +137,14 @@ public class CRP extends JavaProcess
 
 	}
 
-	private PPOrderScheduleChangeRequest scheduleForward(@NonNull final PPOrderRouting orderRouting, @NonNull final Instant orderDateStartSchedule)
+	private PPOrderScheduleChangeRequest scheduleForward(@NonNull final PPOrderRouting orderRouting, @NonNull final LocalDateTime orderDateStartSchedule)
 	{
 		final PPOrderScheduleChangeRequestBuilder changeRequest = PPOrderScheduleChangeRequest.builder()
 				.orderId(orderRouting.getPpOrderId())
 				.scheduledStartDate(orderDateStartSchedule);
 
 		PPOrderRoutingActivity activity = orderRouting.getFirstActivity();
-		Instant date = orderDateStartSchedule;
+		LocalDateTime date = orderDateStartSchedule;
 		final Set<PPOrderRoutingActivityCode> visitedActivityCodes = new HashSet<>();
 		while (activity != null)
 		{
@@ -165,14 +163,14 @@ public class CRP extends JavaProcess
 				continue;
 			}
 
-			final Resource resource = resourceService.getResourceById(resourceId);
+			final I_S_Resource resource = resourcesRepo.getById(resourceId);
 			if (!reasoner.isAvailable(resource))
 			{
-				throw new CRPException("@ResourceNotInSlotDay@").setResource(resource);
+				throw new CRPException("@ResourceNotInSlotDay@").setS_Resource(resource);
 			}
 
 			final Duration activityDuration = calculateActivityDuration(activity);
-			final Instant dateFinish = scheduleForward(date, activityDuration, resource);
+			final LocalDateTime dateFinish = scheduleForward(date, activityDuration, resource);
 
 			changeRequest.activityChangeRequest(PPOrderActivityScheduleChangeRequest.builder()
 					.orderRoutingActivityId(activity.getId())
@@ -189,14 +187,14 @@ public class CRP extends JavaProcess
 		return changeRequest.build();
 	}
 
-	private PPOrderScheduleChangeRequest scheduleBackward(@NonNull final PPOrderRouting orderRouting, @NonNull final Instant orderDateEndSchedule)
+	private PPOrderScheduleChangeRequest scheduleBackward(@NonNull final PPOrderRouting orderRouting, @NonNull final LocalDateTime orderDateEndSchedule)
 	{
 		final PPOrderScheduleChangeRequestBuilder changeRequest = PPOrderScheduleChangeRequest.builder()
 				.orderId(orderRouting.getPpOrderId())
 				.scheduledEndDate(orderDateEndSchedule);
 
 		PPOrderRoutingActivity activity = orderRouting.getLastActivity();
-		Instant date = orderDateEndSchedule;
+		LocalDateTime date = orderDateEndSchedule;
 		final Set<PPOrderRoutingActivityCode> visitedActivityCodes = new HashSet<>();
 		while (activity != null)
 		{
@@ -214,14 +212,14 @@ public class CRP extends JavaProcess
 				continue;
 			}
 
-			final Resource resource = resourceService.getResourceById(resourceId);
+			final I_S_Resource resource = resourcesRepo.getById(resourceId);
 			if (!reasoner.isAvailable(resource))
 			{
-				throw new CRPException("@ResourceNotInSlotDay@").setResource(resource);
+				throw new CRPException("@ResourceNotInSlotDay@").setS_Resource(resource);
 			}
 
 			final Duration activityDuration = calculateActivityDuration(activity);
-			final Instant dateStart = scheduleBackward(date, activityDuration, resource);
+			final LocalDateTime dateStart = scheduleBackward(date, activityDuration, resource);
 
 			changeRequest.activityChangeRequest(PPOrderActivityScheduleChangeRequest.builder()
 					.orderRoutingActivityId(activity.getId())
@@ -274,31 +272,31 @@ public class CRP extends JavaProcess
 	 * @return dayEnd - dayStart in millis
 	 * @throws CRPException if dayStart > dayEnd
 	 */
-	private Duration getAvailableDuration(final Instant dayStart, final Instant dayEnd, final Resource resource)
+	private Duration getAvailableDuration(final LocalDateTime dayStart, final LocalDateTime dayEnd, final I_S_Resource resource)
 	{
 		final Duration availableDuration = Duration.between(dayStart, dayEnd);
 		if (availableDuration.isNegative())
 		{
 			throw new CRPException("@TimeSlotStart@ > @TimeSlotEnd@ (" + dayEnd + " > " + dayStart + ")")
-					.setResource(resource);
+					.setS_Resource(resource);
 		}
 		return availableDuration;
 	}
 
-	private Instant scheduleForward(final Instant start, final Duration activityDuration, final Resource resource)
+	private LocalDateTime scheduleForward(final LocalDateTime start, final Duration activityDuration, final I_S_Resource resource)
 	{
 		final ResourceType resourceType = getResourceType(resource);
 
 		int iteration = 0; // statistical interation count
-		Instant currentDate = start;
-		Instant end = null;
+		LocalDateTime currentDate = start;
+		LocalDateTime end = null;
 		Duration remainingDuration = activityDuration;
 		do
 		{
 
 			currentDate = reasoner.getAvailableDate(resource, currentDate, false);
-			Instant dayStart = resourceType.getDayStart(currentDate);
-			final Instant dayEnd = resourceType.getDayEnd(currentDate);
+			LocalDateTime dayStart = resourceType.getDayStart(currentDate);
+			final LocalDateTime dayEnd = resourceType.getDayEnd(currentDate);
 
 			// If working has already began at this day and the value is in the range of the
 			// resource's availability, switch start time to the given again
@@ -321,12 +319,9 @@ public class CRP extends JavaProcess
 			else
 			{
 				currentDate = currentDate
-						.atZone(SystemTime.zoneId())
 						.toLocalDate()
 						.atTime(LocalTime.MAX)
-						.plusDays(1)
-						.atZone(SystemTime.zoneId())
-						.toInstant();
+						.plusDays(1);
 				remainingDuration = remainingDuration.minus(availableDayDuration);
 			}
 
@@ -342,21 +337,21 @@ public class CRP extends JavaProcess
 		return end;
 	}
 
-	private ResourceType getResourceType(final Resource r)
+	private ResourceType getResourceType(final I_S_Resource r)
 	{
-		final ResourceType resourceType = resourceProductService.getResourceTypeById(r.getResourceTypeId());
+		final ResourceType resourceType = resourceProductService.getResourceTypeById(ResourceTypeId.ofRepoId(r.getS_ResourceType_ID()));
 		return resourceType;
 	}
 
 	/**
 	 * Calculate start date having duration and resource
 	 */
-	private Instant scheduleBackward(final Instant end, final Duration activityDuration, final Resource resource)
+	private LocalDateTime scheduleBackward(final LocalDateTime end, final Duration activityDuration, final I_S_Resource resource)
 	{
 		final ResourceType resourceType = getResourceType(resource);
 
-		Instant start = null;
-		Instant currentDate = end;
+		LocalDateTime start = null;
+		LocalDateTime currentDate = end;
 		Duration remainingDuration = activityDuration;
 		int iteration = 0; // statistical iteration count
 		do
@@ -367,8 +362,8 @@ public class CRP extends JavaProcess
 			currentDate = reasoner.getAvailableDate(resource, currentDate, true);
 			log.info("--> end(available)=" + currentDate);
 
-			Instant dayEnd = resourceType.getDayEnd(currentDate);
-			final Instant dayStart = resourceType.getDayStart(currentDate);
+			LocalDateTime dayEnd = resourceType.getDayEnd(currentDate);
+			final LocalDateTime dayStart = resourceType.getDayStart(currentDate);
 
 			log.info("--> dayStart=" + dayStart + ", dayEnd=" + dayEnd);
 
@@ -396,14 +391,9 @@ public class CRP extends JavaProcess
 				log.info("--> availableDayDuration >= nodeDuration false " + availableDayDuration + "|" + remainingDuration);
 				log.info("--> nodeDuration-availableDayDuration " + remainingDuration.minus(availableDayDuration));
 
-				currentDate = currentDate
-						.atZone(SystemTime.zoneId())
-						.toLocalDate()
+				currentDate = currentDate.toLocalDate()
 						.atTime(LocalTime.MAX)
-						.minusDays(1)
-						.atZone(SystemTime.zoneId())
-						.toInstant();
-
+						.minusDays(1);
 				remainingDuration = remainingDuration.minus(availableDayDuration);
 			}
 			//

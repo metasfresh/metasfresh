@@ -1,23 +1,19 @@
-de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getActiveConfigsByOrgId=[
+de.metas.audit.apirequest.config.ApiAuditConfigRepositoryTest.getAllConfigsByOrgId=[
   [
     {
-      "active": true,
-      "apiAuditConfigId": 100001,
-      "forceProcessedAsync": true,
-      "isBypassAudit": false,
-      "keepErroredRequestDays": 104,
-      "keepRequestBodyDays": 100,
-      "keepRequestDays": 101,
-      "keepResponseBodyDays": 102,
-      "keepResponseDays": 103,
-      "method": "PUT",
-      "notifyUserInCharge": "ALWAYS",
-      "orgId": 1,
-      "pathPrefix": "pathPrefix",
-      "performAuditAsync": false,
-      "seqNo": 10,
-      "userGroupInChargeId": 1,
-      "wrapApiResponse": true
+      "apiAuditConfigId" : 100001,
+      "orgId" : 1,
+      "seqNo" : 10,
+      "isInvokerWaitsForResponse" : true,
+      "keepRequestDays" : 101,
+      "keepRequestBodyDays" : 100,
+      "keepResponseDays" : 103,
+      "keepResponseBodyDays" : 102,
+      "method" : "PUT",
+      "pathPrefix" : "pathPrefix",
+      "notifyUserInCharge" : "ALWAYS",
+      "userGroupInChargeId" : 1,
+      "invokerWaitsForResponse" : true
     }
   ]
 ]

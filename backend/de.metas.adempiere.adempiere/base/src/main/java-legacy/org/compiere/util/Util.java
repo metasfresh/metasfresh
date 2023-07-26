@@ -395,9 +395,11 @@ public class Util
 	 * It's advisable to use this method instead of directly comparing those 2 objects by o1 == o2, because in this way you are telling to static analyzer tool that comparing by reference was your
 	 * intention.
 	 *
+	 * @param o1
+	 * @param o2
 	 * @return true if objects are the same (i.e. o1 == o2)
 	 */
-	public static boolean same(Object o1, Object o2)
+	public static final boolean same(Object o1, Object o2)
 	{
 		return o1 == o2;
 	}

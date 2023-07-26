@@ -7,8 +7,6 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.business
@@ -47,7 +45,7 @@ public class ProductCategoryId implements RepoIdAware
 		return repoId > 0 ? new ProductCategoryId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable ProductCategoryId productCategoryId)
+	public static int toRepoId(ProductCategoryId productCategoryId)
 	{
 		return productCategoryId != null ? productCategoryId.getRepoId() : -1;
 	}

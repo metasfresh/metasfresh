@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
@@ -36,6 +14,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
+import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -45,13 +24,10 @@ import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -60,7 +36,6 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
-import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
@@ -68,13 +43,11 @@ import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Collection;
@@ -84,6 +57,28 @@ import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 @Repository
 public class ExternallyReferencedCandidateRepository
@@ -107,6 +102,8 @@ public class ExternallyReferencedCandidateRepository
 			final I_C_ILCandHandler handlerRecord = invoiceCandidateHandlerDAO.retrieveForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class);
 			icRecord.setC_ILCandHandler_ID(handlerRecord.getC_ILCandHandler_ID());
 			icRecord.setIsManual(true);
+			icRecord.setAD_Table_ID(0);
+			icRecord.setRecord_ID(0);
 
 			icRecord.setAD_Org_ID(ic.getOrgId().getRepoId());
 			icRecord.setM_Product_ID(ic.getProductId().getRepoId());
@@ -114,11 +111,6 @@ public class ExternallyReferencedCandidateRepository
 			syncBillPartnerToRecord(ic, icRecord);
 
 			syncQtysToRecord(ic, icRecord);
-
-			if(ic.getQtyDelivered().signum() != 0)
-			{
-				icRecord.setDeliveryDate(TimeUtil.asTimestamp(ic.getDateOrdered(), timeZone));
-			}
 
 			icRecord.setIsSOTrx(ic.getSoTrx().toBoolean());
 
@@ -134,17 +126,11 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
-
-			icRecord.setC_PaymentTerm_ID(ic.getPaymentTermId().getRepoId());
 		}
 		else
 		{
 			icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		}
-
-
-		final BigDecimal discountOverride = ic.getDiscountOverride() != null ? ic.getDiscountOverride().toBigDecimal() : null;
-		icRecord.setDiscount_Override(discountOverride);
 
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
 		if (priceEnteredOverride != null)
@@ -165,6 +151,7 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setPriceEntered_Override(null);
 		}
 
+		icRecord.setDiscount_Override(Percent.toBigDecimalOrNull(ic.getDiscountOverride()));
 		icRecord.setDateOrdered(TimeUtil.asTimestamp(ic.getDateOrdered(), timeZone));
 		icRecord.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(ic.getInvoiceDocTypeId()));
 		icRecord.setInvoiceRule_Override(InvoiceRule.toCodeOrNull(ic.getInvoiceRuleOverride()));
@@ -175,24 +162,6 @@ public class ExternallyReferencedCandidateRepository
 
 		icRecord.setExternalHeaderId(ExternalId.toValue(ic.getExternalHeaderId()));
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
-		icRecord.setC_Project_ID(ProjectId.toRepoId(ic.getProjectId()));
-
-		icRecord.setDescriptionBottom(ic.getDescriptionBottom());
-		icRecord.setAD_User_InCharge_ID(UserId.toRepoIdOr(ic.getUserInChargeId(), -1 ));
-
-		final TableRecordReference recordReference = ic.getRecordReference();
-		if (recordReference == null)
-		{
-			icRecord.setAD_Table_ID(0);
-			icRecord.setRecord_ID(0);
-		}
-		else
-		{
-			icRecord.setAD_Table_ID(recordReference.getAD_Table_ID());
-			icRecord.setRecord_ID(recordReference.getRecord_ID());
-		}
-
-		icRecord.setC_Activity_ID(ActivityId.toRepoId(ic.getActivityId()));
 
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
@@ -260,13 +229,11 @@ public class ExternallyReferencedCandidateRepository
 		return result.build();
 	}
 
-	@NonNull
 	private ExternallyReferencedCandidate forRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.builder();
+		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.builder();
 
-		final OrgId orgId = OrgId.ofRepoId(icRecord.getAD_Org_ID());
-		candidate.orgId(orgId)
+		candidate.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
 				.id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
 				.externalHeaderId(ExternalId.ofOrNull(icRecord.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(icRecord.getExternalLineId()));
@@ -281,9 +248,8 @@ public class ExternallyReferencedCandidateRepository
 				.build();
 		candidate.billPartnerInfo(bpartnerInfo);
 
-		final ZoneId orgTZ = orgDAO.getTimeZone(orgId);
-		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered(), orgTZ));
-		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced(), orgTZ));
+		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
+		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced()));
 
 		candidate.invoiceRule(InvoiceRule.ofCode(icRecord.getInvoiceRule()))
 				.invoiceRuleOverride(InvoiceRule.ofNullableCode(icRecord.getInvoiceRule_Override()));
@@ -328,12 +294,6 @@ public class ExternallyReferencedCandidateRepository
 		candidate.lineDescription(icRecord.getDescription());
 
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
-
-		candidate.projectId(ProjectId.ofRepoIdOrNull(icRecord.getC_Project_ID()));
-
-		candidate.activityId(ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()));
-
-		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 
 		return candidate.build();
 	}

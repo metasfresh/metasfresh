@@ -1,29 +1,32 @@
 package de.metas.acct.aggregation.impl;
 
-import de.metas.acct.aggregation.IFactAcctLogBL;
-import de.metas.acct.aggregation.IFactAcctLogDAO;
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.impl.ElementValueId;
-import de.metas.acct.model.I_Fact_Acct_Log;
-import de.metas.acct.model.I_Fact_Acct_Summary;
-import de.metas.acct.model.X_Fact_Acct_Log;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.service.ClientId;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.X_C_Period;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.time.Month;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.*;
+import de.metas.acct.aggregation.IFactAcctLogBL;
+import de.metas.acct.aggregation.IFactAcctLogDAO;
+import de.metas.acct.aggregation.IFactAcctSummaryKey;
+import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.acct.model.I_Fact_Acct_Summary;
+import de.metas.acct.model.X_Fact_Acct_Log;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -50,12 +53,14 @@ import static org.assertj.core.api.Assertions.*;
 @ExtendWith(AdempiereTestWatcher.class)
 public class FactAcctLogBLTest
 {
+	private Properties ctx;
+
 	// services
 	private IFactAcctLogBL factAcctLogBL;
 	private FactAcctLogDAO factAcctLogDAO;
 
-	private static final AcctSchemaId C_AcctSchema_ID1 = AcctSchemaId.ofRepoId(1);
-	private final ElementValueId C_ElementValue_ID1 = ElementValueId.ofRepoId(1);
+	private final int C_AcctSchema_ID1 = 1;
+	private final int C_ElementValue_ID1 = 1;
 
 	private I_C_Period year2014_p1;
 
@@ -65,19 +70,20 @@ public class FactAcctLogBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		Env.setClientId(Env.getCtx(), ClientId.ofRepoId(10));
+		ctx = Env.getCtx();
+		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 10);
 
 		factAcctLogBL = Services.get(IFactAcctLogBL.class);
 		factAcctLogDAO = (FactAcctLogDAO)Services.get(IFactAcctLogDAO.class);
 
 		// Master data:
-		final I_C_Year year2014 = FactAcctLogBLTestHelper.createYear(2014);
-		year2014_p1 = FactAcctLogBLTestHelper.createPeriod(year2014, Month.JANUARY);
-		FactAcctLogBLTestHelper.createPeriod(year2014, Month.FEBRUARY);
+		final I_C_Year year2014 = createYear(2014);
+		year2014_p1 = createPeriod(year2014, 1);
+		createPeriod(year2014, 2);
 
-		final I_C_Year year2015 = FactAcctLogBLTestHelper.createYear(2015);
-		year2015_p1 = FactAcctLogBLTestHelper.createPeriod(year2015, Month.JANUARY);
-		FactAcctLogBLTestHelper.createPeriod(year2015, Month.FEBRUARY);
+		final I_C_Year year2015 = createYear(2015);
+		year2015_p1 = createPeriod(year2015, 1);
+		createPeriod(year2015, 2);
 	}
 
 	@Test
@@ -86,7 +92,7 @@ public class FactAcctLogBLTest
 		//
 		// Create consecutive logs
 		final I_Fact_Acct_Log log1 = newFactAcctLogBuilder()
-				.setDateAcct("2015-01-07")
+				.setDateAcct(2015, 01, 7)
 				.setC_ElementValue_ID(C_ElementValue_ID1)
 				.setAction(X_Fact_Acct_Log.ACTION_Insert)
 				.setAmtAcctDr(100)
@@ -94,7 +100,7 @@ public class FactAcctLogBLTest
 
 		@SuppressWarnings("unused")
 		final I_Fact_Acct_Log log2 = newFactAcctLogBuilder()
-				.setDateAcct("2015-01-07")
+				.setDateAcct(2015, 01, 7)
 				.setC_ElementValue_ID(C_ElementValue_ID1)
 				.setAction(X_Fact_Acct_Log.ACTION_Delete)
 				.setAmtAcctDr(30)
@@ -102,7 +108,7 @@ public class FactAcctLogBLTest
 
 		@SuppressWarnings("unused")
 		final I_Fact_Acct_Log log3 = newFactAcctLogBuilder()
-				.setDateAcct("2015-01-08")
+				.setDateAcct(2015, 01, 8)
 				.setC_ElementValue_ID(C_ElementValue_ID1)
 				.setAction(X_Fact_Acct_Log.ACTION_Insert)
 				.setAmtAcctDr(10)
@@ -132,7 +138,7 @@ public class FactAcctLogBLTest
 		// Create one log entry in the past and check if the aggregation
 		{
 			newFactAcctLogBuilder()
-					.setDateAcct("2015-01-06")
+					.setDateAcct(2015, 01, 6)
 					.setC_ElementValue_ID(C_ElementValue_ID1)
 					.setAction(X_Fact_Acct_Log.ACTION_Insert)
 					.setAmtAcctDr(1000)
@@ -152,7 +158,7 @@ public class FactAcctLogBLTest
 	{
 		final I_Fact_Acct_Log log1 = newFactAcctLogBuilder()
 				.setC_Period(year2014_p1)
-				.setDateAcct("2014-01-07")
+				.setDateAcct(2014, 01, 7)
 				.setC_ElementValue_ID(C_ElementValue_ID1)
 				.setAction(X_Fact_Acct_Log.ACTION_Insert)
 				.setAmtAcctDr(100)
@@ -169,7 +175,7 @@ public class FactAcctLogBLTest
 
 		final I_Fact_Acct_Log log2 = newFactAcctLogBuilder()
 				.setC_Period(year2015_p1)
-				.setDateAcct("2015-01-07")
+				.setDateAcct(2015, 01, 7)
 				.setC_ElementValue_ID(C_ElementValue_ID1)
 				.setAction(X_Fact_Acct_Log.ACTION_Insert)
 				.setAmtAcctDr(50)
@@ -190,9 +196,10 @@ public class FactAcctLogBLTest
 
 	}
 
-	private Fact_Acct_Log_Builder newFactAcctLogBuilder()
+	private final Fact_Acct_Log_Builder newFactAcctLogBuilder()
 	{
 		return Fact_Acct_Log_Builder.newBuilder()
+				.setCtx(ctx)
 				.setC_AcctSchema_ID(C_AcctSchema_ID1)
 				.setPostingType(X_Fact_Acct_Log.POSTINGTYPE_Actual)
 				.setC_Period(year2014_p1)
@@ -205,29 +212,29 @@ public class FactAcctLogBLTest
 		assertThat(actual).as(description).isEqualTo(expected);
 	}
 
-	private void assertHasLogs()
+	private final void assertHasLogs()
 	{
-		assertThat(factAcctLogDAO.hasLogs(Env.getCtx(), IFactAcctLogDAO.PROCESSINGTAG_NULL))
+		assertThat(factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL))
 				.as("has logs")
 				.isTrue();
 	}
 
-	private void assertNoLogs()
+	private final void assertNoLogs()
 	{
-		assertThat(factAcctLogDAO.hasLogs(Env.getCtx(), IFactAcctLogDAO.PROCESSINGTAG_NULL))
+		assertThat(factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL))
 				.as("has logs")
 				.isFalse();
 	}
 
-	private void processAllLogs()
+	private final void processAllLogs()
 	{
-		factAcctLogBL.processAll(Env.getCtx(), QueryLimit.NO_LIMIT);
+		factAcctLogBL.processAll(ctx, IQuery.NO_LIMIT);
 		assertNoLogs();
 	}
 
 	private List<I_Fact_Acct_Summary> retrieveAllFactAcctSummariesFor(final IFactAcctSummaryKey key)
 	{
-		return factAcctLogDAO.createFactAcctSummaryQueryForKeyNoDateAcct(Env.getCtx(), key)
+		return factAcctLogDAO.createFactAcctSummaryQueryForKeyNoDateAcct(ctx, key)
 				.orderBy()
 				.addColumn(I_Fact_Acct_Summary.COLUMN_DateAcct)
 				.endOrderBy()
@@ -235,4 +242,29 @@ public class FactAcctLogBLTest
 				.list(I_Fact_Acct_Summary.class);
 	}
 
+	private final I_C_Year createYear(final int year)
+	{
+		final I_C_Year record = InterfaceWrapperHelper.create(ctx, I_C_Year.class, ITrx.TRXNAME_None);
+		record.setFiscalYear(String.valueOf(year));
+		InterfaceWrapperHelper.save(record);
+		return record;
+	}
+
+	private final I_C_Period createPeriod(final I_C_Year year, final int periodNo)
+	{
+		final I_C_Period period = InterfaceWrapperHelper.create(ctx, I_C_Period.class, ITrx.TRXNAME_None);
+		period.setC_Year_ID(year.getC_Year_ID());
+		period.setName(year.getFiscalYear() + "-" + periodNo);
+		period.setPeriodNo(periodNo);
+		period.setPeriodType(X_C_Period.PERIODTYPE_StandardCalendarPeriod);
+
+		final int yearInt = Integer.parseInt(year.getFiscalYear());
+		final Timestamp dateStart = TimeUtil.getDay(yearInt, periodNo, 1);
+		final Timestamp dateEnd = TimeUtil.getMonthLastDay(dateStart);
+		period.setStartDate(dateStart);
+		period.setEndDate(dateEnd);
+
+		InterfaceWrapperHelper.save(period);
+		return period;
+	}
 }

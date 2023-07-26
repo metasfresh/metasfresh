@@ -5,7 +5,12 @@ import PropTypes from 'prop-types';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import { clearNotifications, enableTutorial } from '../actions/AppActions';
+import {
+  clearNotifications,
+  enableTutorial,
+  getNotifications,
+  getNotificationsEndpoint,
+} from '../actions/AppActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { useAuth } from '../hooks/useAuth';
 import ChildRoutes from './ChildRoutes';
@@ -34,21 +39,19 @@ const PrivateRoute = (props) => {
       setFirstRender(false);
       dispatch(clearNotifications());
 
-      // check if user is not already authenticated via another session
-      if (!authRequestPending()) {
-        const url = location.search
-          ? `${location.pathname}/${location.search}`
-          : location.pathname;
-
+      if (!isLoggedIn && !authRequestPending()) {
+        const url = location.pathname;
         auth.checkAuthentication().then((authenticated) => {
           if (!authenticated) {
             auth.setRedirectRoute(url);
-            setFirstRender(true);
             history.push('/login');
           } else {
-            auth.login();
+            dispatch(getNotificationsEndpoint(auth));
+            dispatch(getNotifications());
           }
         });
+      } else if (isLoggedIn && !authRequestPending()) {
+        auth.login();
       }
 
       if (hasTutorial) {
@@ -67,7 +70,7 @@ const PrivateRoute = (props) => {
     return null;
   }
 
-  return <Route {...props} component={ChildRoutes} />;
+  return <Route {...props} render={() => <ChildRoutes />} />;
 };
 
 function propsAreEqual(prevProps, nextProps) {

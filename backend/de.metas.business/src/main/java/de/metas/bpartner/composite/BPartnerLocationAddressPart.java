@@ -47,7 +47,6 @@ public class BPartnerLocationAddressPart
 	@Nullable String region;
 	@Nullable String district;
 	@Nullable String countryCode;
-	@Nullable String countryName;
 
 	public static boolean equals(@Nullable final BPartnerLocationAddressPart o1, @Nullable final BPartnerLocationAddressPart o2)
 	{
@@ -66,7 +65,6 @@ public class BPartnerLocationAddressPart
 				&& Check.isBlank(city)
 				&& Check.isBlank(region)
 				&& Check.isBlank(district)
-				&& Check.isBlank(countryCode)
-				&& Check.isBlank(countryName);
+				&& Check.isBlank(countryCode);
 	}
 }

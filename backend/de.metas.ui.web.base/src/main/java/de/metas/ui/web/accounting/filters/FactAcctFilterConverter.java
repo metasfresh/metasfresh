@@ -24,16 +24,16 @@ package de.metas.ui.web.accounting.filters;
 
 import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;
+import de.metas.acct.api.IElementValueDAO;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.elementvalue.ElementValueService;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.DB;
 
@@ -68,8 +68,9 @@ public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 		Check.assumeNotEmpty(accountValueFrom, "AccountValueFrom not empty");
 		Check.assumeNotEmpty(accountValueTo, "AccountValueTo not empty");
 
-		ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
-		final ImmutableSet<ElementValueId> ids = elementValueService.getElementValueIdsBetween(accountValueFrom, accountValueTo);
+		final IElementValueDAO elementValueDAO = Services.get(IElementValueDAO.class);
+		@SuppressWarnings("ConstantConditions") // needed because intellij believes we could be sending nulls to getElementValueIdsBetween
+		final ImmutableSet<ElementValueId> ids = elementValueDAO.getElementValueIdsBetween(accountValueFrom, accountValueTo);
 
 		if (ids.isEmpty())
 		{

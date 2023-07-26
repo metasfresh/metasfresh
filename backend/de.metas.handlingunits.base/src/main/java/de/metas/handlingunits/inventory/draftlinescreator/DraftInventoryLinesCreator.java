@@ -10,7 +10,6 @@ import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregationKey;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
@@ -57,7 +56,7 @@ import java.util.Set;
  */
 public class DraftInventoryLinesCreator
 {
-	private final static Logger logger = LogManager.getLogger(DraftInventoryLinesCreator.class);
+	private final static transient Logger logger = LogManager.getLogger(DraftInventoryLinesCreator.class);
 
 	@NonNull
 	private final InventoryLinesCreationCtx inventoryLinesCreationCtx;

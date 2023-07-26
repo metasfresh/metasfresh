@@ -13,16 +13,16 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -32,8 +32,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.api.BOMComponentIssueMethod;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
@@ -70,10 +68,9 @@ import java.util.Objects;
  */
 public class CreateDraftIssuesCommand
 {
-	private static final AdMessageKey MSG_IssuingAggregatedTUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed");
-	private static final AdMessageKey MSG_IssuingVHUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed");
-	private static final AdMessageKey MSG_IssuingHUWithMultipleProductsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed");
-	private static final AdMessageKey MSG_IssuingNotClearedHUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.IssuingNotClearedHUsNotAllowed");
+	private static final String MSG_IssuingAggregatedTUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed";
+	private static final String MSG_IssuingVHUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed";
+	private static final String MSG_IssuingHUWithMultipleProductsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed";
 
 	//
 	// Services
@@ -88,8 +85,6 @@ public class CreateDraftIssuesCommand
 	private final transient IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
-	private final transient SourceHUsService sourceHuService = SourceHUsService.get();
-	
 	//
 	// Parameters
 	private final ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
@@ -97,7 +92,7 @@ public class CreateDraftIssuesCommand
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
 	private final ImmutableList<I_M_HU> issueFromHUs;
 	private final boolean changeHUStatusToIssued;
-	private final IssueCandidateGeneratedBy generatedBy;
+	private final PickingCandidateId pickingCandidateId;
 
 	//
 	// Status
@@ -113,10 +108,8 @@ public class CreateDraftIssuesCommand
 			@NonNull final Collection<I_M_HU> issueFromHUs,
 			@Nullable final Boolean changeHUStatusToIssued,
 			//
-			@Nullable final IssueCandidateGeneratedBy generatedBy)
+			@Nullable final PickingCandidateId pickingCandidateId)
 	{
-		validateSourceHUs(issueFromHUs);
-
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
 		{
@@ -131,7 +124,7 @@ public class CreateDraftIssuesCommand
 
 		remainingQtyToIssue = fixedQtyToIssue;
 
-		this.generatedBy = generatedBy;
+		this.pickingCandidateId = pickingCandidateId;
 	}
 
 	public List<I_PP_Order_Qty> execute()
@@ -175,13 +168,13 @@ public class CreateDraftIssuesCommand
 			return null;
 		}
 
-		final String huStatus = hu.getHUStatus();
-		if (!X_M_HU.HUSTATUS_Active.equals(huStatus) && !X_M_HU.HUSTATUS_Issued.equals(huStatus)
-		)
+		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 		{
-			throw new HUException("HU shall be Active or Issued but it was `" + huStatus + "`")
+			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus())
 					.setParameter("hu", hu);
 		}
+
+		removeHuFromParentIfAny(huContext, hu);
 
 		final IHUProductStorage productStorage = retrieveProductStorage(huContext, hu);
 		if (productStorage == null)
@@ -189,7 +182,6 @@ public class CreateDraftIssuesCommand
 			return null;
 		}
 
-		removeHuFromParentIfAny(huContext, hu);
 		// Actually create and save the candidate
 		final I_PP_Order_Qty candidate = createIssueCandidateOrNull(hu, productStorage);
 		if (candidate == null)
@@ -221,17 +213,19 @@ public class CreateDraftIssuesCommand
 
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			throw new HUException(MSG_IssuingAggregatedTUsNotAllowed)
-					.markAsUserValidationError();
+			throw HUException.ofAD_Message(MSG_IssuingAggregatedTUsNotAllowed);
 		}
 		if (handlingUnitsBL.isVirtual(hu))
 		{
-			throw new HUException(MSG_IssuingVHUsNotAllowed)
-					.markAsUserValidationError();
+			throw HUException.ofAD_Message(MSG_IssuingVHUsNotAllowed);
 		}
 		else
 		{
-			huTrxBL.extractHUFromParentIfNeeded(huContext, hu);
+			huTrxBL.setParentHU(huContext //
+					, null // parentHUItem
+					, hu //
+					, true // destroyOldParentIfEmptyStorage
+			);
 		}
 	}
 
@@ -253,8 +247,7 @@ public class CreateDraftIssuesCommand
 
 		if (productStorages.size() != 1)
 		{
-			throw new HUException(MSG_IssuingHUWithMultipleProductsNotAllowed)
-					.markAsUserValidationError()
+			throw HUException.ofAD_Message(MSG_IssuingHUWithMultipleProductsNotAllowed)
 					.setParameter("HU", hu)
 					.setParameter("ProductStorages", productStorages);
 		}
@@ -291,15 +284,11 @@ public class CreateDraftIssuesCommand
 					//
 					.qtyToIssue(qtyToIssue)
 					//
-					.generatedBy(generatedBy)
+					.pickingCandidateId(pickingCandidateId)
 					//
 					.build());
 
 			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
-
-			// Clean up source-HUs.
-			// If we don't do this, addSourceHuMarker will fail when we call ReverseDraftIssues.reverseDraftIssue
-			sourceHuService.deleteSourceHuMarker(HuId.ofRepoId(hu.getM_HU_ID()));
 
 			return candidate;
 		}
@@ -355,18 +344,5 @@ public class CreateDraftIssuesCommand
 		}
 
 		return from.getQty();
-	}
-
-	private void validateSourceHUs(@NonNull final Collection<I_M_HU> sourceHUs)
-	{
-		for (final I_M_HU hu : sourceHUs)
-		{
-			if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
-			{
-				throw new HUException(MSG_IssuingNotClearedHUsNotAllowed)
-						.markAsUserValidationError()
-						.setParameter("M_HU_ID", hu.getM_HU_ID());
-			}
-		}
 	}
 }

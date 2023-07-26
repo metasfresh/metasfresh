@@ -92,8 +92,8 @@ public class DemandCandiateHandlerTest
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		availableToPromiseRepository = Mockito.spy(AvailableToPromiseRepository.class);
@@ -166,10 +166,10 @@ public class DemandCandiateHandlerTest
 
 		final I_MD_Candidate demandStockRecord = DispoTestUtils.retrieveStockCandidate(demandRecord);
 		assertThat(demandStockRecord).extracting(
-				"MD_Candidate_Parent_ID",
-				"Qty",
-				"StorageAttributesKey",
-				"SeqNo")
+						"MD_Candidate_Parent_ID",
+						"Qty",
+						"StorageAttributesKey",
+						"SeqNo")
 				.containsExactly(demandRecord.getMD_Candidate_ID(), BigDecimal.valueOf(-23), STORAGE_ATTRIBUTES_KEY.getAsString(), demandRecord.getSeqNo());
 
 		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
@@ -197,7 +197,7 @@ public class DemandCandiateHandlerTest
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
-				.enqueueEventAfterNextCommit(eventCaptor.capture());
+				.postEventAfterNextCommit(eventCaptor.capture());
 
 		final MaterialEvent event = eventCaptor.getValue();
 
@@ -232,7 +232,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
-				.enqueueEventNow(Mockito.any());
+				.postEventNow(Mockito.any(), Mockito.any());
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)

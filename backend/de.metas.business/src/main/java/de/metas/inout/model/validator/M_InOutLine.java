@@ -1,11 +1,7 @@
 package de.metas.inout.model.validator;
 
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutLineId;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,7 +9,10 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -39,24 +38,19 @@ import java.util.List;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- * @implSpec <a href="http://dewiki908/mediawiki/index.php/09548_Avoid_FK-constraint_violation_when_a_packaging-iol-is_deleted_%28106784154474%29">task</a>
+ * @task http://dewiki908/mediawiki/index.php/09548_Avoid_FK-constraint_violation_when_a_packaging-iol-is_deleted_%28106784154474%29
  */
 @Interceptor(I_M_InOutLine.class)
 @Component
 public class M_InOutLine
 {
-	private final MatchInvoiceService matchInvoiceService;
-
-	public M_InOutLine(@NonNull final MatchInvoiceService matchInvoiceService)
-	{
-		this.matchInvoiceService = matchInvoiceService;
-	}
-
 	/**
 	 * Sets <code>M_PackingMaterial_InOutLine_ID</code> to <code>null</code> for all inOutLines that reference the given <code>packingMaterialLine</code>.
-	 * <p>
+	 *
 	 * Note: we don't even check if <code>packingMaterialLine</code> has <code>IsPackagingMaterial='Y'</code>,<br>
 	 * because we want to make sure that the FK-constrain violation is avoided, even if due to whatever reason, the IsPackagingMaterial value was already set to 'N' earlier.
+	 *
+	 * @param packingMaterialLine
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void processorDeleted(final I_M_InOutLine packingMaterialLine)
@@ -76,13 +70,14 @@ public class M_InOutLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void handleInOutLineDelete(final I_M_InOutLine iol)
 	{
-		matchInvoiceService.deleteByInOutLineId(InOutLineId.ofRepoId(iol.getM_InOutLine_ID()));
+		Services.get(IInOutBL.class).deleteMatchInvsForInOutLine(iol); // task 08627
 	}
 
 	/**
 	 * If the <code>C_Order_ID</code> of the given line is at odds with the <code>C_Order_ID</code> of the line's <code>M_InOut</code>, then <code>M_InOut.C_Order</code> is set to <code>null</code>.
 	 *
-	 * @implSpec task 08451
+	 * @param inOutLine
+	 * @task 08451
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.COLUMNNAME_C_OrderLine_ID })

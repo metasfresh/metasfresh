@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -169,7 +169,7 @@ DocumentNo]]>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement key="textField-83" x="259" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="4023a70e-49c5-442f-bf96-b172f4901aba"/>
@@ -198,9 +198,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{open_currency_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="cc34f4d5-0be4-4894-8cee-bbce7aa6c644">
-						<printWhenExpression><![CDATA[$V{open_currency_convert} !=null || $V{total_currency_convert} != null]]></printWhenExpression>
-					</reportElement>
+					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="cc34f4d5-0be4-4894-8cee-bbce7aa6c644"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,7 +208,7 @@ DocumentNo]]>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{main_currency}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -312,7 +310,7 @@ DocumentNo]]>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement key="textField-83" x="259" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="5641fc24-9eca-4f3b-8253-b60b7b8aa483"/>
@@ -341,9 +339,7 @@ DocumentNo]]>
 					<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
 				<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="89d6466f-a28d-4f8b-b14d-00faeaf614f3">
-						<printWhenExpression><![CDATA[$V{open_bpartner_convert}  != null || $V{total_bpartner_convert} != null]]></printWhenExpression>
-					</reportElement>
+					<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="89d6466f-a28d-4f8b-b14d-00faeaf614f3"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -353,7 +349,7 @@ DocumentNo]]>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{main_currency}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -382,7 +378,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{invoice}]]></textFieldExpression>
 			</textField>
@@ -395,7 +391,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
@@ -408,7 +404,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customerno}]]></textFieldExpression>
 			</textField>
@@ -421,7 +417,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customername}]]></textFieldExpression>
 			</textField>
@@ -434,7 +430,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
@@ -447,7 +443,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{paid}]]></textFieldExpression>
 			</textField>
@@ -460,7 +456,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{open}]]></textFieldExpression>
 			</textField>
@@ -473,7 +469,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{discountdays}]]></textFieldExpression>
 			</textField>
@@ -486,7 +482,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{discountdate}]]></textFieldExpression>
 			</textField>
@@ -499,7 +495,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{nettodays}]]></textFieldExpression>
 			</textField>
@@ -512,7 +508,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{nettodate}]]></textFieldExpression>
 			</textField>
@@ -525,7 +521,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{due.days}]]></textFieldExpression>
 			</textField>
@@ -540,7 +536,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{open_bpartner}]]></textFieldExpression>
 			</textField>
@@ -555,7 +551,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{paid_bpartner}]]></textFieldExpression>
 			</textField>
@@ -570,7 +566,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{total_bpartner}]]></textFieldExpression>
 			</textField>
@@ -585,7 +581,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="true"/>
+					<font fontName="SansSerif" size="8" isBold="false" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
@@ -600,9 +596,9 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false" isItalic="true"/>
+					<font size="8" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
 				<reportElement key="textField-109" x="456" y="25" width="35" height="12" isRemoveLineWhenBlank="true" uuid="83467322-fead-40a7-b5e1-63766da3c3af">
@@ -615,9 +611,9 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false" isItalic="true"/>
+					<font size="8" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{main_currency}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-83" x="259" y="25" width="70" height="12" isRemoveLineWhenBlank="true" uuid="03fd2f7f-5a37-4a6a-af20-83683c920a3d">
@@ -630,7 +626,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
@@ -645,23 +641,23 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-72" x="456" y="0" width="35" height="12" forecolor="#FFFFFF" uuid="8956c53b-3973-4f12-be6f-ed5d0fd02eed"/>
 				<textElement markup="none">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$R{currency}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-77" x="730" y="0" width="52" height="12" forecolor="#FFFFFF" uuid="08985e2c-9a56-4215-9f5c-e2465a07b152">
 					<printWhenExpression><![CDATA[new Boolean($P{PassForPayment}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="8"/>
+					<font fontName="SansSerif" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{instruction}]]></textFieldExpression>
 			</textField>
@@ -698,7 +694,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
@@ -711,7 +707,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
 			</textField>
@@ -724,7 +720,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
@@ -737,7 +733,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
@@ -750,7 +746,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
@@ -763,7 +759,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{openamt}]]></textFieldExpression>
 			</textField>
@@ -776,7 +772,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paidamt}]]></textFieldExpression>
 			</textField>
@@ -789,7 +785,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{discountdays}]]></textFieldExpression>
 			</textField>
@@ -802,7 +798,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{daysdue}]]></textFieldExpression>
 			</textField>
@@ -815,7 +811,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{discountdate}]]></textFieldExpression>
 			</textField>
@@ -828,7 +824,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{netdays}]]></textFieldExpression>
 			</textField>
@@ -841,7 +837,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{duedate}]]></textFieldExpression>
 			</textField>
@@ -854,9 +850,9 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
 				<reportElement key="textField-114" x="734" y="-1" width="48" height="12" isRemoveLineWhenBlank="true" uuid="0130bf72-3864-4584-aa05-5fcd36dc637f">
@@ -869,7 +865,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{passforpayment}? $R{yes} : $R{no}]]></textFieldExpression>
 			</textField>
@@ -882,7 +878,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotalconvert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
@@ -895,14 +891,12 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{openamtconvert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-				<reportElement key="textField-109" x="456" y="11" width="35" height="12" isRemoveLineWhenBlank="true" uuid="4626be61-8636-4249-a721-ca806e825d33">
-					<printWhenExpression><![CDATA[$F{grandtotalconvert} != null || $F{openamtconvert} != null]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="textField-109" x="456" y="11" width="35" height="12" isRemoveLineWhenBlank="true" uuid="4626be61-8636-4249-a721-ca806e825d33"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -910,9 +904,9 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{main_currency}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -930,7 +924,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{open_bpartner}]]></textFieldExpression>
 			</textField>
@@ -943,7 +937,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{paid_bpartner}]]></textFieldExpression>
 			</textField>
@@ -956,7 +950,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{total_bpartner}]]></textFieldExpression>
 			</textField>
@@ -969,7 +963,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="true"/>
+					<font size="8" isBold="false" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{subtotal}]]></textFieldExpression>
 			</textField>
@@ -982,9 +976,9 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false" isItalic="true"/>
+					<font size="8" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-83" x="259" y="12" width="70" height="12" isRemoveLineWhenBlank="true" uuid="f9d22082-b675-442d-a247-88fae9b9b180"/>
@@ -995,7 +989,7 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
@@ -1008,14 +1002,12 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isItalic="true"/>
+					<font fontName="SansSerif" size="8" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00;-###0.00" isBlankWhenNull="true">
-				<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="f2d8c3af-2cd1-4256-8c91-c77b3669b5b2">
-					<printWhenExpression><![CDATA[$V{open_bpartner_convert}  != null || $V{total_bpartner_convert} != null]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="textField-109" x="456" y="12" width="35" height="12" isRemoveLineWhenBlank="true" uuid="f2d8c3af-2cd1-4256-8c91-c77b3669b5b2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -1023,9 +1015,9 @@ DocumentNo]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false" isItalic="true"/>
+					<font size="8" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{main_currency}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,18 +22,15 @@
 
 package de.metas.audit.apirequest;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
 import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
-import de.metas.audit.apirequest.request.Status;
 import de.metas.audit.apirequest.request.log.ApiAuditRequestLogDAO;
 import de.metas.audit.apirequest.response.ApiResponseAudit;
 import de.metas.audit.apirequest.response.ApiResponseAuditRepository;
-import de.metas.audit.request.ApiRequestIterator;
-import de.metas.audit.request.ApiRequestQuery;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,7 +40,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @Service
 public class ApiAuditCleanUpService
@@ -69,30 +66,21 @@ public class ApiAuditCleanUpService
 
 	public void deleteProcessedRequests()
 	{
-		final ApiRequestQuery apiRequestQuery = ApiRequestQuery.builder()
-				.apiRequestStatusSet(ImmutableSet.of(Status.ERROR, Status.PROCESSED))
-				.build();
+		final Stream<ApiRequestAudit> processedApiRequests = apiRequestAuditRepository.getAllProcessedRequests();
 
-		final ApiRequestIterator processedApiRequests = apiRequestAuditRepository.getByQuery(apiRequestQuery);
-
-		if (!processedApiRequests.hasNext())
+		if (Check.isEmpty(processedApiRequests))
 		{
 			return;
 		}
 
 		final ApiAuditConfigShortTimeIndex apiAuditConfigShortTimeIndex = new ApiAuditConfigShortTimeIndex(apiAuditConfigRepository);
 
-		final Consumer<ApiRequestAudit> deleteIfTime = (apiRequestAudit) -> {
-			if (isReadyForCleanup(apiRequestAudit, apiAuditConfigShortTimeIndex))
-			{
-				deleteProcessedRequestInNewTrx(apiRequestAudit);
-			}
-		};
-
-		processedApiRequests.forEach(deleteIfTime);
+		processedApiRequests
+				.filter(request -> isReadyForCleanup(request, apiAuditConfigShortTimeIndex))
+				.forEach(this::deleteProcessedRequestInTrx);
 	}
 
-	private void deleteProcessedRequestInNewTrx(@NonNull final ApiRequestAudit apiRequestAudit)
+	private void deleteProcessedRequestInTrx(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
 		trxManager.runInNewTrx(() -> deleteProcessedRequest(apiRequestAudit));
 	}
@@ -117,13 +105,7 @@ public class ApiAuditCleanUpService
 
 		final long daysSinceLastUpdate = (Instant.now().getEpochSecond() - apiRequestAudit.getTime().getEpochSecond()) / (60 * 60 * 24);
 
-		final boolean deleteProcessedRequest = (apiRequestAudit.isErrorAcknowledged() || Status.PROCESSED.equals(apiRequestAudit.getStatus()))
-				&& daysSinceLastUpdate > apiAuditConfig.getKeepRequestDays();
-
-		final boolean deleteErroredRequest = Status.ERROR.equals(apiRequestAudit.getStatus())
-				&& daysSinceLastUpdate > apiAuditConfig.getKeepErroredRequestDays();
-
-		return deleteErroredRequest || deleteProcessedRequest;
+		return daysSinceLastUpdate > apiAuditConfig.getKeepRequestDays();
 	}
 
 	@Value

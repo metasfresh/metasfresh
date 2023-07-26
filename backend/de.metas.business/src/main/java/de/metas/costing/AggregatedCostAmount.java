@@ -1,14 +1,11 @@
 package de.metas.costing;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.costing.methods.CostAmountDetailed;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -47,18 +44,18 @@ import lombok.Value;
  */
 
 @Value
-public class AggregatedCostAmount
+public final class AggregatedCostAmount
 {
 	@Getter(AccessLevel.NONE)
 	CostSegment costSegment;
 
 	@Getter(AccessLevel.NONE)
-	ImmutableMap<CostElement, CostAmountDetailed> amountsPerElement;
+	ImmutableMap<CostElement, CostAmount> amountsPerElement;
 
 	@Builder
 	private AggregatedCostAmount(
 			@NonNull final CostSegment costSegment,
-			@NonNull @Singular final Map<CostElement, CostAmountDetailed> amounts)
+			@NonNull @Singular final Map<CostElement, CostAmount> amounts)
 	{
 		Check.assumeNotEmpty(amounts, "amounts is not empty");
 
@@ -71,9 +68,9 @@ public class AggregatedCostAmount
 		return amountsPerElement.keySet();
 	}
 
-	public CostAmountDetailed getCostAmountForCostElement(final CostElement costElement)
+	public CostAmount getCostAmountForCostElement(final CostElement costElement)
 	{
-		final CostAmountDetailed amt = amountsPerElement.get(costElement);
+		final CostAmount amt = amountsPerElement.get(costElement);
 		if (amt == null)
 		{
 			throw new AdempiereException("No cost amount for " + costElement + " in " + this);
@@ -89,7 +86,7 @@ public class AggregatedCostAmount
 		}
 
 		// merge amounts maps; will fail in case of duplicate cost elements
-		final ImmutableMap<CostElement, CostAmountDetailed> amountsNew = ImmutableMap.<CostElement, CostAmountDetailed>builder()
+		final ImmutableMap<CostElement, CostAmount> amountsNew = ImmutableMap.<CostElement, CostAmount> builder()
 				.putAll(amountsPerElement)
 				.putAll(other.amountsPerElement)
 				.build();
@@ -104,7 +101,7 @@ public class AggregatedCostAmount
 			throw new AdempiereException("Cannot add cost results when the cost segment is not matching: " + this + ", " + other);
 		}
 
-		final Map<CostElement, CostAmountDetailed> amountsNew = new HashMap<>(amountsPerElement);
+		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amountsPerElement);
 		other.amountsPerElement.forEach((costElement, amtToAdd) -> {
 			amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd);
 		});
@@ -112,38 +109,15 @@ public class AggregatedCostAmount
 		return new AggregatedCostAmount(costSegment, amountsNew);
 	}
 
-	@VisibleForTesting
-	public AggregatedCostAmount retainOnlyAccountable(@NonNull final AcctSchema as)
-	{
-		final AcctSchemaCosting costing = as.getCosting();
-		final CostingMethod costingMethod = costing.getCostingMethod();
-		final ImmutableSet<CostElementId> postOnlyCostElementIds = costing.getPostOnlyCostElementIds();
-
-		final LinkedHashMap<CostElement, CostAmountDetailed> amountsPerElementNew = new LinkedHashMap<>();
-		amountsPerElement.forEach((costElement, costAmount) -> {
-			if (isCostElementMatching(costElement, costingMethod, postOnlyCostElementIds))
-			{
-				amountsPerElementNew.put(costElement, costAmount);
-			}
-		});
-
-		if (amountsPerElementNew.size() == amountsPerElement.size())
-		{
-			return this;
-		}
-
-		return new AggregatedCostAmount(costSegment, amountsPerElementNew);
-	}
-
-	public CostAmountDetailed getTotalAmountToPost(@NonNull final AcctSchema as)
+	public CostAmount getTotalAmountToPost(@NonNull final AcctSchema as)
 	{
 		final AcctSchemaCosting acctSchemaCosting = as.getCosting();
 		return getTotalAmount(acctSchemaCosting.getCostingMethod(), acctSchemaCosting.getPostOnlyCostElementIds())
-				.orElseGet(() -> CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build());
+				.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
 	}
 
 	@VisibleForTesting
-	Optional<CostAmountDetailed> getTotalAmount(
+	Optional<CostAmount> getTotalAmount(
 			@NonNull final CostingMethod costingMethod,
 			final Set<CostElementId> onlyCostElementIds)
 	{
@@ -151,7 +125,8 @@ public class AggregatedCostAmount
 				.stream()
 				.filter(costElement -> isCostElementMatching(costElement, costingMethod, onlyCostElementIds))
 				.map(this::getCostAmountForCostElement)
-				.reduce(CostAmountDetailed::add);
+				.reduce(CostAmount::add);
+		// .orElseThrow(() -> new AdempiereException("No costs found for " + costingMethod + ", onlyCostElementIds=" + onlyCostElementIds + " in " + this));
 	}
 
 	private static boolean isCostElementMatching(
@@ -159,7 +134,18 @@ public class AggregatedCostAmount
 			@NonNull final CostingMethod costingMethod,
 			final Set<CostElementId> onlyCostElementIds)
 	{
-		return costingMethod.equals(costElement.getCostingMethod())
-				&& (onlyCostElementIds == null || onlyCostElementIds.isEmpty() || onlyCostElementIds.contains(costElement.getId()));
+		if (!costingMethod.equals(costElement.getCostingMethod()))
+		{
+			return false;
+		}
+
+		if (onlyCostElementIds != null
+				&& !onlyCostElementIds.isEmpty()
+				&& !onlyCostElementIds.contains(costElement.getId()))
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

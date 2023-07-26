@@ -1,3 +1,15 @@
+package de.metas.vertical.pharma.msv3.server;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 /*
  * #%L
  * metasfresh-pharma.msv3.server
@@ -20,23 +32,26 @@
  * #L%
  */
 
-package de.metas.vertical.pharma.msv3.server;
-
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-
 @Configuration
-@EnableWebMvc
+@EnableSwagger2
 public class SwaggerConfig
 {
 	@Bean
-	public OpenAPI msv3OpenAPI() {
-		return new OpenAPI()
-				.info(new Info().title("metasfresh MSV3 server")
-				.license(new License().name("GNU General Public License, version 2").url("http://www.gnu.org/licenses/gpl-2.0.html")));
+	public Docket api()
+	{
+		return new Docket(DocumentationType.SWAGGER_2)
+				.select()
+				.paths(PathSelectors.any())
+				.build()
+				.apiInfo(createApiInfo());
+	}
+
+	public ApiInfo createApiInfo()
+	{
+		return new ApiInfoBuilder()
+				.title("metasfresh MSV3 server")
+				.license("GNU General Public License, version 2")
+				.licenseUrl("http://www.gnu.org/licenses/gpl-2.0.html")
+				.build();
 	}
 }

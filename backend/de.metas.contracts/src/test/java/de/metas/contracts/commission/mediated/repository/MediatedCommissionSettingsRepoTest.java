@@ -22,8 +22,6 @@
 
 package de.metas.contracts.commission.mediated.repository;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettings;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsId;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
@@ -31,24 +29,26 @@ import de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine;
 import lombok.Builder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@ExtendWith(SnapshotExtension.class)
 public class MediatedCommissionSettingsRepoTest
 {
 	private MediatedCommissionSettingsRepo mediatedCommissionSettingsRepo;
-	private Expect expect;
 
 	@BeforeAll
 	static void init()
 	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -58,6 +58,11 @@ public class MediatedCommissionSettingsRepoTest
 		mediatedCommissionSettingsRepo = new MediatedCommissionSettingsRepo();
 	}
 
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
+	}
 
 	@Test
 	public void givenValidId_whenGetById_thenReturnSettings()
@@ -84,7 +89,7 @@ public class MediatedCommissionSettingsRepoTest
 		final MediatedCommissionSettings mediatedCommissionSettings = mediatedCommissionSettingsRepo.getById(MediatedCommissionSettingsId.ofRepoId(settings.getC_MediatedCommissionSettings_ID()));
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(mediatedCommissionSettings);
+		expect(mediatedCommissionSettings).toMatchSnapshot();
 	}
 
 	private I_C_MediatedCommissionSettings createMediatedSettingsRecord()

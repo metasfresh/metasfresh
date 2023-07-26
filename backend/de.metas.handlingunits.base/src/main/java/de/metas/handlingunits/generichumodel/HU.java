@@ -105,9 +105,6 @@ public class HU
 		}
 
 		final ImmutableList.Builder<HU> results = ImmutableList.builder();
-
-		results.add(hu);
-
 		for (final HU child : hu.getChildHUs())
 		{
 			final List<HU> recurseNext = recurseNext(child);

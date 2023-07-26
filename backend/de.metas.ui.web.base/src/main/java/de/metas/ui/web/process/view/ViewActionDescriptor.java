@@ -89,7 +89,10 @@ public final class ViewActionDescriptor
 				.setDocumentType(DocumentType.Process, processId.toDocumentId())
 				.disableDefaultTableCallouts();
 
-		addParametersDescriptor(parametersDescriptor);
+		viewActionParamDescriptors.stream()
+				.filter(ViewActionParamDescriptor::isUserParameter)
+				.map(ViewActionParamDescriptor::createParameterFieldDescriptor)
+				.forEach(parametersDescriptor::addField);
 
 		if (parametersDescriptor.getFieldsCount() == 0)
 		{
@@ -97,14 +100,6 @@ public final class ViewActionDescriptor
 		}
 
 		return parametersDescriptor.build();
-	}
-
-	private void addParametersDescriptor(final DocumentEntityDescriptor.Builder parametersDescriptor)
-	{
-		viewActionParamDescriptors.stream()
-				.filter(ViewActionParamDescriptor::isUserParameter)
-				.map(ViewActionParamDescriptor::createParameterFieldDescriptor)
-				.forEach(parametersDescriptor::addField);
 	}
 
 	public ProcessDescriptor getProcessDescriptor(@NonNull final ProcessId processId)

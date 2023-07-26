@@ -5,6 +5,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandUpdateScheduler;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -62,8 +63,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 		SCHEDULER.schedule(request);
 	}
 
-	private static final UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler //
-			SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(true/*createOneWorkpackagePerAsyncBatch*/);
+	private static final IInvoiceCandUpdateScheduler SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(true/*createOneWorkpackagePerAsyncBatch*/);
 
 	private static final String SYSCONFIG_MaxInvoiceCandidatesToUpdate = "de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate";
 

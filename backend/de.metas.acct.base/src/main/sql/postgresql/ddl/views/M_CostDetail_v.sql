@@ -3,6 +3,12 @@ DROP VIEW IF EXISTS m_costdetail_v
 
 CREATE OR REPLACE VIEW m_costdetail_v AS
 SELECT cd.*,
+       COALESCE(mi.dateAcct,
+                mpo.dateAcct,
+                pp.dateAcct,
+                inv.movementDate,
+                m.MovementDate,
+                io.dateAcct)       AS DateAcct,
        (CASE
             WHEN cd.m_matchinv_id IS NOT NULL        THEN 'CO'
             WHEN cd.m_matchpo_id IS NOT NULL         THEN 'CO'
@@ -37,5 +43,5 @@ FROM m_costdetail cd
          LEFT JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
 ;
 
-COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some missing columns like DocStatus'
+COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some missing columns like DateAcct'
 ;

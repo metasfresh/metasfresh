@@ -25,16 +25,16 @@ package de.metas.common.bprelation.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.rest_api.common.JsonExternalId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.metas.common.bprelation.JsonBPRelationRole;
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Schema(description = "A BPartner to BPartner relation")
+@ApiModel(description = "A BPartner to BPartner relation")
 @Value
 public class JsonResponseBPRelationItem
 {

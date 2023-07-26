@@ -1,14 +1,5 @@
 package de.metas.ui.web.document.filter;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.util.GuavaCollectors;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -16,8 +7,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.util.GuavaCollectors;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -62,11 +65,6 @@ public class DocumentFilterList
 	public static DocumentFilterList of(@NonNull final DocumentFilter filter)
 	{
 		return ofList(ImmutableList.of(filter));
-	}
-
-	public static DocumentFilterList ofNullable(@Nullable final DocumentFilter filter)
-	{
-		return filter != null ? of(filter) : EMPTY;
 	}
 
 	public static DocumentFilterList of(@NonNull final DocumentFilter... filters)
@@ -142,15 +140,52 @@ public class DocumentFilterList
 		}
 	}
 
-	public DocumentFilterList mergeWithNullable(@Nullable final DocumentFilter filter)
+	public DocumentFilterList retainOnlyNonFacetFilters()
 	{
-		return filter != null ? mergeWith(filter) : this;
+		return filtering(filter -> !filter.isFacetFilter());
+	}
+
+	public DocumentFilterList retainOnlyFacetFilters()
+	{
+		return filtering(DocumentFilter::isFacetFilter);
+	}
+
+	private DocumentFilterList filtering(final Predicate<DocumentFilter> predicate)
+	{
+		if (isEmpty())
+		{
+			return this;
+		}
+
+		final ImmutableMap<String, DocumentFilter> newFiltersById = filtersById.entrySet()
+				.stream()
+				.filter(entry -> predicate.test(entry.getValue()))
+				.collect(GuavaCollectors.toImmutableMap());
+
+		if (newFiltersById.isEmpty())
+		{
+			return EMPTY;
+		}
+		else if (newFiltersById.size() == filtersById.size())
+		{
+			return this;
+		}
+		else
+		{
+			return new DocumentFilterList(newFiltersById);
+		}
+
 	}
 
 	public Optional<DocumentFilter> getFilterById(@NonNull final String filterId)
 	{
 		final DocumentFilter filter = getFilterByIdOrNull(filterId);
 		return Optional.ofNullable(filter);
+	}
+
+	public boolean containsFilterById(final String filterId)
+	{
+		return getFilterByIdOrNull(filterId) != null;
 	}
 
 	private DocumentFilter getFilterByIdOrNull(@NonNull final String filterId)

@@ -16,31 +16,33 @@
  *****************************************************************************/
 package org.eevolution.model;
 
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.uom.UOMPrecision;
-import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.MUOM;
-import org.compiere.util.DB;
-
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MProduct;
+import org.compiere.model.MUOM;
+import org.compiere.util.DB;
+
+import de.metas.product.IProductBL;
+import de.metas.uom.UOMPrecision;
+import de.metas.util.Services;
+
 /**
  * Order Line Model.
  * <code>
- * MDDOrderLine ol = new MDDOrderLine(m_order);
- * ol.setM_Product_ID(wbl.getM_Product_ID());
- * ol.setQtyOrdered(wbl.getQuantity());
- * ol.setPriceActual(wbl.getPrice());
- * ol.setTax();
- * ol.save();
- *
- * </code>
+ * 			MDDOrderLine ol = new MDDOrderLine(m_order);
+			ol.setM_Product_ID(wbl.getM_Product_ID());
+			ol.setQtyOrdered(wbl.getQuantity());
+			ol.setPriceActual(wbl.getPrice());
+			ol.setTax();
+			ol.save();
+
+ *	</code>
  *
  * @author Jorg Janke
  * @version $Id: MOrderLine.java,v 1.6 2006/10/02 05:18:39 jjanke Exp $
@@ -52,8 +54,18 @@ public class MDDOrderLine extends X_DD_OrderLine
 	 */
 	private static final long serialVersionUID = -8878804332001384969L;
 
+	/**
+	 * Get Order Unreserved Qty
+	 *
+	 * @param ctx context
+	 * @param M_Locator_ID wh
+	 * @param M_Product_ID product
+	 * @param M_AttributeSetInstance_ID asi
+	 * @param excludeC_OrderLine_ID exclude C_OrderLine_ID
+	 * @return Unreserved Qty
+	 */
 	public static BigDecimal getNotReserved(Properties ctx, int M_Locator_ID,
-											int M_Product_ID, int M_AttributeSetInstance_ID, int excludeDD_OrderLine_ID)
+			int M_Product_ID, int M_AttributeSetInstance_ID, int excludeDD_OrderLine_ID)
 	{
 
 		ArrayList<Object> params = new ArrayList<>();
@@ -64,8 +76,8 @@ public class MDDOrderLine extends X_DD_OrderLine
 		String sql = "SELECT SUM(QtyOrdered-QtyDelivered-QtyReserved) "
 				+ "FROM DD_OrderLine ol"
 				+ " INNER JOIN DD_Order o ON (ol.DD_Order_ID=o.DD_Order_ID) "
-				+ "WHERE ol.M_Locator_ID=?"    // #1
-				+ " AND M_Product_ID=?"            // #2
+				+ "WHERE ol.M_Locator_ID=?"	// #1
+				+ " AND M_Product_ID=?"			// #2
 				+ " AND o.IsSOTrx='N' AND o.DocStatus='DR'"
 				+ " AND QtyOrdered-QtyDelivered-QtyReserved<>0"
 				+ " AND ol.DD_OrderLine_ID<>?";
@@ -76,7 +88,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			params.add(M_AttributeSetInstance_ID);
 		}
 		return DB.getSQLValueBD(null, sql.toString(), params);
-	}    // getNotReserved
+	}	// getNotReserved
 
 	/**************************************************************************
 	 * Default Constructor
@@ -111,15 +123,15 @@ public class MDDOrderLine extends X_DD_OrderLine
 			setConfirmedQty(BigDecimal.ZERO);
 			setTargetQty(BigDecimal.ZERO);
 			setPickedQty(BigDecimal.ZERO);
-			setQtyOrdered(BigDecimal.ZERO);    // 1
+			setQtyOrdered(BigDecimal.ZERO);	// 1
 			setQtyDelivered(BigDecimal.ZERO);
 			setQtyReserved(BigDecimal.ZERO);
 			//
-			setIsDescription(false);    // N
+			setIsDescription(false);	// N
 			setProcessed(false);
 			setLine(0);
 		}
-	}    // MDDOrderLine
+	}	// MDDOrderLine
 
 	/**
 	 * Parent Constructor.
@@ -129,21 +141,21 @@ public class MDDOrderLine extends X_DD_OrderLine
 		this(order.getCtx(), 0, order.get_TrxName());
 		if (order.get_ID() == 0)
 			throw new IllegalArgumentException("Header not saved");
-		setDD_Order_ID(order.getDD_Order_ID());    // parent
+		setDD_Order_ID(order.getDD_Order_ID());	// parent
 		setOrder(order);
-	}    // MDDOrderLine
+	}	// MDDOrderLine
 
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx     context
-	 * @param rs      result set record
+	 * @param ctx context
+	 * @param rs result set record
 	 * @param trxName transaction
 	 */
 	public MDDOrderLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}    // MDDOrderLine
+	}	// MDDOrderLine
 
 	/**
 	 * Set Defaults from Order.
@@ -157,7 +169,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		setDateOrdered(order.getDateOrdered());
 		setDatePromised(order.getDatePromised());
 
-		// Don't set Activity, etc. as they are overwrites
+		// Don't set Activity, etc as they are overwrites
 	}
 
 	/**
@@ -169,7 +181,42 @@ public class MDDOrderLine extends X_DD_OrderLine
 	private MDDOrder getParent()
 	{
 		return LegacyAdapters.convertToPO(getDD_Order());
-	}    // getParent
+	}	// getParent
+
+	/**
+	 * Set Product
+	 *
+	 * @param product product
+	 */
+	public void setProduct(MProduct product)
+	{
+		setM_Product(product);
+		if (product != null)
+		{
+			setM_Product_ID(product.getM_Product_ID());
+			setC_UOM_ID(product.getC_UOM_ID());
+		}
+		else
+		{
+			setM_Product_ID(0);
+			set_ValueNoCheck(COLUMNNAME_C_UOM_ID, null);
+		}
+		setM_AttributeSetInstance_ID(0);
+	}	// setProduct
+
+	/**
+	 * Set M_AttributeSetInstance_ID
+	 *
+	 * @param M_AttributeSetInstance_ID id
+	 */
+	@Override
+	public void setM_AttributeSetInstance_ID(int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID == 0)		// 0 is valid ID
+			set_Value(COLUMNNAME_M_AttributeSetInstance_ID, new Integer(0));
+		else
+			super.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
+	}	// setM_AttributeSetInstance_ID
 
 	/**
 	 * Can Change Warehouse
@@ -189,7 +236,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		}
 		// We can change
 		return true;
-	}    // canChangeWarehouse
+	}	// canChangeWarehouse
 
 	/**
 	 * Get C_Project_ID
@@ -203,7 +250,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (ii == 0)
 			ii = getDD_Order().getC_Project_ID();
 		return ii;
-	}    // getC_Project_ID
+	}	// getC_Project_ID
 
 	/**
 	 * Get C_Activity_ID
@@ -217,7 +264,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (ii == 0)
 			ii = getDD_Order().getC_Activity_ID();
 		return ii;
-	}    // getC_Activity_ID
+	}	// getC_Activity_ID
 
 	/**
 	 * Get C_Campaign_ID
@@ -231,7 +278,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (ii == 0)
 			ii = getDD_Order().getC_Campaign_ID();
 		return ii;
-	}    // getC_Campaign_ID
+	}	// getC_Campaign_ID
 
 	/**
 	 * Get User2_ID
@@ -245,7 +292,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (ii == 0)
 			ii = getDD_Order().getUser1_ID();
 		return ii;
-	}    // getUser1_ID
+	}	// getUser1_ID
 
 	/**
 	 * Get User2_ID
@@ -259,7 +306,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (ii == 0)
 			ii = getDD_Order().getUser2_ID();
 		return ii;
-	}    // getUser2_ID
+	}	// getUser2_ID
 
 	/**
 	 * Get AD_OrgTrx_ID
@@ -273,7 +320,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (ii == 0)
 			ii = getDD_Order().getAD_OrgTrx_ID();
 		return ii;
-	}    // getAD_OrgTrx_ID
+	}	// getAD_OrgTrx_ID
 
 	/**************************************************************************
 	 * String Representation
@@ -294,7 +341,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		}
 		sb.append("]");
 		return sb.toString();
-	}    // toString
+	}	// toString
 
 	/**
 	 * Add to Description
@@ -308,7 +355,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			setDescription(description);
 		else
 			setDescription(desc + " | " + description);
-	}    // addDescription
+	}	// addDescription
 
 	/**
 	 * Set C_Charge_ID
@@ -321,7 +368,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		super.setC_Charge_ID(C_Charge_ID);
 		if (C_Charge_ID > 0)
 			set_ValueNoCheck(COLUMNNAME_C_UOM_ID, null);
-	}    // setC_Charge_ID
+	}	// setC_Charge_ID
 
 	/**
 	 * Set Qty Entered/Ordered.
@@ -333,7 +380,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	{
 		super.setQtyEntered(Qty);
 		super.setQtyOrdered(getQtyEntered());
-	}    // setQty
+	}	// setQty
 
 	/**
 	 * Set Qty Entered - enforce entered UOM
@@ -349,23 +396,31 @@ public class MDDOrderLine extends X_DD_OrderLine
 			QtyEntered = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 		super.setQtyEntered(QtyEntered);
-	}    // setQtyEntered
+	}	// setQtyEntered
 
 	/**
 	 * Set Qty Ordered - enforce Product UOM
+	 *
+	 * @param QtyOrdered
 	 */
 	@Override
 	public void setQtyOrdered(BigDecimal QtyOrdered)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
-		if (QtyOrdered != null && productId != null)
+		final I_M_Product product = getM_Product();
+		if (QtyOrdered != null && product != null)
 		{
-			final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(productId);
+			final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(product);
 			QtyOrdered = precision.round(QtyOrdered);
 		}
 		super.setQtyOrdered(QtyOrdered);
-	}    // setQtyOrdered
+	}	// setQtyOrdered
 
+	/**************************************************************************
+	 * Before Save
+	 *
+	 * @param newRecord
+	 * @return true if it can be sabed
+	 */
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
@@ -390,7 +445,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 			{
 				throw new AdempiereException("Changing product/locator is not allowed");
 			}
-		}    // Product Changed
+		}	// Product Changed
 
 		// Charge
 		if (getC_Charge_ID() != 0 && getM_Product_ID() != 0)
@@ -403,7 +458,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		// UOM
 		if (getC_UOM_ID() == 0
 				&& (getM_Product_ID() != 0
-				|| getC_Charge_ID() != 0))
+						|| getC_Charge_ID() != 0))
 		{
 			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
 			if (C_UOM_ID > 0)
@@ -429,7 +484,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 		}
 
 		return true;
-	}    // beforeSave
+	}	// beforeSave
 
 	/**
 	 * Before Delete
@@ -451,5 +506,5 @@ public class MDDOrderLine extends X_DD_OrderLine
 		}
 
 		return true;
-	}    // beforeDelete
-}    // MDDOrderLine
+	}	// beforeDelete
+}	// MDDOrderLine

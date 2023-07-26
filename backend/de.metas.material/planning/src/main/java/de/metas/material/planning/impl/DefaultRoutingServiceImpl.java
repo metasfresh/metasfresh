@@ -23,6 +23,7 @@ package de.metas.material.planning.impl;
  */
 
 import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
@@ -31,7 +32,6 @@ import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
-import de.metas.resource.ResourceType;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -87,8 +87,6 @@ public class DefaultRoutingServiceImpl implements RoutingService
 
 		Duration durationTotal = Duration.ZERO;
 		final PPRouting routing = Services.get(IPPRoutingRepository.class).getById(routingId);
-		final int intQty = qty.setScale(0, RoundingMode.UP).intValueExact();
-
 		for (final PPRoutingActivity activity : routing.getActivities())
 		{
 			// Qty independent times:
@@ -99,11 +97,12 @@ public class DefaultRoutingServiceImpl implements RoutingService
 					.plus(activity.getMovingTime());
 
 			// Get OverlapUnits - number of units that must be completed before they are moved the next activity
-			final int overlapUnits = Integer.max(activity.getOverlapUnits(), 0);
-
-			final int batchUnits = Integer.max(intQty - overlapUnits, 0);
-
-			final Duration durationBeforeOverlap = activity.getDurationPerOneUnit().multipliedBy(batchUnits);
+			int overlapUnits = qty.setScale(0, RoundingMode.UP).intValueExact();
+			if (activity.getOverlapUnits() > 0 && activity.getOverlapUnits() < overlapUnits)
+			{
+				overlapUnits = activity.getOverlapUnits();
+			}
+			final Duration durationBeforeOverlap = activity.getDurationPerOneUnit().multipliedBy(overlapUnits);
 
 			durationTotal = durationTotal.plus(durationBeforeOverlap);
 		}

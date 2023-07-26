@@ -22,7 +22,17 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
+import java.util.Iterator;
+
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
+import org.slf4j.Logger;
+
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockCommand.AllowAdditionalLocks;
@@ -34,17 +44,6 @@ import de.metas.lock.spi.ILockDatabase;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery;
-import org.slf4j.Logger;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Abstract lock database which does not implement any database specific logic.
@@ -325,47 +324,6 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
 				.filter(TypedSqlQueryFilter.of(lockedRecordsSQL));
-	}
-
-	@Override
-	@NonNull
-	public final <T> List<T> retrieveAndLockMultipleRecords(@NonNull final IQuery<T> query, @NonNull final Class<T> clazz)
-	{
-		final ILockCommand lockCommand = new LockCommand(this)
-				.setOwner(LockOwner.NONE);
-
-		final ImmutableList.Builder<T> lockedModelsCollector = ImmutableList.builder();
-
-		final List<T> models = query.list(clazz);
-
-		if (models == null || models.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		models.forEach(model -> {
-			final TableRecordReference record = TableRecordReference.of(model);
-
-			if (lockRecord(lockCommand, record))
-			{
-				lockedModelsCollector.add(model);
-			}
-		});
-
-		final ImmutableList<T> lockedModels = lockedModelsCollector.build();
-
-		if (lockedModels.size() != models.size())
-		{
-			logger.warn("*** retrieveAndLockMultipleRecords: not all retrieved records could be locked! expectedLockedSize: {}, actualLockedSize: {}"
-					, models.size(), lockedModels.size());
-		}
-
-		return lockedModels;
-	}
-
-	public <T> IQuery<T> addNotLockedClause(final IQuery<T> query)
-	{
-		return retrieveNotLockedQuery(query);
 	}
 
 	/**

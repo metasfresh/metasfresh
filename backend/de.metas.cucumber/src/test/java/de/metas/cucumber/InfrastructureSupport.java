@@ -23,9 +23,9 @@
 package de.metas.cucumber;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
-import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class InfrastructureSupport
 {
-	private final static Logger logger = LogManager.getLogger(InfrastructureSupport.class);
+	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";

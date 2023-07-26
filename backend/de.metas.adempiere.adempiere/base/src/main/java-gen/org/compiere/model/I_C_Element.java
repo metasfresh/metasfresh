@@ -1,55 +1,72 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for C_Element
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_Element 
 {
 
-	String Table_Name = "C_Element";
+    /** TableName=C_Element */
+    public static final String Table_Name = "C_Element";
 
-//	/** AD_Table_ID=142 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=142 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 2 - Client
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_Client>(I_C_Element.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_Org>(I_C_Element.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Baum.
@@ -59,7 +76,7 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Tree_ID (int AD_Tree_ID);
+	public void setAD_Tree_ID (int AD_Tree_ID);
 
 	/**
 	 * Get Baum.
@@ -69,14 +86,16 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Tree_ID();
+	public int getAD_Tree_ID();
 
-	org.compiere.model.I_AD_Tree getAD_Tree();
+	public org.compiere.model.I_AD_Tree getAD_Tree();
 
-	void setAD_Tree(org.compiere.model.I_AD_Tree AD_Tree);
+	public void setAD_Tree(org.compiere.model.I_AD_Tree AD_Tree);
 
-	ModelColumn<I_C_Element, org.compiere.model.I_AD_Tree> COLUMN_AD_Tree_ID = new ModelColumn<>(I_C_Element.class, "AD_Tree_ID", org.compiere.model.I_AD_Tree.class);
-	String COLUMNNAME_AD_Tree_ID = "AD_Tree_ID";
+    /** Column definition for AD_Tree_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_Tree> COLUMN_AD_Tree_ID = new org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_Tree>(I_C_Element.class, "AD_Tree_ID", org.compiere.model.I_AD_Tree.class);
+    /** Column name AD_Tree_ID */
+    public static final String COLUMNNAME_AD_Tree_ID = "AD_Tree_ID";
 
 	/**
 	 * Set Element.
@@ -86,7 +105,7 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Element_ID (int C_Element_ID);
+	public void setC_Element_ID (int C_Element_ID);
 
 	/**
 	 * Get Element.
@@ -96,56 +115,65 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Element_ID();
+	public int getC_Element_ID();
 
-	ModelColumn<I_C_Element, Object> COLUMN_C_Element_ID = new ModelColumn<>(I_C_Element.class, "C_Element_ID", null);
-	String COLUMNNAME_C_Element_ID = "C_Element_ID";
+    /** Column definition for C_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_C_Element_ID = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "C_Element_ID", null);
+    /** Column name C_Element_ID */
+    public static final String COLUMNNAME_C_Element_ID = "C_Element_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Element, Object> COLUMN_Created = new ModelColumn<>(I_C_Element.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_User>(I_C_Element.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_C_Element, Object> COLUMN_Description = new ModelColumn<>(I_C_Element.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Art.
@@ -155,7 +183,7 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setElementType (java.lang.String ElementType);
+	public void setElementType (java.lang.String ElementType);
 
 	/**
 	 * Get Art.
@@ -165,33 +193,37 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getElementType();
+	public java.lang.String getElementType();
 
-	ModelColumn<I_C_Element, Object> COLUMN_ElementType = new ModelColumn<>(I_C_Element.class, "ElementType", null);
-	String COLUMNNAME_ElementType = "ElementType";
+    /** Column definition for ElementType */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_ElementType = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "ElementType", null);
+    /** Column name ElementType */
+    public static final String COLUMNNAME_ElementType = "ElementType";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_Element, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Element.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Saldierung.
@@ -201,7 +233,7 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsBalancing (boolean IsBalancing);
+	public void setIsBalancing (boolean IsBalancing);
 
 	/**
 	 * Get Saldierung.
@@ -211,10 +243,12 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isBalancing();
+	public boolean isBalancing();
 
-	ModelColumn<I_C_Element, Object> COLUMN_IsBalancing = new ModelColumn<>(I_C_Element.class, "IsBalancing", null);
-	String COLUMNNAME_IsBalancing = "IsBalancing";
+    /** Column definition for IsBalancing */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_IsBalancing = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "IsBalancing", null);
+    /** Column name IsBalancing */
+    public static final String COLUMNNAME_IsBalancing = "IsBalancing";
 
 	/**
 	 * Set Basiskonto.
@@ -224,7 +258,7 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsNaturalAccount (boolean IsNaturalAccount);
+	public void setIsNaturalAccount (boolean IsNaturalAccount);
 
 	/**
 	 * Get Basiskonto.
@@ -234,56 +268,67 @@ public interface I_C_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isNaturalAccount();
+	public boolean isNaturalAccount();
 
-	ModelColumn<I_C_Element, Object> COLUMN_IsNaturalAccount = new ModelColumn<>(I_C_Element.class, "IsNaturalAccount", null);
-	String COLUMNNAME_IsNaturalAccount = "IsNaturalAccount";
+    /** Column definition for IsNaturalAccount */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_IsNaturalAccount = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "IsNaturalAccount", null);
+    /** Column name IsNaturalAccount */
+    public static final String COLUMNNAME_IsNaturalAccount = "IsNaturalAccount";
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_C_Element, Object> COLUMN_Name = new ModelColumn<>(I_C_Element.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Element, Object> COLUMN_Updated = new ModelColumn<>(I_C_Element.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Element, org.compiere.model.I_AD_User>(I_C_Element.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Value Format.
@@ -294,7 +339,7 @@ public interface I_C_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setVFormat (@Nullable java.lang.String VFormat);
+	public void setVFormat (java.lang.String VFormat);
 
 	/**
 	 * Get Value Format.
@@ -305,8 +350,10 @@ public interface I_C_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getVFormat();
+	public java.lang.String getVFormat();
 
-	ModelColumn<I_C_Element, Object> COLUMN_VFormat = new ModelColumn<>(I_C_Element.class, "VFormat", null);
-	String COLUMNNAME_VFormat = "VFormat";
+    /** Column definition for VFormat */
+    public static final org.adempiere.model.ModelColumn<I_C_Element, Object> COLUMN_VFormat = new org.adempiere.model.ModelColumn<I_C_Element, Object>(I_C_Element.class, "VFormat", null);
+    /** Column name VFormat */
+    public static final String COLUMNNAME_VFormat = "VFormat";
 }

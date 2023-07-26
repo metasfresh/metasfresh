@@ -1,10 +1,10 @@
 package de.metas.ui.web.view;
 
+import java.util.Set;
+
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.util.Set;
 
 /*
  * #%L
@@ -29,17 +29,11 @@ import java.util.Set;
  */
 
 @Value
-public class ViewRowIdsSelection
+public final class ViewRowIdsSelection
 {
 	public static ViewRowIdsSelection of(@NonNull final ViewId viewId, final DocumentIdsSelection rowIds)
 	{
 		return new ViewRowIdsSelection(viewId, rowIds);
-	}
-
-	public static ViewRowIdsSelection of(@NonNull final ViewId viewId, final Set<String> rowIdsStringSet)
-	{
-		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofStringSet(rowIdsStringSet);
-		return of(viewId, rowIds);
 	}
 
 	public static ViewRowIdsSelection ofNullableStrings(final String viewIdStr, final String rowIdsListStr)
@@ -66,8 +60,8 @@ public class ViewRowIdsSelection
 		return new ViewRowIdsSelection(viewId, rowIds);
 	}
 
-	ViewId viewId;
-	DocumentIdsSelection rowIds;
+	private final ViewId viewId;
+	private final DocumentIdsSelection rowIds;
 
 	private ViewRowIdsSelection(@NonNull final ViewId viewId, final DocumentIdsSelection rowIds)
 	{

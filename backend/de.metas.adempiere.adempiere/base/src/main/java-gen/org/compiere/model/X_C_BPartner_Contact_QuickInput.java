@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Contact_QuickInput
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Contact_QuickInput extends org.compiere.model.PO implements I_C_BPartner_Contact_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -339688923L;
+	private static final long serialVersionUID = -724059472L;
 
     /** Standard Constructor */
     public X_C_BPartner_Contact_QuickInput (final Properties ctx, final int C_BPartner_Contact_QuickInput_ID, @Nullable final String trxName)
@@ -32,18 +32,6 @@ public class X_C_BPartner_Contact_QuickInput extends org.compiere.model.PO imple
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public void setBirthday (final @Nullable java.sql.Timestamp Birthday)
-	{
-		set_Value (COLUMNNAME_Birthday, Birthday);
-	}
-
-	@Override
-	public java.sql.Timestamp getBirthday() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_Birthday);
 	}
 
 	@Override
@@ -128,39 +116,6 @@ public class X_C_BPartner_Contact_QuickInput extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setIsDefaultContact (final boolean IsDefaultContact)
-	{
-		set_Value (COLUMNNAME_IsDefaultContact, IsDefaultContact);
-	}
-
-	@Override
-	public boolean isDefaultContact() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDefaultContact);
-	}
-
-	/** 
-	 * IsInvoiceEmailEnabled AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISINVOICEEMAILENABLED_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISINVOICEEMAILENABLED_Yes = "Y";
-	/** No = N */
-	public static final String ISINVOICEEMAILENABLED_No = "N";
-	@Override
-	public void setIsInvoiceEmailEnabled (final @Nullable java.lang.String IsInvoiceEmailEnabled)
-	{
-		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, IsInvoiceEmailEnabled);
-	}
-
-	@Override
-	public java.lang.String getIsInvoiceEmailEnabled() 
-	{
-		return get_ValueAsString(COLUMNNAME_IsInvoiceEmailEnabled);
-	}
-
-	@Override
 	public void setIsMembershipContact (final boolean IsMembershipContact)
 	{
 		set_Value (COLUMNNAME_IsMembershipContact, IsMembershipContact);
@@ -206,29 +161,5 @@ public class X_C_BPartner_Contact_QuickInput extends org.compiere.model.PO imple
 	public java.lang.String getPhone() 
 	{
 		return get_ValueAsString(COLUMNNAME_Phone);
-	}
-
-	@Override
-	public void setPhone2 (final @Nullable java.lang.String Phone2)
-	{
-		set_Value (COLUMNNAME_Phone2, Phone2);
-	}
-
-	@Override
-	public java.lang.String getPhone2() 
-	{
-		return get_ValueAsString(COLUMNNAME_Phone2);
-	}
-
-	@Override
-	public void setTitle (final @Nullable java.lang.String Title)
-	{
-		set_Value (COLUMNNAME_Title, Title);
-	}
-
-	@Override
-	public java.lang.String getTitle() 
-	{
-		return get_ValueAsString(COLUMNNAME_Title);
 	}
 }

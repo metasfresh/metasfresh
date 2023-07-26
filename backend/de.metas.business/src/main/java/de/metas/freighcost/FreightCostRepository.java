@@ -1,5 +1,20 @@
 package de.metas.freighcost;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.I_M_FreightCost;
+import org.adempiere.model.I_M_FreightCostDetail;
+import org.adempiere.model.I_M_FreightCostShipper;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -7,11 +22,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
+
 import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.location.CountryAreaId;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -24,20 +39,6 @@ import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.I_M_FreightCost;
-import org.adempiere.model.I_M_FreightCostDetail;
-import org.adempiere.model.I_M_FreightCostShipper;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Repository;
-
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -208,16 +209,13 @@ public class FreightCostRepository
 	private FreightCostBreak toFreightCostBreak(final I_M_FreightCostDetail record)
 	{
 		final CountryId countryId = CountryId.ofRepoIdOrNull(record.getC_Country_ID());
-		final CountryAreaId countryAreaId = CountryAreaId.ofRepoIdOrNull(record.getC_CountryArea_ID());
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
 		return FreightCostBreak.builder()
 				.freightCostShipperId(FreightCostShipperId.ofRepoId(record.getM_FreightCostShipper_ID()))
 				.countryId(countryId)
-				.countryAreaId(countryAreaId)
 				.shipmentValueAmtMax(Money.of(record.getShipmentValueAmt(), currencyId))
 				.freightRate(Money.of(record.getFreightAmt(), currencyId))
-				.seqNo(record.getSeqNo())
 				.build();
 	}
 
@@ -248,7 +246,7 @@ public class FreightCostRepository
 					.filter(FreightCost::isDefaultFreightCost)
 					.sorted(Comparator.comparing(FreightCost::getId)) // just to have a predictible order
 					.collect(ImmutableList.toImmutableList());
-			if (defaults.isEmpty())
+			if (defaults == null)
 			{
 				return Optional.empty();
 			}

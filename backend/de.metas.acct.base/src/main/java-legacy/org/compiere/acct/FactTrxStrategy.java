@@ -24,7 +24,7 @@ import java.util.List;
  * #L%
  */
 
-public interface FactTrxStrategy
+interface FactTrxStrategy
 {
 	List<FactTrxLines> createFactTrxLines(List<FactLine> factLines);
 }

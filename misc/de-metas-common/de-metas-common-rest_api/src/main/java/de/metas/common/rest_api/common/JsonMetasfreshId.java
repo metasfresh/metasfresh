@@ -24,60 +24,34 @@ package de.metas.common.rest_api.common;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.common.util.Check;
-import de.metas.common.util.NumberUtils;
-import io.swagger.v3.oas.models.media.IntegerSchema;
 import lombok.NonNull;
 import lombok.Value;
-import org.springdoc.core.SpringDocUtils;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
 
 @Value
 public class JsonMetasfreshId
 {
 	int value;
 
-	static {
-		SpringDocUtils.getConfig().replaceWithSchema(JsonMetasfreshId.class, new IntegerSchema());
-	}
-
 	@JsonCreator
-	public static JsonMetasfreshId of(@NonNull final Object value)
+	public static JsonMetasfreshId of(@NonNull final Integer value)
 	{
-		try
-		{
-			return new JsonMetasfreshId(NumberUtils.asInt(value));
-		}
-		catch (Exception ex)
-		{
-			throw Check.mkEx("Invalid " + JsonMetasfreshId.class.getSimpleName() + ": `" + value + "` (" + value.getClass() + ")", ex);
-		}
+		return new JsonMetasfreshId(value);
 	}
 
 	@Nullable
 	public static JsonMetasfreshId ofOrNull(@Nullable final Integer value)
 	{
-		if (isNullOrNegative(value))
+		if (isEmpty(value))
 		{
 			return null;
 		}
 		return new JsonMetasfreshId(value);
 	}
 
-	@Nullable
-	public static JsonMetasfreshId ofOrNull(@Nullable final String value)
-	{
-		return Optional.ofNullable(value)
-				.map(Integer::parseInt)
-				.map(JsonMetasfreshId::ofOrNull)
-				.orElse(null);
-	}
-
-	private static boolean isNullOrNegative(@Nullable final Integer value)
+	private static boolean isEmpty(@Nullable final Integer value)
 	{
 		return value == null || value < 0;
 	}
@@ -95,11 +69,6 @@ public class JsonMetasfreshId
 	public int getValue()
 	{
 		return value;
-	}
-
-	@NonNull
-	public <T> T mapValue(@NonNull final Function<Integer, T> mapper) {
-		return mapper.apply(value);
 	}
 
 	public static boolean equals(@Nullable final JsonMetasfreshId id1, @Nullable final JsonMetasfreshId id2)
@@ -131,28 +100,6 @@ public class JsonMetasfreshId
 		if (externalId == null)
 		{
 			return "-1";
-		}
-		return String.valueOf(externalId.getValue());
-	}
-
-	@NonNull
-	public static Optional<Integer> toValueOptional(@Nullable final JsonMetasfreshId externalId)
-	{
-		return Optional.ofNullable(toValue(externalId));
-	}
-
-	@Nullable
-	public static <T> T mapToOrNull(@Nullable final JsonMetasfreshId externalId, @NonNull final Function<Integer, T> mapper)
-	{
-		return toValueOptional(externalId).map(mapper).orElse(null);
-	}
-
-	@Nullable
-	public static String toValueStrOrNull(@Nullable final JsonMetasfreshId externalId)
-	{
-		if (externalId == null)
-		{
-			return null;
 		}
 		return String.valueOf(externalId.getValue());
 	}

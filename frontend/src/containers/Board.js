@@ -1,8 +1,8 @@
 import update from 'immutability-helper';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DragDropContext } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
 import { connect } from 'react-redux';
 
 import { getData, deleteRequest, patchRequest } from '../api';
@@ -268,51 +268,50 @@ class Board extends Component {
 
   render() {
     const { modal, rawModal, pluginModal, breadcrumb, indicator } = this.props;
+
     const { board, targetIndicator, sidenav, sidenavViewId } = this.state;
 
     return (
-      <DndProvider backend={HTML5Backend}>
-        <Container
-          entity="board"
-          siteName={board && board.caption}
-          windowId={board && board.boardId && String(board.boardId)}
-          {...{ modal, rawModal, pluginModal, breadcrumb, indicator }}
-        >
-          {sidenav && (
-            <Sidenav
-              ref={(c) => (this.sideNav = c)}
-              boardId={board.boardId}
-              viewId={sidenavViewId}
-              onClickOutside={() => this.setState({ sidenav: false })}
-              setViewId={this.setSidenavViewId}
-            />
-          )}
-          {board === '404' ? (
-            <BlankPage what="Board" />
-          ) : (
-            <div className="board">
-              <div key="board-header" className="board-header clearfix">
-                <button
-                  className="btn btn-meta-outline-secondary btn-sm float-right"
-                  onClick={() => this.setState({ sidenav: true })}
-                >
-                  Add new
-                </button>
-              </div>
-              <Lanes
-                {...{ targetIndicator }}
-                key="board-lanes"
-                onDrop={this.handleDrop}
-                onHover={this.handleHover}
-                onReject={this.clearTargetIndicator}
-                onDelete={this.handleDelete}
-                onCaptionClick={this.handleCaptionClick}
-                lanes={board && board.lanes}
-              />
+      <Container
+        entity="board"
+        siteName={board && board.caption}
+        windowId={board && board.boardId && String(board.boardId)}
+        {...{ modal, rawModal, pluginModal, breadcrumb, indicator }}
+      >
+        {sidenav && (
+          <Sidenav
+            ref={(c) => (this.sideNav = c)}
+            boardId={board.boardId}
+            viewId={sidenavViewId}
+            onClickOutside={() => this.setState({ sidenav: false })}
+            setViewId={this.setSidenavViewId}
+          />
+        )}
+        {board === '404' ? (
+          <BlankPage what="Board" />
+        ) : (
+          <div className="board">
+            <div key="board-header" className="board-header clearfix">
+              <button
+                className="btn btn-meta-outline-secondary btn-sm float-right"
+                onClick={() => this.setState({ sidenav: true })}
+              >
+                Add new
+              </button>
             </div>
-          )}
-        </Container>
-      </DndProvider>
+            <Lanes
+              {...{ targetIndicator }}
+              key="board-lanes"
+              onDrop={this.handleDrop}
+              onHover={this.handleHover}
+              onReject={this.clearTargetIndicator}
+              onDelete={this.handleDelete}
+              onCaptionClick={this.handleCaptionClick}
+              lanes={board && board.lanes}
+            />
+          </div>
+        )}
+      </Container>
     );
   }
 }
@@ -367,4 +366,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(Board);
+export default connect(mapStateToProps)(DragDropContext(HTML5Backend)(Board));

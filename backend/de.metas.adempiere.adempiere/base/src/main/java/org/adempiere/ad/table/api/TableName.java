@@ -29,9 +29,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
-
 @EqualsAndHashCode(doNotUseGetters = true)
 public final class TableName
 {
@@ -55,15 +52,6 @@ public final class TableName
 		return interner.intern(new TableName(string));
 	}
 
-	@Nullable
-	public static TableName ofNullableString(@Nullable final String string)
-	{
-		final String stringNorm = StringUtils.trimBlankToNull(string);
-		return stringNorm != null
-				? ofString(stringNorm)
-				: null;
-	}
-
 	@Override
 	@Deprecated
 	public String toString()
@@ -74,15 +62,5 @@ public final class TableName
 	public String getAsString()
 	{
 		return tableName;
-	}
-
-	public boolean equalsIgnoreCase(@Nullable final String otherTableName)
-	{
-		return tableName.equalsIgnoreCase(otherTableName);
-	}
-
-	public static boolean equals(@Nullable TableName tableName1, @Nullable TableName tableName2)
-	{
-		return Objects.equals(tableName1, tableName2);
 	}
 }

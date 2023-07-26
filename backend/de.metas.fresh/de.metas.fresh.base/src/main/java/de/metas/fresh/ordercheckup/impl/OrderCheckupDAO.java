@@ -30,9 +30,9 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
@@ -53,7 +53,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsTraded, X_PP_Product_Planning.ISTRADED_Yes);
 
-		return queryBL.createQueryBuilder(I_PP_Product_Planning.class, orderLine)
+		final I_PP_Product_Planning productPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class, orderLine)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, orderLine.getM_Product_ID())
 				.addInArrayOrAllFilter(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, orderLine.getAD_Org_ID(), 0)
@@ -66,6 +66,8 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 				.endOrderBy()
 				.create()
 				.first();
+
+		return productPlanning;
 	}
 
 	@Override
@@ -85,7 +87,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 			return null; // no warehouse available
 		}
 
-		return warehouseDAO.getById(WarehouseId.ofRepoId(productPlanning.getM_Warehouse_ID()));
+		return warehouseDAO.getById(WarehouseId.ofRepoId(productPlanning.getM_Warehouse_ID()), I_M_Warehouse.class);
 	}
 
 	@Override

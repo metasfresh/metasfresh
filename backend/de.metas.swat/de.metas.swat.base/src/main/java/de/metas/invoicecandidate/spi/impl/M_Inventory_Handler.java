@@ -1,6 +1,16 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -10,16 +20,6 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
 
 /*
  * #%L
@@ -43,28 +43,25 @@ import java.util.Properties;
  * #L%
  */
 
-/**
- * Creates/handles invoice candidates for completed material disposals
- */
 public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 {
 	// Services
 	final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
 	@Override
-	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
+	public boolean isCreateMissingCandidatesAutomatically()
 	{
-		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
+		return true;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
-		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
+		return true;
 	}
 
 	@Override
-	public List<InvoiceCandidateGenerateRequest> expandRequest(@NonNull final InvoiceCandidateGenerateRequest request)
+	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
 	{
 		final I_M_Inventory inventory = request.getModel(I_M_Inventory.class);
 
@@ -88,7 +85,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Collections.emptyIterator();
 	}

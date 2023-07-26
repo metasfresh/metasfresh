@@ -34,7 +34,7 @@ import lombok.ToString;
 
 import javax.annotation.Nullable;
 
-@Builder(toBuilder = true)
+@Builder
 @ToString
 @Getter
 @Setter(AccessLevel.PRIVATE)
@@ -51,8 +51,6 @@ public final class PPOrderRoutingProduct
 	private ProductId productId;
 	@Nullable
 	private String specification;
-
-	public PPOrderRoutingProduct copy() {return toBuilder().build();}
 
 	public void setId(final PPOrderRoutingProductId id)
 	{

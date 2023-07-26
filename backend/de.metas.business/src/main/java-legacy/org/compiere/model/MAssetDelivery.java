@@ -16,12 +16,12 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.email.EMail;
-import de.metas.email.EMailSentStatus;
-
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
+
+import de.metas.email.EMail;
+import de.metas.email.EMailSentStatus;
 
 /**
  *  Asset Delivery Model
@@ -66,6 +66,7 @@ public class MAssetDelivery extends X_A_Asset_Delivery
 	 * 	Create Asset Delivery for EMail
 	 * 	@param asset asset
 	 * 	@param email email
+	 * @param emailSentStatus 
 	 * 	@param AD_User_ID BP Contact
 	 */
 	public MAssetDelivery (MAsset asset, EMail email, int AD_User_ID)
@@ -73,6 +74,8 @@ public class MAssetDelivery extends X_A_Asset_Delivery
 		super (asset.getCtx(), 0, asset.get_TrxName());
 		//	Asset Info
 		setA_Asset_ID (asset.getA_Asset_ID());
+		setLot(asset.getLot());
+		setSerNo(asset.getSerNo());
 		setVersionNo(asset.getVersionNo());
 		//
 		setMovementDate (new Timestamp (System.currentTimeMillis ()));

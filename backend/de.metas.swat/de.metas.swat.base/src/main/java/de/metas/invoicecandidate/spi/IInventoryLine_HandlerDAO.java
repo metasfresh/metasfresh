@@ -1,10 +1,10 @@
 package de.metas.invoicecandidate.spi;
 
-import de.metas.invoicecandidate.model.I_M_InventoryLine;
-import de.metas.util.ISingletonService;
-
 import java.util.Iterator;
 import java.util.Properties;
+
+import de.metas.invoicecandidate.model.I_M_InventoryLine;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L
@@ -33,6 +33,11 @@ public interface IInventoryLine_HandlerDAO extends ISingletonService
 
 	/**
 	 * Retrieve all the inventory lines that belong to completed material disposal (internal use inventory) documents. Only the lines which do not yet have invoice candidates will be retrieved
+	 * 
+	 * @param ctx
+	 * @param limit
+	 * @param trxName
+	 * @return
 	 */
 	Iterator<I_M_InventoryLine> retrieveAllLinesWithoutIC(Properties ctx, int limit, String trxName);
 

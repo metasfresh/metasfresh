@@ -1,19 +1,19 @@
 package de.metas.migration.async;
 
+import java.util.Properties;
+
+import org.compiere.util.Env;
+import org.junit.Test;
+
 import ch.qos.logback.classic.Level;
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
 import de.metas.async.processor.impl.QueueProcessorsExecutor;
 import de.metas.logging.LogManager;
 import de.metas.migration.async.MockedExecuteSQLWorkpackageProcessor.ExecuteSQLWorkpackageExpectation;
 import de.metas.util.Services;
-import org.compiere.util.Env;
-import org.junit.Test;
-
-import java.util.Properties;
 
 /*
  * #%L
@@ -53,7 +53,7 @@ public class ExecuteSQLWorkpackageProcessor_IntegrationTest extends QueueProcess
 		helper.assignPackageProcessor(processorDef, MockedExecuteSQLWorkpackageProcessor.class);
 
 		processorsExecutor = new QueueProcessorsExecutor();
-		processorsExecutor.addQueueProcessor(QueueProcessorDescriptorRepository.mapToQueueProcessor(processorDef));
+		processorsExecutor.addQueueProcessor(processorDef);
 	}
 
 	@Override
@@ -68,7 +68,9 @@ public class ExecuteSQLWorkpackageProcessor_IntegrationTest extends QueueProcess
 		final Properties ctx = Env.getCtx();
 		return Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, MockedExecuteSQLWorkpackageProcessor.class)
-				.newWorkPackage()
+				.newBlock()
+				.setContext(ctx)
+				.newWorkpackage()
 				//
 				// Workpackage Parameters
 				.parameters()
@@ -76,7 +78,7 @@ public class ExecuteSQLWorkpackageProcessor_IntegrationTest extends QueueProcess
 				.end()
 				//
 				// Build & enqueue
-				.buildAndEnqueue();
+				.build();
 	}
 
 	@Test

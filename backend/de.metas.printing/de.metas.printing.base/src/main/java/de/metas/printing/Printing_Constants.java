@@ -66,7 +66,7 @@ public final class Printing_Constants
 
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.printing.UserNotifications")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	/**

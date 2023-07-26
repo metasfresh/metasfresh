@@ -22,22 +22,22 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Helper class used for grouping given TUs and build LUs from them.
@@ -112,9 +112,7 @@ public class LULoader
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(tuHU.getM_Locator_ID());
 		final String huStatus = tuHU.getHUStatus();
 		final I_M_HU_PI_Version tuPIVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(tuHU);
-		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.ofHU(tuHU);
-
-		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion, clearanceStatusInfo);
+		final LULoaderInstance luInstance = new LULoaderInstance(huContext, bpartnerId, bpartnerLocationId, locatorId, huStatus, tuPIVersion);
 
 		luInstances.add(luInstance);
 		return luInstance;

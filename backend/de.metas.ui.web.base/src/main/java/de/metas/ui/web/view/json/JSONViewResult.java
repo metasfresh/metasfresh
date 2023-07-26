@@ -22,6 +22,9 @@
 
 package de.metas.ui.web.view.json;
 
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -29,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
@@ -40,23 +44,18 @@ import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONViewResult
 {
 	public static JSONViewResult of(
-			final ViewResult viewResult,
-			final IViewRowOverrides rowOverrides,
-			final JSONOptions jsonOpts,
+			final ViewResult viewResult, 
+			IViewRowOverrides rowOverrides, 
+			final JSONOptions jsonOpts, 
 			@NonNull final ViewRowCommentsSummary viewRowCommentsSummary)
 	{
-		final List<? extends JSONViewRowBase> jsonRows;
+		List<? extends JSONViewRowBase> jsonRows;
 		if (viewResult.isPageLoaded())
 		{
 			final List<IViewRow> rows = viewResult.getPage();
@@ -97,9 +96,7 @@ public final class JSONViewResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String parentViewId;
 
-	/**
-	 * View description (e.g. Manufacturing order 12345). See https://github.com/metasfresh/metasfresh-webui-api/issues/433
-	 */
+	/** View description (e.g. Manufacturing order 12345). See https://github.com/metasfresh/metasfresh-webui-api/issues/433 */
 	@JsonProperty("description")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String description;
@@ -156,15 +153,7 @@ public final class JSONViewResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer queryLimit;
 
-	@JsonProperty("emptyResultText")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String emptyResultText;
-
-	@JsonProperty("emptyResultHint")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String emptyResultHint;
-
-	private JSONViewResult(@NonNull final ViewResult viewResult, @Nullable final List<? extends JSONViewRowBase> rows, @NonNull final JSONOptions jsonOpts)
+	private JSONViewResult(final ViewResult viewResult, final List<? extends JSONViewRowBase> rows, final JSONOptions jsonOpts)
 	{
 		//
 		// View informations
@@ -215,46 +204,35 @@ public final class JSONViewResult
 		// Query limit informations
 		queryLimit = viewResult.getQueryLimit() > 0 ? viewResult.getQueryLimit() : null;
 		queryLimitHit = viewResult.isQueryLimitHit() ? Boolean.TRUE : null;
-
-		if(viewResult.getEmptyReason() != null)
-		{
-			this.emptyResultText = StringUtils.trimBlankToNull(viewResult.getEmptyReason().getText().translate(jsonOpts.getAdLanguage()));
-			this.emptyResultHint = StringUtils.trimBlankToNull(viewResult.getEmptyReason().getHint().translate(jsonOpts.getAdLanguage()));
-		}
-		else
-		{
-			this.emptyResultText = null;
-			this.emptyResultHint = null;
-		}
 	}
 
 	@JsonCreator
 	private JSONViewResult( //
-							@JsonProperty("windowId") final WindowId windowId,
-							@JsonProperty("viewId") final String viewId,
-							@JsonProperty("profileId") final ViewProfileId profileId,
-							//
-							@JsonProperty("parentWindowId") final WindowId parentWindowId,
-							@JsonProperty("parentViewId") final String parentViewId,
-							//
-							@JsonProperty("description") final String description,
-							@JsonProperty("headerProperties") final JSONViewHeaderProperties headerProperties,
-							//
-							@JsonProperty("size") final Long size,
-							@JsonProperty("staticFilters") final List<JSONStickyDocumentFilter> staticFilters,
-							@JsonProperty("filters") final List<JSONDocumentFilter> filters,
-							@JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy,
-							//
-							@JsonProperty("result") final List<JSONViewRowBase> result,
-							@JsonProperty("columnsByFieldName") final Map<String, JSONViewResultColumn> columnsByFieldName,
-							@JsonProperty("firstRow") final Integer firstRow,
-							@JsonProperty("pageLength") final Integer pageLength,
-							//
-							@JsonProperty("queryLimit") final Integer queryLimit,
-							@JsonProperty("queryLimitHit") final Boolean queryLimitHit,
-							@JsonProperty("emptyResultText") final String emptyResultText,
-							@JsonProperty("emptyResultHint") final String emptyResultHint)
+			@JsonProperty("windowId") final WindowId windowId,
+			@JsonProperty("viewId") final String viewId,
+			@JsonProperty("profileId") final ViewProfileId profileId,
+			//
+			@JsonProperty("parentWindowId") final WindowId parentWindowId,
+			@JsonProperty("parentViewId") final String parentViewId,
+			//
+			@JsonProperty("description") final String description,
+			@JsonProperty("headerProperties") final JSONViewHeaderProperties headerProperties,
+			//
+			@JsonProperty("size") final Long size,
+			@JsonProperty("staticFilters") final List<JSONStickyDocumentFilter> staticFilters,
+			@JsonProperty("filters") final List<JSONDocumentFilter> filters,
+			@JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy,
+			//
+			@JsonProperty("result") final List<JSONViewRowBase> result,
+			@JsonProperty("columnsByFieldName") final Map<String, JSONViewResultColumn> columnsByFieldName,
+			@JsonProperty("firstRow") final Integer firstRow,
+			@JsonProperty("pageLength") final Integer pageLength,
+			//
+			@JsonProperty("queryLimit") final Integer queryLimit,
+			@JsonProperty("queryLimitHit") final Boolean queryLimitHit)
 	{
+		super();
+
 		//
 		// View informations
 		this.viewId = viewId;
@@ -284,8 +262,6 @@ public final class JSONViewResult
 		// Query limit hit
 		this.queryLimit = queryLimit;
 		this.queryLimitHit = queryLimitHit;
-		this.emptyResultText = emptyResultText;
-		this.emptyResultHint = emptyResultHint;
 	}
 
 	@Override

@@ -69,6 +69,6 @@ public class WEBUI_Picking_ForcePickToComputedHU extends WEBUI_Picking_PickQtyTo
 
 		forcePick(qtyCUToProcess, packToHuId);
 
-		printPickingLabelIfAutoPrint(packToHuId);
+		printPickingLabel(packToHuId);
 	}
 }

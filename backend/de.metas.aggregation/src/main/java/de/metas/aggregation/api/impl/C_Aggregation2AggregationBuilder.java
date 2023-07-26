@@ -1,6 +1,20 @@
 package de.metas.aggregation.api.impl;
 
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Column;
+
 import com.google.common.collect.ImmutableMap;
+
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.AggregationAttribute;
 import de.metas.aggregation.api.AggregationId;
@@ -15,20 +29,6 @@ import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.ad.expression.api.IExpressionFactory;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.MinimalColumnInfo;
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Creates {@link Aggregation} from {@link I_C_Aggregation} structure.
@@ -40,7 +40,6 @@ import java.util.Set;
 {
 	// services
 	private final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final AggregationDAO aggregationDAO;
 
 	//
@@ -70,20 +69,22 @@ import java.util.Set;
 		return this;
 	}
 
-	private I_C_Aggregation getRootAggregation()
+	private final I_C_Aggregation getRootAggregation()
 	{
 		Check.assumeNotNull(_rootAggregation, "rootAggregation not null");
 		return _rootAggregation;
 	}
 
-	private String getTableName()
+	private final String getTableName()
 	{
 		Check.assumeNotEmpty(_tableName, "_tableName not empty");
 		return _tableName;
 	}
 
-	private Aggregation createAggregation(@NonNull final I_C_Aggregation aggregationDef)
+	private final Aggregation createAggregation(final I_C_Aggregation aggregationDef)
 	{
+		Check.assumeNotNull(aggregationDef, "aggregationDef not null");
+
 		// Avoid cycles (i.e. self including an aggregation, direct or indirect)
 		if (!checkEligible(aggregationDef))
 		{
@@ -110,7 +111,7 @@ import java.util.Set;
 				.build();
 	}
 
-	private LinkedHashMap<AggregationItemId, AggregationItem> createAggregationItems(final List<I_C_AggregationItem> aggregationItemsDef)
+	private final LinkedHashMap<AggregationItemId, AggregationItem> createAggregationItems(final List<I_C_AggregationItem> aggregationItemsDef)
 	{
 		//
 		// Create aggregation items
@@ -152,14 +153,11 @@ import java.util.Set;
 		return aggregationItemsAll;
 	}
 
-	private AggregationItem createAggregationItem_TypeColumn(final I_C_AggregationItem aggregationItemDef)
+	private final AggregationItem createAggregationItem_TypeColumn(final I_C_AggregationItem aggregationItemDef)
 	{
 		// Skip items with inactive records (because those are not present in model, for sure)
-		final AdColumnId adColumnId = AdColumnId.ofRepoIdOrNull(aggregationItemDef.getAD_Column_ID());
-		final MinimalColumnInfo column = adColumnId != null
-				? adTableDAO.getMinimalColumnInfo(adColumnId)
-				: null;
-		if (column == null)
+		final I_AD_Column column = aggregationItemDef.getAD_Column();
+		if (column == null || column.getAD_Column_ID() <= 0)
 		{
 			throw new AdempiereException("@NotFound@ @AD_Column_ID@"
 					+ "\n @C_Aggregation_ID@: " + aggregationItemDef.getC_Aggregation().getName()
@@ -173,14 +171,14 @@ import java.util.Set;
 		//
 		// Create aggregation item
 		final String columnName = column.getColumnName();
-		final int displayType = column.getDisplayType();
+		final int displayType = column.getAD_Reference_ID();
 		final ILogicExpression includeLogic = getLogicExpression(aggregationItemDef);
 		return AggregationItem.builder()
 				.id(AggregationItemId.ofRepoId(aggregationItemDef.getC_AggregationItem_ID()))
 				.type(Type.ModelColumn)
 				.columnName(columnName)
 				.displayType(displayType)
-				.attribute(null)
+				.attribute((AggregationAttribute)null)
 				.includeLogic(includeLogic)
 				.build();
 	}
@@ -273,10 +271,11 @@ import java.util.Set;
 
 	/**
 	 *
+	 * @param aggregationDef
 	 * @return true if aggregation is eligible and shall be considered
 	 * @throws AdempiereException if aggregation is not eligible and this is not acceptable
 	 */
-	private boolean checkEligible(final I_C_Aggregation aggregationDef)
+	private final boolean checkEligible(final I_C_Aggregation aggregationDef)
 	{
 		if (aggregationDef == null)
 		{

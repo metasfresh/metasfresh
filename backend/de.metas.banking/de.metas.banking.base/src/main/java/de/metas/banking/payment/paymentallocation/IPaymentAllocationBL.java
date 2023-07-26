@@ -29,7 +29,7 @@ public interface IPaymentAllocationBL extends ISingletonService
 {
 	/**
 	 * @return true if compensating customer invoices with purchase invoices shall be allowed
-	 * task 09451
+	 * @task 09451
 	 */
 	 boolean isPurchaseSalesInvoiceCompensationAllowed();
 }

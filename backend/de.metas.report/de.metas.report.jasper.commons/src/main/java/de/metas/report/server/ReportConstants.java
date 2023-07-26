@@ -56,6 +56,4 @@ public final class ReportConstants
 	public static final String REPORT_PARAM_BARCODE_URL = "barcodeURL";
 
 	public static final String REPORT_PARAM_REPORT_FORMAT = "ReportFormat";
-
-	public static final String REPORT_PARAM_JSON_DATA = "$JSON_DATA";
 }

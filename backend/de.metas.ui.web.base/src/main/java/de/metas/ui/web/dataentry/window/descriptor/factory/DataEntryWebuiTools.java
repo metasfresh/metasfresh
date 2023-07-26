@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
-import de.metas.CreatedUpdatedInfo;
+import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -24,8 +24,6 @@ import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -64,7 +62,8 @@ public class DataEntryWebuiTools
 	public DataEntryFieldId computeDataEntryFieldId(@NonNull final IDocumentFieldView field)
 	{
 		final String fieldName = field.getFieldName();
-		return DataEntryFieldId.ofRepoId(Integer.parseInt(fieldName));
+		final DataEntryFieldId dataEntryFieldId = DataEntryFieldId.ofRepoId(Integer.parseInt(fieldName));
+		return dataEntryFieldId;
 	}
 
 	public String computeFieldName(@NonNull final DataEntryFieldId dataEntryFieldId)
@@ -73,7 +72,6 @@ public class DataEntryWebuiTools
 	}
 
 	/** Extracts/converts a data entry value for the webui. */
-	@Nullable
 	public Object extractDataEntryValueForField(
 			@NonNull final DataEntryRecord dataEntryRecord,
 			@NonNull final DocumentFieldDescriptor fieldDescriptor)
@@ -103,14 +101,14 @@ public class DataEntryWebuiTools
 			@NonNull final DataEntryRecord dataEntryRecord,
 			@NonNull final DataEntryFieldId dataEntryFieldId)
 	{
-		final Optional<CreatedUpdatedInfo> createdUpdatedInfo = dataEntryRecord.getCreatedUpdatedInfo(dataEntryFieldId);
+		final Optional<DataEntryCreatedUpdatedInfo> createdUpdatedInfo = dataEntryRecord.getCreatedUpdatedInfo(dataEntryFieldId);
 
 		return createdUpdatedInfo
 				.map(this::extractCreatedUpdatedInfo)
 				.orElse(TranslatableStrings.empty());
 	}
 
-	private ITranslatableString extractCreatedUpdatedInfo(@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
+	private ITranslatableString extractCreatedUpdatedInfo(@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo)
 	{
 		final User creator = userRepository.getByIdInTrx(createdUpdatedInfo.getCreatedBy());
 		final User updater = userRepository.getByIdInTrx(createdUpdatedInfo.getUpdatedBy());
@@ -128,7 +126,6 @@ public class DataEntryWebuiTools
 		return createdUpdatedInfoString;
 	}
 
-	@Nullable
 	public Object extractFieldValueForDataEntry(@NonNull final IDocumentFieldView fieldView)
 	{
 		final Object value = fieldView.getValue();

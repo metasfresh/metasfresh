@@ -1,6 +1,5 @@
 package org.compiere.acct;
 
-import de.metas.order.OrderId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 
@@ -31,17 +30,5 @@ public class DocLine_Order extends DocLine<Doc_Order>
 	public DocLine_Order(final I_C_OrderLine orderLine, final Doc_Order doc)
 	{
 		super(InterfaceWrapperHelper.getPO(orderLine), doc);
-	}
-
-	private I_C_OrderLine getOrderLine()
-	{
-		return getModel(I_C_OrderLine.class);
-	}
-
-	@Override
-	protected OrderId getSalesOrderId()
-	{
-		final I_C_OrderLine orderLine = getOrderLine();
-		return OrderId.ofRepoIdOrNull(orderLine.getC_OrderSO_ID());
 	}
 }

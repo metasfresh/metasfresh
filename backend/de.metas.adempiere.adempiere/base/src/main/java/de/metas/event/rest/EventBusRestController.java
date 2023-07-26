@@ -74,7 +74,7 @@ public class EventBusRestController
 			final ArrayList<IEventBus> eventBusInstances = new ArrayList<>();
 
 			{
-				final IEventBus remoteEventBus = eventBusFactory.getEventBusIfExists(Topic.distributed(topicName));
+				final IEventBus remoteEventBus = eventBusFactory.getEventBusIfExists(Topic.remote(topicName));
 				if (remoteEventBus != null)
 				{
 					eventBusInstances.add(remoteEventBus);
@@ -107,11 +107,10 @@ public class EventBusRestController
 	private static JSONEventBusStats toJSONEventBusStats(final IEventBus eventBus)
 	{
 		final EventBusStats stats = eventBus.getStats();
-		final Topic eventBusTopic = eventBus.getTopic();
 
 		return JSONEventBusStats.builder()
-				.topicName(eventBusTopic.getName())
-				.type(eventBusTopic.getType())
+				.topicName(eventBus.getTopicName())
+				.type(eventBus.getType())
 				.async(eventBus.isAsync())
 				.destroyed(eventBus.isDestroyed())
 				//

@@ -40,8 +40,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.report.ReportResultData;
+import de.metas.reflist.ReferenceId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.DocumentApprovalConstraint;
 import de.metas.user.UserId;
@@ -64,13 +63,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
+import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
@@ -320,7 +319,7 @@ public class WFActivity
 
 	public TableRecordReference getDocumentRef() { return documentRef; }
 
-	public Object getDocumentColumnValueByColumnId(final AdColumnId adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
+	public Object getDocumentColumnValueByColumnId(final int adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
 
 	public Object getDocumentColumnValueByColumnName(final String columnName) { return context.getDocumentColumnValueByColumnName(getDocumentRef(), columnName); }
 
@@ -336,8 +335,8 @@ public class WFActivity
 			return null;
 		}
 
-		final AdColumnId AD_Column_ID = AdColumnId.ofRepoIdOrNull(node.getDocumentColumnId());
-		if (AD_Column_ID == null)
+		final int AD_Column_ID = node.getDocumentColumnId();
+		if (AD_Column_ID <= 0)
 		{
 			return null;
 		}
@@ -795,13 +794,13 @@ public class WFActivity
 			throw new IllegalStateException("Not a Report AD_Process_ID=" + pi);
 		}
 
-		final ReportResultData reportData = pi.getResult().getReportData();
-		if (reportData == null)
+		// Report
+		final ReportEngine re = ReportEngine.get(Env.getCtx(), pi);
+		if (re == null)
 		{
 			throw new AdempiereException("Cannot create Report AD_Process_ID=" + wfNode.getProcessId());
 		}
-
-		final File report = reportData.writeToTemporaryFile("report_");
+		final File report = re.getPDF();
 		// Notice
 		final int AD_Message_ID = 753;        // HARDCODED WorkflowResult
 		final MNote note = new MNote(Env.getCtx(), AD_Message_ID, getUserId().getRepoId(), ITrx.TRXNAME_ThreadInherited);

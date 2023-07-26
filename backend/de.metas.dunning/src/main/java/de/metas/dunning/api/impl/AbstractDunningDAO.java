@@ -22,13 +22,23 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_C_BPartner;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.dunning.DunningDocId;
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
@@ -43,18 +53,6 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_C_BPartner;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public abstract class AbstractDunningDAO implements IDunningDAO
 {
@@ -228,11 +226,4 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	protected abstract I_C_Dunning_Candidate retrieveDunningCandidate(IDunningContext context, IDunningCandidateQuery query);
 
 	protected abstract Iterator<I_C_Dunning_Candidate> retrieveDunningCandidatesIterator(IDunningContext context, IDunningCandidateQuery query);
-
-
-	@Override
-	public I_C_DunningDoc getByIdInTrx(@NonNull final DunningDocId dunningDocId)
-	{
-		return load(dunningDocId, I_C_DunningDoc.class);
-	}
 }

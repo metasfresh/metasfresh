@@ -25,7 +25,6 @@ package de.metas.adempiere.docline.sort.api.impl;
 
 import java.util.Properties;
 
-import de.metas.document.DocBaseType;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -95,11 +94,11 @@ public abstract class AbstractDocLineSortItemFinderTest extends AbstractTestSupp
 		// C_DocTypes
 		{
 			// Sales
-			docTypeSOO = docType(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
-			docTypeMMS = docType(DocBaseType.MaterialDelivery, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
+			docTypeSOO = docType(X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
+			docTypeMMS = docType(X_C_DocType.DOCBASETYPE_MaterialDelivery, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
 			// Purchase
-			docTypePOO = docType(DocBaseType.PurchaseOrder, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
-			docTypeMMR = docType(DocBaseType.MaterialReceipt, X_C_DocType.DOCSUBTYPE_Produktanlieferung);
+			docTypePOO = docType(X_C_DocType.DOCBASETYPE_PurchaseOrder, X_C_DocType.DOCSUBTYPE_Produktauslieferung);
+			docTypeMMR = docType(X_C_DocType.DOCBASETYPE_MaterialReceipt, X_C_DocType.DOCSUBTYPE_Produktanlieferung);
 		}
 
 		bpartner1 = bpartner("G000");

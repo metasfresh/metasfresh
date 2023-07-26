@@ -1,5 +1,15 @@
 package de.metas.impexp.product;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product_Category;
+
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -13,15 +23,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product_Category;
-
-import java.math.BigDecimal;
-
-import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -86,11 +87,14 @@ import static org.assertj.core.api.Assertions.*;
 	}
 
 
-	public void assertIFAProductImported(@NonNull final I_I_Pharma_Product ifaProduct) {
+	public void assertIFAProductImported(@NonNull final I_I_Pharma_Product ifaProduct)
+	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
 		assertThat(product).isNotNull();
-		assertThat(product.getValue()).isNotNull().isEqualTo(ifaProduct.getA00PZN());
-		assertThat(product.getName()).isNotNull().isEqualTo(ifaProduct.getA00PNAM());
+		assertThat(product.getValue()).isNotNull();
+		assertThat(product.getValue()).isEqualTo(ifaProduct.getA00PZN());
+		assertThat(product.getName()).isNotNull();
+		assertThat(product.getName()).isEqualTo(ifaProduct.getA00PNAM());
 		assertThat(product.getDescription()).isEqualTo(ifaProduct.getA00PBEZ());
 		assertThat(product.getUPC()).isEqualTo(ifaProduct.getA00GTIN());
 		assertThat(product.getPackageSize()).isEqualTo(ifaProduct.getA00PGMENG());
@@ -104,12 +108,12 @@ import static org.assertj.core.api.Assertions.*;
 
 	@Builder
 	@Value
-	public static class IFAFlags
+	public class IFAFlags
 	{
-		boolean isColdChain;
-		boolean isPrescription;
-		boolean isNarcotic;
-		boolean isTFG;
+		final boolean isColdChain;
+		final boolean isPrescription;
+		final boolean isNarcotic;
+		final boolean isTFG;
 	}
 
 	public void assertIFAProductFlags(@NonNull final I_I_Pharma_Product ifaProduct, final @NonNull IFAFlags flags)
@@ -123,7 +127,7 @@ import static org.assertj.core.api.Assertions.*;
 	}
 
 
-	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull final BigDecimal price)
+	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull BigDecimal price)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
 		assertThat(product).isNotNull();

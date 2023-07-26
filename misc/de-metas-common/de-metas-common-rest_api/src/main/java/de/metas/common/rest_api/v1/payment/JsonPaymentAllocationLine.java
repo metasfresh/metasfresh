@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.rest_api.v1.SwaggerDocConstants;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,27 +44,28 @@ import java.math.BigDecimal;
 public class JsonPaymentAllocationLine
 {
 	@NonNull
-	@Schema(required = true,
-			description= SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
+	@ApiModelProperty(required = true,
+			dataType = "java.lang.String",
+			value = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
 	String invoiceIdentifier;
 
-	@Schema
+	@ApiModelProperty(position = 10)
 	@Nullable
 	String docBaseType;
 
-	@Schema
+	@ApiModelProperty(position = 20)
 	@Nullable
 	String docSubType;
 
-	@Schema
+	@ApiModelProperty(position = 30)
 	@Nullable
 	BigDecimal amount;
 
-	@Schema
+	@ApiModelProperty(position = 40)
 	@Nullable
 	BigDecimal discountAmt;
 
-	@Schema
+	@ApiModelProperty(position = 50)
 	@Nullable
 	BigDecimal writeOffAmt;
 

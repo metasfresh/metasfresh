@@ -55,7 +55,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
-	String getBPartnerName(@Nullable final BPartnerId bpartnerId);
+	String getBPartnerName(final BPartnerId bpartnerId);
 
 	String getBPartnerValueAndName(final BPartnerId bpartnerId);
 
@@ -170,8 +170,6 @@ public interface IBPartnerBL extends ISingletonService
 
 	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
 
-	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
-
 	@Value
 	@Builder
 	class RetrieveContactRequest
@@ -239,21 +237,4 @@ public interface IBPartnerBL extends ISingletonService
 	boolean isSalesRep(BPartnerId bpartnerId);
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
-
-	void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation);
-
-	void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation);
-
-	/**
-	 * extracted logic from legacy code
-	 * @param bp
-	 * @return
-	 */
-	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
-
-	@NonNull
-	Optional<String> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
-
-	@NonNull
-	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
 }

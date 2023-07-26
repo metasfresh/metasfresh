@@ -29,14 +29,11 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -84,19 +81,10 @@ public class MD_Candidate_StepDefTable
 		@NonNull
 		Instant time;
 
-		@Nullable
-		String attributeSetInstanceId;
-
-		boolean simulated;
-		
-		@Nullable 
-		WarehouseId warehouseId;
-
 		public CandidatesQuery createQuery()
 		{
 			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 					.productId(productId.getRepoId())
-					.storageAttributesKey(AttributesKey.ALL) // don't restrict on ASI for now; we might use the row's attributeSetInstanceId in this query at a later time
 					.timeRangeEnd(DateAndSeqNo.builder()
 										  .date(time)
 										  .operator(DateAndSeqNo.Operator.INCLUSIVE)
@@ -107,7 +95,6 @@ public class MD_Candidate_StepDefTable
 					.type(type)
 					.businessCase(businessCase)
 					.materialDescriptorQuery(materialDescriptorQuery)
-					.simulatedQueryQualifier(this.simulated ? SimulatedQueryQualifier.ONLY_SIMULATED : SimulatedQueryQualifier.EXCLUDE_SIMULATED)
 					.build();
 		}
 	}

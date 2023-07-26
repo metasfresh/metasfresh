@@ -10,7 +10,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,    *
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.  					  *
  * 																			  *
- * @sponsor www.metas.de                                                      *
+ * @sponsor www.metas.de													  *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -24,28 +24,41 @@ package org.compiere.apps;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.security.permissions.UserPreferenceLevelConstraint;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Vector;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JPopupMenu;
+import javax.swing.table.DefaultTableModel;
+
 import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.compiere.grid.VTable;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Table;
@@ -63,134 +76,109 @@ import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Vector;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.security.permissions.UserPreferenceLevelConstraint;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 
 /**
  * Change History for field
- *
  * @author Heng Sin Low
  */
 public class FieldRecordInfo extends CDialog
 {
 	private static final long serialVersionUID = -2860082302140462690L;
-
+	
 	public static final String CHANGE_LOG_COMMAND = "ChangeLog";
-	/**
-	 * The Menu Icon
-	 */
+	/** The Menu Icon               */
 	private static Icon s_icon = new ImageIcon(org.compiere.Adempiere.class.getResource("images/ChangeLog16.png"));
-
+	
 	private AdTableId AD_Table_ID;
 	private int AD_Column_ID;
 	private int Record_ID;
 
 	/**
-	 * Record Info
-	 *
-	 * @param owner        owner
-	 * @param title        title
-	 * @param AD_Table_ID
-	 * @param AD_Column_ID
-	 * @param Record_ID
+	 *	Record Info
+	 *	@param owner owner
+	 *	@param title title
+	 *	@param AD_Table_ID
+	 *  @param AD_Column_ID
+	 *  @param Record_ID
 	 */
-	public FieldRecordInfo(Frame owner, String title, int AD_Table_ID, int AD_Column_ID, int Record_ID)
+	public FieldRecordInfo (Frame owner, String title, int AD_Table_ID, int AD_Column_ID, int Record_ID)
 	{
-		super(owner, title, true);
-
+		super (owner, title, true);
+		
 		this.AD_Table_ID = AdTableId.ofRepoIdOrNull(AD_Table_ID);
 		this.AD_Column_ID = AD_Column_ID;
 		this.Record_ID = Record_ID;
-
+		
 		try
-		{
-			jbInit(dynInit(title));
+		{			
+			jbInit ( dynInit(title) );
 		}
 		catch (Exception e)
 		{
 			log.error("", e);
 		}
-		AEnv.positionCenterWindow(owner, this);
+		AEnv.positionCenterWindow (owner, this);
 		AEnv.showCenterScreen(this);
-	}    //	FieldRecordInfo
+	}	//	FieldRecordInfo
 
-	private CPanel mainPanel = new CPanel(new BorderLayout(0, 0));
-	private CScrollPane scrollPane = new CScrollPane();
-	private VTable table = new VTable();
+
+	private CPanel	mainPanel	= new CPanel (new BorderLayout(0,0));
+	private CScrollPane	scrollPane = new CScrollPane ();
+	private VTable table = new VTable ();
 	private ConfirmPanel confirmPanel = ConfirmPanel.builder()
 			.withCancelButton(false)
 			.build();
 
-	/**
-	 * Logger
-	 */
-	protected Logger log = LogManager.getLogger(getClass());
-	/**
-	 * The Data
-	 */
-	private Vector<Vector<String>> m_data = new Vector<>();
+	/**	Logger			*/
+	protected Logger		log = LogManager.getLogger(getClass());
+	/** The Data		*/
+	private Vector<Vector<String>>	m_data = new Vector<>();
+	
+	/** Date Time Format		*/
+	private SimpleDateFormat	m_dateTimeFormat = DisplayType.getDateFormat
+		(DisplayType.DateTime, Env.getLanguage(Env.getCtx()));
+	/** Date Format			*/
+	private SimpleDateFormat	m_dateFormat = DisplayType.getDateFormat
+		(DisplayType.DateTime, Env.getLanguage(Env.getCtx()));
+	/** Number Format		*/
+	private DecimalFormat		m_numberFormat = DisplayType.getNumberFormat
+		(DisplayType.Number, Env.getLanguage(Env.getCtx()));
+	/** Amount Format		*/
+	private DecimalFormat		m_amtFormat = DisplayType.getNumberFormat
+		(DisplayType.Amount, Env.getLanguage(Env.getCtx()));
+	/** Number Format		*/
+	private DecimalFormat		m_intFormat = DisplayType.getNumberFormat
+		(DisplayType.Integer, Env.getLanguage(Env.getCtx()));
 
 	/**
-	 * Date Time Format
+	 * 	Static Layout
+	 *	@throws Exception
 	 */
-	private SimpleDateFormat m_dateTimeFormat = DisplayType.getDateFormat
-			(DisplayType.DateTime, Env.getLanguage(Env.getCtx()));
-	/**
-	 * Date Format
-	 */
-	private SimpleDateFormat m_dateFormat = DisplayType.getDateFormat
-			(DisplayType.DateTime, Env.getLanguage(Env.getCtx()));
-	/**
-	 * Number Format
-	 */
-	private DecimalFormat m_numberFormat = DisplayType.getNumberFormat
-			(DisplayType.Number, Env.getLanguage(Env.getCtx()));
-	/**
-	 * Amount Format
-	 */
-	private DecimalFormat m_amtFormat = DisplayType.getNumberFormat
-			(DisplayType.Amount, Env.getLanguage(Env.getCtx()));
-	/**
-	 * Number Format
-	 */
-	private DecimalFormat m_intFormat = DisplayType.getNumberFormat
-			(DisplayType.Integer, Env.getLanguage(Env.getCtx()));
-
-	/**
-	 * Static Layout
-	 *
-	 * @throws Exception
-	 */
-	private void jbInit(boolean showTable) throws Exception
+	private void jbInit (boolean showTable) throws Exception
 	{
 		getContentPane().add(mainPanel);
 		//
 		if (showTable)
 		{
-			mainPanel.add(scrollPane, BorderLayout.CENTER);
+			mainPanel.add (scrollPane, BorderLayout.CENTER);
 			scrollPane.getViewport().add(table);
-			scrollPane.setPreferredSize(new Dimension(500, 100));
+			scrollPane.setPreferredSize(new Dimension(500,100));
 		}
 		//
-		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
+		mainPanel.add (confirmPanel, BorderLayout.SOUTH);
 		confirmPanel.setActionListener(this);
-	}    //	jbInit
-
+	}	//	jbInit
+	
+	
 	/**
-	 * Dynamic Init
-	 *
-	 * @param title title
-	 * @return true if table initialized
+	 * 	Dynamic Init
+	 *	@param title title
+	 *	@return true if table initialized
 	 */
 	private boolean dynInit(String title)
 	{
@@ -207,30 +195,30 @@ public class FieldRecordInfo extends CDialog
 		{
 			return false;
 		}
-
+		
 		if (Record_ID == 0)
 		{
 			return false;
 		}
-
+		
 		//	Data
 		String sql = "SELECT AD_Column_ID, Updated, UpdatedBy, OldValue, NewValue "
-				+ "FROM AD_ChangeLog "
-				+ "WHERE AD_Table_ID=? AND Record_ID=? AND AD_Column_ID=?"
-				+ "ORDER BY Updated DESC";
+			+ "FROM AD_ChangeLog "
+			+ "WHERE AD_Table_ID=? AND Record_ID=? AND AD_Column_ID=?"
+			+ "ORDER BY Updated DESC";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AdTableId.toRepoId(AD_Table_ID));
-			pstmt.setInt(2, Record_ID);
-			pstmt.setInt(3, AD_Column_ID);
-			rs = pstmt.executeQuery();
-			while (rs.next())
+			pstmt = DB.prepareStatement (sql, null);
+			pstmt.setInt (1, AdTableId.toRepoId(AD_Table_ID));
+			pstmt.setInt (2, Record_ID);
+			pstmt.setInt (3, AD_Column_ID);
+			rs = pstmt.executeQuery ();
+			while (rs.next ())
 			{
-				addLine(rs.getInt(1), rs.getTimestamp(2), rs.getInt(3),
-						rs.getString(4), rs.getString(5));
+				addLine (rs.getInt(1), rs.getTimestamp(2), rs.getInt(3),
+					rs.getString(4), rs.getString(5));
 			}
 		}
 		catch (Exception e)
@@ -241,7 +229,7 @@ public class FieldRecordInfo extends CDialog
 		{
 			DB.close(rs, pstmt);
 		}
-
+		
 		//
 		Vector<String> columnNames = new Vector<>();
 		columnNames.add(Msg.translate(Env.getCtx(), "NewValue"));
@@ -252,23 +240,22 @@ public class FieldRecordInfo extends CDialog
 		table.setModel(model);
 		table.autoSize(false);
 		return true;
-	}    //	dynInit
-
+	}	//	dynInit
+	
 	/**
-	 * Add Line
-	 *
-	 * @param AD_Column_ID column
-	 * @param Updated      updated
-	 * @param UpdatedBy    user
-	 * @param OldValue     old
-	 * @param NewValue     new
+	 * 	Add Line
+	 *	@param AD_Column_ID column
+	 *	@param Updated updated
+	 *	@param UpdatedBy user
+	 *	@param OldValue old
+	 *	@param NewValue new
 	 */
-	private void addLine(int AD_Column_ID, Timestamp Updated, int UpdatedBy,
-						 String OldValue, String NewValue)
+	private void addLine (int AD_Column_ID, Timestamp Updated, int UpdatedBy,
+		String OldValue, String NewValue)
 	{
 		Vector<String> line = new Vector<>();
 		//	Column
-		MColumn column = MColumn.get(Env.getCtx(), AD_Column_ID);
+		MColumn column = MColumn.get (Env.getCtx(), AD_Column_ID);
 		//
 		if (OldValue != null && OldValue.equals(ISessionDAO.CHANGELOG_NullValue))
 		{
@@ -283,7 +270,7 @@ public class FieldRecordInfo extends CDialog
 		//
 		try
 		{
-			if (DisplayType.isText(column.getAD_Reference_ID()))
+			if (DisplayType.isText (column.getAD_Reference_ID ()))
 			{
 				;
 			}
@@ -305,71 +292,69 @@ public class FieldRecordInfo extends CDialog
 				if (OldValue != null)
 				{
 					showOldValue = m_amtFormat
-							.format(new BigDecimal(OldValue));
+						.format (new BigDecimal (OldValue));
 				}
 				if (NewValue != null)
 				{
 					showNewValue = m_amtFormat
-							.format(new BigDecimal(NewValue));
+						.format (new BigDecimal (NewValue));
 				}
 			}
 			else if (column.getAD_Reference_ID() == DisplayType.Integer)
 			{
 				if (OldValue != null)
 				{
-					showOldValue = m_intFormat.format(new Integer(OldValue));
+					showOldValue = m_intFormat.format (new Integer (OldValue));
 				}
 				if (NewValue != null)
 				{
-					showNewValue = m_intFormat.format(new Integer(NewValue));
+					showNewValue = m_intFormat.format (new Integer (NewValue));
 				}
 			}
-			else if (DisplayType.isNumeric(column.getAD_Reference_ID()))
+			else if (DisplayType.isNumeric (column.getAD_Reference_ID ()))
 			{
 				if (OldValue != null)
 				{
-					showOldValue = m_numberFormat.format(new BigDecimal(OldValue));
+					showOldValue = m_numberFormat.format (new BigDecimal (OldValue));
 				}
 				if (NewValue != null)
 				{
-					showNewValue = m_numberFormat.format(new BigDecimal(NewValue));
+					showNewValue = m_numberFormat.format (new BigDecimal (NewValue));
 				}
 			}
 			else if (column.getAD_Reference_ID() == DisplayType.Date)
 			{
 				if (OldValue != null)
 				{
-					showOldValue = m_dateFormat.format(Timestamp.valueOf(OldValue));
+					showOldValue = m_dateFormat.format (Timestamp.valueOf (OldValue));
 				}
 				if (NewValue != null)
 				{
-					showNewValue = m_dateFormat.format(Timestamp.valueOf(NewValue));
+					showNewValue = m_dateFormat.format (Timestamp.valueOf (NewValue));
 				}
 			}
 			else if (column.getAD_Reference_ID() == DisplayType.DateTime)
 			{
 				if (OldValue != null)
 				{
-					showOldValue = m_dateTimeFormat.format(Timestamp.valueOf(OldValue));
+					showOldValue = m_dateTimeFormat.format (Timestamp.valueOf (OldValue));
 				}
 				if (NewValue != null)
 				{
-					showNewValue = m_dateTimeFormat.format(Timestamp.valueOf(NewValue));
+					showNewValue = m_dateTimeFormat.format (Timestamp.valueOf (NewValue));
 				}
 			}
-			else if (DisplayType.isLookup(column.getAD_Reference_ID()))
+			else if (DisplayType.isLookup(column.getAD_Reference_ID ()))
 			{
-				MLookup lookup = MLookupFactory.newInstance().get(Env.getCtx(),
-						0,
-						AD_Column_ID, column.getAD_Reference_ID(),
-						column.get_TableName(),
-						column.getColumnName(),
-						ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID()),
-						column.isParent(),
-						(AdValRuleId)null);
+				MLookup lookup = MLookupFactory.get (Env.getCtx(), 0,
+					AD_Column_ID, column.getAD_Reference_ID(),
+					column.get_TableName(),
+					column.getColumnName(),
+					column.getAD_Reference_Value_ID(),
+					column.isParent(), IValidationRule.AD_Val_Rule_ID_Null);
 				if (OldValue != null)
 				{
-					Object key = OldValue;
+					Object key = OldValue; 
 					NamePair pp = lookup.get(key);
 					if (pp != null)
 					{
@@ -378,7 +363,7 @@ public class FieldRecordInfo extends CDialog
 				}
 				if (NewValue != null)
 				{
-					Object key = NewValue;
+					Object key = NewValue; 
 					NamePair pp = lookup.get(key);
 					if (pp != null)
 					{
@@ -386,7 +371,7 @@ public class FieldRecordInfo extends CDialog
 					}
 				}
 			}
-			else if (DisplayType.isLOB(column.getAD_Reference_ID()))
+			else if (DisplayType.isLOB (column.getAD_Reference_ID ()))
 			{
 				;
 			}
@@ -405,29 +390,28 @@ public class FieldRecordInfo extends CDialog
 		line.add(m_dateFormat.format(Updated));
 
 		m_data.add(line);
-	}    //	addLine
-
+	}	//	addLine
+	
+	
 	/**
-	 * ActionListener
-	 *
-	 * @param e event
+	 *	ActionListener
+	 *  @param e event
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		dispose();
-	}    //	actionPerformed
+	}	//	actionPerformed
 
 	/**
 	 * Add change log menu item
-	 *
 	 * @param l
 	 * @param popupMenu
 	 * @return CMenuItem
 	 */
-	public static CMenuItem addMenu(ActionListener l, JPopupMenu popupMenu)
+	public static CMenuItem addMenu (ActionListener l, JPopupMenu popupMenu)
 	{
-		CMenuItem mi = new CMenuItem(Msg.getElement(Env.getCtx(), "AD_ChangeLog_ID"), s_icon);
+		CMenuItem mi = new CMenuItem (Msg.getElement(Env.getCtx(), "AD_ChangeLog_ID"), s_icon);
 		mi.setActionCommand(CHANGE_LOG_COMMAND);
 		mi.addActionListener(l);
 		popupMenu.add(mi);
@@ -436,14 +420,12 @@ public class FieldRecordInfo extends CDialog
 
 	/**
 	 * Open field record info dialog
-	 *
 	 * @param mField
 	 */
-	public static void start(GridField mField)
-	{
+	public static void start(GridField mField) {
 		int WindowNo = mField.getWindowNo();
 		Frame frame = Env.getWindow(WindowNo);
-		new FieldRecordInfo(frame, mField.getColumnName(), mField.getGridTab().getAD_Table_ID(),
+		new FieldRecordInfo(frame, mField.getColumnName(), mField.getGridTab().getAD_Table_ID(), 
 				mField.getAD_Column_ID(), mField.getGridTab().getRecord_ID());
 	}
-}    // FieldRecordInfo
+}	// FieldRecordInfo

@@ -22,18 +22,10 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.PPOrderUtil;
-import de.metas.materialtracking.IHandlingUnitsInfo;
-import de.metas.materialtracking.model.I_PP_Order_BOMLine;
-import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
-import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
@@ -41,14 +33,20 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
 
-import java.math.BigDecimal;
+import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.materialtracking.IHandlingUnitsInfo;
+import de.metas.materialtracking.model.I_PP_Order_BOMLine;
+import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
+import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class PPOrderBOMLineProductionMaterial extends AbstractProductionMaterial implements IModelWrapper
 {
 	// services
 	private final IHandlingUnitsInfoFactory handlingUnitsInfoFactory = Services.get(IHandlingUnitsInfoFactory.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final I_PP_Order_BOMLine ppOrderBOMLine;
 	private final boolean isCoOrByProduct;
@@ -84,8 +82,7 @@ import java.math.BigDecimal;
 	@Override
 	public final I_M_Product getM_Product()
 	{
-		final ProductId productId = ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID());
-		return productBL.getById(productId);
+		return ppOrderBOMLine.getM_Product();
 	}
 
 	@Override

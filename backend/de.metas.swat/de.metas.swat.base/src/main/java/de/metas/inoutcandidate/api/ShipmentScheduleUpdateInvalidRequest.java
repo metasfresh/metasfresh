@@ -1,12 +1,12 @@
 package de.metas.inoutcandidate.api;
 
+import java.util.Properties;
+
 import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
-
-import java.util.Properties;
 
 /*
  * #%L

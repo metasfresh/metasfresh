@@ -1,22 +1,22 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 
 /*
  * #%L
@@ -67,7 +67,7 @@ public class ContractsDAOTest
 		term1.setStartDate(TimeUtil.getDay(2013, 5, 27)); // yesterday
 		save(term1);
 
-		final List<I_C_Flatrate_Term> termsWithMissingCandidates = new ContractsDAO().retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, QueryLimit.ofInt(50));
+		final List<I_C_Flatrate_Term> termsWithMissingCandidates = new ContractsDAO().retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, 50);
 
 		assertThat(termsWithMissingCandidates).hasSize(1);
 		assertThat(termsWithMissingCandidates.get(0)).isInstanceOf(I_C_Flatrate_Term.class);

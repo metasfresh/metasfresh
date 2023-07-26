@@ -6,10 +6,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -24,7 +22,6 @@ import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.WorkflowId;
@@ -84,8 +81,6 @@ import java.util.Set;
 public final class ProcessInfo implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
-
-	private static final AdMessageKey MSG_NO_TABLE_RECORD_REFERENCE_FOUND = AdMessageKey.of("de.metas.process.NoTableRecordReferenceFound");
 
 	public static ProcessInfoBuilder builder()
 	{
@@ -416,13 +411,6 @@ public final class ProcessInfo implements Serializable
 		return TableRecordReference.of(adTableId, recordId);
 	}
 
-	@NonNull
-	public TableRecordReference getRecordRefNotNull()
-	{
-		return Optional.ofNullable(getRecordRefOrNull())
-				.orElseThrow(() -> new AdempiereException(MSG_NO_TABLE_RECORD_REFERENCE_FOUND, getPinstanceId()));
-	}
-
 	public boolean isRecordSet()
 	{
 		return getTable_ID() > 0 && getRecord_ID() > 0;
@@ -641,7 +629,7 @@ public final class ProcessInfo implements Serializable
 	 * gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
 	 * <p>
 	 * task 03685
-	 * @see JavaProcess#retrieveActiveSelectedRecordsQueryBuilder(Class)
+	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
 	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
@@ -672,7 +660,7 @@ public final class ProcessInfo implements Serializable
 		{
 			whereFilter = defaultQueryFilter;
 
-			// In case the default filter is null, return null
+			// In case te default filter is null, return null
 			if (whereFilter == null)
 			{
 				return null;
@@ -687,19 +675,18 @@ public final class ProcessInfo implements Serializable
 		// also restrict to the client(s) and org(s) the user shall see with its current role.
 		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
 
+		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
+		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, Access.WRITE));
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, Access.WRITE));
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name in this case
 		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
-		compositeFilter.addFilter(whereFilter);
 
-		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, Access.WRITE));
-		compositeFilter.addFilter(clientFilter);
-
-		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
-		role.getOrgWhere(null, Access.WRITE)
-				.map(TypedSqlQueryFilter::<T>of)
-				.ifPresent(compositeFilter::addFilter);
+		compositeFilter.addFilter(whereFilter)
+				.addFilter(clientFilter)
+				.addFilter(orgFilter);
 
 		return compositeFilter;
 	}
@@ -784,7 +771,7 @@ public final class ProcessInfo implements Serializable
 		private int tabNo = Env.TAB_None;
 
 		private Language reportLanguage;
-		@NonNull private OptionalBoolean printPreview = OptionalBoolean.UNKNOWN;
+		private Boolean printPreview;
 		private Boolean archiveReportData;
 
 		private OutputType jrDesiredOutputType = null;
@@ -836,7 +823,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		private Properties createTemporaryCtx(@NonNull final Properties ctx)
+		private Properties createTemporaryCtx(final Properties ctx)
 		{
 			final Properties processCtx = Env.newTemporaryCtx();
 
@@ -889,7 +876,7 @@ public final class ProcessInfo implements Serializable
 								adOrgId,
 								adUserId,
 								Env.getLocalDate(processCtx))
-						.orElse(null);
+						.orNull();
 				adRoleId = role == null ? null : role.getRoleId();
 			}
 			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(adRoleId, Env.CTXVALUE_AD_Role_ID_NONE));
@@ -899,16 +886,6 @@ public final class ProcessInfo implements Serializable
 			final Timestamp date = SystemTime.asDayTimestamp();
 			Env.setContext(processCtx, Env.CTXNAME_Date, date);
 
-			//
-			// Allow using the where clause in expressions.
-			// For example, in a report that exports data, the SQL-Expression could be 
-			// "SELECT DocumentNo, DateOrdered FROM C_Order WHERE @SELECTION_WHERECLAUSE/false@;"
-			final String whereClause = getWhereClause();
-			if (EmptyUtil.isNotBlank(whereClause))
-			{
-				Env.setContext(processCtx, Env.CTXNAME_PROCESS_SELECTION_WHERECLAUSE, whereClause);
-			}
-			
 			//
 			// Copy relevant properties from window context
 			final int windowNo = getWindowNo();
@@ -1091,7 +1068,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setAD_PInstance(@NonNull final I_AD_PInstance adPInstance)
+		public ProcessInfoBuilder setAD_PInstance(final I_AD_PInstance adPInstance)
 		{
 			this._adPInstance = adPInstance;
 			setPInstanceId(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
@@ -1484,12 +1461,12 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
+		/**
+		 * Only really matters when forking with the swing client.
+		 * {@code true} means that the system shall just if the report data shall just be returned.
+		 * If not set, then the system will look at {@link Ini#P_PRINTPREVIEW} and {@code AD_Process.IsDirectPrint}.
+		 */
 		public ProcessInfoBuilder setPrintPreview(final Boolean printPreview)
-		{
-			return setPrintPreview(OptionalBoolean.ofNullableBoolean(printPreview));
-		}
-
-		public ProcessInfoBuilder setPrintPreview(@NonNull final OptionalBoolean printPreview)
 		{
 			this.printPreview = printPreview;
 			return this;
@@ -1501,9 +1478,9 @@ public final class ProcessInfo implements Serializable
 		 */
 		private boolean isPrintPreview()
 		{
-			if (this.printPreview.isPresent())
+			if (this.printPreview != null)
 			{
-				return this.printPreview.isTrue();
+				return this.printPreview;
 			}
 
 			if (Ini.isSwingClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
@@ -1512,7 +1489,12 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			return adProcess != null && !adProcess.isDirectPrint();
+			if (adProcess != null && !adProcess.isDirectPrint())
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		/**

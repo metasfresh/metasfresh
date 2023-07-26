@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
+import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -56,6 +57,7 @@ public class AttachmentRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonAttachmentRequest.class))
 				.removeHeaders("CamelHttp*")
+				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{metasfresh.attachments.v2.api.uri}}")
 

@@ -26,9 +26,9 @@ import de.metas.Profiles;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -53,12 +53,12 @@ public class RemittanceAdviceRestController
 		this.createRemittanceAdviceService = createRemittanceAdviceService;
 	}
 
-	@Operation(summary = "Create a remittance advice")
+	@ApiOperation("Create a remittance advice")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Successfully created remittance advice"),
-			@ApiResponse(responseCode = "401", description = "You are not authorized to create new remittance advice"),
-			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
-			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
+			@ApiResponse(code = 200, message = "Successfully created remittance advice"),
+			@ApiResponse(code = 401, message = "You are not authorized to create new remittance advice"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 
 	@PostMapping(path = "/remittanceAdvice", consumes = "application/json", produces = "application/json")

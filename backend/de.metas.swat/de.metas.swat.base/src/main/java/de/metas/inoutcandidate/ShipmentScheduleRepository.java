@@ -30,8 +30,8 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -94,15 +94,9 @@ public class ShipmentScheduleRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final ModelCacheInvalidationService cacheInvalidationService;
+	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-	public ShipmentScheduleRepository(
-			@NonNull final ModelCacheInvalidationService cacheInvalidationService)
-	{
-		this.cacheInvalidationService = cacheInvalidationService;
-	}
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
@@ -277,7 +271,7 @@ public class ShipmentScheduleRepository
 
 		cacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRepoIdAwares(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds),
-				ModelCacheInvalidationTiming.AFTER_CHANGE);
+				ModelCacheInvalidationTiming.CHANGE);
 	}
 
 	public void saveAll(@NonNull final ImmutableCollection<ShipmentSchedule> shipmentSchedules)

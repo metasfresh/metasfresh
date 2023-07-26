@@ -2,14 +2,8 @@ package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -34,11 +28,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
-import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -68,7 +60,7 @@ public class TimeUtil
 	@Deprecated
 	public static Timestamp getDay(final long time)
 	{
-		final long timeToUse = time > 0 ? time : SystemTime.millis();
+		final long timeToUse = time > 0 ? time : de.metas.common.util.time.SystemTime.millis();
 
 		// note-ts: not using a locale because this method may be used during early startup
 		// (and I don't see what for we need a locale)
@@ -194,7 +186,7 @@ public class TimeUtil
 	@Deprecated
 	static public Timestamp getNextDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -219,7 +211,7 @@ public class TimeUtil
 	@Deprecated
 	static public Timestamp getPrevDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -244,7 +236,7 @@ public class TimeUtil
 	@Deprecated
 	static public Timestamp getMonthLastDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -272,7 +264,7 @@ public class TimeUtil
 	@Deprecated
 	static public Timestamp getMonthMiddleDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dateToUse = day == null ? SystemTime.asDayTimestamp() : day;
+		final Timestamp dateToUse = day == null ? de.metas.common.util.time.SystemTime.asDayTimestamp() : day;
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -586,8 +578,8 @@ public class TimeUtil
 	public static int getDaysBetween(@NonNull final Instant start, @NonNull final Instant end)
 	{
 		// Thanks to http://mattgreencroft.blogspot.com/2014/12/java-8-time-choosing-right-object.html
-		final LocalDate d1 = LocalDateTime.ofInstant(start, SystemTime.zoneId()).toLocalDate();
-		final LocalDate d2 = LocalDateTime.ofInstant(end, SystemTime.zoneId()).toLocalDate();
+		final LocalDate d1 = LocalDateTime.ofInstant(start, de.metas.common.util.time.SystemTime.zoneId()).toLocalDate();
+		final LocalDate d2 = LocalDateTime.ofInstant(end, de.metas.common.util.time.SystemTime.zoneId()).toLocalDate();
 		return Period.between(d1, d2).getDays();
 	}
 
@@ -664,7 +656,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -693,7 +685,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -751,7 +743,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -789,7 +781,7 @@ public class TimeUtil
 	 */
 	public static Date addMinutes(final Date dateTime, final int offset)
 	{
-		final Date dateTimeToUse = dateTime == null ? SystemTime.asDate() : dateTime;
+		final Date dateTimeToUse = dateTime == null ? de.metas.common.util.time.SystemTime.asDate() : dateTime;
 
 		if (offset == 0)
 		{
@@ -845,7 +837,7 @@ public class TimeUtil
 	{
 		if (dateTime == null)
 		{
-			dateTime = new Timestamp(Instant.now().toEpochMilli());
+			dateTime = new Timestamp(System.currentTimeMillis());
 		}
 		if (offset == 0)
 		{
@@ -1172,7 +1164,7 @@ public class TimeUtil
 			@Nullable final Date dayTime,
 			final String trunc)
 	{
-		final Date dayTimeToUse = dayTime == null ? SystemTime.asTimestamp() : dayTime;
+		final Date dayTimeToUse = dayTime == null ? de.metas.common.util.time.SystemTime.asTimestamp() : dayTime;
 		return truncToMillisDayTimeNotNull(dayTimeToUse, trunc);
 	}
 
@@ -1296,18 +1288,8 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
-	public static Timestamp asTimestampNotNull(@NonNull final ZonedDateTime zdt)
-	{
-		return Timestamp.from(zdt.toInstant());
-	}
-
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
-	{
-		return asTimestamp(obj, null);
-	}
-
-	public static Timestamp asTimestamp(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1327,8 +1309,7 @@ public class TimeUtil
 		}
 		else
 		{
-			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
-			return Timestamp.from(asInstant(obj, zoneIdNonNull));
+			return Timestamp.from(asInstant(obj));
 		}
 	}
 
@@ -1357,12 +1338,6 @@ public class TimeUtil
 		return timestamp;
 	}
 
-	@Deprecated
-	public static Timestamp asTimestamp(final LocalDateAndOrgId localDateAndOrgId)
-	{
-		throw new AdempiereException("Converting from LocalDateAndOrgId to Timestamp without knowing the org timezone is not possible");
-	}
-
 	/**
 	 * @return date as timestamp or null if the date is null
 	 */
@@ -1382,13 +1357,7 @@ public class TimeUtil
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
-		return instant != null ? asTimestampNotNull(instant) : null;
-	}
-
-	@NonNull
-	public static Timestamp asTimestampNotNull(@NonNull final Instant instant)
-	{
-		return Timestamp.from(instant);
+		return instant != null ? Timestamp.from(instant) : null;
 	}
 
 	/**
@@ -1412,7 +1381,7 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate
-				.atStartOfDay(coalesceNotNull(timezone, SystemTime.zoneId()))
+				.atStartOfDay(coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId()))
 				.toInstant();
 		return Timestamp.from(instant);
 	}
@@ -1431,7 +1400,7 @@ public class TimeUtil
 			@Nullable final ZoneId timezone)
 	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
-		final ZoneId timezoneEff = coalesceNotNull(timezone, SystemTime.zoneId());
+		final ZoneId timezoneEff = coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId());
 
 		final Instant instant;
 		if (localTime == null)
@@ -1527,27 +1496,13 @@ public class TimeUtil
 	}
 
 	/**
-	 * @deprecated please use {@link #parseTimestamp(String, ZoneId)} with the respective org's timezone isntead.
-	 * Otherwise, the resulting {@code 00:00:00}-timestamp might assume the wrong timezone.
-	 */
-	@Deprecated
-	public static Timestamp parseTimestamp(@NonNull final String date)
-	{
-		return parseTimestamp(date, SystemTime.zoneId());
-	}
-
-	/**
 	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
-	 * The returned timestamp is 00:00 at the given date and timezone.
 	 */
-	public static Timestamp parseTimestamp(@NonNull final String date, @NonNull final ZoneId zoneId)
+	public static Timestamp parseTimestamp(@NonNull final String date)
 	{
 		try
 		{
-			final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			simpleDateFormat.setTimeZone(TimeZone.getTimeZone(zoneId));
-
-			final Date parsedDate = simpleDateFormat.parse(date);
+			final Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
 			return new Timestamp(parsedDate.getTime());
 		}
 		catch (final ParseException e)
@@ -1657,22 +1612,6 @@ public class TimeUtil
 	}
 
 	/**
-	 * @deprecated Consider using {@link InstantAndOrgId#toLocalDate(Function)}.
-	 */
-	@Deprecated
-	@Nullable
-	public static LocalDate asLocalDate(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
-	{
-		if (ts == null)
-		{
-			return null;
-		}
-
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		return InstantAndOrgId.ofTimestamp(ts, orgId).toLocalDate(orgDAO::getTimeZone);
-	}
-
-	/**
 	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
 	 */
 	@Deprecated
@@ -1684,46 +1623,8 @@ public class TimeUtil
 				: null;
 	}
 
-	@Deprecated
-	@NonNull
-	public static LocalDate asLocalDateNonNull(@NonNull final Timestamp ts)
-	{
-		return ts.toLocalDateTime().toLocalDate();
-	}
-
-	@Deprecated
-	@Nullable
-	public static LocalDate asLocalDate(@Nullable final java.util.Date date)
-	{
-		return date != null
-				? date.toInstant().atZone(SystemTime.zoneId()).toLocalDate()
-				: null;
-	}
-
-	@Deprecated
-	@Nullable
-	public static LocalDate asLocalDate(@Nullable final Instant instant)
-	{
-		return instant != null
-				? instant.atZone(SystemTime.zoneId()).toLocalDate()
-				: null;
-	}
-
-	public static LocalDate asLocalDate(@Nullable XMLGregorianCalendar calendar)
-	{
-		return calendar != null
-				? calendar.toGregorianCalendar().toInstant().atZone(SystemTime.zoneId()).toLocalDate()
-				: null;
-	}
-
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Object obj)
-	{
-		return asLocalDate(obj, null);
-	}
-
-	@Nullable
-	public static LocalDate asLocalDate(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1737,13 +1638,9 @@ public class TimeUtil
 		{
 			return LocalDate.parse(obj.toString());
 		}
-		else if (obj instanceof LocalDateAndOrgId)
-		{
-			return ((LocalDateAndOrgId)obj).toLocalDate();
-		}
 		else
 		{
-			return asLocalDateTime(obj, zoneId).toLocalDate();
+			return asLocalDateTime(obj).toLocalDate();
 		}
 	}
 
@@ -1763,14 +1660,6 @@ public class TimeUtil
 				: null;
 	}
 
-	@Nullable
-	public static LocalDate asLocalDate(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
-	{
-		return instant != null
-				? instant.atZone(zoneId).toLocalDate()
-				: null;
-	}
-
 	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime)
@@ -1778,14 +1667,8 @@ public class TimeUtil
 		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
 	}
 
-	@Nullable
-	public static LocalTime asLocalTime(@Nullable final Object obj)
-	{
-		return asLocalTime(obj, null);
-	}
 
-	@Nullable
-	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
+	public static LocalTime asLocalTime(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1797,7 +1680,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj, zoneId).toLocalTime();
+			return asLocalDateTime(obj).toLocalTime();
 		}
 	}
 
@@ -1812,12 +1695,6 @@ public class TimeUtil
 
 	@Nullable
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj)
-	{
-		return asLocalDateTime(obj, null);
-	}
-
-	@Nullable
-	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1841,10 +1718,7 @@ public class TimeUtil
 		}
 		else
 		{
-			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
-
-			return asInstant(obj, zoneIdNonNull)
-					.atZone(zoneIdNonNull).toLocalDateTime();
+			return asInstant(obj).atZone(de.metas.common.util.time.SystemTime.zoneId()).toLocalDateTime();
 		}
 	}
 
@@ -1862,7 +1736,7 @@ public class TimeUtil
 	public static ZonedDateTime asZonedDateTime(@Nullable final LocalDate localDate)
 	{
 		return localDate != null
-				? localDate.atStartOfDay(SystemTime.zoneId())
+				? localDate.atStartOfDay(de.metas.common.util.time.SystemTime.zoneId())
 				: null;
 	}
 
@@ -1870,44 +1744,6 @@ public class TimeUtil
 	public static ZonedDateTime asZonedDateTime(@Nullable final Instant instant)
 	{
 		return instant != null ? instant.atZone(SystemTime.zoneId()) : null;
-	}
-
-	/**
-	 * @return timestamp converted to ZonedDateTime using system time zone.
-	 * @deprecated Please consider using {@link #asZonedDateTime(Timestamp, ZoneId)}.
-	 * <p>
-	 * If you don't know the {@link ZoneId} then
-	 * <ul>
-	 *     <li>please consider using {@link de.metas.organization.InstantAndOrgId} and don't assume system time zone.
-	 *     <li>or please consider using {@link Instant}
-	 *     </ul>
-	 *     <b>But please don't just assume the time zone is system time zone.</b>
-	 */
-	@Deprecated
-	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp)
-	{
-		return timestamp != null ? timestamp.toInstant().atZone(SystemTime.zoneId()) : null;
-	}
-
-	/**
-	 * @deprecated Consider using {@link InstantAndOrgId#toZonedDateTime(Function)}.
-	 */
-	@Deprecated
-	@Nullable
-	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
-	{
-		if (ts == null)
-		{
-			return null;
-		}
-
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		return InstantAndOrgId.ofTimestamp(ts, orgId).toZonedDateTime(orgDAO::getTimeZone);
-	}
-
-	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
-	{
-		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;
 	}
 
 	/**
@@ -1922,7 +1758,7 @@ public class TimeUtil
 			return null;
 		}
 
-		return asZonedDateTime(obj, SystemTime.zoneId());
+		return asZonedDateTime(obj, de.metas.common.util.time.SystemTime.zoneId());
 	}
 
 	@Nullable
@@ -1976,7 +1812,7 @@ public class TimeUtil
 	@Nullable
 	public static Instant asInstant(@Nullable final Object obj)
 	{
-		return asInstant(obj, SystemTime.zoneId());
+		return asInstant(obj, de.metas.common.util.time.SystemTime.zoneId());
 	}
 
 	@Nullable
@@ -1991,61 +1827,6 @@ public class TimeUtil
 		return timestamp.toInstant();
 	}
 
-	/**
-	 * @deprecated Consider using {@link LocalDateAndOrgId#toEndOfDayInstant(Function)}.
-	 */
-	@Deprecated
-	@Nullable
-	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final OrgId orgId)
-	{
-		if (localDate == null)
-		{
-			return null;
-		}
-
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toEndOfDayInstant(orgDAO::getTimeZone);
-	}
-
-	@Nullable
-	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
-	{
-		if (localDate == null)
-		{
-			return null;
-		}
-		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
-
-		return asInstant(endOfDay, zoneId);
-	}
-
-	/**
-	 * @deprecated Consider using {@link LocalDateAndOrgId#toInstant(Function)}.
-	 */
-	@Deprecated
-	@Nullable
-	public static Instant asInstant(
-			@Nullable final LocalDate localDate,
-			@NonNull final OrgId orgId)
-	{
-		if (localDate == null)
-		{
-			return null;
-		}
-
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toInstant(orgDAO::getTimeZone);
-	}
-
-	@SuppressWarnings("unused")
-	@Deprecated
-	public static Instant asInstant(
-			@Nullable final LocalDateAndOrgId localDateAndOrgId,
-			@NonNull final ZoneId zoneId)
-	{
-		throw new AdempiereException("Converting from localDateAndOrgId without knowing the Org's TimeZone is not possible");
-	}
-
 	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,
@@ -2054,14 +1835,6 @@ public class TimeUtil
 		if (obj == null)
 		{
 			return null;
-		}
-		else if (String.valueOf(obj).equals(String.valueOf((Object)null)))
-		{
-			return null;
-		}
-		else if (obj instanceof InstantAndOrgId)
-		{
-			return ((InstantAndOrgId)obj).toInstant();
 		}
 		else if (obj instanceof Instant)
 		{
@@ -2109,10 +1882,6 @@ public class TimeUtil
 		{
 			final long millis = (Long)obj;
 			return Instant.ofEpochMilli(millis);
-		}
-		else if (obj instanceof InstantAndOrgId)
-		{
-			return ((InstantAndOrgId)obj).toInstant();
 		}
 		else
 		{
@@ -2199,6 +1968,7 @@ public class TimeUtil
 		return d1.isAfter(d2) ? d1 : d2;
 	}
 
+
 	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
 	{
 		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -2268,18 +2038,16 @@ public class TimeUtil
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
 
-	public static Range<Instant> toInstantsRange(
+	public static Range<LocalDate> toLocalDateRange(
 			@Nullable final java.sql.Timestamp from,
 			@Nullable final java.sql.Timestamp to)
 	{
-		return toInstantsRange(
-				from != null ? from.toInstant() : null,
-				to != null ? to.toInstant() : null);
+		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
 	}
 
-	public static Range<Instant> toInstantsRange(
-			@Nullable final Instant from,
-			@Nullable final Instant to)
+	public static Range<LocalDate> toLocalDateRange(
+			@Nullable final LocalDate from,
+			@Nullable final LocalDate to)
 	{
 		if (from == null)
 		{
@@ -2291,44 +2059,4 @@ public class TimeUtil
 		}
 	}
 
-	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
-	{
-		return timestamp2.getTime() - timestamp1.getTime();
-	}
-
-	@Nullable
-	public static Instant asStartOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
-	{
-		if (localDate == null)
-		{
-			return null;
-		}
-		final LocalDateTime startOfDay = localDate.atTime(LocalTime.MIN);
-
-		return asInstant(startOfDay, zoneId);
-	}
-
-	@Nullable
-	public static Instant asStartOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
-	{
-		if (instant == null)
-		{
-			return null;
-		}
-
-		final LocalDate localDate = asLocalDate(instant, zoneId);
-		return asStartOfDayInstant(localDate, zoneId);
-	}
-
-	@Nullable
-	public static Instant asEndOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
-	{
-		if (instant == null)
-		{
-			return null;
-		}
-
-		final LocalDate localDate = asLocalDate(instant, zoneId);
-		return asEndOfDayInstant(localDate, zoneId);
-	}
 }    // TimeUtil

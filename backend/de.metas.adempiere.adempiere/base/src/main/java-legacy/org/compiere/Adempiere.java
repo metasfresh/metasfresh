@@ -16,20 +16,17 @@
  *****************************************************************************/
 package org.compiere;
 
-import ch.qos.logback.classic.Level;
-import com.github.zafarkhaja.semver.ParseException;
-import com.github.zafarkhaja.semver.Version;
-import de.metas.adempiere.addon.IAddonStarter;
-import de.metas.adempiere.addon.impl.AddonStarter;
-import de.metas.cache.interceptor.CacheInterceptor;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.DefaultServiceNamePolicy;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.lang.SoftwareVersion;
-import lombok.NonNull;
-import org.adempiere.ad.service.ADSystemInfo;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
+
+import javax.swing.ImageIcon;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.service.impl.DeveloperModeBL;
@@ -40,6 +37,7 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.db.CConnection;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.MLanguage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
@@ -49,12 +47,20 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.SecureInterface;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Properties;
+import com.github.zafarkhaja.semver.ParseException;
+import com.github.zafarkhaja.semver.Version;
+
+import ch.qos.logback.classic.Level;
+import de.metas.adempiere.addon.IAddonStarter;
+import de.metas.adempiere.addon.impl.AddonStarter;
+import de.metas.cache.interceptor.CacheInterceptor;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.DefaultServiceNamePolicy;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.SoftwareVersion;
+import lombok.NonNull;
 
 /**
  * Adempiere Control Class
@@ -136,7 +142,7 @@ public class Adempiere
 	 * @deprecated Please use {@link SpringContextHolder#getBean(Class)}
 	 */
 	@Deprecated
-	public static <T> T getBean(final Class<T> requiredType)
+	public static final <T> T getBean(final Class<T> requiredType)
 	{
 		return SpringContextHolder.instance.getBean(requiredType);
 	}
@@ -538,11 +544,10 @@ public class Adempiere
 	 * Notes:
 	 * <ul>
 	 * <li>"UniTestMode" mode is not a runmode because the system can be unit tested beeing in every run mode</li>
-	 * <li>This concept might be refined further (e.g. multiple runmodes)</li>
+	 * <li>This concept might be refined further (e.g. multiple runmodes), and might be combined with the functionality of {@link ModelValidationEngine#CTX_InitEntityTypes}</li>
 	 * </ul>
 	 *
-	 * Task 04585
-	 *
+	 * @task 04585
 	 * @see Ini#getRunMode()
 	 */
 	public enum RunMode
@@ -695,13 +700,19 @@ public class Adempiere
 
 	private boolean startupEnvironment(final RunMode runMode)
 	{
-		final ADSystemInfo system = Services.get(ISystemBL.class).get();	// Initializes Base Context too
+		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());	// Initializes Base Context too
+
+		if (system == null)
+		{
+			logger.error("No AD_System record found");
+			return false;
+		}
 
 		// Initialize main cached Singletons
 		ModelValidationEngine.get();
 		try
 		{
-			String className = null;
+			String className = system.getEncryptionKey();
 			if (className == null || className.length() == 0)
 			{
 				className = System.getProperty(SecureInterface.METASFRESH_SECURE);
@@ -709,6 +720,8 @@ public class Adempiere
 						&& !className.equals(SecureInterface.METASFRESH_SECURE_DEFAULT))
 				{
 					SecureEngine.init(className);	// test it
+					system.setEncryptionKey(className);
+					save(system);
 				}
 			}
 			SecureEngine.init(className);
@@ -727,7 +740,7 @@ public class Adempiere
 		}
 		catch (Exception e)
 		{
-			logger.warn("Environment problems", e);
+			logger.warn("Environment problems: " + e.toString());
 		}
 
 		// Start Workflow Document Manager (in other package) for PO

@@ -47,31 +47,24 @@ public class BPartnerContactType
 	public static final String PURCHASE_DEFAULT = "purchaseDefault";
 
 	@JsonInclude(Include.NON_ABSENT)
-	@NonNull
 	private Optional<Boolean> defaultContact;
 
 	@JsonInclude(Include.NON_ABSENT)
-	@NonNull
 	private Optional<Boolean> billToDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
-	@NonNull
 	private Optional<Boolean> shipToDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
-	@NonNull
 	private final Optional<Boolean> sales;
 
 	@JsonInclude(Include.NON_ABSENT)
-	@NonNull
 	private Optional<Boolean> salesDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
-	@NonNull
 	private final Optional<Boolean> purchase;
 
 	@JsonInclude(Include.NON_ABSENT)
-	@NonNull
 	private Optional<Boolean> purchaseDefault;
 
 	//

@@ -22,25 +22,23 @@ package de.metas.activity.model.validator;
  * #L%
  */
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductActivityProvider;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
+
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.ModelValidator;
 
 @Validator(I_C_InvoiceLine.class)
 public class C_InvoiceLine
 {
-	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-	private final IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
+	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_InvoiceLine.COLUMNNAME_M_Product_ID })
 	public void updateActivity(final I_C_InvoiceLine invoiceLine)
@@ -56,21 +54,18 @@ public class C_InvoiceLine
 			return;
 		}
 
-		final ActivityId productActivityId = productActivityProvider.getActivityForAcct(
-				ClientId.ofRepoId(invoiceLine.getAD_Client_ID()),
-				OrgId.ofRepoId(invoiceLine.getAD_Org_ID()),
-				productId);
+		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).getProductActivityId(productId);
 		if (productActivityId == null)
 		{
 			return;
 		}
 		final Dimension orderLineDimension = dimensionService.getFromRecord(invoiceLine);
 		if (orderLineDimension == null)
+
 		{
 			//nothing to do
 			return;
 		}
 		dimensionService.updateRecord(invoiceLine, orderLineDimension.withActivityId(productActivityId));
-
 	}
 }

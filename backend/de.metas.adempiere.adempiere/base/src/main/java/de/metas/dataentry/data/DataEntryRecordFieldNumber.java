@@ -1,14 +1,14 @@
 package de.metas.dataentry.data;
 
-import de.metas.CreatedUpdatedInfo;
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ public class DataEntryRecordFieldNumber extends DataEntryRecordField<BigDecimal>
 
 	public static DataEntryRecordFieldNumber of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final BigDecimal value)
 	{
 		return new DataEntryRecordFieldNumber(dataEntryFieldId, createdUpdatedInfo, value);
@@ -49,7 +49,7 @@ public class DataEntryRecordFieldNumber extends DataEntryRecordField<BigDecimal>
 
 	private DataEntryRecordFieldNumber(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final BigDecimal value)
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);

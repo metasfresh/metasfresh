@@ -30,7 +30,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
-import de.metas.material.MovementType;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -73,7 +72,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 		final StockQtyAndUOMQty qtysDelivered_100 = StockQtyAndUOMQtys.create(HUNDRET, productId, THOUSAND, uomId);
 		{
 			final String inOutDocumentNo = "1";
-			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment); // DocumentNo
+			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
 			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_100, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut1);
 		}

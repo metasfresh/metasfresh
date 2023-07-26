@@ -1,12 +1,13 @@
 package de.metas.contracts.subscription.impl;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.ISubscriptionDAO;
-import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.sql.Timestamp;
+import java.util.List;
+
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
@@ -14,14 +15,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -64,8 +64,6 @@ public class SubscriptionCommandTest
 		subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
 		term = newInstance(I_C_Flatrate_Term.class);
-		term.setBill_BPartner_ID(123);
-		term.setC_Flatrate_Data_ID(321);
 		save(term);
 
 		first = SubscriptionTestUtil.createDeliverySubscriptionProgress(term, "2017-09-10", 1);
@@ -154,7 +152,7 @@ public class SubscriptionCommandTest
 		save(shipmentSchedule);
 
 		middle.setStatus(X_C_SubscriptionProgress.STATUS_Open);
-		middle.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
+		middle.setM_ShipmentSchedule(shipmentSchedule);
 		save(middle);
 		assertThat(middle.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running); // guard
 
@@ -169,7 +167,7 @@ public class SubscriptionCommandTest
 				.satisfies(record -> {
 					assertThat(record.getC_SubscriptionProgress_ID()).isEqualTo(middle.getC_SubscriptionProgress_ID());
 					assertThat(record.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_DeliveryPause);
-					assertThat(load(record.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class).isClosed()).isTrue();
+					assertThat(record.getM_ShipmentSchedule().isClosed()).isTrue();
 				});
 	}
 

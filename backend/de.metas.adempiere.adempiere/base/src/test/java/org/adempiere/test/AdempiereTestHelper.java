@@ -22,6 +22,10 @@ import de.metas.util.Services;
 import de.metas.util.Services.IServiceImplProvider;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
+import io.github.jsonSnapshot.SnapshotConfig;
+import io.github.jsonSnapshot.SnapshotMatcher;
+import io.github.jsonSnapshot.SnapshotMatchingStrategy;
+import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -97,6 +101,24 @@ public class AdempiereTestHelper
 
 	public static final String AD_LANGUAGE = "de_DE";
 
+	/**
+	 * This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars
+	 */
+	public static final SnapshotConfig SNAPSHOT_CONFIG = new SnapshotConfig()
+	{
+		@Override
+		public String getFilePath()
+		{
+			return "src/test/resources/";
+		}
+
+		@Override
+		public SnapshotMatchingStrategy getSnapshotMatchingStrategy()
+		{
+			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
+		}
+	};
+
 	public static AdempiereTestHelper get()
 	{
 		return instance;
@@ -118,18 +140,32 @@ public class AdempiereTestHelper
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		staticInit0();
+		Adempiere.enableUnitTestMode();
+
+		Check.setDefaultExClass(AdempiereException.class);
+
+		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
+
+		//
+		// Configure services; note the this is not the place to register individual services, see init() for that.
+		Services.setAutodetectServices(true);
+		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
+		Services.setExternalServiceImplProvider(new IServiceImplProvider()
+		{
+			@Override
+			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
+			{
+				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
+			}
+		});
+
+		//
+		// Make sure cache is empty
+		CacheMgt.get().reset();
+
+		staticInitialized = true;
 
 		log("staticInit", "done in " + stopwatch);
-	}
-
-	public void forceStaticInit()
-	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-
-		staticInit0();
-
-		log("forceStaticInitialize", "done in " + stopwatch);
 	}
 
 	public void init()
@@ -310,6 +346,30 @@ public class AdempiereTestHelper
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 
+	/**
+	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
+	 * <p>
+	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
+	 *
+	 * @deprecated  Consider using de.metas.test.SnapshotFunctionFactory
+	 */
+	@Deprecated
+	public static Function<Object, String> createSnapshotJsonFunction()
+	{
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		final ObjectWriter writerWithDefaultPrettyPrinter = jsonObjectMapper.writerWithDefaultPrettyPrinter();
+		return object -> {
+			try
+			{
+				return writerWithDefaultPrettyPrinter.writeValueAsString(object);
+			}
+			catch (final JsonProcessingException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+		};
+	}
+
 	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
 	{
 		final CleanupTask task = new CleanupTask(name, runnable);
@@ -338,35 +398,5 @@ public class AdempiereTestHelper
 		@NonNull private final Runnable runnable;
 
 		public void run() {runnable.run();}
-	}
-
-	private void staticInit0()
-	{
-		Adempiere.enableUnitTestMode();
-		Language.setUseJUnitFixedFormats(false);
-		POJOLookupMap.resetToDefaultNextIdSupplier();
-
-		Check.setDefaultExClass(AdempiereException.class);
-
-		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
-
-		//
-		// Configure services; note the this is not the place to register individual services, see init() for that.
-		Services.setAutodetectServices(true);
-		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
-		Services.setExternalServiceImplProvider(new IServiceImplProvider()
-		{
-			@Override
-			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
-			{
-				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
-			}
-		});
-
-		//
-		// Make sure cache is empty
-		CacheMgt.get().reset();
-
-		staticInitialized = true;
 	}
 }

@@ -72,7 +72,7 @@ public class DocumentPostingBusService
 	public void postRequest(@NonNull final DocumentPostRequest request)
 	{
 		final Event event = createEventFromRequest(request);
-		getEventBus().enqueueEvent(event);
+		getEventBus().postEvent(event);
 	}
 
 	private IEventBus getEventBus()

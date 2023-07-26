@@ -10,28 +10,27 @@ package org.adempiere.mmovement.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import de.metas.inventory.InventoryId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mmovement.MovementId;
 import org.adempiere.mmovement.MovementLineId;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
-import java.util.List;
+import de.metas.inventory.InventoryId;
+import de.metas.util.ISingletonService;
 
 public interface IMovementDAO extends ISingletonService
 {
@@ -39,7 +38,7 @@ public interface IMovementDAO extends ISingletonService
 
 	/**
 	 * Retrieves all {@link I_M_MovementLine}s (including inactive ones), ordered by "Line" column.
-	 *
+	 * 
 	 * @param movement
 	 * @return movement lines
 	 * @see #retrieveLines(I_M_Movement, Class)
@@ -48,7 +47,7 @@ public interface IMovementDAO extends ISingletonService
 
 	/**
 	 * Retrieves all {@link I_M_MovementLine}s (including inactive ones), ordered by "Line" column.
-	 *
+	 * 
 	 * @param movement
 	 * @param movementLineClass
 	 * @return movement lines
@@ -62,7 +61,4 @@ public interface IMovementDAO extends ISingletonService
 	void save(final I_M_MovementLine movementLine);
 
 	List<I_M_Movement> retrieveMovementsForDDOrder(int ddOrderId);
-
-	@NonNull
-	I_M_Movement getById(@NonNull MovementId movementId);
 }

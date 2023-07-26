@@ -15,7 +15,6 @@ import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.report.DocumentReportRequest;
 import de.metas.report.DocumentReportResult;
@@ -24,7 +23,6 @@ import de.metas.report.PrintFormatId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.ArchiveRequest;
@@ -70,14 +68,14 @@ public class DefaultModelArchiver
 {
 	public static DefaultModelArchiver of(@NonNull final Object record)
 	{
-		return DefaultModelArchiver.builder().record(record).build();
+		return new DefaultModelArchiver(record, null);
 	}
 
 	public static DefaultModelArchiver of(
 			@NonNull final Object record,
 			@Nullable final PrintFormatId printFormatId)
 	{
-		return DefaultModelArchiver.builder().record(record).printFormatId(printFormatId).build();
+		return new DefaultModelArchiver(record, printFormatId);
 	}
 
 	// services
@@ -92,9 +90,8 @@ public class DefaultModelArchiver
 	//
 	// Parameters
 	private final Object record;
-	private final AdProcessId reportProcessId;
 	private final PrintFormatId printFormatId;
-	private final DocumentReportFlavor flavor;
+	private DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
 
 	//
 	// Status & cached values
@@ -102,16 +99,9 @@ public class DefaultModelArchiver
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private Optional<I_C_Doc_Outbound_Config> _docOutboundConfig;
 
-	@Builder
-	private DefaultModelArchiver(
-			@NonNull final Object record,
-			@Nullable final DocumentReportFlavor flavor,
-			@Nullable final AdProcessId reportProcessId,
-			@Nullable final PrintFormatId printFormatId)
+	private DefaultModelArchiver(@NonNull final Object record, @Nullable final PrintFormatId printFormatId)
 	{
 		this.record = record;
-		this.flavor = flavor != null ? flavor : DocumentReportFlavor.PRINT;
-		this.reportProcessId = reportProcessId;
 		this.printFormatId = printFormatId;
 	}
 
@@ -124,6 +114,12 @@ public class DefaultModelArchiver
 				.add("printFormatId", printFormatId)
 				.add("docOutboundConfig", _docOutboundConfig)
 				.toString();
+	}
+
+	public DefaultModelArchiver flavor(@NonNull final DocumentReportFlavor flavor)
+	{
+		this.flavor = flavor;
+		return this;
 	}
 
 	public ArchiveResult archive()
@@ -140,19 +136,18 @@ public class DefaultModelArchiver
 
 		final DocumentReportResult report = getDocumentReportService()
 				.createReport(DocumentReportRequest.builder()
-						.flavor(flavor)
-						.documentRef(recordRef)
-						.reportProcessId(reportProcessId)
-						.printFormatIdToUse(getPrintFormatId().orElse(null))
-						.printPreview(true)
-						.asyncBatchId(asyncBatchId)
-						//
-						.clientId(InterfaceWrapperHelper.getClientId(record).orElse(ClientId.SYSTEM))
-						.orgId(InterfaceWrapperHelper.getOrgId(record).orElse(OrgId.ANY))
-						.userId(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM))
-						.roleId(Env.getLoggedRoleId())
-						//
-						.build());
+									  .flavor(flavor)
+									  .documentRef(recordRef)
+									  .printFormatIdToUse(getPrintFormatId().orElse(null))
+									  .printPreview(true)
+									  .asyncBatchId(asyncBatchId)
+									  //
+									  .clientId(InterfaceWrapperHelper.getClientId(record).orElse(ClientId.SYSTEM))
+									  .orgId(InterfaceWrapperHelper.getOrgId(record).orElse(OrgId.ANY))
+									  .userId(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM))
+									  .roleId(Env.getLoggedRoleId())
+									  //
+									  .build());
 
 		final ArchiveResult lastArchive = report.getLastArchive();
 
@@ -205,20 +200,20 @@ public class DefaultModelArchiver
 		final String documentNo = documentNoBL.asDocumentNoAware(getRecord()).map(IDocumentNoAware::getDocumentNo).orElse(null);
 
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
-				.flavor(report.getFlavor())
-				.data(report.getReportData().orElse(null))
-				.force(true)
-				.save(true)
-				.asyncBatchId(report.getAsyncBatchId())
-				.trxName(ITrx.TRXNAME_ThreadInherited)
-				.documentNo(documentNo)
-				.recordRef(report.getDocumentRef())
-				.processId(report.getReportProcessId())
-				.pinstanceId(report.getReportPInstanceId())
-				.archiveName(report.getFilename())
-				.bpartnerId(report.getBpartnerId())
-				.language(report.getLanguage())
-				.build());
+																	  .flavor(report.getFlavor())
+																	  .data(report.getReportData().orElse(null))
+																	  .force(true)
+																	  .save(true)
+																	  .asyncBatchId(report.getAsyncBatchId())
+																	  .trxName(ITrx.TRXNAME_ThreadInherited)
+																	  .documentNo(documentNo)
+																	  .recordRef(report.getDocumentRef())
+																	  .processId(report.getReportProcessId())
+																	  .pinstanceId(report.getReportPInstanceId())
+																	  .archiveName(report.getFilename())
+																	  .bpartnerId(report.getBpartnerId())
+																	  .language(report.getLanguage())
+																	  .build());
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
 				Objects.requireNonNull(archiveResult.getArchiveRecord()),
@@ -296,21 +291,9 @@ public class DefaultModelArchiver
 
 	private Optional<PrintFormatId> getPrintFormatId()
 	{
-		// Favor the Report Process if any
-		if (reportProcessId != null)
-		{
-			return Optional.empty();
-		}
-		// Then check the print format
-		else if (printFormatId != null)
-		{
-			return Optional.of(printFormatId);
-		}
-		// Else, fallback to doc outbound config
-		else
-		{
-			return getDocOutboundConfig().map(docOutboundConfig -> PrintFormatId.ofRepoIdOrNull(docOutboundConfig.getAD_PrintFormat_ID()));
-		}
+		return printFormatId != null
+				? Optional.of(printFormatId)
+				: getDocOutboundConfig().map(docOutboundConfig -> PrintFormatId.ofRepoIdOrNull(docOutboundConfig.getAD_PrintFormat_ID()));
 	}
 
 	@NonNull

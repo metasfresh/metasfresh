@@ -1,16 +1,17 @@
 package de.metas.material.event;
 
-import de.metas.Profiles;
-import de.metas.event.IEventBusFactory;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import lombok.NonNull;
 import org.compiere.Adempiere;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+
+import de.metas.Profiles;
+import de.metas.event.IEventBusFactory;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,11 +45,10 @@ public class MaterialEventConfiguration
 	@Profile(Profiles.PROFILE_Test)
 	public MetasfreshEventBusService createLocalMaterialEventService(
 			@NonNull final MaterialEventConverter materialEventConverter,
-			@NonNull final IEventBusFactory eventBusFactory,
-			@NonNull final MaterialEventObserver materialEventObserver)
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
-				.createLocalServiceThatIsReadyToUse(materialEventConverter, eventBusFactory, materialEventObserver);
+				.createLocalServiceThatIsReadyToUse(materialEventConverter, eventBusFactory);
 
 		return materialEventService;
 	}
@@ -58,11 +58,10 @@ public class MaterialEventConfiguration
 	@Profile(Profiles.PROFILE_NotTest)
 	public MetasfreshEventBusService createDistributedMaterialEventService(
 			@NonNull final MaterialEventConverter materialEventConverter,
-			@NonNull final IEventBusFactory eventBusFactory,
-			@NonNull final MaterialEventObserver materialEventObserver)
+			@NonNull final IEventBusFactory eventBusFactory)
 	{
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
-				.createDistributedServiceThatNeedsToSubscribe(materialEventConverter, eventBusFactory, materialEventObserver);
+				.createDistributedServiceThatNeedsToSubscribe(materialEventConverter, eventBusFactory);
 
 		return materialEventService;
 	}

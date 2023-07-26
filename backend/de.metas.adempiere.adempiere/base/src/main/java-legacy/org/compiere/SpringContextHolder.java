@@ -22,20 +22,22 @@
 
 package org.compiere;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public final class SpringContextHolder
 {
@@ -65,7 +67,7 @@ public final class SpringContextHolder
 
 	/**
 	 * Inject the application context from outside <b>and</b> enable {@link Services} to retrieve service implementations from it.
-	 * <p>
+	 *
 	 * Currently seems to be required because currently the client startup procedure needs to be decomposed more.
 	 * See <code>SwingUIApplication</code> to know what I mean.
 	 */
@@ -133,35 +135,7 @@ public final class SpringContextHolder
 		return springApplicationContext.getBean(requiredType);
 	}
 
-	public <T> T getBean(@NonNull final Class<T> requiredType, @NonNull final String name)
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
-			if (beanImpl != null)
-			{
-				return beanImpl;
-			}
-		}
-
-		final ApplicationContext springApplicationContext = getApplicationContext();
-		try
-		{
-			throwExceptionIfNull(springApplicationContext);
-		}
-		catch (final AdempiereException e)
-		{
-			throw e.appendParametersToMessage()
-					.setParameter("requiredType", requiredType)
-					.setParameter("name", name);
-		}
-		// noinspection ConstantConditions
-		return springApplicationContext.getBean(name, requiredType);
-	}
-
-	/**
-	 * can be used if a service might be retrieved before the spring application context is up
-	 */
+	/** can be used if a service might be retrieved before the spring application context is up */
 	@Nullable
 	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @Nullable final T defaultImplementation)
 	{
@@ -184,7 +158,7 @@ public final class SpringContextHolder
 		{
 			return springApplicationContext.getBean(requiredType);
 		}
-		catch (final NoSuchBeanDefinitionException | IllegalStateException e)
+		catch (final NoSuchBeanDefinitionException e)
 		{
 			if (Adempiere.isUnitTestMode())
 			{
@@ -270,41 +244,4 @@ public final class SpringContextHolder
 		instance.junitRegisteredBeans.registerJUnitBeans(beanType, beansToAdd);
 	}
 
-	public static <T> Lazy<T> lazyBean(@NonNull final Class<T> requiredType)
-	{
-		return new Lazy<>(requiredType, null);
-	}
-
-	public static <T> Lazy<T> lazyBean(@NonNull final Class<T> requiredType, @Nullable final T initialBean)
-	{
-		return new Lazy<>(requiredType, initialBean);
-	}
-
-	//
-	//
-	//
-
-	@ToString
-	public static final class Lazy<T>
-	{
-		private final Class<T> requiredType;
-		private T bean;
-
-		private Lazy(@NonNull final Class<T> requiredType, @Nullable final T initialBean)
-		{
-			this.requiredType = requiredType;
-			this.bean = initialBean;
-		}
-
-		@NonNull
-		public T get()
-		{
-			T bean = this.bean;
-			if (bean == null)
-			{
-				bean = this.bean = instance.getBean(requiredType);
-			}
-			return bean;
-		}
-	}
 }

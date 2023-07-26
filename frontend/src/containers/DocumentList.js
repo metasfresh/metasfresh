@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import currentDevice from 'current-device';
 import { debounce, get } from 'lodash';
 
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
@@ -41,7 +42,6 @@ import { deleteFilter } from '../actions/FiltersActions';
 import { deleteQuickActions, fetchQuickActions } from '../actions/Actions';
 
 import {
-  computePageLengthEffective,
   DLmapStateToProps,
   DLpropTypes,
   GEO_PANEL_STATES,
@@ -66,6 +66,11 @@ class DocumentListContainer extends Component {
   constructor(props) {
     super(props);
 
+    // TODO: Why it's not in the state?
+    this.pageLength =
+      currentDevice.type === 'mobile' || currentDevice.type === 'tablet'
+        ? 9999
+        : 20;
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
@@ -81,16 +86,6 @@ class DocumentListContainer extends Component {
     );
   }
 
-  handlePopState = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const page = urlParams.get('page');
-
-    if (this.lastViewedPage !== page) {
-      this.lastViewedPage = page;
-      this.handleChangePage(page);
-    }
-  };
-
   UNSAFE_componentWillMount() {
     const { isModal, windowId, fetchLocationConfig } = this.props;
 
@@ -99,7 +94,6 @@ class DocumentListContainer extends Component {
 
   componentDidMount = () => {
     this.mounted = true;
-    window.addEventListener('popstate', this.handlePopState);
   };
 
   componentWillUnmount() {
@@ -110,7 +104,6 @@ class DocumentListContainer extends Component {
 
     deleteTable(getTableId({ windowId, viewId }));
     deleteView(windowId, isModal);
-    window.removeEventListener('popstate', this.handlePopState);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -293,11 +286,6 @@ class DocumentListContainer extends Component {
     if (fullyChanged === true) {
       this.debouncedRefresh();
     }
-  };
-
-  getPageLength = () => {
-    const { layout } = this.props;
-    return computePageLengthEffective(layout?.pageLength);
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
@@ -538,7 +526,7 @@ class DocumentListContainer extends Component {
       windowId,
       viewId: id,
       page,
-      pageLength: this.getPageLength(),
+      pageLength: this.pageLength,
       orderBy: sortingQuery,
       isModal,
       websocketRefresh,
@@ -600,7 +588,6 @@ class DocumentListContainer extends Component {
       viewId,
       viewData: { mapConfig },
       isModal,
-      addViewLocationData,
     } = this.props;
 
     locationSearchRequest({ windowId, viewId }).then(({ data }) => {
@@ -648,7 +635,6 @@ class DocumentListContainer extends Component {
         currentPage = index;
     }
 
-    this.lastViewedPage = currentPage;
     viewData.viewId && this.getData(viewData.viewId, currentPage, sort);
   };
 
@@ -780,7 +766,7 @@ class DocumentListContainer extends Component {
         triggerSpinner={triggerSpinner}
         hasIncluded={hasIncluded}
         onToggleState={this.toggleState}
-        pageLength={this.getPageLength()}
+        pageLength={this.pageLength}
         onGetSelected={this.getSelected}
         onShowSelectedIncludedView={this.showSelectedIncludedView}
         onSortData={this.sortData}
@@ -825,7 +811,6 @@ export default connect(
     setBreadcrumb,
     fetchQuickActions,
     deleteQuickActions,
-    addViewLocationData,
   },
   null,
   { forwardRef: true }

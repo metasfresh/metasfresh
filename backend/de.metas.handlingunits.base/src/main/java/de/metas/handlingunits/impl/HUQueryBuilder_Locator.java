@@ -4,11 +4,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
@@ -59,7 +57,7 @@ final class HUQueryBuilder_Locator
 	/**
 	 * Flag to set determine if the query shall only retrieve the HUs from AfterPicking locators or not
 	 * 
-	 * @implNote Task 08544
+	 * @task 08544
 	 */
 	private boolean includeAfterPickingLocator = false;
 
@@ -142,26 +140,13 @@ final class HUQueryBuilder_Locator
 		notInAnyWarehouse = onlyInWarehouseIds.isEmpty();
 	}
 
-	public void addOnlyInLocatorRepoId(final int locatorId)
+	public void addOnlyInLocatorId(final int locatorId)
 	{
 		Check.assumeGreaterThanZero(locatorId, "locatorId");
 		onlyInLocatorIds.add(locatorId);
 	}
 
-	public void addOnlyInLocatorId(@NonNull final LocatorId locatorId)
-	{
-		onlyInLocatorIds.add(locatorId.getRepoId());
-	}
-
-	public void addOnlyInLocatorRepoIds(final Collection<Integer> locatorIds)
-	{
-		if (locatorIds != null && !locatorIds.isEmpty())
-		{
-			locatorIds.forEach(this::addOnlyInLocatorRepoId);
-		}
-	}
-
-	public void addOnlyInLocatorIds(final Collection<LocatorId> locatorIds)
+	public void addOnlyInLocatorIds(final Collection<Integer> locatorIds)
 	{
 		if (locatorIds != null && !locatorIds.isEmpty())
 		{

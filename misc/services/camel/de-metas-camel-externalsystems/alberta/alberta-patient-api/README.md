@@ -1,8 +1,8 @@
 # swagger-java-client
 
 Patient - Warenwirtschaft (Basis)
-- API version: 1.0.7
-  - Build date: 2021-11-24T08:15:46.695Z[GMT]
+- API version: 1.0.6
+  - Build date: 2021-02-09T23:55:37.565Z[GMT]
 
 Synchronisation der Patienten mit der Warenwirtschaft
 
@@ -85,9 +85,10 @@ public class CustomerMappingApiExample {
         
         CustomerMappingApi apiInstance = new CustomerMappingApi();
         String albertaApiKey = "albertaApiKey_example"; // String | 
+        String tenant = "tenant_example"; // String | 
         String customerId = "customerId_example"; // String | die Id des Kunden aus dem WaWi
         try {
-            CustomerMapping result = apiInstance.getCustomerMapping(albertaApiKey, customerId);
+            CustomerMapping result = apiInstance.getCustomerMapping(albertaApiKey, tenant, customerId);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling CustomerMappingApi#getCustomerMapping");
@@ -105,21 +106,13 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *CustomerMappingApi* | [**getCustomerMapping**](docs/CustomerMappingApi.md#getCustomerMapping) | **GET** /patient/customerMapping | Zuordnung Kunde (WaWi) zu Patient (Alberta) abrufen
 *DoctorApi* | [**getDoctor**](docs/DoctorApi.md#getDoctor) | **GET** /doctor/{_id} | Daten eines einzelnen Arztes abrufen
-*DoctorApi* | [**getNewAndUpdatedDoctors**](docs/DoctorApi.md#getNewAndUpdatedDoctors) | **GET** /doctor | Daten der neuen und geänderten Ärzte abrufen
 *HospitalApi* | [**getHospital**](docs/HospitalApi.md#getHospital) | **GET** /hospital/{_id} | Daten einer einzelnen Klinik abrufen
-*HospitalApi* | [**getNewAndUpdatedHospitals**](docs/HospitalApi.md#getNewAndUpdatedHospitals) | **GET** /hospital | Daten der neuen und geänderten Kliniken abrufen
 *NursingHomeApi* | [**geNursingHome**](docs/NursingHomeApi.md#geNursingHome) | **GET** /nursingHome/{_id} | Daten eines einzelnen Pflegeheimes abrufen
-*NursingHomeApi* | [**getNewAndUpdatedNursingHomes**](docs/NursingHomeApi.md#getNewAndUpdatedNursingHomes) | **GET** /nursingHome | Daten der neuen und geänderten Pflegeheime abrufen
-*NursingServiceApi* | [**getNewAndUpdatedNursingServices**](docs/NursingServiceApi.md#getNewAndUpdatedNursingServices) | **GET** /nursingService | Daten der neuen und geänderten Pflegedienste abrufen
 *NursingServiceApi* | [**getNursingService**](docs/NursingServiceApi.md#getNursingService) | **GET** /nursingService/{_id} | Daten eines einzelnen Pflegedienstes abrufen
 *PatientApi* | [**addPatient**](docs/PatientApi.md#addPatient) | **POST** /patient | Patient hinzufügen
 *PatientApi* | [**getCreatedPatients**](docs/PatientApi.md#getCreatedPatients) | **GET** /patient | Patienten je nach Status abrufen
 *PatientApi* | [**updatePatient**](docs/PatientApi.md#updatePatient) | **PUT** /patient | Patient ändern
-*PatientNoteApi* | [**patientNote**](docs/PatientNoteApi.md#patientNote) | **POST** /patientNote | PatientenNotiz erstellen
-*PatientNoteApi* | [**patientNotePatch**](docs/PatientNoteApi.md#patientNotePatch) | **PATCH** /patientNote/{id} | PatientenNotiz ändern
-*PayerApi* | [**getNewAndUpdatedPayers**](docs/PayerApi.md#getNewAndUpdatedPayers) | **GET** /payer | Daten der neuen und geänderten Kostenträger abrufen
 *PayerApi* | [**getPayer**](docs/PayerApi.md#getPayer) | **GET** /payer/{_id} | Daten eines einzelnen Kostenträgers abrufen
-*PharmacyApi* | [**getNewAndUpdatedPharmacies**](docs/PharmacyApi.md#getNewAndUpdatedPharmacies) | **GET** /pharmacy | Daten der neuen und geänderten Apotheken abrufen
 *PharmacyApi* | [**getPharmacy**](docs/PharmacyApi.md#getPharmacy) | **GET** /pharmacy/{_id} | Daten einer einzelnen Apotheke abrufen
 *RegionApi* | [**getRegion**](docs/RegionApi.md#getRegion) | **GET** /region/{_id} | Daten einer einzelnen Region abrufen
 *UserApi* | [**getUser**](docs/UserApi.md#getUser) | **GET** /users/{_id} | Daten eines einzelnen Benutzers abrufen
@@ -128,7 +121,6 @@ Class | Method | HTTP request | Description
 
  - [ArrayOfMappings](docs/ArrayOfMappings.md)
  - [ArrayOfPatients](docs/ArrayOfPatients.md)
- - [CareGiver](docs/CareGiver.md)
  - [CustomerMapping](docs/CustomerMapping.md)
  - [Doctor](docs/Doctor.md)
  - [Hospital](docs/Hospital.md)
@@ -136,12 +128,10 @@ Class | Method | HTTP request | Description
  - [NursingService](docs/NursingService.md)
  - [Patient](docs/Patient.md)
  - [PatientBillingAddress](docs/PatientBillingAddress.md)
+ - [PatientContact](docs/PatientContact.md)
  - [PatientDeliveryAddress](docs/PatientDeliveryAddress.md)
  - [PatientHospital](docs/PatientHospital.md)
- - [PatientNote](docs/PatientNote.md)
- - [PatientNoteMapping](docs/PatientNoteMapping.md)
  - [PatientPayer](docs/PatientPayer.md)
- - [PatientPrimaryDoctorInstitution](docs/PatientPrimaryDoctorInstitution.md)
  - [Payer](docs/Payer.md)
  - [Pharmacy](docs/Pharmacy.md)
  - [Region](docs/Region.md)

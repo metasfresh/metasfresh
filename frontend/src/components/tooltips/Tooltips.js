@@ -1,69 +1,99 @@
-import React, { useEffect, useState } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-const Tooltips = ({
-  action,
-  className,
-  delay,
-  extraClass,
-  name,
-  tooltipOnFirstlevelPositionLeft,
-  type,
-}) => {
-  const [opacity, setOpacity] = useState(0);
+/**
+ * @file Class based component.
+ * @module Filters
+ * @extends Component
+ */
+class Tooltips extends Component {
+  constructor(props) {
+    super(props);
 
-  useEffect(() => {
-    const timeout = setTimeout(
+    this.state = {
+      opacity: 0,
+    };
+  }
+
+  /**
+   * @method componentDidMount
+   * @summary ToDo: Describe the method.
+   */
+  componentDidMount() {
+    const { delay } = this.props;
+    this.timeout = setTimeout(
       () => {
-        setOpacity(1);
+        this.setState({
+          opacity: 1,
+        });
       },
       delay ? delay : 1000
     );
+  }
 
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, []);
+  /**
+   * @method componentWillUnmount
+   * @summary ToDo: Describe the method.
+   */
+  componentWillUnmount() {
+    clearTimeout(this.timeout);
+  }
 
-  const cx = classNames(
-    'tooltip-wrapp',
-    { [`tooltip-${type}`]: type },
-    { [`${extraClass}`]: extraClass },
-    { [`${className}`]: className }
-  );
+  /**
+   * @method render
+   * @summary ToDo: Describe the method.
+   */
+  render() {
+    const {
+      name,
+      action,
+      type,
+      extraClass,
+      tooltipOnFirstlevelPositionLeft,
+      className,
+    } = this.props;
 
-  return (
-    <div style={{ opacity: opacity }}>
-      <div
-        className={cx}
-        style={{ left: tooltipOnFirstlevelPositionLeft + 'px' }}
-      >
-        <div className="tooltip-shortcut">{name}</div>
-        <div className="tooltip-name">{action}</div>
+    const cx = classNames(
+      'tooltip-wrapp',
+      { [`tooltip-${type}`]: type },
+      { [`${extraClass}`]: extraClass },
+      { [`${className}`]: className }
+    );
+
+    const { opacity } = this.state;
+    return (
+      <div style={{ opacity: opacity }}>
+        <div
+          className={cx}
+          style={{ left: tooltipOnFirstlevelPositionLeft + 'px' }}
+        >
+          <div className="tooltip-shortcut">{name}</div>
+          <div className="tooltip-name">{action}</div>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+}
 
 /**
  * @typedef {object} Props Component props
- * @prop {String} action - i.e. the actual tooltip caption (displayed beneath the shortcut)
- * @prop {String} className
- * @prop {Number} delay
- * @prop {String} extraClass
- * @prop {String} name - i.e. shortcut
- * @prop {*} tooltipOnFirstlevelPositionLeft - deprecated, looks that is no longer used
- * @prop {String} type - deprecated, looks that is no longer used (i.e. it's always empty string)
+ * @prop {*} action
+ * @prop {*} className
+ * @prop {*} delay
+ * @prop {*} extraClass
+ * @prop {*} name
+ * @prop {*} tooltipOnFirstlevelPositionLeft
+ * @prop {*} type
  */
 Tooltips.propTypes = {
-  action: PropTypes.string,
-  className: PropTypes.string,
-  delay: PropTypes.number,
-  extraClass: PropTypes.string,
-  name: PropTypes.string,
-  tooltipOnFirstlevelPositionLeft: PropTypes.number,
-  type: PropTypes.string,
+  action: PropTypes.any,
+  className: PropTypes.any,
+  delay: PropTypes.any,
+  extraClass: PropTypes.any,
+  name: PropTypes.any,
+  tooltipOnFirstlevelPositionLeft: PropTypes.any,
+  type: PropTypes.any,
 };
 
 export default Tooltips;

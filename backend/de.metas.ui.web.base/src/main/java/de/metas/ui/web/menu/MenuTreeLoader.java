@@ -58,7 +58,7 @@ final class MenuTreeLoader
 	}
 
 	// services
-	private static final Logger logger = LogManager.getLogger(MenuTreeLoader.class);
+	private static final transient Logger logger = LogManager.getLogger(MenuTreeLoader.class);
 	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	private static final int DEPTH_Root = 0;
@@ -216,11 +216,6 @@ final class MenuTreeLoader
 		{
 			final DocumentId elementId = DocumentId.of(nodeModel.getWEBUI_Board_ID());
 			builder.setType(MenuNodeType.Board, elementId);
-		}
-		else if (X_AD_Menu.ACTION_Calendar.equals(action))
-		{
-			final DocumentId elementId = DocumentId.of(1);
-			builder.setType(MenuNodeType.Calendar, elementId);
 		}
 		else
 		{

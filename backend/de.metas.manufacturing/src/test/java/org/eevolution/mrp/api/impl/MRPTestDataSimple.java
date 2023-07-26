@@ -14,7 +14,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_Planning;
 
 /**
@@ -53,7 +52,6 @@ public class MRPTestDataSimple
 	public ProductId pOnionId;
 	public I_M_Product pSalad_2xTomato_1xOnion;
 	public I_PP_Product_BOM pSalad_2xTomato_1xOnion_BOM;
-	public I_PP_Product_BOMVersions pSalad_2xTomato_1xOnion_BOM_Versions;
 
 	//
 	// Manufacturing workflows (routings)
@@ -120,12 +118,10 @@ public class MRPTestDataSimple
 		this.pOnion = helper.createProduct("Onion", uomKg);
 		this.pOnionId = ProductId.ofRepoId(pOnion.getM_Product_ID());
 		this.pSalad_2xTomato_1xOnion = helper.createProduct("Salad_2xTomato_1xOnion", uomEach);
-		this.pSalad_2xTomato_1xOnion_BOM_Versions = helper.createBOMVersions(ProductId.ofRepoId(pSalad_2xTomato_1xOnion.getM_Product_ID()));
 
 		//@formatter:off
 		this.pSalad_2xTomato_1xOnion_BOM = helper.newProductBOM()
 				.product(pSalad_2xTomato_1xOnion)
-				.bomVersions(pSalad_2xTomato_1xOnion_BOM_Versions)
 				.uom(uomEach)
 				.newBOMLine()
 					.product(pTomato).uom(uomKg)
@@ -186,7 +182,7 @@ public class MRPTestDataSimple
 		helper.newProductPlanning()
 				.product(pSalad_2xTomato_1xOnion).warehouse(warehouse_plant01).plant(plant01)
 				.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes)
-				.setPP_Product_BOMVersions(pSalad_2xTomato_1xOnion_BOM_Versions)
+				.setPP_Product_BOM(pSalad_2xTomato_1xOnion_BOM)
 				.setAD_Workflow(workflow_Standard)
 				.setDeliveryTime_Promised(1)
 				.build();

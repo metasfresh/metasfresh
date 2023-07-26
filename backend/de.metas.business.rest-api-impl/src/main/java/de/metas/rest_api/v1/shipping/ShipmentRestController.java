@@ -47,10 +47,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * @deprecated please consider migrating to version 2 of this API.
- */
-@Deprecated
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/shipments",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/shipments" })

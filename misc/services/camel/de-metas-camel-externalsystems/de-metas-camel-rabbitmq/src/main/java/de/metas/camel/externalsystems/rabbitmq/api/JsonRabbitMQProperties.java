@@ -25,10 +25,7 @@ package de.metas.camel.externalsystems.rabbitmq.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
-
-import java.util.Map;
 
 @Value
 @Builder
@@ -37,8 +34,4 @@ public class JsonRabbitMQProperties
 {
 	@JsonProperty("delivery_mode")
 	int delivery_mode;
-
-	@Singular
-	@JsonProperty("headers")
-	Map<String, String> headers;
 }

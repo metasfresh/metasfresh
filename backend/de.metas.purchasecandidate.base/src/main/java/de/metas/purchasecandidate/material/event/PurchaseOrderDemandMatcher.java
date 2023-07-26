@@ -1,15 +1,14 @@
 package de.metas.purchasecandidate.material.event;
 
-import de.metas.material.planning.IMaterialDemandMatcher;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
+
+import de.metas.material.planning.IMaterialDemandMatcher;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.Loggables;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,11 +45,10 @@ public class PurchaseOrderDemandMatcher implements IMaterialDemandMatcher
 			return true;
 		}
 
-		final ProductId productId = mrpContext.getProductId();
-		final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
+		final I_M_Product product = mrpContext.getM_Product();
 		Loggables.addLog(
-				"Product {} is not set to be purchased; PurchaseOrderDemandMatcher returns false; productPlanning={}; product={}",
-				productName, productPlanning, productId);
+				"Product {}_{} is not set to be purchased; PurchaseOrderDemandMatcher returns false; productPlanning={}; product={}",
+				product.getValue(), product.getName(), productPlanning, product);
 		return false;
 	}
 

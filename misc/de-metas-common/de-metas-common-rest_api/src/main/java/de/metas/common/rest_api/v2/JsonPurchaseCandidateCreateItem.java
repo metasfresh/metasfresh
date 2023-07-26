@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,7 +36,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.ACTIVITY_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -51,10 +50,6 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("externalHeaderId")
 	String externalHeaderId;
 
-	@NonNull
-	@JsonProperty("poReference")
-	String poReference;
-	
 	@Nullable
 	@JsonProperty("externalPurchaseOrderUrl")
 	String externalPurchaseOrderUrl;
@@ -88,7 +83,7 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("purchaseDateOrdered")
 	ZonedDateTime purchaseDateOrdered;
 
-	@Schema(description = "The vendor (`C_BPartner`) in question. Can be\n"
+	@ApiModelProperty("The vendor (`C_BPartner`) in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
 			+ "* a plain `gln-<C_BPartner_Location.GLN>`\n"
 			+ "* a plain `val-<C_BPartner.Value>`\n"
@@ -97,7 +92,7 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("vendor")
 	JsonVendor vendor;
 
-	@Schema(description = "The warehouse (`M_Warehouse`) in question. Can be\n"
+	@ApiModelProperty("The warehouse (`M_Warehouse`) in question. Can be\n"
 			+ "* a plain `<M_Warehouse_ID>`\n"
 			+ "* a plain `val-<M_Warehouse.Value>`\n"
 			+ "* or an External Business Key with type `Warehouse` such as `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n")
@@ -105,7 +100,7 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("warehouseIdentifier")
 	String warehouseIdentifier;
 
-	@Schema(description = PRODUCT_IDENTIFIER_DOC)
+	@ApiModelProperty(value = PRODUCT_IDENTIFIER_DOC)
 	@NonNull
 	@JsonProperty("productIdentifier")
 	String productIdentifier;
@@ -118,21 +113,11 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("qty")
 	JsonQuantity qty;
 
-	@Nullable
-	@JsonProperty("productDescription")
-	String productDescription;
-
-	@Schema(description = ACTIVITY_IDENTIFIER_DOC)
-	@Nullable
-	@JsonProperty("activityIdentifier")
-	String activityIdentifier;
-
 	@Builder
 	@JsonCreator
 	private JsonPurchaseCandidateCreateItem(
 			@JsonProperty("orgCode") final @NonNull String orgCode,
 			@JsonProperty("externalHeaderId") final @NonNull String externalHeaderId,
-			@JsonProperty("poReference") final @NonNull String poReference,
 			@JsonProperty("externalPurchaseOrderUrl") final @Nullable String externalPurchaseOrderUrl,
 			@JsonProperty("externalLineId") final @NonNull String externalLineId,
 			@JsonProperty("isManualPrice") @Nullable final Boolean isManualPrice,
@@ -146,20 +131,17 @@ public class JsonPurchaseCandidateCreateItem
 			@JsonProperty("warehouseIdentifier") final @NonNull String warehouseIdentifier,
 			@JsonProperty("productIdentifier") final @NonNull String productIdentifier,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
-			@JsonProperty("qty") final @NonNull JsonQuantity qty,
-			@JsonProperty("productDescription") @Nullable final String productDescription,
-			@JsonProperty("activityIdentifier") @Nullable final String activityIdentifier)
+			@JsonProperty("qty") final @NonNull JsonQuantity qty)
 	{
 
 		this.orgCode = orgCode;
 		this.externalHeaderId = externalHeaderId;
-		this.poReference = poReference;
 		this.externalPurchaseOrderUrl = externalPurchaseOrderUrl;
 		this.externalLineId = externalLineId;
-		this.isManualPrice = CoalesceUtil.coalesceNotNull(isManualPrice, false);
+		this.isManualPrice = CoalesceUtil.coalesce(isManualPrice, false);
 		this.isPrepared = isPrepared;
 		this.price = price;
-		this.isManualDiscount = CoalesceUtil.coalesceNotNull(isManualDiscount, false);
+		this.isManualDiscount = CoalesceUtil.coalesce(isManualDiscount, false);
 		this.discount = discount;
 		this.purchaseDatePromised = purchaseDatePromised;
 		this.purchaseDateOrdered = purchaseDateOrdered;
@@ -168,7 +150,5 @@ public class JsonPurchaseCandidateCreateItem
 		this.productIdentifier = productIdentifier;
 		this.attributeSetInstance = attributeSetInstance;
 		this.qty = qty;
-		this.productDescription = productDescription;
-		this.activityIdentifier = activityIdentifier;
 	}
 }

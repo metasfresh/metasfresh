@@ -1,6 +1,6 @@
 package de.metas.invoice_gateway.spi.model.imp;
 
-import de.metas.invoice.InvoiceId;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

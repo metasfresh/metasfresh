@@ -22,20 +22,13 @@
 
 package de.metas.common.product.v2.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_CATEGORY_IDENTIFIER_DOC;
@@ -46,120 +39,82 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADV
 @EqualsAndHashCode
 public class JsonRequestProduct
 {
-	@Schema(description = "Corresponding to `M_Product.Value`")
+	public enum Type
+	{
+		ITEM, SERVICE
+	}
+
+	@ApiModelProperty(position = 20, value = "Corresponding to `M_Product.Value`")
 	private String code;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean codeSet;
 
-	@Schema(description = "Corresponding to `M_Product.Name`", required = true)
+	@ApiModelProperty(position = 30, value = "Corresponding to `M_Product.Name`", required = true)
 	private String name;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
-	@Schema(description = "Corresponding to `M_Product.Type`", required = true)
+	@ApiModelProperty(position = 40, value = "Corresponding to `M_Product.Type`", required = true)
 	private Type type;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean typeSet;
 
-	@Schema(description = "Corresponding to `M_Product.C_UOM_ID`", required = true)
+	@ApiModelProperty(position = 50, value = "Corresponding to `M_Product.C_UOM_ID`", required = true)
 	private String uomCode;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean uomCodeSet;
 
-	@Schema(description = "Corresponding to `M_Product.UPC`")
+	@ApiModelProperty(position = 60, value = "Corresponding to `M_Product.UPC`")
 	private String ean;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean eanSet;
 
-	@Schema(description = "Corresponding to `M_Product.GTIN`")
+	@ApiModelProperty(position = 70, value = "Corresponding to `M_Product.GTIN`")
 	private String gtin;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean gtinSet;
 
-	@Schema(description = "Corresponding to `M_Product.Description`")
+	@ApiModelProperty(position = 80, value = "Corresponding to `M_Product.Description`")
 	private String description;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean descriptionSet;
 
-	@Schema(description = "Corresponding to `M_Product.isDiscontinued`")
+	@ApiModelProperty(position = 90, value = "Corresponding to `M_Product.isDiscontinued`")
 	private Boolean discontinued;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean discontinuedSet;
 
-	@Schema(description = "Corresponding to `M_Product.discontinuedFrom`", example = "2021-11-08")
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate discontinuedFrom;
-
-	@Schema(hidden = true)
-	private boolean discontinuedFromSet;
-
-	@Schema(description = "Corresponding to `M_Product.isActive`")
+	@ApiModelProperty(position = 100, value = "Corresponding to `M_Product.isActive`")
 	private Boolean active;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@Schema(description = "Corresponding to `M_Product.isStocked`")
+	@ApiModelProperty(position = 110, value = "Corresponding to `M_Product.isStocked`")
 	private Boolean stocked;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean stockedSet;
 
-	@Schema(description = PRODUCT_CATEGORY_IDENTIFIER_DOC)
+	@ApiModelProperty(position = 120, value = PRODUCT_CATEGORY_IDENTIFIER_DOC)
 	private String productCategoryIdentifier;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean productCategoryIdentifierSet;
 
-	@Schema
-	private String guaranteeMonths;
-
-	@Schema(hidden = true)
-	private boolean guaranteeMonthsSet;
-
-	@Schema
-	private String warehouseTemperature;
-
-	@Schema(hidden = true)
-	private boolean warehouseTemperatureSet;
-
-	@Schema(description = READ_ONLY_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 130, value = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@Schema
+	@ApiModelProperty(position = 140)
 	private List<JsonRequestBPartnerProductUpsert> bpartnerProductItems;
-
-	@Schema
-	private String sectionCode;
-
-	@Schema(hidden = true)
-	private boolean sectionCodeSet;
-
-	@Schema(description = "Corresponding to `M_Product.IsPurchased`")
-	private Boolean purchased;
-
-	@Schema(hidden = true)
-	private boolean purchasedSet;
-
-	@Schema(description = "Corresponding to `M_Product.SAP_ProductHierarchy`")
-	private String sapProductHierarchy;
-
-	@Schema(hidden = true)
-	private boolean sapProductHierarchySet;
-
-	@Schema
-	private JsonRequestUpsertProductAllergen productAllergens;
-
-	@Schema
-	private JsonRequestUpsertQualityAttribute qualityAttributes;
 
 	public void setCode(final @NonNull String code)
 	{
@@ -209,12 +164,6 @@ public class JsonRequestProduct
 		this.discontinuedSet = true;
 	}
 
-	public void setDiscontinuedFrom(final LocalDate discontinuedFrom)
-	{
-		this.discontinuedFrom = discontinuedFrom;
-		this.discontinuedFromSet = true;
-	}
-
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -233,12 +182,6 @@ public class JsonRequestProduct
 		this.productCategoryIdentifierSet = true;
 	}
 
-	public void setPurchased(final Boolean purchased)
-	{
-		this.purchased = purchased;
-		this.purchasedSet = true;
-	}
-
 	public void setSyncAdvise(final SyncAdvise syncAdvise)
 	{
 		this.syncAdvise = syncAdvise;
@@ -249,64 +192,4 @@ public class JsonRequestProduct
 		this.bpartnerProductItems = bpartnerProductItems;
 	}
 
-	public void setSectionCode(final String sectionCode)
-	{
-		this.sectionCode = sectionCode;
-		this.sectionCodeSet = true;
-	}
-
-	public void setSAPProductHierarchy(final String sapProductHierarchy)
-	{
-		this.sapProductHierarchy = sapProductHierarchy;
-		this.sapProductHierarchySet = true;
-	}
-
-	public void setProductAllergens(@Nullable final JsonRequestUpsertProductAllergen productAllergens)
-	{
-		this.productAllergens = productAllergens;
-	}
-
-	public void setGuaranteeMonths(@Nullable final String guaranteeMonths)
-	{
-		this.guaranteeMonths = guaranteeMonths;
-		this.guaranteeMonthsSet = true;
-	}
-
-	public void setWarehouseTemperature(@Nullable final String warehouseTemperature)
-	{
-		this.warehouseTemperature = warehouseTemperature;
-		this.warehouseTemperatureSet = true;
-	}
-
-	public void setQualityAttributes(@Nullable final JsonRequestUpsertQualityAttribute qualityAttribute)
-	{
-		this.qualityAttributes = qualityAttribute;
-	}
-
-	@AllArgsConstructor
-	public static enum Type
-	{
-		ITEM("I"),
-		SERVICE("S"),
-		RESOURCE("R"),
-		EXPENSE_TYPE("E"),
-		ONLINE("O"),
-		FREIGHT_COST("F"),
-		NAHRUNG("N");
-
-		@Getter
-		private String code;
-		private static final ImmutableMap<String, Type> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), Type::getCode);
-
-		@NonNull
-		public static Type ofCode(@NonNull final String code)
-		{
-			final Type type = typesByCode.get(code);
-			if (type == null)
-			{
-				throw new RuntimeException("No " + Type.class + " found for code: " + code);
-			}
-			return type;
-		}
-	}
 }

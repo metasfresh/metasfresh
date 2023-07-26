@@ -24,18 +24,19 @@ package de.metas.handlingunits;
 
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.util.ISingletonService;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public interface IHUWarehouseDAO extends ISingletonService
 {
 	/**
 	 * Retrieves all warehouses that have isPickingWarehouse set to 'Y' and have at least one "after picking locator".
+	 *
+	 * @param ctx
+	 * @return
 	 */
 	List<I_M_Warehouse> retrievePickingWarehouses();
 
@@ -44,9 +45,18 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 *
 	 * If given locator is after-picking then it will be returned.
 	 *
+	 * @param locatorRepoId
 	 * @return after-picking locator or null
 	 */
-	Optional<LocatorId> suggestAfterPickingLocatorId(int locatorRepoId);
+	I_M_Locator suggestAfterPickingLocator(int locatorRepoId);
+
+	/**
+	 * Suggests an after-picking locator in the given <code>warehouse</code>.
+	 *
+	 * @param warehouse
+	 * @return after-picking locator or null
+	 */
+	I_M_Locator suggestAfterPickingLocator(I_M_Warehouse warehouse);
 
 	/**
 	 * Retrieve the warehouses where the quality returns will be kept.
@@ -56,6 +66,13 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 * This method fails if no Warehouses were found.
 	 */
 	List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouses();
+
+	/**
+	 * Retrieve the first warehouseId with  <code>de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse</code> = `Y`
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if no such a warehouse could be found.
+	 */
+	WarehouseId retrieveQuarantineWarehouseId();
 
 	Set<WarehouseId> retrieveQualityReturnWarehouseIds();
 }

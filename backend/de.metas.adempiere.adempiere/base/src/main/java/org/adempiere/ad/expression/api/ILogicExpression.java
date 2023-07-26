@@ -22,10 +22,8 @@ package org.adempiere.ad.expression.api;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
-import de.metas.util.OptionalBoolean;
-import lombok.NonNull;
+import java.util.List;
+
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.LogicExpressionBuilder;
 import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator;
@@ -33,20 +31,24 @@ import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionDeserializer;
 import org.compiere.util.Evaluatee;
 
-import java.util.List;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
 
 /**
  * Logic expression
- * <p>
+ *
  * NOTE: business logic expects that implementation of this interface to be immutable.
  *
  * @author metas-dev <dev@metas-fresh.com>
+ *
  */
 @JsonDeserialize(using = JsonLogicExpressionDeserializer.class)
 public interface ILogicExpression extends IExpression<Boolean>
 {
-	//	ILogicExpression TRUE = ConstantLogicExpression.TRUE;
-	//	ILogicExpression FALSE = ConstantLogicExpression.FALSE;
+//	ILogicExpression TRUE = ConstantLogicExpression.TRUE;
+//	ILogicExpression FALSE = ConstantLogicExpression.FALSE;
 
 	String LOGIC_OPERATOR_AND = "&";
 	String LOGIC_OPERATOR_OR = "|";
@@ -67,7 +69,8 @@ public interface ILogicExpression extends IExpression<Boolean>
 
 	/**
 	 * Tries to partially evaluate this expression.
-	 *
+	 * 
+	 * @param ctx
 	 * @return partially evaluated expression.
 	 */
 	default ILogicExpression evaluatePartial(final Evaluatee ctx)
@@ -82,15 +85,19 @@ public interface ILogicExpression extends IExpression<Boolean>
 		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.ReturnNoResult : OnVariableNotFound.Fail;
 		return evaluate(ctx, onVariableNotFound);
 	}
-
+	
 	/**
 	 * Evaluates given expression and returns {@link LogicExpressionResult}.
-	 * <p>
+	 *
 	 * Use this method if you need more informations about the evaluation (e.g. which were the parameters used etc).
-	 * <p>
+	 *
 	 * If you are just interested about the boolean result, please use {@link #evaluate(Evaluatee, OnVariableNotFound)}.
 	 *
-	 * @see ILogicExpressionEvaluator#evaluateToResult(Evaluatee, ILogicExpression, OnVariableNotFound)
+	 * @param ctx
+	 * @param onVariableNotFound
+	 * @return
+	 * @throws ExpressionEvaluationException
+	 * @see {@link ILogicExpressionEvaluator#evaluateToResult(Evaluatee, ILogicExpression, OnVariableNotFound)}
 	 */
 	LogicExpressionResult evaluateToResult(Evaluatee ctx, OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
 
@@ -108,6 +115,7 @@ public interface ILogicExpression extends IExpression<Boolean>
 	/**
 	 * Converts this expression to a constant expression
 	 *
+	 * @param constantValue
 	 * @return constant expression
 	 */
 	ILogicExpression toConstantExpression(final boolean constantValue);
@@ -128,13 +136,6 @@ public interface ILogicExpression extends IExpression<Boolean>
 		return isConstant() && constantValue() == false;
 	}
 
-	default OptionalBoolean toOptionalBoolean()
-	{
-		return isConstant()
-				? OptionalBoolean.ofBoolean(constantValue())
-				: OptionalBoolean.UNKNOWN;
-	}
-
 	@Override
 	default boolean isNoResult(final Object result)
 	{
@@ -149,9 +150,7 @@ public interface ILogicExpression extends IExpression<Boolean>
 		return false;
 	}
 
-	/**
-	 * Compose this logic expression with the given one, using logic AND and return it
-	 */
+	/** Compose this logic expression with the given one, using logic AND and return it */
 	default ILogicExpression and(final ILogicExpression expression)
 	{
 		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_AND, expression);
@@ -162,9 +161,7 @@ public interface ILogicExpression extends IExpression<Boolean>
 		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_AND, expression.negate());
 	}
 
-	/**
-	 * Compose this logic expression with the given one, using logic OR and return it
-	 */
+	/** Compose this logic expression with the given one, using logic OR and return it */
 	default ILogicExpression or(final ILogicExpression expression)
 	{
 		return LogicExpressionBuilder.build(this, LOGIC_OPERATOR_OR, expression);

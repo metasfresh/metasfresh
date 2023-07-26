@@ -63,7 +63,7 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -263,14 +263,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 
 		//
-		// first update those shipment schedule properties that don't need two passes
+		// Briefly update our shipment schedules:
+		// * set BPartnerAddress_Override if was not set before
+		// * update HeaderAggregationKey
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-				shipmentScheduleHandlerBL.updateShipmentScheduleFromReferencedRecord(sched);
 
 				updateCatchUomId(sched);
 
@@ -281,20 +281,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				shipmentScheduleBL.updateHeaderAggregationKey(sched);
 
 				updateShipmentConstraints(sched);
-
-				//
-				// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
-				// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
-				// * QtyPicked from QtyPicked records
-				final BigDecimal qtyPickedOrOnDraftShipment;
-				{
-					// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-					final Quantity qtyPickedAndUnconfirmed = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
-					logger.debug("QtyPickedAndUnconfirmed={}", qtyPickedAndUnconfirmed);
-					qtyPickedOrOnDraftShipment = qtyPickedAndUnconfirmed.toBigDecimal();
-
-					sched.setQtyPickList(qtyPickedOrOnDraftShipment);
-				}
 			}
 		}
 
@@ -342,8 +328,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// task 09869: don't rely on ol anyways
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedRecord);
 			schedRecord.setQtyDelivered(qtyDelivered);
-			// takes into consideration isClosed flag 
-			schedRecord.setQtyReserved(BigDecimal.ZERO.max(shipmentScheduleEffectiveBL.computeQtyOrdered(olAndSched.getSched()).subtract(schedRecord.getQtyDelivered())));
+			schedRecord.setQtyReserved(getQtyReserved(schedRecord, olAndSched));
 
 			updateLineNetAmt(olAndSched);
 
@@ -454,7 +439,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private ShipmentSchedulesDuringUpdate generate(
 			@NonNull final List<OlAndSched> lines,
-			@NonNull final ShipmentSchedulesDuringUpdate shipmentSchedulesDuringUpdate)
+			@NonNull final ShipmentSchedulesDuringUpdate candidates)
 	{
 		//
 		// Load QtyOnHand in scope for our lines
@@ -465,147 +450,145 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			processSingleOlAndSched(olAndSched, shipmentSchedulesDuringUpdate, qtyOnHands);
-		}
-		return shipmentSchedulesDuringUpdate;
-	} // generate
-
-	private void processSingleOlAndSched(
-			final @NonNull OlAndSched olAndSched,
-			final @NonNull ShipmentSchedulesDuringUpdate shipmentSchedulesDuringUpdate,
-			final @NonNull ShipmentScheduleQtyOnHandStorage shipmentScheduleQtyOnHandStorage)
-	{
-		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
-		{
-			final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-			final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(sched);
-			logger.debug("DeliveryRule={}", deliveryRule);
-
-			final BigDecimal qtyRequired = computeQtyRequiredForOlAndSched(olAndSched, deliveryRule);
-
-			//
-			// QtyToDeliver: qtyRequired - qtyPickList (non negative!)
-			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, sched.getQtyPickList()/* qtyPickList was already updated by now*/);
-
-			logger.debug("QtyToDeliver={}", qtyToDeliver);
-			final ProductId productId = olAndSched.getProductId();
-			if (!productsService.isStocked(productId))
+			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
-				// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
-				logger.debug("M_Product_ID={} is not stocked; will use qtyToDeliver={} as-is", productId.getRepoId(), qtyToDeliver);
-				createLine(
-						olAndSched,
-						qtyToDeliver,
-						ShipmentScheduleAvailableStock.of(),
-						true/* force */,
-						CompleteStatus.OK,
-						shipmentSchedulesDuringUpdate);
-				return; // we are done
-			}
+				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
-			//
-			// Get the QtyOnHand storages suitable for our order line
-			final ShipmentScheduleAvailableStock storages = shipmentScheduleQtyOnHandStorage.getStockDetailsMatching(sched);
-			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
+				final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(sched);
+				logger.debug("DeliveryRule={}", deliveryRule);
 
-			logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
-			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
-
-			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
-
-			//
-			// Delivery rule: Force
-			if (deliveryRule.isForce())
-			{
-				createLine( // createLine will also subtract the respective qty from storages
-						olAndSched,
-						qtyToDeliver,
-						storages,
-						true, // force
-						completeStatus,
-						shipmentSchedulesDuringUpdate);
-			}
-			//
-			// Delivery rule: Complete Order/Line or Availability or Manual
-			else if (deliveryRule.isCompleteOrderOrLine()
-					|| deliveryRule.isAvailability()
-					|| deliveryRule.isManual())
-			{
-				if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
+				// QtyRequired
+				final BigDecimal qtyRequired;
+				if (olAndSched.getQtyOverride() != null)
 				{
-					//
-					// if there is anything at all to deliver, create a new inOutLine
-					final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(qtyOnHandBeforeAllocation);
-
-					// we invoke createLine even if ruleComplete is true and fullLine is false,
-					// because we want the quantity to be allocated.
-					// If the created line will make it into a real shipment will be decided later.
-					createLine( // createLine will also subtract the respective qty from storages
-							olAndSched,
-							qtyToDeliverEffective,
-							storages,
-							false, // force
-							completeStatus,
-							shipmentSchedulesDuringUpdate);
+					final BigDecimal qtyToDeliverOverrideFulFilled = ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched, shipmentScheduleAllocDAO);
+					if (olAndSched.getQtyOverride().compareTo(qtyToDeliverOverrideFulFilled) > 0)
+					{
+						qtyRequired = olAndSched.getQtyOverride().subtract(qtyToDeliverOverrideFulFilled);
+						logger.debug("QtyOverride={} is greater than QtyToDeliverOverrideFulFilled={}; => use the delta as QtyRequired={}", olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired);
+					}
+					else
+					{
+						final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+						qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
+						logger.debug("QtyOverride={} is less than QtyToDeliverOverrideFulFilled={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
+									 olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+					}
+				}
+				else if (deliveryRule.isManual())
+				{
+					// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
+					qtyRequired = BigDecimal.ZERO;
+					logger.debug("DeliveryRule={}; => qtyRequired={}", deliveryRule, qtyRequired);
 				}
 				else
 				{
-					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={}, ToDeliver={}, FullLine={}",
-								 qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
+					final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+					qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
+					logger.debug("DeliveryRule={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
+								 deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+				}
+
+				//
+				// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
+				// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
+				// * QtyPicked from QtyPicked records
+				final BigDecimal qtyPickedOrOnDraftShipment;
+				{
+					// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
+					final Quantity qtyPickedAndUnconfirmed = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
+					logger.debug("QtyPickedAndUnconfirmed={}", qtyPickedAndUnconfirmed);
+					qtyPickedOrOnDraftShipment = qtyPickedAndUnconfirmed.toBigDecimal();
+
+					// Update shipment schedule's fields
+					sched.setQtyPickList(qtyPickedOrOnDraftShipment);
+				}
+
+				//
+				// QtyToDeliver: qtyRequired - qtyPickList (non negative!)
+				final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, qtyPickedOrOnDraftShipment);
+				logger.debug("QtyToDeliver={}", qtyToDeliver);
+				final ProductId productId = olAndSched.getProductId();
+				if (!productsService.isStocked(productId))
+				{
+					// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
+					logger.debug("ProductId={} is not stocked; will use qtyToDeliver={} as-is", productId.getRepoId(), qtyToDeliver);
+					createLine(
+							olAndSched,
+							qtyToDeliver,
+							ShipmentScheduleAvailableStock.of(),
+							true/* force */,
+							CompleteStatus.OK,
+							candidates);
+				}
+				else
+				{
+					//
+					// Get the QtyOnHand storages suitable for our order line
+					final ShipmentScheduleAvailableStock storages = qtyOnHands.getStockDetailsMatching(sched);
+					final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
+
+					logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
+					sched.setQtyOnHand(qtyOnHandBeforeAllocation);
+
+					final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
+
+					//
+					// Delivery rule: Force
+					if (deliveryRule.isForce())
+					{
+						createLine(
+								olAndSched,
+								qtyToDeliver,
+								storages,
+								true, // force
+								completeStatus,
+								candidates);
+					}
+					//
+					// Delivery rule: Complete Order/Line or Availability or Manual
+					else if (deliveryRule.isCompleteOrderOrLine()
+							|| deliveryRule.isAvailability()
+							|| deliveryRule.isManual())
+					{
+						if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
+						{
+							//
+							// if there is anything at all to deliver, create a new inOutLine
+							final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(qtyOnHandBeforeAllocation);
+
+							// we invoke createLine even if ruleComplete is true and fullLine is false,
+							// because we want the quantity to be allocated.
+							// If the created line will make it into a real shipment will be decided later.
+							createLine(
+									olAndSched,
+									qtyToDeliverEffective,
+									storages,
+									false, // force
+									completeStatus,
+									candidates);
+						}
+						else
+						{
+							logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={} (QtyPickList={}), ToDeliver={}, FullLine={}",
+										 qtyOnHandBeforeAllocation, qtyPickedOrOnDraftShipment, qtyToDeliver, completeStatus);
+						}
+					}
+					//
+					// Unknown delivery rule
+					else
+					{
+						throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
+								.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
+								.setParameter("qtyPickedButNotDelivered", qtyPickedOrOnDraftShipment)
+								.setParameter("qtyToDeliver", qtyToDeliver)
+								.appendParametersToMessage();
+					}
 				}
 			}
-			//
-			// Unknown delivery rule
-			else
-			{
-				throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
-						.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
-						.setParameter("qtyToDeliver", qtyToDeliver)
-						.appendParametersToMessage();
-			}
 		}
-	}
-
-	@NonNull
-	private BigDecimal computeQtyRequiredForOlAndSched(
-			final @NonNull OlAndSched olAndSched,
-			final @NonNull DeliveryRule deliveryRule)
-	{
-		final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-		final BigDecimal qtyRequired;
-		if (olAndSched.getQtyOverride() != null)
-		{
-			final BigDecimal qtyToDeliverOverrideFulFilled = ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched, shipmentScheduleAllocDAO);
-			if (olAndSched.getQtyOverride().compareTo(qtyToDeliverOverrideFulFilled) > 0)
-			{
-				qtyRequired = olAndSched.getQtyOverride().subtract(qtyToDeliverOverrideFulFilled);
-				logger.debug("QtyOverride={} is greater than QtyToDeliverOverrideFulFilled={}; => use the delta as QtyRequired={}", olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired);
-			}
-			else
-			{
-				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
-				qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
-				logger.debug("QtyOverride={} is less than QtyToDeliverOverrideFulFilled={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
-							 olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
-			}
-		}
-		else if (deliveryRule.isManual())
-		{
-			// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
-			qtyRequired = BigDecimal.ZERO;
-			logger.debug("DeliveryRule={}; => qtyRequired={}", deliveryRule, qtyRequired);
-		}
-		else
-		{
-			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
-			qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
-			logger.debug("DeliveryRule={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
-						 deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
-		}
-		return qtyRequired;
-	}
+		return candidates;
+	} // generate
 
 	private static CompleteStatus computeCompleteStatus(final BigDecimal qtyToDeliver, final BigDecimal qtyOnHand)
 	{
@@ -646,82 +629,83 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				deliveryLineCandidate.setQtyToDeliver(qty);
 			}
 			candidates.addLine(deliveryLineCandidate);
-			return; // we are done
 		}
-
-		// Shipment Lines (i.e. candidate lines)
-		final List<DeliveryLineCandidate> deliveryLines = new ArrayList<>();
-
-		//
-		// Iterate QtyOnHand storage records and try to allocate on current shipment schedule/order line.
-		BigDecimal qtyRemainingToDeliver = qty; // how much still needs to be delivered; initially it's the whole qty required
-		for (int storageIndex = 0; storageIndex < storages.size(); storageIndex++)
+		else
 		{
-			// Stop here if there is nothing remaining to be delivered
-			if (qtyRemainingToDeliver.signum() == 0)
-			{
-				break;
-			}
-
-			BigDecimal qtyToDeliver = qtyRemainingToDeliver; // initially try to deliver the entire quantity remaining to be delivered
+			// Shipment Lines (i.e. candidate lines)
+			final List<DeliveryLineCandidate> deliveryLines = new ArrayList<>();
 
 			//
-			// Adjust the quantity that can be delivered from this storage line
-			// Check: Not enough On Hand
-			final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex);
-			if (qtyToDeliver.compareTo(qtyAvailable) > 0
-					&& qtyAvailable.signum() >= 0)         // positive storage
+			// Iterate QtyOnHand storage records and try to allocate on current shipment schedule/order line.
+			BigDecimal qtyRemainingToDeliver = qty; // how much still needs to be delivered; initially it's the whole qty required
+			for (int storageIndex = 0; storageIndex < storages.size(); storageIndex++)
 			{
-				if (!force // Adjust to OnHand Qty
-						|| storageIndex + 1 != storages.size())         // if force not on last location
+				// Stop here is there is nothing remaining to be delivered
+				if (qtyRemainingToDeliver.signum() == 0)
 				{
-					qtyToDeliver = qtyAvailable;
-				}
-			}
-			// Skip if we cannot deliver something for current storage line
-			if (qtyToDeliver.signum() == 0)
-			{
-				// zero deliver
-				continue;
-			}
-
-			// Find existing lineCandidate that was added in a previous iteration
-			DeliveryLineCandidate lineCandidate = null;
-			for (final DeliveryLineCandidate existingLineCandidate : deliveryLines)
-			{
-				// skip if it's for a different order line
-				if (existingLineCandidate.getShipmentScheduleId().equals(olAndSched.getShipmentScheduleId()))
-				{
-					lineCandidate = existingLineCandidate;
 					break;
 				}
-			}
 
-			// Case: No InOutLine found
-			// => create a new InOutLine
-			if (lineCandidate == null)
-			{
-				lineCandidate = groupCandidate.createAndAddLineCandidate(olAndSched.getSched(), completeStatus);
+				BigDecimal qtyToDeliver = qtyRemainingToDeliver; // initially try to deliver the entire quantity remaining to be delivered
 
-				lineCandidate.setQtyToDeliver(qtyToDeliver);
+				//
+				// Adjust the quantity that can be delivered from this storage line
+				// Check: Not enough On Hand
+				final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex);
+				if (qtyToDeliver.compareTo(qtyAvailable) > 0
+						&& qtyAvailable.signum() >= 0)         // positive storage
+				{
+					if (!force // Adjust to OnHand Qty
+							|| storageIndex + 1 != storages.size())         // if force not on last location
+					{
+						qtyToDeliver = qtyAvailable;
+					}
+				}
+				// Skip if we cannot deliver something for current storage line
+				if (qtyToDeliver.signum() == 0)
+				{
+					// zero deliver
+					continue;
+				}
 
-				deliveryLines.add(lineCandidate);
-				candidates.addLine(lineCandidate);
-			}
-			//
-			// Case: existing InOutLine found
-			// => adjust the quantity
-			else
-			{
-				final BigDecimal inoutLineQtyOld = lineCandidate.getQtyToDeliver();
-				final BigDecimal inoutLineQtyNew = inoutLineQtyOld.add(qtyToDeliver);
-				lineCandidate.setQtyToDeliver(inoutLineQtyNew);
-			}
+				// Find existing lineCandidate that was added in a previous iteration
+				DeliveryLineCandidate lineCandidate = null;
+				for (final DeliveryLineCandidate existingLineCandidate : deliveryLines)
+				{
+					// skip if it's for a different order line
+					if (existingLineCandidate.getShipmentScheduleId().equals(olAndSched.getShipmentScheduleId()))
+					{
+						lineCandidate = existingLineCandidate;
+						break;
+					}
+				}
 
-			qtyRemainingToDeliver = qtyRemainingToDeliver.subtract(qtyToDeliver);
+				// Case: No InOutLine found
+				// => create a new InOutLine
+				if (lineCandidate == null)
+				{
+					lineCandidate = groupCandidate.createAndAddLineCandidate(olAndSched.getSched(), completeStatus);
 
-			storages.subtractQtyOnHand(storageIndex, qtyToDeliver);
-		}    // for each storage record
+					lineCandidate.setQtyToDeliver(qtyToDeliver);
+
+					deliveryLines.add(lineCandidate);
+					candidates.addLine(lineCandidate);
+				}
+				//
+				// Case: existing InOutLine found
+				// => adjust the quantity
+				else
+				{
+					final BigDecimal inoutLineQtyOld = lineCandidate.getQtyToDeliver();
+					final BigDecimal inoutLineQtyNew = inoutLineQtyOld.add(qtyToDeliver);
+					lineCandidate.setQtyToDeliver(inoutLineQtyNew);
+				}
+
+				qtyRemainingToDeliver = qtyRemainingToDeliver.subtract(qtyToDeliver);
+
+				storages.subtractQtyOnHand(storageIndex, qtyToDeliver);
+			}    // for each storage record
+		}
 	}
 
 	private DeliveryGroupCandidate getOrCreateGroupCandidateForShipmentSchedule(
@@ -783,9 +767,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 		final boolean noQtyOverride = sched.getQtyToDeliver_Override().signum() <= 0;
 		final boolean noQtyReserved = sched.getQtyReserved().signum() <= 0;
-		final boolean noQtyPickedAndNotDelivered = sched.getQtyPickList().signum() <= 0;
 
-		sched.setProcessed(noQtyOverride && noQtyReserved && noQtyPickedAndNotDelivered);
+		sched.setProcessed(noQtyOverride && noQtyReserved);
 	}
 
 	private void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)
@@ -938,6 +921,19 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				}
 			}
 			return segments.stream();
+		}
+	}
+
+	@NonNull
+	private static BigDecimal getQtyReserved(@NonNull final I_M_ShipmentSchedule schedRecord, @NonNull final OlAndSched olAndSched)
+	{
+		if (schedRecord.isClosed())
+		{
+			return BigDecimal.ZERO;
+		}
+		else
+		{
+			return BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(schedRecord.getQtyDelivered()));
 		}
 	}
 }

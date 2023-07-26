@@ -1,11 +1,25 @@
 package de.metas.ui.web.window.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import de.metas.i18n.BooleanWithReason;
+
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -16,19 +30,6 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -351,13 +352,6 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 				// SKIP if document was not found. It's pointless to fail here
 				logger.warn("Skip deleting {} because document was not found", documentId);
 				continue;
-			}
-
-			final BooleanWithReason isDeleteForbidden = document.isDeleteForbidden();
-			if (isDeleteForbidden.isTrue())
-			{
-				throw new AdempiereException(isDeleteForbidden.getReason())
-						.markAsUserValidationError();
 			}
 
 			// assertDeleteDocumentAllowed(document);

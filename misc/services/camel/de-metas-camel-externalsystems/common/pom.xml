@@ -36,12 +36,12 @@
     <artifactId>de-metas-camel-externalsystems-common</artifactId>
     <version>10.0.0</version>
     <properties>
-        <java.version>17</java.version>
-        <spring-boot.version>2.7.11</spring-boot.version>
-        <camel.version>3.14.7</camel.version>
+        <java.version>14</java.version>
+        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
+        <camel.version>3.7.3</camel.version>
+        <guava.version>30.1.1-jre</guava.version>
         <smooks.version>1.7.1</smooks.version>
-        <jackson.version>2.14.1</jackson.version>
-        <servlet-api.version>4.0.1</servlet-api.version>
+        <jackson.version>2.12.1</jackson.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
@@ -59,11 +59,6 @@
             <groupId>de.metas.common.bpartner</groupId>
             <artifactId>de-metas-common-bpartner</artifactId>
             <version>${metasfresh-common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>${servlet-api.version}</version>
         </dependency>
         <dependency>
             <groupId>de.metas.common.product</groupId>
@@ -84,34 +79,15 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-api</artifactId>
             <version>${camel.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
             <version>${camel.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.metas.common.manufacturing</groupId>
-            <artifactId>de-metas-common-manufacturing</artifactId>
-            <version>${metasfresh-common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-http-common</artifactId>
-            <version>${camel.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.camel.springboot</groupId>
-            <artifactId>camel-http-starter</artifactId>
-            <version>${camel.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>${jackson.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
+
 
 </project>

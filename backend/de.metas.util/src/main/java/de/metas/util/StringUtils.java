@@ -23,9 +23,11 @@ package de.metas.util;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.Check;
+import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
@@ -36,16 +38,36 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class StringUtils
 {
+	public static final String REGEXP_STREET_AND_NUMBER_SPLIT = "^([^0-9]+) ?([0-9]+.*$)?";
+
 	private StringUtils()
 	{
+	}
+
+	@Nullable
+	public static IPair<String, String> splitStreetAndHouseNumberOrNull(@Nullable final String streetAndNumber)
+	{
+		if (EmptyUtil.isBlank(streetAndNumber))
+		{
+			return null;
+		}
+		final Pattern pattern = Pattern.compile(StringUtils.REGEXP_STREET_AND_NUMBER_SPLIT);
+		final Matcher matcher = pattern.matcher(streetAndNumber);
+		if (!matcher.matches())
+		{
+			return null;
+		}
+
+		final String street = matcher.group(1);
+		final String number = matcher.group(2);
+		return ImmutablePair.of(trim(street), trim(number));
 	}
 
 	@Nullable
@@ -78,15 +100,6 @@ public final class StringUtils
 	public static Optional<String> trimBlankToOptional(@Nullable final String str)
 	{
 		return Optional.ofNullable(trimBlankToNull(str));
-	}
-
-	@Nullable
-	public static <T> T trimBlankToNullAndMap(@Nullable final String str, @NonNull Function<String, T> mapper)
-	{
-		final String strNorm = trimBlankToNull(str);
-		return strNorm != null
-				? mapper.apply(strNorm)
-				: null;
 	}
 
 	/**
@@ -1031,36 +1044,5 @@ public final class StringUtils
 			insertPosition += groupSize + groupSeparator.length();
 		}
 		return result.toString();
-	}
-
-	public static Map<String, String> parseURLQueryString(@Nullable final String query)
-	{
-		final String queryNorm = trimBlankToNull(query);
-		if (queryNorm == null)
-		{
-			return ImmutableMap.of();
-		}
-
-		final HashMap<String, String> params = new HashMap<String, String>();
-		for (final String param : queryNorm.split("&"))
-		{
-			final String key;
-			final String value;
-			final int idx = param.indexOf("=");
-			if (idx < 0)
-			{
-				key = param;
-				value = null;
-			}
-			else
-			{
-				key = param.substring(0, idx);
-				value = param.substring(idx + 1);
-			}
-			params.put(key, value);
-		}
-
-		return params;
-
 	}
 }

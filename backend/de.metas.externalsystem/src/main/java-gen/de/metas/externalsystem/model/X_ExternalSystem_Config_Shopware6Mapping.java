@@ -1,30 +1,30 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Shopware6Mapping
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6Mapping, org.compiere.model.I_Persistent 
+public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6Mapping, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -482839612L;
+	private static final long serialVersionUID = -494228431L;
 
-    /** Standard Constructor */
-    public X_ExternalSystem_Config_Shopware6Mapping (final Properties ctx, final int ExternalSystem_Config_Shopware6Mapping_ID, @Nullable final String trxName)
-    {
-      super (ctx, ExternalSystem_Config_Shopware6Mapping_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_ExternalSystem_Config_Shopware6Mapping (final Properties ctx, final int ExternalSystem_Config_Shopware6Mapping_ID, @Nullable final String trxName)
+	{
+		super (ctx, ExternalSystem_Config_Shopware6Mapping_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_ExternalSystem_Config_Shopware6Mapping (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_ExternalSystem_Config_Shopware6Mapping (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -34,7 +34,7 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-	/** 
+	/**
 	 * BPartner_IfExists AD_Reference_ID=541309
 	 * Reference name: SyncAdvice_IfExists
 	 */
@@ -50,12 +50,12 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getBPartner_IfExists() 
+	public java.lang.String getBPartner_IfExists()
 	{
 		return get_ValueAsString(COLUMNNAME_BPartner_IfExists);
 	}
 
-	/** 
+	/**
 	 * BPartner_IfNotExists AD_Reference_ID=541310
 	 * Reference name: SyncAdvice_IfNotExists
 	 */
@@ -71,12 +71,12 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getBPartner_IfNotExists() 
+	public java.lang.String getBPartner_IfNotExists()
 	{
 		return get_ValueAsString(COLUMNNAME_BPartner_IfNotExists);
 	}
 
-	/** 
+	/**
 	 * BPartnerLocation_IfExists AD_Reference_ID=541309
 	 * Reference name: SyncAdvice_IfExists
 	 */
@@ -92,12 +92,12 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getBPartnerLocation_IfExists() 
+	public java.lang.String getBPartnerLocation_IfExists()
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerLocation_IfExists);
 	}
 
-	/** 
+	/**
 	 * BPartnerLocation_IfNotExists AD_Reference_ID=541310
 	 * Reference name: SyncAdvice_IfNotExists
 	 */
@@ -113,7 +113,7 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getBPartnerLocation_IfNotExists() 
+	public java.lang.String getBPartnerLocation_IfNotExists()
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerLocation_IfNotExists);
 	}
@@ -121,14 +121,14 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	@Override
 	public void setC_DocTypeOrder_ID (final int C_DocTypeOrder_ID)
 	{
-		if (C_DocTypeOrder_ID < 1) 
+		if (C_DocTypeOrder_ID < 1)
 			set_Value (COLUMNNAME_C_DocTypeOrder_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocTypeOrder_ID, C_DocTypeOrder_ID);
 	}
 
 	@Override
-	public int getC_DocTypeOrder_ID() 
+	public int getC_DocTypeOrder_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeOrder_ID);
 	}
@@ -136,14 +136,14 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
-		if (C_PaymentTerm_ID < 1) 
+		if (C_PaymentTerm_ID < 1)
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
 	}
 
 	@Override
-	public int getC_PaymentTerm_ID() 
+	public int getC_PaymentTerm_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
 	}
@@ -155,7 +155,7 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -175,14 +175,14 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	@Override
 	public void setExternalSystem_Config_Shopware6_ID (final int ExternalSystem_Config_Shopware6_ID)
 	{
-		if (ExternalSystem_Config_Shopware6_ID < 1) 
+		if (ExternalSystem_Config_Shopware6_ID < 1)
 			set_Value (COLUMNNAME_ExternalSystem_Config_Shopware6_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_ExternalSystem_Config_Shopware6_ID, ExternalSystem_Config_Shopware6_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Config_Shopware6_ID() 
+	public int getExternalSystem_Config_Shopware6_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_Shopware6_ID);
 	}
@@ -190,19 +190,19 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	@Override
 	public void setExternalSystem_Config_Shopware6Mapping_ID (final int ExternalSystem_Config_Shopware6Mapping_ID)
 	{
-		if (ExternalSystem_Config_Shopware6Mapping_ID < 1) 
+		if (ExternalSystem_Config_Shopware6Mapping_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Config_Shopware6Mapping_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Config_Shopware6Mapping_ID, ExternalSystem_Config_Shopware6Mapping_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Config_Shopware6Mapping_ID() 
+	public int getExternalSystem_Config_Shopware6Mapping_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_Shopware6Mapping_ID);
 	}
 
-	/** 
+	/**
 	 * IsInvoiceEmailEnabled AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -218,12 +218,12 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getIsInvoiceEmailEnabled() 
+	public java.lang.String getIsInvoiceEmailEnabled()
 	{
 		return get_ValueAsString(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
 
-	/** 
+	/**
 	 * PaymentRule AD_Reference_ID=195
 	 * Reference name: _Payment Rule
 	 */
@@ -244,12 +244,6 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
-	/** PayPal Extern = PE */
-	public static final String PAYMENTRULE_PayPalExtern = "PE";
-	/** Kreditkarte Extern = CE */
-	public static final String PAYMENTRULE_KreditkarteExtern = "CE";
-	/** Sofortüberweisung = BE */
-	public static final String PAYMENTRULE_Sofortueberweisung = "BE";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
@@ -257,7 +251,7 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getPaymentRule() 
+	public java.lang.String getPaymentRule()
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentRule);
 	}
@@ -269,7 +263,7 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public int getSeqNo() 
+	public int getSeqNo()
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
@@ -281,12 +275,12 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getSW6_Customer_Group() 
+	public java.lang.String getSW6_Customer_Group()
 	{
 		return get_ValueAsString(COLUMNNAME_SW6_Customer_Group);
 	}
 
-	/** 
+	/**
 	 * SW6_Payment_Method AD_Reference_ID=541295
 	 * Reference name: _SW6_Payment_Method
 	 */
@@ -303,8 +297,6 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	public static final String SW6_PAYMENT_METHOD_PayPal = "pay_pal_payment_handler";
 	/** Rechnungskauf Paypal = pay_pal_pui_payment_handler */
 	public static final String SW6_PAYMENT_METHOD_RechnungskaufPaypal = "pay_pal_pui_payment_handler";
-	/** Kredit- oder Debitkarte = a_c_d_c_handler */
-	public static final String SW6_PAYMENT_METHOD_Kredit_OderDebitkarte = "a_c_d_c_handler";
 	@Override
 	public void setSW6_Payment_Method (final @Nullable java.lang.String SW6_Payment_Method)
 	{
@@ -312,7 +304,7 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	}
 
 	@Override
-	public java.lang.String getSW6_Payment_Method() 
+	public java.lang.String getSW6_Payment_Method()
 	{
 		return get_ValueAsString(COLUMNNAME_SW6_Payment_Method);
 	}

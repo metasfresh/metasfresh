@@ -1,54 +1,68 @@
 package de.metas.contracts.subscription.invoicecandidatehandler;
 
-import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.function.Consumer;
+
+import de.metas.lang.SOTrx;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.tax.api.TaxId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
 import de.metas.contracts.IContractsDAO;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
-import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
-import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
-
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(@NonNull final QueryLimit limit)
+	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final int limit)
 	{
 		return Services.get(IContractsDAO.class)
 				.retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, limit)
@@ -56,85 +70,56 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 	}
 
 	@Override
-	@NonNull
-	public CandidatesAutoCreateMode isMissingInvoiceCandidate(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
-		final boolean anyMissing = Services.get(IContractsDAO.class)
+		return Services.get(IContractsDAO.class)
 				.createTermWithMissingCandidateQueryBuilder(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, true /* ignoreDateFilters */)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTerm.getC_Flatrate_Term_ID())
 				.create()
 				.anyMatch();
-		if (!anyMissing)
-		{
-			return CandidatesAutoCreateMode.DONT;
-		}
-
-		return isEligibleForInvoiceAutoCreation(flatrateTerm)
-				? CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES
-				: CandidatesAutoCreateMode.CREATE_CANDIDATES;
-
-	}
-
-	private boolean isEligibleForInvoiceAutoCreation(@NonNull final I_C_Flatrate_Term flatrateTerm)
-	{
-		final boolean autoInvoiceFlatrateTerm = orgDAO.isAutoInvoiceFlatrateTerm(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()));
-		if (!autoInvoiceFlatrateTerm)
-		{
-			return false; // nothing to do
-		}
-
-		if (flatrateDAO.bpartnerHasExistingRunningTerms(flatrateTerm))
-		{
-			return false; // there are already running terms for this partner. Nothing to do
-		}
-		return true;
 	}
 
 	@Override
 	public void setSpecificInvoiceCandidateValues(
-			@NonNull final I_C_Invoice_Candidate icRecord,
+			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final I_C_Flatrate_Term term)
 	{
-		final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord);
-		IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
+		ic.setPriceActual(term.getPriceActual()); // TODO document and make sure there is the correct value
+		ic.setPrice_UOM_ID(term.getC_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
+		ic.setPriceEntered(term.getPriceActual()); // cg : task 04917 -- same as price actual
+
+		final boolean isSOTrx = true;
 
 		// 05265
-		icRecord.setIsSOTrx(true);
-
-		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
-		icRecord.setQtyOrdered(qty);
-	}
-
-	@Override
-	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
+		ic.setIsSOTrx(isSOTrx);
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
+
+		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
+		ic.setQtyOrdered(qty);
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
+				Env.getCtx(),
 				term,
 				taxCategoryId,
 				term.getM_Product_ID(),
 				ic.getDateOrdered(), // shipDate
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				(WarehouseId)null,
-				CoalesceUtil.coalesceSuppliersNotNull(
-						() -> ContractLocationHelper.extractDropshipLocationId(term),
-						() -> ContractLocationHelper.extractBillToLocationId(term)),
-				SOTrx.ofBoolean(ic.isSOTrx()),
-				vatCodeId);
+				CoalesceUtil.coalesceSuppliers(
+						()-> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
+						()->BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID())),
+				SOTrx.ofBoolean(isSOTrx));
+		ic.setC_Tax_ID(taxId.getRepoId());
+	}
 
+	@Override
+	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 		return PriceAndTax.builder()
-				.pricingSystemId(PricingSystemId.ofRepoId(term.getM_PricingSystem_ID()))
 				.priceActual(term.getPriceActual())
-				.priceEntered(term.getPriceActual()) // cg : task 04917 -- same as price actual
 				.priceUOMId(UomId.ofRepoId(term.getC_UOM_ID())) // 07090: when setting a priceActual, we also need to specify a PriceUOM
-				.taxCategoryId(TaxCategoryId.ofRepoId(term.getC_TaxCategory_ID()))
-				.taxId(taxId)
-				.taxIncluded(term.isTaxIncluded())
-				.currencyId(CurrencyId.ofRepoIdOrNull(term.getC_Currency_ID()))
 				.build();
 	}
 
@@ -153,7 +138,36 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final UomId uomId = HandlerTools.retrieveUomId(icRecord);
 
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(icRecord);
-		return Quantitys.create(term.getPlannedQtyPerUnit(), uomId);
+		return new Quantity(
+				term.getPlannedQtyPerUnit(),
+				loadOutOfTrx(uomId, I_C_UOM.class));
+	}
+
+	@Override
+	public Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(@NonNull final Consumer<I_C_Invoice_Candidate> defaultImplementation)
+	{
+		return defaultImplementation;
+	}
+
+	@Override
+	public Timestamp calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(invoiceCandidateRecord);
+
+		final Timestamp dateOrdered;
+		final boolean termHasAPredecessor = Services.get(IContractsDAO.class).termHasAPredecessor(term);
+		if (!termHasAPredecessor)
+		{
+			dateOrdered = term.getStartDate();
+		}
+		// If the term was extended (meaning that there is a predecessor term),
+		// C_Invoice_Candidate.DateOrdered should rather be the StartDate minus TermOfNoticeDuration/TermOfNoticeUnit
+		else
+		{
+			final Timestamp firstDayOfNewTerm = getGetExtentionDateOfNewTerm(term);
+			dateOrdered = firstDayOfNewTerm;
+		}
+		return dateOrdered;
 	}
 
 	/**

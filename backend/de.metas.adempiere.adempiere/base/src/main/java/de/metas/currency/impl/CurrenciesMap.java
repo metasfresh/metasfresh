@@ -1,16 +1,18 @@
 package de.metas.currency.impl;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.money.CurrencyId;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -53,7 +55,6 @@ final class CurrenciesMap
 				.toString();
 	}
 
-	@NonNull
 	public Currency getById(@NonNull final CurrencyId id)
 	{
 		final Currency currency = currenciesById.get(id);
@@ -69,7 +70,7 @@ final class CurrenciesMap
 		final Currency currency = currenciesByCode.get(currencyCode);
 		if (currency == null)
 		{
-			throw new AdempiereException("@NotFound@ @C_Currency_ID@ @ISO_Code@: " + currencyCode);
+			throw new AdempiereException("@NotFound@ @ISO_Code@: " + currencyCode);
 		}
 		return currency;
 	}

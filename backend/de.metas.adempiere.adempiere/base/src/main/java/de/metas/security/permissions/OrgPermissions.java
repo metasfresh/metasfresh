@@ -10,33 +10,18 @@ package de.metas.security.permissions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.organization.OrgId;
-import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.tree.AdTreeId;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.MTree_Base;
-import org.compiere.util.DB;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,10 +31,27 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.tree.AdTreeId;
+import org.adempiere.service.ClientId;
+import org.compiere.model.MTree_Base;
+import org.compiere.util.DB;
+
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.organization.OrgId;
+import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
+import de.metas.util.collections.NullPredicate;
+import lombok.NonNull;
+
 @Immutable
 public class OrgPermissions extends AbstractPermissions<OrgPermission>
 {
-	public static Builder builder(@Nullable final AdTreeId orgTreeId)
+	public static final Builder builder(@Nullable final AdTreeId orgTreeId)
 	{
 		return new Builder(orgTreeId);
 	}
@@ -123,6 +125,8 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	}
 
 	/**
+	 * @param clientiD
+	 * @param rw true if read-write access is required, false if read-only access is required
 	 * @return true if there is access to given AD_Client_ID
 	 */
 	public boolean isClientAccess(final ClientId clientId, final Access access)
@@ -160,6 +164,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	}
 
 	/**
+	 * @param rw true if read-write access is required, false if read-only access is required
 	 * @return list of AD_Org_IDs on which we have access
 	 */
 	public Set<OrgId> getOrgAccess(final Access access)
@@ -183,6 +188,17 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	}
 
 	/**
+	 * @param access
+	 * @return resources which have given access (read-write set)
+	 */
+	public Set<OrgResource> getResourcesWithAccess(final Access access)
+	{
+		Predicate<OrgResource> matcher = NullPredicate.of();
+		return getResourcesWithAccessThatMatch(access, matcher);
+	}
+
+	/**
+	 * @param access
 	 * @return resources which have given access and are matched by given matcher (read-write set)
 	 */
 	public Set<OrgResource> getResourcesWithAccessThatMatch(final Access access, final Predicate<OrgResource> matcher)
@@ -207,7 +223,6 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		return result;
 	}
 
-	@SuppressWarnings("UnusedReturnValue")
 	public static class Builder extends PermissionsBuilder<OrgPermission, OrgPermissions>
 	{
 		private final AdTreeId orgTreeId;
@@ -235,15 +250,20 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			return new OrgPermissions(this);
 		}
 
-		private AdTreeId getOrgTreeId()
+		private final AdTreeId getOrgTreeId()
 		{
 			return orgTreeId;
 		}
 
 		/**
 		 * Load Org Access Add Tree to List
+		 *
+		 * @param list list
+		 * @param oa org access
+		 * @return
+		 * @see org.compiere.util.Login
 		 */
-		public Builder addPermissionRecursively(final OrgPermission oa)
+		public Builder addPermissionRecursivelly(final OrgPermission oa)
 		{
 			if (hasPermission(oa))
 			{
@@ -259,19 +279,15 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			}
 
 			final OrgResource orgResource = oa.getResource();
-			if (!orgResource.isGroupingOrg())
+			if (!orgResource.isSummaryOrganization())
 			{
 				return this;
 			}
 
 			// Summary Org - Get Dependents
 			final MTree_Base tree = MTree_Base.getById(adTreeOrgId);
-			final String sql = "SELECT "
-					+ "  AD_Client_ID"
-					+ ", AD_Org_ID"
-					+ ", " + I_AD_Org.COLUMNNAME_IsSummary
-					+ " FROM AD_Org "
-					+ " WHERE IsActive='Y' AND AD_Org_ID IN (SELECT Node_ID FROM " + tree.getNodeTableName()
+			final String sql = "SELECT AD_Client_ID, AD_Org_ID FROM AD_Org "
+					+ "WHERE IsActive='Y' AND AD_Org_ID IN (SELECT Node_ID FROM " + tree.getNodeTableName()
 					+ " WHERE AD_Tree_ID=? AND Parent_ID=? AND IsActive='Y')";
 			final Object[] sqlParams = new Object[] { tree.getAD_Tree_ID(), orgResource.getOrgId() };
 			PreparedStatement pstmt = null;
@@ -285,13 +301,10 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 				{
 					final ClientId clientId = ClientId.ofRepoId(rs.getInt(1));
 					final OrgId orgId = OrgId.ofRepoId(rs.getInt(2));
-					final boolean isGroupingOrg = StringUtils.toBoolean(rs.getString(3));
-					final OrgResource resource = OrgResource.of(clientId, orgId, isGroupingOrg);
+					final OrgResource resource = OrgResource.of(clientId, orgId);
 					final OrgPermission childOrgPermission = oa.copyWithResource(resource);
-					addPermissionRecursively(childOrgPermission);
+					addPermissionRecursivelly(childOrgPermission);
 				}
-
-				return this;
 			}
 			catch (final SQLException e)
 			{
@@ -300,8 +313,12 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 			finally
 			{
 				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
 			}
-		}
+
+			return this;
+		}	// loadOrgAccessAdd
 
 	}
 }

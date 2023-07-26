@@ -1,15 +1,15 @@
 package de.metas.handlingunits.sourcehu;
 
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.util.proxy.Cached;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.util.ISingletonService;
-import org.adempiere.util.proxy.Cached;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
 
 /*
  * #%L
@@ -44,14 +44,19 @@ public interface ISourceHuDAO extends ISingletonService
 	/**
 	 * Return {@code true} if the given HU is referenced by an active {@link I_M_Source_HU}.<br>
 	 * Note that we use the ID for performance reasons.
+	 *
+	 * @param huId
+	 * @return
 	 */
 	boolean isSourceHu(HuId huId);
 
-	@Nullable
 	I_M_Source_HU retrieveSourceHuMarkerOrNull(I_M_HU hu);
 
 	/**
 	 * Returns those fine picking source HUs whose location and product match any the given query.
+	 *
+	 * @param query
+	 * @return
 	 */
 	List<I_M_HU> retrieveActiveSourceHus(MatchingSourceHusQuery query);
 

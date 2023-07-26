@@ -1,9 +1,8 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { detect } from 'detect-browser';
-import { connect } from 'react-redux';
+
 import LoginForm from '../components/app/LoginForm';
-import ErrorScreen from '../components/app/ErrorScreen';
 
 const BROWSER = detect();
 
@@ -12,7 +11,7 @@ const BROWSER = detect();
  * @module Login
  * @extends Component
  */
-class Login extends PureComponent {
+class Login extends Component {
   /**
    * @method browserSupport
    * @summary Method checking if user is using a supported browser
@@ -30,7 +29,7 @@ class Login extends PureComponent {
   };
 
   render() {
-    const { auth, splat, token, connectionErrorType } = this.props;
+    const { auth, splat, token } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
     const component = <LoginForm {...{ auth, token }} path={splat} />;
 
@@ -45,15 +44,10 @@ class Login extends PureComponent {
             </div>
           )}
         </div>
-        {connectionErrorType && <ErrorScreen errorType={connectionErrorType} />}
       </div>
     );
   }
 }
-
-const mapStateToProps = (state) => ({
-  connectionErrorType: state.appHandler.connectionErrorType || '',
-});
 
 /**
  * @typedef {object} Props Component props
@@ -64,7 +58,6 @@ Login.propTypes = {
   splat: PropTypes.string,
   token: PropTypes.string,
   auth: PropTypes.object,
-  connectionErrorType: PropTypes.string,
 };
 
-export default connect(mapStateToProps, null)(Login);
+export default Login;

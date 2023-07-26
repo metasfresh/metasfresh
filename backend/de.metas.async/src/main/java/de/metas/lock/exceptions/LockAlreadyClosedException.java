@@ -38,7 +38,7 @@ public class LockAlreadyClosedException extends LockException
 	 */
 	private static final long serialVersionUID = 297769188483961257L;
 
-	public static void throwIfClosed(final ILock lock)
+	public static final void throwIfClosed(final ILock lock)
 	{
 		if (lock.isClosed())
 		{

@@ -1,11 +1,10 @@
 package org.adempiere.mm.attributes.api;
 
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.util.Date;
+
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import java.util.Date;
-import java.util.Optional;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L
@@ -46,8 +45,6 @@ public interface ILotNumberBL extends ISingletonService
 	 * @return
 	 */
 	String calculateLotNumber(Date date);
-
-	Optional<String> getAndIncrementLotNo(@NonNull LotNoContext context);
 
 	/**
 	 * @param asi

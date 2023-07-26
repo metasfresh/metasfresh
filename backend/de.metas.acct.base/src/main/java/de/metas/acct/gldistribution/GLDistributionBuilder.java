@@ -1,5 +1,15 @@
 package de.metas.acct.gldistribution;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.compiere.model.I_GL_Distribution;
+import org.compiere.model.I_GL_DistributionLine;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.gldistribution.GLDistributionResultLine.Sign;
 import de.metas.currency.CurrencyPrecision;
@@ -8,16 +18,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.compiere.model.I_GL_Distribution;
-import org.compiere.model.I_GL_DistributionLine;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 /*
  * #%L
@@ -49,17 +50,18 @@ import java.util.List;
  */
 public class GLDistributionBuilder
 {
-	public static GLDistributionBuilder newInstance()
+	public static final GLDistributionBuilder newInstance()
 	{
 		return new GLDistributionBuilder();
 	}
 
 	// services
-	private static final Logger log = LogManager.getLogger(GLDistributionBuilder.class);
+	private static final transient Logger log = LogManager.getLogger(GLDistributionBuilder.class);
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	// Parameters
+	private Properties _ctx;
 	private I_GL_Distribution _glDistribution;
 	private BigDecimal _amountToDistribute;
 	private Sign _amountSign = Sign.DETECT;
@@ -156,7 +158,7 @@ public class GLDistributionBuilder
 		return GLDistributionResult.of(resultLines);
 	}
 
-	private GLDistributionResultLine createResultLine(final I_GL_DistributionLine glDistributionLine)
+	private final GLDistributionResultLine createResultLine(final I_GL_DistributionLine glDistributionLine)
 	{
 		final AccountDimension accountDimension = createAccountDimension(glDistributionLine);
 
@@ -191,7 +193,7 @@ public class GLDistributionBuilder
 		return resultLine;
 	}	// setAmt
 
-	private AccountDimension createAccountDimension(final I_GL_DistributionLine line)
+	private final AccountDimension createAccountDimension(final I_GL_DistributionLine line)
 	{
 		final AccountDimension.Builder builder = AccountDimension.builder()
 				.applyOverrides(getAccountDimension());
@@ -240,14 +242,6 @@ public class GLDistributionBuilder
 		{
 			builder.setC_Activity_ID(line.getC_Activity_ID());
 		}
-		if (line.isOverwriteOrder())
-		{
-			builder.setSalesOrderId(line.getC_Order_ID());
-		}
-		if (line.isOverwriteSectionCode())
-		{
-			builder.setM_SectionCode_ID(line.getM_SectionCode_ID());
-		}
 		if (line.isOverwriteUser1())
 		{
 			builder.setUser1_ID(line.getUser1_ID());
@@ -260,17 +254,17 @@ public class GLDistributionBuilder
 		return builder.build();
 	}
 
-	private String buildDescription(final I_GL_DistributionLine line)
+	private final String buildDescription(final I_GL_DistributionLine line)
 	{
 		final I_GL_Distribution distribution = getGLDistribution();
 
 		final StringBuilder description = new StringBuilder()
 				.append(distribution.getName()).append(" #").append(line.getLine());
 
-		final String lineDescription = StringUtils.trimBlankToNull(line.getDescription());
-		if (lineDescription != null)
+		final String lineDescription = line.getDescription();
+		if (!Check.isEmpty(lineDescription, true))
 		{
-			description.append(" - ").append(lineDescription);
+			description.append(" - ").append(lineDescription.trim());
 		}
 
 		return description.toString();
@@ -279,10 +273,11 @@ public class GLDistributionBuilder
 	public GLDistributionBuilder setGLDistribution(final I_GL_Distribution distribution)
 	{
 		_glDistribution = distribution;
+		_ctx = null;
 		return this;
 	}
 
-	private I_GL_Distribution getGLDistribution()
+	private final I_GL_Distribution getGLDistribution()
 	{
 		Check.assumeNotNull(_glDistribution, "glDistribution not null");
 		return _glDistribution;
@@ -301,13 +296,13 @@ public class GLDistributionBuilder
 		return this;
 	}
 
-	private CurrencyId getCurrencyId()
+	private final CurrencyId getCurrencyId()
 	{
 		Check.assumeNotNull(_currencyId, "currencyId not null");
 		return _currencyId;
 	}
 
-	private CurrencyPrecision getPrecision()
+	private final CurrencyPrecision getPrecision()
 	{
 		if (_precision == null)
 		{
@@ -322,7 +317,7 @@ public class GLDistributionBuilder
 		return this;
 	}
 
-	private BigDecimal getAmountToDistribute()
+	private final BigDecimal getAmountToDistribute()
 	{
 		Check.assumeNotNull(_amountToDistribute, "amountToDistribute not null");
 		return _amountToDistribute;
@@ -334,7 +329,7 @@ public class GLDistributionBuilder
 		return this;
 	}
 
-	private Sign getAmountSign()
+	private final Sign getAmountSign()
 	{
 		Check.assumeNotNull(_amountSign, "amountSign not null");
 		return _amountSign;
@@ -346,7 +341,7 @@ public class GLDistributionBuilder
 		return this;
 	}
 
-	private BigDecimal getQtyToDistribute()
+	private final BigDecimal getQtyToDistribute()
 	{
 		Check.assumeNotNull(_qtyToDistribute, "qtyToDistribute not null");
 		return _qtyToDistribute;
@@ -358,7 +353,7 @@ public class GLDistributionBuilder
 		return this;
 	}
 
-	private AccountDimension getAccountDimension()
+	private final AccountDimension getAccountDimension()
 	{
 		Check.assumeNotNull(_accountDimension, "_accountDimension not null");
 		return _accountDimension;

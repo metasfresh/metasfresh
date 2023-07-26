@@ -22,31 +22,42 @@
 
 package de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner;
 
-import au.com.origin.snapshots.Expect;
-
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare.alberta.bpartner.albertabpartner.AlbertaBPartner;
 import de.metas.vertical.healthcare.alberta.bpartner.albertabpartner.AlbertaBPartnerRepository;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 
-@ExtendWith(SnapshotExtension.class)
 public class AlbertaBPartnerRepositoryTest
 {
 	private AlbertaBPartnerRepository albertaBPartnerRepository;
-	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		albertaBPartnerRepository =  new AlbertaBPartnerRepository();
+	}
+
+	@BeforeAll
+	public static void initStatic()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	public static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
@@ -65,7 +76,7 @@ public class AlbertaBPartnerRepositoryTest
 		final AlbertaBPartner result = albertaBPartnerRepository.save(bPartner);
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 
@@ -81,6 +92,6 @@ public class AlbertaBPartnerRepositoryTest
 		final AlbertaBPartner result = albertaBPartnerRepository.save(bPartner);
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 }

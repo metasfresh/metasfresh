@@ -107,13 +107,6 @@
 			<version>10.0.0</version>
 		</dependency>
 
-		<!-- required for PickingSlotQRCode printing -->
-		<dependency>
-			<groupId>de.metas.global_qrcode</groupId>
-			<artifactId>de.metas.global_qrcode.services</artifactId>
-			<version>10.0.0</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
@@ -132,23 +125,6 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy</artifactId>
-			<version>${byte-buddy.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy-agent</artifactId>
-			<version>${byte-buddy.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.objenesis</groupId>
-			<artifactId>objenesis</artifactId>
-			<version>${objenesis.version}</version>
-			<scope>test</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

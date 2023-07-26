@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Bean;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
@@ -91,7 +90,7 @@ public class Application
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
 						.packageIds(createPackageIDs())
-						.grossWeightKg(BigDecimal.ONE)
+						.grossWeightKg(1)
 						.content("some products")
 						.build())
 				.customerReference("some info for customer")

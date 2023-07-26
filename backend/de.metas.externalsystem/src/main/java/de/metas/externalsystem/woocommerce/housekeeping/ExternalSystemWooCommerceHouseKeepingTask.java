@@ -68,7 +68,7 @@ public class ExternalSystemWooCommerceHouseKeepingTask implements IStartupHouseK
 
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(ExternalSystemType.WOO);
+		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getAllByType(ExternalSystemType.WOO);
 
 		parentConfigList
 				.stream()

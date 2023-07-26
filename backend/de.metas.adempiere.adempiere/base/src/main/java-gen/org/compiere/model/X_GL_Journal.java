@@ -1,172 +1,344 @@
-// Generated Model - DO NOT CHANGE
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
+
+import static org.compiere.model.I_GL_Journal.COLUMNNAME_IsApproved;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
+
+import org.compiere.util.Env;
 
 /** Generated Model for GL_Journal
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_GL_Journal extends org.compiere.model.PO implements I_GL_Journal, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1731739462L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1350629674L;
 
     /** Standard Constructor */
-    public X_GL_Journal (final Properties ctx, final int GL_Journal_ID, @Nullable final String trxName)
+    public X_GL_Journal (Properties ctx, int GL_Journal_ID, String trxName)
     {
       super (ctx, GL_Journal_ID, trxName);
+      /** if (GL_Journal_ID == 0)
+        {
+			setC_AcctSchema_ID (0);
+// @$C_AcctSchema_ID@
+			setC_ConversionType_ID (0);
+			setC_Currency_ID (0);
+// @C_Currency_ID@
+			setC_DocType_ID (0);
+// @C_DocType_ID@
+			setCurrencyRate (Env.ZERO);
+// 1
+			setDateAcct (new Timestamp( System.currentTimeMillis() ));
+// @DateAcct@
+			setDateDoc (new Timestamp( System.currentTimeMillis() ));
+// @DateDoc@
+			setDescription (null);
+			setDocAction (null);
+// CO
+			setDocStatus (null);
+// DR
+			setDocumentNo (null);
+			setGL_Category_ID (0);
+// @GL_Category_ID@
+			setGL_Journal_ID (0);
+			setIsApproved (true);
+// Y
+			setIsPrinted (false);
+// N
+			setPosted (false);
+// N
+			setPostingType (null);
+// @PostingType@
+			setTotalCr (Env.ZERO);
+// 0
+			setTotalDr (Env.ZERO);
+// 0
+        } */
     }
 
     /** Load Constructor */
-    public X_GL_Journal (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_GL_Journal (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
 
-	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
-	}
+//	@Override
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+//	}
+//
+//	@Override
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+//	}
 
+	/** Set Buchführungs-Schema.
+		@param C_AcctSchema_ID 
+		Rules for accounting
+	  */
 	@Override
-	public void setC_AcctSchema(final org.compiere.model.I_C_AcctSchema C_AcctSchema)
-	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
-	}
-
-	@Override
-	public void setC_AcctSchema_ID (final int C_AcctSchema_ID)
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, C_AcctSchema_ID);
+			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
 	}
 
+	/** Get Buchführungs-Schema.
+		@return Rules for accounting
+	  */
 	@Override
-	public int getC_AcctSchema_ID() 
+	public int getC_AcctSchema_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_AcctSchema_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_ConversionType_ID (final int C_ConversionType_ID)
+	public org.compiere.model.I_C_ConversionType getC_ConversionType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class);
+	}
+
+	@Override
+	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class, C_ConversionType);
+	}
+
+	/** Set Kursart.
+		@param C_ConversionType_ID 
+		Currency Conversion Rate Type
+	  */
+	@Override
+	public void setC_ConversionType_ID (int C_ConversionType_ID)
 	{
 		if (C_ConversionType_ID < 1) 
 			set_Value (COLUMNNAME_C_ConversionType_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_ConversionType_ID, C_ConversionType_ID);
+			set_Value (COLUMNNAME_C_ConversionType_ID, Integer.valueOf(C_ConversionType_ID));
 	}
 
+	/** Get Kursart.
+		@return Currency Conversion Rate Type
+	  */
 	@Override
-	public int getC_ConversionType_ID() 
+	public int getC_ConversionType_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_ConversionType_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_ConversionType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Currency_ID (final int C_Currency_ID)
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
+	/** Get Währung.
+		@return The Currency for this record
+	  */
 	@Override
-	public int getC_Currency_ID() 
+	public int getC_Currency_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_DocType_ID (final int C_DocType_ID)
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Document type or rules
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
 			set_Value (COLUMNNAME_C_DocType_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_DocType_ID, C_DocType_ID);
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
+	/** Get Belegart.
+		@return Document type or rules
+	  */
 	@Override
-	public int getC_DocType_ID() 
+	public int getC_DocType_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Kontrollbetrag.
+		@param ControlAmt 
+		If not zero, the Debit amount of the document must be equal this amount
+	  */
 	@Override
-	public void setControlAmt (final @Nullable BigDecimal ControlAmt)
+	public void setControlAmt (java.math.BigDecimal ControlAmt)
 	{
 		set_Value (COLUMNNAME_ControlAmt, ControlAmt);
 	}
 
+	/** Get Kontrollbetrag.
+		@return If not zero, the Debit amount of the document must be equal this amount
+	  */
 	@Override
-	public BigDecimal getControlAmt() 
+	public java.math.BigDecimal getControlAmt () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ControlAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ControlAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
+	/** Set Wechselkurs.
+		@param CurrencyRate 
+		Currency Conversion Rate
+	  */
 	@Override
-	public void setCurrencyRate (final BigDecimal CurrencyRate)
+	public void setCurrencyRate (java.math.BigDecimal CurrencyRate)
 	{
 		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
 	}
 
+	/** Get Wechselkurs.
+		@return Currency Conversion Rate
+	  */
 	@Override
-	public BigDecimal getCurrencyRate() 
+	public java.math.BigDecimal getCurrencyRate () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrencyRate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
+	/** Set Buchungsdatum.
+		@param DateAcct 
+		Accounting Date
+	  */
 	@Override
-	public void setDateAcct (final java.sql.Timestamp DateAcct)
+	public void setDateAcct (java.sql.Timestamp DateAcct)
 	{
 		set_Value (COLUMNNAME_DateAcct, DateAcct);
 	}
 
+	/** Get Buchungsdatum.
+		@return Accounting Date
+	  */
 	@Override
-	public java.sql.Timestamp getDateAcct() 
+	public java.sql.Timestamp getDateAcct () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
+	/** Set Belegdatum.
+		@param DateDoc 
+		Datum des Belegs
+	  */
 	@Override
-	public void setDateDoc (final java.sql.Timestamp DateDoc)
+	public void setDateDoc (java.sql.Timestamp DateDoc)
 	{
 		set_Value (COLUMNNAME_DateDoc, DateDoc);
 	}
 
+	/** Get Belegdatum.
+		@return Datum des Belegs
+	  */
 	@Override
-	public java.sql.Timestamp getDateDoc() 
+	public java.sql.Timestamp getDateDoc () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateDoc);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDoc);
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -202,18 +374,24 @@ public class X_GL_Journal extends org.compiere.model.PO implements I_GL_Journal,
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
-	/** UnClose = UC */
-	public static final String DOCACTION_UnClose = "UC";
+	/** Set Belegverarbeitung.
+		@param DocAction 
+		The targeted status of the document
+	  */
 	@Override
-	public void setDocAction (final java.lang.String DocAction)
+	public void setDocAction (java.lang.String DocAction)
 	{
+
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
+	/** Get Belegverarbeitung.
+		@return The targeted status of the document
+	  */
 	@Override
-	public java.lang.String getDocAction() 
+	public java.lang.String getDocAction () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocAction);
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
 	/** 
@@ -245,202 +423,257 @@ public class X_GL_Journal extends org.compiere.model.PO implements I_GL_Journal,
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param DocStatus 
+		The current status of the document
+	  */
 	@Override
-	public void setDocStatus (final java.lang.String DocStatus)
+	public void setDocStatus (java.lang.String DocStatus)
 	{
+
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
+	/** Get Belegstatus.
+		@return The current status of the document
+	  */
 	@Override
-	public java.lang.String getDocStatus() 
+	public java.lang.String getDocStatus () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
+	/** Set Beleg Nr..
+		@param DocumentNo 
+		Document sequence number of the document
+	  */
 	@Override
-	public void setDocumentNo (final java.lang.String DocumentNo)
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
+	/** Get Beleg Nr..
+		@return Document sequence number of the document
+	  */
 	@Override
-	public java.lang.String getDocumentNo() 
+	public java.lang.String getDocumentNo () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	@Override
-	public org.compiere.model.I_GL_Budget getGL_Budget()
+	public org.compiere.model.I_GL_Budget getGL_Budget() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_GL_Budget_ID, org.compiere.model.I_GL_Budget.class);
 	}
 
 	@Override
-	public void setGL_Budget(final org.compiere.model.I_GL_Budget GL_Budget)
+	public void setGL_Budget(org.compiere.model.I_GL_Budget GL_Budget)
 	{
 		set_ValueFromPO(COLUMNNAME_GL_Budget_ID, org.compiere.model.I_GL_Budget.class, GL_Budget);
 	}
 
+	/** Set Budget.
+		@param GL_Budget_ID 
+		General Ledger Budget
+	  */
 	@Override
-	public void setGL_Budget_ID (final int GL_Budget_ID)
+	public void setGL_Budget_ID (int GL_Budget_ID)
 	{
 		if (GL_Budget_ID < 1) 
 			set_Value (COLUMNNAME_GL_Budget_ID, null);
 		else 
-			set_Value (COLUMNNAME_GL_Budget_ID, GL_Budget_ID);
+			set_Value (COLUMNNAME_GL_Budget_ID, Integer.valueOf(GL_Budget_ID));
 	}
 
+	/** Get Budget.
+		@return General Ledger Budget
+	  */
 	@Override
-	public int getGL_Budget_ID() 
+	public int getGL_Budget_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_GL_Budget_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Budget_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_GL_Category getGL_Category()
+	public org.compiere.model.I_GL_Category getGL_Category() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_GL_Category_ID, org.compiere.model.I_GL_Category.class);
 	}
 
 	@Override
-	public void setGL_Category(final org.compiere.model.I_GL_Category GL_Category)
+	public void setGL_Category(org.compiere.model.I_GL_Category GL_Category)
 	{
 		set_ValueFromPO(COLUMNNAME_GL_Category_ID, org.compiere.model.I_GL_Category.class, GL_Category);
 	}
 
+	/** Set Hauptbuch - Kategorie.
+		@param GL_Category_ID 
+		General Ledger Category
+	  */
 	@Override
-	public void setGL_Category_ID (final int GL_Category_ID)
+	public void setGL_Category_ID (int GL_Category_ID)
 	{
 		if (GL_Category_ID < 1) 
 			set_Value (COLUMNNAME_GL_Category_ID, null);
 		else 
-			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
+			set_Value (COLUMNNAME_GL_Category_ID, Integer.valueOf(GL_Category_ID));
 	}
 
+	/** Get Hauptbuch - Kategorie.
+		@return General Ledger Category
+	  */
 	@Override
-	public int getGL_Category_ID() 
+	public int getGL_Category_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_GL_Category_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Category_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setGL_Journal_ID (final int GL_Journal_ID)
-	{
-		if (GL_Journal_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_GL_Journal_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_GL_Journal_ID, GL_Journal_ID);
-	}
-
-	@Override
-	public int getGL_Journal_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_GL_Journal_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_GL_JournalBatch getGL_JournalBatch()
+	public org.compiere.model.I_GL_JournalBatch getGL_JournalBatch() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_GL_JournalBatch_ID, org.compiere.model.I_GL_JournalBatch.class);
 	}
 
 	@Override
-	public void setGL_JournalBatch(final org.compiere.model.I_GL_JournalBatch GL_JournalBatch)
+	public void setGL_JournalBatch(org.compiere.model.I_GL_JournalBatch GL_JournalBatch)
 	{
 		set_ValueFromPO(COLUMNNAME_GL_JournalBatch_ID, org.compiere.model.I_GL_JournalBatch.class, GL_JournalBatch);
 	}
 
+	/** Set Journal-Lauf.
+		@param GL_JournalBatch_ID 
+		General Ledger Journal Batch
+	  */
 	@Override
-	public void setGL_JournalBatch_ID (final int GL_JournalBatch_ID)
+	public void setGL_JournalBatch_ID (int GL_JournalBatch_ID)
 	{
 		if (GL_JournalBatch_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_GL_JournalBatch_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_GL_JournalBatch_ID, GL_JournalBatch_ID);
+			set_ValueNoCheck (COLUMNNAME_GL_JournalBatch_ID, Integer.valueOf(GL_JournalBatch_ID));
 	}
 
+	/** Get Journal-Lauf.
+		@return General Ledger Journal Batch
+	  */
 	@Override
-	public int getGL_JournalBatch_ID() 
+	public int getGL_JournalBatch_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_GL_JournalBatch_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_GL_JournalBatch_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Journal.
+		@param GL_Journal_ID 
+		General Ledger Journal
+	  */
 	@Override
-	public void setIsApproved (final boolean IsApproved)
+	public void setGL_Journal_ID (int GL_Journal_ID)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsApproved, IsApproved);
-	}
-
-	@Override
-	public boolean isApproved() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
-	}
-
-	@Override
-	public void setIsPrinted (final boolean IsPrinted)
-	{
-		set_ValueNoCheck (COLUMNNAME_IsPrinted, IsPrinted);
-	}
-
-	@Override
-	public boolean isPrinted() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPrinted);
-	}
-
-	@Override
-	public org.compiere.model.I_M_SectionCode getM_SectionCode()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
-	}
-
-	@Override
-	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
-	{
-		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
-	}
-
-	@Override
-	public void setM_SectionCode_ID (final int M_SectionCode_ID)
-	{
-		if (M_SectionCode_ID < 1) 
-			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		if (GL_Journal_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_GL_Journal_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+			set_ValueNoCheck (COLUMNNAME_GL_Journal_ID, Integer.valueOf(GL_Journal_ID));
 	}
 
+	/** Get Journal.
+		@return General Ledger Journal
+	  */
 	@Override
-	public int getM_SectionCode_ID() 
+	public int getGL_Journal_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_GL_Journal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Freigegeben.
+		@param IsApproved 
+		Indicates if this document requires approval
+	  */
 	@Override
-	public void setPosted (final boolean Posted)
+	public void setIsApproved (boolean IsApproved)
 	{
-		set_ValueNoCheck (COLUMNNAME_Posted, Posted);
+		set_ValueNoCheck (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
 	}
 
+	/** Get Freigegeben.
+		@return Indicates if this document requires approval
+	  */
 	@Override
-	public boolean isPosted() 
+	public boolean isApproved () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Posted);
+		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set andrucken.
+		@param IsPrinted 
+		Indicates if this document / line is printed
+	  */
 	@Override
-	public void setPostingError_Issue_ID (final int PostingError_Issue_ID)
+	public void setIsPrinted (boolean IsPrinted)
 	{
-		if (PostingError_Issue_ID < 1) 
-			set_Value (COLUMNNAME_PostingError_Issue_ID, null);
-		else 
-			set_Value (COLUMNNAME_PostingError_Issue_ID, PostingError_Issue_ID);
+		set_ValueNoCheck (COLUMNNAME_IsPrinted, Boolean.valueOf(IsPrinted));
 	}
 
+	/** Get andrucken.
+		@return Indicates if this document / line is printed
+	  */
 	@Override
-	public int getPostingError_Issue_ID() 
+	public boolean isPrinted () 
 	{
-		return get_ValueAsInt(COLUMNNAME_PostingError_Issue_ID);
+		Object oo = get_Value(COLUMNNAME_IsPrinted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Verbucht.
+		@param Posted 
+		Posting status
+	  */
+	@Override
+	public void setPosted (boolean Posted)
+	{
+		set_ValueNoCheck (COLUMNNAME_Posted, Boolean.valueOf(Posted));
+	}
+
+	/** Get Verbucht.
+		@return Posting status
+	  */
+	@Override
+	public boolean isPosted () 
+	{
+		Object oo = get_Value(COLUMNNAME_Posted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** 
@@ -458,94 +691,153 @@ public class X_GL_Journal extends org.compiere.model.PO implements I_GL_Journal,
 	public static final String POSTINGTYPE_Statistical = "S";
 	/** Reservation = R */
 	public static final String POSTINGTYPE_Reservation = "R";
-	/** Actual Year End = Y */
-	public static final String POSTINGTYPE_ActualYearEnd = "Y";
+	/** Set Buchungsart.
+		@param PostingType 
+		The type of posted amount for the transaction
+	  */
 	@Override
-	public void setPostingType (final java.lang.String PostingType)
+	public void setPostingType (java.lang.String PostingType)
 	{
+
 		set_Value (COLUMNNAME_PostingType, PostingType);
 	}
 
+	/** Get Buchungsart.
+		@return The type of posted amount for the transaction
+	  */
 	@Override
-	public java.lang.String getPostingType() 
+	public java.lang.String getPostingType () 
 	{
-		return get_ValueAsString(COLUMNNAME_PostingType);
+		return (java.lang.String)get_Value(COLUMNNAME_PostingType);
+	}
+
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public void setProcessed (boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+	}
+
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public boolean isProcessed () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Verarbeiten.
+		@param Processing Verarbeiten	  */
+	@Override
+	public void setProcessing (boolean Processing)
+	{
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+	}
+
+	/** Get Verarbeiten.
+		@return Verarbeiten	  */
+	@Override
+	public boolean isProcessing () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
-	public void setProcessed (final boolean Processed)
-	{
-		set_Value (COLUMNNAME_Processed, Processed);
-	}
-
-	@Override
-	public boolean isProcessed() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_Processed);
-	}
-
-	@Override
-	public void setProcessing (final boolean Processing)
-	{
-		set_Value (COLUMNNAME_Processing, Processing);
-	}
-
-	@Override
-	public boolean isProcessing() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_Processing);
-	}
-
-	@Override
-	public org.compiere.model.I_GL_Journal getReversal()
+	public org.compiere.model.I_GL_Journal getReversal() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_GL_Journal.class);
 	}
 
 	@Override
-	public void setReversal(final org.compiere.model.I_GL_Journal Reversal)
+	public void setReversal(org.compiere.model.I_GL_Journal Reversal)
 	{
 		set_ValueFromPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_GL_Journal.class, Reversal);
 	}
 
+	/** Set Reversal ID.
+		@param Reversal_ID 
+		ID of document reversal
+	  */
 	@Override
-	public void setReversal_ID (final int Reversal_ID)
+	public void setReversal_ID (int Reversal_ID)
 	{
 		if (Reversal_ID < 1) 
 			set_Value (COLUMNNAME_Reversal_ID, null);
 		else 
-			set_Value (COLUMNNAME_Reversal_ID, Reversal_ID);
+			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
 	}
 
+	/** Get Reversal ID.
+		@return ID of document reversal
+	  */
 	@Override
-	public int getReversal_ID() 
+	public int getReversal_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_Reversal_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Reversal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Total Credit.
+		@param TotalCr 
+		Total Credit in document currency
+	  */
 	@Override
-	public void setTotalCr (final BigDecimal TotalCr)
+	public void setTotalCr (java.math.BigDecimal TotalCr)
 	{
 		set_ValueNoCheck (COLUMNNAME_TotalCr, TotalCr);
 	}
 
+	/** Get Total Credit.
+		@return Total Credit in document currency
+	  */
 	@Override
-	public BigDecimal getTotalCr() 
+	public java.math.BigDecimal getTotalCr () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalCr);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalCr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
+	/** Set Total Debit.
+		@param TotalDr 
+		Total debit in document currency
+	  */
 	@Override
-	public void setTotalDr (final BigDecimal TotalDr)
+	public void setTotalDr (java.math.BigDecimal TotalDr)
 	{
 		set_ValueNoCheck (COLUMNNAME_TotalDr, TotalDr);
 	}
 
+	/** Get Total Debit.
+		@return Total debit in document currency
+	  */
 	@Override
-	public BigDecimal getTotalDr() 
+	public java.math.BigDecimal getTotalDr () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalDr);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalDr);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 }

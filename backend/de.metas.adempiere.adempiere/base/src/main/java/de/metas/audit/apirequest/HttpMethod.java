@@ -22,24 +22,21 @@
 
 package de.metas.audit.apirequest;
 
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Optional;
 
-import static org.compiere.model.X_API_Audit_Config.METHOD_CONNECT;
 import static org.compiere.model.X_API_Audit_Config.METHOD_DELETE;
 import static org.compiere.model.X_API_Audit_Config.METHOD_GET;
-import static org.compiere.model.X_API_Audit_Config.METHOD_HEAD;
-import static org.compiere.model.X_API_Audit_Config.METHOD_OPTIONS;
-import static org.compiere.model.X_API_Audit_Config.METHOD_PATCH;
 import static org.compiere.model.X_API_Audit_Config.METHOD_POST;
 import static org.compiere.model.X_API_Audit_Config.METHOD_PUT;
-import static org.compiere.model.X_API_Audit_Config.METHOD_TRACE;
 
 @AllArgsConstructor
 @Getter
@@ -48,25 +45,41 @@ public enum HttpMethod implements ReferenceListAwareEnum
 	GET(METHOD_GET),
 	POST(METHOD_POST),
 	DELETE(METHOD_DELETE),
-	PUT(METHOD_PUT),
-	PATCH(METHOD_PATCH),
-	OPTIONS(METHOD_OPTIONS),
-	HEAD(METHOD_HEAD),
-	TRACE(METHOD_TRACE),
-	CONNECT(METHOD_CONNECT),
-	;
+	PUT(METHOD_PUT);
 
 	private final String code;
 
-	private static final ReferenceListAwareEnums.ValuesIndex<HttpMethod> index = ReferenceListAwareEnums.index(values());
-
 	@NonNull
-	public static HttpMethod ofCode(@NonNull final String code) {return index.ofCode(code);}
+	public static HttpMethod ofCode(@NonNull final String code)
+	{
+		return ofCodeOptional(code)
+				.orElseThrow(() -> new AdempiereException("No HttpMethod could be found for code!")
+						.appendParametersToMessage()
+						.setParameter("code", code));
+	}
 
 	@Nullable
-	public static HttpMethod ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+	public static HttpMethod ofNullableCode(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+
+		return ofCode(code);
+	}
 
 	@NonNull
-	public static Optional<HttpMethod> ofCodeOptional(@Nullable final String code) {return Optional.ofNullable(ofNullableCode(code));}
+	public static Optional<HttpMethod> ofCodeOptional(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return Optional.empty();
+		}
+
+		return Arrays.stream(values())
+				.filter(value -> value.getCode().equals(code))
+				.findFirst();
+	}
 
 }

@@ -23,27 +23,26 @@
 package de.metas.common.ordercandidates.v2.request;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.common.util.Check;
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.pentabyte.springfox.ApiEnum;
 import lombok.Getter;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Schema(enumAsRef = true, description = "JsonOrderDocType: \n" +
-		"* `SalesOrder` - Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.\n" +
-		"* `ReturnMaterial` - Specifies if the order is ReturnMaterial\n" +
-		"* `Proposal` - Specifies if the order is Quotation\n" +
-		"* `PrepayOrder` - Specifies if the order will be prepaid\n" +
-		"")
 public enum JsonOrderDocType
 {
+	@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
 	SalesOrder("SO"),
+
+	@ApiEnum("Specifies if the order is ReturnMaterial")
 	ReturnMaterial("RM"),
+
+	@ApiEnum("Specifies if the order is Quotation")
 	Proposal("ON"),
+
+	@ApiEnum("Specifies if the order will be prepaid")
 	PrepayOrder("PR");
 
 	@Getter
@@ -62,25 +61,13 @@ public enum JsonOrderDocType
 											 .collect(Collectors.toMap(JsonOrderDocType::getCode, item -> item)));
 	}
 
-	@Nullable
-	public static JsonOrderDocType ofCodeOrNull(@Nullable final String code)
-	{
-		if(Check.isBlank(code))
-		{
-			return null;
-		}
-		return ofCode(code);
-	}
-	
-	@NonNull
-	public static JsonOrderDocType ofCode(@NonNull final String code)
-	{
+	public static JsonOrderDocType ofCode(@NonNull final String code){
 		final JsonOrderDocType orderDocType = lookup.get(code);
 
-		if(orderDocType == null)
-		{
+		if(orderDocType == null){
 			throw new IllegalArgumentException("OrderDocType does not support code: " + code);
 		}
+
 		return orderDocType;
 	}
 

@@ -23,14 +23,14 @@
 package de.metas.scheduler;
 
 import de.metas.process.AdProcessId;
+import de.metas.scheduler.SchedulerDao;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Scheduler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -46,7 +46,7 @@ public class SchedulerDaoTest
 	}
 
 	@Test
-	public void getSchedulersByProcessId_Test()
+	public void getSchedulerByProcessIdIfUnique_Test()
 	{
 		//given
 		final I_AD_Process adProcessRecord = InterfaceWrapperHelper.newInstance(I_AD_Process.class);
@@ -57,11 +57,11 @@ public class SchedulerDaoTest
 		InterfaceWrapperHelper.save(record);
 
 		//when
-		final List<I_AD_Scheduler> result = schedulerDao.getSchedulersByProcessId(AdProcessId.ofRepoId(adProcessRecord.getAD_Process_ID()));
+		final I_AD_Scheduler result = schedulerDao.getSchedulerByProcessIdIfUnique(AdProcessId.ofRepoId(adProcessRecord.getAD_Process_ID()))
+				.orElseThrow(() -> new AdempiereException("Something went wrong when executing test for SchedulerDaoTest class"));
 
 		//then
-		assertThat(result).isNotEmpty();
-		assertThat(result.size()).isEqualTo(1);
-		assertThat(result.get(0).getAD_Process_ID()).isEqualTo(adProcessRecord.getAD_Process_ID());
+		assertThat(result).isNotNull();
+		assertThat(result.getAD_Process_ID()).isEqualTo(adProcessRecord.getAD_Process_ID());
 	}
 }

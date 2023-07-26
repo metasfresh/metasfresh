@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-08-16T16:28:10 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="1a23dc24-c216-40e0-891b-a3648835dca6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -14,24 +15,11 @@
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Description ($P{RECORD_ID},  $P{ad_language} );]]>
 	</queryString>
-	<field name="documentno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
-	</field>
-	<field name="dateinvoiced" class="java.sql.Timestamp">
-		<property name="com.jaspersoft.studio.field.label" value="dateinvoiced"/>
-	</field>
-	<field name="bp_value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
-	</field>
-	<field name="eori" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="eori"/>
-	</field>
-	<field name="printname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="printname"/>
-	</field>
-	<field name="o_documentno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="o_documentno"/>
-	</field>
+	<field name="documentno" class="java.lang.String"/>
+	<field name="dateinvoiced" class="java.sql.Timestamp"/>
+	<field name="bp_value" class="java.lang.String"/>
+	<field name="printname" class="java.lang.String"/>
+	<field name="o_documentno" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -45,7 +33,7 @@
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="176" y="149" width="91" height="13" uuid="bb712730-1ec3-406c-b259-045c9e03f407">
+				<reportElement key="textField-10" x="176" y="154" width="91" height="13" uuid="bb712730-1ec3-406c-b259-045c9e03f407">
 					<printWhenExpression><![CDATA[new Boolean($F{o_documentno}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -60,14 +48,14 @@
 				<textFieldExpression><![CDATA[$F{o_documentno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-6" x="37" y="137" width="140" height="13" forecolor="#000000" uuid="09ec774b-e26e-40a0-8143-f09a53cb9b0a"/>
+				<reportElement key="textField-6" x="37" y="142" width="140" height="13" forecolor="#000000" uuid="09ec774b-e26e-40a0-8143-f09a53cb9b0a"/>
 				<textElement textAlignment="Left" markup="none">
-					<font fontName="Arial" size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-11" x="37" y="149" width="140" height="13" uuid="769324e4-2262-4b22-b3a4-b0e46980a0e8">
+				<reportElement key="textField-11" x="37" y="154" width="140" height="13" uuid="769324e4-2262-4b22-b3a4-b0e46980a0e8">
 					<printWhenExpression><![CDATA[new Boolean($F{o_documentno}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
@@ -76,7 +64,7 @@
 				<textFieldExpression><![CDATA[$R{Order}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="176" y="137" width="91" height="13" forecolor="#000000" uuid="32c99b4e-6dee-45af-bfcb-2766e20b30ba"/>
+				<reportElement key="textField-1" x="176" y="142" width="91" height="13" forecolor="#000000" uuid="32c99b4e-6dee-45af-bfcb-2766e20b30ba"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -84,7 +72,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
@@ -102,7 +90,7 @@
 				<textFieldExpression><![CDATA[$F{dateinvoiced}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-11" x="37" y="161" width="140" height="13" uuid="769324e4-2262-4b22-b3a4-b0e46980a0e8">
+				<reportElement key="textField-11" x="37" y="166" width="140" height="13" uuid="769324e4-2262-4b22-b3a4-b0e46980a0e8">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
@@ -111,7 +99,7 @@
 				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="176" y="161" width="91" height="13" uuid="bb712730-1ec3-406c-b259-045c9e03f407">
+				<reportElement key="textField-10" x="176" y="166" width="91" height="13" uuid="bb712730-1ec3-406c-b259-045c9e03f407">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -124,30 +112,6 @@
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="176" y="174" width="91" height="13" uuid="931baeb9-f444-473d-ae1c-78ba608784a1">
-					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-12" x="37" y="174" width="140" height="13" uuid="36c21eb5-8cfe-47d0-8ac8-888f1c7e007d">
-					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Left" markup="none">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{EORI}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

@@ -8,10 +8,11 @@ import de.metas.bpartner.product.callout.C_BPartner_Product;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.TableNamesGroup;
+import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
-import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;
@@ -26,6 +27,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
@@ -61,6 +63,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
 
 import java.util.List;
 
@@ -127,6 +130,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(new org.adempiere.ad.callout.model.validator.AD_ColumnCallout());
 		engine.addModelValidator(new org.adempiere.model.validator.AD_InfoColumn());
+		engine.addModelValidator(new org.adempiere.model.validator.AD_SysConfig());
 		engine.addModelValidator(new org.adempiere.server.rpl.model.validator.IMP_Processor());
 
 		engine.addModelValidator(new AD_Workflow());
@@ -135,6 +139,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type()); // 04599
 
 		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance); // FRESH-727
+
+		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE);
 
 		//
 		// Currency
@@ -325,7 +331,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		// task 09508: make sure that masterdata-fixes in warehouse and resource/plant make is to other clients
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Warehouse.Table_Name);
-		//cacheMgt.enableRemoteCacheInvalidationForTableName(I_S_Resource.Table_Name); // not needed anymore because we have a dedicated cache for S_Resource
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_S_Resource.Table_Name);
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoWindow.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoColumn.Table_Name);
@@ -336,5 +342,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
+
+		WindowBasedCacheInvalidateRequestInitializer.setup();
+		ColumnSqlCacheInvalidateRequestInitializer.setup();
 	}
 }

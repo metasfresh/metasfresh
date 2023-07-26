@@ -32,11 +32,10 @@ import org.adempiere.service.ClientId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class CurrencyConversionTypesMapTest
 {
@@ -51,9 +50,9 @@ class CurrencyConversionTypesMapTest
 		SystemTime.setFixedTimeSource(LocalDate.parse("2022-11-12").atStartOfDay(zoneId));
 	}
 
-	private Instant date(final String localDate)
+	private LocalDate date(final String localDate)
 	{
-		return LocalDate.parse(localDate).atStartOfDay(zoneId).toInstant();
+		return LocalDate.parse(localDate);
 	}
 
 	@Test

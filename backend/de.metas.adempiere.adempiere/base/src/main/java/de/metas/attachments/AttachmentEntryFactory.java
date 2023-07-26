@@ -1,27 +1,21 @@
 package de.metas.attachments;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-import de.metas.CreatedUpdatedInfo;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.X_AD_AttachmentEntry;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.ZoneId;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -48,11 +42,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class AttachmentEntryFactory
 {
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	public static final BiMap<String, AttachmentEntry.Type> AD_RefList_Value2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntry.Type> builder()
+			.put(X_AD_AttachmentEntry.TYPE_Data, AttachmentEntry.Type.Data)
+			.put(X_AD_AttachmentEntry.TYPE_URL, AttachmentEntry.Type.URL)
+			.build();
 
 	public AttachmentEntry createAndSaveEntry(@NonNull final AttachmentEntryCreateRequest request)
 	{
-		final AttachmentEntryType type = request.getType();
+		final AttachmentEntry.Type type = request.getType();
 		final String filename = request.getFilename();
 		final String contentType = request.getContentType();
 		final byte[] data = request.getData();
@@ -65,27 +62,23 @@ public class AttachmentEntryFactory
 
 		//
 		attachmentEntryRecord.setFileName(filename);
-		attachmentEntryRecord.setType(type.getCode());
 
-		switch (type)
+		if (type == AttachmentEntry.Type.Data)
 		{
-			case Data:
-				attachmentEntryRecord.setBinaryData(data);
-				attachmentEntryRecord.setContentType(contentType);
-				break;
-			case URL:
-				Check.assumeNotNull(url, "Parameter url is not null");
-				attachmentEntryRecord.setURL(url.toString());
-				break;
-			case LocalFileURL:
-				Check.assumeNotNull(url, "Parameter url is not null");
-				attachmentEntryRecord.setContentType(contentType);
-				attachmentEntryRecord.setURL(url.toString());
-				break;
-			default:
-				throw new AdempiereException("Type not supported: " + type).setParameter("request", request);
+			attachmentEntryRecord.setType(X_AD_AttachmentEntry.TYPE_Data);
+			attachmentEntryRecord.setBinaryData(data);
+			attachmentEntryRecord.setContentType(contentType);
 		}
-
+		else if (type == AttachmentEntry.Type.URL)
+		{
+			attachmentEntryRecord.setType(X_AD_AttachmentEntry.TYPE_URL);
+			Check.assumeNotNull(url, "Parameter url is not null");
+			attachmentEntryRecord.setURL(url.toString());
+		}
+		else
+		{
+			throw new AdempiereException("Type not supported: " + type).setParameter("request", request);
+		}
 		if (request.getTags() != null)
 		{
 			attachmentEntryRecord.setTags(request.getTags().getTagsAsString());
@@ -98,29 +91,24 @@ public class AttachmentEntryFactory
 		// we also save for type==URL so be more "predictable"
 		saveRecord(attachmentEntryRecord);
 
-		return toAttachmentEntry(attachmentEntryRecord);
+		final AttachmentEntry entry = toAttachmentEntry(attachmentEntryRecord);
+		return entry;
 	}
 
 	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(entryRecord.getAD_Org_ID()));
-
 		return AttachmentEntry.builder()
 				.id(AttachmentEntryId.ofRepoIdOrNull(entryRecord.getAD_AttachmentEntry_ID()))
 				.name(entryRecord.getFileName())
-				.type(AttachmentEntryType.ofCode(entryRecord.getType()))
+				.type(toAttachmentEntryTypeFromADRefListValue(entryRecord.getType()))
 				.filename(entryRecord.getFileName())
 				.mimeType(entryRecord.getContentType())
 				.url(extractUriOrNull(entryRecord))
 				.tags(AttachmentTags.ofString(entryRecord.getTags()))
-				.createdUpdatedInfo(CreatedUpdatedInfo.of(
-						TimeUtil.asZonedDateTime(entryRecord.getCreated(), timeZone), UserId.ofRepoId(entryRecord.getCreatedBy()),
-						TimeUtil.asZonedDateTime(entryRecord.getUpdated(), timeZone), UserId.ofRepoId(entryRecord.getUpdatedBy())))
 				.build();
 	}
 
-	@Nullable
-	private static URI extractUriOrNull(final I_AD_AttachmentEntry entryRecord)
+	private static final URI extractUriOrNull(final I_AD_AttachmentEntry entryRecord)
 	{
 		final String url = entryRecord.getURL();
 		if (Check.isEmpty(url, true))
@@ -132,11 +120,21 @@ public class AttachmentEntryFactory
 		{
 			return new URI(url);
 		}
-		catch (final URISyntaxException ex)
+		catch (URISyntaxException ex)
 		{
 			throw new AdempiereException("Invalid URL: " + url, ex)
 					.setParameter("entryRecord", entryRecord);
 		}
+	}
+
+	private static final AttachmentEntry.Type toAttachmentEntryTypeFromADRefListValue(@NonNull final String adRefListValue)
+	{
+		final AttachmentEntry.Type type = AD_RefList_Value2attachmentEntryType.get(adRefListValue);
+		if (type == null)
+		{
+			throw new IllegalArgumentException("No " + AttachmentEntry.Type.class + " found for " + adRefListValue);
+		}
+		return type;
 	}
 
 	public void syncToRecord(
@@ -144,7 +142,11 @@ public class AttachmentEntryFactory
 			@NonNull final I_AD_AttachmentEntry attachmentEntryRecord)
 	{
 		attachmentEntryRecord.setFileName(attachmentEntry.getFilename());
-		attachmentEntryRecord.setType(attachmentEntry.getType().getCode());
+
+		final String recordType = AD_RefList_Value2attachmentEntryType
+				.inverse()
+				.get(attachmentEntry.getType());
+		attachmentEntryRecord.setType(recordType);
 		attachmentEntryRecord.setFileName(attachmentEntry.getFilename());
 
 		if (attachmentEntry.getUrl() != null)

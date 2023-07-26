@@ -144,6 +144,7 @@ public class DataEntryTabLoader
 				.description(dataEntryTab.getDescription())
 				.internalName(dataEntryTab.getInternalName())
 				.queryOnActivate(true)
+				.supportQuickInput(false)
 				.addAllSubTabLayouts(subGroupLayoutDescriptors.build());
 
 		return ImmutableList.of(builder.build());
@@ -160,7 +161,8 @@ public class DataEntryTabLoader
 				.caption(subTab.getCaption())
 				.description(subTab.getDescription())
 				.internalName(subTab.getInternalName())
-				.queryOnActivate(true);
+				.queryOnActivate(true)
+				.supportQuickInput(false);
 
 		final DocumentLayoutSingleRow.Builder singleRowLayoutBuilder = DocumentLayoutSingleRow
 				.builder()

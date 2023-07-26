@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_User_Attribute
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_User_Attribute extends org.compiere.model.PO implements I_AD_User_Attribute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 137206892L;
+	private static final long serialVersionUID = 1916657884L;
 
     /** Standard Constructor */
     public X_AD_User_Attribute (final Properties ctx, final int AD_User_Attribute_ID, @Nullable final String trxName)
@@ -73,12 +73,6 @@ public class X_AD_User_Attribute extends org.compiere.model.PO implements I_AD_U
 	public static final String ATTRIBUTE_Delegate = "D";
 	/** Politician = P */
 	public static final String ATTRIBUTE_Politician = "P";
-	/** Rechtsberater = R */
-	public static final String ATTRIBUTE_Rechtsberater = "R";
-	/** Schätzer = S */
-	public static final String ATTRIBUTE_Schaetzer = "S";
-	/** Vorstand = V */
-	public static final String ATTRIBUTE_Vorstand = "V";
 	@Override
 	public void setAttribute (final java.lang.String Attribute)
 	{

@@ -25,12 +25,15 @@ package de.metas.event;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import de.metas.async.QueueWorkPackageId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
@@ -66,7 +69,6 @@ import java.util.function.Supplier;
 public class Event
 {
 	private static final String PROP_Body = "body";
-
 	public static Builder builder()
 	{
 		return new Builder();
@@ -107,6 +109,10 @@ public class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	ImmutableSet<Integer> recipientUserIds;
 
+	@JsonProperty("queueWorkPackageId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	QueueWorkPackageId queueWorkPackageId;
+
 	private enum LoggingStatus
 	{
 		SHALL_NOT_BE_LOGGED,
@@ -126,6 +132,10 @@ public class Event
 	@Getter(value = AccessLevel.NONE)
 	LoggingStatus loggingStatus;
 
+	@JsonIgnore
+	@Getter(AccessLevel.NONE)
+	transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
+
 	private Event(final Builder builder)
 	{
 		uuid = CoalesceUtil.coalesceSuppliers(() -> builder.uuid, UUID::randomUUID);
@@ -138,6 +148,7 @@ public class Event
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
 		loggingStatus = builder.loggingStatus;
+		queueWorkPackageId = builder.getQueueWorkPackageId();
 	}
 
 	@JsonCreator
@@ -150,6 +161,7 @@ public class Event
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties,
+			@JsonProperty("queueWorkPackageId") final QueueWorkPackageId queueWorkPackageId,
 			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus)
 	{
 		this.uuid = uuid;
@@ -161,6 +173,7 @@ public class Event
 		this.senderId = senderId;
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
+		this.queueWorkPackageId = queueWorkPackageId;
 		this.loggingStatus = loggingStatus;
 	}
 
@@ -278,6 +291,25 @@ public class Event
 		return getProperty(PROPERTY_Record);
 	}
 
+	/**
+	 * @return <ul>
+	 * <li>true if event was successfully marked
+	 * <li>false if event was already received by given event bus ID
+	 * </ul>
+	 */
+	public boolean markReceivedByEventBusId(final String eventBusId)
+	{
+		return receivedByEventBusIds.add(eventBusId);
+	}
+
+	/**
+	 * @return true if this event was received by a even bus with given ID.
+	 */
+	public boolean wasReceivedByEventBusId(final String eventBusId)
+	{
+		return receivedByEventBusIds.contains(eventBusId);
+	}
+
 	public Event withStatusWasLogged()
 	{
 		final Builder builder = toBuilder();
@@ -312,6 +344,7 @@ public class Event
 		builder.uuid = uuid;
 		builder.when = when;
 		builder.loggingStatus = loggingStatus;
+		builder.queueWorkPackageId = queueWorkPackageId;
 
 		return builder;
 	}
@@ -330,6 +363,7 @@ public class Event
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
 		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;
+		private QueueWorkPackageId queueWorkPackageId;
 
 		private Builder()
 		{
@@ -363,7 +397,6 @@ public class Event
 			this.detailPlain = detailPlain;
 			return this;
 		}
-
 		public Builder withBody(final String body)
 		{
 			properties.put(PROP_Body, body);
@@ -620,6 +653,17 @@ public class Event
 		public Builder shallBeLogged()
 		{
 			this.loggingStatus = LoggingStatus.SHALL_BE_LOGGED;
+			return this;
+		}
+
+		public QueueWorkPackageId getQueueWorkPackageId()
+		{
+			return queueWorkPackageId;
+		}
+
+		public Builder setQueueWorkPackageId(final QueueWorkPackageId workpackageQueueId)
+		{
+			this.queueWorkPackageId = workpackageQueueId;
 			return this;
 		}
 	}

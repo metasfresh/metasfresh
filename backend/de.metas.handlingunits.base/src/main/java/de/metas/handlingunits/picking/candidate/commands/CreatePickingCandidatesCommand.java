@@ -6,8 +6,11 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -35,6 +38,8 @@ import lombok.NonNull;
 
 public class CreatePickingCandidatesCommand
 {
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ShipmentScheduleId shipmentScheduleId;

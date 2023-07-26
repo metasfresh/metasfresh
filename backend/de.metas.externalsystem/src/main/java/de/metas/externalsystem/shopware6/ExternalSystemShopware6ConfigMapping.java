@@ -36,10 +36,10 @@ public class ExternalSystemShopware6ConfigMapping
 	@NonNull
 	Integer seqNo;
 
-	@Nullable
+	@NonNull
 	DocTypeId docTypeOrderId;
 
-	@Nullable
+	@NonNull
 	String paymentRule;
 
 	@NonNull
@@ -73,7 +73,7 @@ public class ExternalSystemShopware6ConfigMapping
 	public ExternalSystemShopware6ConfigMapping(
 			@NonNull final Integer seqNo,
 			final int docTypeOrderId,
-			@Nullable final String paymentRule,
+			@NonNull final String paymentRule,
 			final int paymentTermId,
 			@NonNull final String bpartnerIfExists,
 			@NonNull final String bpartnerIfNotExists,
@@ -85,7 +85,7 @@ public class ExternalSystemShopware6ConfigMapping
 			@Nullable final String description)
 	{
 		this.seqNo = seqNo;
-		this.docTypeOrderId = DocTypeId.ofRepoIdOrNull(docTypeOrderId);
+		this.docTypeOrderId = DocTypeId.ofRepoId(docTypeOrderId);
 		this.paymentRule = paymentRule;
 		this.paymentTermId = PaymentTermId.ofRepoIdOrNull(paymentTermId);
 		this.sw6CustomerGroup = sw6CustomerGroup;

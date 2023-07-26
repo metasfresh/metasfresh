@@ -1,18 +1,18 @@
 package de.metas.ui.web.pickingV2.packageable;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.Packageable;
+import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
-import de.metas.organization.IOrgDAO;
-import de.metas.picking.api.IPackagingDAO;
-import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableQuery;
 import de.metas.shipping.ShipperId;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.pickingV2.packageable.PackageableRowsData.PackageableRowsDataBuilder;
@@ -32,13 +32,10 @@ import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 /*
  * #%L
@@ -68,24 +65,21 @@ final class PackageableRowsRepository
 
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IPackagingDAO packageablesRepo = Services.get(IPackagingDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final MoneyService moneyService;
 
 	private final Supplier<LookupDataSource> bpartnerLookup;
 	private final Supplier<LookupDataSource> shipperLookup;
 	private final Supplier<LookupDataSource> userLookup;
 
-	public PackageableRowsRepository(
-			@NonNull final MoneyService moneyService,
-			@NonNull LookupDataSourceFactory lookupDataSourceFactory)
+	public PackageableRowsRepository(@NonNull final MoneyService moneyService)
 	{
 		this.moneyService = moneyService;
 
 		// creating those LookupDataSources requires DB access. So, to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
-		bpartnerLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name));
-		shipperLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_M_Shipper.Table_Name));
-		userLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_AD_User.Table_Name));
+		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name));
+		shipperLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_M_Shipper.Table_Name));
+		userLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_AD_User.Table_Name));
 	}
 
 	public PackageableRowsDataBuilder newPackageableRowsData()
@@ -98,7 +92,7 @@ final class PackageableRowsRepository
 		final PackageableQuery query = createPackageableQuery(filters);
 
 		return packageablesRepo.stream(query)
-				.collect(GuavaCollectors.toImmutableListMultimap(PackageableRowsRepository::extractGroupingKey))
+				.collect(GuavaCollectors.toImmutableListMultimap(packageable -> extractGroupingKey(packageable)))
 				.asMap()
 				.values()
 				.stream()
@@ -108,7 +102,7 @@ final class PackageableRowsRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static PackageableQuery createPackageableQuery(final DocumentFilterList filters)
+	private PackageableQuery createPackageableQuery(final DocumentFilterList filters)
 	{
 		final PackageableViewFilterVO filterVO = PackageableViewFilters.extractPackageableViewFilterVO(filters);
 
@@ -127,20 +121,17 @@ final class PackageableRowsRepository
 	private static ArrayKey extractGroupingKey(final Packageable packageable)
 	{
 		return ArrayKey.of(
-				PackageableRowId.of(
-						Objects.requireNonNull(packageable.getSalesOrderId()),
-						packageable.getWarehouseTypeId()),
+				PackageableRowId.of(packageable.getSalesOrderId(), packageable.getWarehouseTypeId()),
 				packageable.getLockedBy());
 	}
 
-	@Nullable
 	private PackageableRow createPackageableRowNoFail(final Collection<Packageable> packageables)
 	{
 		try
 		{
 			return createPackageableRow(packageables);
 		}
-		catch (final Exception ex)
+		catch (Exception ex)
 		{
 			logger.warn("Failed creating row from {}. Skip.", packageables, ex);
 			return null;
@@ -152,7 +143,7 @@ final class PackageableRowsRepository
 		Check.assumeNotEmpty(packageables, "packageables is not empty");
 
 		final BPartnerId customerId = Packageable.extractSingleValue(packageables, Packageable::getCustomerId).get();
-		final LookupValue customer = Objects.requireNonNull(bpartnerLookup.get().findById(customerId));
+		final LookupValue customer = bpartnerLookup.get().findById(customerId);
 
 		final WarehouseTypeId warehouseTypeId = Packageable.extractSingleValue(packageables, Packageable::getWarehouseTypeId).orElse(null);
 		final ITranslatableString warehouseTypeName;
@@ -175,10 +166,6 @@ final class PackageableRowsRepository
 		final UserId lockedByUserId = Packageable.extractSingleValue(packageables, Packageable::getLockedBy).orElse(null);
 		final LookupValue lockedByUser = userLookup.get().findById(lockedByUserId);
 
-		final ZoneId timeZone = Packageable.extractSingleValue(packageables, Packageable::getOrgId)
-				.map(orgDAO::getTimeZone)
-				.get();
-
 		return PackageableRow.builder()
 				.orderId(salesOrderId)
 				.poReference(poReference)
@@ -188,7 +175,6 @@ final class PackageableRowsRepository
 				.warehouseTypeName(warehouseTypeName)
 				.lockedByUser(lockedByUser)
 				.lines(packageables.size())
-				.timeZone(timeZone)
 				.shipper(shipper)
 				.lineNetAmt(buildNetAmtTranslatableString(packageables))
 				.packageables(packageables)

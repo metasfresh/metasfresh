@@ -156,18 +156,6 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 		return ii.intValue();
 	}
 
-	@Override
-	public void setOnlyClearedHUs (final boolean OnlyClearedHUs)
-	{
-		set_Value (COLUMNNAME_OnlyClearedHUs, OnlyClearedHUs);
-	}
-
-	@Override
-	public boolean isOnlyClearedHUs()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_OnlyClearedHUs);
-	}
-
 	/** Set Relative Priorität.
 		@param PriorityNo 
 		Where inventory should be picked from first

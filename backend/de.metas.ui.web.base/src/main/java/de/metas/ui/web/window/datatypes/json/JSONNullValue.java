@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
 import org.compiere.model.Null;
 
 import javax.annotation.Nullable;
@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Schema(description = "null-value")
+@ApiModel("null-value")
 @JsonSerialize(using = JSONNullValueSerializer.class)
 public final class JSONNullValue
 {

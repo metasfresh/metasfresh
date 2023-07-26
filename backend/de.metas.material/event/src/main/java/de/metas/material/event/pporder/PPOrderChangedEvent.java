@@ -14,13 +14,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.With;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -64,7 +62,6 @@ public class PPOrderChangedEvent implements MaterialEvent
 	BigDecimal newQtyDelivered;
 
 	DocStatus oldDocStatus;
-	@With
 	DocStatus newDocStatus;
 
 	List<PPOrderLine> newPPOrderLines;
@@ -84,9 +81,9 @@ public class PPOrderChangedEvent implements MaterialEvent
 			@JsonProperty("newQtyDelivered") @NonNull final BigDecimal newQtyDelivered,
 			@JsonProperty("oldDocStatus") @NonNull final DocStatus oldDocStatus,
 			@JsonProperty("newDocStatus") @NonNull final DocStatus newDocStatus,
-			@JsonProperty("newPPOrderLines") @Singular final List<PPOrderLine> newPPOrderLines,
 			@JsonProperty("ppOrderLineChanges") @Singular final List<ChangedPPOrderLineDescriptor> ppOrderLineChanges,
-			@JsonProperty("deletedPPOrderLines") @Singular final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines)
+			@JsonProperty("deletedPPOrderLines") @Singular final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines,
+			@JsonProperty("newPPOrderLines") @Singular final List<PPOrderLine> newPPOrderLines)
 	{
 		Check.assumeGreaterThanZero(ppOrderAfterChanges.getPpOrderId(), "ppOrderAfterChanges shall be saved");
 
@@ -104,19 +101,6 @@ public class PPOrderChangedEvent implements MaterialEvent
 		this.deletedPPOrderLines = deletedPPOrderLines;
 		this.newPPOrderLines = newPPOrderLines;
 	}
-	
-	@NonNull
-	public Optional<ChangedPPOrderLineDescriptor> getChangedDescriptorForPPOrderLineId(final int ppOrderLineId)
-	{
-		if (Check.isEmpty(ppOrderLineChanges))
-		{
-			return Optional.empty();
-		}
-		
-		return ppOrderLineChanges.stream()
-				.filter(changedDescriptor -> changedDescriptor.getNewPPOrderLineId() == ppOrderLineId)
-				.findFirst();
-	}	
 
 	public boolean isJustCompleted()
 	{
@@ -125,14 +109,6 @@ public class PPOrderChangedEvent implements MaterialEvent
 
 		return newDocStatus != null && newDocStatus.isCompleted()
 				&& (oldDocStatus == null || oldDocStatus.isNotProcessed());
-	}
-
-	public boolean isJustReactivated()
-	{
-		final DocStatus newDocStatus = getNewDocStatus();
-
-		return newDocStatus != null && newDocStatus.isInProgress()
-				&& (oldDocStatus != null && oldDocStatus.isCompleted()); 
 	}
 
 	public int getPpOrderId()
@@ -206,13 +182,12 @@ public class PPOrderChangedEvent implements MaterialEvent
 	{
 		public static DeletedPPOrderLineDescriptor ofPPOrderLine(@NonNull final PPOrderLine ppOrderLine)
 		{
-			final PPOrderLineData ppOrderLineData = ppOrderLine.getPpOrderLineData();
 			return DeletedPPOrderLineDescriptor.builder()
-					.issueOrReceiveDate(ppOrderLineData.getIssueOrReceiveDate())
+					.issueOrReceiveDate(ppOrderLine.getIssueOrReceiveDate())
 					.ppOrderLineId(ppOrderLine.getPpOrderLineId())
-					.productDescriptor(ppOrderLineData.getProductDescriptor())
-					.qtyRequired(ppOrderLineData.getQtyRequired())
-					.qtyDelivered(ppOrderLineData.getQtyDelivered())
+					.productDescriptor(ppOrderLine.getProductDescriptor())
+					.qtyRequired(ppOrderLine.getQtyRequired())
+					.qtyDelivered(ppOrderLine.getQtyDelivered())
 					.build();
 		}
 

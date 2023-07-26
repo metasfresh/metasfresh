@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,29 +38,33 @@ import javax.annotation.Nullable;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@Schema(description = "Describes a data attachment that exists within metasfresh")
+@ApiModel(description = "Describes a data attachment that exists within metasfresh")
 public class JsonAttachment
 {
-	@Schema(minLength = 1,
-			description = "Reference in terms of the external system. Can reference multiple records (e.g. multiple order line candidates)\n"
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "Reference in terms of the external system. Can reference multiple records (e.g. multiple order line candidates)\n"
 					+ "To be used in conjunktion with <code>dataSourceName</code>")
 	String externalReference;
 
-	@Schema(minLength = 1,
-			description = "Internal name of the <code>AD_InputDataSource</code> record that tells where this attachment came from.\n"
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "Internal name of the <code>AD_InputDataSource</code> record that tells where this attachment came from.\n"
 					+ "To be used in conjunktion with <code>externalReference</code>")
 	String dataSourceName;
 
-	@Schema(minLength = 1,
-			description = "ID assigned to the attachment data by metasfresh")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "ID assigned to the attachment data by metasfresh")
 	String attachmentId;
 
 	JsonAttachmentType type;
 
 	String filename;
 
-	@Schema(minLength = 1, //
-			description = "MIME type of the binary data; `null` if the attachment's type is `URL`")
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "MIME type of the binary data; `null` if the attachment's type is `URL`")
 	String mimeType;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

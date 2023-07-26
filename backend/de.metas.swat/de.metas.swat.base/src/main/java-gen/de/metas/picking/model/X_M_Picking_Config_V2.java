@@ -1,87 +1,113 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package de.metas.picking.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_Picking_Config_V2
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_M_Picking_Config_V2 extends org.compiere.model.PO implements I_M_Picking_Config_V2, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1374338252L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -468603884L;
 
     /** Standard Constructor */
-    public X_M_Picking_Config_V2 (final Properties ctx, final int M_Picking_Config_V2_ID, @Nullable final String trxName)
+    public X_M_Picking_Config_V2 (Properties ctx, int M_Picking_Config_V2_ID, String trxName)
     {
       super (ctx, M_Picking_Config_V2_ID, trxName);
+      /** if (M_Picking_Config_V2_ID == 0)
+        {
+			setIsConsiderAttributes (false); // N
+			setIsPickingReviewRequired (true); // Y
+			setM_Picking_Config_V2_ID (0);
+        } */
     }
 
     /** Load Constructor */
-    public X_M_Picking_Config_V2 (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_M_Picking_Config_V2 (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
+
+	/** Set Attribute berücksichtigen.
+		@param IsConsiderAttributes Attribute berücksichtigen	  */
 	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	public void setIsConsiderAttributes (boolean IsConsiderAttributes)
 	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+		set_Value (COLUMNNAME_IsConsiderAttributes, Boolean.valueOf(IsConsiderAttributes));
 	}
 
+	/** Get Attribute berücksichtigen.
+		@return Attribute berücksichtigen	  */
 	@Override
-	public void setIsConsiderAttributes (final boolean IsConsiderAttributes)
+	public boolean isConsiderAttributes () 
 	{
-		set_Value (COLUMNNAME_IsConsiderAttributes, IsConsiderAttributes);
+		Object oo = get_Value(COLUMNNAME_IsConsiderAttributes);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Kommissionierprüfung erforderlich.
+		@param IsPickingReviewRequired Kommissionierprüfung erforderlich	  */
 	@Override
-	public boolean isConsiderAttributes() 
+	public void setIsPickingReviewRequired (boolean IsPickingReviewRequired)
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsConsiderAttributes);
+		set_Value (COLUMNNAME_IsPickingReviewRequired, Boolean.valueOf(IsPickingReviewRequired));
 	}
 
+	/** Get Kommissionierprüfung erforderlich.
+		@return Kommissionierprüfung erforderlich	  */
 	@Override
-	public void setIsPickingReviewRequired (final boolean IsPickingReviewRequired)
+	public boolean isPickingReviewRequired () 
 	{
-		set_Value (COLUMNNAME_IsPickingReviewRequired, IsPickingReviewRequired);
+		Object oo = get_Value(COLUMNNAME_IsPickingReviewRequired);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Kommissionierkonfiguration (V2).
+		@param M_Picking_Config_V2_ID Kommissionierkonfiguration (V2)	  */
 	@Override
-	public boolean isPickingReviewRequired() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPickingReviewRequired);
-	}
-
-	@Override
-	public void setIsReserveHUsOnPickingJobStart (final boolean IsReserveHUsOnPickingJobStart)
-	{
-		set_Value (COLUMNNAME_IsReserveHUsOnPickingJobStart, IsReserveHUsOnPickingJobStart);
-	}
-
-	@Override
-	public boolean isReserveHUsOnPickingJobStart() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsReserveHUsOnPickingJobStart);
-	}
-
-	@Override
-	public void setM_Picking_Config_V2_ID (final int M_Picking_Config_V2_ID)
+	public void setM_Picking_Config_V2_ID (int M_Picking_Config_V2_ID)
 	{
 		if (M_Picking_Config_V2_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Picking_Config_V2_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Picking_Config_V2_ID, M_Picking_Config_V2_ID);
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Config_V2_ID, Integer.valueOf(M_Picking_Config_V2_ID));
 	}
 
+	/** Get Kommissionierkonfiguration (V2).
+		@return Kommissionierkonfiguration (V2)	  */
 	@Override
-	public int getM_Picking_Config_V2_ID() 
+	public int getM_Picking_Config_V2_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Picking_Config_V2_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Picking_Config_V2_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

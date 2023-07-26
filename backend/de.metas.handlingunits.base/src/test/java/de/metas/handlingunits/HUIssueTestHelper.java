@@ -1,13 +1,35 @@
 package de.metas.handlingunits;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.swing.SwingClientUI;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
-import de.metas.util.Services;
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createProduct;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
@@ -24,13 +46,14 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_M_Warehouse_Routing;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import static de.metas.business.BusinessTestHelper.createLocator;
-import static de.metas.business.BusinessTestHelper.createProduct;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.adempiere.form.swing.SwingClientUI;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.util.Services;
 
 public class HUIssueTestHelper extends HUTestHelper
 {
@@ -301,7 +324,7 @@ public class HUIssueTestHelper extends HUTestHelper
 	{
 		final I_PP_Order_BOMLine bomLine = InterfaceWrapperHelper.create(ctx, I_PP_Order_BOMLine.class, ITrx.TRXNAME_None);
 		bomLine.setPP_Order_ID(bom.getPP_Order_ID());
-		bomLine.setM_Product_ID(prod.getM_Product_ID());
+		bomLine.setM_Product(prod);
 		bomLine.setPP_Order_BOM_ID(bom.getPP_Order_BOM_ID());
 		InterfaceWrapperHelper.save(bomLine);
 

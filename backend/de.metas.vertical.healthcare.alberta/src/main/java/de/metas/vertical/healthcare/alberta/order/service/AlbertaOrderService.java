@@ -23,7 +23,7 @@
 package de.metas.vertical.healthcare.alberta.order.service;
 
 import de.metas.util.Check;
-import de.metas.vertical.healthcare.alberta.order.AlbertaOrderInfo;
+import de.metas.vertical.healthcare.alberta.order.AlbertaOrderCompositeInfo;
 import de.metas.vertical.healthcare.alberta.order.dao.AlbertaOrderDAO;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -38,24 +38,24 @@ public class AlbertaOrderService
 		this.albertaOrderDAO = albertaOrderDAO;
 	}
 
-	public void saveAlbertaOrderInfo(@NonNull final AlbertaOrderInfo albertaOrderInfo)
+	public void saveAlbertaOrderCompositeInfo(@NonNull final AlbertaOrderCompositeInfo albertaOrderCompositeInfo)
 	{
-		if (Check.isNotBlank(albertaOrderInfo.getTherapy()))
+		if (Check.isNotBlank(albertaOrderCompositeInfo.getTherapy()))
 		{
-			albertaOrderDAO.createAlbertaOrderTherapy(albertaOrderInfo.getOlCandId(),
-													  albertaOrderInfo.getTherapy(),
-													  albertaOrderInfo.getOrgId());
+			albertaOrderDAO.createAlbertaOrderTherapy(albertaOrderCompositeInfo.getOlCandId(),
+													  albertaOrderCompositeInfo.getTherapy(),
+													  albertaOrderCompositeInfo.getOrgId());
 		}
 
-		if (!Check.isEmpty(albertaOrderInfo.getTherapyTypes()))
+		if (!Check.isEmpty(albertaOrderCompositeInfo.getTherapyTypes()))
 		{
-			albertaOrderInfo.getTherapyTypes()
+			albertaOrderCompositeInfo.getTherapyTypes()
 					.forEach(therapyType -> albertaOrderDAO
-							.createAlbertaOrderTherapyType(albertaOrderInfo.getOlCandId(),
+							.createAlbertaOrderTherapyType(albertaOrderCompositeInfo.getOlCandId(),
 														   therapyType,
-														   albertaOrderInfo.getOrgId()));
+														   albertaOrderCompositeInfo.getOrgId()));
 		}
 
-		albertaOrderDAO.createAlbertaOrder(albertaOrderInfo);
+		albertaOrderDAO.createAlbertaOrder(albertaOrderCompositeInfo);
 	}
 }

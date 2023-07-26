@@ -22,19 +22,20 @@
 
 package de.metas.common.bpartner.v1.response;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.common.changelog.JsonChangeInfo;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.metas.common.rest_api.common.JsonExternalId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 public class JsonResponseLocation
@@ -61,26 +62,22 @@ public class JsonResponseLocation
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 
-	public static final String SETUP_PLACE_NO = "setupPlaceNo";
-	public static final String HANDOVER_LOCATION = "handoverLocation";
-	public static final String REMIT_TO = "remitTo";
-	public static final String VISITORS_ADDRESS = "visitorsAddress";
-	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
-
-	@Schema
+	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;
 
-	@Schema(description = "This translates to `C_BPartner_Location.ExternalId`.\n"
+	@ApiModelProperty(
+			dataType = "java.lang.String", //
+			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private JsonExternalId externalId;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean active;
 
-	@Schema(description = "This translates to `C_BPartner_Location.Name`")
+	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
 	String name;
 
-	@Schema(description = "This translates to `C_BPartner_Location.BPartnerName`")
+	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
 	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -110,38 +107,23 @@ public class JsonResponseLocation
 
 	String countryCode;
 
-	@Schema(nullable = true, description = "This translates to `C_BPartner_Location.GLN`.")
+	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean shipTo;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean shipToDefault;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean billTo;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean billToDefault;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String setupPlaceNo;
-
-	@Schema
-	boolean remitTo;
-
-	@Schema
-	boolean visitorsAddress;
-
-	@Schema
-	boolean handoverLocation;
-
-	@Schema
-	boolean replicationLookupDefault;
-
 	@JsonInclude(Include.NON_NULL)
-	@Schema // shall be last
+	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)
@@ -167,12 +149,6 @@ public class JsonResponseLocation
 			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
 			@JsonProperty(BILL_TO) final boolean billTo,
 			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
-
-			@JsonProperty(SETUP_PLACE_NO) @Nullable final String setupPlaceNo,
-			@JsonProperty(HANDOVER_LOCATION)  final boolean handoverLocation,
-			@JsonProperty(REMIT_TO)  final boolean remitTo,
-			@JsonProperty(VISITORS_ADDRESS) final boolean visitorsAddress,
-			@JsonProperty(REPLICATION_LOOKUP_DEFAULT)  final boolean replicationLookupDefault,
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -202,12 +178,6 @@ public class JsonResponseLocation
 		this.billTo = billTo;
 		this.shipToDefault = shipToDefault;
 		this.shipTo = shipTo;
-
-		this.setupPlaceNo = setupPlaceNo;
-		this.remitTo = remitTo;
-		this.handoverLocation = handoverLocation;
-		this.replicationLookupDefault = replicationLookupDefault;
-		this.visitorsAddress = visitorsAddress;
 
 		this.changeInfo = changeInfo;
 	}

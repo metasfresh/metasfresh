@@ -4,18 +4,18 @@ import nock from 'nock';
 import { merge } from 'merge-anything';
 
 import actionsHandler, {
-  getQuickActionsId,
   initialSingleActionsState,
+  getQuickActionsId,
 } from '../../reducers/actionsHandler';
 import { initialState as initialViewsState } from '../../reducers/viewHandler';
 import tablesHandler, {
-  getTableId,
   initialTableState,
+  getTableId,
 } from '../../reducers/tables';
 import {
-  deleteQuickActions,
-  fetchQuickActions,
   requestQuickActions,
+  fetchQuickActions,
+  deleteQuickActions,
 } from '../../actions/Actions';
 import { createTableData } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
@@ -23,14 +23,13 @@ import * as ACTION_TYPES from '../../constants/ActionTypes';
 import gridDataFixtures from '../../../test_setup/fixtures/grid/data.json';
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
 import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
-import quickActionsFixtures
-  from '../../../test_setup/fixtures/grid/quick_actions.json';
+import quickActionsFixtures from '../../../test_setup/fixtures/grid/quick_actions.json';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createState = function(state = {}) {
-  return merge(
+  const res = merge(
     {
       viewHandler: initialViewsState,
       actionsHandler: { ...actionsHandler(undefined, {}) },
@@ -38,14 +37,12 @@ const createState = function(state = {}) {
     },
     state
   );
+
+  return res;
 };
 
 describe('QuickActions', () => {
-  beforeEach(() => {
-    nock.cleanAll();
-  });
-
-  afterEach(() => {
+  afterAll(() => {
     nock.cleanAll();
   });
 
@@ -55,9 +52,17 @@ describe('QuickActions', () => {
     const state = createState();
     const store = mockStore(state);
 
+    const id = getQuickActionsId({ windowId, viewId });
+    const payload1 = { id };
+    const payload2 = { id, actions };
+    const expectedActions = [
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload1 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS, payload: payload2 },
+    ];
+
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .post(`/documentView/${windowId}/${viewId}/quickActions`)
+      .get(`/documentView/${windowId}/${viewId}/quickActions`)
       .reply(200, { actions });
 
     return store
@@ -68,40 +73,39 @@ describe('QuickActions', () => {
         })
       )
       .then(() => {
-        const id = getQuickActionsId({ windowId, viewId });
-        expect(store.getActions()).toEqual([
-          {
-            type: ACTION_TYPES.FETCH_QUICK_ACTIONS,
-            payload: { id }
-          },
-          {
-            type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS,
-            payload: { id, actions }
-          },
-        ]);
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
       });
   });
 
   it(`call 'FETCH_QUICK_ACTIONS_FAILURE' on failed actions fetching`, () => {
-    const windowId = '143';
-    const viewId = '143-F';
-    const store = mockStore(createState());
+    const { windowId, viewId } = gridDataFixtures.data1;
+    const state = createState();
+    const store = mockStore(state);
 
     const id = getQuickActionsId({ windowId, viewId });
+    const payload = { id };
+    const expectedActions = [
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS_FAILURE, payload },
+    ];
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .post(`/documentView/${windowId}/${viewId}/quickActions`)
-      .reply(500, { some_error: 'bla bla' });
+      .get(`/documentView/${windowId}/${viewId}/quickActions`)
+      .reply(404);
 
     return store
-      .dispatch(requestQuickActions({ windowId, viewId }))
+      .dispatch(
+        requestQuickActions({
+          windowId,
+          viewId,
+        })
+      )
       .catch(() => {
         expect(store.getActions()).toEqual(
-          expect.arrayContaining([
-            { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: { id } },
-            { type: ACTION_TYPES.FETCH_QUICK_ACTIONS_FAILURE, payload: { id } },
-          ])
+          expect.arrayContaining(expectedActions)
         );
       });
   });
@@ -112,11 +116,12 @@ describe('QuickActions', () => {
     const state = createState();
     const store = mockStore(state);
 
+    const expectedActions = [
+      { type: ACTION_TYPES.DELETE_QUICK_ACTIONS, payload: { id } },
+    ];
     store.dispatch(deleteQuickActions(windowId, viewId));
 
-    expect(store.getActions()).toEqual(expect.arrayContaining([
-      { type: ACTION_TYPES.DELETE_QUICK_ACTIONS, payload: { id } },
-    ]));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
   it(`not fetch quick actions when there's already a pending request`, () => {
@@ -130,98 +135,16 @@ describe('QuickActions', () => {
     });
     const store = mockStore(state);
 
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/quickActions`)
+      .reply(200, { actions: [] });
+
     store.dispatch(requestQuickActions({ windowId, viewId }));
     expect(store.getActions()).toEqual([]);
   });
 
-  it(`fetch included parent's quick actions`, () => {
-    const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
-    const childLayoutResponse = gridLayoutFixtures.layout2_child;
-    const parentRowResponse = gridRowFixtures.data3_parent;
-    const childRowResponse = gridRowFixtures.data3_child;
-    const { actions2: actions } = quickActionsFixtures;
-    const { windowId, viewId, parentWindowId, parentViewId } = childRowResponse;
-    const id = getQuickActionsId({
-      windowId: parentWindowId,
-      viewId: parentViewId
-    });
-    const store = mockStore(createState({
-      viewHandler: {
-        modals: {
-          [windowId]: {
-            layout: { ...childLayoutResponse },
-            windowId,
-            viewId,
-          },
-          [parentWindowId]: {
-            layout: { ...parentLayoutResponse },
-            viewId: parentViewId,
-            windowId: parentWindowId,
-          },
-        },
-        includedView: {
-          viewId,
-          windowId,
-          parentId: parentWindowId,
-        },
-      },
-      tables: {
-        length: 2,
-        [getTableId({ windowId, viewId })]: {
-          ...initialTableState,
-          ...(createTableData({
-            ...childLayoutResponse,
-            ...childRowResponse,
-            keyProperty: 'id',
-          })),
-          selected: [childRowResponse.result[0].id],
-        },
-        [getTableId({
-          windowId: parentWindowId,
-          viewId: parentViewId,
-        })]: {
-          ...initialTableState,
-          ...(createTableData({
-            ...parentLayoutResponse,
-            ...parentRowResponse,
-            keyProperty: 'id',
-          })),
-          selected: [parentRowResponse.result[0].id],
-        },
-      },
-      actionsHandler: {
-        [id]: initialSingleActionsState,
-        // child actions already requested
-        [getQuickActionsId({ windowId, viewId })]: {
-          ...initialSingleActionsState,
-          pending: true,
-        },
-      },
-    }));
-
-    nock(config.API_URL)
-      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .post(`/documentView/${parentWindowId}/${parentViewId}/quickActions`)
-      .reply(200, { actions });
-    //console.log('ACTIVE MOCKS: ', nock.activeMocks());
-
-    return store
-      .dispatch(fetchQuickActions({ windowId, viewId, isModal: true }))
-      .then(() => {
-        expect(store.getActions()).toEqual(
-          expect.arrayContaining([
-            { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: { id } },
-            {
-              type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS,
-              payload: { id, actions }
-            },
-          ])
-        );
-
-      });
-  });
-
-  it(`fetch included parent and child quick actions`, () => {
+  it(`fetch included parent's quick actions`, async () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const childLayoutResponse = gridLayoutFixtures.layout2_child;
     const parentRowResponse = gridRowFixtures.data3_parent;
@@ -232,10 +155,26 @@ describe('QuickActions', () => {
     const childRowId = childRowResponse.result[0].id;
     const id = getQuickActionsId({
       windowId: parentWindowId,
-      viewId: parentViewId
+      viewId: parentViewId,
     });
     const childId = getQuickActionsId({ windowId, viewId });
-    const store = mockStore(createState({
+    const parentTableId = getTableId({
+      windowId: parentWindowId,
+      viewId: parentViewId,
+    });
+    const childTableId = getTableId({ windowId, viewId });
+    const c_tableData_create = createTableData({
+      ...childLayoutResponse,
+      ...childRowResponse,
+      keyProperty: 'id',
+    });
+    const p_tableData_create = createTableData({
+      ...parentLayoutResponse,
+      ...parentRowResponse,
+      keyProperty: 'id',
+    });
+
+    const initialStateData = createState({
       viewHandler: {
         modals: {
           [windowId]: {
@@ -257,44 +196,43 @@ describe('QuickActions', () => {
       },
       tables: {
         length: 2,
-        [getTableId({ windowId, viewId })]: {
+        [childTableId]: {
           ...initialTableState,
-          ...(createTableData({
-            ...childLayoutResponse,
-            ...childRowResponse,
-            keyProperty: 'id',
-          })),
+          ...c_tableData_create,
           selected: [childRowId],
         },
-        [getTableId({
-          windowId: parentWindowId,
-          viewId: parentViewId,
-        })]: {
+        [parentTableId]: {
           ...initialTableState,
-          ...(createTableData({
-            ...parentLayoutResponse,
-            ...parentRowResponse,
-            keyProperty: 'id',
-          })),
+          ...p_tableData_create,
           selected: [parentRowId],
         },
       },
       actionsHandler: {
         [id]: initialSingleActionsState,
-        [childId]: initialSingleActionsState,
+        // child actions already requested
+        [childId]: {
+          ...initialSingleActionsState,
+          pending: true,
+        },
       },
-    }));
+    });
+    const store = mockStore(initialStateData);
+
+    const payload1 = { id };
+    const payload2 = { id, actions };
+    const expectedActions = [
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload1 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS, payload: payload2 },
+    ];
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .post(`/documentView/${windowId}/${viewId}/quickActions`)
+      .get(
+        `/documentView/${parentWindowId}/${parentViewId}/quickActions?childViewId=${viewId}&childViewSelectedIds=${childRowId}&selectedIds=${parentRowId}`
+      )
       .reply(200, { actions });
-    nock(config.API_URL)
-      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .post(`/documentView/${parentWindowId}/${parentViewId}/quickActions`)
-      .reply(200, { actions: [] });
 
-    return store
+    store
       .dispatch(
         fetchQuickActions({
           windowId,
@@ -304,27 +242,124 @@ describe('QuickActions', () => {
       )
       .then(() => {
         expect(store.getActions()).toEqual(
-          expect.arrayContaining([
-            { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: { id } },
-            {
-              type: ACTION_TYPES.FETCH_QUICK_ACTIONS,
-              payload: { id: childId }
-            },
-            {
-              type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS,
-              payload: { id, actions: [] }
-            },
-            {
-              type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS,
-              payload: { id: childId, actions }
-            },
-          ])
+          expect.arrayContaining(expectedActions)
         );
 
       });
   });
 
-  it(`fetch underlying view's actions when modal with included view is visible`, () => {
+  it(`fetch included parent and child quick actions`, async () => {
+    const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
+    const childLayoutResponse = gridLayoutFixtures.layout2_child;
+    const parentRowResponse = gridRowFixtures.data3_parent;
+    const childRowResponse = gridRowFixtures.data3_child;
+    const { actions2: actions } = quickActionsFixtures;
+    const { windowId, viewId, parentWindowId, parentViewId } = childRowResponse;
+    const parentRowId = parentRowResponse.result[0].id;
+    const childRowId = childRowResponse.result[0].id;
+    const id = getQuickActionsId({
+      windowId: parentWindowId,
+      viewId: parentViewId,
+    });
+    const childId = getQuickActionsId({ windowId, viewId });
+    const parentTableId = getTableId({
+      windowId: parentWindowId,
+      viewId: parentViewId,
+    });
+    const childTableId = getTableId({ windowId, viewId });
+    const c_tableData_create = createTableData({
+      ...childLayoutResponse,
+      ...childRowResponse,
+      keyProperty: 'id',
+    });
+    const p_tableData_create = createTableData({
+      ...parentLayoutResponse,
+      ...parentRowResponse,
+      keyProperty: 'id',
+    });
+
+    const initialStateData = createState({
+      viewHandler: {
+        modals: {
+          [windowId]: {
+            layout: { ...childLayoutResponse },
+            windowId,
+            viewId,
+          },
+          [parentWindowId]: {
+            layout: { ...parentLayoutResponse },
+            viewId: parentViewId,
+            windowId: parentWindowId,
+          },
+        },
+        includedView: {
+          viewId,
+          windowId,
+          parentId: parentWindowId,
+        },
+      },
+      tables: {
+        length: 2,
+        [childTableId]: {
+          ...initialTableState,
+          ...c_tableData_create,
+          selected: [childRowId],
+        },
+        [parentTableId]: {
+          ...initialTableState,
+          ...p_tableData_create,
+          selected: [parentRowId],
+        },
+      },
+      actionsHandler: {
+        [id]: initialSingleActionsState,
+        [childId]: initialSingleActionsState,
+      },
+    });
+    const store = mockStore(initialStateData);
+
+    const payload1 = { id };
+    const payload2 = { id: childId };
+    const payload3 = { id, actions: [] };
+    const payload4 = { id: childId, actions };
+    const expectedActions = [
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload1 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload2 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS, payload: payload3 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS, payload: payload4 },
+    ];
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(
+        `/documentView/${parentWindowId}/${parentViewId}/quickActions?childViewId=${viewId}&childViewSelectedIds=${childRowId}&selectedIds=${parentRowId}`
+      )
+      .reply(200, { actions: [] });
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(
+        `/documentView/${windowId}/${viewId}/quickActions?parentViewId=${parentViewId}&parentViewSelectedIds=${parentRowId}&selectedIds=${childRowId}`
+      )
+      .reply(200, { actions });
+
+    store
+      .dispatch(
+        fetchQuickActions({
+          windowId,
+          viewId,
+          isModal: true,
+        })
+      )
+      .then(() => {
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
+
+      });
+  });
+
+  it(`fetch underlying view's actions when modal with included view is visible`, async () => {
     const layoutResponse = gridLayoutFixtures.layout3_payments;
     const rowResponse = gridRowFixtures.data4_payments;
     const { windowId, viewId, result } = rowResponse;
@@ -336,6 +371,12 @@ describe('QuickActions', () => {
     const id = getQuickActionsId({ windowId, viewId });
     const tableId = getTableId({ windowId, viewId });
     const selectedId = result[0].id;
+
+    const tableData_create = createTableData({
+      ...layoutResponse,
+      ...rowResponse,
+      keyProperty: 'id',
+    });
 
     const initialStateData = createState({
       viewHandler: {
@@ -349,11 +390,7 @@ describe('QuickActions', () => {
         length: 1,
         [tableId]: {
           ...initialTableState,
-          ...(createTableData({
-            ...layoutResponse,
-            ...rowResponse,
-            keyProperty: 'id',
-          })),
+          ...tableData_create,
           selected: [selectedId],
         },
       },
@@ -363,22 +400,31 @@ describe('QuickActions', () => {
     });
     const store = mockStore(initialStateData);
 
+    const payload1 = { id };
+    const payload2 = { id, actions: [] };
+
+    const expectedActions = [
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload1 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS, payload: payload2 },
+    ];
+
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .post(`/documentView/${windowId}/${viewId}/quickActions`)
+      .get(
+        `/documentView/${windowId}/${viewId}/quickActions?selectedIds=${selectedId}`
+      )
       .reply(200, { actions: [] });
 
-    return store
-      .dispatch(fetchQuickActions({ windowId, viewId }))
+    store
+      .dispatch(
+        fetchQuickActions({
+          windowId,
+          viewId,
+        })
+      )
       .then(() => {
         expect(store.getActions()).toEqual(
-          expect.arrayContaining([
-            { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: { id } },
-            {
-              type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS,
-              payload: { id, actions: [] }
-            },
-          ])
+          expect.arrayContaining(expectedActions)
         );
 
       });

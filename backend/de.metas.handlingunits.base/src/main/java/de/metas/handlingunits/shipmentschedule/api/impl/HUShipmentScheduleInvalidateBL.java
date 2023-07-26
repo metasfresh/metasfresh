@@ -22,6 +22,10 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * #L%
  */
 
+import java.util.List;
+
+import org.compiere.model.I_M_InOutLine;
+
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -33,9 +37,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_M_InOutLine;
-
-import java.util.List;
 
 /**
  * Subclass of {@link ShipmentScheduleInvalidateBL} with HU-aware code. The concrete benefit of this is that we can create BPartner-specific storage segments which in turn allow us to invalidate less
@@ -54,7 +55,7 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 	}
 
 	@Override
-	protected IShipmentScheduleSegment createSegmentForInOutLine(final int bPartnerId, final @NonNull I_M_InOutLine inoutLine)
+	protected IShipmentScheduleSegment createSegmentForInOutLine(final int bPartnerId, final I_M_InOutLine inoutLine)
 	{
 		final ShipmentScheduleSegmentBuilder storageSegmentBuilder = ShipmentScheduleSegments.builder();
 		storageSegmentBuilder
@@ -78,7 +79,7 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 	}
 
 	@Override
-	protected IShipmentScheduleSegment createSegmentForShipmentSchedule(final @NonNull I_M_ShipmentSchedule schedule)
+	protected IShipmentScheduleSegment createSegmentForShipmentSchedule(final I_M_ShipmentSchedule schedule)
 	{
 		boolean maybeCanRestrictToCertainPartners = false; // we will set this to true if there is any TU assigned to the shipment schedule
 

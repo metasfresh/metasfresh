@@ -140,7 +140,7 @@ public final class QtyCalculationsBOMLine
 
 	public Quantity computeQtyRequired(@NonNull final Quantity qtyOfFinishedGood)
 	{
-		final Quantity qtyOfFinishedGoodInRightUOM = uomConversionService.convertQuantityTo(qtyOfFinishedGood, UOMConversionContext.of(bomProductId), UomId.ofRepoId(bomProductUOM.getC_UOM_ID()));
+		Check.assumeEquals(qtyOfFinishedGood.getUomId().getRepoId(), bomProductUOM.getC_UOM_ID(), "{} shall have uom={}", qtyOfFinishedGood, bomProductUOM);
 
 		final Quantity qtyRequiredForOneFinishedGood = getQtyRequiredForOneFinishedGood();
 
@@ -152,7 +152,7 @@ public final class QtyCalculationsBOMLine
 		else
 		{
 			qtyRequired = qtyRequiredForOneFinishedGood
-					.multiply(qtyOfFinishedGoodInRightUOM.toBigDecimal())
+					.multiply(qtyOfFinishedGood.toBigDecimal())
 					.setScale(UOMPrecision.ofInt(8), RoundingMode.UP);
 		}
 

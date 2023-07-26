@@ -1,11 +1,12 @@
 package de.metas.handlingunits;
 
+import java.util.Collection;
+
+import org.adempiere.ad.dao.IQueryFilter;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.lock.api.LockOwner;
 import de.metas.util.ISingletonService;
-import org.adempiere.ad.dao.IQueryFilter;
-
-import java.util.Collection;
 
 /*
  * #%L
@@ -41,6 +42,7 @@ public interface IHULockBL extends ISingletonService
 	boolean isLocked(I_M_HU hu);
 
 	/**
+	 * @param hu
 	 * @param lockOwner lock owner; {@link LockOwner#ANY} is accepted
 	 * @return true if given HU is locked by given owner
 	 */
@@ -50,6 +52,9 @@ public interface IHULockBL extends ISingletonService
 	 * Locks the HU using given lock owner.
 	 * 
 	 * If the HU was already locked by same owner, this method does nothing.
+	 * 
+	 * @param hu
+	 * @param lockOwner
 	 */
 	void lock(I_M_HU hu, LockOwner lockOwner);
 
@@ -61,6 +66,9 @@ public interface IHULockBL extends ISingletonService
 	 * Unlock the HU from given lock owner.
 	 * 
 	 * If the HU is not locked by that owner, this method does nothing.
+	 * 
+	 * @param hu
+	 * @param lockOwner
 	 */
 	void unlock(I_M_HU hu, LockOwner lockOwner);
 

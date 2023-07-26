@@ -50,10 +50,7 @@ import java.util.Iterator;
  * Uses {@link OLCandValidatorService} to check the prices and other aspects of all {@link I_C_OLCand} for a certain {@link I_EXP_ReplicationTrx#COLUMNNAME_EXP_ReplicationTrx_ID EXP_ReplicationTrx_ID}. <br>
  * Then, if all prices are OK, uses {@link NoOpIssueSolver} to flag the {@link I_C_OLCand}s of that trx-ID as solved.
  * Finally, the process performs an update to set <code>C_OLCand.IsImportedWithIssues='N'</code> to all olcands.
- * 
- * @deprecated instead we now use the process {@link de.metas.ordercandidate.process.C_OLCandEnqueueForSalesOrderCreation}.
  */
-@Deprecated
 public abstract class C_OLCand_Update_IsImportedWithIssues_Base extends JavaProcess
 {
 	//

@@ -1,12 +1,21 @@
 package de.metas.ui.web.order.products_proposal.view;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.product.ProductId;
@@ -25,16 +34,9 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -203,11 +205,5 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	public DocumentFilterList getFilters()
 	{
 		return ProductsProposalViewFilters.toDocumentFilters(rowsData.getFilter());
-	}
-
-	@NonNull
-	public Optional<ClientAndOrgId> getOrderClientAndOrg()
-	{
-		return rowsData.getOrder().map(Order::getClientAndOrgId);
 	}
 }

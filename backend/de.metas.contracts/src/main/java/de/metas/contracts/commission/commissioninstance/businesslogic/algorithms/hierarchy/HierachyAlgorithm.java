@@ -44,6 +44,7 @@ import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_BPartner;
@@ -88,7 +89,8 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 						  triggerData.getTimestamp(),
 						  triggerData.getForecastedBasePoints(),
 						  triggerData.getInvoiceableBasePoints(),
-						  triggerData.getInvoicedBasePoints());
+						  triggerData.getInvoicedBasePoints(),
+						  triggerData.getTradedCommissionPercent());
 
 		return shares;
 	}
@@ -160,7 +162,8 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 				newTriggerData.getTimestamp(),
 				forecastedBase,
 				toInvoiceBase,
-				invoicedBase);
+				invoicedBase,
+				newTriggerData.getTradedCommissionPercent());
 	}
 
 	private void createAndAddFacts(
@@ -168,7 +171,8 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 			@NonNull final Instant timestamp,
 			@NonNull final CommissionPoints initialForecastedBase,
 			@NonNull final CommissionPoints initialToInvoiceBase,
-			@NonNull final CommissionPoints initialInvoicedBase)
+			@NonNull final CommissionPoints initialInvoicedBase,
+			@NonNull final Percent tradedCommissionPercent)
 	{
 		CommissionPoints currentForecastedBase = initialForecastedBase;
 		CommissionPoints currentToInvoiceBase = initialToInvoiceBase;
@@ -191,13 +195,21 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 
 					final HierarchyContract contract = HierarchyContract.cast(share.getContract());
 
-					final CommissionPoints salesRepForecastCP = calculateSalesRepCommissionPoints(contract, currentForecastedBase);
-					final CommissionPoints salesRepToInvoiceCP = calculateSalesRepCommissionPoints(contract, currentToInvoiceBase);
-					final CommissionPoints salesRepInvoiced = calculateSalesRepCommissionPoints(contract, currentInvoicedBase);
+					final Percent currentTradedCommissionPercent = HierarchyLevel.ZERO.equals(share.getLevel())
+							? tradedCommissionPercent
+							: Percent.ZERO;
 
-					final Optional<CommissionFact> forecastedFact = CommissionFact.createFact(timestamp, CommissionState.FORECASTED, salesRepForecastCP, share.getForecastedPointsSum());
-					final Optional<CommissionFact> toInvoiceFact = CommissionFact.createFact(timestamp, CommissionState.INVOICEABLE, salesRepToInvoiceCP, share.getInvoiceablePointsSum());
-					final Optional<CommissionFact> invoicedFact = CommissionFact.createFact(timestamp, CommissionState.INVOICED, salesRepInvoiced, share.getInvoicedPointsSum());
+					final CommissionPoints forecastCP = calculateSalesRepCommissionPoints(contract, currentForecastedBase);
+					final CommissionPoints toInvoiceCP = calculateSalesRepCommissionPoints(contract, currentToInvoiceBase);
+					final CommissionPoints invoicedCP = calculateSalesRepCommissionPoints(contract, currentInvoicedBase);
+
+					final CommissionPoints tradedForecastCP = calculateTradedCommissionPoints(forecastCP, currentTradedCommissionPercent, contract.getPointsPrecision());
+					final CommissionPoints tradedToInvoiceCP = calculateTradedCommissionPoints(toInvoiceCP, currentTradedCommissionPercent, contract.getPointsPrecision());
+					final CommissionPoints tradedInvoicedCP = calculateTradedCommissionPoints(invoicedCP, currentTradedCommissionPercent, contract.getPointsPrecision());
+
+					final Optional<CommissionFact> forecastedFact = CommissionFact.createFact(timestamp, CommissionState.FORECASTED, forecastCP.subtract(tradedForecastCP), share.getForecastedPointsSum());
+					final Optional<CommissionFact> toInvoiceFact = CommissionFact.createFact(timestamp, CommissionState.INVOICEABLE, toInvoiceCP.subtract(tradedToInvoiceCP), share.getInvoiceablePointsSum());
+					final Optional<CommissionFact> invoicedFact = CommissionFact.createFact(timestamp, CommissionState.INVOICED, invoicedCP.subtract(tradedInvoicedCP), share.getInvoicedPointsSum());
 
 					forecastedFact.ifPresent(share::addFact);
 					toInvoiceFact.ifPresent(share::addFact);
@@ -205,9 +217,9 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 
 					if (hierarchyConfig.isSubtractLowerLevelCommissionFromBase())
 					{
-						currentForecastedBase = currentForecastedBase.subtract(salesRepForecastCP);
-						currentToInvoiceBase = currentToInvoiceBase.subtract(salesRepToInvoiceCP);
-						currentInvoicedBase = currentInvoicedBase.subtract(salesRepInvoiced);
+						currentForecastedBase = currentForecastedBase.subtract(forecastCP);
+						currentToInvoiceBase = currentToInvoiceBase.subtract(toInvoiceCP);
+						currentInvoicedBase = currentInvoicedBase.subtract(invoicedCP);
 					}
 				}
 			}
@@ -222,5 +234,14 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 				.computePercentageOf(
 						contract.getCommissionPercent(),
 						contract.getPointsPrecision());
+	}
+
+	private CommissionPoints calculateTradedCommissionPoints(
+			@NonNull final CommissionPoints salesRepCommissionPoints,
+			@NonNull final Percent tradedCommissionPercent,
+			final int pointsPrecision)
+	{
+		return salesRepCommissionPoints
+				.computePercentageOf(tradedCommissionPercent, pointsPrecision);
 	}
 }

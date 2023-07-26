@@ -6,6 +6,7 @@ import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
@@ -23,14 +24,14 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.api.ProductBOMVersionsId;
+import org.compiere.model.I_S_Resource;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -38,6 +39,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ProductPlanningDAO implements IProductPlanningDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
 
 	@Override
 	public I_PP_Product_Planning getById(@NonNull final ProductPlanningId ppProductPlanningId)
@@ -53,7 +55,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				productPlanningQuery.getWarehouseId(),
 				productPlanningQuery.getPlantId(),
 				productPlanningQuery.getProductId(),
-				productPlanningQuery.isIncludeWithNullProductId(),
 				productPlanningQuery.getAttributeSetInstanceId());
 
 		//
@@ -63,7 +64,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public ResourceId findPlantId(
+	public I_S_Resource findPlant(
 			final int orgRepoId,
 			final I_M_Warehouse warehouse,
 			final int productRepoId,
@@ -76,7 +77,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final ResourceId plantId = ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID());
 			if (plantId != null)
 			{
-				return plantId;
+				return resourcesRepo.getById(plantId);
 			}
 		}
 
@@ -92,7 +93,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 					warehouseId,
 					(ResourceId)null,  // any plant
 					productId,
-					true /*includeNullProducts*/,
 					attributeSetInstanceId);
 
 			final List<ResourceId> plantIds = queryBuilder
@@ -114,22 +114,9 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			}
 			else
 			{
-				return plantIds.get(0);
+				return resourcesRepo.getById(plantIds.get(0));
 			}
 		}
-	}
-
-	@Override
-	public Stream<I_PP_Product_Planning> query(
-			final OrgId orgId,
-			final WarehouseId warehouseId,
-			final ResourceId resourceId,
-			final ProductId productId,
-			final AttributeSetInstanceId attributeSetInstanceId)
-	{
-		return createQueryBuilder(orgId, warehouseId, resourceId, productId,false, attributeSetInstanceId)
-				.create()
-				.stream();
 	}
 
 	private IQueryBuilder<I_PP_Product_Planning> createQueryBuilder(
@@ -137,7 +124,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final WarehouseId warehouseId,
 			final ResourceId resourceId,
 			final ProductId productId,
-			final boolean includeWithNullProductId,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL
@@ -159,15 +145,9 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, null);
 		}
 
-		if (includeWithNullProductId)
-		{
-			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
-		}
-		else
-		{
-			// The query should exclude PP_Product_Plannings that have no M_Product_ID
-			queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
-		}
+		// Filter by Product if provided
+
+		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
 
 		// Filter by ASI
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);
@@ -214,48 +194,36 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public void setProductBOMVersionsIdIfAbsent(
+	public void setProductBOMIdIfAbsent(
 			@NonNull final ProductId productId,
-			@NonNull final ProductBOMVersionsId bomVersionsId)
+			@NonNull final ProductBOMId bomId)
 	{
 		final List<I_PP_Product_Planning> productPlanningRecords = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, null)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, null)
 				.create()
 				.list();
 
 		for (final I_PP_Product_Planning productPlanningRecord : productPlanningRecords)
 		{
-			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersionsId.getRepoId());
+			productPlanningRecord.setPP_Product_BOM_ID(bomId.getRepoId());
 			save(productPlanningRecord);
 		}
 	}
 
 	@Override
-	@NonNull
-	public Set<ProductBOMVersionsId> retrieveAllPickingBOMVersionsIds()
+	public Set<ProductBOMId> retrieveAllPickingBOMIds()
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsPickingOrder, true)
-				.addNotNull(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
+				.addNotNull(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID)
 				.create()
-				.listDistinct(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, Integer.class)
+				.listDistinct(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, Integer.class)
 				.stream()
-				.map(ProductBOMVersionsId::ofRepoId)
+				.map(ProductBOMId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Override
-	@NonNull
-	public List<I_PP_Product_Planning> retrieveProductPlanningForBomVersions(@NonNull final ProductBOMVersionsId bomVerisonId)
-	{
-		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, bomVerisonId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.listImmutable(I_PP_Product_Planning.class);
 	}
 }

@@ -1,5 +1,9 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.stream.Stream;
+
+import java.util.Objects;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -9,9 +13,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import de.metas.util.StreamUtils;
 import lombok.NonNull;
-
-import java.util.Objects;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -73,15 +74,6 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 
 		return getView().streamByIds(filter.andOnlyRowIds(selectedDocumentIds));
 	}
-
-	@SuppressWarnings("MethodDoesntCallSuperMethod")
-	@Override
-	protected Stream<HUEditorRow> streamSelectedRows()
-	{
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		return getView().streamByIds(selectedRowIds);
-	}
-
 
 	protected final Stream<HuId> streamSelectedHUIds(@NonNull final Select select)
 	{

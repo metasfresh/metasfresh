@@ -19,6 +19,8 @@ package org.compiere.util;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.sql.RowSet;
+
 /**
  * Interface to wrap and extend Statement
  * @author Low Heng Sin
@@ -26,15 +28,37 @@ import java.sql.Statement;
  */
 public interface CStatement extends Statement
 {
-	String getSql();
+	/**
+	 * 	Get Sql
+	 *	@return sql
+	 */
+	public String getSql();
 
+
+	/**
+	 * 	Execute Query
+	 * 	@return ResultSet or RowSet
+	 * 	@throws SQLException
+	 * @see java.sql.PreparedStatement#executeQuery()
+	 */
+	public RowSet getRowSet();
+	
+	/**
+	 * @return boolean
+	 * @throws SQLException
+	 */
 	@Override
-	boolean isClosed() throws SQLException;
+    public boolean isClosed() throws SQLException;
     
-	void commit() throws SQLException;
+    /**
+     * 
+     * @throws SQLException
+     */
+    public void commit() throws SQLException;
 
     /**
      * don't call this directly, invoke by finalizer thread
+     * @throws Throwable
      */
-	void finalize() throws Throwable;
-}
+	public void finalize() throws Throwable; 
+}	//	CStatement

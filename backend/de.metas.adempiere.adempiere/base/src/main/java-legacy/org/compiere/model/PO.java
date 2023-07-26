@@ -16,12 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.CacheSourceModelFactory;
-import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.POCacheSourceModel;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
@@ -39,30 +40,35 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.execution.DocWorkflowManager;
 import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.session.ChangeLogRecord;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
-import org.compiere.model.copy.POValuesCopyStrategies;
-import org.compiere.model.copy.POValuesCopyStrategy;
-import org.compiere.model.copy.ValueToCopyResolveContext;
-import org.compiere.model.copy.ValueToCopyResolved;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -73,6 +79,7 @@ import org.compiere.util.Ini;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -81,7 +88,6 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -104,38 +110,39 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 
 /**
  * Persistent Object.
  * Superclass for actual implementations
  *
  * @author Jorg Janke
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- * <li>FR [ 1675490 ] ModelValidator on modelChange after events
- * <li>BF [ 1704828 ] PO.is_Changed() and PO.is_ValueChanged are not consistent
- * <li>FR [ 1720995 ] Add PO.saveEx() and PO.deleteEx() methods
- * <li>BF [ 1990856 ] PO.set_Value* : truncate string more than needed
- * <li>FR [ 2042844 ] PO.get_Translation improvements
- * <li>FR [ 2818369 ] Implement PO.get_ValueAs*(columnName)
- * https://sourceforge.net/tracker/?func=detail&aid=2818369&group_id=176962&atid=879335
- * <li>BF [ 2849122 ] PO.AfterSave is not rollback on error
- * https://sourceforge.net/tracker/?func=detail&aid=2849122&group_id=176962&atid=879332
- * <li>BF [ 2859125 ] Can't set AD_OrgBP_ID
- * https://sourceforge.net/tracker/index.php?func=detail&aid=2859125&group_id=176962&atid=879332
- * <li>BF [ 2866493 ] VTreePanel is not saving who did the node move
- * https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2866493&group_id=176962
- * @author Teo Sarca, teo.sarca@gmail.com
- * <li>BF [ 2876259 ] PO.insertTranslation query is not correct
- * https://sourceforge.net/tracker/?func=detail&aid=2876259&group_id=176962&atid=879332
- * @author Victor Perez, e-Evolution SC
- * <li>[ 2195894 ] Improve performance in PO engine
- * <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335
  * @version $Id: PO.java,v 1.12 2006/08/09 16:38:47 jjanke Exp $
+ *
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ *         <li>FR [ 1675490 ] ModelValidator on modelChange after events
+ *         <li>BF [ 1704828 ] PO.is_Changed() and PO.is_ValueChanged are not consistent
+ *         <li>FR [ 1720995 ] Add PO.saveEx() and PO.deleteEx() methods
+ *         <li>BF [ 1990856 ] PO.set_Value* : truncate string more than needed
+ *         <li>FR [ 2042844 ] PO.get_Translation improvements
+ *         <li>FR [ 2818369 ] Implement PO.get_ValueAs*(columnName)
+ *         https://sourceforge.net/tracker/?func=detail&aid=2818369&group_id=176962&atid=879335
+ *         <li>BF [ 2849122 ] PO.AfterSave is not rollback on error
+ *         https://sourceforge.net/tracker/?func=detail&aid=2849122&group_id=176962&atid=879332
+ *         <li>BF [ 2859125 ] Can't set AD_OrgBP_ID
+ *         https://sourceforge.net/tracker/index.php?func=detail&aid=2859125&group_id=176962&atid=879332
+ *         <li>BF [ 2866493 ] VTreePanel is not saving who did the node move
+ *         https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2866493&group_id=176962
+ * @author Teo Sarca, teo.sarca@gmail.com
+ *         <li>BF [ 2876259 ] PO.insertTranslation query is not correct
+ *         https://sourceforge.net/tracker/?func=detail&aid=2876259&group_id=176962&atid=879332
+ * @author Victor Perez, e-Evolution SC
+ *         <li>[ 2195894 ] Improve performance in PO engine
+ *         <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335
  */
 public abstract class PO
 		implements Serializable, Comparator<Object>, Evaluatee, Evaluatee2 // metas: 01622
@@ -150,13 +157,9 @@ public abstract class PO
 
 	private static final int QUERY_TIME_OUT = 10;
 
-	/**
-	 * User Maintained Entity Type
-	 */
+	/** User Maintained Entity Type */
 	static protected final String ENTITYTYPE_UserMaintained = "U";
-	/**
-	 * Dictionary Maintained Entity Type
-	 */
+	/** Dictionary Maintained Entity Type */
 	static public final String ENTITYTYPE_Dictionary = "D";
 
 	/**************************************************************************
@@ -172,8 +175,8 @@ public abstract class PO
 	/**
 	 * Create & Load existing Persistent Object
 	 *
-	 * @param ID      The unique ID of the object
-	 * @param ctx     context
+	 * @param ID The unique ID of the object
+	 * @param ctx context
 	 * @param trxName transaction name
 	 */
 	public PO(final Properties ctx, final int ID, @Nullable final String trxName)
@@ -184,15 +187,15 @@ public abstract class PO
 	/**
 	 * Create & Load existing Persistent Object.
 	 *
-	 * @param ctx     context
-	 * @param rs      optional - load from current result set position (no navigation, not closed)
-	 *                if null, a new record is created.
+	 * @param ctx context
+	 * @param rs optional - load from current result set position (no navigation, not closed)
+	 *            if null, a new record is created.
 	 * @param trxName transaction name
 	 */
 	public PO(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
 	{
 		this(ctx, 0, trxName, rs);
-	}    // PO
+	}	// PO
 
 	/**
 	 * Create & Load existing Persistent Object.
@@ -209,10 +212,10 @@ public abstract class PO
 	 *  you need to set the IDs for multi-key records explicitly.
 	 * </pre>
 	 *
-	 * @param ctx     context
-	 * @param ID      the ID if 0, the record defaults are applied - ignored if re exists
+	 * @param ctx context
+	 * @param ID the ID if 0, the record defaults are applied - ignored if re exists
 	 * @param trxName transaction name
-	 * @param rs      optional - load from current result set position (no navigation, not closed)
+	 * @param rs optional - load from current result set position (no navigation, not closed)
 	 */
 	public PO(@NonNull final Properties ctx, final int ID, @Nullable final String trxName, @Nullable final ResultSet rs)
 	{
@@ -239,7 +242,7 @@ public abstract class PO
 
 		if (rs != null)
 		{
-			load(rs);        // will not have virtual columns
+			load(rs);		// will not have virtual columns
 		}
 		else
 		{
@@ -250,14 +253,14 @@ public abstract class PO
 	/**
 	 * Create New PO by Copying existing (key not copied).
 	 *
-	 * @param ctx          context
-	 * @param source       source object
+	 * @param ctx context
+	 * @param source source object
 	 * @param AD_Client_ID client
-	 * @param AD_Org_ID    org
+	 * @param AD_Org_ID org
 	 */
 	public PO(final Properties ctx, final PO source, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		this(ctx, 0, null, null);    // create new
+		this(ctx, 0, null, null);	// create new
 		//
 		if (source != null)
 		{
@@ -265,42 +268,28 @@ public abstract class PO
 		}
 		setAD_Client_ID(AD_Client_ID);
 		setAD_Org_ID(AD_Org_ID);
-	}    // PO
+	}	// PO
 
-	/**
-	 * Logger
-	 */
+	/** Logger */
 	protected transient final Logger log = LogManager.getLogger(getClass());
 
-	/**
-	 * Static Logger
-	 */
+	/** Static Logger */
 	private static final Logger s_log = LogManager.getLogger(PO.class);
 
 	private static final String COLUMNNAME_IsApproved = "IsApproved";
 
-	private final POServicesFacade services = new POServicesFacade();
+	/** Context */
 	private Properties p_ctx;
-	/**
-	 * Model Info
-	 */
+	/** Model Info */
 	private volatile POInfo p_info = null;
 
-	/**
-	 * Original Values
-	 */
+	/** Original Values */
 	private Object[] m_oldValues = null;
-	/**
-	 * New Values
-	 */
+	/** New Values */
 	private Object[] m_newValues = null;
-	/**
-	 * Flag to mark that a value was loaded
-	 */
+	/** Flag to mark that a value was loaded */
 	private boolean[] m_valueLoaded = null;
-	/**
-	 * Counts how many times this object was loaded/reloaded
-	 */
+	/** Counts how many times this object was loaded/reloaded */
 	private int m_loadCount = 0;
 
 	/**
@@ -321,13 +310,9 @@ public abstract class PO
 	 */
 	private boolean m_stale = false;
 
-	/**
-	 * Record_IDs
-	 */
+	/** Record_IDs */
 	private Object[] m_IDs = new Object[] { I_ZERO };
-	/**
-	 * Key Columns
-	 */
+	/** Key Columns */
 	// NOTE: not "final" because we want to use it in copy
 	private String[] m_KeyColumns;
 	/**
@@ -340,31 +325,19 @@ public abstract class PO
 	 * Compared to {@link #m_createNew} this flag will be never ever reset so can always know if this PO was created now.
 	 */
 	private boolean m_wasJustCreated = false;
-	/**
-	 * Deleted ID
-	 */
+	/** Deleted ID */
 	private int m_idOld = 0;
-	/**
-	 * Custom Columns
-	 */
+	/** Custom Columns */
 	private HashMap<String, String> m_custom = null;
 
-	/**
-	 * Zero Integer
-	 */
-	@SuppressWarnings("UnnecessaryBoxing")
+	/** Zero Integer */
 	protected static final Integer I_ZERO = new Integer(0);
-	@SuppressWarnings("UnnecessaryBoxing")
 	private static final Integer I_ZERO_NATIVESEQUENCE = new Integer(0);
 
-	/**
-	 * Trifon - Indicates that this record is created by replication functionality.
-	 */
+	/** Trifon - Indicates that this record is created by replication functionality. */
 	private boolean m_isReplication = false;
 
-	/**
-	 * Do not overwrite assigned ID with generated one
-	 */
+	/** Do not overwrite assigned ID with generated one */
 	private boolean isAssignedID = false;
 
 	public final boolean isAssignedID()
@@ -437,7 +410,7 @@ public abstract class PO
 		sb.append("]");
 		// metas: end
 		return sb.toString();
-	}    // toString
+	}	// toString
 
 	/**
 	 * Equals based on ID
@@ -475,7 +448,7 @@ public abstract class PO
 			}
 		}
 		return super.equals(cmp);
-	}    // equals
+	}	// equals
 
 	/**
 	 * Compare based on DocumentNo, Value, Name, Description
@@ -537,7 +510,7 @@ public abstract class PO
 			}
 		}
 		return o1.toString().compareTo(o2.toString());
-	}    // compare
+	}	// compare
 
 	/**
 	 * Get TableName.
@@ -584,7 +557,7 @@ public abstract class PO
 		}
 
 		final Object oo = m_IDs[0];
-		if (oo instanceof Integer)
+		if (oo != null && oo instanceof Integer)
 		{
 			return ((Integer)oo).intValue();
 		}
@@ -609,14 +582,16 @@ public abstract class PO
 	public final Properties getCtx()
 	{
 		return p_ctx;
-	}    // getCtx
+	}	// getCtx
 
 	/**
 	 * Sets PO's context.
-	 * <p>
+	 *
 	 * WARNING: use it only if u really know what are you doing.
+	 *
+	 * @param ctx
 	 */
-	public final void setCtx(@NonNull final Properties ctx)
+	protected final void setCtx(@NonNull final Properties ctx)
 	{
 		this.p_ctx = ctx;
 	}
@@ -628,7 +603,7 @@ public abstract class PO
 	public final Logger get_Logger()
 	{
 		return log;
-	}    // getLogger
+	}	// getLogger
 
 	/**************************************************************************
 	 * Get Value
@@ -713,10 +688,22 @@ public abstract class PO
 		return get_Value(index);
 	}   // get_Value
 
+	/**
+	 * Get Encrypted Value
+	 *
+	 * @param columnName column name
+	 * @return value or null
+	 */
+	protected final Object get_ValueE(final String columnName)
+	{
+		return get_Value(columnName);
+	}   // get_ValueE
+
 	@Override
 	public <T> T get_ValueAsObject(final String variableName)
 	{
-		@SuppressWarnings("unchecked") final T value = (T)get_Value(variableName);
+		@SuppressWarnings("unchecked")
+		final T value = (T)get_Value(variableName);
 		return value;
 	}
 
@@ -724,11 +711,12 @@ public abstract class PO
 	 * Get Column Value
 	 *
 	 * @param variableName name
-	 * @return <ul>
-	 * <li>string value
-	 * <li>null in case the underlying value is null
-	 * <li>"Y"/"N" in case the underlying value is {@link Boolean}
-	 * </ul>
+	 * @return
+	 *         <ul>
+	 *         <li>string value
+	 *         <li>null in case the underlying value is null
+	 *         <li>"Y"/"N" in case the underlying value is {@link Boolean}
+	 *         </ul>
 	 */
 	@Override
 	public final String get_ValueAsString(final String variableName)
@@ -751,7 +739,7 @@ public abstract class PO
 		{
 			return value.toString();
 		}
-	}    // get_ValueAsString
+	}	// get_ValueAsString
 
 	/**
 	 * Get Value of Column
@@ -759,7 +747,7 @@ public abstract class PO
 	 * @param AD_Column_ID column
 	 * @return value or null
 	 */
-	public final Object get_ValueOfColumn(@NonNull final AdColumnId AD_Column_ID)
+	public final Object get_ValueOfColumn(final int AD_Column_ID)
 	{
 		final int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
@@ -830,7 +818,7 @@ public abstract class PO
 		}
 		if (value instanceof Integer)
 		{
-			return (Integer)value;
+			return ((Integer)value).intValue();
 		}
 		try
 		{
@@ -910,6 +898,80 @@ public abstract class PO
 		return is_ValueChanged(index);
 	}   // is_ValueChanged
 
+	/**
+	 * Return new - old.
+	 * - New Value if Old Value is null
+	 * - New Value - Old Value if Number
+	 * - otherwise null
+	 *
+	 * @param index index
+	 * @return new - old or null if not appropriate or not changed
+	 */
+	public final Object get_ValueDifference(final int index)
+	{
+		if (index < 0 || index >= get_ColumnCount())
+		{
+			log.warn("Index invalid - " + index);
+			return null;
+		}
+
+		//
+		// Check if object is stalled
+		// In case is stalled then there is no change so we return null
+		// because it's the same as having m_newValues[index] == null
+		if (m_stale)  // metas: 01537
+		{
+			return null;
+		}
+
+		final Object nValue = m_newValues[index];
+		// No new Value or NULL
+		if (nValue == null || nValue == Null.NULL)
+		{
+			return null;
+		}
+		//
+		final Object oValue = m_oldValues[index];
+		if (oValue == null || oValue == Null.NULL)
+		{
+			return nValue;
+		}
+		if (nValue instanceof BigDecimal)
+		{
+			final BigDecimal obd = (BigDecimal)oValue;
+			return ((BigDecimal)nValue).subtract(obd);
+		}
+		else if (nValue instanceof Integer)
+		{
+			int result = ((Integer)nValue).intValue();
+			result -= ((Integer)oValue).intValue();
+			return result;
+		}
+		//
+		log.warn("Invalid type - New=" + nValue);
+		return null;
+	}   // get_ValueDifference
+
+	/**
+	 * Return new - old.
+	 * - New Value if Old Value is null
+	 * - New Value - Old Value if Number
+	 * - otherwise null
+	 *
+	 * @param columnName column name
+	 * @return new - old or null if not appropriate or not changed
+	 */
+	public final Object get_ValueDifference(final String columnName)
+	{
+		final int index = get_ColumnIndex(columnName);
+		if (index < 0)
+		{
+			log.warn("Column {} not found in method PO.get_ValueDifference", columnName);
+			return null;
+		}
+		return get_ValueDifference(index);
+	}   // get_ValueDifference
+
 	/**************************************************************************
 	 * Set Value
 	 *
@@ -920,7 +982,7 @@ public abstract class PO
 	protected final boolean set_Value(final String ColumnName, @Nullable Object value)
 	{
 		if (value instanceof String && ColumnName.equals("WhereClause")
-				&& value.toString().toUpperCase().contains("=NULL"))
+				&& value.toString().toUpperCase().indexOf("=NULL") != -1)
 		{
 			log.warn("Invalid Null Value - " + ColumnName + "=" + value);
 		}
@@ -953,7 +1015,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	private boolean set_Value(final int index, final Object value)
+	private final boolean set_Value(final int index, final Object value)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -968,7 +1030,7 @@ public abstract class PO
 			log.warn("", ex);
 			return false;
 		}
-		if (m_currentChangeType != null && m_currentChangeType.isAfter())
+		if(m_currentChangeType != null && m_currentChangeType.isAfter())
 		{
 			AdempiereException.logWarningIfDeveloperMode(log, () -> new AdempiereException("Changing " + this + " on AFTER NEW/CHANGE shall be avoided because those changes won't be persisted in database.")
 					.appendParametersToMessage()
@@ -1006,18 +1068,20 @@ public abstract class PO
 			else if (oldValue != null)
 			{
 				// task 09266: be strict but allow an admin to declare exceptions from the stric rule via AD_SysConfig
+				final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 				// Value was changed and oldValue was already set
 				// That's an error because user shall not be allowed to change the value of this column
 				final String sysConfigName = "org.compiere.PO." + get_TableName() + "_" + ColumnName + ".ThrowExIfNotUpdateable";
-				final boolean throwException = services.isDeveloperMode()
-						|| services.getSysConfigBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
+				final boolean throwException = developerModeBL.isEnabled()
+						|| sysConfigBL.getBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
 
 				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + valueToUse + " - OldValue=" + oldValue + "; "
 						+ "Note to developer: to bypass this checking you can:\n"
 						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)\n"
 						+ "2. Set dynamic attribute " + InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled + " = true (no errors will be logged in this case)")
-						.throwOrLogSevere(throwException, log);
+								.throwOrLogSevere(throwException, log);
 			}
 			else
 			{
@@ -1087,16 +1151,16 @@ public abstract class PO
 				catch (final NumberFormatException e)
 				{
 					log.warn(ColumnName
-							+ " - Class invalid(1): " + valueToUse.getClass()
-							+ ", Should be " + Objects.requireNonNull(p_info.getColumnClass(index)) + ": " + valueToUse, new Exception("stacktrace"));
+							+ " - Class invalid(1): " + valueToUse.getClass().toString()
+							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 					return false;
 				}
 			}
 			else
 			{
 				log.warn(ColumnName
-						+ " - Class invalid(2): " + valueToUse.getClass()
-						+ ", Should be " + p_info.getColumnClass(index) + ": " + valueToUse, new Exception("stacktrace"));
+						+ " - Class invalid(2): " + valueToUse.getClass().toString()
+						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 				return false;
 			}
 			// Validate (Min/Max)
@@ -1119,14 +1183,20 @@ public abstract class PO
 				}
 			}
 			// Validate reference list [1762461]
-			if (p_info.getColumn(index).getDisplayType() == DisplayType.List &&
-					p_info.getColumn(index).AD_Reference_Value_ID != null &&
+			if (p_info.getColumn(index).DisplayType == DisplayType.List &&
+					p_info.getColumn(index).AD_Reference_Value_ID > 0 &&
 					valueToUse instanceof String)
 			{
-				final ADRefList adRefList = services.getRefListById(p_info.getColumn(index).AD_Reference_Value_ID);
-				if (!adRefList.containsValue((String)valueToUse))
+				final boolean hasListValue = Services.get(IADReferenceDAO.class).existListValue(p_info.getColumn(index).AD_Reference_Value_ID, (String)valueToUse);
+				if (!hasListValue)
 				{
-					throw new AdempiereException(get_TableName() + "." + ColumnName + " Invalid value - " + valueToUse + " - " + adRefList);
+					final StringBuilder validValues = new StringBuilder();
+					for (final ValueNamePair vp : MRefList.getList(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, false))
+					{
+						validValues.append(" - ").append(vp.getValue());
+					}
+					throw new IllegalArgumentException(ColumnName + " Invalid value - "
+							+ valueToUse + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
 				}
 			}
 			if (log.isTraceEnabled())
@@ -1144,7 +1214,7 @@ public abstract class PO
 	 * Required for key and parent values
 	 *
 	 * @param ColumnName column name
-	 * @param value      value
+	 * @param value value
 	 * @return true if value set
 	 */
 	// metas: changed from protected to public
@@ -1159,7 +1229,7 @@ public abstract class PO
 		return set_ValueNoCheck(index, value);
 	}
 
-	private boolean set_ValueNoCheck(final int index, final Object value)
+	private final boolean set_ValueNoCheck(final int index, final Object value)
 	{
 		final Object valueToUse = POUtils.stripZerosAndLogIssueIfBigDecimalScaleTooBig(value, this);
 
@@ -1170,7 +1240,7 @@ public abstract class PO
 		loadIfStalled(-1);
 		if (valueToUse == null || valueToUse == Null.NULL)
 		{
-			m_newValues[index] = Null.NULL;        // write direct
+			m_newValues[index] = Null.NULL;		// write direct
 		}
 		else
 		{
@@ -1197,21 +1267,21 @@ public abstract class PO
 				try
 				{
 					final int intValue = Integer.parseInt((String)valueToUse);
-					m_newValues[index] = intValue;
+					m_newValues[index] = Integer.valueOf(intValue);
 				}
 				catch (final Exception e)
 				{
 					log.warn(get_ColumnName(index)
-							+ " - Class invalid(3): " + valueToUse.getClass()
-							+ ", Should be " + p_info.getColumnClass(index) + ": " + valueToUse, new Exception("stacktrace"));
+							+ " - Class invalid(3): " + valueToUse.getClass().toString()
+							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 					m_newValues[index] = null;
 				}
 			}
 			else
 			{
 				log.warn(get_ColumnName(index)
-						+ " - Class invalid(4): " + valueToUse.getClass()
-						+ ", Should be " + p_info.getColumnClass(index) + ": " + valueToUse, new Exception("stacktrace"));
+						+ " - Class invalid(4): " + valueToUse.getClass().toString()
+						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 				m_newValues[index] = valueToUse;     // correct
 			}
 
@@ -1247,7 +1317,9 @@ public abstract class PO
 	/**
 	 * Set value of Column returning boolean
 	 *
-	 * @return boolean indicating success or failure
+	 * @param columnName
+	 * @param value
+	 * @returns boolean indicating success or failure
 	 */
 	public final boolean set_ValueOfColumn(final String columnName, @Nullable final Object value)
 	{
@@ -1261,7 +1333,7 @@ public abstract class PO
 		return set_ValueReturningBoolean(columnIndex, value);
 	}
 
-	private boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
+	private final boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
 	{
 		final String columnName = p_info.getColumnName(columnIndex);
 		if (COLUMNNAME_IsApproved.equals(columnName))
@@ -1278,19 +1350,19 @@ public abstract class PO
 	 * Set Custom Column
 	 *
 	 * @param columnName column
-	 * @param value      value
+	 * @param value value
 	 */
 	public final void set_CustomColumn(final String columnName, @Nullable final Object value)
 	{
 		set_CustomColumnReturningBoolean(columnName, value);
-	}    // set_CustomColumn
+	}	// set_CustomColumn
 
 	/**
 	 * Set Custom Column returning boolean
 	 *
 	 * @param columnName column
-	 * @param value      value
-	 * @return boolean indicating success or failure
+	 * @param value value
+	 * @returns boolean indicating success or failure
 	 */
 	public final boolean set_CustomColumnReturningBoolean(final String columnName, final Object value)
 	{
@@ -1332,13 +1404,13 @@ public abstract class PO
 		log.debug("Set custom column: {}={}", columnName, valueString);
 		m_custom.put(columnName, valueString);
 		return true;
-	}    // set_CustomColumn
+	}	// set_CustomColumn
 
 	/**
 	 * Set (numeric) Key Value
 	 *
 	 * @param ColumnName column name
-	 * @param value      value
+	 * @param value value
 	 */
 	private void set_Keys(final String ColumnName, final Object value)
 	{
@@ -1349,8 +1421,8 @@ public abstract class PO
 			{
 				m_IDs[i] = value;
 			}
-		}    // for all key columns
-	}    // setKeys
+		} 	// for all key columns
+	}	// setKeys
 
 	/**************************************************************************
 	 * Get Column Count
@@ -1374,6 +1446,53 @@ public abstract class PO
 	}   // getColumnName
 
 	/**
+	 * Is Column Mandatory
+	 *
+	 * @param index index
+	 * @return true if column mandatory
+	 */
+	protected final boolean isColumnMandatory(final int index)
+	{
+		return p_info.isColumnMandatory(index);
+	}   // isColumnNandatory
+
+	/**
+	 * Is Column Updateable
+	 *
+	 * @param index index
+	 * @return true if column updateable
+	 */
+	protected final boolean isColumnUpdateable(final int index)
+	{
+		return p_info.isColumnUpdateable(index);
+	}	// isColumnUpdateable
+
+	/**
+	 * Get Column DisplayType
+	 *
+	 * @param index index
+	 * @return display type
+	 */
+	protected final int get_ColumnDisplayType(final int index)
+	{
+		return p_info.getColumnDisplayType(index);
+	}	// getColumnDisplayType
+
+	/**
+	 * Get Lookup
+	 *
+	 * @param index index
+	 * @return Lookup or null
+	 */
+	protected final Lookup get_ColumnLookup(final int index)
+	{
+		// NOTE: in case the PO was saved/deleted from a UI window then WindowNo is available
+		final int windowNo = get_WindowNo();
+
+		return p_info.getColumnLookup(getCtx(), windowNo, index);
+	}   // getColumnLookup
+
+	/**
 	 * Get Column Index
 	 *
 	 * @param columnName column name
@@ -1385,20 +1504,56 @@ public abstract class PO
 	}   // getColumnIndex
 
 	/**
+	 * Get Display Value of value
+	 *
+	 * @param columnName columnName
+	 * @param currentValue current value
+	 * @return String value with "./." as null
+	 */
+	public final String get_DisplayValue(final String columnName, final boolean currentValue)
+	{
+		final Object value = currentValue ? get_Value(columnName) : get_ValueOld(columnName);
+		if (value == null)
+		{
+			return "./.";
+		}
+		final String retValue = value.toString();
+		final int index = get_ColumnIndex(columnName);
+		if (index < 0)
+		{
+			return retValue;
+		}
+		final int dt = get_ColumnDisplayType(index);
+		if (DisplayType.isText(dt) || DisplayType.YesNo == dt)
+		{
+			return retValue;
+		}
+		// Lookup
+		final Lookup lookup = get_ColumnLookup(index);
+		if (lookup != null)
+		{
+			final IValidationContext evalCtx = Services.get(IValidationRuleFactory.class).createValidationContext(this);
+			return lookup.getDisplay(evalCtx, value);
+		}
+		// Other
+		return retValue;
+	}	// get_DisplayValue
+
+	/**
 	 * Copy old values of From to new values of To.
 	 * Does not copy Keys
 	 *
-	 * @param from         old, existing & unchanged PO
-	 * @param to           new, not saved PO
+	 * @param from old, existing & unchanged PO
+	 * @param to new, not saved PO
 	 * @param AD_Client_ID client
-	 * @param AD_Org_ID    org
+	 * @param AD_Org_ID org
 	 */
 	protected static void copyValues(final PO from, final PO to, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		copyValues(from, to);
 		to.setAD_Client_ID(AD_Client_ID);
 		to.setAD_Org_ID(AD_Org_ID);
-	}    // copyValues
+	}	// copyValues
 
 	/**
 	 * Copy old values of From to new values of To.
@@ -1407,91 +1562,155 @@ public abstract class PO
 	 * <b>IMPORTANT:</b> Copies all columns, even if they are marked with <code>IsCalculated=Y</code>.
 	 *
 	 * @param from old, existing & unchanged PO
-	 * @param to   new, not saved PO
+	 * @param to new, not saved PO
 	 */
 	public static void copyValues(final PO from, final PO to)
 	{
-		copyValues(from, to, POValuesCopyStrategies.standard(false));
+		// metas: begin
+		copyValues(from, to, false);
 	}
 
 	public static void copyValues(final PO from, final PO to, final boolean honorIsCalculated)
 	{
-		copyValues(from, to, POValuesCopyStrategies.standard(honorIsCalculated));
-	}
-
-	public static void copyValues(
-			@NonNull final PO from,
-			@NonNull final PO to,
-			@NonNull final POValuesCopyStrategy valueCopyStrategy)
-	{
-		s_log.debug("Copy values: from={}, to={}, valueCopyStrategy={}", from, to, valueCopyStrategy);
+		// metas: end
+		s_log.debug("Copy values: From ID={}, To ID={}", from.get_ID(), to.get_ID());
 
 		//
 		// Make sure "from" and "to" objects are not stale (01537)
 		from.loadIfStalled(-1);
 		to.loadIfStalled(-1);
 
-		for (int toColumnIndex = 0, toColumnsCount = to.p_info.getColumnCount(); toColumnIndex < toColumnsCount; toColumnIndex++)
+		//
+		// Different Classes
+		if (from.getClass() != to.getClass())
 		{
-			final String columnName = to.p_info.getColumnNameNotNull(toColumnIndex);
-			if (to.p_info.isVirtualColumn(toColumnIndex) || to.p_info.isKey(toColumnIndex))
+			for (int fromColumnIndex = 0; fromColumnIndex < from.m_oldValues.length; fromColumnIndex++)
 			{
-				continue;
-			}
-			if (!from.p_info.hasColumnName(columnName))
+				final String fromColumnName = from.p_info.getColumnName(fromColumnIndex); // metas: us215
+				if (from.p_info.isVirtualColumn(fromColumnIndex)
+						|| from.p_info.isKey(fromColumnIndex)) 		// KeyColumn
+				{
+					continue;
+				}
+				// metas: begin: us215
+				else if (honorIsCalculated && from.p_info.isCalculated(fromColumnIndex))
+				{
+					for (int toColumnIndex = 0; toColumnIndex < to.m_oldValues.length; toColumnIndex++)
+					{
+						final String toColumnName = to.p_info.getColumnName(toColumnIndex);
+						if (toColumnName.equals(fromColumnName))
+						{
+							if (to.getDynAttribute(PO.DYNATTR_CopyRecordSupport) != null)
+							{
+								final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(PO.DYNATTR_CopyRecordSupport);
+								to.m_newValues[toColumnIndex] = cps.getValueToCopy(to, from, fromColumnName);
+							}
+							break;
+						}
+					}
+				}
+				// metas: end: us215
+				// Ignore Standard Values
+				else // metas: us215: use else
+				if (fromColumnName.startsWith("Created")
+						|| fromColumnName.startsWith("Updated")
+						|| fromColumnName.equals("IsActive")
+						// fresh 07896: skip copying org and client ONLY if it's calculated
+						|| (to.p_info.isCalculated(fromColumnIndex)
+								&& (fromColumnName.equals("AD_Client_ID") || fromColumnName.equals("AD_Org_ID")))
+						|| fromColumnName.equals("DocumentNo")
+						|| fromColumnName.equals("Processing")
+						|| fromColumnName.equals("Processed") // metas: tsa: us215
+				)
+				{
+						// ignore / skip this column
+				}
+				else
+				{
+					for (int toColumnIndex = 0; toColumnIndex < to.m_oldValues.length; toColumnIndex++)
+					{
+						final String toColumnName = to.p_info.getColumnName(toColumnIndex);
+						if (toColumnName.equals(fromColumnName))
+						{
+							to.m_newValues[toColumnIndex] = from.m_oldValues[fromColumnIndex];
+							break;
+						}
+					}
+				}
+			} 	// from loop
+		}
+		//
+		// Same class
+		else
+		{
+			for (int i = 0; i < from.m_oldValues.length; i++)
 			{
-				continue;
+				final String colName = from.p_info.getColumnName(i); // metas
+				if (from.p_info.isVirtualColumn(i)
+						|| from.p_info.isKey(i))
+				{
+					continue;
+				}
+				else if (honorIsCalculated && from.p_info.isCalculated(i))
+				{
+					final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(DYNATTR_CopyRecordSupport);
+					if (cps != null)
+					{
+						to.m_newValues[i] = cps.getValueToCopy(to, from, colName);
+					}
+					else
+					{
+						s_log.trace("Skip copying calculated column because there is no CopyRecordSupport advisor: {}", colName);
+					}
+				}
+				// metas: end: us215
+				// Ignore Standard Values
+				else // metas: us215: use else
+				if (colName.startsWith("Created")
+						|| colName.startsWith("Updated")
+						|| colName.equals("IsActive")
+						// fresh 07896: skip copying org and client ONLY if it's calculated
+						|| (to.p_info.isCalculated(i)
+								&& (colName.equals("AD_Client_ID")
+										|| colName.equals("AD_Org_ID")))
+						|| colName.equals("DocumentNo")
+						|| colName.equals("Processing")
+						|| colName.equals("Processed") // metas: tsa: us215
+				)
+				{
+					s_log.trace("Skip copying standard column: {}", colName);
+				}
+				else
+				{
+					to.m_newValues[i] = from.m_oldValues[i];
+					// metas: tsa: begin: when dealing with new POs copy their new values because old values are all null
+					if (from.is_new())
+					{
+						to.m_newValues[i] = from.m_newValues[i];
+					}
+					// metas: tsa: Copy cached objects
+					// NOTE: is is important because sometimes we have set a new object which is present in PO cache but it's ID is still zero.
+					// Without doing this copy, the object will be lost when copying
+					if (from.m_poCacheLocals != null)
+					{
+						final POCacheLocal poCacheLocal = from.m_poCacheLocals.get(colName);
+						if (poCacheLocal != null)
+						{
+							if (to.m_poCacheLocals == null)
+							{
+								to.m_poCacheLocals = new HashMap<>();
+							}
+							final POCacheLocal poCacheLocalCopy = poCacheLocal.copy(to);
+							to.m_poCacheLocals.put(colName, poCacheLocalCopy);
+						}
+					}
+					// metas: tsa: end
+				}
 			}
+		} 	// same class
 
-			final ValueToCopyResolved valueToCopy = valueCopyStrategy.getValueToCopy(
-					ValueToCopyResolveContext.builder()
-							.to(to)
-							.from(from)
-							.columnName(columnName)
-							.build());
-
-			if (!valueToCopy.isSkip())
-			{
-				to.m_newValues[toColumnIndex] = valueToCopy.getValue();
-
-				// Copy cached objects
-				// NOTE: it is important because sometimes we have set a new object which is present in PO cache but its ID is still zero.
-				// Without doing this copy, the object will be lost when copying
-				copyPOCacheLocalIfApplies(from, to, columnName);
-			}
-		}
-
-		// NOTE: don't copy the DynAttributes because this is how it is designed and some BLs are relying on this (e.g. caching)
-	}
-
-	private static void copyPOCacheLocalIfApplies(
-			@NonNull final PO from,
-			@NonNull final PO to,
-			@NonNull final String columnName)
-	{
-		if (from.m_poCacheLocals == null)
-		{
-			return;
-		}
-
-		final POCacheLocal poCacheLocal = from.m_poCacheLocals.get(columnName);
-		if (poCacheLocal == null)
-		{
-			return;
-		}
-
-		if (!Objects.equals(from.get_Value(columnName), to.get_Value(columnName)))
-		{
-			return;
-		}
-
-		if (to.m_poCacheLocals == null)
-		{
-			to.m_poCacheLocals = new HashMap<>();
-		}
-		final POCacheLocal poCacheLocalCopy = poCacheLocal.copy(to);
-		to.m_poCacheLocals.put(columnName, poCacheLocalCopy);
-	}
+		// NOTE: don't copy the DynAttributes because this is how it is designed and some BLs are rellying on this (e.g. caching)
+	}	// copy
 
 	/**************************************************************************
 	 * Load record with ID
@@ -1507,15 +1726,15 @@ public abstract class PO
 			m_IDs = new Object[] { ID };
 			load(trxName);
 		}
-		else    // new
+		else	// new
 		{
 			loadDefaults();
 			m_createNew = true;
 			m_wasJustCreated = true;
-			setKeyInfo();    // sets m_IDs
+			setKeyInfo();	// sets m_IDs
 			loadComplete(true);
 		}
-	}    // load
+	}	// load
 
 	/**
 	 * (re)Load record with m_ID[*]
@@ -1529,13 +1748,7 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-
-			if(!services.isPerfMonActive())
-			{
-				return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record;
-			}
-			return services.performanceMonitoringServiceLoad(
-					() -> load0(trxName, false)); // gh #986 isRetry=false because this is our first attempt to load the record;
+			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
 		}
 		finally
 		{
@@ -1547,9 +1760,10 @@ public abstract class PO
 	/**
 	 * Do the actual loading.
 	 *
+	 * @param trxName
 	 * @param isRetry if there is a loading problem, we invoke the registered {@link INoDataFoundHandler}s and retry <b>one time</b>. This flag being {@code true} means that this invocation is that retry.
 	 */
-	private boolean load0(final String trxName, final boolean isRetry)
+	private final boolean load0(final String trxName, final boolean isRetry)
 	{
 		m_trxName = trxName;
 		boolean success = true;
@@ -1566,7 +1780,7 @@ public abstract class PO
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, m_trxName);    // local trx only
+			pstmt = DB.prepareStatement(sql, m_trxName);	// local trx only
 			DB.setParameters(pstmt, m_IDs);
 			rs = pstmt.executeQuery();
 			if (rs.next())
@@ -1597,9 +1811,10 @@ public abstract class PO
 			// else it's a programatic or application dictionary configuration error (i.e. Key IDs are not unique)
 			if (rs.next())
 			{
-				throw new AdempiereException("More then one records were found while loading " + this + "."
+				final AdempiereException ex = new AdempiereException("More then one records were found while loading " + this + "."
 						+ " Please make sure key columns are unique."
 						+ "\n WhereClause: " + get_WhereClause(true));
+				throw ex;
 			}
 
 			m_createNew = false;
@@ -1622,7 +1837,7 @@ public abstract class PO
 					// + ", Index=" + index
 					// + ", Column=" + get_ColumnName(index)
 					// + ", " + p_info.toString(index)
-					+ ", SQL=" + sql;
+					+ ", SQL=" + sql.toString();
 			success = false;
 			m_IDs = new Object[] { I_ZERO };
 			log.warn(msg, e);
@@ -1632,6 +1847,8 @@ public abstract class PO
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		loadComplete(success);
@@ -1667,9 +1884,9 @@ public abstract class PO
 		setKeyInfo();
 		loadComplete(success);
 		return success;
-	}    // load
+	}	// load
 
-	private boolean loadColumn(final int index, final ResultSet rs)
+	private final boolean loadColumn(final int index, final ResultSet rs)
 	{
 		boolean success = true;
 		final String columnName = p_info.getColumnName(index);
@@ -1719,18 +1936,18 @@ public abstract class PO
 			//
 			if (log.isTraceEnabled())
 			{
-				log.trace(index + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
+				log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 			}
 		}
 		catch (final SQLException e)
 		{
-			if (p_info.isVirtualColumn(index))    // if rs constructor used
+			if (p_info.isVirtualColumn(index)) 	// if rs constructor used
 			{
 				log.trace("Virtual Column not loaded: {}", columnName);
 			}
 			else
 			{
-				log.warn("(rs) - " + index
+				log.warn("(rs) - " + String.valueOf(index)
 						+ ": " + p_info.getTableName() + "." + p_info.getColumnName(index)
 						+ " (" + p_info.getColumnClass(index) + ") - " + e);
 				success = false;
@@ -1769,6 +1986,8 @@ public abstract class PO
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 		return success;
 	}
@@ -1816,31 +2035,30 @@ public abstract class PO
 				}
 				else if (DisplayType.isLOB(dt))
 				{
-					m_oldValues[index] = null;    // get_LOB (rs.getObject(columnName));
+					m_oldValues[index] = null;	// get_LOB (rs.getObject(columnName));
 				}
 				else if (clazz == String.class)
 				{
 					m_oldValues[index] = value;
 				}
-				else
-				{
-					m_oldValues[index] = null;    // loadSpecial(rs, index);
+				else {
+					m_oldValues[index] = null;	// loadSpecial(rs, index);
 				}
 				//
 				if (log.isTraceEnabled())
 				{
-					log.trace(index + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
+					log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
 				}
 			}
 			catch (final Exception e)
 			{
-				if (p_info.isVirtualColumn(index))    // if rs constructor used
+				if (p_info.isVirtualColumn(index)) 	// if rs constructor used
 				{
 					log.trace("Virtual Column not loaded: {}", columnName);
 				}
 				else
 				{
-					log.warn("(ht) - " + index
+					log.warn("(ht) - " + String.valueOf(index)
 							+ ": " + p_info.getTableName() + "." + p_info.getColumnName(index)
 							+ " (" + p_info.getColumnClass(index) + ") - " + e);
 					success = false;
@@ -1854,15 +2072,15 @@ public abstract class PO
 		setKeyInfo();
 		loadComplete(success);
 		return success;
-	}    // load
+	}	// load
 
 	/**
 	 * Load column if object is staled.
 	 *
 	 * @param requestedColumnIndex column index to load; if requestedColumnIndex is less then ZERO then object will be loaded anyway
-	 * @implSpec task 01537
+	 * @task 01537
 	 */
-	private void loadIfStalled(final int requestedColumnIndex)
+	private final void loadIfStalled(final int requestedColumnIndex)
 	{
 		// Object is not staled, nothing to do
 		if (!m_stale)
@@ -1916,12 +2134,93 @@ public abstract class PO
 	}
 
 	/**
+	 * Create Hashmap with data as Strings
+	 *
+	 * @return HashMap
+	 */
+	protected final HashMap<String, String> get_HashMap()
+	{
+		final HashMap<String, String> hmOut = new HashMap<>();
+		final int size = get_ColumnCount();
+		for (int i = 0; i < size; i++)
+		{
+			final Object value = get_Value(i);
+			// Don't insert NULL values (allows Database defaults)
+			if (value == null
+					|| p_info.isVirtualColumn(i))
+			{
+				continue;
+			}
+			// Display Type
+			final int dt = p_info.getColumnDisplayType(i);
+			// Based on class of definition, not class of value
+			final Class<?> c = p_info.getColumnClass(i);
+			String stringValue = null;
+			if (c == Object.class)
+			{
+					// saveNewSpecial (value, i));
+			}
+			else if (value == null || value.equals(Null.NULL))
+			{
+
+			}
+			else if (value instanceof Integer || value instanceof BigDecimal)
+			{
+				stringValue = value.toString();
+			}
+			else if (c == Boolean.class)
+			{
+				final boolean bValue = StringUtils.toBoolean(value);
+				stringValue = Env.toString(bValue);
+			}
+			else if (value instanceof Timestamp)
+			{
+				stringValue = value.toString();
+			}
+			else if (c == String.class)
+			{
+				stringValue = (String)value;
+			}
+			else if (DisplayType.isLOB(dt))
+			{
+
+			}
+			else {
+					// saveNewSpecial (value, i));
+			}
+			//
+			if (stringValue != null)
+			{
+				hmOut.put(p_info.getColumnName(i), stringValue);
+			}
+		}
+		// Custom Columns
+		if (m_custom != null)
+		{
+			final Iterator<String> it = m_custom.keySet().iterator();
+			while (it.hasNext())
+			{
+				final String column = it.next();
+				// int index = p_info.getColumnIndex(column);
+				final String value = m_custom.get(column);
+				if (value != null)
+				{
+					hmOut.put(column, value);
+				}
+			}
+			m_custom = null;
+		}
+		return hmOut;
+	}   // get_HashMap
+
+	/**
 	 * Load Special data (images, ..).
 	 * To be extended by sub-classes
 	 *
-	 * @param rs    result set
+	 * @param rs result set
 	 * @param index zero based index
 	 * @return value value
+	 * @throws SQLException
 	 */
 	protected Object loadSpecial(final ResultSet rs, final int index) throws SQLException
 	{
@@ -1938,7 +2237,7 @@ public abstract class PO
 	 *
 	 * @param success success
 	 */
-	private void loadComplete(final boolean success)
+	private final void loadComplete(final boolean success)
 	{
 		this.m_loadCount++;
 
@@ -1961,6 +2260,11 @@ public abstract class PO
 	protected final void loadDefaults()
 	{
 		setStandardDefaults();
+		//
+		/**
+		 * @todo defaults from Field
+		 */
+		// MField.getDefault(p_info.getDefaultLogic(i));
 	}
 
 	/**
@@ -2059,7 +2363,34 @@ public abstract class PO
 				m_IDs[i] = valueObj;
 			}
 		}
-	}    // setKeyInfo
+	}	// setKeyInfo
+
+	/**************************************************************************
+	 * Are all mandatory Fields filled (i.e. can we save)?.
+	 * Stops at first null mandatory field
+	 *
+	 * @return true if all mandatory fields are ok
+	 */
+	protected final boolean isMandatoryOK()
+	{
+		final int size = get_ColumnCount();
+		for (int i = 0; i < size; i++)
+		{
+			if (p_info.isColumnMandatory(i))
+			{
+				if (p_info.isVirtualColumn(i))
+				{
+					continue;
+				}
+				if (get_Value(i) == null || get_Value(i).equals(Null.NULL))
+				{
+					// log.info(p_info.getColumnName(i));
+					return false;
+				}
+			}
+		}
+		return true;
+	}   // isMandatoryOK
 
 	/**************************************************************************
 	 * Set AD_Client
@@ -2069,7 +2400,7 @@ public abstract class PO
 	final protected void setAD_Client_ID(final int AD_Client_ID)
 	{
 		set_ValueNoCheck("AD_Client_ID", AD_Client_ID);
-	}    // setAD_Client_ID
+	}	// setAD_Client_ID
 
 	/**
 	 * Get AD_Client
@@ -2080,8 +2411,12 @@ public abstract class PO
 	public final int getAD_Client_ID()
 	{
 		final Integer ii = (Integer)get_Value("AD_Client_ID");
-		return ii == null ? 0 : ii;
-	}    // getAD_Client_ID
+		if (ii == null)
+		{
+			return 0;
+		}
+		return ii.intValue();
+	}	// getAD_Client_ID
 
 	/**
 	 * Set AD_Org
@@ -2092,7 +2427,7 @@ public abstract class PO
 	final public void setAD_Org_ID(final int AD_Org_ID)
 	{
 		set_ValueNoCheck("AD_Org_ID", AD_Org_ID);
-	}    // setAD_Org_ID
+	}	// setAD_Org_ID
 
 	/**
 	 * Get AD_Org
@@ -2103,14 +2438,18 @@ public abstract class PO
 	public int getAD_Org_ID()
 	{
 		final Integer ii = (Integer)get_Value("AD_Org_ID");
-		return ii == null ? 0 : ii;
-	}    // getAD_Org_ID
+		if (ii == null)
+		{
+			return 0;
+		}
+		return ii.intValue();
+	}	// getAD_Org_ID
 
 	/**
 	 * Overwrite Client Org if different
 	 *
 	 * @param AD_Client_ID client
-	 * @param AD_Org_ID    org
+	 * @param AD_Org_ID org
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
@@ -2123,7 +2462,7 @@ public abstract class PO
 		{
 			setAD_Org_ID(AD_Org_ID);
 		}
-	}    // setClientOrg
+	}	// setClientOrg
 
 	/**
 	 * Overwrite Client Org if different
@@ -2133,7 +2472,7 @@ public abstract class PO
 	protected final void setClientOrg(final PO po)
 	{
 		setClientOrg(po.getAD_Client_ID(), po.getAD_Org_ID());
-	}    // setClientOrg
+	}	// setClientOrg
 
 	protected final void setClientOrgFromModel(final Object model)
 	{
@@ -2150,7 +2489,7 @@ public abstract class PO
 	public final void setIsActive(final boolean active)
 	{
 		set_Value("IsActive", active);
-	}    // setActive
+	}	// setActive
 
 	/**
 	 * Is Active
@@ -2160,8 +2499,12 @@ public abstract class PO
 	public final boolean isActive()
 	{
 		final Boolean bb = (Boolean)get_Value("IsActive");
-		return bb != null && bb;
-	}    // isActive
+		if (bb != null)
+		{
+			return bb.booleanValue();
+		}
+		return false;
+	}	// isActive
 
 	/**
 	 * Get Created
@@ -2171,7 +2514,7 @@ public abstract class PO
 	final public Timestamp getCreated()
 	{
 		return (Timestamp)get_Value("Created");
-	}    // getCreated
+	}	// getCreated
 
 	/**
 	 * Get Updated
@@ -2181,7 +2524,7 @@ public abstract class PO
 	final public Timestamp getUpdated()
 	{
 		return (Timestamp)get_Value("Updated");
-	}    // getUpdated
+	}	// getUpdated
 
 	/**
 	 * Get CreatedBy
@@ -2195,8 +2538,8 @@ public abstract class PO
 		{
 			return 0;
 		}
-		return ii;
-	}    // getCreateddBy
+		return ii.intValue();
+	}	// getCreateddBy
 
 	/**
 	 * Get UpdatedBy
@@ -2210,14 +2553,16 @@ public abstract class PO
 		{
 			return 0;
 		}
-		return ii;
-	}    // getUpdatedBy
+		return ii.intValue();
+	}	// getUpdatedBy
 
 	/**
 	 * Get Translation of column (if needed).
 	 * It checks if the base language is used or the column is not translated.
 	 * If there is no translation then it fallback to original value.
 	 *
+	 * @param columnName
+	 * @param AD_Language
 	 * @return translated string
 	 * @throws IllegalArgumentException if columnName or AD_Language is null or model has multiple PK
 	 */
@@ -2253,12 +2598,11 @@ public abstract class PO
 		}
 		//
 		return retValue;
-	}    // get_Translation
+	}	// get_Translation
 
 	/**
 	 * Get Translation of column
 	 */
-	@Deprecated
 	public final String get_Translation(final String columnName)
 	{
 		return get_Translation(columnName, Env.getAD_Language(getCtx()));
@@ -2284,9 +2628,10 @@ public abstract class PO
 		// return false; // one value is non-zero
 		// }
 		// return true;
-	}    // is_new
+	}	// is_new
 
 	/**
+	 *
 	 * @return true if this object was just created (saved or not).
 	 */
 	public final boolean is_JustCreated()
@@ -2294,7 +2639,7 @@ public abstract class PO
 		return m_wasJustCreated;
 	}
 
-	private void createChangeLog(final String changeLogType)
+	private final void createChangeLog(final String changeLogType)
 	{
 		//
 		// Don't create change logs if is not activated on table level
@@ -2305,7 +2650,7 @@ public abstract class PO
 
 		//
 		// Don't create change logs if they are not activated in ChangeLog system/BL
-		if (!services.isChangeLogEnabled())
+		if (!Services.get(ISessionBL.class).isChangeLogEnabled())
 		{
 			return;
 		}
@@ -2329,7 +2674,7 @@ public abstract class PO
 		if (isInsertChangeLogEvent)
 		{
 			// note that i never needed this value to be Y, so i'm now setting the default to N
-			final String insertChangeLogType = services.getInsertChangeLogType(adClientId);
+			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "N", adClientId);
 			if ("Y".equals(insertChangeLogType))
 			{
 				// log everything allowed
@@ -2374,7 +2719,7 @@ public abstract class PO
 			{
 				continue;
 			}
-			if (p_info.isPasswordColumn(i))
+			if(p_info.isPasswordColumn(i))
 			{
 				continue;
 			}
@@ -2431,7 +2776,7 @@ public abstract class PO
 					.setAD_PInstance_ID(adPInstanceId) // FRESH-314
 					.setTrxName(m_trxName)
 					.setAD_Table_ID(adTableId)
-					.setAD_Column_ID(p_info.getColumn(i).getAD_Column_ID().getRepoId())
+					.setAD_Column_ID(p_info.getColumn(i).getAD_Column_ID())
 					.setRecord_ID(recordId)
 					.setAD_Client_ID(adClientId)
 					.setAD_Org_ID(adOrgId)
@@ -2452,11 +2797,11 @@ public abstract class PO
 		// Save change log records
 		if (changeLogRecords != null)
 		{
-			services.saveChangeLogs(changeLogRecords);
+			Services.get(ISessionDAO.class).saveChangeLogs(changeLogRecords);
 		}
 	}
 
-	private void logMigration(final String actionType)
+	private final void logMigration(final String actionType)
 	{
 		if (!Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
 		{
@@ -2468,7 +2813,7 @@ public abstract class PO
 			return;
 		}
 
-		services.logMigration(session, this, p_info, actionType);
+		Services.get(IMigrationLogger.class).logMigration(session, this, p_info, actionType);
 	}
 
 	/*
@@ -2478,7 +2823,6 @@ public abstract class PO
 	 * org.compiere.model.MClientInfo
 	 * org.compiere.model.MSystem
 	 */
-
 	/**************************************************************************
 	 * Update Value or create new record. To reload call load() - not updated
 	 * The operation is performed, unless
@@ -2510,26 +2854,15 @@ public abstract class PO
 		}
 
 		return success;
-	}    // save
+	}	// save
 
 	/**
 	 * Update Value or create new record.
 	 *
+	 * @throws AdempiereException
 	 * @see #save()
 	 */
 	public final void saveEx() throws AdempiereException
-	{
-		if(!services.isPerfMonActive())
-		{
-			saveEx0();
-		}
-		else
-		{
-			services.performanceMonitoringServiceSaveEx(() -> saveEx0());
-		}
-	}
-
-	private final void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving
@@ -2574,10 +2907,10 @@ public abstract class PO
 	 *
 	 * @return <code>true</code> if save is needed; <code>false</code> if no save is needed
 	 */
-	private boolean savePrepare()
+	private final boolean savePrepare()
 	{
 		MetasfreshLastError.resetLast();
-		final boolean newRecord = is_new();    // save locally as load resets
+		final boolean newRecord = is_new();	// save locally as load resets
 		if (!newRecord && !is_Changed())
 		{
 			log.debug("Save prepare: nothing changed - {}", this);
@@ -2588,8 +2921,8 @@ public abstract class PO
 		final TableAccessLevel accessLevel = get_TableAccessLevel();
 		if (getAD_Org_ID() <= 0
 				&& (accessLevel == TableAccessLevel.Organization
-				|| (accessLevel == TableAccessLevel.ClientPlusOrganization
-				&& MClientShare.isOrgLevelOnly(getAD_Client_ID(), get_Table_ID()))))
+						|| (accessLevel == TableAccessLevel.ClientPlusOrganization
+								&& MClientShare.isOrgLevelOnly(getAD_Client_ID(), get_Table_ID()))))
 		{
 			throw new FillMandatoryException("AD_Org_ID");
 		}
@@ -2627,37 +2960,21 @@ public abstract class PO
 		return true; // save is needed
 	}
 
-	private void save0() throws Exception
+	private final void save0() throws Exception
 	{
-		final boolean newRecord = is_new();    // save locally as load resets
+		final boolean newRecord = is_new();	// save locally as load resets
 
 		// Before Save
 		if (!isAssignedID)
 		{
 			if (!beforeSave(newRecord))
 			{
-				throw new AdempiereException("beforeSave failed - " + this);
+				throw new AdempiereException("beforeSave failed - " + toString());
 			}
 		}
 
 		// Call ModelValidators TYPE_NEW/TYPE_CHANGE
 		fireModelChange(newRecord ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
-
-		//
-		// Create cache invalidation request
-		if (p_info.isSingleKeyColumnName())
-		{
-			try
-			{
-				final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-				final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.BEFORE_NEW : ModelCacheInvalidationTiming.BEFORE_CHANGE;
-				cacheInvalidationService.invalidateForModel(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming);
-			}
-			catch (final Exception ex)
-			{
-				log.warn("Cache invalidation on before new/change failed for {}. Ignored.", this, ex);
-			}
-		}
 
 		// Save
 		if (newRecord)
@@ -2682,15 +2999,22 @@ public abstract class PO
 	 * Finish Save Process. Called after {@link #saveNew()} or {@link #saveUpdate()}.
 	 *
 	 * @param newRecord new
-	 * @param success   success
+	 * @param success success
 	 * @return true if saved
 	 */
-	private boolean saveFinish(final boolean newRecord, boolean success)
+	private final boolean saveFinish(final boolean newRecord, boolean success) throws Exception
 	{
 		// Translations
 		if (success)
 		{
-			updateTranslations(newRecord);
+			if (newRecord)
+			{
+				insertTranslations();
+			}
+			else
+			{
+				updateTranslations();
+			}
 		}
 
 		if (!isAssignedID)
@@ -2710,6 +3034,20 @@ public abstract class PO
 						MTree.updateTreeNode(this);
 					}
 				}
+
+				//
+				// Continue copying child records
+				// start: c.ghita@metas.ro
+				CopyRecordSupport copyRecordSupport = (CopyRecordSupport)getDynAttribute(DYNATTR_CopyRecordSupport);
+				if (copyRecordSupport != null && success)
+				{
+					copyRecordSupport.setParentPO(this);
+					copyRecordSupport.copyRecord(this, get_TrxName());
+
+					copyRecordSupport = null;
+					setDynAttribute(DYNATTR_CopyRecordSupport, null);
+				}
+				// end: c.ghita@metas.ro
 			}
 			catch (final Exception e)
 			{
@@ -2727,15 +3065,6 @@ public abstract class PO
 			fireModelChange(newRecord ? (replication ? ModelChangeType.AFTER_NEW_REPLICATION : ModelChangeType.AFTER_NEW)
 					: (replication ? ModelChangeType.AFTER_CHANGE_REPLICATION : ModelChangeType.AFTER_CHANGE));
 		}
-
-		//
-		// Create cache invalidation request
-		// (we have to do it here, before we reset all fields)
-		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-		final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
-		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
-				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
-				: null;
 
 		final int columnsCount = p_info.getColumnCount();
 
@@ -2788,11 +3117,14 @@ public abstract class PO
 
 		//
 		// Reset model cache
-		if (cacheInvalidateRequest != null)
+		if (p_info.isSingleKeyColumnName())
 		{
 			try
 			{
-				cacheInvalidationService.invalidate(cacheInvalidateRequest, cacheInvalidationTiming);
+				final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+				cacheInvalidationService.invalidateForModel(
+						POCacheSourceModel.of(this),
+						newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
 			}
 			catch (final Exception ex)
 			{
@@ -2800,15 +3132,16 @@ public abstract class PO
 			}
 		}
 
+		final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
+
 		if (get_ID() > 0)
 		{
-			final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
 			Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
 		}
 
 		// Return "success"
 		return success;
-	}    // saveFinish
+	}	// saveFinish
 
 	private void fireDocWorkflowManager()
 	{
@@ -2825,12 +3158,13 @@ public abstract class PO
 	{
 		set_TrxName(trxName);
 		return save();
-	}    // save
+	}	// save
 
 	/**
 	 * Sets given trxName and save it.
 	 *
 	 * @param trxName transaction
+	 * @throws AdempiereException
 	 * @see #saveEx(String)
 	 */
 	public final void saveEx(final String trxName) throws AdempiereException
@@ -2841,6 +3175,9 @@ public abstract class PO
 
 	/**
 	 * Set <code>isReplica=true</code>. Calls {@link #saveEx()} afterwards.
+	 *
+	 * @param isFromReplication
+	 * @throws AdempiereException
 	 */
 	public final void saveExReplica(final boolean isFromReplication) throws AdempiereException
 	{
@@ -2865,11 +3202,11 @@ public abstract class PO
 			}
 		}
 		if (m_custom != null && m_custom.size() > 0)
-		{
+		 {
 			return true; // there are custom columns modified
 		}
 		return false;
-	}    // is_Change
+	}	// is_Change
 
 	/**
 	 * Called before Save for Pre-Save Operation
@@ -2886,20 +3223,20 @@ public abstract class PO
 	 * Called after Save for Post-Save Operation
 	 *
 	 * @param newRecord new record
-	 * @param success   true if save operation was success
+	 * @param success true if save operation was success
 	 * @return if save was a success
 	 */
 	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		return success;
-	}    // afterSave
+	}	// afterSave
 
 	/**
 	 * Update Record directly
 	 *
 	 * @return true if updated
 	 */
-	private boolean saveUpdate() throws Exception
+	private final boolean saveUpdate() throws Exception
 	{
 		final String where = get_WhereClause(true);
 		//
@@ -2968,20 +3305,17 @@ public abstract class PO
 						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
 
-					final IDocumentNoBuilderFactory documentNoFactory = services.documentNoBuilderFactory();
+					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
-					if (docTypeIndex != -1)        // get based on Doc Type (might return null)
+					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						final int docTypeRepoId = get_ValueAsInt(docTypeIndex);
-						if (docTypeRepoId > 0)
-						{
-							value = documentNoFactory.forDocType(docTypeRepoId, false) // useDefiniteSequence=false
-									.setDocumentModel(this)
-									.setFailOnError(false)
-									.build();
-						}
+						final int docTypeId = get_ValueAsInt(docTypeIndex);
+						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
+								.setDocumentModel(this)
+								.setFailOnError(false)
+								.build();
 					}
-					if (value == null)    // not overwritten by DocType and not manually entered
+					if (value == null) 	// not overwritten by DocType and not manually entered
 					{
 						value = documentNoFactory.forTableName(p_info.getTableName(), getAD_Client_ID(), getAD_Org_ID())
 								.setDocumentModel(this)
@@ -3035,7 +3369,7 @@ public abstract class PO
 					sql.append(encrypt(i, DB.TO_STRING(value.toString())));
 				}
 			}
-		}    // for all fields
+		} 	// for all fields
 
 		// Custom Columns (cannot be logged as no column)
 		if (m_custom != null)
@@ -3065,19 +3399,22 @@ public abstract class PO
 				log.trace("PO has changes; tableNAme={}; whereClause={}", p_info.getTableName(), where);
 			}
 
-			if (!updated)    // Updated not explicitly set
+			if (!updated) 	// Updated not explicitly set
 			{
 				final Timestamp now = new Timestamp(System.currentTimeMillis());
 				set_ValueNoCheck("Updated", now);
 				sql.append(",Updated=").append(DB.TO_DATE(now, false));
 			}
-			if (!updatedBy)    // UpdatedBy not explicitly set
+			if (!updatedBy) 	// UpdatedBy not explicitly set
 			{
 				final UserId loggedUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
 				set_ValueNoCheck("UpdatedBy", loggedUserId.getRepoId());
 				sql.append(",UpdatedBy=").append(loggedUserId.getRepoId());
 			}
 			sql.append(" WHERE ").append(where);
+			/**
+			 * @todo status locking goes here
+			 */
 
 			//
 			// Execute UPDATE SQL
@@ -3117,7 +3454,7 @@ public abstract class PO
 		return saveFinish(false, true);  // newRecord=false, success=true
 	}   // saveUpdate
 
-	private boolean isUseTimeoutForUpdate()
+	private final boolean isUseTimeoutForUpdate()
 	{
 		return "true".equalsIgnoreCase(System.getProperty(USE_TIMEOUT_FOR_UPDATE, "false"))
 				&& DB.getDatabase().isQueryTimeoutSupported();
@@ -3129,7 +3466,7 @@ public abstract class PO
 	 * @param id new id
 	 * @return old id
 	 */
-	private Object set_ID(final Object id)
+	private final Object set_ID(final Object id)
 	{
 		final Object idOld = m_IDs[0];
 		m_IDs[0] = id;
@@ -3142,7 +3479,7 @@ public abstract class PO
 	 *
 	 * @return true if succeed (even if it does nothing); false ONLY if failed
 	 */
-	private boolean retrieveAndSetIds()
+	private final boolean retrieveAndSetIds()
 	{
 		// ID was assigned externally. Nothing to do
 		if (isAssignedID)
@@ -3210,7 +3547,7 @@ public abstract class PO
 	 *
 	 * @return true if new record inserted
 	 */
-	private boolean saveNew()
+	private boolean saveNew() throws Exception
 	{
 		//
 		// Generate and set new IDs
@@ -3249,20 +3586,16 @@ public abstract class PO
 						docTypeIndex = p_info.getColumnIndex("C_DocType_ID");
 					}
 
-					final IDocumentNoBuilderFactory documentNoFactory = services.documentNoBuilderFactory();
+					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
-					if (docTypeIndex != -1)        // get based on Doc Type (might return null)
+					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						final int docTypeRepoId = get_ValueAsInt(docTypeIndex);
-						if (docTypeRepoId > 0)
-						{
-							value = documentNoFactory.forDocType(docTypeRepoId, false) // useDefiniteSequence=false
-									.setDocumentModel(this)
-									.setFailOnError(false)
-									.build();
-						}
+						value = documentNoFactory.forDocType(get_ValueAsInt(docTypeIndex), false) // useDefiniteSequence=false
+								.setDocumentModel(this)
+								.setFailOnError(false)
+								.build();
 					}
-					if (value == null || value == IDocumentNoBuilder.NO_DOCUMENTNO)    // not overwritten by DocType and not manually entered
+					if (value == null || value == IDocumentNoBuilder.NO_DOCUMENTNO) 	// not overwritten by DocType and not manually entered
 					{
 						value = documentNoFactory.forTableName(tableName, getAD_Client_ID(), getAD_Org_ID())
 								.setDocumentModel(this)
@@ -3272,7 +3605,7 @@ public abstract class PO
 					}
 					set_ValueNoCheck(columnName, value);
 
-					services.fireDocumentNoChange(this, value); // task 09776
+					Services.get(IDocumentNoBL.class).fireDocumentNoChange(this, value); // task 09776
 				}
 			}
 		}
@@ -3309,10 +3642,6 @@ public abstract class PO
 					loadAfterInsertProcessor.addColumnName(columnName);
 				}
 			}
-		}
-		{
-			p_info.getColumnNames()
-					.forEach(this::handleEmptyDocSequenceAwareColumns);
 		}
 
 		lobReset();
@@ -3421,7 +3750,7 @@ public abstract class PO
 				}
 				else if (DisplayType.isLOB(dt))
 				{
-					sqlValues.append("null");        // no db dependent stuff here
+					sqlValues.append("null");		// no db dependent stuff here
 				}
 				else
 				{
@@ -3439,7 +3768,7 @@ public abstract class PO
 						+ " - Value=" + value
 						+ "(" + (value == null ? "null" : value.getClass().getName()) + ")";
 				log.warn(msg, e);
-				throw new DBException(e);    // fini
+				throw new DBException(e);	// fini
 			}
 		}
 
@@ -3566,7 +3895,7 @@ public abstract class PO
 
 		final int id = get_ID();
 		return id;
-	}    // saveNew_getID
+	}	// saveNew_getID
 
 	/**
 	 * Create Single/Multi Key Where Clause
@@ -3599,7 +3928,7 @@ public abstract class PO
 			}
 		}
 		return sb.toString();
-	}    // getWhereClause
+	}	// getWhereClause
 
 	/**
 	 * Save Special Data.
@@ -3631,7 +3960,7 @@ public abstract class PO
 	 * Not: LOB, special values/Objects
 	 *
 	 * @param index index
-	 * @param xx    data
+	 * @param xx data
 	 * @return xx
 	 */
 	private Object encrypt(final int index, final Object xx)
@@ -3645,13 +3974,13 @@ public abstract class PO
 			return SecureEngine.encrypt(xx);
 		}
 		return xx;
-	}    // encrypt
+	}	// encrypt
 
 	/**
 	 * Decrypt data
 	 *
 	 * @param index index
-	 * @param yy    data
+	 * @param yy data
 	 * @return yy
 	 */
 	private Object decrypt(final int index, final Object yy)
@@ -3665,7 +3994,7 @@ public abstract class PO
 			return SecureEngine.decrypt(yy);
 		}
 		return yy;
-	}    // decrypt
+	}	// decrypt
 
 	/**************************************************************************
 	 * Delete Current Record, unless
@@ -3696,12 +4025,13 @@ public abstract class PO
 		Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), StateType.DELETED.getCode(), get_TrxName());
 
 		return success;
-	}    // delete
+	}	// delete
 
 	/**
 	 * Delete Current Record
 	 *
 	 * @param force delete also processed records
+	 * @throws AdempiereException
 	 * @see #delete(boolean)
 	 */
 	public final void deleteEx(final boolean force) throws AdempiereException
@@ -3748,7 +4078,7 @@ public abstract class PO
 	 * @param force force delete (i.e. delete even if the record is processed)
 	 * @return <code>true</code> if delete is needed; <code>false</code> if delete is not needed
 	 */
-	private boolean deletePrepare(final boolean force)
+	private final boolean deletePrepare(final boolean force)
 	{
 		MetasfreshLastError.resetLast();
 		if (is_new())
@@ -3768,8 +4098,8 @@ public abstract class PO
 				{
 					throw new AdempiereException("@CannotDelete@ (@Processed@): " + this);
 				}
-			}    // processed
-		}    // force
+			} 	// processed
+		} 	// force
 
 		//
 		// Check if deleting is allowed
@@ -3781,7 +4111,7 @@ public abstract class PO
 		return true; // delete is needed
 	}
 
-	private void delete0()
+	private final void delete0()
 	{
 		final int AD_Table_ID = p_info.getAD_Table_ID();
 		final int Record_ID = get_ID();
@@ -3816,14 +4146,6 @@ public abstract class PO
 		PO_Record.deleteCascade(AD_Table_ID, Record_ID, trxName);
 
 		//
-		// Create cache invalidation request
-		// We have to do it here, before we actually delete in case we have to compute what rows are "disappearing" from a view because this record was deleted.
-		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
-				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
-				: null;
-
-		//
 		// Execute SQL DELETE
 		final StringBuilder sql = new StringBuilder("DELETE FROM ")
 				.append(p_info.getTableName())
@@ -3845,6 +4167,15 @@ public abstract class PO
 
 		// Save ID
 		m_idOld = get_ID();
+
+		//
+		// Create cache invalidation request
+		// (we have to do it here, before we reset all fields)
+		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = //
+				p_info.isSingleKeyColumnName()
+						? cacheInvalidationService.createRequestOrNull(POCacheSourceModel.of(this), ModelCacheInvalidationTiming.DELETE)
+						: null;
 
 		//
 		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
@@ -3883,7 +4214,7 @@ public abstract class PO
 		{
 			try
 			{
-				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.AFTER_DELETE);
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
 			}
 			catch (final Exception ex)
 			{
@@ -3895,7 +4226,7 @@ public abstract class PO
 	/**
 	 * Delete Current Record
 	 *
-	 * @param force   delete also processed records
+	 * @param force delete also processed records
 	 * @param trxName transaction
 	 * @return true if deleted
 	 */
@@ -3903,13 +4234,14 @@ public abstract class PO
 	{
 		set_TrxName(trxName);
 		return delete(force);
-	}    // delete
+	}	// delete
 
 	/**
 	 * Delete Current Record
 	 *
-	 * @param force   delete also processed records
+	 * @param force delete also processed records
 	 * @param trxName transaction
+	 * @throws AdempiereException
 	 * @see {@link #deleteEx(boolean)}
 	 */
 	public final void deleteEx(final boolean force, final String trxName) throws AdempiereException
@@ -3927,7 +4259,7 @@ public abstract class PO
 	{
 		// log.warn("Error", Msg.getMsg(getCtx(), "CannotDelete"));
 		return true;
-	}    // beforeDelete
+	} 	// beforeDelete
 
 	/**
 	 * Executed after Delete operation.
@@ -3938,7 +4270,7 @@ public abstract class PO
 	protected boolean afterDelete(final boolean success)
 	{
 		return success;
-	}    // afterDelete
+	} 	// afterDelete
 
 	private boolean is_Translatable()
 	{
@@ -3948,63 +4280,93 @@ public abstract class PO
 		}
 
 		// Make sure it's single ID key which is integer and which is set
-		return isSingleIntegerPrimaryKeySet();
+		if (m_IDs.length > 1 || m_IDs.length == 0
+				|| I_ZERO.equals(m_IDs[0])
+				|| !(m_IDs[0] instanceof Integer))
+		{
+			return false;
+		}
+
+		return true;
 	}
 
-	private boolean isSingleIntegerPrimaryKeySet()
+	/**
+	 * Insert (missing) Translation Records
+	 *
+	 * @return false if error (true if no translation or success)
+	 */
+	public final boolean insertTranslations()
 	{
-		return m_IDs.length == 1
-				&& !I_ZERO.equals(m_IDs[0])
-				&& m_IDs[0] instanceof Integer;
-	}
+		// Not a translation table
+		if (!is_Translatable())
+		{
+			return true;
+		}
 
-	private void updateTranslations(final boolean newRecord)
+		final boolean ok = POTrlRepository.instance.insertTranslations(p_info.getTrlInfo(), get_ID());
+		if (ok)
+		{
+			m_translations = null; // reset translations cache
+		}
+		return ok;
+	}	// insertTranslations
+
+	/**
+	 * Update Translations.
+	 *
+	 * @return
+	 *         <ul>
+	 *         <li>true if no translation or success
+	 *         <li>false if error
+	 *         </ul>
+	 */
+	private boolean updateTranslations()
 	{
-		final POTrlInfo trlInfo = p_info.getTrlInfo();
+		// Not a translation table
+		if (!is_Translatable())
+		{
+			return true; // OK
+		}
+
+		final boolean ok = POTrlRepository.instance.updateTranslations(this);
+		if (ok)
+		{
+			m_translations = null; // reset cached translations
+		}
 
 		//
-		// Case: we deal with a base table which supports translations
-		if (trlInfo.isTranslated())
-		{
-			final boolean updated = newRecord
-					? POTrlRepository.instance.onBaseRecordCreated(trlInfo, get_ID())
-					: POTrlRepository.instance.onBaseRecordChanged(this);
+		return ok;
+	}	// updateTranslations
 
-			// reset cached translations
-			if (updated)
-			{
-				m_translations = null;
-			}
-		}
-		//
-		// Case: we are dealing with a translation table
-		else if (POTrlRepository.isTrlTableName(p_info.getTableName()))
-		{
-			POTrlRepository.instance.onTrlRecordChanged(this);
-		}
-	}
-
-	private void deleteTranslations()
+	/**
+	 * Delete Translation Records
+	 *
+	 * @return false if error (true if no translation or success)
+	 */
+	private boolean deleteTranslations()
 	{
-		final POTrlInfo trlInfo = p_info.getTrlInfo();
-		if (!trlInfo.isTranslated())
+		// Not a translation table
+		if (!is_Translatable())
 		{
-			return;
+			return true;
 		}
 
-		final boolean ok = POTrlRepository.instance.deleteTranslations(trlInfo, get_ID());
+		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
 		if (ok)
 		{
 			m_translations = NullModelTranslationMap.instance; // reset cached translations
 		}
-	}
+
+		//
+		return ok;
+	}	// deleteTranslations
 
 	/**
 	 * Insert Accounting Records
 	 *
-	 * @param acctTable     accounting sub table
+	 * @param acctTable accounting sub table
 	 * @param acctBaseTable acct table to get data from
-	 * @param whereClause   optional where clause with alias "p" for acctBaseTable
+	 * @param whereClause optional where clause with alias "p" for acctBaseTable
 	 * @return true if records inserted
 	 */
 	// task 05372: make method public so we can insert accountings from not-M-classes
@@ -4014,7 +4376,7 @@ public abstract class PO
 			@Nullable final String whereClause)
 	{
 		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
-		if (acctInfo == null)
+		if(acctInfo == null)
 		{
 			log.warn("No accounting info found for {}. Skipping", acctTable);
 			return false;
@@ -4040,7 +4402,7 @@ public abstract class PO
 				.append(getUpdatedBy());
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			if (acctBaseTableInfo.hasColumnName(acctColumnName))
+			if(acctBaseTableInfo.hasColumnName(acctColumnName))
 			{
 				sb.append("\n, p.").append(acctColumnName);
 			}
@@ -4063,7 +4425,7 @@ public abstract class PO
 		//
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
 		return no > 0;
-	}    // insert_Accounting
+	}	// insert_Accounting
 
 	/**
 	 * Delete Accounting records.
@@ -4075,7 +4437,7 @@ public abstract class PO
 	public final boolean delete_Accounting(final String acctTable)
 	{
 		return true;
-	}    // delete_Accounting
+	}	// delete_Accounting
 
 	/**
 	 * Insert id data into Tree
@@ -4088,7 +4450,7 @@ public abstract class PO
 	protected final boolean insert_Tree(final String treeType)
 	{
 		return true;
-	}    // insert_Tree
+	}	// insert_Tree
 
 	/**
 	 * Delete ID Tree Nodes
@@ -4101,7 +4463,7 @@ public abstract class PO
 	protected final boolean delete_Tree(final String treeType)
 	{
 		return true;
-	}    // delete_Tree
+	}	// delete_Tree
 
 	/**************************************************************************
 	 * Lock it.
@@ -4120,11 +4482,10 @@ public abstract class PO
 			boolean success = false;
 			if (isUseTimeoutForUpdate())
 			{
-				success = DB.executeUpdateAndThrowExceptionOnFail(sql, null, QUERY_TIME_OUT) == 1;    // outside trx
+				success = DB.executeUpdateAndThrowExceptionOnFail(sql, null, QUERY_TIME_OUT) == 1;	// outside trx
 			}
-			else
-			{
-				success = DB.executeUpdateAndSaveErrorOnFail(sql, null) == 1;    // outside trx
+			else {
+				success = DB.executeUpdateAndSaveErrorOnFail(sql, null) == 1;	// outside trx
 			}
 			if (success)
 			{
@@ -4137,7 +4498,7 @@ public abstract class PO
 			return success;
 		}
 		return false;
-	}    // lock
+	}	// lock
 
 	/**
 	 * Get the Column Processing index
@@ -4147,7 +4508,7 @@ public abstract class PO
 	private int get_ProcessingIndex()
 	{
 		return p_info.getColumnIndex("Processing");
-	}    // getProcessingIndex
+	}	// getProcessingIndex
 
 	/**
 	 * UnLock it
@@ -4184,11 +4545,9 @@ public abstract class PO
 			return success;
 		}
 		return true;
-	}    // unlock
+	}	// unlock
 
-	/**
-	 * Optional Transaction
-	 */
+	/** Optional Transaction */
 	private String m_trxName = null;
 
 	/**
@@ -4199,7 +4558,7 @@ public abstract class PO
 	public final void set_TrxName(final String trxName)
 	{
 		m_trxName = trxName;
-	}    // setTrx
+	}	// setTrx
 
 	/**
 	 * Get Trx
@@ -4209,7 +4568,7 @@ public abstract class PO
 	public final String get_TrxName()
 	{
 		return m_trxName;
-	}    // getTrx
+	}	// getTrx
 
 	/**************************************************************************
 	 * Dump Record
@@ -4249,12 +4608,12 @@ public abstract class PO
 	 * Get All IDs of Table.
 	 * Used for listing all Entities
 	 * <code>
-	 int[] IDs = PO.getAllIDs ("AD_PrintFont", null);
-	 for (int i = 0; i < IDs.length; i++)
-	 {
-	 pf = new MPrintFont(Env.getCtx(), IDs[i]);
-	 System.out.println(IDs[i] + " = " + pf.getFont());
-	 }
+	 	int[] IDs = PO.getAllIDs ("AD_PrintFont", null);
+		for (int i = 0; i < IDs.length; i++)
+		{
+			pf = new MPrintFont(Env.getCtx(), IDs[i]);
+			System.out.println(IDs[i] + " = " + pf.getFont());
+		}
 	 *	</code>
 	 *
 	 * @param TableName table name (key column with _ID)
@@ -4300,7 +4659,7 @@ public abstract class PO
 			retValue[i] = list.get(i).intValue();
 		}
 		return retValue;
-	}    // getAllIDs
+	}	// getAllIDs
 
 	/**************************************************************************
 	 * Load LOB
@@ -4327,20 +4686,20 @@ public abstract class PO
 			{
 				retValue = value;
 			}
-			else if (value instanceof Clob)        // returns String
+			else if (value instanceof Clob) 		// returns String
 			{
 				final Clob clob = (Clob)value;
 				length = clob.length();
 				retValue = clob.getSubString(1, (int)length);
 			}
-			else if (value instanceof Blob)    // returns byte[]
+			else if (value instanceof Blob) 	// returns byte[]
 			{
 				final Blob blob = (Blob)value;
 				length = blob.length();
-				int index = 1;    // correct
+				int index = 1;	// correct
 				if (blob.getClass().getName().equals("oracle.jdbc.rowset.OracleSerialBlob"))
-				{
-					index = 0;    // Oracle Bug Invalid Arguments
+				 {
+					index = 0;	// Oracle Bug Invalid Arguments
 				}
 				// at oracle.jdbc.rowset.OracleSerialBlob.getBytes(OracleSerialBlob.java:130)
 				retValue = blob.getBytes(index, (int)length);
@@ -4355,11 +4714,9 @@ public abstract class PO
 			log.warn("Length=" + length, e);
 		}
 		return retValue;
-	}    // getLOB
+	}	// getLOB
 
-	/**
-	 * LOB Info
-	 */
+	/** LOB Info */
 	private ArrayList<PO_LOB> m_lobInfo = null;
 
 	/**
@@ -4368,13 +4725,13 @@ public abstract class PO
 	private void lobReset()
 	{
 		m_lobInfo = null;
-	}    // resetLOB
+	}	// resetLOB
 
 	/**
 	 * Prepare LOB save
 	 *
-	 * @param value       value
-	 * @param index       index
+	 * @param value value
+	 * @param index index
 	 * @param displayType display type
 	 */
 	private void lobAdd(final Object value, final int index, final int displayType)
@@ -4387,7 +4744,7 @@ public abstract class PO
 			m_lobInfo = new ArrayList<>();
 		}
 		m_lobInfo.add(lob);
-	}    // lobAdd
+	}	// lobAdd
 
 	/**
 	 * Save LOB
@@ -4411,10 +4768,10 @@ public abstract class PO
 				retValue = false;
 				break;
 			}
-		}    // for all LOBs
+		} 	// for all LOBs
 		lobReset();
 		return retValue;
-	}    // saveLOB
+	}	// saveLOB
 
 	/**
 	 * Get Object xml representation as string
@@ -4440,12 +4797,12 @@ public abstract class PO
 			final DOMSource source = new DOMSource(get_xmlDocument(xml.length() != 0));
 			final TransformerFactory tFactory = TransformerFactory.newInstance();
 			final Transformer transformer = tFactory.newTransformer();
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
 			transformer.transform(source, result);
 			final StringBuffer newXML = writer.getBuffer();
 			//
 			if (xml.length() != 0)
-			{    // // <?xml version="1.0" encoding="UTF-8"?>
+			{	// // <?xml version="1.0" encoding="UTF-8"?>
 				final int tagIndex = newXML.indexOf("?>");
 				if (tagIndex != -1)
 				{
@@ -4466,15 +4823,11 @@ public abstract class PO
 			log.warn("get_xmlString - caught exception", e);
 		}
 		return xml;
-	}    // get_xmlString
+	}	// get_xmlString
 
-	/**
-	 * Table ID Attribute
-	 */
+	/** Table ID Attribute */
 	protected final static String XML_ATTRIBUTE_AD_Table_ID = "AD_Table_ID";
-	/**
-	 * Record ID Attribute
-	 */
+	/** Record ID Attribute */
 	protected final static String XML_ATTRIBUTE_Record_ID = "Record_ID";
 
 	/**
@@ -4578,7 +4931,7 @@ public abstract class PO
 			m_custom = null;
 		}
 		return document;
-	}    // getDocument
+	}	// getDocument
 
 	public final void setReplication(final boolean isFromReplication)
 	{
@@ -4610,9 +4963,11 @@ public abstract class PO
 		}
 	}
 
+
 	/**
 	 * Get Integer Value
 	 *
+	 * @param columnName
 	 * @return int value
 	 */
 	public final int get_ValueAsInt(final String columnName)
@@ -4630,9 +4985,11 @@ public abstract class PO
 				: defaultValue;
 	}
 
+
 	/**
 	 * Get value as Boolean
 	 *
+	 * @param columnName
 	 * @return boolean value
 	 */
 	// metas: tsa: changed and introduced get_ValueAsBoolean(int)
@@ -4661,12 +5018,15 @@ public abstract class PO
 	}
 
 	// metas: begin
-	private HashMap<String, Object> m_dynAttrs = null;
+	private Map<String, Object> m_dynAttrs = null;
 
 	/**
 	 * Set Dynamic Attribute.
 	 * A dynamic attribute is an attribute that is not stored in database and is kept as long as this
 	 * PO instance is not destroyed.
+	 *
+	 * @param name
+	 * @param value
 	 */
 	public final Object setDynAttribute(final String name, @Nullable final Object value)
 	{
@@ -4680,9 +5040,9 @@ public abstract class PO
 	/**
 	 * Get Dynamic Attribute
 	 *
+	 * @param name
 	 * @return attribute value or null if not found
 	 */
-	@Nullable
 	public final Object getDynAttribute(final String name)
 	{
 		if (m_dynAttrs == null)
@@ -4697,26 +5057,16 @@ public abstract class PO
 		return DisplayType.toBoolean(getDynAttribute(name));
 	}
 
-	public <T> T computeDynAttributeIfAbsent(@NonNull final String name, @NonNull final Supplier<T> supplier)
-	{
-		if (m_dynAttrs == null)
-		{
-			m_dynAttrs = new HashMap<>();
-		}
-
-		//noinspection unchecked
-		return (T)m_dynAttrs.computeIfAbsent(name, k -> supplier.get());
-	}
-
 	/**
 	 * Fire Model Change Event.
-	 * <p>
+	 *
 	 * After event is fired, if the event was about replication, the replication flag will also be set to <code>false</code>.
 	 *
 	 * @param type see ModelValidator.TYPE_* events
-	 * @implSpec task 01512
+	 * @return error or null
+	 * @task 01512
 	 */
-	private void fireModelChange(final ModelChangeType type)
+	private final void fireModelChange(final ModelChangeType type)
 	{
 		if (type == null)
 		{
@@ -4750,10 +5100,13 @@ public abstract class PO
 	private ModelChangeType m_currentChangeType = null;
 
 	/**
-	 * Boolean DynAttr which is true while the record is copied-with-details
+	 * DynAttr which holds the <code>CopyRecordSupport</code> class which handles this PO
 	 */
-	private static final String DYNATTR_IsCopyWithDetailsInProgress = "IsCopyWithDetailsInProgress";
-	private static final String DYNATTR_CopiedFromRecordId = "CopyRecordSupport_CopiedFromRecordId";
+	public static final String DYNATTR_CopyRecordSupport = "CopyRecordSupport";
+	/**
+	 * DynAttr which holds the source PO from which this PO was copied
+	 */
+	public static final String DYNATTR_CopyRecordSupport_OldValue = "CopyRecordSupportOldValue";
 
 	@Override
 	public final boolean has_Variable(final String variableName)
@@ -4786,6 +5139,7 @@ public abstract class PO
 	/**
 	 * Get/Load translation map for a given language
 	 *
+	 * @param AD_Language
 	 * @return map of columnName->translatedValue pairs
 	 */
 	private IModelTranslation get_ModelTranslation(final String AD_Language)
@@ -4796,7 +5150,7 @@ public abstract class PO
 
 	public IModelTranslationMap get_ModelTranslationMap()
 	{
-		if (is_new())
+		if(is_new())
 		{
 			return NullModelTranslationMap.instance;
 		}
@@ -4808,12 +5162,12 @@ public abstract class PO
 		}
 
 		IModelTranslationMap translations = m_translations;
-		if (translations == NullModelTranslationMap.instance)
+		if(translations == NullModelTranslationMap.instance)
 		{
 			return translations;
 		}
 
-		if (translations != null && translations.getRecordId() != id)
+		if(translations != null && translations.getRecordId() != id)
 		{
 			translations = null;
 		}
@@ -4832,7 +5186,7 @@ public abstract class PO
 		return p_info;
 	}
 
-	private transient HashMap<String, POCacheLocal> m_poCacheLocals;
+	private transient Map<String, POCacheLocal> m_poCacheLocals;
 
 	private POCacheLocal get_POCacheLocal(final String columnName, final String refTableName)
 	{
@@ -4876,10 +5230,21 @@ public abstract class PO
 		poCache.set(obj);
 	}
 
+	protected final <RecordType> RecordType getReferencedRecord(final Class<RecordType> recordType)
+	{
+		return TableRecordCacheLocal.getReferencedValue(this, recordType);
+	}
+
+	protected final <RecordType> void setReferencedRecord(final RecordType record)
+	{
+		TableRecordCacheLocal.setReferencedValue(this, record);
+	}
+
 	private boolean m_isManualUserAction = false;
 	private int m_windowNo = 0;
 
 	/**
+	 *
 	 * @return true if this PO is created, updated or deleted by an manual user action (from window)
 	 */
 	public final boolean is_ManualUserAction()
@@ -4888,6 +5253,7 @@ public abstract class PO
 	}
 
 	/**
+	 *
 	 * @return WindowNo in case is an user manual action, or {@link Env#WINDOW_None} otherwise
 	 */
 	public final int get_WindowNo()
@@ -4913,20 +5279,20 @@ public abstract class PO
 	}
 
 	@Override
-	public I_AD_Client getAD_Client()
+	public org.compiere.model.I_AD_Client getAD_Client()
 	{
-		return get_ValueAsPO("AD_Client_ID", I_AD_Client.class);
+		return get_ValueAsPO("AD_Client_ID", org.compiere.model.I_AD_Client.class);
 	}
 
 	@Override
-	public I_AD_Org getAD_Org()
+	public org.compiere.model.I_AD_Org getAD_Org()
 	{
-		return get_ValueAsPO("AD_Org_ID", I_AD_Org.class);
+		return get_ValueAsPO("AD_Org_ID", org.compiere.model.I_AD_Org.class);
 	}
 
-	public final void setAD_Org(final I_AD_Org org)
+	public final void setAD_Org(final org.compiere.model.I_AD_Org org)
 	{
-		set_ValueFromPO("AD_Org_ID", I_AD_Org.class, org);
+		set_ValueFromPO("AD_Org_ID", org.compiere.model.I_AD_Org.class, org);
 	}
 
 	/**
@@ -4935,7 +5301,7 @@ public abstract class PO
 	 * @return session or null
 	 */
 	// metas
-	private MFSession get_Session()
+	private final MFSession get_Session()
 	{
 		if (I_AD_Session.Table_Name.equals(get_TableName()))
 		{
@@ -4943,7 +5309,7 @@ public abstract class PO
 			return null;
 		}
 
-		final MFSession session = services.sessionBL().getCurrentSession(getCtx());
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(getCtx());
 		if (session == null)
 		{
 			log.debug("No Session found");
@@ -4963,18 +5329,19 @@ public abstract class PO
 
 	public final Timestamp get_ValueAsTimestamp(final int index)
 	{
-		return (Timestamp)get_Value(index);
+		final Timestamp ts = (Timestamp)get_Value(index);
+		return ts;
 	}
 
 	/**
 	 * Explicitly mark a column that was changed.
-	 * <p>
+	 *
 	 * It is helpful to do this when:
 	 * <ul>
 	 * <li>you set a value for a column but the new value can be the same as the old value
 	 * <li>and you really really what to trigger the database UPDATE or you really really want to trigger the model validators
 	 * </ul>
-	 * <p>
+	 *
 	 * NOTE: if you are marking the column as changed but you are not explicitly set a value (i.e. a new value), this command will have no effect
 	 *
 	 * @param columnName column name to be marked as changed
@@ -5007,9 +5374,9 @@ public abstract class PO
 	 *
 	 * @return transaction manager; never return null
 	 */
-	protected final ITrxManager get_TrxManager()
+	private ITrxManager get_TrxManager()
 	{
-		return services.trxManager();
+		return Services.get(ITrxManager.class);
 	}
 
 	/**
@@ -5089,6 +5456,7 @@ public abstract class PO
 	}
 
 	/**
+	 *
 	 * @return how many times this object was loaded/reloaded
 	 */
 	public final int getLoadCount()
@@ -5096,43 +5464,7 @@ public abstract class PO
 		return m_loadCount;
 	}
 
-	private void handleEmptyDocSequenceAwareColumns(@NonNull final String columnName)
-	{
-		final int columnIndex = p_info.getColumnIndex(columnName);
-		final POInfoColumn poInfoColumn = p_info.getColumn(columnIndex);
-
-		Check.assumeNotNull(poInfoColumn, "POInfoColumn cannot be missing at this stage!");
-
-		if (!poInfoColumn.isString())
-		{
-			return;
-		}
-
-		final String value = (String)get_Value(columnIndex);
-		if (Check.isNotBlank(value))
-		{
-			return;
-		}
-
-		final String computedValue = SequenceUtil.computeColumnValueBasedOnSequenceIdIfProvided(poInfoColumn, getAD_Client_ID())
-				.orElse(null);
-
-		if (computedValue == null)
-		{
-			return;
-		}
-
-		set_ValueNoCheck(columnIndex, computedValue);
-	}
-
 	// metas: end
-	public boolean isCopying() {return isDynAttributeTrue(DYNATTR_IsCopyWithDetailsInProgress);}
-
-	public void setCopying(final boolean copying) {setDynAttribute(DYNATTR_IsCopyWithDetailsInProgress, copying ? Boolean.TRUE : null);}
-
-	public boolean isCopiedFromOtherRecord() {return getDynAttribute(DYNATTR_CopiedFromRecordId) != null;}
-
-	public void setCopiedFromRecordId(int fromRecordId) {setDynAttribute(DYNATTR_CopiedFromRecordId, fromRecordId);}
 
 	private class POReturningAfterInsertLoader implements ISqlUpdateReturnProcessor
 	{

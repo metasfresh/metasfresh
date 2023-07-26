@@ -1,9 +1,15 @@
 package de.metas.contracts;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.contracts.location.ContractLocationHelper;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner_Location;
+
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -16,14 +22,10 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner_Location;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -89,8 +91,11 @@ public class FlatrateTermPricing
 
 		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
 
-		final BPartnerLocationAndCaptureId dropShipLocationId = ContractLocationHelper.extractDropshipLocationId(term);
-		final BPartnerLocationAndCaptureId billLocationId = ContractLocationHelper.extractBillToLocationId(term);
+		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID());
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(term.getBill_BPartner_ID());
+
+		final BPartnerLocationAndCaptureId dropShipLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(dropShipBPartnerId, term.getDropShip_Location_ID());
+		final BPartnerLocationAndCaptureId billLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billBPartnerId, term.getBill_Location_ID());
 
 		final BPartnerLocationAndCaptureId bpLocationIdToUse = dropShipLocationId != null ? dropShipLocationId : billLocationId;
 

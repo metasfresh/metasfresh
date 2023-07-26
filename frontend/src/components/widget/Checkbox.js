@@ -21,7 +21,7 @@ const Checkbox = (props) => {
     filterWidget,
     isFilterActive,
     updateItems,
-    suppressChange,
+    isEdited,
   } = props;
   let { value, defaultValue } = widgetData;
   const prevValue = usePrevious(value);
@@ -50,7 +50,7 @@ const Checkbox = (props) => {
     }
 
     // only valid for checkboxes in tabs
-    if (isChanged && value !== prevValue && initialRender && suppressChange) {
+    if (isChanged && value !== prevValue && initialRender && isEdited) {
       setChanged(false);
     }
 
@@ -93,9 +93,9 @@ const Checkbox = (props) => {
       updateItems({ widgetField, value: !checkedState });
 
     handlePatch(widgetField, newCheckedState, id).then(() => {
-      // in case of checkboxes in tabs/Attributes we will always get a websocket request, which can break
+      // in case of checkboxes in tabs we will always get a websocket request, which ras break
       // the current state. So don't change it until next render
-      if (!suppressChange) {
+      if (!isEdited) {
         setChanged(false);
       }
     });
@@ -155,10 +155,7 @@ const Checkbox = (props) => {
  * @prop {func} [handlePatch]
  * @prop {string} [widgetField]
  * @prop {string|number} [id]
- * @prop {func} [updateItems] - function used for updating the filter items before having an active filter
- * @prop {bool} [suppressChange] - this flag is set for checkboxes in Tabs/Attributes, where we have additional
- *                           requests which would otherwise break the current flow, overriding the local checked
- *                           state with default value.
+ * @todo Check props. Which proptype? Required or optional?
  */
 Checkbox.propTypes = {
   widgetData: PropTypes.object.isRequired,
@@ -170,8 +167,8 @@ Checkbox.propTypes = {
   widgetField: PropTypes.string,
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  updateItems: PropTypes.func,
-  suppressChange: PropTypes.bool,
+  updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
+  isEdited: PropTypes.bool,
 };
 
 export default Checkbox;

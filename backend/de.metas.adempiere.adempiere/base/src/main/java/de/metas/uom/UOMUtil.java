@@ -61,6 +61,15 @@ public class UOMUtil
 		return X12DE355.YEAR.equals(x12de355);
 	}
 
+	/**
+	 * @return true if is time UOM
+	 */
+	public static boolean isTime(final I_C_UOM uom)
+	{
+		final X12DE355 x12de355 = X12DE355.ofCode(uom.getX12DE355());
+		return x12de355.isTemporalUnit();
+	}
+
 	@NonNull
 	public static TemporalUnit toTemporalUnit(final I_C_UOM uom)
 	{

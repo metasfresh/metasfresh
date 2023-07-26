@@ -1,7 +1,6 @@
 {
   "orgCode": "001",
   "externalSystemName": "Shopware6",
-  "externalSystemChildConfigValue": "childValue",
   "command": "getProducts",
   "adPInstanceId": 2,
   "externalSystemConfigId": 1,
@@ -10,14 +9,6 @@
     "UpdatedAfter": "1999-08-09T13:35:17Z",
     "ClientSecret": "ClientSecret",
     "ClientId": "ClientId",
-    "BasePath": "BasePath",
-    "NormalVAT_Rates": "7,19",
-    "Reduced_VAT_Rates": "10",
-    "M_FreightCost_NormalVAT_Product_ID": "2005599",
-    "M_FreightCost_ReducedVAT_Product_ID": "2005600",
-    "TargetPriceListId": "121",
-    "PriceList_IsTaxIncluded": true,
-    "PriceListCurrencyCode": "EUR",
-    "UOMMappings": "{\"uomMappings\":[{\"uom\":{\"id\":540047,\"code\":\"CM\"},\"externalCode\":\"kg\"}]}"
+    "BasePath": "BasePath"
   }
 }

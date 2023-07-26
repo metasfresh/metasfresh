@@ -1,13 +1,15 @@
 package de.metas.customs.document;
 
+import java.time.LocalDate;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.util.TimeUtil;
+
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Customs_Invoice;
 
 /*
  * #%L
@@ -47,10 +49,10 @@ public class CustomsInvoiceDocumentHandler  implements DocumentHandler
 	}
 
 	@Override
-	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
 		final I_C_Customs_Invoice customsInvoice = extractCustomsInvoice(docFields);
-		return InstantAndOrgId.ofTimestamp(customsInvoice.getDateInvoiced(), OrgId.ofRepoId(customsInvoice.getAD_Org_ID()));
+		return TimeUtil.asLocalDate(customsInvoice.getDateInvoiced());
 	}
 
 	@Override

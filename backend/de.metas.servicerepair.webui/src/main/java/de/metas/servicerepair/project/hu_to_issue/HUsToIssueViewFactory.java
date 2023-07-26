@@ -30,7 +30,7 @@ import de.metas.servicerepair.project.process.HUsToIssueView_IssueHUs;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
-import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;

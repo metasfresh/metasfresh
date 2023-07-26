@@ -22,18 +22,21 @@ package de.metas.lock.exceptions;
  * #L%
  */
 
+
+import java.util.Arrays;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.google.common.collect.ImmutableList;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.lock.spi.ExistingLockInfo;
+import de.metas.lock.spi.impl.SqlLockDatabase;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.util.Arrays;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * General exception thrown on any locking/unlocking error.
@@ -53,7 +56,7 @@ public abstract class LockException extends AdempiereException
 	private Object[] sqlParams;
 	
 	@Getter
-	private ImmutableList<ExistingLockInfo> existingLocks;
+	private ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks;
 	
 	public LockException(final String message)
 	{
@@ -122,7 +125,7 @@ public abstract class LockException extends AdempiereException
 		return this;
 	}
 
-	public LockException setExistingLocks(@NonNull final ImmutableList<ExistingLockInfo> existingLocks)
+	public LockException setExistingLocks(@NonNull final ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks)
 	{
 		this.existingLocks = existingLocks;
 		return this;

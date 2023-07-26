@@ -1,18 +1,54 @@
 package de.metas.contracts.flatrate.process;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.process.PInstanceId;
-import de.metas.process.RunOutOfTrx;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 
-public class C_Flatrate_Term_Change extends C_Flatrate_Term_Change_Base
+import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
+import de.metas.contracts.model.I_C_Contract_Change;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
+import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+
+public class C_Flatrate_Term_Change extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+
+
+	public static final String PARAM_CHANGE_DATE = "EventDate";
+
+	public static final String PARAM_ACTION = I_C_Contract_Change.COLUMNNAME_Action;
+
+	public static final String PARAM_TERMINATION_MEMO = I_C_Flatrate_Term.COLUMNNAME_TerminationMemo;
+	public static final String PARAM_TERMINATION_REASON = I_C_Flatrate_Term.COLUMNNAME_TerminationReason;
+
+	public static final String PARAM_ONLY_TERMINATE_CURRENT_TERM = "OnlyTerminateCurrentTerm";
+
+	public static final String PARAM_IsCreditOpenInvoices ="IsCreditOpenInvoices";
+
+	@Param(parameterName = PARAM_ACTION, mandatory = true)
+	private String action;
+
+	@Param(parameterName = PARAM_CHANGE_DATE, mandatory = true)
+	private Timestamp changeDate;
+
+	@Param(parameterName = PARAM_TERMINATION_MEMO, mandatory = false)
+	private String terminationMemo;
+
+	@Param(parameterName = PARAM_TERMINATION_REASON, mandatory = false)
+	private String terminationReason;
+
+	@Param(parameterName = PARAM_IsCreditOpenInvoices, mandatory = false)
+	private boolean isCreditOpenInvoices;
 
 	@Override
 	@RunOutOfTrx
@@ -24,12 +60,30 @@ public class C_Flatrate_Term_Change extends C_Flatrate_Term_Change_Base
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
+
 	}
 
 	@Override
-	protected Iterable<I_C_Flatrate_Term> getFlatrateTermsToChange()
+	protected String doIt()
 	{
-		return retrieveSelection(getPinstanceId());
+		if (IContractChangeBL.ChangeTerm_ACTION_SwitchContract.equals(action))
+		{
+			throw new AdempiereException("Not implemented");
+		}
+
+		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+				.changeDate(changeDate)
+				.isCloseInvoiceCandidate(true)
+				.terminationMemo(terminationMemo)
+				.terminationReason(terminationReason)
+				.isCreditOpenInvoices(isCreditOpenInvoices)
+				.action(action)
+				.build();
+
+		final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getPinstanceId());
+		flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
+
+		return "@Success@";
 	}
 
 	private IQueryBuilder<I_C_Flatrate_Term> createQueryBuilder()
@@ -47,7 +101,7 @@ public class C_Flatrate_Term_Change extends C_Flatrate_Term_Change_Base
 				.addOnlyContextClient();
 	}
 
-	private Iterable<I_C_Flatrate_Term> retrieveSelection(final PInstanceId adPInstanceId)
+	private final Iterable<I_C_Flatrate_Term> retrieveSelection(final PInstanceId adPInstanceId)
 	{
 		return () -> queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class)

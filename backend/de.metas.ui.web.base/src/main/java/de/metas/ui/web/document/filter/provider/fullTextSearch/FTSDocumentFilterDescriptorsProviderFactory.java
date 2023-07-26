@@ -37,12 +37,12 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstan
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -74,10 +74,11 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 	@Nullable
 	@Override
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
+			@Nullable final AdTabId adTabId,
+			@Nullable final String tableName,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
-		return StringUtils.trimBlankToOptional(context.getTableName())
+		return StringUtils.trimBlankToOptional(tableName)
 				.map(this::createFiltersProvider)
 				.orElse(null);
 	}
@@ -116,9 +117,9 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 						.setFrequentUsed(true)
 						.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 						.addParameter(DocumentFilterParamDescriptor.builder()
-								.fieldName(PARAM_SearchText)
-								.displayName(caption)
-								.widgetType(DocumentFieldWidgetType.Text))
+								.setFieldName(PARAM_SearchText)
+								.setDisplayName(caption)
+								.setWidgetType(DocumentFieldWidgetType.Text))
 						.addInternalParameter(PARAM_Context, context)
 						.build());
 	}

@@ -1,15 +1,13 @@
 package org.eevolution.callout;
 
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.ProductBOMVersionsId;
-import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMVersions;
+
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -44,30 +42,22 @@ public class PP_Product_BOM
 {
 	private final IProductBL productsService = Services.get(IProductBL.class);
 
-	private final ProductBOMVersionsDAO bomVersionsDAO;
-
-	public PP_Product_BOM(final ProductBOMVersionsDAO bomVersionsDAO)
-	{
-		this.bomVersionsDAO = bomVersionsDAO;
-	}
-
 	/**
-	 * Updates BOM fields from selected bom versions, if any.
+	 * Updates BOM fields from selected product, if any.
 	 *
 	 * @param bom
 	 */
-	@CalloutMethod(columnNames = I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID)
-	public void onBOMVersionsChanged(final I_PP_Product_BOM bom)
+	@CalloutMethod(columnNames = I_PP_Product_BOM.COLUMNNAME_M_Product_ID)
+	public void onProductChanged(final I_PP_Product_BOM bom)
 	{
-		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(bom.getPP_Product_BOMVersions_ID());
-
-		final I_PP_Product_BOMVersions bomVersions = bomVersionsDAO.getBOMVersions(bomVersionsId);
-
-		final ProductId productId = ProductId.ofRepoId(bomVersions.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(bom.getM_Product_ID());
+		if (productId == null)
+		{
+			return;
+		}
 
 		final I_M_Product product = productsService.getById(productId);
 
-		bom.setM_Product_ID(product.getM_Product_ID());
 		bom.setValue(product.getValue());
 		bom.setName(product.getName());
 		bom.setDescription(product.getDescription());

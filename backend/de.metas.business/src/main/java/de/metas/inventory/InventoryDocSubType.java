@@ -1,7 +1,6 @@
 package de.metas.inventory;
 
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocBaseType;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
@@ -54,9 +53,9 @@ public enum InventoryDocSubType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
-	public DocBaseType getDocBaseType()
+	public String getDocBaseType()
 	{
-		return DocBaseType.MaterialPhysicalInventory;
+		return X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory;
 	}
 
 	public String toDocSubTypeString()

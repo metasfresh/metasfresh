@@ -1,21 +1,26 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for I_ElementValue
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_I_ElementValue 
 {
 
-	String Table_Name = "I_ElementValue";
+    /** TableName=I_ElementValue */
+    public static final String Table_Name = "I_ElementValue";
 
-//	/** AD_Table_ID=534 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=534 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 6 - System - Client
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
+
+    /** Load Meta Data */
 
 	/**
 	 * Set Kontovorzeichen.
@@ -25,7 +30,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAccountSign (@Nullable java.lang.String AccountSign);
+	public void setAccountSign (java.lang.String AccountSign);
 
 	/**
 	 * Get Kontovorzeichen.
@@ -35,10 +40,12 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAccountSign();
+	public java.lang.String getAccountSign();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_AccountSign = new ModelColumn<>(I_I_ElementValue.class, "AccountSign", null);
-	String COLUMNNAME_AccountSign = "AccountSign";
+    /** Column definition for AccountSign */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_AccountSign = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "AccountSign", null);
+    /** Column name AccountSign */
+    public static final String COLUMNNAME_AccountSign = "AccountSign";
 
 	/**
 	 * Set Kontenart.
@@ -48,7 +55,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAccountType (@Nullable java.lang.String AccountType);
+	public void setAccountType (java.lang.String AccountType);
 
 	/**
 	 * Get Kontenart.
@@ -58,141 +65,87 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAccountType();
+	public java.lang.String getAccountType();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_AccountType = new ModelColumn<>(I_I_ElementValue.class, "AccountType", null);
-	String COLUMNNAME_AccountType = "AccountType";
+    /** Column definition for AccountType */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_AccountType = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "AccountType", null);
+    /** Column name AccountType */
+    public static final String COLUMNNAME_AccountType = "AccountType";
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_Client>(I_I_ElementValue.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Link Column.
-	 * Link Column for Multi-Parent tables
+	 * Set Spalte.
+	 * Column in the table
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Column_ID (int AD_Column_ID);
+	public void setAD_Column_ID (int AD_Column_ID);
 
 	/**
-	 * Get Link Column.
-	 * Link Column for Multi-Parent tables
+	 * Get Spalte.
+	 * Column in the table
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Column_ID();
+	public int getAD_Column_ID();
 
-	@Nullable org.compiere.model.I_AD_Column getAD_Column();
+	public org.compiere.model.I_AD_Column getAD_Column();
 
-	void setAD_Column(@Nullable org.compiere.model.I_AD_Column AD_Column);
+	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column);
 
-	ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new ModelColumn<>(I_I_ElementValue.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
-	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
+    /** Column definition for AD_Column_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_Column>(I_I_ElementValue.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
+    /** Column name AD_Column_ID */
+    public static final String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
 	/**
-	 * Set Issues.
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Issue_ID (int AD_Issue_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Issues.
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Issue_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
 
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
-	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
-
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Data import.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DataImport_ID (int C_DataImport_ID);
-
-	/**
-	 * Get Data import.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DataImport_ID();
-
-	@Nullable org.compiere.model.I_C_DataImport getC_DataImport();
-
-	void setC_DataImport(@Nullable org.compiere.model.I_C_DataImport C_DataImport);
-
-	ModelColumn<I_I_ElementValue, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new ModelColumn<>(I_I_ElementValue.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
-	String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
-
-	/**
-	 * Set Data Import Run.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DataImport_Run_ID (int C_DataImport_Run_ID);
-
-	/**
-	 * Get Data Import Run.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DataImport_Run_ID();
-
-	@Nullable org.compiere.model.I_C_DataImport_Run getC_DataImport_Run();
-
-	void setC_DataImport_Run(@Nullable org.compiere.model.I_C_DataImport_Run C_DataImport_Run);
-
-	ModelColumn<I_I_ElementValue, org.compiere.model.I_C_DataImport_Run> COLUMN_C_DataImport_Run_ID = new ModelColumn<>(I_I_ElementValue.class, "C_DataImport_Run_ID", org.compiere.model.I_C_DataImport_Run.class);
-	String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_Org>(I_I_ElementValue.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Element.
@@ -202,7 +155,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Element_ID (int C_Element_ID);
+	public void setC_Element_ID (int C_Element_ID);
 
 	/**
 	 * Get Element.
@@ -212,9 +165,16 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Element_ID();
+	public int getC_Element_ID();
 
-	String COLUMNNAME_C_Element_ID = "C_Element_ID";
+	public org.compiere.model.I_C_Element getC_Element();
+
+	public void setC_Element(org.compiere.model.I_C_Element C_Element);
+
+    /** Column definition for C_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_C_Element> COLUMN_C_Element_ID = new org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_C_Element>(I_I_ElementValue.class, "C_Element_ID", org.compiere.model.I_C_Element.class);
+    /** Column name C_Element_ID */
+    public static final String COLUMNNAME_C_Element_ID = "C_Element_ID";
 
 	/**
 	 * Set Kontenart.
@@ -224,7 +184,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_ElementValue_ID (int C_ElementValue_ID);
+	public void setC_ElementValue_ID (int C_ElementValue_ID);
 
 	/**
 	 * Get Kontenart.
@@ -234,83 +194,94 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_ElementValue_ID();
+	public int getC_ElementValue_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getC_ElementValue();
+	public org.compiere.model.I_C_ElementValue getC_ElementValue();
 
-	void setC_ElementValue(@Nullable org.compiere.model.I_C_ElementValue C_ElementValue);
+	public void setC_ElementValue(org.compiere.model.I_C_ElementValue C_ElementValue);
 
-	ModelColumn<I_I_ElementValue, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_ID = new ModelColumn<>(I_I_ElementValue.class, "C_ElementValue_ID", org.compiere.model.I_C_ElementValue.class);
-	String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
+    /** Column definition for C_ElementValue_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_ID = new org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_C_ElementValue>(I_I_ElementValue.class, "C_ElementValue_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name C_ElementValue_ID */
+    public static final String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_Created = new ModelColumn<>(I_I_ElementValue.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_User>(I_I_ElementValue.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Default Account.
+	 * Set Standard-Konto.
 	 * Name of the Default Account Column
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDefault_Account (@Nullable java.lang.String Default_Account);
+	public void setDefault_Account (java.lang.String Default_Account);
 
 	/**
-	 * Get Default Account.
+	 * Get Standard-Konto.
 	 * Name of the Default Account Column
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDefault_Account();
+	public java.lang.String getDefault_Account();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_Default_Account = new ModelColumn<>(I_I_ElementValue.class, "Default_Account", null);
-	String COLUMNNAME_Default_Account = "Default_Account";
+    /** Column definition for Default_Account */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_Default_Account = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "Default_Account", null);
+    /** Column name Default_Account */
+    public static final String COLUMNNAME_Default_Account = "Default_Account";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_Description = new ModelColumn<>(I_I_ElementValue.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Element Name.
@@ -320,7 +291,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setElementName (@Nullable java.lang.String ElementName);
+	public void setElementName (java.lang.String ElementName);
 
 	/**
 	 * Get Element Name.
@@ -330,10 +301,12 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getElementName();
+	public java.lang.String getElementName();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_ElementName = new ModelColumn<>(I_I_ElementValue.class, "ElementName", null);
-	String COLUMNNAME_ElementName = "ElementName";
+    /** Column definition for ElementName */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_ElementName = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "ElementName", null);
+    /** Column name ElementName */
+    public static final String COLUMNNAME_ElementName = "ElementName";
 
 	/**
 	 * Set Import - Kontendefinition.
@@ -343,7 +316,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setI_ElementValue_ID (int I_ElementValue_ID);
+	public void setI_ElementValue_ID (int I_ElementValue_ID);
 
 	/**
 	 * Get Import - Kontendefinition.
@@ -353,121 +326,87 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getI_ElementValue_ID();
+	public int getI_ElementValue_ID();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_I_ElementValue_ID = new ModelColumn<>(I_I_ElementValue.class, "I_ElementValue_ID", null);
-	String COLUMNNAME_I_ElementValue_ID = "I_ElementValue_ID";
+    /** Column definition for I_ElementValue_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_I_ElementValue_ID = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "I_ElementValue_ID", null);
+    /** Column name I_ElementValue_ID */
+    public static final String COLUMNNAME_I_ElementValue_ID = "I_ElementValue_ID";
 
 	/**
-	 * Set Import Error Message.
+	 * Set Import-Fehlermeldung.
 	 * Messages generated from import process
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setI_ErrorMsg (@Nullable java.lang.String I_ErrorMsg);
+	public void setI_ErrorMsg (java.lang.String I_ErrorMsg);
 
 	/**
-	 * Get Import Error Message.
+	 * Get Import-Fehlermeldung.
 	 * Messages generated from import process
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getI_ErrorMsg();
+	public java.lang.String getI_ErrorMsg();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_I_ErrorMsg = new ModelColumn<>(I_I_ElementValue.class, "I_ErrorMsg", null);
-	String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
+    /** Column definition for I_ErrorMsg */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_I_ErrorMsg = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "I_ErrorMsg", null);
+    /** Column name I_ErrorMsg */
+    public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 
 	/**
-	 * Set Imported.
+	 * Set Importiert.
 	 * Has this import been processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setI_IsImported (boolean I_IsImported);
+	public void setI_IsImported (boolean I_IsImported);
 
 	/**
-	 * Get Imported.
+	 * Get Importiert.
 	 * Has this import been processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isI_IsImported();
+	public boolean isI_IsImported();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_I_IsImported = new ModelColumn<>(I_I_ElementValue.class, "I_IsImported", null);
-	String COLUMNNAME_I_IsImported = "I_IsImported";
-
-	/**
-	 * Set Import Line Content.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setI_LineContent (@Nullable java.lang.String I_LineContent);
+    /** Column definition for I_IsImported */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "I_IsImported", null);
+    /** Column name I_IsImported */
+    public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 
 	/**
-	 * Get Import Line Content.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getI_LineContent();
-
-	ModelColumn<I_I_ElementValue, Object> COLUMN_I_LineContent = new ModelColumn<>(I_I_ElementValue.class, "I_LineContent", null);
-	String COLUMNNAME_I_LineContent = "I_LineContent";
-
-	/**
-	 * Set Import Line No.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setI_LineNo (int I_LineNo);
-
-	/**
-	 * Get Import Line No.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getI_LineNo();
-
-	ModelColumn<I_I_ElementValue, Object> COLUMN_I_LineNo = new ModelColumn<>(I_I_ElementValue.class, "I_LineNo", null);
-	String COLUMNNAME_I_LineNo = "I_LineNo";
-
-	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_IsActive = new ModelColumn<>(I_I_ElementValue.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Belegartgesteuert.
@@ -477,7 +416,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsDocControlled (boolean IsDocControlled);
+	public void setIsDocControlled (boolean IsDocControlled);
 
 	/**
 	 * Get Belegartgesteuert.
@@ -487,54 +426,62 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isDocControlled();
+	public boolean isDocControlled();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_IsDocControlled = new ModelColumn<>(I_I_ElementValue.class, "IsDocControlled", null);
-	String COLUMNNAME_IsDocControlled = "IsDocControlled";
+    /** Column definition for IsDocControlled */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_IsDocControlled = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "IsDocControlled", null);
+    /** Column name IsDocControlled */
+    public static final String COLUMNNAME_IsDocControlled = "IsDocControlled";
 
 	/**
-	 * Set Summary Level.
+	 * Set Zusammenfassungseintrag.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsSummary (boolean IsSummary);
+	public void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Summary Level.
+	 * Get Zusammenfassungseintrag.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isSummary();
+	public boolean isSummary();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_IsSummary = new ModelColumn<>(I_I_ElementValue.class, "IsSummary", null);
-	String COLUMNNAME_IsSummary = "IsSummary";
+    /** Column definition for IsSummary */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_IsSummary = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "IsSummary", null);
+    /** Column name IsSummary */
+    public static final String COLUMNNAME_IsSummary = "IsSummary";
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setName (@Nullable java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_Name = new ModelColumn<>(I_I_ElementValue.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Übergeordnetes Konto.
@@ -544,7 +491,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setParentElementValue_ID (int ParentElementValue_ID);
+	public void setParentElementValue_ID (int ParentElementValue_ID);
 
 	/**
 	 * Get Übergeordnetes Konto.
@@ -554,14 +501,16 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getParentElementValue_ID();
+	public int getParentElementValue_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getParentElementValue();
+	public org.compiere.model.I_C_ElementValue getParentElementValue();
 
-	void setParentElementValue(@Nullable org.compiere.model.I_C_ElementValue ParentElementValue);
+	public void setParentElementValue(org.compiere.model.I_C_ElementValue ParentElementValue);
 
-	ModelColumn<I_I_ElementValue, org.compiere.model.I_C_ElementValue> COLUMN_ParentElementValue_ID = new ModelColumn<>(I_I_ElementValue.class, "ParentElementValue_ID", org.compiere.model.I_C_ElementValue.class);
-	String COLUMNNAME_ParentElementValue_ID = "ParentElementValue_ID";
+    /** Column definition for ParentElementValue_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_C_ElementValue> COLUMN_ParentElementValue_ID = new org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_C_ElementValue>(I_I_ElementValue.class, "ParentElementValue_ID", org.compiere.model.I_C_ElementValue.class);
+    /** Column name ParentElementValue_ID */
+    public static final String COLUMNNAME_ParentElementValue_ID = "ParentElementValue_ID";
 
 	/**
 	 * Set Schlüssel Übergeordnetes Konto .
@@ -571,7 +520,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setParentValue (@Nullable java.lang.String ParentValue);
+	public void setParentValue (java.lang.String ParentValue);
 
 	/**
 	 * Get Schlüssel Übergeordnetes Konto .
@@ -581,10 +530,12 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getParentValue();
+	public java.lang.String getParentValue();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_ParentValue = new ModelColumn<>(I_I_ElementValue.class, "ParentValue", null);
-	String COLUMNNAME_ParentValue = "ParentValue";
+    /** Column definition for ParentValue */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_ParentValue = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "ParentValue", null);
+    /** Column name ParentValue */
+    public static final String COLUMNNAME_ParentValue = "ParentValue";
 
 	/**
 	 * Set Buchen "Ist".
@@ -594,7 +545,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPostActual (boolean PostActual);
+	public void setPostActual (boolean PostActual);
 
 	/**
 	 * Get Buchen "Ist".
@@ -604,10 +555,12 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isPostActual();
+	public boolean isPostActual();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_PostActual = new ModelColumn<>(I_I_ElementValue.class, "PostActual", null);
-	String COLUMNNAME_PostActual = "PostActual";
+    /** Column definition for PostActual */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_PostActual = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "PostActual", null);
+    /** Column name PostActual */
+    public static final String COLUMNNAME_PostActual = "PostActual";
 
 	/**
 	 * Set Buchen "Budget".
@@ -617,7 +570,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPostBudget (boolean PostBudget);
+	public void setPostBudget (boolean PostBudget);
 
 	/**
 	 * Get Buchen "Budget".
@@ -627,10 +580,12 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isPostBudget();
+	public boolean isPostBudget();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_PostBudget = new ModelColumn<>(I_I_ElementValue.class, "PostBudget", null);
-	String COLUMNNAME_PostBudget = "PostBudget";
+    /** Column definition for PostBudget */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_PostBudget = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "PostBudget", null);
+    /** Column name PostBudget */
+    public static final String COLUMNNAME_PostBudget = "PostBudget";
 
 	/**
 	 * Set Buchen "Reservierung".
@@ -640,7 +595,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPostEncumbrance (boolean PostEncumbrance);
+	public void setPostEncumbrance (boolean PostEncumbrance);
 
 	/**
 	 * Get Buchen "Reservierung".
@@ -650,10 +605,12 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isPostEncumbrance();
+	public boolean isPostEncumbrance();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_PostEncumbrance = new ModelColumn<>(I_I_ElementValue.class, "PostEncumbrance", null);
-	String COLUMNNAME_PostEncumbrance = "PostEncumbrance";
+    /** Column definition for PostEncumbrance */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_PostEncumbrance = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "PostEncumbrance", null);
+    /** Column name PostEncumbrance */
+    public static final String COLUMNNAME_PostEncumbrance = "PostEncumbrance";
 
 	/**
 	 * Set Buchen "statistisch".
@@ -663,7 +620,7 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPostStatistical (boolean PostStatistical);
+	public void setPostStatistical (boolean PostStatistical);
 
 	/**
 	 * Get Buchen "statistisch".
@@ -673,98 +630,113 @@ public interface I_I_ElementValue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isPostStatistical();
+	public boolean isPostStatistical();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_PostStatistical = new ModelColumn<>(I_I_ElementValue.class, "PostStatistical", null);
-	String COLUMNNAME_PostStatistical = "PostStatistical";
+    /** Column definition for PostStatistical */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_PostStatistical = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "PostStatistical", null);
+    /** Column name PostStatistical */
+    public static final String COLUMNNAME_PostStatistical = "PostStatistical";
 
 	/**
-	 * Set Processed.
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProcessed (boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessed();
+	public boolean isProcessed();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_Processed = new ModelColumn<>(I_I_ElementValue.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Process Now.
+	 * Set Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProcessing (boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Process Now.
+	 * Get Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessing();
+	public boolean isProcessing();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_Processing = new ModelColumn<>(I_I_ElementValue.class, "Processing", null);
-	String COLUMNNAME_Processing = "Processing";
+    /** Column definition for Processing */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "Processing", null);
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_Updated = new ModelColumn<>(I_I_ElementValue.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_ElementValue, org.compiere.model.I_AD_User>(I_I_ElementValue.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Search Key.
+	 * Set Suchschlüssel.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setValue (@Nullable java.lang.String Value);
+	public void setValue (java.lang.String Value);
 
 	/**
-	 * Get Search Key.
+	 * Get Suchschlüssel.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getValue();
+	public java.lang.String getValue();
 
-	ModelColumn<I_I_ElementValue, Object> COLUMN_Value = new ModelColumn<>(I_I_ElementValue.class, "Value", null);
-	String COLUMNNAME_Value = "Value";
+    /** Column definition for Value */
+    public static final org.adempiere.model.ModelColumn<I_I_ElementValue, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_I_ElementValue, Object>(I_I_ElementValue.class, "Value", null);
+    /** Column name Value */
+    public static final String COLUMNNAME_Value = "Value";
 }

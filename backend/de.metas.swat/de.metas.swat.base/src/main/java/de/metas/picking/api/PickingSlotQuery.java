@@ -1,6 +1,5 @@
 package de.metas.picking.api;
 
-import de.metas.picking.qrcode.PickingSlotQRCode;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
@@ -56,5 +55,5 @@ public class PickingSlotQuery
 
 	WarehouseId warehouseId;
 
-	PickingSlotQRCode qrCode;
+	String barcode;
 }

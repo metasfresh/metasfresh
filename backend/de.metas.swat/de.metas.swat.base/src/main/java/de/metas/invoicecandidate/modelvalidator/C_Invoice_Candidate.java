@@ -36,6 +36,27 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_OrderLine;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
@@ -51,14 +72,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 public class C_Invoice_Candidate
 {
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
-
-	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-
 	private final AttachmentEntryService attachmentEntryService;
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IDocumentLocationBL documentLocationBL;
 
 	public C_Invoice_Candidate(
@@ -224,14 +241,14 @@ public class C_Invoice_Candidate
 	/**
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
 	 * <p>
-	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29">task</a>
+	 * Task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		if (adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name) == ic.getAD_Table_ID())
+		if (adTableDAO.retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name) == ic.getAD_Table_ID())
 		{
 			final I_M_InOutLine iol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic), ic.getRecord_ID(), I_M_InOutLine.class, InterfaceWrapperHelper.getTrxName(ic));
 			ic.setC_Order_ID(iol.getM_InOut().getC_Order_ID());
@@ -240,7 +257,7 @@ public class C_Invoice_Candidate
 		{
 			final I_C_OrderLine ol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic), ic.getRecord_ID(), I_C_OrderLine.class, InterfaceWrapperHelper.getTrxName(ic));
 			ic.setC_Order_ID(ol.getC_Order_ID());
-			ic.setC_OrderSO_ID(ol.getC_OrderSO_ID());
+
 		}
 	}
 
@@ -257,7 +274,7 @@ public class C_Invoice_Candidate
 	public void updateCapturedLocationsAndRenderedAddresses(final I_C_Invoice_Candidate ic)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ic))
-		{ // at this point the fix/update of Bill_Location_Value_ID is coming too late for the IC's header aggregation key!
+		{
 			InvoiceCandidateLocationsUpdater.builder()
 					.documentLocationBL(documentLocationBL)
 					.record(ic)
@@ -355,7 +372,7 @@ public class C_Invoice_Candidate
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
 	 * <p>
-	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29">task</a>
+	 * Task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
@@ -417,7 +434,6 @@ public class C_Invoice_Candidate
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
-
 		if (ic.isProcessed()
 				|| invoiceCandBL.extractProcessedOverride(ic).isTrue()
 				|| isBackgroundProcessInProcess)
@@ -425,15 +441,9 @@ public class C_Invoice_Candidate
 			return; // nothing to do
 		}
 
-		if (InterfaceWrapperHelper.isNew(ic) || ic.getC_Invoice_Candidate_ID() <= 0)
-		{
-			aggregationBL.setHeaderAggregationKey(ic);
-			return;
-		}
-
-		invoiceCandDAO.invalidateCand(ic);
+		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+		aggregationBL.setHeaderAggregationKey(ic);
 	}
-
 
 	/**
 	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.

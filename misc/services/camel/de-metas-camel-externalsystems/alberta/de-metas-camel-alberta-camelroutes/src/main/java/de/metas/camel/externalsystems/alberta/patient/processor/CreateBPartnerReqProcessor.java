@@ -22,14 +22,14 @@
 
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.patient.BPartnerUpsertRequestProducer;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.common.externalreference.v1.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DoctorApi;
@@ -125,7 +125,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Doctor doctor = doctorApi.getDoctor(albertaConnectionDetails.getApiKey(), doctorId);
+		final Doctor doctor = doctorApi.getDoctor(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), doctorId);
 
 		if (doctor == null)
 		{
@@ -145,7 +145,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final NursingHome nursingHome = nursingHomeApi.geNursingHome(albertaConnectionDetails.getApiKey(), nursingHomeId);
+		final NursingHome nursingHome = nursingHomeApi.geNursingHome(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), nursingHomeId);
 
 		if (nursingHome == null)
 		{
@@ -165,7 +165,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final NursingService nursingService = nursingServiceApi.getNursingService(albertaConnectionDetails.getApiKey(), nursingServiceId);
+		final NursingService nursingService = nursingServiceApi.getNursingService(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), nursingServiceId);
 
 		if (nursingService == null)
 		{
@@ -185,7 +185,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Hospital hospital = hospitalApi.getHospital(albertaConnectionDetails.getApiKey(), patientHospital.getHospitalId());
+		final Hospital hospital = hospitalApi.getHospital(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), patientHospital.getHospitalId());
 
 		if (hospital == null)
 		{
@@ -205,7 +205,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Payer payer = payerApi.getPayer(albertaConnectionDetails.getApiKey(), patientPayer.getPayerId());
+		final Payer payer = payerApi.getPayer(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), patientPayer.getPayerId());
 
 		if (payer == null)
 		{
@@ -225,7 +225,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Pharmacy pharmacy = pharmacyApi.getPharmacy(albertaConnectionDetails.getApiKey(), pharmacyId);
+		final Pharmacy pharmacy = pharmacyApi.getPharmacy(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), pharmacyId);
 
 		if (pharmacy == null)
 		{
@@ -245,7 +245,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Users user = userApi.getUser(albertaConnectionDetails.getApiKey(), userId);
+		final Users user = userApi.getUser(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), userId);
 
 		if (user == null)
 		{

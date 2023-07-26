@@ -1,19 +1,17 @@
 package de.metas.ui.web.window.descriptor;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimap;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Multimap;
 
 /*
  * #%L
@@ -41,10 +39,11 @@ import java.util.Set;
  * Immutable document field's dependencies map.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public final class DocumentFieldDependencyMap
 {
-	public static Builder builder()
+	public static final Builder builder()
 	{
 		return new Builder();
 	}
@@ -53,32 +52,20 @@ public final class DocumentFieldDependencyMap
 
 	public enum DependencyType
 	{
-		/**
-		 * Entity readonly
-		 */
+		/** Entity readonly */
 		DocumentReadonlyLogic,
 
-		/**
-		 * Field's Readonly logic
-		 */
+		/** Field's Readonly logic */
 		ReadonlyLogic,
-		/**
-		 * Field's Display logic
-		 */
+		/** Field's Display logic */
 		DisplayLogic,
-		/**
-		 * Field's Mandatory logic
-		 */
+		/** Field's Mandatory logic */
 		MandatoryLogic,
-		/**
-		 * Field's lookup values
-		 */
+		/** Field's lookup values */
 		LookupValues,
-		/**
-		 * Field's value
-		 */
+		/** Field's value */
 		FieldValue,
-	}
+	};
 
 	public static final EnumSet<DependencyType> DEPENDENCYTYPES_DocumentLevel = EnumSet.of(DependencyType.DocumentReadonlyLogic);
 	public static final EnumSet<DependencyType> DEPENDENCYTYPES_FieldLevel = EnumSet.complementOf(DEPENDENCYTYPES_DocumentLevel);
@@ -87,26 +74,24 @@ public final class DocumentFieldDependencyMap
 	public static final Set<String> DOCUMENT_ALL_FIELDS = ImmutableSet.of(DOCUMENT_Readonly);
 
 	@FunctionalInterface
-	public interface IDependencyConsumer
+	public static interface IDependencyConsumer
 	{
 		void consume(String dependentFieldName, DependencyType dependencyType);
 	}
 
-	/**
-	 * Map: "dependency type" to "depends on field name" to list of "dependent field name"
-	 */
+	/** Map: "dependency type" to "depends on field name" to list of "dependent field name" */
 	private final ImmutableMap<DependencyType, Multimap<String, String>> type2name2dependencies;
 
 	private DocumentFieldDependencyMap(final Builder builder)
 	{
+		super();
 		type2name2dependencies = builder.getType2Name2DependenciesMap();
 	}
 
-	/**
-	 * Empty constructor
-	 */
+	/** Empty constructor */
 	private DocumentFieldDependencyMap()
 	{
+		super();
 		type2name2dependencies = ImmutableMap.of();
 	}
 
@@ -200,18 +185,19 @@ public final class DocumentFieldDependencyMap
 			return builder.build();
 		}
 
-		public Builder add(
-				@NonNull final String fieldName,
-				@Nullable final Collection<String> dependsOnFieldNames,
-				@NonNull final DependencyType dependencyType)
+		public Builder add(final String fieldName, final Collection<String> dependsOnFieldNames, final DependencyType dependencyType)
 		{
 			if (dependsOnFieldNames == null || dependsOnFieldNames.isEmpty())
 			{
 				return this;
 			}
 
-			final ImmutableSetMultimap.Builder<String, String> fieldName2dependsOnFieldNames
-					= type2name2dependencies.computeIfAbsent(dependencyType, k -> ImmutableSetMultimap.builder());
+			ImmutableSetMultimap.Builder<String, String> fieldName2dependsOnFieldNames = type2name2dependencies.get(dependencyType);
+			if (fieldName2dependsOnFieldNames == null)
+			{
+				fieldName2dependsOnFieldNames = ImmutableSetMultimap.builder();
+				type2name2dependencies.put(dependencyType, fieldName2dependsOnFieldNames);
+			}
 
 			for (final String dependsOnFieldName : dependsOnFieldNames)
 			{
@@ -221,7 +207,7 @@ public final class DocumentFieldDependencyMap
 			return this;
 		}
 
-		public Builder add(@Nullable final DocumentFieldDependencyMap dependencies)
+		public Builder add(final DocumentFieldDependencyMap dependencies)
 		{
 			if (dependencies == null || dependencies == EMPTY)
 			{
@@ -232,8 +218,12 @@ public final class DocumentFieldDependencyMap
 			{
 				final DependencyType dependencyType = l1.getKey();
 
-				final ImmutableSetMultimap.Builder<String, String> name2dependencies
-						= type2name2dependencies.computeIfAbsent(dependencyType, k -> ImmutableSetMultimap.builder());
+				ImmutableSetMultimap.Builder<String, String> name2dependencies = type2name2dependencies.get(dependencyType);
+				if (name2dependencies == null)
+				{
+					name2dependencies = ImmutableSetMultimap.builder();
+					type2name2dependencies.put(dependencyType, name2dependencies);
+				}
 
 				name2dependencies.putAll(l1.getValue());
 			}

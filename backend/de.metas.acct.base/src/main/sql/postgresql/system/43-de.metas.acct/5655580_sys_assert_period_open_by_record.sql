@@ -16,7 +16,7 @@ DECLARE
     v_AD_Client_ID numeric;
     v_AD_Org_ID    numeric;
 BEGIN
-    RAISE DEBUG 'Checking document %/% if period is open', p_TableName, p_Record_ID;
+    RAISE NOTICE 'Checking document %/% if period is open', p_TableName, p_Record_ID;
 
     IF (p_TableName = 'C_Order') THEN
         SELECT o.dateacct, dt.docbasetype, o.ad_client_id, o.ad_org_id
@@ -37,10 +37,10 @@ BEGIN
                  INNER JOIN c_doctype dt ON dt.c_doctype_id = p.c_doctype_id
         WHERE p.c_payment_id = p_Record_ID;
     ELSIF (p_TableName = 'C_AllocationHdr') THEN
-        SELECT ah.dateacct, 'CMA' AS docbasetype, ah.ad_client_id, ah.ad_org_id
+        SELECT ah.dateacct, 'CMA', ah.ad_client_id, ah.ad_org_id
         INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
-        FROM C_AllocationHdr ah
-        WHERE ah.C_AllocationHdr_ID = p_Record_ID;
+        FROM c_allocationhdr ah
+        WHERE ah.c_allocationhdr_id = p_Record_ID;
     ELSIF (p_TableName = 'C_BankStatement') THEN
         SELECT bs.statementdate, 'CMB', bs.ad_client_id, bs.ad_org_id
         INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
@@ -86,12 +86,6 @@ BEGIN
         FROM pp_cost_collector cc
                  INNER JOIN c_doctype dt ON dt.c_doctype_id = cc.c_doctype_id
         WHERE cc.pp_cost_collector_id = p_Record_ID;
-    ELSIF (p_TableName = 'M_CostRevaluation') THEN
-        SELECT cr.dateacct, dt.docbasetype, cr.ad_client_id, cr.ad_org_id
-        INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
-        FROM m_costrevaluation cr
-                 INNER JOIN c_doctype dt ON dt.c_doctype_id = cr.c_doctype_id
-        WHERE cr.m_costrevaluation_id = p_Record_ID;
     ELSE
         RAISE EXCEPTION 'Document %/% is not handled when checking if the period is open', p_TableName, p_Record_ID;
     END IF;

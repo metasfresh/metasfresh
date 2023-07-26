@@ -12,11 +12,10 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
-import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -27,7 +26,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.isEmpty;
 
@@ -79,20 +78,13 @@ public interface IWarehouseDAO extends ISingletonService
 
 	WarehouseId getWarehouseIdByValue(String value);
 
-	@Nullable
-	WarehouseId getWarehouseIdByLocatorRepoId(int locatorId);
-
 	@Deprecated
-	@Nullable
-	I_M_Warehouse getWarehouseByLocatorRepoId(int locatorId);
+	WarehouseId getWarehouseIdByLocatorRepoId(int locatorId);
 
 	@Deprecated
 	Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(Set<Integer> locatorRepoIds);
 
-	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
-
-	List<I_M_Locator> getLocatorByIds(Collection<LocatorId> locatorIds);
-
+	@Deprecated
 	I_M_Locator getLocatorByRepoId(final int locatorId);
 
 	@Nullable
@@ -112,8 +104,6 @@ public interface IWarehouseDAO extends ISingletonService
 
 	List<LocatorId> getLocatorIds(WarehouseId warehouseId);
 
-	ImmutableSet<LocatorId> getLocatorIdsByWarehouseIds(@NonNull Collection<WarehouseId> warehouseIds);
-
 	/**
 	 * Retrieve warehouses for a specific docBaseType
 	 */
@@ -128,8 +118,6 @@ public interface IWarehouseDAO extends ISingletonService
 
 	Optional<WarehouseId> getInTransitWarehouseIdIfExists(OrgId adOrgId);
 
-	Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull OrgId orgId);
-
 	List<I_M_Warehouse> getAllWarehouses();
 
 	Set<WarehouseId> getAllWarehouseIds();
@@ -137,8 +125,6 @@ public interface IWarehouseDAO extends ISingletonService
 	Set<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);
 
 	WarehousePickingGroup getWarehousePickingGroupById(WarehousePickingGroupId warehousePickingGroupId);
-
-	ImmutableSet<WarehouseId> getWarehouseIdsOfSameGroup(@NonNull WarehouseId warehouseId, @NonNull WarehouseGroupAssignmentType assignmentType);
 
 	int retrieveLocatorIdByBarcode(String barcode);
 
@@ -163,6 +149,11 @@ public interface IWarehouseDAO extends ISingletonService
 	 * Same as {@link #retrieveWarehouseForIssuesOrNull(Properties)} but it will fail if no warehouse found.
 	 */
 	I_M_Warehouse retrieveWarehouseForIssues(Properties ctx);
+
+	/**
+	 * Retrieve the warehouse marked as IsQuarantineWarehouse.
+	 */
+	org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull();
 
 	BPartnerLocationAndCaptureId getWarehouseLocationById(WarehouseId warehouseId);
 
@@ -201,12 +192,10 @@ public interface IWarehouseDAO extends ISingletonService
 			this.value = value;
 			this.externalId = externalId;
 			this.orgId = orgId;
-			this.includeAnyOrg = coalesceNotNull(includeAnyOrg, false);
-			this.outOfTrx = coalesceNotNull(outOfTrx, false);
+			this.includeAnyOrg = coalesce(includeAnyOrg, false);
+			this.outOfTrx = coalesce(outOfTrx, false);
 		}
 	}
-
-	WarehouseId retrieveQuarantineWarehouseId();
 
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
 

@@ -1,19 +1,22 @@
 package de.metas.ui.web.handlingunits.process;
 
+import java.math.BigDecimal;
+
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -45,7 +48,8 @@ import java.math.BigDecimal;
 public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_ReceiptSchedule_ReceiveHUs_Base
 {
 	// services
-	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)

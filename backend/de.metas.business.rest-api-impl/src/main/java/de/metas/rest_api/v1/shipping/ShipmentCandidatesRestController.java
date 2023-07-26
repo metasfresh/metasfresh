@@ -26,7 +26,7 @@ import de.metas.Profiles;
 import de.metas.common.shipping.v1.JsonRequestCandidateResults;
 import de.metas.common.shipping.v1.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.MDC;
@@ -41,10 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
-/**
- * @deprecated please consider migrating to version 2 of this API.
- */
-@Deprecated
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/shipments",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/shipments" })
@@ -61,7 +57,7 @@ public class ShipmentCandidatesRestController
 
 	@GetMapping("shipmentCandidates")
 	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
-			@Parameter(description = "Max number orders per request for which shipmentSchedules shall be returned.\n"
+			@ApiParam("Max number orders per request for which shipmentSchedules shall be returned.\n"
 					+ "ShipmentSchedules without an order count as one.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "10") //
 			@Nullable final Integer limit)

@@ -165,7 +165,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			@Nullable final ActivityId activityId,
 			@Nullable final String description)
 	{
-		warehouseLocatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
+		warehouseLocatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 		this.inventoryDocTypeId = inventoryDocTypeId;
 		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 
@@ -247,7 +247,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 				//
 				// Calculate and update inventory line's QtyTU
 				{
-					final BigDecimal countTUs = countTUs(request.getHuContext(), tuHU, inventoryLine);
+					final BigDecimal countTUs = countTUs(request.getHUContext(), tuHU, inventoryLine);
 					final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
 					inventoryLine.setQtyTU(qtyTU);
 				}
@@ -255,10 +255,10 @@ class InventoryAllocationDestination implements IAllocationDestination
 				//
 				// Collect HU's packing materials
 				{
-					collectPackingMaterials(request.getHuContext(), inventoryLine.getM_Inventory_ID(), tuHU);
+					collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), tuHU);
 					if (!HuId.equals(topLevelHUId, HuId.ofRepoId(hu.getM_HU_ID())))
 					{
-						collectPackingMaterials_LUOnly(request.getHuContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
+						collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
 					}
 				}
 			}

@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 <a name="addPatient"></a>
 # **addPatient**
-> ArrayOfMappings addPatient(body, albertaApiKey)
+> ArrayOfMappings addPatient(body, albertaApiKey, tenant)
 
 Patient hinzufügen
 
@@ -26,8 +26,9 @@ Szenario - ein Patient wurde im WaWi angelegt und soll in Alberta übertragen we
 PatientApi apiInstance = new PatientApi();
 Patient body = new Patient(); // Patient | Der Patient
 String albertaApiKey = "albertaApiKey_example"; // String | 
+String tenant = "tenant_example"; // String | 
 try {
-    ArrayOfMappings result = apiInstance.addPatient(body, albertaApiKey);
+    ArrayOfMappings result = apiInstance.addPatient(body, albertaApiKey, tenant);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling PatientApi#addPatient");
@@ -41,6 +42,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**Patient**](Patient.md)| Der Patient |
  **albertaApiKey** | **String**|  |
+ **tenant** | **String**|  |
 
 ### Return type
 
@@ -57,7 +59,7 @@ No authorization required
 
 <a name="getCreatedPatients"></a>
 # **getCreatedPatients**
-> ArrayOfPatients getCreatedPatients(albertaApiKey, status, updatedAfter)
+> ArrayOfPatients getCreatedPatients(albertaApiKey, tenant, status, updatedAfter)
 
 Patienten je nach Status abrufen
 
@@ -72,10 +74,11 @@ Szenario - das WaWi fragt in einem bestimmten Intervall bei Alberta nach, ob es 
 
 PatientApi apiInstance = new PatientApi();
 String albertaApiKey = "albertaApiKey_example"; // String | 
+String tenant = "tenant_example"; // String | 
 String status = "status_example"; // String | created, updated oder archived -
 String updatedAfter = "updatedAfter_example"; // String | 2018-02-21T09:30:00.000Z (im UTC-Format)
 try {
-    ArrayOfPatients result = apiInstance.getCreatedPatients(albertaApiKey, status, updatedAfter);
+    ArrayOfPatients result = apiInstance.getCreatedPatients(albertaApiKey, tenant, status, updatedAfter);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling PatientApi#getCreatedPatients");
@@ -88,6 +91,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albertaApiKey** | **String**|  |
+ **tenant** | **String**|  |
  **status** | **String**| created, updated oder archived - |
  **updatedAfter** | **String**| 2018-02-21T09:30:00.000Z (im UTC-Format) |
 
@@ -106,7 +110,7 @@ No authorization required
 
 <a name="updatePatient"></a>
 # **updatePatient**
-> CustomerMapping updatePatient(body, albertaApiKey, id)
+> CustomerMapping updatePatient(body, albertaApiKey, tenant, id)
 
 Patient ändern
 
@@ -122,9 +126,10 @@ Szenario - ein Patient wurde im WaWi geändert und diese Änderungen sollen in A
 PatientApi apiInstance = new PatientApi();
 Patient body = new Patient(); // Patient | Der Patient
 String albertaApiKey = "albertaApiKey_example"; // String | 
+String tenant = "tenant_example"; // String | 
 String id = "id_example"; // String | die Id des zu ändernden Patienten
 try {
-    CustomerMapping result = apiInstance.updatePatient(body, albertaApiKey, id);
+    CustomerMapping result = apiInstance.updatePatient(body, albertaApiKey, tenant, id);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling PatientApi#updatePatient");
@@ -138,6 +143,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**Patient**](Patient.md)| Der Patient |
  **albertaApiKey** | **String**|  |
+ **tenant** | **String**|  |
  **id** | **String**| die Id des zu ändernden Patienten |
 
 ### Return type

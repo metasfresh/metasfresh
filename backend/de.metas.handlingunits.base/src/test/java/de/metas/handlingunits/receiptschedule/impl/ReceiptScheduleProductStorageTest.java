@@ -22,19 +22,18 @@ package de.metas.handlingunits.receiptschedule.impl;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.storage.impl.AbstractProductStorageTest;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.junit.Assume;
 
-import java.math.BigDecimal;
-
-import static org.assertj.core.api.Assumptions.assumeThat;
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.handlingunits.storage.impl.AbstractProductStorageTest;
 
 public class ReceiptScheduleProductStorageTest extends AbstractProductStorageTest
 {
@@ -51,12 +50,13 @@ public class ReceiptScheduleProductStorageTest extends AbstractProductStorageTes
 	}
 
 	@Override
-	protected ReceiptScheduleProductStorage createStorage(final String qtyStr, final boolean reversal, final boolean outboundTrx)
+	protected IProductStorage createStorage(final String qtyStr, final boolean reversal, final boolean outboundTrx)
 	{
-		assumeThat(!outboundTrx).as("We are not supporting outboundTrx for ReceiptSchedules").isTrue();
-		assumeThat(!reversal).as("We are not supporting not reversal transactions only").isTrue();
+		Assume.assumeTrue("We are not supporting outboundTrx for ReceiptSchedules", !outboundTrx);
+		Assume.assumeTrue("We are not supporting not reversal transactions only", !reversal);
 
-		final BigDecimal qty = new BigDecimal(qtyStr);
+		final BigDecimal qtyAbs = new BigDecimal(qtyStr);
+		final BigDecimal qty = qtyAbs;
 
 		final I_M_ReceiptSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, helper.contextProvider);
 		schedule.setM_Warehouse_ID(warehouseId.getRepoId());
@@ -70,11 +70,8 @@ public class ReceiptScheduleProductStorageTest extends AbstractProductStorageTes
 		// enabling string values because we want to make sure that only defined fields are used
 		POJOWrapper.getWrapper(schedule).setStrictValues(true);
 
-		return ReceiptScheduleProductStorage.builder()
-				.receiptScheduleBL(Services.get(IReceiptScheduleBL.class))
-				.receiptSchedule(schedule)
-				.enforceCapacity(true)
-				.build();
+		final boolean enforceCapacity = true;
+		return new ReceiptScheduleProductStorage(schedule, enforceCapacity);
 	}
 
 }

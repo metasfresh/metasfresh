@@ -54,7 +54,9 @@ public final class HUEditorViewBuilder
 	private ViewId viewId;
 	private JSONViewDataType viewType = JSONViewDataType.grid;
 
-	private ImmutableSet<DocumentPath> referencingDocumentPaths = ImmutableSet.of();
+	@Nullable
+	private String referencingTableName;
+	private Set<DocumentPath> referencingDocumentPaths;
 
 	private boolean considerTableRelatedProcessDescriptors = true;
 	private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
@@ -126,15 +128,22 @@ public final class HUEditorViewBuilder
 		return viewType;
 	}
 
-	public HUEditorViewBuilder setReferencingDocumentPaths(@Nullable final Set<DocumentPath> referencingDocumentPaths)
+	public HUEditorViewBuilder setReferencingDocumentPaths(@Nullable final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)
 	{
-		this.referencingDocumentPaths = referencingDocumentPaths != null ? ImmutableSet.copyOf(referencingDocumentPaths) : ImmutableSet.of();
+		this.referencingTableName = referencingTableName;
+		this.referencingDocumentPaths = referencingDocumentPaths;
 		return this;
 	}
 
-	ImmutableSet<DocumentPath> getReferencingDocumentPaths()
+	@Nullable
+	public String getReferencingTableName()
 	{
-		return referencingDocumentPaths;
+		return referencingTableName;
+	}
+
+	Set<DocumentPath> getReferencingDocumentPaths()
+	{
+		return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 	}
 
 	public HUEditorViewBuilder considerTableRelatedProcessDescriptors(final boolean considerTableRelatedProcessDescriptors)
@@ -161,7 +170,7 @@ public final class HUEditorViewBuilder
 
 	public HUEditorViewBuilder setAdditionalRelatedProcessDescriptors(@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
-		if (additionalRelatedProcessDescriptors.isEmpty())
+		if (additionalRelatedProcessDescriptors == null || additionalRelatedProcessDescriptors.isEmpty())
 		{
 			this.additionalRelatedProcessDescriptors = null;
 		}
@@ -292,7 +301,6 @@ public final class HUEditorViewBuilder
 		return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
 	}
 
-	@Nullable
 	public <T> T getParameter(@NonNull final String name)
 	{
 		if (parameters == null)

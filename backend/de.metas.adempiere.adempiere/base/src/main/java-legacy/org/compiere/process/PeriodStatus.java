@@ -16,18 +16,19 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import de.metas.cache.CacheMgt;
-import de.metas.calendar.standard.IPeriodBL;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.X_C_PeriodControl;
 
-import java.util.List;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
+import de.metas.cache.CacheMgt;
+import de.metas.calendar.IPeriodBL;
+import de.metas.process.JavaProcess;
 
 /**
  * Open/Close all Period (Control)

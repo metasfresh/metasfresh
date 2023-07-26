@@ -1,26 +1,22 @@
 package de.metas.letter.service.async.spi.impl;
 
+import java.util.Set;
+
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.RenderedAddressAndCapturedLocation;
-import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateRepository;
 import de.metas.letters.model.Letter;
 import de.metas.letters.model.LetterRepository;
+import de.metas.location.Location;
+import de.metas.location.LocationRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.user.UserId;
 import de.metas.util.Loggables;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
-
-import java.util.Set;
 
 /*
  * #%L
@@ -46,16 +42,14 @@ import java.util.Set;
 
 public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProcessorAdapter
 {
-
-
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		// Services
-		final ContactPersonRepository contactRepo = SpringContextHolder.instance.getBean(ContactPersonRepository.class);
-		final LetterRepository letterRepo = SpringContextHolder.instance.getBean(LetterRepository.class);
-		final BoilerPlateRepository boilerPlateRepo = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
-		final DocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(DocumentLocationBL.class);
+		final ContactPersonRepository contactRepo = Adempiere.getBean(ContactPersonRepository.class);
+		final LetterRepository letterRepo = Adempiere.getBean(LetterRepository.class);
+		final LocationRepository locationRepo = Adempiere.getBean(LocationRepository.class);
+		final BoilerPlateRepository boilerPlateRepo = Adempiere.getBean(BoilerPlateRepository.class);
 
 		final Set<Integer> campaignContactPersonsIDs = retrieveAllItemIds();
 
@@ -70,6 +64,8 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 				continue;
 			}
 			
+			final Location location = locationRepo.getByLocationId(contactPerson.getLocationId());
+
 			// create letter
 			String subject = "";
 			String body = "";
@@ -100,24 +96,12 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 				}
 			}
 
-			final BPartnerId bPartnerId = contactPerson.getBPartnerId();
-			final BPartnerLocationId bpLocationId = contactPerson.getBpLocationId();
-			final UserId userId = contactPerson.getUserId();
-
-			final RenderedAddressAndCapturedLocation renderedAddress = documentLocationBL.computeRenderedAddress(
-					DocumentLocation.builder()
-							.bpartnerId(bPartnerId)
-							.bpartnerLocationId(bpLocationId)
-							.locationId(contactPerson.getLocationId())
-							.contactId(BPartnerContactId.of(bPartnerId,userId))
-							.build());
-
 			final Letter letter = Letter.builder()
 					.boilerPlateId(contactPerson.getBoilerPlateId())
-					.bpartnerId(bPartnerId)
-					.bpartnerLocationId(bpLocationId)
-					.userId(userId)
-					.address(renderedAddress.getRenderedAddress())
+					.bpartnerId(contactPerson.getBPartnerId())
+					.bpartnerLocationId(contactPerson.getBpLocationId())
+					.userId(contactPerson.getUserId())
+					.address(location.getAddress())
 					.adLanguage(Env.getAD_Language())
 					.subject(subject)
 					.body(body)

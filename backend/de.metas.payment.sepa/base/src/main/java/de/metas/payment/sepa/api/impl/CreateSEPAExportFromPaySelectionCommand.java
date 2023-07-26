@@ -3,10 +3,10 @@ package de.metas.payment.sepa.api.impl;
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
-import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -57,8 +57,7 @@ class CreateSEPAExportFromPaySelectionCommand
 	private static final AdMessageKey ERR_C_BP_BankAccount_SEPA_CreditorIdentifierNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_SEPA_CreditorIdentifierNotSet");
 	private static final AdMessageKey ERR_C_Bank_SwiftCodeNotSet = AdMessageKey.of("de.metas.payment.sepa.C_Bank_SwiftCodeNotSet");
 
-
-	private final IPaySelectionDAO paySelectionRepo = Services.get(IPaySelectionDAO.class);
+	private final IPaymentDAO paymentsRepo = Services.get(IPaymentDAO.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
 
@@ -73,7 +72,7 @@ class CreateSEPAExportFromPaySelectionCommand
 	{
 		final I_SEPA_Export header = createExportHeader(source);
 
-		for (final I_C_PaySelectionLine line : paySelectionRepo.retrievePaySelectionLines(source))
+		for (final I_C_PaySelectionLine line : paymentsRepo.getProcessedLines(source))
 		{
 			if (line.getC_BP_BankAccount_ID() <= 0)
 			{
@@ -152,7 +151,10 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
+		final String iban = bpBankAccount.getIBAN();
+
 		header.setIBAN(selectIBANOrNull(bpBankAccount));
+
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());

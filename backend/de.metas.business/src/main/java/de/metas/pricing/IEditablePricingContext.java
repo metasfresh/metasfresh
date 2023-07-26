@@ -22,6 +22,9 @@ package de.metas.pricing;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -32,10 +35,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /**
  * A {@link IPricingContext} which also have setters.
@@ -56,7 +55,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setQty(BigDecimal qty);
 
-	IEditablePricingContext setUomId(@Nullable UomId uomId);
+	IEditablePricingContext setUomId(UomId uomId);
 
 	default IEditablePricingContext setQty(@NonNull final Quantity qty)
 	{
@@ -67,15 +66,15 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setBPartnerId(BPartnerId bpartnerId);
 
-	IEditablePricingContext setCurrencyId(@Nullable CurrencyId currencyId);
+	IEditablePricingContext setCurrencyId(CurrencyId currencyId);
 
 	IEditablePricingContext setPriceDate(LocalDate priceDate);
 
 	IEditablePricingContext setPricingSystemId(PricingSystemId pricingSystemId);
 
-	IEditablePricingContext setPriceListId(@Nullable PriceListId priceListId);
+	IEditablePricingContext setPriceListId(PriceListId priceListId);
 
-	IEditablePricingContext setPriceListVersionId(@Nullable PriceListVersionId priceListVersionId);
+	IEditablePricingContext setPriceListVersionId(PriceListVersionId priceListVersionId);
 
 	IEditablePricingContext setProductId(ProductId productId);
 
@@ -102,14 +101,9 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setManualPriceEnabled(boolean manualPriceEnabled);
 
-	/**
-	 * Note that either countryId or priceListId need to be provided.
-	 */
-	IEditablePricingContext setCountryId(@Nullable CountryId countryId);
+	IEditablePricingContext setCountryId(CountryId countryId);
 
 	IEditablePricingContext setFailIfNotCalculated();
 
 	IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag);
-
-	IEditablePricingContext setManualPrice(@Nullable final BigDecimal manualPrice);
 }

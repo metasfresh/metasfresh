@@ -32,7 +32,7 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 
-public class BetweenQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+/* package */class BetweenQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	private final CompositeQueryFilter<T> filter;
 

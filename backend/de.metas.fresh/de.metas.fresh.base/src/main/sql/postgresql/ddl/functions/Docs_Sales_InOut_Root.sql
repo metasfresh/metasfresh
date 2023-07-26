@@ -56,7 +56,7 @@ FROM
 	LEFT OUTER JOIN C_DocType_Trl dtt ON io.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
 	--get the email from AD_MailConfig for org, docbasetype and docsubtype, with fallback to org, docbasetype
 	LEFT OUTER JOIN (
-		SELECT mb.email, io.M_InOut_ID
+		SELECT email, io.M_InOut_ID 
 		FROM M_InOut io
 		INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
 		LEFT OUTER JOIN AD_MailConfig mc1 ON io.AD_Org_ID = mc1.AD_Org_ID AND mc1.DocBaseType = dt.DocBaseType AND mc1.DocSubType = dt.DocSubType AND mc1.isActive = 'Y'

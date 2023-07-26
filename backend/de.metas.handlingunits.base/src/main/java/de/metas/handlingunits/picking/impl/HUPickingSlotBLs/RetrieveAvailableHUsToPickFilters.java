@@ -1,5 +1,11 @@
 package de.metas.handlingunits.picking.impl.HUPickingSlotBLs;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
+
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -12,11 +18,6 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.SpringContextHolder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /*
  * #%L
@@ -57,12 +58,16 @@ public class RetrieveAvailableHUsToPickFilters
 	public List<I_M_HU> retrieveFullTreeAndExcludePickingHUs(@NonNull final List<I_M_HU> vhus)
 	{
 		final List<I_M_HU> husTopLevel = retrieveTopLevelUs(vhus);
+		final List<I_M_HU> result = filterForValidPaths(husTopLevel);
 
-		return filterForValidPaths(husTopLevel);
+		return result;
 	}
 
 	/**
 	 * Gets the the top level HUs from for our VHUs.
+	 *
+	 * @param vhus
+	 * @return
 	 */
 	private List<I_M_HU> retrieveTopLevelUs(@NonNull final List<I_M_HU> vhus)
 	{
@@ -72,23 +77,27 @@ public class RetrieveAvailableHUsToPickFilters
 				.includeAll(false)
 				.filter(RetrieveAvailableHUsToPickFilters::isNotPickedAndNotSourceHU) // exclude HUs that are already picked or flagged as source HUs
 				.build();
-		return handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
+		final List<I_M_HU> husTopLevel = handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
+		return husTopLevel;
 	}
 
 	private static boolean isNotPickedAndNotSourceHU(final I_M_HU hu)
 	{
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
-		final PickingCandidateRepository pickingCandidatesRepo = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
+		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
 		final SourceHUsService sourceHuService = SourceHUsService.get();
 
 		return !pickingCandidatesRepo.isHuIdPicked(huId) && !sourceHuService.isSourceHu(huId);
-	}
+	};
 
 	/**
 	 * We still need to iterate the HUs trees from the top level HUs.
 	 * Even if we had called handlingUnitsBL.getTopLevelHUs with includeAll(true),
 	 * There might be a VHU with a picked TU. Because the TU is picked, also its un-picked VHU may not be in the result we return
+	 *
+	 * @param husTopLevel
+	 * @return
 	 */
 	private List<I_M_HU> filterForValidPaths(@NonNull final List<I_M_HU> husTopLevel)
 	{
@@ -100,7 +109,7 @@ public class RetrieveAvailableHUsToPickFilters
 					.setListener(new HUIteratorListenerAdapter()
 					{
 						@Override
-						public Result beforeHU(@NonNull final IMutable<I_M_HU> hu)
+						public Result beforeHU(IMutable<I_M_HU> hu)
 						{
 							if (!isNotPickedAndNotSourceHU(hu.getValue()))
 							{

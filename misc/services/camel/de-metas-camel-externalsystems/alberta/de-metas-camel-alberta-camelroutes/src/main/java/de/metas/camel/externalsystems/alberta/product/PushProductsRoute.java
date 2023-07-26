@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.alberta.product.processor.PushArticlesProc
 import de.metas.camel.externalsystems.alberta.product.processor.RetrieveProductsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.common.externalreference.v1.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import lombok.NonNull;

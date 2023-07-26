@@ -1,26 +1,20 @@
 package de.metas.marketing.base;
 
-import de.metas.i18n.Language;
-import de.metas.marketing.base.model.CampaignId;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
-import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.EmailAddress;
-import de.metas.marketing.base.model.SyncResult;
-import de.metas.user.User;
-import de.metas.user.UserId;
-import de.metas.user.UserRepository;
-import de.metas.util.Check;
-import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.springframework.stereotype.Service;
+
+import de.metas.i18n.Language;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
+import de.metas.user.User;
+import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.EmailAddress;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,19 +43,10 @@ public class ContactPersonService
 {
 
 	private final ContactPersonRepository contactPersonRepo;
-	private final UserRepository userRepo;
 
-	public ContactPersonService(
-			@NonNull final ContactPersonRepository contactPersonRepo,
-			@NonNull final UserRepository userRepo)
+	public ContactPersonService(@NonNull final ContactPersonRepository contactPersonRepo)
 	{
 		this.contactPersonRepo = contactPersonRepo;
-		this.userRepo = userRepo;
-	}
-
-	public List<ContactPerson> getByCampaignId(final CampaignId campaignId)
-	{
-		return contactPersonRepo.getByCampaignId(campaignId);
 	}
 
 	public void updateContactPersonsEmailFromUser(
@@ -86,7 +71,7 @@ public class ContactPersonService
 			@Nullable final String oldUserEmail,
 			@Nullable final Language oldUserLanguage)
 	{
-		final boolean updateContactMail = isFitForUpdate(contactPerson.getEmailAddressStringOrNull(), oldUserEmail);
+		final boolean updateContactMail = isFitForUpdate(contactPerson.getEmailAddessStringOrNull(), oldUserEmail);
 		final boolean updateContactLanguage = isFitForUpdate(contactPerson.getLanguage(), oldUserLanguage);
 		if (!updateContactMail && !updateContactLanguage)
 		{
@@ -108,41 +93,18 @@ public class ContactPersonService
 
 	}
 
-	public void updateUserFromContactPersonIfFeasible(
-			@NonNull final ContactPerson contactPerson,
-			@Nullable final String oldContactPersonMail,
-			@Nullable final Language oldContactPersonLanguage)
-	{
-		final UserId userId = contactPerson.getUserId();
-		if (userId == null)
-		{
-			return; // no user to update the email
-		}
-
-		final User user = userRepo.getByIdInTrx(userId);
-
-		final boolean updateUserMail = isFitForUpdate(user.getEmailAddress(), oldContactPersonMail);
-		final boolean updateUserLanguage = isFitForUpdate(user.getUserLanguage(), oldContactPersonLanguage);
-		if (!updateUserMail && !updateUserLanguage)
-		{
-			return; // nothing to do
-		}
-
-		final User.UserBuilder updatedUser = user.toBuilder();
-		if (updateUserMail)
-		{
-			updatedUser.emailAddress(contactPerson.getEmailAddressStringOrNull());
-		}
-		if (updateUserLanguage)
-		{
-			updatedUser.userLanguage(contactPerson.getLanguage());
-			if (contactPerson.getLanguage() != null)
-			{
-				updatedUser.language(contactPerson.getLanguage());
-			}
-		}
-		userRepo.save(updatedUser.build());
-	}
+	// private ContactPerson updateContactPersonEmail(
+	// @NonNull final ContactPerson contactPerson,
+	// final EmailAddress newEmailaddress)
+	// {
+	// final ContactPerson updatedContactPerson = contactPerson.toBuilder()
+	// .address(newEmailaddress)
+	// .build();
+	//
+	// contactPersonRepo.save(updatedContactPerson);
+	//
+	// return updatedContactPerson;
+	// }
 
 	private boolean isFitForUpdate(
 			@Nullable final Object currentContactValue,
@@ -154,51 +116,7 @@ public class ContactPersonService
 		}
 
 		// if user and contact were in sync, then keep them in sync, i.e. forward the new user value to the contact.
-		//noinspection UnnecessaryLocalVariable
 		final boolean userValueInSyncWithOldcontactValue = Objects.equals(currentContactValue, oldUserValue);
 		return userValueInSyncWithOldcontactValue;
-	}
-
-	public List<ContactPerson> saveSyncResults(final List<? extends SyncResult> syncResults)
-	{
-		final ArrayList<ContactPerson> savedContactPersons = new ArrayList<>(syncResults.size());
-		for (final SyncResult syncResult : syncResults)
-		{
-			savedContactPersons.add(saveSyncResult(syncResult));
-		}
-
-		return savedContactPersons;
-	}
-
-	@NonNull
-	public ContactPerson saveSyncResult(@NonNull final SyncResult syncResult)
-	{
-		return contactPersonRepo.saveSyncResult(syncResult);
-	}
-
-	@NonNull
-	public Stream<ContactPerson> streamActivelySyncedWithRemoteId(@NonNull final CampaignId campaignId)
-	{
-		final boolean onlyWithRemoteIds = true;
-		return contactPersonRepo.streamActiveContacts(campaignId, onlyWithRemoteIds);
-	}
-
-	@NonNull
-	public Stream<ContactPerson> streamContacts(@NonNull final CampaignId campaignId)
-	{
-		final boolean onlyWithRemoteIds = false;
-		return contactPersonRepo.streamActiveContacts(campaignId, onlyWithRemoteIds);
-	}
-
-	@NonNull
-	public List<ContactPerson> retrieveByCampaignAndRemoteIds(@NonNull final CampaignId campaignId, @NonNull final Set<String> remoteIds)
-	{
-		return contactPersonRepo.retrieveByCampaignAndRemoteIds(campaignId, remoteIds);
-	}
-
-	@NonNull
-	public List<ContactPerson> retrieveByEmails(@NonNull final CampaignId campaignId, @NonNull final Collection<String> emails)
-	{
-		return contactPersonRepo.retrieveByEmails(campaignId, emails);
 	}
 }

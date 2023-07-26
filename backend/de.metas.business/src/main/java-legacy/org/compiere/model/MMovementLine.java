@@ -1,21 +1,38 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
+ *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.uom.UOMPrecision;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.Properties;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.DB;
 import org.eevolution.model.MDDOrderLine;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.util.Properties;
+import de.metas.lang.SOTrx;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Inventory Move Line Model
@@ -63,7 +80,6 @@ public class MMovementLine extends X_M_MovementLine
 	 * @param rs result set
 	 * @param trxName transaction
 	 */
-	@SuppressWarnings("unused")
 	public MMovementLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -80,6 +96,11 @@ public class MMovementLine extends X_M_MovementLine
 		setClientOrg(parent);
 		setM_Movement_ID(parent.getM_Movement_ID());
 	}	// MMovementLine
+
+	public MMovementLine(I_M_Movement parent)
+	{
+		this(LegacyAdapters.<I_M_Movement, MMovement> convertToPO(parent));
+	}
 
 	/**
 	 * Get AttributeSetInstance To
@@ -109,11 +130,17 @@ public class MMovementLine extends X_M_MovementLine
 			setDescription(desc + " | " + description);
 	}	// addDescription
 
-	@Nullable
-	public ProductId getProductId()
+	/**
+	 * Get Product
+	 *
+	 * @return product or null if not defined
+	 */
+	public MProduct getProduct()
 	{
-		return ProductId.ofRepoIdOrNull(getM_Product_ID());
-	}
+		if (getM_Product_ID() != 0)
+			return MProduct.get(getCtx(), getM_Product_ID());
+		return null;
+	}	// getProduct
 
 	/**
 	 * Set Movement Qty - enforce UOM precision
@@ -125,11 +152,11 @@ public class MMovementLine extends X_M_MovementLine
 	{
 		if (MovementQty != null)
 		{
-			ProductId productId = getProductId();
-			if (productId != null)
+			MProduct product = getProduct();
+			if (product != null)
 			{
-				UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(productId);
-				MovementQty = precision.round(MovementQty);
+				int precision = product.getUOMPrecision();
+				MovementQty = MovementQty.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			}
 		}
 		super.setMovementQty(MovementQty);
@@ -201,9 +228,34 @@ public class MMovementLine extends X_M_MovementLine
 
 		// Qty Precision
 		if (newRecord || is_ValueChanged(COLUMNNAME_MovementQty))
-		{
 			setMovementQty(getMovementQty());
+
+		// Mandatory Instance
+		if (getM_AttributeSetInstance_ID() <= 0)
+		{
+			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+			if (Services.get(IProductBL.class).isASIMandatory(productId, SOTrx.PURCHASE.toBoolean()))
+			{
+				throw new FillMandatoryException(I_M_MovementLine.COLUMNNAME_M_AttributeSetInstance_ID);
+			}
 		}
+		if (getM_AttributeSetInstanceTo_ID() <= 0)
+		{
+			// instance id default to same for movement between locator
+			if (getM_Locator_ID() != getM_LocatorTo_ID())
+			{
+				if (getM_AttributeSetInstance_ID() > 0)        // set to from
+				{
+					setM_AttributeSetInstanceTo_ID(getM_AttributeSetInstance_ID());
+				}
+			}
+
+			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+			if (Services.get(IProductBL.class).isASIMandatory(productId, SOTrx.SALES.toBoolean()) && getM_AttributeSetInstanceTo_ID() <= 0)
+			{
+				throw new FillMandatoryException(I_M_MovementLine.COLUMNNAME_M_AttributeSetInstanceTo_ID);
+			}
+		}       // ASI
 
 		return true;
 	}	// beforeSave
@@ -211,14 +263,18 @@ public class MMovementLine extends X_M_MovementLine
 	/**
 	 * Set Distribution Order Line.
 	 * Does not set Quantity!
+	 *
+	 * @param oLine order line
+	 * @param M_Locator_ID locator
+	 * @param Qty used only to find suitable locator
 	 */
 	public void setOrderLine(MDDOrderLine oLine, BigDecimal Qty, boolean isReceipt)
 	{
 		setDD_OrderLine_ID(oLine.getDD_OrderLine_ID());
 		setLine(oLine.getLine());
 		// setC_UOM_ID(oLine.getC_UOM_ID());
-		final ProductId productId = ProductId.ofRepoIdOrNull(oLine.getM_Product_ID());
-		if (productId == null)
+		I_M_Product product = oLine.getM_Product();
+		if (product == null)
 		{
 			set_ValueNoCheck(COLUMNNAME_M_Product_ID, null);
 			set_ValueNoCheck(COLUMNNAME_M_AttributeSetInstance_ID, null);
@@ -228,15 +284,16 @@ public class MMovementLine extends X_M_MovementLine
 		}
 		else
 		{
-			setM_Product_ID(productId.getRepoId());
+			setM_Product_ID(oLine.getM_Product_ID());
 			setM_AttributeSetInstance_ID(oLine.getM_AttributeSetInstance_ID());
 			setM_AttributeSetInstanceTo_ID(oLine.getM_AttributeSetInstanceTo_ID());
 			//
 
+			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 			if (Services.get(IProductBL.class).getProductType(productId).isItem())
 			{
 				final WarehouseId warehouseId = WarehouseId.ofRepoId(oLine.getDD_Order().getM_Warehouse_ID());
-				LocatorId locator_inTransit = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
+				LocatorId locator_inTransit = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 				if (locator_inTransit == null)
 				{
 					throw new AdempiereException("Do not exist Locator for the  Warehouse in transit");

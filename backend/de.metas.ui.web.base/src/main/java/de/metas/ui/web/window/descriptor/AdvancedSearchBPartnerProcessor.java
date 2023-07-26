@@ -30,14 +30,11 @@ import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.sql.SqlComposedKey;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Adv_Search;
 import org.compiere.model.I_C_Order;
-
-import javax.annotation.Nullable;
 
 public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor.AdvancedSearchSelectionProcessor
 {
@@ -55,8 +52,6 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 			@NonNull final String bpartnerFieldName,
 			@NonNull final String selectionIdStr)
 	{
-		final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator = DocumentFieldLogicExpressionResultRevaluator.DEFAULT;
-
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewFactory.getKeyColumnNamesMap(windowId);
 		final SqlComposedKey composedKey = keyColumnNamesMap.extractComposedKey(DocumentId.of(selectionIdStr));
 
@@ -67,38 +62,32 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		{
 			throw new AdempiereException("@NoSelection@"); // shall not happen
 		}
-		document.processValueChange(bpartnerFieldName, bpartnerId, null, readonlyRevaluator);
+		document.processValueChange(bpartnerFieldName, bpartnerId, null, false);
 
 		//
 		// Location
-		final String locationFieldName = getLocationFieldNameForBPartnerField(bpartnerFieldName);
-		if (locationFieldName != null)
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(
+				bpartnerId,
+				composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BPartner_Location_ID).orElse(-1));
+		if (bpLocationId != null)
 		{
-			final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(
-					bpartnerId,
-					composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BPartner_Location_ID).orElse(-1));
-			if (bpLocationId != null)
-			{
-				document.processValueChange(locationFieldName, bpLocationId.getRepoId(), null, readonlyRevaluator);
-			}
+			final String locationFieldName = getLocationFieldNameForBPartnerField(bpartnerFieldName);
+			document.processValueChange(locationFieldName, bpLocationId.getRepoId(), null, false);
 		}
 
 		//
 		// Contact
-		final String bpContactIdFieldName = getUserIdFieldNameForBPartnerField(bpartnerFieldName);
-		if (bpContactIdFieldName != null)
+		final BPartnerContactId bpContactId = BPartnerContactId.ofRepoIdOrNull(
+				bpartnerId,
+				composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BP_Contact_ID).orElse(-1));
+		if (bpContactId != null)
 		{
-			final BPartnerContactId bpContactId = BPartnerContactId.ofRepoIdOrNull(
-					bpartnerId,
-					composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BP_Contact_ID).orElse(-1));
-			if (bpContactId != null)
-			{
-				document.processValueChange(bpContactIdFieldName, bpContactId.getRepoId(), null, readonlyRevaluator);
-			}
+			final String bpContactIdFieldName = getUserIdFieldNameForBPartnerField(bpartnerFieldName);
+			document.processValueChange(bpContactIdFieldName, bpContactId.getRepoId(), null, false);
 		}
 	}
 
-	@Nullable
+	@NonNull
 	private static String getLocationFieldNameForBPartnerField(final String bpartnerFieldName)
 	{
 		switch (bpartnerFieldName)
@@ -112,11 +101,11 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 			case I_C_Order.COLUMNNAME_Pay_BPartner_ID:
 				return I_C_Order.COLUMNNAME_Pay_Location_ID;
 			default:
-				return null;
+				throw new AdempiereException("Can't find Location field for Bpartner field: " + bpartnerFieldName);
 		}
 	}
 
-	@Nullable
+	@NonNull
 	private static String getUserIdFieldNameForBPartnerField(final String bpartnerFieldName)
 	{
 		switch (bpartnerFieldName)
@@ -128,7 +117,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 			case I_C_Order.COLUMNNAME_DropShip_BPartner_ID:
 				return I_C_Order.COLUMNNAME_DropShip_User_ID;
 			default:
-				return null;
+				throw new AdempiereException("Can't find Location field for Bpartner field: " + bpartnerFieldName);
 		}
 	}
 }

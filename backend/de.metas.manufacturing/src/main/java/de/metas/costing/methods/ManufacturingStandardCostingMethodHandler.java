@@ -5,13 +5,13 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
-import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -21,6 +21,8 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.material.planning.IResourceProductService;
+import org.eevolution.api.PPOrderBOMLineId;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -35,7 +37,6 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
-import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +44,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -82,8 +82,6 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final ICostDetailService costDetailsService;
 	private final CostingMethodHandlerUtils utils;
 
-	private final StandardCostingMethodHandler standardCostingMethodHandler;
-
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
@@ -91,13 +89,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	public ManufacturingStandardCostingMethodHandler(
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailService costDetailsService,
-			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final StandardCostingMethodHandler standardCostingMethodHandler)
+			@NonNull final CostingMethodHandlerUtils utils)
 	{
 		this.currentCostsRepo = currentCostsRepo;
 		this.costDetailsService = costDetailsService;
 		this.utils = utils;
-		this.standardCostingMethodHandler = standardCostingMethodHandler;
 	}
 
 	@Override
@@ -113,124 +109,41 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	}
 
 	@Override
-	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
-		if (!existingCostDetails.isEmpty())
-		{
-			CostDetail mainCostDetail = null;
-			CostDetail costAdjustmentDetail = null;
-			CostDetail alreadyShippedDetail = null;
-			for (final CostDetail existingCostDetail : existingCostDetails)
-			{
-				@NonNull final CostAmountType amtType = existingCostDetail.getAmtType();
-				switch (amtType)
-				{
-					case MAIN ->
-					{
-						if (mainCostDetail != null)
-						{
-							throw new AdempiereException("More than one main cost is not allowed: " + existingCostDetails);
-						}
-						mainCostDetail = existingCostDetail;
-					}
-					case ADJUSTMENT ->
-					{
-						if (costAdjustmentDetail != null)
-						{
-							throw new AdempiereException("More than one adjustment cost is not allowed: " + existingCostDetails);
-						}
-						costAdjustmentDetail = existingCostDetail;
-					}
-					case ALREADY_SHIPPED ->
-					{
-						if (alreadyShippedDetail != null)
-						{
-							throw new AdempiereException("More than one already shipped cost is not allowed: " + existingCostDetails);
-						}
-						alreadyShippedDetail = existingCostDetail;
-					}
-					default -> throw new AdempiereException("Unknown type: " + amtType);
-				}
-			}
-
-			if (mainCostDetail == null)
-			{
-				throw new AdempiereException("No main cost detail found in " + existingCostDetails);
-			}
-
-			// make sure DateAcct is up-to-date
-			utils.updateDateAcct(mainCostDetail, request.getDate());
-			if (costAdjustmentDetail != null)
-			{
-				utils.updateDateAcct(costAdjustmentDetail, request.getDate());
-			}
-			if (alreadyShippedDetail != null)
-			{
-				utils.updateDateAcct(alreadyShippedDetail, request.getDate());
-			}
-
-			return Optional.of(
-					utils.toCostDetailCreateResult(mainCostDetail)
-							.withAmt(CostAmountDetailed.builder()
-									.mainAmt(mainCostDetail.getAmt())
-									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
-									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
-									.build())
-			);
-		}
-
-		else
-		{
-			return Optional.ofNullable(createCostOrNull(request));
-		}
-	}
-
-	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
-	{
-		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());
 
 		if (costCollectorType.isMaterial(orderBOMLineId))
 		{
-			return createIssueOrReceipt(request);
+			return Optional.of(createIssueOrReceipt(request));
 		}
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-			if (actualResourceId.isNoResource())
-			{
-				return null;
-			}
-
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
-			return createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
+			return Optional.ofNullable(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
 		}
 		else if (costCollectorType.isUsageVariance())
 		{
 			if (cc.getPP_Order_BOMLine_ID() > 0)
 			{
-				return createUsageVariance(request);
+				return Optional.of(createUsageVariance(request));
 			}
 			else
 			{
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-				if (actualResourceId.isNoResource())
-				{
-					return null;
-				}
-
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
 
-				return createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty));
+				return Optional.of(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
 			}
 		}
 		else
@@ -243,6 +156,14 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Optional<CostAmount> calculateSeedCosts(
+			final CostSegment costSegment,
+			final OrderLineId orderLineId)
+	{
+		return Optional.empty();
 	}
 
 	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)
@@ -260,7 +181,6 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
-				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.qty(qty)
 				.changingCosts(true)
@@ -294,7 +214,6 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
-				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -317,7 +236,6 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
-				.amtType(CostAmountType.MAIN)
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -561,11 +479,5 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
-	{
-		return standardCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
 }

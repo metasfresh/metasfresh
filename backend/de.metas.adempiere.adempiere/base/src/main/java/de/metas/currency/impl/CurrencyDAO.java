@@ -3,7 +3,27 @@
  */
 package de.metas.currency.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_ConversionType_Default;
+import org.compiere.model.I_C_Conversion_Rate;
+import org.compiere.model.I_C_Currency;
+import org.compiere.util.TimeUtil;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.cache.CCache;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
@@ -18,24 +38,8 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_ConversionType;
-import org.compiere.model.I_C_ConversionType_Default;
-import org.compiere.model.I_C_Conversion_Rate;
-import org.compiere.model.I_C_Currency;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 
 /*
  * #%L
@@ -76,7 +80,6 @@ public class CurrencyDAO implements ICurrencyDAO
 			.build();
 
 	@Override
-	@NonNull
 	public Currency getById(@NonNull final CurrencyId currencyId)
 	{
 		return getCurrenciesMap().getById(currencyId);
@@ -94,13 +97,13 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(CurrencyDAO::toCurrency)
+				.map(currencyRecord -> toCurrency(currencyRecord))
 				.collect(ImmutableList.toImmutableList());
 
 		return new CurrenciesMap(currencies);
 	}
 
-	public static Currency toCurrency(@NonNull final I_C_Currency record)
+	public static final Currency toCurrency(@NonNull final I_C_Currency record)
 	{
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(record);
 		return Currency.builder()
@@ -150,7 +153,7 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(CurrencyDAO::toCurrencyConversionTypeRouting)
+				.map(routingRecord -> toCurrencyConversionTypeRouting(routingRecord))
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList<CurrencyConversionType> types = queryBL
@@ -158,7 +161,7 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(CurrencyDAO::toCurrencyConversionType)
+				.map(record -> toCurrencyConversionType(record))
 				.collect(ImmutableList.toImmutableList());
 
 		return CurrencyConversionTypesMap.builder()
@@ -172,7 +175,7 @@ public class CurrencyDAO implements ICurrencyDAO
 		return CurrencyConversionTypeRouting.builder()
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.validFrom(record.getValidFrom().toInstant())
+				.validFrom(TimeUtil.asLocalDate(record.getValidFrom()))
 				.conversionTypeId(CurrencyConversionTypeId.ofRepoId(record.getC_ConversionType_ID()))
 				.build();
 	}
@@ -181,7 +184,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	{
 		return CurrencyConversionType.builder()
 				.id(CurrencyConversionTypeId.ofRepoId(record.getC_ConversionType_ID()))
-				.method(ConversionTypeMethod.ofCode(record.getValue()))
+				.method(ConversionTypeMethod.forCode(record.getValue()))
 				.build();
 	}
 
@@ -190,7 +193,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	public CurrencyConversionTypeId getDefaultConversionTypeId(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
-			@NonNull final Instant date)
+			@NonNull final LocalDate date)
 	{
 		return getConversionTypesMap()
 				.getDefaultConversionType(adClientId, adOrgId, date)
@@ -217,7 +220,7 @@ public class CurrencyDAO implements ICurrencyDAO
 			@NonNull final CurrencyId currencyToId)
 	{
 		final CurrencyConversionTypeId conversionTypeId = conversionCtx.getConversionTypeId();
-		final Instant conversionDate = conversionCtx.getConversionDate();
+		final LocalDate conversionDate = conversionCtx.getConversionDate();
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
@@ -257,6 +260,7 @@ public class CurrencyDAO implements ICurrencyDAO
 		}
 
 		final Map<String, Object> record = recordsList.get(0);
-		return (BigDecimal)record.get(I_C_Conversion_Rate.COLUMNNAME_MultiplyRate);
+		final BigDecimal rate = (BigDecimal)record.get(I_C_Conversion_Rate.COLUMNNAME_MultiplyRate);
+		return rate;
 	}
 }

@@ -16,24 +16,8 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import lombok.Setter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.plaf.AdempiereLookAndFeel;
-import org.adempiere.plaf.MetasFreshTheme;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.Adempiere.RunMode;
-import org.compiere.model.ModelValidationEngine;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -44,7 +28,24 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import lombok.Setter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.plaf.AdempiereLookAndFeel;
+import org.adempiere.plaf.MetasFreshTheme;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.Adempiere.RunMode;
+import org.compiere.model.ModelValidationEngine;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+
+import javax.annotation.Nullable;
 
 /**
  * Load & Save INI Settings from property file
@@ -52,10 +53,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Settings activated in ALogin.getIni
  *
  * @author Jorg Janke
- * @author Teo Sarca, www.arhipac.ro
- * <li>FR [ 1658127 ] Select charset encoding on import
- * <li>FR [ 2406123 ] Ini.saveProperties fails if target directory does not exist
  * @version $Id$
+ *
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>FR [ 1658127 ] Select charset encoding on import
+ *         <li>FR [ 2406123 ] Ini.saveProperties fails if target directory does not exist
  */
 public final class Ini
 {
@@ -73,138 +75,86 @@ public final class Ini
 	 */
 	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(Ini::findMetasfreshHome);
 
-	/**
-	 * Property file name
-	 */
+	/** Property file name */
 	public static final String METASFRESH_PROPERTY_FILE = "metasfresh.properties";
 
-	/**
-	 * Apps User ID
-	 */
+	/** Apps User ID */
 	public static final String P_UID = "ApplicationUserID";
 	private static final String DEFAULT_UID = "";
-	/**
-	 * Apps Password
-	 */
+	/** Apps Password */
 	public static final String P_PWD = "ApplicationPassword";
 	private static final String DEFAULT_PWD = "";
-	/**
-	 * Store Password
-	 */
+	/** Store Password */
 	public static final String P_STORE_PWD = "StorePassword";
 	private static final boolean DEFAULT_STORE_PWD = true;
-	/**
-	 * Trace Level
-	 */
+	/** Trace Level */
 	public static final String P_TRACELEVEL = "TraceLevel";
 	private static final String DEFAULT_TRACELEVEL = "WARNING";
-	/**
-	 * Trace to File (Y/N).
-	 */
+	/** Trace to File (Y/N). */
 	public static final String P_TRACEFILE_ENABLED = "TraceFile";
 	private static final boolean DEFAULT_TRACEFILE_ENABLED = false;
 
-	/**
-	 * Language
-	 */
+	/** Language */
 	public static final String P_LANGUAGE = "Language";
 	private static final String DEFAULT_LANGUAGE = Language.getName(System.getProperty("user.language") + "_" + System.getProperty("user.country"));
-	/**
-	 * Ini File Name
-	 */
+	/** Ini File Name */
 	public static final String P_INI = "FileNameINI";
 	private static final String DEFAULT_INI = "";
-	/**
-	 * Connection Details
-	 */
+	/** Connection Details */
 	public static final String P_CONNECTION = "Connection";
 	private static final String DEFAULT_CONNECTION = "";
 
-	/**
-	 * Look & Feel
-	 */
+	/** Look & Feel */
 	public static final String P_UI_LOOK = "UILookFeel";
 
 	private static final String DEFAULT_UI_LOOK = AdempiereLookAndFeel.NAME;
-	/**
-	 * UI Theme
-	 */
+	/** UI Theme */
 
 	private static final String DEFAULT_UI_THEME = MetasFreshTheme.NAME;
-	/**
-	 * UI Theme
-	 */
+	/** UI Theme */
 	public static final String P_UI_THEME = "UITheme";
 
-	/**
-	 * Auto Save
-	 */
+	/** Auto Save */
 	public static final String P_A_COMMIT = "AutoCommit";
 	private static final boolean DEFAULT_A_COMMIT = true;
-	/**
-	 * Auto Login
-	 */
+	/** Auto Login */
 	public static final String P_A_LOGIN = "AutoLogin";
 	private static final boolean DEFAULT_A_LOGIN = false;
-	/**
-	 * Auto New Record
-	 */
+	/** Auto New Record */
 	public static final String P_A_NEW = "AutoNew";
 	private static final boolean DEFAULT_A_NEW = false;
-	/**
-	 * Dictionary Maintenance
-	 */
+	/** Dictionary Maintenance */
 	public static final String P_ADEMPIERESYS = "AdempiereSys";    // Save system records
 	private static final boolean DEFAULT_ADEMPIERESYS = false;
-	/**
-	 * Log Migration Script
-	 */
+	/** Log Migration Script */
 	public static final String P_LOGMIGRATIONSCRIPT = "LogMigrationScript";    // Log migration script
 	private static final boolean DEFAULT_LOGMIGRATIONSCRIPT = false;
-	/**
-	 * Show Acct Tabs
-	 */
+	/** Show Acct Tabs */
 	public static final String P_SHOW_ACCT = "ShowAcct";
 	private static final boolean DEFAULT_SHOW_ACCT = true;
-	/**
-	 * Show Advanced Tabs
-	 */
+	/** Show Advanced Tabs */
 	public static final String P_SHOW_ADVANCED = "ShowAdvanced";
 	private static final boolean DEFAULT_SHOW_ADVANCED = true;
-	/**
-	 * Show Translation Tabs
-	 */
+	/** Show Translation Tabs */
 	public static final String P_SHOW_TRL = "ShowTrl";
 	private static final boolean DEFAULT_SHOW_TRL = false;
-	/**
-	 * Cache Windows
-	 */
+	/** Cache Windows */
 	public static final String P_CACHE_WINDOW = "CacheWindow";
 	private static final boolean DEFAULT_CACHE_WINDOW = true;
-	/**
-	 * Temp Directory
-	 */
+	/** Temp Directory */
 	public static final String P_TEMP_DIR = "TempDir";
 	private static final String DEFAULT_TEMP_DIR = "";
-	/**
-	 * Role
-	 */
+	/** Role */
 	public static final String P_ROLE = "Role";
 	private static final String DEFAULT_ROLE = "";
-	/**
-	 * Client Name
-	 */
+	/** Client Name */
 	public static final String P_CLIENT = "Client";
 	private static final String DEFAULT_CLIENT = "";
-	/**
-	 * Org Name
-	 */
+	/** Org Name */
 	public static final String P_ORG = "Organization";
 	private static final String DEFAULT_ORG = "";
 
-	/**
-	 * Printer Name
-	 */
+	/** Printer Name */
 	public static final String P_PRINTER = "Printer";
 	private static final String DEFAULT_PRINTER = "";
 	// metas: adding support for an additional label printer
@@ -215,36 +165,24 @@ public final class Ini
 	public static final String P_REPORT_PREFIX = "ReportServer";
 	private static final String DEFAULT_REPORT_SERVER = "";
 
-	/**
-	 * Warehouse Name
-	 */
+	/** Warehouse Name */
 	public static final String P_WAREHOUSE = "Warehouse";
 	private static final String DEFAULT_WAREHOUSE = "";
-	/**
-	 * Current Date
-	 */
+	/** Current Date */
 	public static final String P_TODAY = "CDate";
 	private static final Timestamp DEFAULT_TODAY = new Timestamp(System.currentTimeMillis());
-	/**
-	 * Print Preview
-	 */
+	/** Print Preview */
 	public static final String P_PRINTPREVIEW = "PrintPreview";
 	private static final boolean DEFAULT_PRINTPREVIEW = false;
-	/**
-	 * Validate connection on startup
-	 */
+	/** Validate connection on startup */
 	public static final String P_VALIDATE_CONNECTION_ON_STARTUP = "ValidateConnectionOnStartup";
 	private static final boolean DEFAULT_VALIDATE_CONNECTION_ON_STARTUP = false;
 
-	/**
-	 * Single instance per window id
-	 **/
+	/** Single instance per window id **/
 	public static final String P_SINGLE_INSTANCE_PER_WINDOW = "SingleInstancePerWindow";
 	public static final boolean DEFAULT_SINGLE_INSTANCE_PER_WINDOW = false;
 
-	/**
-	 * Open new windows as maximized
-	 **/
+	/** Open new windows as maximized **/
 	public static final String P_OPEN_WINDOW_MAXIMIZED = "OpenWindowMaximized";
 
 	// task 09355: Open everything as maximized from the beginning
@@ -255,25 +193,17 @@ public final class Ini
 	private static final String P_WARNING_de = "WarningD";
 	private static final String DEFAULT_WARNING_de = "Einstellungen_nicht_aendern,_da_diese_undokumentierte_Nebenwirkungen_haben.";
 
-	/**
-	 * Charset
-	 */
+	/** Charset */
 	public static final String P_CHARSET = "Charset";
-	/**
-	 * Charser Default Value
-	 */
+	/** Charser Default Value */
 	private static final String DEFAULT_CHARSET = Charset.defaultCharset().name();
 
-	/**
-	 * Load tab fields meta data using background thread
-	 **/
+	/** Load tab fields meta data using background thread **/
 	public static final String P_LOAD_TAB_META_DATA_BG = "LoadTabMetaDataBackground";
 
 	public static final String DEFAULT_LOAD_TAB_META_DATA_BG = "N";
 
-	/**
-	 * Ini PropertyName to default value
-	 */
+	/** Ini PropertyName to default value */
 	private static final ImmutableMap<String, String> PROPERTY_DEFAULTS = ImmutableMap.<String, String>builder()
 			.put(P_UID, DEFAULT_UID)
 			.put(P_PWD, DEFAULT_PWD)
@@ -321,29 +251,19 @@ public final class Ini
 			.add(P_ADEMPIERESYS)
 			.add(P_LOGMIGRATIONSCRIPT)
 			.build();
-	private static class ServerLocalProps
-	{
-		private static final AtomicBoolean logMigrationScripts = new AtomicBoolean(false);
-	}
 
-	/**
-	 * List of property names which shall be skipped from encryption
-	 */
+	/** List of property names which shall be skipped from encryption */
 	private static final Set<String> PROPERTIES_SKIP_ENCRYPTION = ImmutableSet.<String>builder()
 			.add(P_WARNING)
 			.add(P_WARNING_de)
 			.build();
 
-	/**
-	 * Container for Properties
-	 */
+	/** Container for Properties */
 	private static Properties s_prop = new Properties();
 
 	private static String s_propertyFileName = null;
 
-	/**
-	 * Logger
-	 */
+	/** Logger */
 	private static final transient Logger log = LogManager.getLogger(Ini.class.getName());
 
 	private Ini()
@@ -576,10 +496,6 @@ public final class Ini
 		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
 		{
 			Env.getCtx().setProperty(key, value);
-			if(P_LOGMIGRATIONSCRIPT.equals(key))
-			{
-				ServerLocalProps.logMigrationScripts.set(StringUtils.toBoolean(value, false));
-			}
 			return;
 		}
 
@@ -635,15 +551,8 @@ public final class Ini
 		// If it's a client property and we are in server mode, get value from context instead of Ini file
 		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
 		{
-			if(P_LOGMIGRATIONSCRIPT.equals(key))
-			{
-				return StringUtils.ofBoolean(ServerLocalProps.logMigrationScripts.get());
-			}
-			else
-			{
-				final String value = Env.getCtx().getProperty(key);
-				return value == null ? "" : value;
-			}
+			final String value = Env.getCtx().getProperty(key);
+			return value == null ? "" : value;
 		}
 
 		final String retStr = s_prop.getProperty(key, "");
@@ -668,17 +577,7 @@ public final class Ini
 	 */
 	public static boolean isPropertyBool(final String key)
 	{
-		final String valueStr = getProperty(key);
-		if (Check.isBlank(valueStr))
-		{
-			return false;
-		}
-
-		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> DisplayType.toBoolean(valueStr, null),
-				() -> DisplayType.toBoolean(SecureInterface.CLEARVALUE_START + valueStr + SecureInterface.CLEARVALUE_END, null),
-				() -> false
-		);
+		return DisplayType.toBoolean(getProperty(key), false);
 	}    // getProperty
 
 	/**
@@ -732,7 +631,7 @@ public final class Ini
 
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
-	 * <p>
+	 *
 	 * task 04585
 	 */
 	private static RunMode s_runMode = RunMode.SWING_CLIENT;
@@ -778,7 +677,7 @@ public final class Ini
 
 	/**
 	 * Set global run mode.
-	 * <p>
+	 *
 	 * task 04585
 	 */
 	public static void setRunMode(final RunMode mode)

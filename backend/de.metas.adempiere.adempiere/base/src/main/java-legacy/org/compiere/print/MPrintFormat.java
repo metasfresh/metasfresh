@@ -16,25 +16,6 @@
  *****************************************************************************/
 package org.compiere.print;
 
-import de.metas.cache.CCache;
-import de.metas.cache.interceptor.CacheCtxParamDescriptor;
-import de.metas.i18n.Language;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.StringUtils;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.compiere.model.I_AD_PrintFormatItem;
-import org.compiere.model.MQuery;
-import org.compiere.model.MQuery.Operator;
-import org.compiere.model.Query;
-import org.compiere.model.X_AD_PrintFormat;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,6 +25,29 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+
+import javax.sql.RowSet;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.compiere.model.I_AD_PrintFormatItem;
+import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
+import org.compiere.model.Query;
+import org.compiere.model.X_AD_PrintFormat;
+import org.compiere.util.CPreparedStatement;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.cache.CCache;
+import de.metas.cache.interceptor.CacheCtxParamDescriptor;
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.StringUtils;
 
 /**
  *	AD_PrintFormat - Print Format Model.
@@ -931,4 +935,45 @@ public class MPrintFormat extends X_AD_PrintFormat
 		return DB.getSQLValue(null, sql, formatName, AD_Table_ID, AD_Client_ID);
 	}
 	//end vpj-cd e-evolution
+
+	/**
+	 * @param AD_Table_ID
+	 * @param AD_Client_ID use -1 to retrieve from all client
+	 * @param trxName
+	 */
+	public static RowSet getAccessiblePrintFormats (int AD_Table_ID, int AD_Client_ID, String trxName)
+	{
+		RowSet rowSet = null;
+		String sql = "SELECT AD_PrintFormat_ID, Name, AD_Client_ID "
+			+ "FROM AD_PrintFormat "
+			+ "WHERE AD_Table_ID=? AND IsTableBased='Y' ";
+		if (AD_Client_ID >= 0)
+		{
+			sql = sql + " AND AD_Client_ID = ? ";
+		}
+		sql = sql + "ORDER BY AD_Client_ID DESC, IsDefault DESC, Name"; //	Own First
+		//
+		sql = Env.getUserRolePermissions().addAccessSQL (
+			sql, "AD_PrintFormat", IUserRolePermissions.SQL_NOTQUALIFIED,
+			Access.READ);
+		CPreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, AD_Table_ID);
+			if (AD_Client_ID >= 0)
+				pstmt.setInt(2, AD_Client_ID);
+			rowSet = pstmt.getRowSet();
+		}
+		catch (SQLException e)
+		{
+			s_log.error(sql, e);
+		}
+		finally {
+			DB.close(pstmt);
+			pstmt = null;
+		}
+
+		return rowSet;
+	}
 }	//	MPrintFormat

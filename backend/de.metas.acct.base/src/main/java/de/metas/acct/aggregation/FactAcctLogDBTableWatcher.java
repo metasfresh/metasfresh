@@ -22,11 +22,9 @@
 
 package de.metas.acct.aggregation;
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -42,9 +40,7 @@ public class FactAcctLogDBTableWatcher implements Runnable
 	private static final String SYSCONFIG_PollIntervalInSeconds = "de.metas.acct.aggregation.FactAcctLogDBTableWatcher.pollIntervalInSeconds";
 	private static final Duration DEFAULT_PollInterval = Duration.ofSeconds(10);
 
-	@VisibleForTesting
-	static final String SYSCONFIG_RetrieveBatchSize = "de.metas.acct.aggregation.FactAcctLogDBTableWatcher.retrieveBatchSize";
-	private static final QueryLimit DEFAULT_RetrieveBatchSize = QueryLimit.ofInt(2000);
+	private static final int RETRIEVE_CHUNK_SIZE = 500;
 
 	@Builder
 	private FactAcctLogDBTableWatcher(
@@ -60,9 +56,11 @@ public class FactAcctLogDBTableWatcher implements Runnable
 	{
 		while (true)
 		{
+			final Duration pollInterval = getPollInterval();
+			logger.debug("Sleeping {}", pollInterval);
 			try
 			{
-				sleep();
+				Thread.sleep(getPollInterval().toMillis());
 			}
 			catch (InterruptedException e)
 			{
@@ -82,13 +80,6 @@ public class FactAcctLogDBTableWatcher implements Runnable
 
 	}
 
-	private void sleep() throws InterruptedException
-	{
-		final Duration pollInterval = getPollInterval();
-		logger.debug("Sleeping {}", pollInterval);
-		Thread.sleep(pollInterval.toMillis());
-	}
-
 	private Duration getPollInterval()
 	{
 		final int pollIntervalInSeconds = sysConfigBL.getIntValue(SYSCONFIG_PollIntervalInSeconds, -1);
@@ -97,31 +88,13 @@ public class FactAcctLogDBTableWatcher implements Runnable
 				: DEFAULT_PollInterval;
 	}
 
-	private QueryLimit getRetrieveBatchSize()
+	private void processNow()
 	{
-		final int retrieveBatchSize = sysConfigBL.getIntValue(SYSCONFIG_RetrieveBatchSize, -1);
-		return retrieveBatchSize > 0 ? QueryLimit.ofInt(retrieveBatchSize) : DEFAULT_RetrieveBatchSize;
-	}
-
-	@VisibleForTesting
-	FactAcctLogProcessResult processNow()
-	{
-		FactAcctLogProcessResult finalResult = FactAcctLogProcessResult.ZERO;
-
-		boolean mightHaveMore;
 		do
 		{
-			final QueryLimit retrieveBatchSize = getRetrieveBatchSize();
-			final FactAcctLogProcessResult result = factAcctLogBL.processAll(Env.getCtx(), retrieveBatchSize);
-
-			finalResult = finalResult.combineWith(result);
-			mightHaveMore = retrieveBatchSize.isLessThanOrEqualTo(result.getProcessedLogRecordsCount());
-			logger.debug("processNow: retrieveBatchSize={}, result={}, mightHaveMore={}", retrieveBatchSize, result, mightHaveMore);
+			factAcctLogBL.processAll(Env.getCtx(), RETRIEVE_CHUNK_SIZE);
 		}
-		while (mightHaveMore);
-
-		logger.debug("processNow: DONE. Processed {}", finalResult);
-		return finalResult;
+		while (factAcctLogBL.hasLogsToProcess());
 	}
 
 }

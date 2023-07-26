@@ -1,18 +1,11 @@
 package de.metas.handlingunits.trace.repository;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU_Trace;
-import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceEventQuery;
-import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
-import de.metas.handlingunits.trace.HUTraceType;
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
@@ -21,12 +14,20 @@ import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
-import java.sql.Timestamp;
-import java.util.List;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.trace.HUTraceEvent;
+import de.metas.handlingunits.trace.HUTraceEventQuery;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -83,11 +84,15 @@ public class RetrieveDbRecordsUtil
 
 		/**
 		 * Get the {@code VHU_ID}s from the records we already found so far. Needed to recurse forwards.
+		 *
+		 * @return
 		 */
 		List<HuId> getVhuIds();
 
 		/**
 		 * Get the {@code VHU_Source_ID} from the records we already found so far. Needed to recurse backwards.
+		 *
+		 * @return
 		 */
 		List<HuId> getVhuSourceIds();
 	}
@@ -292,9 +297,9 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trace_ID, query.getHuTraceEventId().getAsInt());
 			queryIsEmpty = false;
 		}
-		if(!query.getTypes().isEmpty())
+		if(query.getType() != null)
 		{
-			queryBuilder.addInArrayFilter(I_M_HU_Trace.COLUMN_HUTraceType, query.getTypes().stream().map(HUTraceType::getCode).collect(ImmutableList.toImmutableList()));
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_HUTraceType, query.getType().getCode());
 			queryIsEmpty = false;
 		}
 		if (query.getOrgId() != null)
@@ -312,19 +317,11 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_Product_ID, query.getProductId());
 			queryIsEmpty = false;
 		}
-
-		if(query.getLotNumber() != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_LotNumber, query.getLotNumber());
-			queryIsEmpty = false;
-		}
 		if (query.getQty() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_Qty, query.getQty().toBigDecimal());
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_C_UOM_ID, query.getQty().getUomId());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_Qty, query.getQty());
 			queryIsEmpty = false;
 		}
-
 		if (!Check.isEmpty(query.getVhuStatus()))
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHUStatus, query.getVhuStatus());
@@ -348,12 +345,6 @@ public class RetrieveDbRecordsUtil
 		if (query.getMovementId() > 0)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Movement_ID, query.getMovementId());
-			queryIsEmpty = false;
-		}
-
-		if (query.getInventoryId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Inventory_ID, query.getInventoryId());
 			queryIsEmpty = false;
 		}
 		if (query.getPpCostCollectorId() > 0)
@@ -423,9 +414,6 @@ public class RetrieveDbRecordsUtil
 		return false;
 	}
 
-	/**
-	 * Creates and executes a query in which the {@code vhuSourceIds} of the given {@code resultIn} are the  {@code vhuId}s of the additional records we want to load
-	 */
 	private Result recurseBackwards(@NonNull final Result resultIn)
 	{
 		final Result resultOut = resultIn.newEmptyResult();
@@ -508,6 +496,8 @@ public class RetrieveDbRecordsUtil
 
 	/**
 	 * Return all records; this makes absolutely no sense in production; Intended to be used only use for testing.
+	 *
+	 * @return
 	 */
 	@VisibleForTesting
 	public List<HUTraceEvent> queryAll()

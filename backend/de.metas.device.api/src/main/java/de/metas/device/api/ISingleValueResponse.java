@@ -22,14 +22,19 @@ package de.metas.device.api;
  * #L%
  */
 
-import java.math.BigDecimal;
 
 /**
  * Special sort of device response class that can return just one value.
+ * <p>
+ * Background: in our current usage scenario in ADempiere we have buttons that are supposed to query scales and add set result into a UI numerical field. To support this, ADempiere only adds buttons
+ * for those {@link IDeviceRequest}s that have a single value response.
  *
  * @author ts
+ * 
+ * @param <T> the type of the return value.
+ * 
  */
-public interface ISingleValueResponse extends IDeviceResponse
+public interface ISingleValueResponse<T> extends IDeviceResponse
 {
-	BigDecimal getSingleValue();
+	T getSingleValue();
 }

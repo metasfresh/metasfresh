@@ -1,21 +1,22 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.Set;
+
+import org.compiere.util.DisplayType;
+
 import com.google.common.collect.Sets;
+
 import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Password;
-import org.compiere.util.DisplayType;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.OptionalInt;
-import java.util.Set;
 
 /*
  * #%L
@@ -103,7 +104,7 @@ public enum DocumentFieldWidgetType
 	private final Class<?> valueClass;
 	private final int displayType;
 
-	DocumentFieldWidgetType(final LayoutAlign gridAlign, final Class<?> valueClass, final int displayType)
+	private DocumentFieldWidgetType(final LayoutAlign gridAlign, final Class<?> valueClass, final int displayType)
 	{
 		this.gridAlign = gridAlign;
 		this.valueClass = valueClass;
@@ -118,6 +119,22 @@ public enum DocumentFieldWidgetType
 	public LayoutAlign getGridAlign()
 	{
 		return gridAlign;
+	}
+
+	public final Integer getStandardNumberPrecision()
+	{
+		// FIXME: hardcoded standard number precision
+
+		switch (this)
+		{
+			case Integer:
+				return 0;
+			case CostPrice:
+			case Amount:
+				return 2;
+			default:
+				return null;
+		}
 	}
 
 	public final boolean isDateOrTime()
@@ -158,9 +175,7 @@ public enum DocumentFieldWidgetType
 
 	public final boolean isSupportZoomInto()
 	{
-		return isLookup() || this == DocumentFieldWidgetType.ZoomIntoButton
-				// || this == DocumentFieldWidgetType.Labels // not implemented yet
-				;
+		return isLookup() || this == DocumentFieldWidgetType.ZoomIntoButton || this == DocumentFieldWidgetType.Labels;
 	}
 
 	public final boolean isBoolean()
@@ -170,7 +185,7 @@ public enum DocumentFieldWidgetType
 
 	/**
 	 * Same as {@link #getValueClassOrNull()} but it will throw exception in case there is no valueClass.
-	 *
+	 * 
 	 * @return value class
 	 */
 	public Class<?> getValueClass()
@@ -185,7 +200,7 @@ public enum DocumentFieldWidgetType
 	/**
 	 * Gets the standard value class to be used for this widget.
 	 * In case there are multiple value classes which can be used for this widget, the method will return null.
-	 *
+	 * 
 	 * @return value class or <code>null</code>
 	 */
 	public Class<?> getValueClassOrNull()

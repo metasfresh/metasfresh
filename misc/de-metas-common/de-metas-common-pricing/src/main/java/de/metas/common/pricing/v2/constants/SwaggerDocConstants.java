@@ -26,17 +26,17 @@ public class SwaggerDocConstants
 {
 	public static final String PRICE_LIST_VERSION_IDENTIFIER = "Identifier of the price list version in question. Can be\n"
 			+ "* a plain `<M_PriceList_Version_ID>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>`";
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>";
 
 	public static final String PRICE_LIST_IDENTIFIER = "Identifier of the price list in question. Can be\n"
 			+ "* a plain `<M_PriceList_ID>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>`";
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>";
 
 	public static final String PRODUCT_PRICE_IDENTIFIER = "Identifier of the product price in question. Can be\n"
 			+ "* a plain `<M_ProductPrice_ID>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>`";
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>";
 
 	public static final String PRODUCT_IDENTIFIER = "Identifier of the product for the price in question. Can be\n"
 			+ "* a plain `<M_Product_ID>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>`";
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>";
 }

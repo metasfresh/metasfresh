@@ -48,20 +48,20 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 		Object retrieveValue(ResultSet rs, String adLanguage) throws SQLException;
 	}
 
-	@NonNull String fieldName;
-	@NonNull String columnName;
+	String fieldName;
+	String columnName;
 	boolean keyColumn;
-	@NonNull DocumentFieldWidgetType widgetType;
+	DocumentFieldWidgetType widgetType;
 	boolean virtualColumn;
 	boolean mandatory;
 
-	@NonNull Class<?> sqlValueClass;
-	@NonNull SqlSelectValue sqlSelectValue;
-	@Nullable SqlSelectDisplayValue sqlSelectDisplayValue;
+	Class<?> sqlValueClass;
+	SqlSelectValue sqlSelectValue;
+	SqlSelectDisplayValue sqlSelectDisplayValue;
 
-	@NonNull SqlOrderByValue sqlOrderBy;
+	SqlOrderByValue sqlOrderBy;
 
-	@NonNull SqlViewRowFieldLoader fieldLoader;
+	SqlViewRowFieldLoader fieldLoader;
 
 	@Builder
 	private SqlViewRowFieldBinding(

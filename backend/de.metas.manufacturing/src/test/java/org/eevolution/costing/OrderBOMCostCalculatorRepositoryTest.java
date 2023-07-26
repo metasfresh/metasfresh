@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostPrice;
+import org.eevolution.api.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -36,7 +37,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.api.impl.PPOrderCostsTestHelper;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,12 +86,8 @@ class OrderBOMCostCalculatorRepositoryTest
 		// Manufacturing order
 		// IMPORTANT: remark that the finished good and component UOMs are different from their stocking UOM!
 		final I_PP_Order ppOrder = helper.order()
-				.finishedGoodsProductId(finishedGoodsProductId)
-				.finishedGoodsQty("100")
-				.finishedGoodsUOM(helper.uomEach)
-				.componentId(componentId)
-				.componentQtyRequired("200")
-				.componentUOM(helper.uomKg) // i.e. we need 2 Kg for one finished good
+				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("100").finishedGoodsUOM(helper.uomEach)
+				.componentId(componentId).componentQtyRequired("200").componentUOM(helper.uomKg) // i.e. we need 2 Kg for one finished good
 				.build();
 		ppOrderCostBL.createOrderCosts(ppOrder);
 

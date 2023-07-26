@@ -23,7 +23,7 @@
 package de.metas.common.pricing.v2.pricelist.request;
 
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -37,33 +37,33 @@ import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRICE_LIS
 @EqualsAndHashCode
 public class JsonRequestPriceListVersion
 {
-	@Schema(required = true, description = PRICE_LIST_IDENTIFIER)
+	@ApiModelProperty(required = true, value = PRICE_LIST_IDENTIFIER)
 	private String priceListIdentifier;
 
-	@Schema(required = true)
+	@ApiModelProperty(required = true)
 	private String orgCode;
 
-	@Schema(required = true)
+	@ApiModelProperty(required = true)
 	private Instant validFrom;
 
 	@Getter
 	private Boolean active;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	@Getter
 	private boolean activeSet;
 
 	@Getter
 	private String description;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	@Getter
 	private boolean descriptionSet;
 
 	@Getter
 	private SyncAdvise syncAdvise;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	@Getter
 	private boolean syncAdviseSet;
 

@@ -4,6 +4,7 @@ import java.net.URI;
 
 import org.adempiere.util.lang.ITableRecordReference;
 
+import de.metas.attachments.AttachmentEntry.Type;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -35,7 +36,7 @@ import lombok.Value;
 public class AttachmentLog
 {
 	String filename;
-	AttachmentEntryType type;
+	Type type;
 	URI url;
 	AttachmentTags attachmentTags;
 	ITableRecordReference recordRef;

@@ -38,8 +38,6 @@ import java.util.Set;
 
 public interface IPrintingQueueBL extends ISingletonService
 {
-	void updateArchiveFlagsFromConfig(I_AD_Archive archive);
-
 	/**
 	 * Adds the given print-out to the queue
 	 *
@@ -47,7 +45,7 @@ public interface IPrintingQueueBL extends ISingletonService
 	 */
 	I_C_Printing_Queue enqueue(I_AD_Archive printOut);
 
-	void printArchive(@NonNull PrintArchiveParameters printArchiveParameters);
+	void printArchive(PrintArchiveParameters printArchiveParameters);
 
 	void registerHandler(IPrintingQueueHandler handler);
 
@@ -112,6 +110,4 @@ public interface IPrintingQueueBL extends ISingletonService
 	void setPrintoutForOtherUsers(I_C_Printing_Queue item, Set<Integer> userToPrintIds);
 
 	PrinterRoutingsQuery createPrinterRoutingsQueryForItem(I_C_Printing_Queue item);
-
-	void setProcessedAndSave(@NonNull I_C_Printing_Queue item);
 }

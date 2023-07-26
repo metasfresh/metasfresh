@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.lang.SOTrx;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
@@ -33,7 +32,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.decorator.ReadOnlyInfo;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
@@ -52,13 +50,10 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.expression.api.LogicExpressionResultWithReason;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -970,7 +965,7 @@ public final class Document
 	public Collection<IDocumentFieldView> getFieldViews()
 	{
 		final Collection<IDocumentField> documentFields = fieldsByName.values();
-		return ImmutableList.copyOf(documentFields);
+		return ImmutableList.<IDocumentFieldView>copyOf(documentFields);
 	}
 
 	public Set<String> getFieldNames()
@@ -1168,12 +1163,12 @@ public final class Document
 			@NonNull final String fieldName,
 			@Nullable final Object value,
 			@Nullable final ReasonSupplier reason,
-			@NonNull final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator)
+			final boolean ignoreReadonlyFlag)
 			throws DocumentFieldReadonlyException
 	{
 		final IDocumentField documentField = getField(fieldName);
 
-		if (readonlyRevaluator.isReadonly(documentField))
+		if (!ignoreReadonlyFlag && documentField.isReadonly())
 		{
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
@@ -1188,23 +1183,14 @@ public final class Document
 		}
 	}
 
-	public void processValueChanges(
-			@NonNull final List<JSONDocumentChangedEvent> events,
-			@Nullable final ReasonSupplier reason) throws DocumentFieldReadonlyException
-	{
-		processValueChanges(events, reason, DocumentFieldLogicExpressionResultRevaluator.DEFAULT);
-	}
-
-	public void processValueChanges(
-			@NonNull final List<JSONDocumentChangedEvent> events,
-			@Nullable final ReasonSupplier reason,
-			@NonNull final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator) throws DocumentFieldReadonlyException
+	public void processValueChanges(@NonNull final List<JSONDocumentChangedEvent> events, @Nullable final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
 		for (final JSONDocumentChangedEvent event : events)
 		{
 			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 			{
-				processValueChange(event.getPath(), event.getValue(), reason, readonlyRevaluator);
+				final boolean ignoreReadonlyFlag = false;
+				processValueChange(event.getPath(), event.getValue(), reason, ignoreReadonlyFlag);
 			}
 			else
 			{
@@ -1248,10 +1234,8 @@ public final class Document
 		}
 		else
 		{
-			if (documentBL.getDocumentOrNull(this) != null)
-			{
-				documentBL.processEx(this, docAction, null);
-			}
+			final String expectedDocStatus = null; // N/A
+			documentBL.processEx(this, docAction, expectedDocStatus);
 		}
 
 		//
@@ -1334,7 +1318,7 @@ public final class Document
 		{
 			for (final DependencyType triggeringDependencyType : DocumentFieldDependencyMap.DEPENDENCYTYPES_DocumentLevel)
 			{
-				updateOnDependencyChanged(documentFieldName, null, triggeringFieldName, triggeringDependencyType);
+				updateOnDependencyChanged(documentFieldName, (IDocumentField)null, triggeringFieldName, triggeringDependencyType);
 			}
 		}
 
@@ -1367,52 +1351,13 @@ public final class Document
 		getFields().forEach(documentField -> updateFieldReadOnlyAndCollect(documentField, reason));
 	}
 
-	@NonNull
 	private DocumentReadonly computeReadonly()
 	{
-		return DocumentReadonly.builder()
-				.parentActive(parentReadonly.isActive()).active(isActive())
-				.processed(parentReadonly.isProcessed() || isProcessed())
-				.processing(parentReadonly.isProcessing() || isProcessing())
-				.parentEnforcingReadOnly(parentReadonly.computeForceReadOnlyChildDocuments())
-				.fieldsReadonly(ExtendedMemorizingSupplier.of(this::computeFieldsReadOnly))
-				.build();
-	}
-
-	@NonNull
-	private ReadOnlyInfo computeFieldsReadOnly()
-	{
-		final boolean isReadOnlyLogicTrue = computeDefaultFieldsReadOnly().booleanValue();
-
-		if (isReadOnlyLogicTrue)
-		{
-			return ReadOnlyInfo.of(BooleanWithReason.TRUE);
-		}
-
-		final TableRecordReference recordReference = this.getTableRecordReference().orElse(null);
-		if (recordReference == null)
-		{
-			return ReadOnlyInfo.of(BooleanWithReason.FALSE);
-		}
-
-		return getEntityDescriptor()
-				.getDocumentDecorators()
-				.stream()
-				.map(documentDecorator -> documentDecorator.isReadOnly(recordReference))
-				.filter(ReadOnlyInfo::isReadOnly)
-				.findFirst()
-				.orElse(ReadOnlyInfo.of(BooleanWithReason.FALSE));
-	}
-
-	@NonNull
-	private LogicExpressionResult computeDefaultFieldsReadOnly()
-	{
 		final ILogicExpression allFieldsReadonlyLogic = getEntityDescriptor().getReadonlyLogic();
-
-		final LogicExpressionResult allFieldsReadonly;
+		LogicExpressionResult allFieldsReadonly;
 		try
 		{
-			return allFieldsReadonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
+			allFieldsReadonly = allFieldsReadonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
 		}
 		catch (final Exception e)
 		{
@@ -1420,7 +1365,13 @@ public final class Document
 			logger.warn("Failed evaluating entity readonly logic {} for {}. Considering {}", allFieldsReadonlyLogic, this, allFieldsReadonly, e);
 		}
 
-		return allFieldsReadonly;
+		final DocumentReadonly readonlyComputed = DocumentReadonly.builder()
+				.parentActive(parentReadonly.isActive()).active(isActive())
+				.processed(parentReadonly.isProcessed() || isProcessed())
+				.processing(parentReadonly.isProcessing() || isProcessing())
+				.fieldsReadonly(allFieldsReadonly.booleanValue())
+				.build();
+		return readonlyComputed;
 	}
 
 	private void updateFieldReadOnlyAndCollect(final IDocumentField documentField, final ReasonSupplier reason)
@@ -1434,20 +1385,12 @@ public final class Document
 		}
 	}
 
-	@Nullable
 	private LogicExpressionResult computeFieldReadOnly(final IDocumentField documentField)
 	{
 		// Check document's readonly logic
 		final DocumentReadonly documentReadonlyLogic = getReadonly();
-		final BooleanWithReason isReadOnly = documentReadonlyLogic.computeFieldReadonly(documentField.getFieldName(), documentField.isAlwaysUpdateable());
-
-		if (isReadOnly.isTrue())
+		if (documentReadonlyLogic.computeFieldReadonly(documentField.getFieldName(), documentField.isAlwaysUpdateable()))
 		{
-			if (WindowConstants.FIELDNAME_DocumentSummary.equals(documentField.getFieldName()))
-			{
-				return new LogicExpressionResultWithReason(LogicExpressionResult.TRUE, isReadOnly.getReason());
-			}
-
 			return LogicExpressionResult.TRUE;
 		}
 
@@ -1665,12 +1608,6 @@ public final class Document
 
 	/* package */ void deleteIncludedDocuments(final DetailId detailId, final DocumentIdsSelection rowIds)
 	{
-		final BooleanWithReason isDeleteSubDocumentsForbidden = isDeleteSubDocumentsForbidden();
-		if (isDeleteSubDocumentsForbidden.isTrue())
-		{
-			throw new AdempiereException(isDeleteSubDocumentsForbidden.getReason()).markAsUserValidationError();
-		}
-
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		includedDocuments.deleteDocuments(rowIds);
 		checkAndGetValidStatus();
@@ -1684,19 +1621,19 @@ public final class Document
 	/* package */ boolean isProcessed()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processed);
-		return isActiveField != null && isActiveField.getValueAsBoolean(); // not processed if field missing
+		return isActiveField != null ? isActiveField.getValueAsBoolean() : false; // not processed if field missing
 	}
 
 	/* package */ boolean isProcessing()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processing);
-		return isActiveField != null && isActiveField.getValueAsBoolean(); // not processed if field missing
+		return isActiveField != null ? isActiveField.getValueAsBoolean() : false; // not processed if field missing
 	}
 
 	/* package */ boolean isActive()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_IsActive);
-		return isActiveField == null || isActiveField.getValueAsBoolean(); // active if field not found (shall not happen)
+		return isActiveField != null ? isActiveField.getValueAsBoolean() : true; // active if field not found (shall not happen)
 	}
 
 	/* package */ void setParentReadonly(@NonNull final DocumentReadonly parentReadonly)
@@ -1770,7 +1707,8 @@ public final class Document
 			return defaultValue;
 		}
 
-		@SuppressWarnings("unchecked") final T value = (T)valueObj;
+		@SuppressWarnings("unchecked")
+		final T value = (T)valueObj;
 		return value;
 	}
 
@@ -2124,56 +2062,6 @@ public final class Document
 		}
 
 		return standardActions;
-	}
-
-	@NonNull
-	public Optional<TableRecordReference> getTableRecordReference()
-	{
-		final String tableName = entityDescriptor.getTableNameOrNull();
-		final Integer recordId = getDocumentId().isInt() ? getDocumentIdAsInt() : null;
-
-		if (tableName == null || recordId == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(TableRecordReference.of(tableName, recordId));
-	}
-
-	@NonNull
-	public BooleanWithReason isDeleteForbidden()
-	{
-		final TableRecordReference recordReference = getTableRecordReference().orElse(null);
-
-		if (recordReference == null)
-		{
-			return BooleanWithReason.FALSE;
-		}
-
-		return entityDescriptor.getDocumentDecorators()
-				.stream()
-				.map(decorator -> decorator.isDeleteForbidden(recordReference))
-				.filter(BooleanWithReason::isTrue)
-				.findFirst()
-				.orElse(BooleanWithReason.FALSE);
-	}
-
-	@NonNull
-	private BooleanWithReason isDeleteSubDocumentsForbidden()
-	{
-		final TableRecordReference recordReference = getTableRecordReference().orElse(null);
-
-		if (recordReference == null)
-		{
-			return BooleanWithReason.FALSE;
-		}
-
-		return entityDescriptor.getDocumentDecorators()
-				.stream()
-				.map(decorator -> decorator.isDeleteSubDocumentsForbidden(recordReference))
-				.filter(BooleanWithReason::isTrue)
-				.findFirst()
-				.orElse(BooleanWithReason.FALSE);
 	}
 
 	//

@@ -2,11 +2,11 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
-import { ARROW_DOWN_KEY, ARROW_UP_KEY } from '../../constants/Constants';
-import { componentPropTypes, handleCopy } from '../../utils/tableHelpers';
+
+import { handleCopy, componentPropTypes } from '../../utils/tableHelpers';
+
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
-import Spinner from '../app/SpinnerOverlay';
 
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
@@ -20,7 +20,6 @@ export default class Table extends PureComponent {
       listenOnKeys: true,
       tableRefreshToggle: false,
     };
-    this.multiSelectionStartIdx = null;
   }
 
   componentDidMount() {
@@ -73,29 +72,15 @@ export default class Table extends PureComponent {
     this.tfoot = ref;
   };
 
-  getCurrentRowIndex = (arrowOrientation) => {
-    const { selected: selectedRowIds } = this.props;
+  getCurrentRowId = () => {
+    const { keyProperty, selected, rows } = this.props;
 
-    const allRowIds = this.getAllRowIds();
+    const array = rows.map((item) => item[keyProperty]);
+    const currentId = array.findIndex(
+      (x) => x === selected[selected.length - 1]
+    );
 
-    // If there is no selection, return right away
-    if (!selectedRowIds || selectedRowIds.length === 0) {
-      return { currentIdx: null, allRowIds };
-    }
-
-    let currentRowId =
-      arrowOrientation === ARROW_UP_KEY
-        ? selectedRowIds[0]
-        : selectedRowIds[selectedRowIds.length - 1];
-
-    const currentIdx = allRowIds.findIndex((rowId) => rowId === currentRowId);
-
-    return { currentIdx, allRowIds };
-  };
-
-  getAllRowIds = () => {
-    const { keyProperty, rows } = this.props;
-    return rows.map((item) => item[keyProperty]);
+    return { currentId, array };
   };
 
   getProductRange = (id) => {
@@ -114,26 +99,12 @@ export default class Table extends PureComponent {
     return arrayIndex.slice(selectedArr[0], selectedArr[1] + 1);
   };
 
-  /**
-   * @summary Updates the start reference used for the multi selection when SHIFT + arrow up/down keys are pressed
-   * @param {*} currentIdx - the current index in the array of rows
-   */
-  updateMultiSelectionStartIdx = (currentIdx) => {
-    if (this.multiSelectionStartIdx === null) {
-      // setting the start index for the first time (when we get a null value - as result of a previous reset, ie. click on a row)
-      this.multiSelectionStartIdx = currentIdx;
-    }
-  };
-
-  clearMultiSelectionStartIdx = () => (this.multiSelectionStartIdx = null);
-
   handleClick = (e, item) => {
     const { keyProperty, selected, onSelect, onDeselect, featureType } =
       this.props;
     const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
-    this.clearMultiSelectionStartIdx();
     if (e && e.button === 0) {
       const selectMore = e.metaKey || e.ctrlKey;
       const selectRange = e.shiftKey;
@@ -184,11 +155,12 @@ export default class Table extends PureComponent {
       selected,
       showSelectedIncludedView,
       handleSelect,
-      navigationActive,
     } = this.props;
     const { listenOnKeys } = this.state;
 
-    if (!listenOnKeys) return;
+    if (!listenOnKeys) {
+      return;
+    }
 
     const selectRange = e.shiftKey;
     const nodeList = Array.prototype.slice.call(
@@ -202,68 +174,47 @@ export default class Table extends PureComponent {
     }
 
     switch (e.key) {
-      case ARROW_DOWN_KEY: {
+      case 'ArrowDown': {
         e.preventDefault();
 
-        const { currentIdx, allRowIds } =
-          this.getCurrentRowIndex(ARROW_DOWN_KEY);
+        const { currentId, array } = this.getCurrentRowId();
 
-        if (currentIdx >= allRowIds.length - 1) return;
+        if (currentId >= array.length - 1) {
+          return;
+        }
 
         if (!selectRange) {
           handleSelect(
-            allRowIds[currentIdx + 1],
+            array[currentId + 1],
             false,
             idFocused,
             showSelectedIncludedView &&
-              showSelectedIncludedView([allRowIds[currentIdx + 1]])
+              showSelectedIncludedView([array[currentId + 1]])
           );
-          this.clearMultiSelectionStartIdx();
         } else {
-          this.updateMultiSelectionStartIdx(currentIdx);
-
-          const downShiftSel = allRowIds.slice(
-            this.multiSelectionStartIdx > 0 ? this.multiSelectionStartIdx : 0,
-            currentIdx + 2 // +2 because we want to slice up to the next row and include it
-          );
-          handleSelect(
-            downShiftSel,
-            false,
-            idFocused,
-            showSelectedIncludedView && showSelectedIncludedView(downShiftSel)
-          );
+          handleSelect(array[currentId + 1], false, idFocused);
         }
         break;
       }
-      case ARROW_UP_KEY: {
+      case 'ArrowUp': {
         e.preventDefault();
 
-        const { currentIdx, allRowIds } = this.getCurrentRowIndex(ARROW_UP_KEY);
+        const { currentId, array } = this.getCurrentRowId();
 
-        if (currentIdx <= 0) return;
+        if (currentId <= 0) {
+          return;
+        }
 
         if (!selectRange) {
           handleSelect(
-            allRowIds[currentIdx - 1],
+            array[currentId - 1],
             idFocused,
             false,
             showSelectedIncludedView &&
-              showSelectedIncludedView([allRowIds[currentIdx - 1]])
+              showSelectedIncludedView([array[currentId - 1]])
           );
-          this.clearMultiSelectionStartIdx();
         } else {
-          this.updateMultiSelectionStartIdx(currentIdx);
-
-          const upShiftSel = allRowIds.slice(
-            currentIdx - 1,
-            this.multiSelectionStartIdx + 1
-          );
-          handleSelect(
-            upShiftSel,
-            false,
-            idFocused,
-            showSelectedIncludedView && showSelectedIncludedView(upShiftSel)
-          );
+          handleSelect(array[currentId - 1], idFocused, false);
         }
         break;
       }
@@ -285,12 +236,12 @@ export default class Table extends PureComponent {
             e.preventDefault();
             document.activeElement.nextSibling.focus();
           } else {
-            const { currentIdx, allRowIds } = this.getCurrentRowIndex();
+            const { currentId, array } = this.getCurrentRowId();
 
-            if (currentIdx < allRowIds.length - 1) {
+            if (currentId < array.length - 1) {
               e.preventDefault();
 
-              handleSelect(allRowIds[currentIdx + 1], false, 0);
+              handleSelect(array[currentId + 1], false, 0);
 
               const focusedElem =
                 document.getElementsByClassName('js-attributes')[0];
@@ -306,7 +257,7 @@ export default class Table extends PureComponent {
 
           break;
         } else {
-          if (e.shiftKey && navigationActive) {
+          if (e.shiftKey) {
             e.preventDefault();
             //passing focus over table cells backwards
             this.table.focus();
@@ -453,14 +404,16 @@ export default class Table extends PureComponent {
   renderEmptyInfo = (rows) => {
     const { emptyText, emptyHint, pending } = this.props;
 
-    // Note: for the case of pending this div has to pe present otherwise it will mess up
-    // the rendering of the spinner within the table when there are no rows.
+    if (pending) {
+      return false;
+    }
+
     if (!rows.length) {
       return (
         <div className="empty-info-text">
           <div>
-            <h5>{!pending ? emptyText : ''}</h5>
-            <p>{!pending ? emptyHint : ''}</p>
+            <h5>{emptyText}</h5>
+            <p>{emptyHint}</p>
           </div>
         </div>
       );
@@ -497,7 +450,6 @@ export default class Table extends PureComponent {
       onDeselectAll,
       tableRefreshToggle,
       setActiveSort,
-      pending,
     } = this.props;
 
     return (
@@ -512,13 +464,6 @@ export default class Table extends PureComponent {
           }
         )}
       >
-        {pending && !hasIncluded && (
-          <div className="spinner-wrapper-in-tab">
-            <div>
-              <Spinner iconSize={50} spinnerType="modal" />
-            </div>
-          </div>
-        )}
         <table
           className={classnames(
             'table table-bordered-vertically',

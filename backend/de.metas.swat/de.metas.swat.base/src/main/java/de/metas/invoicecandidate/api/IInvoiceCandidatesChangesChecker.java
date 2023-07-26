@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.api;
 
 import java.math.BigDecimal;
 
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -45,19 +44,20 @@ public interface IInvoiceCandidatesChangesChecker
 
 	/**
 	 * Sets the invoice candidates that needs to be tracked, right before any changes.
-	 * <p>
+	 *
 	 * This is our reference when checking for changes.
-	 * <p>
+	 *
 	 * The implementation will take a snapshot of those invoice candidates and later it will use to compare with their new version.
 	 */
-	IInvoiceCandidatesChangesChecker setBeforeChanges(@NonNull final Iterable<I_C_Invoice_Candidate> candidates);
+	IInvoiceCandidatesChangesChecker setBeforeChanges(final Iterable<I_C_Invoice_Candidate> candidates);
 
 	/**
 	 * Asserts there were no changes, when comparing given candidates with the ones which were set by {@link #setBeforeChanges(Iterable)}.
-	 * <p>
+	 *
 	 * On any changes found, the change will be logged to configured logger.
 	 *
+	 * @param candidates
 	 * @throws AdempiereException if any changes where found
 	 */
-	void assertNoChanges(@NonNull final Iterable<I_C_Invoice_Candidate> candidates);
+	void assertNoChanges(final Iterable<I_C_Invoice_Candidate> candidates);
 }

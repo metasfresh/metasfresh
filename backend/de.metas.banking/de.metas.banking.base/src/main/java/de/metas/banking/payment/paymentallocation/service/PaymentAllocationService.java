@@ -24,25 +24,19 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
-import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
-import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
-import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
-import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -63,8 +57,6 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -72,21 +64,15 @@ public class PaymentAllocationService
 {
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
-	private final PaymentAllocationRepository paymentAllocationRepository;
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
 
-	public PaymentAllocationService(
-			@NonNull final MoneyService moneyService,
-			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
-			@NonNull final PaymentAllocationRepository paymentAllocationRepository)
+	public PaymentAllocationService(final MoneyService moneyService, final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
 	{
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
-		this.paymentAllocationRepository = paymentAllocationRepository;
 	}
+
+	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
 
 	@VisibleForTesting
 	public PaymentAllocationResult allocatePayment(@NonNull final PaymentAllocationCriteria paymentAllocationCriteria)
@@ -100,39 +86,6 @@ public class PaymentAllocationService
 	}
 
 	@NonNull
-	public ImmutableList<I_C_Invoice> retrieveUnpaidInvoices(@NonNull final UnpaidInvoiceMatchingAmtQuery unpaidInvoiceMatchingAmtQuery)
-	{
-		final ImmutableList<I_C_Invoice> unpaidInvoices = invoiceDAO.retrieveUnpaid(unpaidInvoiceMatchingAmtQuery.getUnpaidInvoiceQuery());
-
-		if (unpaidInvoices.isEmpty() 
-				|| unpaidInvoiceMatchingAmtQuery.getOpenAmountAtDate() == null 
-				|| unpaidInvoiceMatchingAmtQuery.getOpenAmountEvaluationDate() == null)
-		{
-			return unpaidInvoices;
-		}
-
-		final Map<InvoiceId, I_C_Invoice> id2Invoice = Maps.uniqueIndex(unpaidInvoices, inv -> InvoiceId.ofRepoId(inv.getC_Invoice_ID()));
-
-		final InvoiceToAllocateQuery query = InvoiceToAllocateQuery.builder()
-				.evaluationDate(unpaidInvoiceMatchingAmtQuery.getOpenAmountEvaluationDate())
-				.onlyInvoiceIds(id2Invoice.keySet())
-				.build();
-
-		return paymentAllocationRepository.retrieveInvoicesToAllocate(query)
-				.stream()
-				.filter(invoiceToAllocate -> isOpenAmtWithDiscountMatching(invoiceToAllocate, unpaidInvoiceMatchingAmtQuery.getOpenAmountAtDate()))
-				.map(InvoiceToAllocate::getInvoiceId)
-				.map(id2Invoice::get)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	public List<InvoiceToAllocate> retrieveInvoicesToAllocate(@NonNull final InvoiceToAllocateQuery query)
-	{
-		return paymentAllocationRepository.retrieveInvoicesToAllocate(query);
-	}
-	
-	@NonNull
 	private Optional<PaymentAllocationBuilder> preparePaymentAllocationBuilder(@NonNull final PaymentAllocationCriteria paymentAllocationCriteria)
 	{
 		final boolean paymentAllocationItemsMissing = CollectionUtils.isEmpty(paymentAllocationCriteria.getPaymentAllocationPayableItems());
@@ -145,11 +98,10 @@ public class PaymentAllocationService
 		final I_C_Payment payment = paymentAllocationCriteria.getPayment();
 
 		final PaymentDocument paymentDocument = toPaymentDocument(payment);
-		final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), ZoneId.systemDefault());
 
 		final ImmutableList<PayableDocument> invoiceDocuments = paymentAllocationCriteria.getPaymentAllocationPayableItems()
 				.stream()
-				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDate))
+				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDocument))
 				.collect(ImmutableList.toImmutableList());
 
 		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx());
@@ -165,7 +117,8 @@ public class PaymentAllocationService
 		return Optional.of(builder);
 	}
 
-	public PaymentDocument toPaymentDocument(@NonNull final I_C_Payment payment)
+	@VisibleForTesting
+	PaymentDocument toPaymentDocument(@NonNull final I_C_Payment payment)
 	{
 		final PaymentDirection paymentDirection = extractPaymentDirection(payment);
 
@@ -198,7 +151,7 @@ public class PaymentAllocationService
 
 	private PayableDocument toPayableDocument(
 			final PaymentAllocationPayableItem paymentAllocationPayableItem,
-			final ZonedDateTime paymentDate)
+			final PaymentDocument paymentDocument)
 	{
 		final Money openAmt = moneyService.toMoney(paymentAllocationPayableItem.getOpenAmt());
 		final Money payAmt = moneyService.toMoney(paymentAllocationPayableItem.getPayAmt());
@@ -223,7 +176,7 @@ public class PaymentAllocationService
 			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
 							.orgId(paymentAllocationPayableItem.getClientAndOrgId().getOrgId())
-							.paymentDate(paymentDate)
+							.paymentDate(TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), ZoneId.systemDefault()))
 							.customerId(paymentAllocationPayableItem.getBPartnerId())
 							.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 							.feeAmountIncludingTax(serviceFeeAmt)
@@ -242,11 +195,6 @@ public class PaymentAllocationService
 
 		final InvoiceAmtMultiplier amtMultiplier = paymentAllocationPayableItem.getAmtMultiplier();
 
-		// for purchase invoices and sales credit memos, we need to negate
-		// but not for sales invoices and purchase credit memos
-		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
-		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
-		
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
 				.bpartnerId(paymentAllocationPayableItem.getBPartnerId())
@@ -262,31 +210,7 @@ public class PaymentAllocationService
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
-				//.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo()) // we don't want the credit memo to be wrapped as IPaymentDocument
-				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way 
 				.build();
 	}
 
-	private boolean isOpenAmtWithDiscountMatching(
-			@NonNull final InvoiceToAllocate invoiceToAllocate,
-			@NonNull final Amount openAmountToMatch)
-	{
-		final InvoiceId invoiceId = invoiceToAllocate.getInvoiceId();
-		if (invoiceId == null)
-		{
-			return false;
-		}
-
-		final Amount openAmtWithDiscount = invoiceToAllocate.getOpenAmountConverted().subtract(invoiceToAllocate.getDiscountAmountConverted());
-
-		final boolean isSoTrx = invoiceToAllocate.getDocBaseType().isSales();
-		if (isSoTrx)
-		{
-			return openAmountToMatch.equals(openAmtWithDiscount);
-		}
-		else
-		{
-			return openAmountToMatch.abs().equals(openAmtWithDiscount);
-		}
-	}
 }

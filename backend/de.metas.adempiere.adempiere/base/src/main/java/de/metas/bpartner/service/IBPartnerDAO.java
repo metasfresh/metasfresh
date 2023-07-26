@@ -22,12 +22,27 @@
 
 package de.metas.bpartner.service;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.location.LocationId;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
@@ -36,7 +51,6 @@ import de.metas.bpartner.OrgMappingId;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
-import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
@@ -47,7 +61,6 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -171,9 +184,7 @@ public interface IBPartnerDAO extends ISingletonService
 	ImmutableSet<BPartnerContactId> getContactIdsByRepoIds(@NonNull Set<Integer> repoIds);
 
 	@Nullable
-	I_AD_User getContactById(@NonNull BPartnerContactId contactId);
-
-	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
+	I_AD_User getContactById(BPartnerContactId contactId);
 
 	@Nullable
 	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
@@ -240,7 +251,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(Object contextProvider, I_C_BPartner partner, I_C_BPartner_Location location);
 
-
 	/**
 	 * Retrieve default/first ship to location.
 	 *
@@ -272,8 +282,7 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
-	@NonNull
-	CountryId getCountryId(@NonNull BPartnerLocationId bpLocationId);
+	CountryId getCountryId(BPartnerLocationId bpLocationId);
 	/**
 	 * Retrieve default/first bill to location.
 	 *
@@ -328,13 +337,6 @@ public interface IBPartnerDAO extends ISingletonService
 			@NonNull OrgId targetOrgId);
 
 	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
-
-	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
-
-
-	List<I_C_BPartner> retrieveBusinessPartners();
-
-	Set<Integer> retrieveForSectionGroupPartner(BPartnerId sectionGroupPartnerId);
 
 	@Value
 	@Builder
@@ -400,9 +402,4 @@ public interface IBPartnerDAO extends ISingletonService
 	BPartnerLocationId retrieveLastUpdatedLocation(BPartnerId bpartnerId);
 	
 	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
-
-	BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId);
-
-	@NonNull
-	ImmutableList<I_C_BPartner> getBySAPBpartnerCode(@NonNull String sapBPartnerCode);
 }

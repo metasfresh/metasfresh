@@ -49,6 +49,11 @@ public class UpdateMainDataRequest
 	BigDecimal directMovementQty = BigDecimal.ZERO;
 
 	/**
+	 * Quantity reserved for our customers
+	 */
+	@Default
+	BigDecimal orderedSalesQty = BigDecimal.ZERO;
+	/**
 	 * Quantity ordered from our vendors
 	 */
 	@Default

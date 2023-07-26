@@ -1,6 +1,15 @@
 package de.metas.ui.web.window.model.sql;
 
+import java.util.Set;
+
+import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
+import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.NamePair;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
@@ -10,15 +19,6 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
-import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.NamePair;
-
-import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.Set;
 
 /*
  * #%L
@@ -46,11 +46,13 @@ import java.util.Set;
  * {@link IValidationRule} implementation which filters only those DocActions on which are suitable for current document status and user's role has access to them.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public final class DocActionValidationRule extends AbstractJavaValidationRule
 {
-	public static final DocActionValidationRule instance = new DocActionValidationRule();
-	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.<String>builder()
+	public static final transient DocActionValidationRule instance = new DocActionValidationRule();
+
+	private static final Set<String> PARAMETERS = ImmutableSet.<String> builder()
 			.add(WindowConstants.FIELDNAME_DocStatus)
 			.add(WindowConstants.FIELDNAME_C_DocType_ID)
 			.add(WindowConstants.FIELDNAME_C_DocTypeTarget_ID)
@@ -75,12 +77,12 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 		}
 
 		final String docAction = item.getID();
-		final ImmutableSet<String> availableDocActions = getAvailableDocActions(evalCtx);
+		final Set<String> availableDocActions = getAvailableDocActions(evalCtx);
 
 		return availableDocActions.contains(docAction);
 	}
 
-	private ImmutableSet<String> getAvailableDocActions(final IValidationContext evalCtx)
+	private final Set<String> getAvailableDocActions(final IValidationContext evalCtx)
 	{
 		final DocActionOptionsContext optionsCtx = DocActionOptionsContext.builder()
 				.userRolePermissionsKey(extractUserRolePermissionsKey(evalCtx))
@@ -90,16 +92,14 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 				.processing(extractProcessing(evalCtx))
 				.orderType(extractOrderType(evalCtx))
 				.soTrx(extractSOTrx(evalCtx))
-				.validationContext(evalCtx)
 				.build();
+		Services.get(IDocActionOptionsBL.class).updateDocActions(optionsCtx);
 
-		final IDocActionOptionsBL docActionOptionsBL = Services.get(IDocActionOptionsBL.class);
-		docActionOptionsBL.updateDocActions(optionsCtx);
-
-		return optionsCtx.getDocActions();
+		final Set<String> availableDocActions = optionsCtx.getDocActions();
+		return availableDocActions;
 	}
 
-	private static UserRolePermissionsKey extractUserRolePermissionsKey(final IValidationContext evalCtx)
+	private UserRolePermissionsKey extractUserRolePermissionsKey(final IValidationContext evalCtx)
 	{
 		return UserRolePermissionsKey.fromEvaluatee(evalCtx, LookupDataSourceContext.PARAM_UserRolePermissionsKey.getName());
 	}
@@ -117,18 +117,25 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 
 	private static String extractDocStatus(final IValidationContext evalCtx)
 	{
-		return evalCtx.get_ValueAsString(WindowConstants.FIELDNAME_DocStatus);
+		final String value = evalCtx.get_ValueAsString(WindowConstants.FIELDNAME_DocStatus);
+		return value;
 	}
 
 	private static DocTypeId extractDocTypeId(final IValidationContext evalCtx)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(evalCtx.get_ValueAsInt(WindowConstants.FIELDNAME_C_DocType_ID, -1));
-		if (docTypeId != null)
+		final int docTypeId = evalCtx.get_ValueAsInt(WindowConstants.FIELDNAME_C_DocType_ID, -1);
+		if (docTypeId > 0)
 		{
-			return docTypeId;
+			return DocTypeId.ofRepoId(docTypeId);
 		}
 
-		return DocTypeId.ofRepoIdOrNull(evalCtx.get_ValueAsInt(WindowConstants.FIELDNAME_C_DocTypeTarget_ID, -1));
+		final int docTypeTargetId = evalCtx.get_ValueAsInt(WindowConstants.FIELDNAME_C_DocTypeTarget_ID, -1);
+		if (docTypeTargetId > 0)
+		{
+			return DocTypeId.ofRepoId(docTypeTargetId);
+		}
+
+		return null;
 	}
 
 	private static SOTrx extractSOTrx(final IValidationContext evalCtx)
@@ -138,8 +145,7 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 
 	private static boolean extractProcessing(final IValidationContext evalCtx)
 	{
-		final Boolean valueAsBoolean = evalCtx.get_ValueAsBoolean(WindowConstants.FIELDNAME_Processing, false);
-		return valueAsBoolean != null && valueAsBoolean;
+		return evalCtx.get_ValueAsBoolean(WindowConstants.FIELDNAME_Processing, false);
 	}
 
 	private static String extractOrderType(final IValidationContext evalCtx)
@@ -148,14 +154,9 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public Set<String> getParameters(@Nullable final String contextTableName)
+	public Set<String> getParameters()
 	{
-		final HashSet<String> parameters = new HashSet<>(PARAMETERS);
-
-		final IDocActionOptionsBL docActionOptionsBL = Services.get(IDocActionOptionsBL.class);
-		parameters.addAll(docActionOptionsBL.getRequiredParameters(contextTableName));
-
-		return parameters;
+		return PARAMETERS;
 	}
 
 }

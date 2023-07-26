@@ -346,14 +346,13 @@ public class ShipmentService
 		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
 				shipmentSchedules,
 				request.getQuantityTypeToUse(),
-				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
 				ImmutableMap.of());
 
 		return huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(true)
 				.setScheduleIdToExternalInfo(request.getScheduleToExternalInfo())
-				.computeShipmentDate(CalculateShippingDateRule.DELIVERY_DATE)
+				.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE)
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(scheduleWithHUS);
 	}

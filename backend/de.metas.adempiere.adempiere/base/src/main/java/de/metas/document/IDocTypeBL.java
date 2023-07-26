@@ -15,11 +15,12 @@ public interface IDocTypeBL extends ISingletonService
 	@NonNull
 	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
+
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
 
 	@NonNull
 	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
-
+	
 	ITranslatableString getNameById(DocTypeId docTypeId);
 
 	/**
@@ -36,7 +37,6 @@ public interface IDocTypeBL extends ISingletonService
 	 * @return true if it's a sales cost estimate
 	 */
 	boolean isSalesCostEstimate(I_C_DocType dt);
-
 	/**
 	 * @return true if it's a sales proposal (Not binding)
 	 */
@@ -57,6 +57,8 @@ public interface IDocTypeBL extends ISingletonService
 	 */
 	boolean isSalesProposalOrQuotation(I_C_DocType dt);
 
+	boolean isSOTrx(String docBaseType);
+
 	boolean isPrepay(DocTypeId docTypeId);
 
 	boolean isPrepay(I_C_DocType dt);
@@ -66,10 +68,6 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isRequisition(DocTypeId docTypeId);
 
 	boolean isMediated(DocTypeId docTypeId);
-
-	boolean isCallOrder(DocTypeId docTypeId);
-
-	boolean isInternalVendorInvoice(DocTypeId docTypeId);
-
+	
 	void save(I_C_DocType dt);
 }

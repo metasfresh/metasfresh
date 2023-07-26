@@ -1,13 +1,18 @@
 package de.metas.product;
 
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import org.compiere.model.X_M_Product;
+import java.util.Arrays;
 
 import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_M_Product;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -31,7 +36,6 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@AllArgsConstructor
 public enum ProductType implements ReferenceListAwareEnum
 {
 	Item(X_M_Product.PRODUCTTYPE_Item), // I
@@ -39,31 +43,53 @@ public enum ProductType implements ReferenceListAwareEnum
 	Resource(X_M_Product.PRODUCTTYPE_Resource), // R
 	ExpenseType(X_M_Product.PRODUCTTYPE_ExpenseType), // E
 	Online(X_M_Product.PRODUCTTYPE_Online), // O
-	FreightCost(X_M_Product.PRODUCTTYPE_FreightCost), // F
-	Food(X_M_Product.PRODUCTTYPE_Nahrung)//N
+	FreightCost(X_M_Product.PRODUCTTYPE_FreightCost) // F
 	;
-
-	private static final ReferenceListAwareEnums.ValuesIndex<ProductType> index = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private final String code;
 
-	@Nullable
-	public static ProductType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+	ProductType(@NonNull final String code)
+	{
+		this.code = code;
+	}
 
-	public static ProductType ofCode(@NonNull final String code) {return index.ofCode(code);}
+	public static ProductType ofNullableCode(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : null;
+	}
 
-	@Nullable
-	public static String toCodeOrNull(@Nullable final ProductType type) {return type != null ? type.getCode() : null;}
+	public static ProductType ofCode(@NonNull final String code)
+	{
+		ProductType type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + ProductType.class + " found for code: " + code);
+		}
+		return type;
+	}
 
-	public boolean isItem() {return this == Item;}
+	public static String toCodeOrNull(@Nullable final ProductType type)
+	{
+		return type != null ? type.getCode() : null;
+	}
 
-	/**
-	 * @return {@code true} <b>for every</b> non-item, not just {@link #Service}.
-	 */
-	public boolean isService() {return this != Item;}
+	private static final ImmutableMap<String, ProductType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ProductType::getCode);
 
-	public boolean isFreightCost() {return this == FreightCost;}
+	public boolean isItem()
+	{
+		return this == Item;
+	}
 
-	public boolean isResource() {return this == Resource;}
+	/** @return {@code true} <b>for every</b> non-item, not just {@link #Service}. */
+	public boolean isService()
+	{
+		return this != Item;
+	}
+
+	public boolean isFreightCost()
+	{
+		return this == FreightCost;
+	}
+
 }

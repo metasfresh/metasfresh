@@ -22,13 +22,9 @@ package de.metas.materialtracking.model.validator;
  * #L%
  */
 
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
-import de.metas.materialtracking.model.I_C_Invoice_Detail;
-import de.metas.materialtracking.model.I_PP_Order;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Map;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -38,8 +34,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 
-import java.util.List;
-import java.util.Map;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
+import de.metas.materialtracking.model.I_C_Invoice_Detail;
+import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 @Interceptor(I_M_PriceList_Version.class)
 public class M_PriceList_Version

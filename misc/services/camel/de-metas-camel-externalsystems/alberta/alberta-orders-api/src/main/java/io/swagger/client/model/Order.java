@@ -12,20 +12,27 @@
 
 package io.swagger.client.model;
 
+import java.util.Objects;
+import java.util.Arrays;
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import io.swagger.client.model.OrderDeliveryAddress;
+import io.swagger.client.model.OrderedArticleLine;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.OffsetDateTime;
-
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.OffsetDateTime;
 /**
  * Order
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-10-04T13:49:41.437Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-04-08T07:58:57.853Z[GMT]")
 public class Order {
   @SerializedName("_id")
   private String _id = null;
@@ -63,9 +70,6 @@ public class Order {
   @SerializedName("doctorId")
   private String doctorId = null;
 
-  @SerializedName("hospitalId")
-  private String hospitalId = null;
-
   @SerializedName("pharmacyId")
   private String pharmacyId = null;
 
@@ -92,12 +96,6 @@ public class Order {
 
   @SerializedName("annotation")
   private String annotation = null;
-
-  @SerializedName("deliveryInformation")
-  private String deliveryInformation = null;
-
-  @SerializedName("deliveryNote")
-  private String deliveryNote = null;
 
   @SerializedName("archived")
   private Boolean archived = null;
@@ -324,24 +322,6 @@ public class Order {
     this.doctorId = doctorId;
   }
 
-  public Order hospitalId(String hospitalId) {
-    this.hospitalId = hospitalId;
-    return this;
-  }
-
-   /**
-   * Id der verordnenden Klinik (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich in WaWi vorhanden)
-   * @return hospitalId
-  **/
-  @Schema(example = "5ab233d79d69c74b68cec670", description = "Id der verordnenden Klinik (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich in WaWi vorhanden)")
-  public String getHospitalId() {
-    return hospitalId;
-  }
-
-  public void setHospitalId(String hospitalId) {
-    this.hospitalId = hospitalId;
-  }
-
   public Order pharmacyId(String pharmacyId) {
     this.pharmacyId = pharmacyId;
     return this;
@@ -366,10 +346,10 @@ public class Order {
   }
 
    /**
-   * Therapie, für die der Vertrag gilt (0&#x3D; Unbekannt, 1 &#x3D; Parenterale Ernährung, 2 &#x3D; Enterale Ernährung, 3 &#x3D; Stoma, 4 &#x3D; Tracheostoma, 5 &#x3D; Inkontinenz ableitend, 6 &#x3D; Wundversorgung, 7 &#x3D; IV-Therapien, 8 &#x3D; Beatmung, 9 &#x3D; Sonstiges, 10 &#x3D; OSA, 11 &#x3D; Hustenhilfen, 12 &#x3D; Absaugung, 13 &#x3D; Patientenüberwachung, 14 &#x3D; Sauerstoff, 15 &#x3D; Inhalations- und Atemtherapie, 16 &#x3D; Lagerungshilfsmittel, 17 &#x3D; Schmerztherapie, 18 &#x3D; Immuntherapie, 19 &#x3D; Rehydration, Befeuchtung &#x3D; 20, High-Flow &#x3D; 21, Atemtherapie &#x3D; 22, Monitoring &#x3D; 23, Diagnostik &#x3D; 24, Zahnschiene &#x3D; 25, Sitzschalenbau &#x3D; 26, Orthopaedietechnik &#x3D; 27, Reha Hilfsmittel &#x3D; 28, Elektrostimulation &#x3D; 29, Diabetes &#x3D; 30, Applikationshilfen IV PE EE &#x3D; 31, Messgeraete fuer Koerperzustaende/-funktionen &#x3D; 32, PCA Schmerztherapie &#x3D; 33, Arzneimittelgabe &#x3D; 34)
+   * Therapie, für die der Vertrag gilt (0&#x3D; Unbekannt, 1 &#x3D; Parenterale Ernährung, 2 &#x3D; Enterale Ernährung, 3 &#x3D; Stoma, 4 &#x3D; Tracheostoma, 5 &#x3D; Inkontinenz ableitend, 6 &#x3D; Wundversorgung, 7 &#x3D; IV-Therapien, 8 &#x3D; Beatmung, 9 &#x3D; Sonstiges, 10 &#x3D; OSA, 11 &#x3D; Hustenhilfen, 12 &#x3D; Absaugung, 13 &#x3D; Patientenüberwachung, 14 &#x3D; Sauerstoff, 15 &#x3D; Inhalations- und Atemtherapie, 16 &#x3D; Lagerungshilfsmittel, 17 &#x3D; Immuntherapie, 18 &#x3D; Rehydration)
    * @return therapyId
   **/
-  @Schema(example = "3", required = true, description = "Therapie, für die der Vertrag gilt (0= Unbekannt, 1 = Parenterale Ernährung, 2 = Enterale Ernährung, 3 = Stoma, 4 = Tracheostoma, 5 = Inkontinenz ableitend, 6 = Wundversorgung, 7 = IV-Therapien, 8 = Beatmung, 9 = Sonstiges, 10 = OSA, 11 = Hustenhilfen, 12 = Absaugung, 13 = Patientenüberwachung, 14 = Sauerstoff, 15 = Inhalations- und Atemtherapie, 16 = Lagerungshilfsmittel, 17 = Schmerztherapie, 18 = Immuntherapie, 19 = Rehydration, Befeuchtung = 20, High-Flow = 21, Atemtherapie = 22, Monitoring = 23, Diagnostik = 24, Zahnschiene = 25, Sitzschalenbau = 26, Orthopaedietechnik = 27, Reha Hilfsmittel = 28, Elektrostimulation = 29, Diabetes = 30, Applikationshilfen IV PE EE = 31, Messgeraete fuer Koerperzustaende/-funktionen = 32, PCA Schmerztherapie = 33, Arzneimittelgabe = 34)")
+  @Schema(example = "3", required = true, description = "Therapie, für die der Vertrag gilt (0= Unbekannt, 1 = Parenterale Ernährung, 2 = Enterale Ernährung, 3 = Stoma, 4 = Tracheostoma, 5 = Inkontinenz ableitend, 6 = Wundversorgung, 7 = IV-Therapien, 8 = Beatmung, 9 = Sonstiges, 10 = OSA, 11 = Hustenhilfen, 12 = Absaugung, 13 = Patientenüberwachung, 14 = Sauerstoff, 15 = Inhalations- und Atemtherapie, 16 = Lagerungshilfsmittel, 17 = Immuntherapie, 18 = Rehydration)")
   public BigDecimal getTherapyId() {
     return therapyId;
   }
@@ -520,42 +500,6 @@ public class Order {
     this.annotation = annotation;
   }
 
-  public Order deliveryInformation(String deliveryInformation) {
-    this.deliveryInformation = deliveryInformation;
-    return this;
-  }
-
-   /**
-   * weitere Lieferinformationen z.B. Expresslieferung
-   * @return deliveryInformation
-  **/
-  @Schema(example = "Express", description = "weitere Lieferinformationen z.B. Expresslieferung")
-  public String getDeliveryInformation() {
-    return deliveryInformation;
-  }
-
-  public void setDeliveryInformation(String deliveryInformation) {
-    this.deliveryInformation = deliveryInformation;
-  }
-
-  public Order deliveryNote(String deliveryNote) {
-    this.deliveryNote = deliveryNote;
-    return this;
-  }
-
-   /**
-   * Zustellhinweis
-   * @return deliveryNote
-  **/
-  @Schema(example = "beim Nachbarn ablegen", description = "Zustellhinweis")
-  public String getDeliveryNote() {
-    return deliveryNote;
-  }
-
-  public void setDeliveryNote(String deliveryNote) {
-    this.deliveryNote = deliveryNote;
-  }
-
   public Order archived(Boolean archived) {
     this.archived = archived;
     return this;
@@ -612,7 +556,7 @@ public class Order {
 
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -632,7 +576,6 @@ public class Order {
         Objects.equals(this.nextDelivery, order.nextDelivery) &&
         Objects.equals(this.deliveryAddress, order.deliveryAddress) &&
         Objects.equals(this.doctorId, order.doctorId) &&
-        Objects.equals(this.hospitalId, order.hospitalId) &&
         Objects.equals(this.pharmacyId, order.pharmacyId) &&
         Objects.equals(this.therapyId, order.therapyId) &&
         Objects.equals(this.therapyTypeIds, order.therapyTypeIds) &&
@@ -642,8 +585,6 @@ public class Order {
         Objects.equals(this.status, order.status) &&
         Objects.equals(this.isSeriesOrder, order.isSeriesOrder) &&
         Objects.equals(this.annotation, order.annotation) &&
-        Objects.equals(this.deliveryInformation, order.deliveryInformation) &&
-        Objects.equals(this.deliveryNote, order.deliveryNote) &&
         Objects.equals(this.archived, order.archived) &&
         Objects.equals(this.timestamp, order.timestamp) &&
         Objects.equals(this.updated, order.updated);
@@ -651,7 +592,7 @@ public class Order {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_id, salesId, patientId, rootId, creationDate, deliveryDate, startDate, endDate, dayOfDelivery, nextDelivery, deliveryAddress, doctorId, hospitalId, pharmacyId, therapyId, therapyTypeIds, isInitialCare, orderedArticleLines, createdBy, status, isSeriesOrder, annotation, deliveryInformation, deliveryNote, archived, timestamp, updated);
+    return Objects.hash(_id, salesId, patientId, rootId, creationDate, deliveryDate, startDate, endDate, dayOfDelivery, nextDelivery, deliveryAddress, doctorId, pharmacyId, therapyId, therapyTypeIds, isInitialCare, orderedArticleLines, createdBy, status, isSeriesOrder, annotation, archived, timestamp, updated);
   }
 
 
@@ -672,7 +613,6 @@ public class Order {
     sb.append("    nextDelivery: ").append(toIndentedString(nextDelivery)).append("\n");
     sb.append("    deliveryAddress: ").append(toIndentedString(deliveryAddress)).append("\n");
     sb.append("    doctorId: ").append(toIndentedString(doctorId)).append("\n");
-    sb.append("    hospitalId: ").append(toIndentedString(hospitalId)).append("\n");
     sb.append("    pharmacyId: ").append(toIndentedString(pharmacyId)).append("\n");
     sb.append("    therapyId: ").append(toIndentedString(therapyId)).append("\n");
     sb.append("    therapyTypeIds: ").append(toIndentedString(therapyTypeIds)).append("\n");
@@ -682,8 +622,6 @@ public class Order {
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    isSeriesOrder: ").append(toIndentedString(isSeriesOrder)).append("\n");
     sb.append("    annotation: ").append(toIndentedString(annotation)).append("\n");
-    sb.append("    deliveryInformation: ").append(toIndentedString(deliveryInformation)).append("\n");
-    sb.append("    deliveryNote: ").append(toIndentedString(deliveryNote)).append("\n");
     sb.append("    archived: ").append(toIndentedString(archived)).append("\n");
     sb.append("    timestamp: ").append(toIndentedString(timestamp)).append("\n");
     sb.append("    updated: ").append(toIndentedString(updated)).append("\n");
@@ -695,7 +633,7 @@ public class Order {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }

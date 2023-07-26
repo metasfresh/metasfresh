@@ -2,7 +2,6 @@ package de.metas.material.dispo.commons.candidate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.common.util.IdConstants;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -105,12 +104,5 @@ public class CandidateId implements RepoIdAware
 	public boolean isUnspecified()
 	{
 		return repoId == IdConstants.UNSPECIFIED_REPO_ID;
-	}
-
-	public static boolean isRegularNonNull(@Nullable final CandidateId candidateId)
-	{
-		return candidateId != null
-				&& !candidateId.isUnspecified()
-				&& !candidateId.isNull();
 	}
 }

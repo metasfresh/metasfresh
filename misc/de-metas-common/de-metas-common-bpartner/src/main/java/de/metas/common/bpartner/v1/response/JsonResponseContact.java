@@ -27,9 +27,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.metas.common.rest_api.common.JsonExternalId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
@@ -62,23 +62,23 @@ public class JsonResponseContact
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
 
-	@Schema
+	@ApiModelProperty(dataType = "java.lang.String")
 	JsonExternalId externalId;
 
-	@Schema
+	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshBPartnerId;
 
-	@Schema(description = "translated to `AD_User.Value`")
+	@ApiModelProperty("translated to `AD_User.Value`")
 	@JsonInclude(Include.NON_NULL)
 	String code;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean active;
 
-	@Schema(minLength = 1)
+	@ApiModelProperty(allowEmptyValue = false)
 	String name;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -105,35 +105,35 @@ public class JsonResponseContact
 	@JsonInclude(Include.NON_EMPTY)
 	String description;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean newsletter;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean shipToDefault;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean billToDefault;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean defaultContact;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean sales;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean salesDefault;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean purchase;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean purchaseDefault;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = false)
 	boolean subjectMatter;
 
 	@JsonInclude(Include.NON_NULL)
-	@Schema // shall be last
+	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)

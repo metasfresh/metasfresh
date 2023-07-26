@@ -1,7 +1,15 @@
 package org.compiere.apps.search;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.ad_reference.ADReferenceService;
+import java.awt.Component;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.X_AD_WF_NextCondition;
 import org.compiere.swing.CComboBox;
@@ -9,12 +17,9 @@ import org.compiere.swing.CEditor;
 import org.compiere.swing.ToStringListCellRenderer;
 import org.compiere.util.Env;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import java.awt.*;
-import java.util.Map;
-import java.util.Properties;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Services;
 
 /**
  * Advanced search table - cell renderer and editor for AND/OR join option.
@@ -39,11 +44,11 @@ class FindJoinCellEditor extends FindCellEditor implements TableCellRenderer
 		super();
 
 		// Load translation
-		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 		final Properties ctx = Env.getCtx();
 		join2displayName = ImmutableMap.<Join, String> builder()
-				.put(Join.AND, adReferenceService.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_And))
-				.put(Join.OR, adReferenceService.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_OR))
+				.put(Join.AND, adReferenceDAO.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_And))
+				.put(Join.OR, adReferenceDAO.retrieveListNameTrl(ctx, JoinAndOr_AD_Reference_ID, X_AD_WF_NextCondition.ANDOR_OR))
 				.build();
 	}
 

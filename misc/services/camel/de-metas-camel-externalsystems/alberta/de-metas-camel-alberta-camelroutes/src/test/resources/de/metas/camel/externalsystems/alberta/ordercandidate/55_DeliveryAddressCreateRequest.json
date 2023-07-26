@@ -4,12 +4,12 @@
   "jsonRequestLocationUpsert": {
     "requestItems": [
       {
-        "locationIdentifier": "ext-ALBERTA-patientId_8a5d70ebb3300be757050b0bc2e01d44e9b6ac3af31f39fdd5fb517d2ebd13f660d87badb51b65e6600666101e728f9d24aa52224f9617981aa2fce45c02b701",
+        "locationIdentifier": "ext-ALBERTA-delivery_patientId",
         "location": {
           "active": null,
           "activeSet": false,
-          "name": "address, additionalAddress, additionalAddress2",
-          "nameSet": true,
+          "name": null,
+          "nameSet": false,
           "bpartnerName": "address name",
           "bpartnerNameSet": true,
           "address1": "address",
@@ -38,12 +38,10 @@
           "shipToSet": true,
           "shipToDefault": null,
           "shipToDefaultSet": false,
-          "billTo": false,
-          "billToSet": true,
+          "billTo": null,
+          "billToSet": false,
           "billToDefault": null,
-          "billToDefaultSet": false,
-          "ephemeral": true,
-          "ephemeralSet": true
+          "billToDefaultSet": false
         }
       }
     ],

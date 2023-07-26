@@ -39,7 +39,7 @@ import de.metas.util.Services;
 @Interceptor(I_C_Location.class)
 public class C_Location
 {
-	public static final Topic EVENTS_TOPIC = Topic.distributed("de.metas.location.geocoding.events");
+	public static final Topic EVENTS_TOPIC = Topic.remote("de.metas.location.geocoding.events");
 
 	private final IEventBusFactory eventBusFactory;
 
@@ -61,6 +61,6 @@ public class C_Location
 	{
 		eventBusFactory
 				.getEventBus(EVENTS_TOPIC)
-				.enqueueObject(LocationGeocodeEventRequest.of(locationId));
+				.postObject(LocationGeocodeEventRequest.of(locationId));
 	}
 }

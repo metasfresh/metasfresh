@@ -1,9 +1,7 @@
 package de.metas.ui.web.session;
 
 import com.google.common.base.MoreObjects;
-import de.metas.contracts.ConditionsId;
 import de.metas.i18n.Language;
-import de.metas.letter.BoilerPlateId;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.ui.web.session.json.WebuiSessionId;
@@ -80,8 +78,6 @@ import java.util.Properties;
 	private String userFullname;
 	private String userEmail;
 	private String avatarId;
-	private BoilerPlateId defaultBoilerPlateId;
-	private ConditionsId defaultFlatrateConditionsId;
 
 	//
 	// Defaults

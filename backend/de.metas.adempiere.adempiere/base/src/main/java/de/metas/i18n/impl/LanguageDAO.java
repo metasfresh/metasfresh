@@ -1,14 +1,8 @@
 package de.metas.i18n.impl;
 
-import ch.qos.logback.classic.Level;
-import de.metas.i18n.ADLanguageList;
-import de.metas.i18n.ILanguageDAO;
-import de.metas.logging.LogManager;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -23,8 +17,14 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
+import ch.qos.logback.classic.Level;
+import de.metas.i18n.ADLanguageList;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class LanguageDAO implements ILanguageDAO
 {
@@ -293,7 +293,7 @@ public class LanguageDAO implements ILanguageDAO
 		//
 		// Insert Statement
 		final String trlAlias = "trl";
-		final UserId userId = Env.getLoggedUserIdIfExists().orElse(UserId.METASFRESH);
+		final int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
 		final String keyColumn = poInfo.getKeyColumnName();
 		Check.assumeNotEmpty(keyColumn, "keyColumn not empty for {}", baseTableName); // shall not happen
 		//
@@ -318,9 +318,9 @@ public class LanguageDAO implements ILanguageDAO
 			.append(", " + tblAlias + ".AD_Client_ID") // AD_Client_ID
 			.append(", " + tblAlias + ".AD_Org_ID") // AD_Org_ID
 			.append(", now()") // Created
-			.append(", " + userId.getRepoId()) // CreatedBy
+			.append(", " + AD_User_ID) // CreatedBy
 			.append(", now()") // Updated
-			.append(", " + userId.getRepoId()) // UpdatedBy
+			.append(", " + AD_User_ID) // UpdatedBy
 			.append(", ").append(DB.TO_BOOLEAN(true)) // IsActive
 			.append(", " + tblAlias + "." + keyColumn) // KeyColumn
 			.append(colsWithAlias)

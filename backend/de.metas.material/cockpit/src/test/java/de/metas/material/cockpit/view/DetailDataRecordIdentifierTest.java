@@ -1,21 +1,22 @@
 package de.metas.material.cockpit.view;
 
-import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
-import de.metas.material.event.commons.ProductDescriptor;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
+import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L

@@ -1,5 +1,12 @@
 package de.metas.contracts.spi;
 
+import java.util.List;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -7,17 +14,9 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.util.List;
 
 /*
  * #%L
@@ -51,9 +50,6 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 {
 	private static final AdMessageKey MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P = AdMessageKey.of("Term_Error_Entry_Already_CO");
 
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void beforeFlatrateTermReactivate(final I_C_Flatrate_Term term)
@@ -70,6 +66,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 */
 	protected void deleteFlatrateTermDataEntriesOnReactivate(final I_C_Flatrate_Term term)
 	{
+		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> entries = flatrateDAO.retrieveDataEntries(term, null, null);
 		for (final I_C_Flatrate_DataEntry entry : entries)
 		{
@@ -77,10 +74,9 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 			// However, we want to give a user-friendly explanation to the user.
 			if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(entry.getDocStatus()))
 			{
-				final ITranslatableString uomName = uomDAO.getName(UomId.ofRepoId(entry.getC_UOM_ID()));
 				throw new AdempiereException(
 						MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P,
-						uomName, entry.getC_Period().getName());
+						new Object[] { entry.getC_UOM().getName(), entry.getC_Period().getName() });
 			}
 			InterfaceWrapperHelper.delete(entry);
 		}
@@ -88,6 +84,8 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 
 	/**
 	 * Deletes {@link I_C_Invoice_Clearing_Alloc}s for given term.
+	 *
+	 * @param term
 	 */
 	protected void deleteC_Invoice_Clearing_AllocsOnReactivate(final I_C_Flatrate_Term term)
 	{
@@ -113,7 +111,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void afterSaveOfNextTermForPredecessor(final I_C_Flatrate_Term next, final I_C_Flatrate_Term predecessor)
+	public void afterSaveOfNextTermForPredecessor(I_C_Flatrate_Term next, I_C_Flatrate_Term predecessor)
 	{
 		// nothing
 	}
@@ -122,7 +120,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void afterFlatrateTermEnded(final I_C_Flatrate_Term term)
+	public void afterFlatrateTermEnded(I_C_Flatrate_Term term)
 	{
 		// nothing
 	}
@@ -131,7 +129,7 @@ public class FallbackFlatrateTermEventListener implements IFlatrateTermEventList
 	 * Does nothing; Feel free to override.
 	 */
 	@Override
-	public void beforeSaveOfNextTermForPredecessor(final I_C_Flatrate_Term next, final I_C_Flatrate_Term predecessor)
+	public void beforeSaveOfNextTermForPredecessor(I_C_Flatrate_Term next, I_C_Flatrate_Term predecessor)
 	{
 		// nothing
 	}

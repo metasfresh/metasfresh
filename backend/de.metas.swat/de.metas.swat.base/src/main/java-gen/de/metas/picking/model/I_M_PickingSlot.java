@@ -1,141 +1,161 @@
 package de.metas.picking.model;
 
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_PickingSlot
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_M_PickingSlot 
 {
 
-	String Table_Name = "M_PickingSlot";
+    /** TableName=M_PickingSlot */
+    public static final String Table_Name = "M_PickingSlot";
 
-//	/** AD_Table_ID=540543 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540543 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Business Partner.
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Business Partner.
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_ID();
+	public int getC_BPartner_ID();
 
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Location.
+	 * Set Standort.
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Location.
+	 * Get Standort.
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_Location_ID();
+	public int getC_BPartner_Location_ID();
 
-	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+    /** Column name C_BPartner_Location_ID */
+    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_PickingSlot, Object> COLUMN_Created = new ModelColumn<>(I_M_PickingSlot.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_M_PickingSlot, Object> COLUMN_IsActive = new ModelColumn<>(I_M_PickingSlot.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Is Dynamic.
@@ -144,7 +164,7 @@ public interface I_M_PickingSlot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDynamic (boolean IsDynamic);
+	public void setIsDynamic (boolean IsDynamic);
 
 	/**
 	 * Get Is Dynamic.
@@ -153,10 +173,12 @@ public interface I_M_PickingSlot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isDynamic();
+	public boolean isDynamic();
 
-	ModelColumn<I_M_PickingSlot, Object> COLUMN_IsDynamic = new ModelColumn<>(I_M_PickingSlot.class, "IsDynamic", null);
-	String COLUMNNAME_IsDynamic = "IsDynamic";
+    /** Column definition for IsDynamic */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsDynamic = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "IsDynamic", null);
+    /** Column name IsDynamic */
+    public static final String COLUMNNAME_IsDynamic = "IsDynamic";
 
 	/**
 	 * Set Rack System.
@@ -165,7 +187,7 @@ public interface I_M_PickingSlot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsPickingRackSystem (boolean IsPickingRackSystem);
+	public void setIsPickingRackSystem (boolean IsPickingRackSystem);
 
 	/**
 	 * Get Rack System.
@@ -174,53 +196,58 @@ public interface I_M_PickingSlot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isPickingRackSystem();
+	public boolean isPickingRackSystem();
 
-	ModelColumn<I_M_PickingSlot, Object> COLUMN_IsPickingRackSystem = new ModelColumn<>(I_M_PickingSlot.class, "IsPickingRackSystem", null);
-	String COLUMNNAME_IsPickingRackSystem = "IsPickingRackSystem";
-
-	/**
-	 * Set Locator.
-	 * Warehouse Locator
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Locator_ID (int M_Locator_ID);
+    /** Column definition for IsPickingRackSystem */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_IsPickingRackSystem = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "IsPickingRackSystem", null);
+    /** Column name IsPickingRackSystem */
+    public static final String COLUMNNAME_IsPickingRackSystem = "IsPickingRackSystem";
 
 	/**
-	 * Get Locator.
-	 * Warehouse Locator
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Locator_ID();
-
-	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
-
-	/**
-	 * Set Picking Job.
+	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Picking_Job_ID (int M_Picking_Job_ID);
+	public void setM_HU_ID (int M_HU_ID);
 
 	/**
-	 * Get Picking Job.
+	 * Get Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Picking_Job_ID();
+	public int getM_HU_ID();
 
-	ModelColumn<I_M_PickingSlot, Object> COLUMN_M_Picking_Job_ID = new ModelColumn<>(I_M_PickingSlot.class, "M_Picking_Job_ID", null);
-	String COLUMNNAME_M_Picking_Job_ID = "M_Picking_Job_ID";
+    /** Column definition for M_HU_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "M_HU_ID", null);
+    /** Column name M_HU_ID */
+    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+
+	/**
+	 * Set Lagerort.
+	 * Lagerort im Lager
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Locator_ID (int M_Locator_ID);
+
+	/**
+	 * Get Lagerort.
+	 * Lagerort im Lager
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Locator_ID();
+
+    /** Column name M_Locator_ID */
+    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
 	 * Set Picking Slot.
@@ -229,7 +256,7 @@ public interface I_M_PickingSlot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_PickingSlot_ID (int M_PickingSlot_ID);
+	public void setM_PickingSlot_ID (int M_PickingSlot_ID);
 
 	/**
 	 * Get Picking Slot.
@@ -238,32 +265,35 @@ public interface I_M_PickingSlot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_PickingSlot_ID();
+	public int getM_PickingSlot_ID();
 
-	ModelColumn<I_M_PickingSlot, Object> COLUMN_M_PickingSlot_ID = new ModelColumn<>(I_M_PickingSlot.class, "M_PickingSlot_ID", null);
-	String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
+    /** Column definition for M_PickingSlot_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_M_PickingSlot_ID = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "M_PickingSlot_ID", null);
+    /** Column name M_PickingSlot_ID */
+    public static final String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Warehouse_ID();
+	public int getM_Warehouse_ID();
 
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set PickingSlot.
@@ -272,7 +302,7 @@ public interface I_M_PickingSlot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPickingSlot (java.lang.String PickingSlot);
+	public void setPickingSlot (java.lang.String PickingSlot);
 
 	/**
 	 * Get PickingSlot.
@@ -281,33 +311,38 @@ public interface I_M_PickingSlot
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getPickingSlot();
+	public java.lang.String getPickingSlot();
 
-	ModelColumn<I_M_PickingSlot, Object> COLUMN_PickingSlot = new ModelColumn<>(I_M_PickingSlot.class, "PickingSlot", null);
-	String COLUMNNAME_PickingSlot = "PickingSlot";
+    /** Column definition for PickingSlot */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_PickingSlot = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "PickingSlot", null);
+    /** Column name PickingSlot */
+    public static final String COLUMNNAME_PickingSlot = "PickingSlot";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_PickingSlot, Object> COLUMN_Updated = new ModelColumn<>(I_M_PickingSlot.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_PickingSlot, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_PickingSlot, Object>(I_M_PickingSlot.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

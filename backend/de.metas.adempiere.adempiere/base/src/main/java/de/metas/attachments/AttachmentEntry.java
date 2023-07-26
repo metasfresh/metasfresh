@@ -1,7 +1,6 @@
 package de.metas.attachments;
 
 import com.google.common.base.Preconditions;
-import de.metas.CreatedUpdatedInfo;
 import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
@@ -18,6 +17,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -29,9 +29,14 @@ import java.util.Set;
 @ToString
 public class AttachmentEntry
 {
+	public enum Type
+	{
+		Data, URL
+	}
+
 	AttachmentEntryId id;
 	String name;
-	AttachmentEntryType type;
+	Type type;
 	String filename;
 	String mimeType;
 	URI url;
@@ -44,20 +49,17 @@ public class AttachmentEntry
 
 	Map<TableRecordReference, String> linkedRecord2AttachmentName;
 
-	CreatedUpdatedInfo createdUpdatedInfo;
-	
 	@lombok.Builder(toBuilder = true)
 	private AttachmentEntry(
 			@Nullable final AttachmentEntryId id,
 			@Nullable final String name,
-			@NonNull final AttachmentEntryType type,
+			@NonNull final Type type,
 			@Nullable final String filename,
 			@Nullable final String mimeType,
 			@Nullable final URI url,
 			@Nullable final AttachmentTags tags,
 			@Singular final Set<TableRecordReference> linkedRecords,
-			@Nullable final Map<TableRecordReference, String> linkedRecord2AttachmentName,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
+			@Nullable final Map<TableRecordReference, String> linkedRecord2AttachmentName)
 	{
 		this.id = id;
 		this.name = name == null ? "?" : name;
@@ -68,31 +70,28 @@ public class AttachmentEntry
 
 		this.linkedRecords = linkedRecords;
 		this.linkedRecord2AttachmentName = linkedRecord2AttachmentName;
-		
-		this.createdUpdatedInfo=createdUpdatedInfo;
 
-		switch (type)
+		if (type == Type.Data)
 		{
-			case Data:
-				this.mimeType = mimeType != null ? mimeType : MimeType.getMimeType(this.name);
-				this.url = null;
-				break;
-			case URL:
-				this.mimeType = null;
-				this.url = Preconditions.checkNotNull(url, "url");
-				break;
-			case LocalFileURL:
-				this.mimeType = mimeType != null ? mimeType : MimeType.getMimeType(this.name);
-				this.url = Preconditions.checkNotNull(url, "url");
-				break;
-			default:
-				throw new AdempiereException("Attachment entry type not supported: " + type);
+			this.mimeType = mimeType != null ? mimeType : MimeType.getMimeType(this.name);
+			this.url = null;
+		}
+		else if (type == Type.URL)
+		{
+			this.mimeType = null;
+			this.url = Preconditions.checkNotNull(url, "url");
+		}
+		else
+		{
+			throw new AdempiereException("Attachment entry type not supported: " + type);
 		}
 	}
 
 	public String toStringX()
 	{
-		return getName() + " - " + getMimeType();
+		final StringBuilder sb = new StringBuilder(getName());
+		sb.append(" - ").append(getMimeType());
+		return sb.toString();
 	}
 
 	public boolean isPDF()
@@ -107,12 +106,6 @@ public class AttachmentEntry
 		return name.endsWith(".gif") || name.endsWith(".jpg") || name.endsWith(".png");
 	}
 
-	public boolean isXML()
-	{
-		final String name = getName().trim().toLowerCase();
-		return name.endsWith(".xml");
-	}
-	
 	public AttachmentEntry withAdditionalLinkedRecord(@NonNull final TableRecordReference modelRef)
 	{
 		if (getLinkedRecords().contains(modelRef))

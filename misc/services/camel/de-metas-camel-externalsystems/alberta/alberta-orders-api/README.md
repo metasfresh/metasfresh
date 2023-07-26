@@ -1,8 +1,8 @@
 # swagger-java-client
 
 Aufträge - Warenwirtschaft (Basis)
-- API version: 1.0.4
-  - Build date: 2021-10-04T13:49:41.437Z[GMT]
+- API version: 1.0.3
+  - Build date: 2021-03-27T08:16:46.412Z[GMT]
 
 Synchronisation der Bestellungen aus Alberta mit den Aufträgen mit der Warenwirtschaft
 
@@ -85,9 +85,9 @@ public class OrderApiExample {
         
         OrderApi apiInstance = new OrderApi();
         Order body = new Order(); // Order | Die Bestellung
-        String albertaApiKey = "albertaApiKey_example"; // String | 
+        String apiKey = "apiKey_example"; // String | 
         try {
-            OrderMapping result = apiInstance.addOrder(body, albertaApiKey);
+            OrderMapping result = apiInstance.addOrder(body, apiKey);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling OrderApi#addOrder");
@@ -108,11 +108,11 @@ public class OrderApiExample {
     public static void main(String[] args) {
         
         OrderApi apiInstance = new OrderApi();
-        String albertaApiKey = "albertaApiKey_example"; // String | 
+        String apiKey = "apiKey_example"; // String | 
         String status = "status_example"; // String | created (später ggf. archived) -
         String updatedAfter = "updatedAfter_example"; // String | 2018-02-21T09:30:00.000Z (im UTC-Format)
         try {
-            ArrayOfOrders result = apiInstance.getCreatedOrders(albertaApiKey, status, updatedAfter);
+            ArrayOfOrders result = apiInstance.getCreatedOrders(apiKey, status, updatedAfter);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling OrderApi#getCreatedOrders");
@@ -130,21 +130,18 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *OrderApi* | [**addOrder**](docs/OrderApi.md#addOrder) | **POST** /order | Auftrag hinzufügen
 *OrderApi* | [**getCreatedOrders**](docs/OrderApi.md#getCreatedOrders) | **GET** /order | Bestellungen je nach Status abrufen
+*OrderMappingApi* | [**getOrderMapping**](docs/OrderMappingApi.md#getOrderMapping) | **GET** /order/orderMapping | Zuordnung Auftrag (WaWi) zu Bestellung (Alberta) abrufen
 *OrderStatusApi* | [**updateOrderStatus**](docs/OrderStatusApi.md#updateOrderStatus) | **PATCH** /order | Auftragsstatus (ggf. später auch Rezeptstatus) ändern
-*PrescriptionRequestApi* | [**getCreatedPrescriptionRequests**](docs/PrescriptionRequestApi.md#getCreatedPrescriptionRequests) | **GET** /prescriptionRequest | Rezeptanforderungen je nach Status abrufen
 
 ## Documentation for Models
 
  - [ArrayOfOrders](docs/ArrayOfOrders.md)
- - [ArrayOfPrescriptionRequests](docs/ArrayOfPrescriptionRequests.md)
  - [Order](docs/Order.md)
  - [OrderDeliveryAddress](docs/OrderDeliveryAddress.md)
  - [OrderMapping](docs/OrderMapping.md)
  - [OrderStatus](docs/OrderStatus.md)
  - [OrderedArticleLine](docs/OrderedArticleLine.md)
  - [OrderedArticleLineDuration](docs/OrderedArticleLineDuration.md)
- - [PrescriptedArticleLine](docs/PrescriptedArticleLine.md)
- - [PrescriptionRequest](docs/PrescriptionRequest.md)
 
 ## Documentation for Authorization
 

@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,65 +44,78 @@ import java.util.List;
 @JsonDeserialize(builder = JsonRemittanceAdvice.JsonRemittanceAdviceBuilder.class)
 public class JsonRemittanceAdvice
 {
-	@Schema(description = "This translates to AD_Org_ID")
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates to AD_Org_ID")
 	@Nullable
 	String orgCode;
 
-	@Schema(required = true,
-			description = "This translates to Source_BPartner_ID")
+	@ApiModelProperty(required = true,
+			dataType = "java.lang.String",
+			value = "This translates to Source_BPartner_ID")
 	@NonNull
 	String senderId;
 
-	@Schema(required = true,
-			description = "This translates to Destintion_BPartner_ID")
+	@ApiModelProperty(required = true,
+			dataType = "java.lang.String",
+			value = "This translates to Destintion_BPartner_ID")
 	@NonNull
 	String recipientId;
 
-	@Schema(description = "This translates to ExternalDocumentNo")
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates to ExternalDocumentNo")
 	@NonNull
 	String documentNumber;
 
-	@Schema(description = "This translates to SendAt, using DateTimeFormatter ISO_INSTANT e.g.2017-11-22T00:00:00Z")
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates to SendAt, using DateTimeFormatter ISO_INSTANT e.g.2017-11-22T00:00:00Z")
 	@Nullable
 	String sendDate;
 
-	@Schema(description = "This translates to DateDoc, using DateTimeFormatter ISO_INSTANT. "
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates to DateDoc, using DateTimeFormatter ISO_INSTANT. "
 					+ "If not provided current date is taken ")
 	@Nullable
 	String documentDate;
 
-	@Schema(required = true,
-			description = "RemittanceAdviceType as INBOUND/OUTBOUND (This translates to C_DocType_ID)")
+	@ApiModelProperty(required = true,
+			dataType = "RemittanceAdviceType as INBOUND/OUTBOUND",
+			value = "This translates to C_DocType_ID")
 	@NonNull
 	RemittanceAdviceType remittanceAdviceType;
 
-	@Schema(required = true,
-			description = "This translates as RemittanceAmt")
+	@ApiModelProperty(required = true,
+			dataType = "java.math.BigDecimal",
+			value = "This translates as RemittanceAmt")
 	@NonNull
 	BigDecimal remittedAmountSum;
 
-	@Schema(required = true,
-			type = "java.math.BigDecimal",
-			description = "This translates as RemittanceAmt_Currency_ID")
+	@ApiModelProperty(required = true,
+			dataType = "java.math.BigDecimal",
+			value = "This translates as RemittanceAmt_Currency_ID")
 	@NonNull
 	String remittanceAmountCurrencyISO;
 
-	@Schema(description = "This translates as ServiceFeeAmount")
+	@ApiModelProperty(dataType = "java.math.BigDecimal",
+			value = "This translates as ServiceFeeAmount")
 	BigDecimal serviceFeeAmount;
 
-	@Schema(description = "This translates as ServiceFeeAmount_Currency_ID")
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates as ServiceFeeAmount_Currency_ID")
 	@Nullable
 	String serviceFeeCurrencyISO;
 
-	@Schema(description = "This translates as PaymentDiscountAmountSum")
+	@ApiModelProperty(dataType = "java.math.BigDecimal",
+			value = "This translates as PaymentDiscountAmountSum")
 	@Nullable
 	BigDecimal paymentDiscountAmountSum;
 
-	@Schema(description = "This translates as AdditionalNotes")
+	@ApiModelProperty(dataType = "java.lang.String",
+			value = "This translates as AdditionalNotes")
 	@Nullable
 	String additionalNotes;
 
-	@Schema(description = "This translates as each entry in RemittanceAdviceLine table for a remittanceAdvice document")
+	@ApiModelProperty(dataType = "List<JsonRemittanceAdviceLine>",
+			value = "This translates as each entry in RemittanceAdviceLine table for a remittanceAdvice document")
 	@NonNull
 	List<JsonRemittanceAdviceLine> lines;
 

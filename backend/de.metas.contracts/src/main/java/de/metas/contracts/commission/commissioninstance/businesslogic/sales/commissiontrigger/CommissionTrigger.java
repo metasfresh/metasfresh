@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.sales.com
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Customer;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -59,5 +60,12 @@ public class CommissionTrigger
 		this.salesRepId = salesRepId;
 		this.orgBPartnerId = orgBPartnerId;
 		this.commissionTriggerData = commissionTriggerData;
+	}
+
+	public CommissionPoints getCommissionBase()
+	{
+		return commissionTriggerData.getForecastedBasePoints()
+				.add(commissionTriggerData.getInvoiceableBasePoints())
+				.add(commissionTriggerData.getInvoicedBasePoints());
 	}
 }

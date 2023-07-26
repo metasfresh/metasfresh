@@ -1,7 +1,6 @@
 package de.metas.lang;
 
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -36,10 +35,9 @@ public enum SOTrx
 	 * For backward compatibility we are accepting null parameter, so we are calling {@link #ofNullableBoolean(Boolean)}.
 	 * <p>
 	 * But in the future, instead of calling this method,
-	 * pls call {@link #ofBooleanNotNull(Boolean)} if you know that the parameter is not null,
+	 * pls call {@link #ofBooleanNotNull(boolean)} if you know that the parameter is not null,
 	 * or pls call {@link #ofNullableBoolean(Boolean)} if you know the parameter might be null (so the return value).
 	 */
-	@Nullable
 	public static SOTrx ofBoolean(@Nullable final Boolean isSOTrx)
 	{
 		return ofNullableBoolean(isSOTrx);
@@ -52,7 +50,7 @@ public enum SOTrx
 	}
 
 	@NonNull
-	public static SOTrx ofBooleanNotNull(@NonNull final Boolean isSOTrx)
+	public static SOTrx ofBooleanNotNull(final boolean isSOTrx)
 	{
 		return isSOTrx ? SALES : PURCHASE;
 	}
@@ -91,21 +89,5 @@ public enum SOTrx
 	public SOTrx invert()
 	{
 		return isSales() ? PURCHASE : SALES;
-	}
-
-	@NonNull
-	public static SOTrx ofNameNotNull(@NonNull final String soTrx)
-	{
-		try
-		{
-			return SOTrx.valueOf(soTrx);
-		}
-		catch (final Exception exception)
-		{
-			throw new AdempiereException("Invalid SOTrx!")
-					.appendParametersToMessage()
-					.setParameter("SOTrx", soTrx)
-					.setParameter("Known values", values());
-		}
 	}
 }

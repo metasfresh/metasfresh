@@ -100,7 +100,7 @@ public class ApiAuditLoggable implements ILoggable
 	}
 
 	@Override
-	public ILoggable addTableRecordReferenceLog(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @Nullable String trxName)
+	public ILoggable addTableRecordReferenceLog(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @NonNull String trxName)
 	{
 		if (SKIP_LOGGING_FOR_TABLES.contains(recordRef.getTableName()))
 		{
@@ -150,7 +150,7 @@ public class ApiAuditLoggable implements ILoggable
 				.build();
 	}
 
-	private ApiRequestAuditLog createLogEntry(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @Nullable String trxName)
+	private ApiRequestAuditLog createLogEntry(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @NonNull String trxName)
 	{
 		return ApiRequestAuditLog.builder()
 				.timestamp(SystemTime.asInstant())

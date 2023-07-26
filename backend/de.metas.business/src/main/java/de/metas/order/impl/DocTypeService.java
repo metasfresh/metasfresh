@@ -23,12 +23,12 @@
 package de.metas.order.impl;
 
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -50,11 +50,11 @@ public class DocTypeService
 
 	@Nullable
 	public DocTypeId getInvoiceDocTypeId(
-			@Nullable final DocBaseType docBaseType,
+			@Nullable final String docBaseType,
 			@Nullable final String docSubType,
 			@NonNull final OrgId orgId)
 	{
-		if (docBaseType == null)
+		if (Check.isBlank(docBaseType))
 		{
 			return null;
 		}
@@ -80,7 +80,7 @@ public class DocTypeService
 			return null;
 		}
 
-		final DocBaseType docBaseType = DocBaseType.SalesOrder;
+		final String docBaseType = X_C_DocType.DOCBASETYPE_SalesOrder;
 		final String docSubType;
 
 		if (JsonOrderDocType.PrepayOrder.equals(orderDocType))
@@ -106,25 +106,22 @@ public class DocTypeService
 	}
 
 	@NonNull
-	public Optional<JsonOrderDocType> getOrderDocType(@Nullable final DocTypeId docTypeId)
+	public Optional<JsonOrderDocType> getOrderDocType(@NonNull final DocTypeId docTypeId)
 	{
-		if (docTypeId == null)
-		{
-			return Optional.empty();
-		}
 
 		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
-		if (docType == null)
-		{
-			return Optional.empty();
-		}
 
-		final DocBaseType docBaseType = DocBaseType.ofCode(docType.getDocBaseType());
-		if (!docBaseType.isSalesOrder())
+		if (!X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType()))
 		{
 			throw new AdempiereException("Invalid base doc type!");
 		}
 
-		return Optional.of(JsonOrderDocType.ofCode(docType.getDocSubType()));
+		if (docType != null)
+		{
+			return Optional.of(JsonOrderDocType.ofCode(docType.getDocSubType()));
+		}
+
+		return Optional.empty();
+
 	}
 }

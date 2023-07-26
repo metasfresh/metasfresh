@@ -1,13 +1,39 @@
 package org.adempiere.mm.attributes.api;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.lang.SOTrx;
-import de.metas.util.ISingletonService;
+import java.util.Collection;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -18,13 +44,9 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
+import de.metas.util.ISingletonService;
 
 public interface IAttributeDAO extends ISingletonService
 {
@@ -45,6 +67,8 @@ public interface IAttributeDAO extends ISingletonService
 	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
 
 	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
+	List<AttributeId> getAttributeIdsByAttributeSetId(AttributeSetId attributeSetId);
+
 	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(AttributeSetInstanceId attributeSetInstanceId);
 
 	/** @return attributes, ordered by M_AttributeUse.SeqNo */
@@ -186,8 +210,6 @@ public interface IAttributeDAO extends ISingletonService
 		return retrieveAttributeByValueOrNull(attributeCode, I_M_Attribute.class);
 	}
 
-	Optional<AttributeSetAttribute> getAttributeSetAttributeId(AttributeSetId attributeSetId, AttributeId attributeId);
-
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
 	 *
@@ -226,6 +248,4 @@ public interface IAttributeDAO extends ISingletonService
 	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
 
 	AttributeSetInstanceId copyASI(AttributeSetInstanceId asiSourceId);
-
-	boolean nullSafeASIEquals(@Nullable AttributeSetInstanceId firstASIId, @Nullable AttributeSetInstanceId secondASIId);
 }

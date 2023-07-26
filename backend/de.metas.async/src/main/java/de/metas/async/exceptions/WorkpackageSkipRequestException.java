@@ -22,12 +22,14 @@ package de.metas.async.exceptions;
  * #L%
  */
 
+
+import java.util.Random;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.async.Async_Constants;
 import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.Random;
 
 /**
  * Exception to be thrown from {@link IWorkpackageProcessor} implementation if we want current workpackage to be skipped this time.
@@ -37,6 +39,9 @@ import java.util.Random;
  */
 public class WorkpackageSkipRequestException extends AdempiereException implements IWorkpackageSkipRequest
 {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 5950712616746434839L;
 
 	private final int skipTimeoutMillis;
@@ -79,6 +84,8 @@ public class WorkpackageSkipRequestException extends AdempiereException implemen
 	/**
 	 * A random int between 0 and 5000 is added to the {@link Async_Constants#DEFAULT_RETRY_TIMEOUT_MILLIS} timeout. Use this if you want workpackages that are postponed at the same time to be
 	 * retried at different times.
+	 *
+	 * @param message
 	 */
 	public static WorkpackageSkipRequestException createWithRandomTimeout(final String message)
 	{
@@ -117,11 +124,4 @@ public class WorkpackageSkipRequestException extends AdempiereException implemen
 		return this;
 	}
 
-	/**
-	 * No need to fill the log if this exception is thrown.
-	 */
-	protected boolean isLoggedInTrxManager()
-	{
-		return false;
-	}
 }

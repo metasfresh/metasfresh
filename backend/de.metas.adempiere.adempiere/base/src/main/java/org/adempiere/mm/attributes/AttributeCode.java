@@ -1,17 +1,16 @@
 package org.adempiere.mm.attributes;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.util.Objects;
 
 /*
  * #%L
@@ -35,21 +34,19 @@ import java.util.Objects;
  * #L%
  */
 
-/**
- * aka M_Attribute.Value
- */
-@SuppressWarnings("UnstableApiUsage")
+/** aka M_Attribute.Value */
 @EqualsAndHashCode
 public final class AttributeCode implements Comparable<AttributeCode>
 {
 	@Nullable
 	public static AttributeCode ofNullableString(@Nullable final String code)
 	{
-		return StringUtils.trimBlankToOptional(code).map(AttributeCode::ofString).orElse(null);
+		return Check.isNotBlank(code)
+				? ofString(code)
+				: null;
 	}
 
 	@NonNull
-	@JsonCreator
 	public static AttributeCode ofString(@NonNull final String code)
 	{
 		return interner.intern(new AttributeCode(code));
@@ -69,7 +66,6 @@ public final class AttributeCode implements Comparable<AttributeCode>
 	/**
 	 * @deprecated please use {@link #getCode()}
 	 */
-	@JsonValue
 	@Override
 	@Deprecated
 	public String toString()

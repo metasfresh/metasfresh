@@ -9,11 +9,15 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -108,7 +112,24 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 				.getProductStorages();
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final int currentDays = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productStorage.getProductId());
+			final I_M_Product productRecord = productDAO.getById(productStorage.getProductId());
+			final int currentDays;
+			if (productRecord.getGuaranteeDaysMin() > 0)
+			{
+				currentDays = productRecord.getGuaranteeDaysMin();
+			}
+			else
+			{
+				if (productRecord.getGuaranteeMonths() != null && !productRecord.getGuaranteeMonths().isEmpty()) {
+					currentDays = productDAO.getGuaranteeMonthsInDays(ProductId.ofRepoId(productRecord.getM_Product_ID()));
+				}
+				else
+				{
+					final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+					final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(productCategoryId);
+					currentDays = productCategoryRecord.getGuaranteeDaysMin();
+				}
+			}
 			expiryWarningLeadTimeDays = Integer.min(currentDays, expiryWarningLeadTimeDays);
 		}
 		if (expiryWarningLeadTimeDays == Integer.MAX_VALUE)

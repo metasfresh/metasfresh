@@ -28,8 +28,8 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -80,7 +80,7 @@ import java.util.function.UnaryOperator;
 
 @RestController
 @RequestMapping(LetterRestController.ENDPOINT)
-@Schema(description = "Letter endpoint")
+@ApiModel("Letter endpoint")
 public class LetterRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/letter";
@@ -132,7 +132,7 @@ public class LetterRestController
 	}
 
 	@PostMapping
-	@Operation(summary = "Creates a new letter")
+	@ApiOperation("Creates a new letter")
 	public JSONLetter createNewLetter(@RequestBody final JSONLetterRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -167,7 +167,7 @@ public class LetterRestController
 	}
 
 	@GetMapping("/{letterId}")
-	@Operation(summary = "Gets letter by ID")
+	@ApiOperation("Gets letter by ID")
 	public JSONLetter getLetter(@PathVariable("letterId") final String letterId)
 	{
 		userSession.assertLoggedIn();
@@ -188,7 +188,7 @@ public class LetterRestController
 	}
 
 	@GetMapping("/{letterId}/printPreview")
-	@Operation(summary = "Returns letter's printable version (e.g. PDF)")
+	@ApiOperation("Returns letter's printable version (e.g. PDF)")
 	public ResponseEntity<byte[]> getLetterPrintPreview(@PathVariable("letterId") final String letterId)
 	{
 		userSession.assertLoggedIn();
@@ -205,7 +205,7 @@ public class LetterRestController
 	}
 
 	@PostMapping("/{letterId}/complete")
-	@Operation(summary = "Completes the letter and returns it's printable version (e.g. PDF)")
+	@ApiOperation("Completes the letter and returns it's printable version (e.g. PDF)")
 	public ResponseEntity<byte[]> complete(@PathVariable("letterId") final String letterId)
 	{
 		userSession.assertLoggedIn();
@@ -277,7 +277,7 @@ public class LetterRestController
 	}
 
 	@PatchMapping("/{letterId}")
-	@Operation(summary = "Changes the letter")
+	@ApiOperation("Changes the letter")
 	public JSONLetter changeLetter(@PathVariable("letterId") final String letterId, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
@@ -333,17 +333,13 @@ public class LetterRestController
 	}
 
 	@GetMapping("/templates")
-	@Operation(summary = "Available Letter templates")
+	@ApiOperation("Available Email templates")
 	public JSONLookupValuesList getTemplates()
 	{
-		userSession.assertLoggedIn();
-
-		final BoilerPlateId defaultBoilerPlateId = userSession.getDefaultBoilerPlateId();
-
-		return MADBoilerPlate.streamAllReadable(userSession.getUserRolePermissions())
+		return MADBoilerPlate.getAll(Env.getCtx())
+				.stream()
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
-				.collect(JSONLookupValuesList.collect())
-				.setDefaultId(defaultBoilerPlateId == null ? null : String.valueOf(defaultBoilerPlateId.getRepoId()));
+				.collect(JSONLookupValuesList.collect());
 	}
 
 	private void applyTemplate(final WebuiLetter letter, final WebuiLetterBuilder newLetterBuilder, final LookupValue templateLookupValue)

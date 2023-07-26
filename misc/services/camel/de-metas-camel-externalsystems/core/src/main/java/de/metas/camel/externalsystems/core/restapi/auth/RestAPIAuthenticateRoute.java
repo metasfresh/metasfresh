@@ -40,15 +40,15 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class RestAPIAuthenticateRoute extends RouteBuilder
 {
-	private final TokenBasedAuthService tokenService;
+	private final TokenService tokenService;
 
-	public RestAPIAuthenticateRoute(@NotNull final TokenBasedAuthService tokenService)
+	public RestAPIAuthenticateRoute(@NotNull final TokenService tokenService)
 	{
 		this.tokenService = tokenService;
 	}
 
 	@Override
-	public void configure()
+	public void configure() throws Exception
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
@@ -99,7 +99,6 @@ public class RestAPIAuthenticateRoute extends RouteBuilder
 				.pInstance(request.getPInstance())
 				.auditTrailEndpoint(request.getAuditTrailEndpoint())
 				.externalSystemValue(request.getExternalSystemValue())
-				.orgCode(request.getOrgCode())
 				.build();
 	}
 }

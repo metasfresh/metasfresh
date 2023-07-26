@@ -26,9 +26,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,36 +44,11 @@ import java.time.ZonedDateTime;
 @Builder
 public class PurchaseOrderPricingInfo
 {
-	@NonNull
-	OrgId orgId;
-
-	@Nullable
-	ZoneId orgTimeZone;
-
-	@NonNull
-	BPartnerId bpartnerId;
-
-	@NonNull
-	ZonedDateTime datePromised;
-
-	@NonNull
-	ProductId productId;
-
-	@Nullable
-	CountryId countryId;
-
-	@NonNull
-	Quantity quantity;
-
-	@NonNull
-	Boolean isManualPrice;
-
-	@Nullable
-	BigDecimal priceEntered;
-
-	@Nullable
-	UomId priceEnteredUomId;
-
-	@Nullable
-	CurrencyId currencyId;
+	@NonNull OrgId orgId;
+	@Nullable ZoneId orgTimeZone;
+	@NonNull BPartnerId bpartnerId;
+	@NonNull ZonedDateTime datePromised;
+	@NonNull ProductId productId;
+	@Nullable CountryId countryId;
+	@NonNull Quantity quantity;
 }

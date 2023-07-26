@@ -14,7 +14,8 @@ import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -44,7 +45,7 @@ import java.util.List;
  * #L%
  */
 
-@Schema(name = "tab", description = "Window included tab layout")
+@ApiModel(value = "tab", description = "Window included tab layout")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutTab
 {
@@ -117,18 +118,21 @@ public final class JSONDocumentLayoutTab
 	/**
 	 *
 	 */
-	@Schema(description = "Required to render the table columns for this tab.<br>"
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "Required to render the table columns for this tab.<br>"
 			+ "Therefore filled, unless <code>singleRowDetailLayout</code> is <code>true</code>.")
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	@Schema(description = "Subtabs of this tab; note: there are either subtabs or sections, but not both.")
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "Subtabs of this tab; note: there are either subtabs or sections, but not both.")
 	@JsonProperty("tabs")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutTab> subTabs;
 
-	@Schema(description = "\"detail\" layout of the rows in this tab; required if singleRowDetailView is <code>true</code> and in advanced edit mode")
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "\"detail\" layout of the rows in this tab; required if singleRowDetailView is <code>true</code> and in advanced edit mode")
 	@JsonProperty("sections")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutSection> sections;
@@ -141,17 +145,14 @@ public final class JSONDocumentLayoutTab
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONViewOrderBy> defaultOrderBys;
 
-	@JsonProperty("quickInputSupport")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final JSONQuickInputSupport quickInputSupport;
+	@JsonProperty("supportQuickInput")
+	private final boolean supportQuickInput;
 
 	@JsonProperty("queryOnActivate")
 	private final boolean queryOnActivate;
 
-	@JsonProperty("newRecordInputMode")
-	private final JSONIncludedTabNewRecordInputMode newRecordInputMode;
-
-	@Schema(description = "If set to true, then the frontend shall render the tab in \"detail\" view. It can assume that there is at most one record to be shown in the tab.<br>"
+	@ApiModelProperty(allowEmptyValue = true, //
+			value = "If set to true, then the frontend shall render the tab in \"detail\" view. It can assume that there is at most one record to be shown in the tab.<br>"
 					+ "If empty, assume false.")
 	@JsonProperty("singleRowDetailView")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -164,12 +165,8 @@ public final class JSONDocumentLayoutTab
 	{
 		final ViewLayout gridLayout = includedTabLayout.getGridLayout();
 
-		quickInputSupport = includedTabLayout.getQuickInputSupport() != null
-				? JSONQuickInputSupport.of(includedTabLayout.getQuickInputSupport(), options.getAdLanguage())
-				: null;
-
+		supportQuickInput = includedTabLayout.isSupportQuickInput();
 		queryOnActivate = includedTabLayout.isQueryOnActivate();
-		newRecordInputMode = JSONIncludedTabNewRecordInputMode.of(includedTabLayout.getNewRecordInputMode());
 
 		windowId = includedTabLayout.getWindowId();
 		tabId = includedTabLayout.getDetailId();

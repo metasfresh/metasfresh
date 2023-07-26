@@ -23,9 +23,9 @@ package de.metas.fresh.ordercheckup;
  */
 
 
+import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.junit.Assert;
 
@@ -75,10 +75,10 @@ public class Masterdata
 			final I_C_Order_MFGWarehouse_Report report = retrievePlantReport();
 			Assert.assertNotNull("Plant report exists for " + plant.getName(), report);
 			Assert.assertEquals("Plant", plant.getS_Resource_ID(), report.getPP_Plant_ID());
-			Assert.assertNull("Warehouse", report.getM_Warehouse());
+			Assert.assertEquals("Warehouse", null, report.getM_Warehouse());
 			Assert.assertEquals("Responsible", responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID());
-			Assert.assertTrue("Processed", report.isProcessed());
-			Assert.assertTrue("Active", report.isActive());
+			Assert.assertEquals("Processed", true, report.isProcessed());
+			Assert.assertEquals("Active", true, report.isActive());
 
 			helper.assertReportHasOrderLines(report, expectedOrderLines);
 		}
@@ -115,8 +115,8 @@ public class Masterdata
 				Assert.assertEquals("Plant", warehouse.getPP_Plant_ID(), report.getPP_Plant_ID());
 				Assert.assertEquals("Warehouse", warehouse.getM_Warehouse_ID(), report.getM_Warehouse_ID());
 				Assert.assertEquals("Responsible", responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID());
-				Assert.assertTrue("Processed", report.isProcessed());
-				Assert.assertTrue("Active", report.isActive());
+				Assert.assertEquals("Processed", true, report.isProcessed());
+				Assert.assertEquals("Active", true, report.isActive());
 				helper.assertReportHasOrderLines(report, expectedOrderLines);
 			}
 		}

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_UI_Element
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_Element, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1880954666L;
+	private static final long serialVersionUID = -424520330L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (final Properties ctx, final int AD_UI_Element_ID, @Nullable final String trxName)
@@ -62,33 +62,6 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Element getAD_Name()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Name_ID, org.compiere.model.I_AD_Element.class);
-	}
-
-	@Override
-	public void setAD_Name(final org.compiere.model.I_AD_Element AD_Name)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Name_ID, org.compiere.model.I_AD_Element.class, AD_Name);
-	}
-
-	@Override
-	public void setAD_Name_ID (final int AD_Name_ID)
-	{
-		if (AD_Name_ID < 1) 
-			set_Value (COLUMNNAME_AD_Name_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Name_ID, AD_Name_ID);
-	}
-
-	@Override
-	public int getAD_Name_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_Name_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_AD_Tab getAD_Tab()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Tab_ID, org.compiere.model.I_AD_Tab.class);
@@ -116,6 +89,21 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
+	public void setAD_UI_Element_ID (final int AD_UI_Element_ID)
+	{
+		if (AD_UI_Element_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_UI_Element_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_UI_Element_ID, AD_UI_Element_ID);
+	}
+
+	@Override
+	public int getAD_UI_Element_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_UI_Element_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_AD_UI_ElementGroup getAD_UI_ElementGroup()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_UI_ElementGroup_ID, org.compiere.model.I_AD_UI_ElementGroup.class);
@@ -140,21 +128,6 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public int getAD_UI_ElementGroup_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_UI_ElementGroup_ID);
-	}
-
-	@Override
-	public void setAD_UI_Element_ID (final int AD_UI_Element_ID)
-	{
-		if (AD_UI_Element_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_UI_Element_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_UI_Element_ID, AD_UI_Element_ID);
-	}
-
-	@Override
-	public int getAD_UI_Element_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_UI_Element_ID);
 	}
 
 	/** 
@@ -291,18 +264,6 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public void setIsDisplayedGrid (final boolean IsDisplayedGrid)
-	{
-		set_Value (COLUMNNAME_IsDisplayedGrid, IsDisplayedGrid);
-	}
-
-	@Override
-	public boolean isDisplayedGrid() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDisplayedGrid);
-	}
-
-	@Override
 	public void setIsDisplayed_SideList (final boolean IsDisplayed_SideList)
 	{
 		set_Value (COLUMNNAME_IsDisplayed_SideList, IsDisplayed_SideList);
@@ -312,6 +273,18 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public boolean isDisplayed_SideList() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDisplayed_SideList);
+	}
+
+	@Override
+	public void setIsDisplayedGrid (final boolean IsDisplayedGrid)
+	{
+		set_Value (COLUMNNAME_IsDisplayedGrid, IsDisplayedGrid);
+	}
+
+	@Override
+	public boolean isDisplayedGrid() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDisplayedGrid);
 	}
 
 	@Override
@@ -429,18 +402,6 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public void setSeqNoGrid (final int SeqNoGrid)
-	{
-		set_Value (COLUMNNAME_SeqNoGrid, SeqNoGrid);
-	}
-
-	@Override
-	public int getSeqNoGrid() 
-	{
-		return get_ValueAsInt(COLUMNNAME_SeqNoGrid);
-	}
-
-	@Override
 	public void setSeqNo_SideList (final int SeqNo_SideList)
 	{
 		set_Value (COLUMNNAME_SeqNo_SideList, SeqNo_SideList);
@@ -450,6 +411,18 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public int getSeqNo_SideList() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo_SideList);
+	}
+
+	@Override
+	public void setSeqNoGrid (final int SeqNoGrid)
+	{
+		set_Value (COLUMNNAME_SeqNoGrid, SeqNoGrid);
+	}
+
+	@Override
+	public int getSeqNoGrid() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNoGrid);
 	}
 
 	@Override

@@ -40,8 +40,6 @@ public class JsonAuthenticateRequest
 	String authKey;
 	@NonNull
 	JsonMetasfreshId pInstance;
-	@NonNull
-	String orgCode;
 	@Nullable
 	String externalSystemValue;
 	@Nullable
@@ -54,14 +52,12 @@ public class JsonAuthenticateRequest
 			@JsonProperty("authKey") @NonNull final String authKey,
 			@JsonProperty("pinstance") @NonNull final JsonMetasfreshId pInstance,
 			@JsonProperty("externalSystemValue") @Nullable final String externalSystemValue,
-			@JsonProperty("auditTrailEndpoint") @Nullable final String auditTrailEndpoint,
-			@JsonProperty("orgCode") @NonNull final String orgCode)
+			@JsonProperty("auditTrailEndpoint") @Nullable final String auditTrailEndpoint)
 	{
 		this.grantedAuthority = grantedAuthority;
 		this.authKey = authKey;
 		this.pInstance = pInstance;
 		this.externalSystemValue = externalSystemValue;
 		this.auditTrailEndpoint = auditTrailEndpoint;
-		this.orgCode = orgCode;
 	}
 }

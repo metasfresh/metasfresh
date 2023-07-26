@@ -11,10 +11,6 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
-import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
-import de.metas.material.cockpit.availableforsales.AvailableForSalesService;
-import de.metas.organization.OrgId;
-import de.metas.uom.UomId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Color;
@@ -61,15 +57,14 @@ import de.metas.util.ColorId;
 class AvailableForSalesUtilTest
 {
 
-	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal FOUR = new BigDecimal("4");
+	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal SEVEN = new BigDecimal("7");
 
 	private AvailableForSalesUtil availableForSalesUtil;
 	private ColorId colorId;
 	private OrderLineId orderLineId;
 	private ProductId productId;
-	private UomId uomId;
 	private CheckAvailableForSalesRequest request;
 	private AvailableForSalesConfig config;
 
@@ -84,7 +79,6 @@ class AvailableForSalesUtilTest
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
-		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
@@ -96,7 +90,6 @@ class AvailableForSalesUtilTest
 		orderLineRecord.setQtyOrdered(THREE);
 		orderLineRecord.setQtyEntered(THREE);
 		orderLineRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
-		orderLineRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());
 		saveRecord(orderLineRecord);
 		orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
 
@@ -115,7 +108,7 @@ class AvailableForSalesUtilTest
 				.productId(productId)
 				.build();
 
-		availableForSalesUtil = new AvailableForSalesUtil(new AvailableForSalesService(new AvailableForSalesConfigRepo(), new AvailableForSalesRepository()));
+		availableForSalesUtil = new AvailableForSalesUtil(new AvailableForSalesRepository());
 	}
 
 	@Test
@@ -125,7 +118,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(FOUR, null/* qtyOnHandStock */);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -140,7 +133,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(THREE, null/* qtyOnHandStock */);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -156,7 +149,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(THREE/* qtyToBeShipped */, FOUR/* qtyOnHandStock */);
 
 		// invoke the method under test
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -171,7 +164,7 @@ class AvailableForSalesUtilTest
 		createQueryResultRecord(THREE/* qtyToBeShipped */, null/* qtyOnHandStock */);
 		createQueryResultRecord(THREE/* qtyToBeShipped */, TEN/* qtyOnHandStock */);
 
-		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config, OrgId.MAIN);
+		availableForSalesUtil.retrieveDataAndUpdateOrderLines(ImmutableList.of(request), config);
 
 		final I_C_OrderLine updatedOrderRecord = load(orderLineId, I_C_OrderLine.class);
 
@@ -194,7 +187,6 @@ class AvailableForSalesUtilTest
 		resultRecord1.setStorageAttributesKey(AttributesKey.NONE.getAsString());
 		resultRecord1.setQtyToBeShipped(qtyToBeShipped);
 		resultRecord1.setQtyOnHandStock(qtyOnHandStock);
-		resultRecord1.setC_UOM_ID(uomId.getRepoId());
 		saveRecord(resultRecord1);
 	}
 

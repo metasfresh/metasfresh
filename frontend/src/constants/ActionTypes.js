@@ -5,12 +5,13 @@ export * from './actions/TabTypes';
 export * from './actions/FilterTypes';
 export * from './actions/Actions';
 export * from './actions/InlineTabTypes';
+export * from './actions/WindowActions';
 
 /**
  * @constant
- * @type {string} Used to set the connection error type into the store
+ * @type {string} ToDo: Description for the constant.
  */
-export const CONNECTION_ERROR = 'CONNECTION_ERROR';
+export const NO_CONNECTION = 'NO_CONNECTION';
 
 /**
  * @constant
@@ -412,9 +413,3 @@ export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';
  * @type {string} used to set the boolean flag `showSpinner` in the store
  */
 export const SET_SPINNER = 'SET_SPINNER';
-
-/**
- * @constant
- * @type {string} used to update the lastBackPage to keep the last visited page under appHandler
- */
-export const UPDATE_LAST_BACK_PAGE = 'UPDATE_LAST_BACK_PAGE';

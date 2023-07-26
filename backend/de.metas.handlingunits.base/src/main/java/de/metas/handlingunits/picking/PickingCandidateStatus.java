@@ -1,12 +1,15 @@
 package de.metas.handlingunits.picking;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableMap;
+
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -43,9 +46,9 @@ public enum PickingCandidateStatus implements ReferenceListAwareEnum
 	private static final ImmutableMap<String, PickingCandidateStatus> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
 	@Getter
-	private final String code;
+	private String code;
 
-	PickingCandidateStatus(final String code)
+	private PickingCandidateStatus(final String code)
 	{
 		this.code = code;
 	}
@@ -58,12 +61,5 @@ public enum PickingCandidateStatus implements ReferenceListAwareEnum
 			throw new AdempiereException("No " + PickingCandidateStatus.class + " found for: " + code);
 		}
 		return type;
-	}
-
-	public boolean isDraft() {return Draft.equals(this);}
-
-	public boolean isProcessed()
-	{
-		return Processed.equals(this);
 	}
 }

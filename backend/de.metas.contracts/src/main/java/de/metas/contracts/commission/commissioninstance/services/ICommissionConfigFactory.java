@@ -34,8 +34,4 @@ public interface ICommissionConfigFactory
 	ImmutableMap<FlatrateTermId, CommissionConfig> createForExistingInstance(CommissionConfigProvider.ConfigRequestForExistingInstance commissionConfigRequest);
 
 	boolean appliesFor(CommissionConfigProvider.ConfigRequestForNewInstance contractRequest);
-
-	boolean isFurtherSearchForConfigTypesAllowed();
-
-	CommissionConfigPriority getPriority();
 }

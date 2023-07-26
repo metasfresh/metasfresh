@@ -22,10 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.product;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
-import de.metas.common.externalsystem.JsonUOM;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
@@ -34,9 +31,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_PRODUCT_UOM;
 import static de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat.formatExternalId;
@@ -45,44 +42,48 @@ import static de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier
 public class ProductUpsertRequestProducer
 {
 	@NonNull
-	JsonProduct product;
+	List<JsonProduct> products;
 
 	@NonNull
 	ImportProductsRouteContext routeContext;
 
-	@NonNull
-	ProcessLogger processLogger;
-
 	@Builder
 	public ProductUpsertRequestProducer(
-			@NonNull final JsonProduct product,
-			@NonNull final ImportProductsRouteContext routeContext,
-			@NonNull final ProcessLogger processLogger)
+			@NonNull final List<JsonProduct> products,
+			@NonNull final ImportProductsRouteContext routeContext)
 	{
-		this.product = product;
+		this.products = products;
 		this.routeContext = routeContext;
-		this.processLogger = processLogger;
 	}
 
 	@NonNull
-	public JsonRequestProductUpsert run()
+	public Optional<JsonRequestProductUpsert> run()
 	{
-		return JsonRequestProductUpsert.builder()
+		if (products.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final JsonRequestProductUpsert jsonRequestProductUpsert = JsonRequestProductUpsert.builder()
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 				.requestItems(getProductItems())
 				.build();
+
+		return Optional.of(jsonRequestProductUpsert);
 	}
 
 	@NonNull
 	private List<JsonRequestProductUpsertItem> getProductItems()
 	{
-		return mapProductToProductRequestItem()
-				.map(ImmutableList::of)
-				.orElseGet(ImmutableList::of);
+		return products.stream()
+				.map(this::mapProductToProductRequestItem)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(Collectors.toList());
 	}
 
 	@NonNull
-	private Optional<JsonRequestProductUpsertItem> mapProductToProductRequestItem()
+	private Optional<JsonRequestProductUpsertItem> mapProductToProductRequestItem(@NonNull final JsonProduct product)
 	{
 		if (product.getName() == null)
 		{
@@ -99,47 +100,11 @@ public class ProductUpsertRequestProducer
 		jsonRequestProduct.setEan(product.getEan());
 		jsonRequestProduct.setName(product.getName());
 		jsonRequestProduct.setType(JsonRequestProduct.Type.ITEM);
-		jsonRequestProduct.setUomCode(getUOMCode(product.getUnitId()));
+		jsonRequestProduct.setUomCode(DEFAULT_PRODUCT_UOM);
 
 		return Optional.of(JsonRequestProductUpsertItem.builder()
 								   .productIdentifier(productIdentifier)
 								   .requestProduct(jsonRequestProduct)
-								   .externalSystemConfigId(routeContext.getExternalSystemRequest().getExternalSystemConfigId())
 								   .build());
-	}
-
-	@NonNull
-	private String getUOMCode(@Nullable final String unitId)
-	{
-		if (unitId == null)
-		{
-			processLogger.logMessage("Shopware unit id is null, fallback to default UOM: PCE ! ProductId: " + product.getId(),
-									 routeContext.getPInstanceId());
-			return DEFAULT_PRODUCT_UOM;
-		}
-
-		if (routeContext.getUomMappings().isEmpty())
-		{
-			processLogger.logMessage("No UOM mappings found in the route context, fallback to default UOM: PCE ! ProductId: " + product.getId(),
-									 routeContext.getPInstanceId());
-			return DEFAULT_PRODUCT_UOM;
-		}
-
-		final String externalCode = routeContext.getShopwareUomInfoProvider().getCode(unitId);
-		if (externalCode == null)
-		{
-			processLogger.logMessage("No externalCode found for unit id: " + unitId + ", fallback to default UOM: PCE ! ProductId: " + product.getId(),
-									 routeContext.getPInstanceId());
-			return DEFAULT_PRODUCT_UOM;
-		}
-
-		final JsonUOM jsonUOM = routeContext.getUomMappings().get(externalCode);
-		if (jsonUOM == null)
-		{
-			processLogger.logMessage("No UOM mapping found for externalCode: " + externalCode + " ! fallback to default UOM: PCE ! ProductId: " + product.getId(),
-									 routeContext.getPInstanceId());
-			return DEFAULT_PRODUCT_UOM;
-		}
-		return jsonUOM.getCode();
 	}
 }

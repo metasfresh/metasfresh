@@ -1,206 +1,320 @@
-// Generated Model - DO NOT CHANGE
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_MigrationScript
- *  @author metasfresh (generated) 
- */
-@SuppressWarnings("unused")
-public class X_AD_MigrationScript extends org.compiere.model.PO implements I_AD_MigrationScript, org.compiere.model.I_Persistent 
+ *  @author Adempiere (generated) 
+ *  @version Release 3.7.0LTS - $Id$ */
+public class X_AD_MigrationScript extends PO implements I_AD_MigrationScript, I_Persistent 
 {
 
-	private static final long serialVersionUID = 133021957L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 20110831L;
 
     /** Standard Constructor */
-    public X_AD_MigrationScript (final Properties ctx, final int AD_MigrationScript_ID, @Nullable final String trxName)
+    public X_AD_MigrationScript (Properties ctx, int AD_MigrationScript_ID, String trxName)
     {
       super (ctx, AD_MigrationScript_ID, trxName);
+      /** if (AD_MigrationScript_ID == 0)
+        {
+			setAD_MigrationScript_ID (0);
+			setFileName (null);
+			setIsApply (false);
+			setName (null);
+			setProjectName (null);
+			setReleaseNo (null);
+			setStatus (null);
+        } */
     }
 
     /** Load Constructor */
-    public X_AD_MigrationScript (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_AD_MigrationScript (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
+    /** AccessLevel
+      * @return 4 - System 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    protected POInfo initPO (Properties ctx)
+    {
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      return poi;
+    }
 
-	@Override
-	public void setAD_MigrationScript_ID (final int AD_MigrationScript_ID)
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_AD_MigrationScript[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
+
+	/** Set Migration Script.
+		@param AD_MigrationScript_ID 
+		Table to check whether the migration script has been applied
+	  */
+	public void setAD_MigrationScript_ID (int AD_MigrationScript_ID)
 	{
 		if (AD_MigrationScript_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_MigrationScript_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_MigrationScript_ID, AD_MigrationScript_ID);
+			set_ValueNoCheck (COLUMNNAME_AD_MigrationScript_ID, Integer.valueOf(AD_MigrationScript_ID));
 	}
 
-	@Override
-	public int getAD_MigrationScript_ID() 
+	/** Get Migration Script.
+		@return Table to check whether the migration script has been applied
+	  */
+	public int getAD_MigrationScript_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_MigrationScript_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_MigrationScript_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	@Override
-	public java.lang.String getDescription() 
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (String)get_Value(COLUMNNAME_Description);
 	}
 
-	@Override
-	public void setDeveloperName (final @Nullable java.lang.String DeveloperName)
+	/** Set Developer Name.
+		@param DeveloperName Developer Name	  */
+	public void setDeveloperName (String DeveloperName)
 	{
 		set_Value (COLUMNNAME_DeveloperName, DeveloperName);
 	}
 
-	@Override
-	public java.lang.String getDeveloperName() 
+	/** Get Developer Name.
+		@return Developer Name	  */
+	public String getDeveloperName () 
 	{
-		return get_ValueAsString(COLUMNNAME_DeveloperName);
+		return (String)get_Value(COLUMNNAME_DeveloperName);
 	}
 
-	@Override
-	public void setFileName (final java.lang.String FileName)
+	/** Set File Name.
+		@param FileName 
+		Name of the local file or URL
+	  */
+	public void setFileName (String FileName)
 	{
 		set_Value (COLUMNNAME_FileName, FileName);
 	}
 
-	@Override
-	public java.lang.String getFileName() 
+	/** Get File Name.
+		@return Name of the local file or URL
+	  */
+	public String getFileName () 
 	{
-		return get_ValueAsString(COLUMNNAME_FileName);
+		return (String)get_Value(COLUMNNAME_FileName);
 	}
 
-	@Override
-	public void setIsApply (final boolean IsApply)
+	/** Set Apply Script.
+		@param IsApply Apply Script	  */
+	public void setIsApply (boolean IsApply)
 	{
-		set_Value (COLUMNNAME_IsApply, IsApply);
+		set_Value (COLUMNNAME_IsApply, Boolean.valueOf(IsApply));
 	}
 
-	@Override
-	public boolean isApply() 
+	/** Get Apply Script.
+		@return Apply Script	  */
+	public boolean isApply () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsApply);
+		Object oo = get_Value(COLUMNNAME_IsApply);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public void setName (final java.lang.String Name)
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	@Override
-	public java.lang.String getName() 
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
+	public String getName () 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (String)get_Value(COLUMNNAME_Name);
 	}
 
-	@Override
-	public void setProjectName (final java.lang.String ProjectName)
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public KeyNamePair getKeyNamePair() 
+    {
+        return new KeyNamePair(get_ID(), getName());
+    }
+
+	/** Set Project.
+		@param ProjectName 
+		Name of the Project
+	  */
+	public void setProjectName (String ProjectName)
 	{
 		set_Value (COLUMNNAME_ProjectName, ProjectName);
 	}
 
-	@Override
-	public java.lang.String getProjectName() 
+	/** Get Project.
+		@return Name of the Project
+	  */
+	public String getProjectName () 
 	{
-		return get_ValueAsString(COLUMNNAME_ProjectName);
+		return (String)get_Value(COLUMNNAME_ProjectName);
 	}
 
-	@Override
-	public void setReference (final @Nullable java.lang.String Reference)
+	/** Set Reference.
+		@param Reference 
+		Reference for this record
+	  */
+	public void setReference (String Reference)
 	{
 		set_Value (COLUMNNAME_Reference, Reference);
 	}
 
-	@Override
-	public java.lang.String getReference() 
+	/** Get Reference.
+		@return Reference for this record
+	  */
+	public String getReference () 
 	{
-		return get_ValueAsString(COLUMNNAME_Reference);
+		return (String)get_Value(COLUMNNAME_Reference);
 	}
 
-	@Override
-	public void setReleaseNo (final java.lang.String ReleaseNo)
+	/** Set Release No.
+		@param ReleaseNo 
+		Internal Release Number
+	  */
+	public void setReleaseNo (String ReleaseNo)
 	{
 		set_Value (COLUMNNAME_ReleaseNo, ReleaseNo);
 	}
 
-	@Override
-	public java.lang.String getReleaseNo() 
+	/** Get Release No.
+		@return Internal Release Number
+	  */
+	public String getReleaseNo () 
 	{
-		return get_ValueAsString(COLUMNNAME_ReleaseNo);
+		return (String)get_Value(COLUMNNAME_ReleaseNo);
 	}
 
-	@Override
-	public void setScript (final @Nullable byte[] Script)
+	/** Set Script.
+		@param Script 
+		Dynamic Java Language Script to calculate result
+	  */
+	public void setScript (byte[] Script)
 	{
 		set_ValueNoCheck (COLUMNNAME_Script, Script);
 	}
 
-	@Override
-	public byte[] getScript() 
+	/** Get Script.
+		@return Dynamic Java Language Script to calculate result
+	  */
+	public byte[] getScript () 
 	{
 		return (byte[])get_Value(COLUMNNAME_Script);
 	}
 
-	@Override
-	public void setScriptRoll (final @Nullable java.lang.String ScriptRoll)
+	/** Set Roll the Script.
+		@param ScriptRoll Roll the Script	  */
+	public void setScriptRoll (String ScriptRoll)
 	{
 		set_Value (COLUMNNAME_ScriptRoll, ScriptRoll);
 	}
 
-	@Override
-	public java.lang.String getScriptRoll() 
+	/** Get Roll the Script.
+		@return Roll the Script	  */
+	public String getScriptRoll () 
 	{
-		return get_ValueAsString(COLUMNNAME_ScriptRoll);
+		return (String)get_Value(COLUMNNAME_ScriptRoll);
 	}
 
-	/** 
-	 * Status AD_Reference_ID=53239
-	 * Reference name: MigrationScriptStatus
-	 */
+	/** Status AD_Reference_ID=53239 */
 	public static final int STATUS_AD_Reference_ID=53239;
-	/** In Verarbeitung = IP */
-	public static final String STATUS_InVerarbeitung = "IP";
-	/** Fertiggestellt = CO */
-	public static final String STATUS_Fertiggestellt = "CO";
-	/** Fehler = ER */
-	public static final String STATUS_Fehler = "ER";
-	@Override
-	public void setStatus (final java.lang.String Status)
+	/** In Progress = IP */
+	public static final String STATUS_InProgress = "IP";
+	/** Completed = CO */
+	public static final String STATUS_Completed = "CO";
+	/** Error = ER */
+	public static final String STATUS_Error = "ER";
+	/** Set Status.
+		@param Status 
+		Status of the currently running check
+	  */
+	public void setStatus (String Status)
 	{
+
 		set_ValueNoCheck (COLUMNNAME_Status, Status);
 	}
 
-	@Override
-	public java.lang.String getStatus() 
+	/** Get Status.
+		@return Status of the currently running check
+	  */
+	public String getStatus () 
 	{
-		return get_ValueAsString(COLUMNNAME_Status);
+		return (String)get_Value(COLUMNNAME_Status);
 	}
 
-	@Override
-	public void setURL (final @Nullable java.lang.String URL)
+	/** Set URL.
+		@param URL 
+		Full URL address - e.g. http://www.adempiere.org
+	  */
+	public void setURL (String URL)
 	{
 		set_Value (COLUMNNAME_URL, URL);
 	}
 
-	@Override
-	public java.lang.String getURL() 
+	/** Get URL.
+		@return Full URL address - e.g. http://www.adempiere.org
+	  */
+	public String getURL () 
 	{
-		return get_ValueAsString(COLUMNNAME_URL);
+		return (String)get_Value(COLUMNNAME_URL);
 	}
 }

@@ -34,7 +34,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
-import de.metas.ad_reference.ReferenceId;
+import de.metas.reflist.ReferenceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -60,7 +60,6 @@ import de.metas.workflow.service.WFNodeCreateRequest;
 import de.metas.workflow.service.WFNodeLayoutChangeRequest;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
@@ -374,7 +373,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		try
 		{
 			return WFNodeTransitionCondition.builder()
-					.adColumnId(AdColumnId.ofRepoId(record.getAD_Column_ID()))
+					.adColumnId(record.getAD_Column_ID())
 					.andJoin(X_AD_WF_NextCondition.ANDOR_And.equals(record.getAndOr()))
 					.operation(record.getOperation())
 					.conditionValue1(record.getValue())

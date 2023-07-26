@@ -22,36 +22,36 @@ package de.metas.invoicecandidate.spi.impl;
  * #L%
  */
 
+
+import java.util.Collections;
+import java.util.Iterator;
+
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
-import org.adempiere.ad.dao.QueryLimit;
-
-import java.util.Collections;
-import java.util.Iterator;
 
 public class PlainInvoiceCandidateHandler extends AbstractInvoiceCandidateHandler
 {
 	public final static String TABLENAME = "PlainInvoiceCandidateHandler";
 
 	@Override
-	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
+	public boolean isCreateMissingCandidatesAutomatically()
 	{
-		return CandidatesAutoCreateMode.DONT;
+		return false;
 	}
 
 	@Override
-	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(Object model)
+	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
-		return CandidatesAutoCreateMode.DONT;
+		return false;
 	}
 
 	/**
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Collections.emptyIterator();
 	}

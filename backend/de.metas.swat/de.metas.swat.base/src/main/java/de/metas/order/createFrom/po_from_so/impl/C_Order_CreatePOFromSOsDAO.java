@@ -1,14 +1,10 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.document.engine.IDocument;
-import de.metas.order.OrderLineId;
-import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
-import de.metas.order.model.I_C_Order;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.List;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -20,15 +16,14 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import de.metas.document.engine.IDocument;
+import de.metas.order.model.I_C_Order;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -73,8 +68,7 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 			final int vendor_ID,
 			final String poReference,
 			final Timestamp datePromised_From,
-			final Timestamp datePromised_To,
-			final boolean isVendorInOrderLinesRequired)
+			final Timestamp datePromised_To)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -153,50 +147,37 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(@NonNull final I_C_Order order,
+	public List<I_C_OrderLine> retrieveOrderLines(final I_C_Order order,
 			final boolean allowMultiplePOOrders,
 			final String purchaseQtySource)
 	{
+		Check.assumeNotNull(order, "Param order is not null");
 		Check.assumeNotEmpty(purchaseQtySource, "Param purchaseQtySource is not empty");
 		Check.assume(I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(purchaseQtySource) || I_C_OrderLine.COLUMNNAME_QtyReserved.equals(purchaseQtySource),
-					 "Param purchaseQtySource={} needs to be either {} or {}",
-					 purchaseQtySource, I_C_OrderLine.COLUMNNAME_QtyOrdered, I_C_OrderLine.COLUMNNAME_QtyReserved
-		);
+				"Param purchaseQtySource={} needs to be either {} or {}",
+				purchaseQtySource, I_C_OrderLine.COLUMNNAME_QtyOrdered, I_C_OrderLine.COLUMNNAME_QtyReserved
+				);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<I_C_OrderLine> salesOrderLines = queryBL.createQueryBuilder(I_C_OrderLine.class, order)
+		final IQueryBuilder<I_C_OrderLine> orderLineQueryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class, order)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.addCompareFilter(purchaseQtySource, Operator.GREATER, BigDecimal.ZERO)
-				.filter(additionalFilters)
+				.filter(additionalFilters);
+
+		if (!allowMultiplePOOrders)
+		{
+			// exclude sales order lines that are already linked to a purchase order line
+			orderLineQueryBuilder
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_Link_OrderLine_ID, null);
+		}
+
+		return orderLineQueryBuilder
+
 				.orderBy().addColumn(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).endOrderBy()
 				.create()
 				.list(I_C_OrderLine.class);
-
-		if (allowMultiplePOOrders)
-		{
-			return salesOrderLines;
-		}
-
-		// exclude sales order lines that are already linked to a purchase order line
-		final Set<OrderLineId> salesOrderLineIds = salesOrderLines.stream()
-				.map(I_C_OrderLine::getC_OrderLine_ID)
-				.map(OrderLineId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final Set<OrderLineId> alreadyAllocatedSOLineIds = queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_SO_OrderLine_ID, salesOrderLineIds)
-				.create()
-				.stream()
-				.map(I_C_PO_OrderLine_Alloc::getC_SO_OrderLine_ID)
-				.map(OrderLineId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return salesOrderLines.stream()
-				.filter(salesOrderLine -> !alreadyAllocatedSOLineIds.contains(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID())))
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override

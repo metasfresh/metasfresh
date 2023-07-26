@@ -16,28 +16,28 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.DocBaseType;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.Msg;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.Msg;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 /**
  * 	Time + Expense Model
@@ -46,6 +46,7 @@ import java.util.Properties;
  *
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * 			<li> FR [ 2520591 ] Support multiples calendar for Org
+ *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *	@version $Id: MTimeExpense.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MTimeExpense extends X_S_TimeExpense implements IDocument
@@ -325,7 +326,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			return IDocument.STATUS_Invalid;
 
 		//	Std Period open? - AP (Reimbursement) Invoice
-		if (!MPeriod.isOpen(getCtx(), getDateReport(), DocBaseType.APInvoice, getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateReport(), MDocType.DOCBASETYPE_APInvoice, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -561,9 +562,9 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	}	//	getSummary
 
 	@Override
-	public InstantAndOrgId getDocumentDate()
+	public LocalDate getDocumentDate()
 	{
-		return InstantAndOrgId.ofTimestamp(getDateReport(), OrgId.ofRepoId(getAD_Org_ID()));
+		return TimeUtil.asLocalDate(getDateReport());
 	}
 
 	/**

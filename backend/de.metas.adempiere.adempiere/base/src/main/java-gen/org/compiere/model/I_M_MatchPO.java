@@ -1,410 +1,445 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_MatchPO
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_M_MatchPO 
 {
 
-	String Table_Name = "M_MatchPO";
+    /** TableName=M_MatchPO */
+    public static final String Table_Name = "M_MatchPO";
 
-//	/** AD_Table_ID=473 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=473 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_AD_Client>(I_M_MatchPO.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_AD_Org>(I_M_MatchPO.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Invoice Line.
-	 * Rechnungszeile
+	 * Set Rechnungsposition.
+	 * Invoice Detail Line
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_InvoiceLine_ID (int C_InvoiceLine_ID);
+	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID);
 
 	/**
-	 * Get Invoice Line.
-	 * Rechnungszeile
+	 * Get Rechnungsposition.
+	 * Invoice Detail Line
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_InvoiceLine_ID();
+	public int getC_InvoiceLine_ID();
 
-	@Nullable org.compiere.model.I_C_InvoiceLine getC_InvoiceLine();
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine();
 
-	void setC_InvoiceLine(@Nullable org.compiere.model.I_C_InvoiceLine C_InvoiceLine);
+	public void setC_InvoiceLine(org.compiere.model.I_C_InvoiceLine C_InvoiceLine);
 
-	ModelColumn<I_M_MatchPO, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new ModelColumn<>(I_M_MatchPO.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
-	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
+    /** Column definition for C_InvoiceLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_C_InvoiceLine>(I_M_MatchPO.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
+    /** Column name C_InvoiceLine_ID */
+    public static final String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
 
 	/**
-	 * Set Orderline.
+	 * Set Auftragsposition.
+	 * Sales Order Line
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_OrderLine_ID (int C_OrderLine_ID);
+	public void setC_OrderLine_ID (int C_OrderLine_ID);
 
 	/**
-	 * Get Orderline.
+	 * Get Auftragsposition.
+	 * Sales Order Line
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_OrderLine_ID();
+	public int getC_OrderLine_ID();
 
-	org.compiere.model.I_C_OrderLine getC_OrderLine();
+	public org.compiere.model.I_C_OrderLine getC_OrderLine();
 
-	void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
+	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
 
-	ModelColumn<I_M_MatchPO, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_MatchPO.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
-	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+    /** Column definition for C_OrderLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_C_OrderLine>(I_M_MatchPO.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLine_ID */
+    public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_Created = new ModelColumn<>(I_M_MatchPO.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_AD_User>(I_M_MatchPO.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Accounting Date.
+	 * Set Buchungsdatum.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateAcct (java.sql.Timestamp DateAcct);
+	public void setDateAcct (java.sql.Timestamp DateAcct);
 
 	/**
-	 * Get Accounting Date.
+	 * Get Buchungsdatum.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDateAcct();
+	public java.sql.Timestamp getDateAcct();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_DateAcct = new ModelColumn<>(I_M_MatchPO.class, "DateAcct", null);
-	String COLUMNNAME_DateAcct = "DateAcct";
+    /** Column definition for DateAcct */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "DateAcct", null);
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
-	 * Set Date.
+	 * Set Vorgangsdatum.
 	 * Transaction Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateTrx (java.sql.Timestamp DateTrx);
+	public void setDateTrx (java.sql.Timestamp DateTrx);
 
 	/**
-	 * Get Date.
+	 * Get Vorgangsdatum.
 	 * Transaction Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDateTrx();
+	public java.sql.Timestamp getDateTrx();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_DateTrx = new ModelColumn<>(I_M_MatchPO.class, "DateTrx", null);
-	String COLUMNNAME_DateTrx = "DateTrx";
+    /** Column definition for DateTrx */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "DateTrx", null);
+    /** Column name DateTrx */
+    public static final String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_Description = new ModelColumn<>(I_M_MatchPO.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Document No.
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Document No.
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocumentNo();
+	public java.lang.String getDocumentNo();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_DocumentNo = new ModelColumn<>(I_M_MatchPO.class, "DocumentNo", null);
-	String COLUMNNAME_DocumentNo = "DocumentNo";
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_IsActive = new ModelColumn<>(I_M_MatchPO.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Approved.
+	 * Set Freigegeben.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsApproved (boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/**
-	 * Get Approved.
+	 * Get Freigegeben.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isApproved();
+	public boolean isApproved();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_MatchPO.class, "IsApproved", null);
-	String COLUMNNAME_IsApproved = "IsApproved";
+    /** Column definition for IsApproved */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "IsApproved", null);
+    /** Column name IsApproved */
+    public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Attributes.
-	 * Attribute Instances for Products
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Attributes.
-	 * Attribute Instances for Products
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_AttributeSetInstance_ID();
+	public int getM_AttributeSetInstance_ID();
 
-	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-	ModelColumn<I_M_MatchPO, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_M_MatchPO.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+    /** Column definition for M_AttributeSetInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_M_AttributeSetInstance>(I_M_MatchPO.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeSetInstance_ID */
+    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Receipt Line.
-	 * Line on Receipt document
+	 * Set Versand-/Wareneingangsposition.
+	 * Line on Shipment or Receipt document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_InOutLine_ID (int M_InOutLine_ID);
+	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
-	 * Get Receipt Line.
-	 * Line on Receipt document
+	 * Get Versand-/Wareneingangsposition.
+	 * Line on Shipment or Receipt document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_InOutLine_ID();
+	public int getM_InOutLine_ID();
 
-	org.compiere.model.I_M_InOutLine getM_InOutLine();
+	public org.compiere.model.I_M_InOutLine getM_InOutLine();
 
-	void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
 
-	ModelColumn<I_M_MatchPO, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_M_MatchPO.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+    /** Column definition for M_InOutLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_M_InOutLine>(I_M_MatchPO.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+    /** Column name M_InOutLine_ID */
+    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
-	 * Set Match PO.
+	 * Set Abgleich Bestellung.
 	 * Match Purchase Order to Shipment/Receipt and Invoice
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_MatchPO_ID (int M_MatchPO_ID);
+	public void setM_MatchPO_ID (int M_MatchPO_ID);
 
 	/**
-	 * Get Match PO.
+	 * Get Abgleich Bestellung.
 	 * Match Purchase Order to Shipment/Receipt and Invoice
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_MatchPO_ID();
+	public int getM_MatchPO_ID();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_M_MatchPO_ID = new ModelColumn<>(I_M_MatchPO.class, "M_MatchPO_ID", null);
-	String COLUMNNAME_M_MatchPO_ID = "M_MatchPO_ID";
+    /** Column definition for M_MatchPO_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_M_MatchPO_ID = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "M_MatchPO_ID", null);
+    /** Column name M_MatchPO_ID */
+    public static final String COLUMNNAME_M_MatchPO_ID = "M_MatchPO_ID";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID (int M_Product_ID);
+	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Product_ID();
+	public int getM_Product_ID();
 
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_M_Product>(I_M_MatchPO.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Posting status.
+	 * Set Verbucht.
 	 * Posting status
 	 *
-	 * <br>Type: List
+	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPosted (boolean Posted);
+	public void setPosted (boolean Posted);
 
 	/**
-	 * Get Posting status.
+	 * Get Verbucht.
 	 * Posting status
 	 *
-	 * <br>Type: List
+	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isPosted();
+	public boolean isPosted();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_Posted = new ModelColumn<>(I_M_MatchPO.class, "Posted", null);
-	String COLUMNNAME_Posted = "Posted";
-
-	/**
-	 * Set Posting Error.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPostingError_Issue_ID (int PostingError_Issue_ID);
-
-	/**
-	 * Get Posting Error.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPostingError_Issue_ID();
-
-	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
+    /** Column definition for Posted */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_Posted = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "Posted", null);
+    /** Column name Posted */
+    public static final String COLUMNNAME_Posted = "Posted";
 
 	/**
 	 * Set Price Match Difference.
@@ -414,7 +449,7 @@ public interface I_M_MatchPO
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPriceMatchDifference (@Nullable BigDecimal PriceMatchDifference);
+	public void setPriceMatchDifference (java.math.BigDecimal PriceMatchDifference);
 
 	/**
 	 * Get Price Match Difference.
@@ -424,98 +459,113 @@ public interface I_M_MatchPO
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getPriceMatchDifference();
+	public java.math.BigDecimal getPriceMatchDifference();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_PriceMatchDifference = new ModelColumn<>(I_M_MatchPO.class, "PriceMatchDifference", null);
-	String COLUMNNAME_PriceMatchDifference = "PriceMatchDifference";
+    /** Column definition for PriceMatchDifference */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_PriceMatchDifference = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "PriceMatchDifference", null);
+    /** Column name PriceMatchDifference */
+    public static final String COLUMNNAME_PriceMatchDifference = "PriceMatchDifference";
 
 	/**
-	 * Set Processed.
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProcessed (boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessed();
+	public boolean isProcessed();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_Processed = new ModelColumn<>(I_M_MatchPO.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Process Now.
+	 * Set Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProcessing (boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Process Now.
+	 * Get Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessing();
+	public boolean isProcessing();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_Processing = new ModelColumn<>(I_M_MatchPO.class, "Processing", null);
-	String COLUMNNAME_Processing = "Processing";
+    /** Column definition for Processing */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "Processing", null);
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Quantity.
+	 * Set Menge.
 	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setQty (BigDecimal Qty);
+	public void setQty (java.math.BigDecimal Qty);
 
 	/**
-	 * Get Quantity.
+	 * Get Menge.
 	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQty();
+	public java.math.BigDecimal getQty();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_Qty = new ModelColumn<>(I_M_MatchPO.class, "Qty", null);
-	String COLUMNNAME_Qty = "Qty";
+    /** Column definition for Qty */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "Qty", null);
+    /** Column name Qty */
+    public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_MatchPO, Object> COLUMN_Updated = new ModelColumn<>(I_M_MatchPO.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_MatchPO, Object>(I_M_MatchPO.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_MatchPO, org.compiere.model.I_AD_User>(I_M_MatchPO.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

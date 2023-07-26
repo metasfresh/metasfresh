@@ -81,7 +81,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	}
 
 	@Override
-	public Group retrieveGroup(@NonNull final GroupId groupId)
+	public Group retrieveGroup(final GroupId groupId)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = retrieveInvoiceCandidatesForGroup(groupId);
 		if (invoiceCandidates.isEmpty())
@@ -175,7 +175,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.build();
 	}
 
-	public InvoiceCandidateId extractLineId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	public InvoiceCandidateId extractLineId(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}
@@ -189,7 +189,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Invoice candidates are not part of the same group: " + invoiceCandidates)));
 	}
 
-	public GroupId extractGroupId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	public GroupId extractGroupId(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InvoiceCandidateCompensationGroupUtils.assertInGroup(invoiceCandidate);
 		final OrderId orderId = OrderId.ofRepoId(invoiceCandidate.getC_Order_ID());
@@ -257,12 +257,12 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		throw new UnsupportedOperationException();
 	}
 
-	private List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroup(@NonNull final GroupId groupId)
+	private List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroup(final GroupId groupId)
 	{
 		return retrieveInvoiceCandidatesForGroupQuery(groupId).create().list(I_C_Invoice_Candidate.class);
 	}
 
-	private IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroupQuery(@NonNull final GroupId groupId)
+	private IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroupQuery(final GroupId groupId)
 	{
 		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
 		final int orderCompensationGroupId = groupId.getOrderCompensationGroupId();

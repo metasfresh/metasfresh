@@ -32,6 +32,9 @@ package org.adempiere.ad.expression.exceptions;
  */
 public class ExpressionCompileException extends ExpressionException
 {
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 7284538289150002848L;
 
 	public ExpressionCompileException(final String msg)

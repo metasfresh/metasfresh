@@ -1,13 +1,12 @@
 package org.adempiere.inout.util;
 
-import java.util.List;
-import java.util.Optional;
-
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.shipping.ShipperId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.shipping.ShipperId;
+import java.util.List;
+import java.util.Optional;
 
 public interface IShipmentSchedulesDuringUpdate
 {

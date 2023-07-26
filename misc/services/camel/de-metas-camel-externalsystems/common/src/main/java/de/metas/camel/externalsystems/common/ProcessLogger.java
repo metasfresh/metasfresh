@@ -22,9 +22,7 @@
 
 package de.metas.camel.externalsystems.common;
 
-import javax.annotation.Nullable;
-
 public interface ProcessLogger
 {
-	void logMessage(String message, @Nullable Integer adPInstanceId);
+	void logMessage(String message, Integer adPInstanceId);
 }

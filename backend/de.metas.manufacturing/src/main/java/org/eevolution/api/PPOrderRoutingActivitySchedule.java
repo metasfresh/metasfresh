@@ -1,10 +1,10 @@
 package org.eevolution.api;
 
+import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.Instant;
 
 /*
  * #%L
@@ -32,9 +32,13 @@ import java.time.Instant;
 @Builder
 public class PPOrderRoutingActivitySchedule
 {
-	@NonNull PPOrderRoutingActivityId orderRoutingActivityId;
-	@NonNull Instant scheduledStartDate;
-	@NonNull Instant scheduledEndDate;
+	@NonNull
+	PPOrderRoutingActivityId orderRoutingActivityId;
+
+	@NonNull
+	LocalDateTime scheduledStartDate;
+	@NonNull
+	LocalDateTime scheduledEndDate;
 
 	public PPOrderId getOrderId()
 	{

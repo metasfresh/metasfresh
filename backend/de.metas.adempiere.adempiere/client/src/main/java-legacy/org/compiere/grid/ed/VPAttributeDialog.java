@@ -16,19 +16,35 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.form.IClientUI;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.i18n.IMsgBL;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -56,6 +72,9 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Lot;
+import org.compiere.model.I_M_LotCtl;
+import org.compiere.model.I_M_SerNoCtl;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MAttributeSet;
@@ -74,27 +93,25 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
+import com.google.common.collect.ImmutableList;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Value;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -143,8 +160,25 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 	private CButton bSelectExistingASI = new CButton(Images.getImageIcon2("PAttribute16"));
 
+	//
+	// Lot
+	private final boolean isLotEnabled;
+	private final VString fieldLotString = new VString("Lot", false, false, true, 20, 20, null, null);
+	private CComboBox<KeyNamePair> fieldLot = null;
+	private final CButton bLot = new CButton(msgBL.getMsg(Env.getCtx(), "New"));
+	// Lot Popup
+	private final JPopupMenu popupMenu = new JPopupMenu();
 	private CMenuItem mZoom;
-
+	//
+	// SerNo
+	private final boolean isSerNoEnabled;
+	private final VString fieldSerNo = new VString("SerNo", false, false, true, 20, 20, null, null);
+	private final CButton bSerNo = new CButton(msgBL.getMsg(Env.getCtx(), "New"));
+	//
+	// GuaranteeDate
+	private final boolean isGuaranteeDateEnabled;
+	private final VDate fieldGuaranteeDate = new VDate("GuaranteeDate", false, false, true, DisplayType.Date, msgBL.translate(Env.getCtx(), "GuaranteeDate"));
+	//
 	private final CTextField fieldDescription = new CTextField(20);
 	//
 	private final CPanel centerPanel = new CPanel();
@@ -165,6 +199,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		_productId = attributeContext.getProductId();
 		_callerColumnId = asiInfo.getCallerColumnId();
 
+		this.isLotEnabled = asiInfo.isLotEnabled();
+		this.isSerNoEnabled = asiInfo.isSerNoEnabled();
+		this.isGuaranteeDateEnabled = asiInfo.isGuaranteeDateEnabled();
 
 		//
 		// Initialize
@@ -250,7 +287,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	}
 
 	/**
-	 * Initialize all panel fields and editors based on {@link #getASITemplate()}.
+	 * Initialize all panel fields and editors based on {@link #asiTemplate}.
 	 */
 	private final void initAttributes()
 	{
@@ -275,6 +312,125 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		{
 			addAttributeLine(attribute);
 		}
+
+		//
+		// Lot
+		if (isLotEnabled)
+		{
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+
+			CLabel label = new CLabel(msgBL.translate(ctx, "Lot"));
+			label.setLabelFor(fieldLotString);
+			centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
+			centerPanel.add(fieldLotString, null);
+			fieldLotString.setText(asiTemplate == null ? null : asiTemplate.getLot());
+			// M_Lot_ID
+			// int AD_Column_ID = 9771; // M_AttributeSetInstance.M_Lot_ID
+			// fieldLot = new VLookup ("M_Lot_ID", false,false, true,
+			// MLookupFactory.get(getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.TableDir));
+			final String sql = "SELECT M_Lot_ID, Name "
+					+ "FROM M_Lot l "
+					+ "WHERE EXISTS (SELECT M_Product_ID FROM M_Product p "
+					+ "WHERE p.M_AttributeSet_ID=" + attributeSet.getM_AttributeSet_ID()
+					+ " AND p.M_Product_ID=l.M_Product_ID)";
+			fieldLot = new CComboBox<>(DB.getKeyNamePairs(sql, true));
+			label = new CLabel(msgBL.translate(ctx, "M_Lot_ID"));
+			label.setLabelFor(fieldLot);
+			centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
+			centerPanel.add(fieldLot, null);
+			if (asiTemplate != null && asiTemplate.getM_Lot_ID() > 0)
+			{
+				for (int i = 1; i < fieldLot.getItemCount(); i++)
+				{
+					KeyNamePair pp = fieldLot.getItemAt(i);
+					if (pp.getKey() == asiTemplate.getM_Lot_ID())
+					{
+						fieldLot.setSelectedIndex(i);
+						fieldLotString.setEditable(false);
+						break;
+					}
+				}
+			}
+			fieldLot.addActionListener(this);
+			// New Lot Button
+			if (attributeSet.getM_LotCtl_ID() > 0)
+			{
+				if (Env.getUserRolePermissions().isTableAccess(I_M_Lot.Table_ID, Access.WRITE)
+						&& Env.getUserRolePermissions().isTableAccess(I_M_LotCtl.Table_ID, Access.WRITE)
+						&& !attributeSet.isExcludeLot(getCallerColumnId(), attributeContext.isSOTrx()))
+				{
+					centerPanel.add(bLot, null);
+					bLot.addActionListener(this);
+				}
+			}
+			// Popup
+			fieldLot.addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseClicked(MouseEvent e)
+				{
+					if (SwingUtilities.isRightMouseButton(e))
+					{
+						popupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+					}
+				}
+			});
+			mZoom = new CMenuItem(msgBL.getMsg(ctx, "Zoom"), Images.getImageIcon2("Zoom16"));
+			mZoom.addActionListener(this);
+			popupMenu.add(mZoom);
+		}	// Lot
+
+		//
+		// SerNo
+		if (isSerNoEnabled)
+		{
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+
+			CLabel label = new CLabel(msgBL.translate(ctx, "SerNo"));
+			label.setLabelFor(fieldSerNo);
+			fieldSerNo.setText(asiTemplate == null ? null : asiTemplate.getSerNo());
+			centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
+			centerPanel.add(fieldSerNo, null);
+			// New SerNo Button
+			if (attributeSet.getM_SerNoCtl_ID() > 0)
+			{
+				if (Env.getUserRolePermissions().isTableAccess(I_M_SerNoCtl.Table_ID, Access.WRITE)
+						&& !attributeSet.isExcludeSerNo(getCallerColumnId(), attributeContext.isSOTrx()))
+				{
+					centerPanel.add(bSerNo, null);
+					bSerNo.addActionListener(this);
+				}
+			}
+		}	// SerNo
+
+		//
+		// GuaranteeDate.
+		if (isGuaranteeDateEnabled)
+		{
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+			Date guaranteeDate = asiTemplate == null ? null : asiTemplate.getGuaranteeDate();
+
+			CLabel label = new CLabel(msgBL.translate(ctx, "GuaranteeDate"));
+			label.setLabelFor(fieldGuaranteeDate);
+			if (isASITemplateNew())
+			{
+				if (guaranteeDate == null)
+				{
+					guaranteeDate = attributesBL.calculateBestBeforeDate(ctx,
+							getProductId(), // product
+							attributeContext.getBpartnerId(), // vendor bpartner
+							Env.getDate(ctx) // dateReceipt
+					);
+				}
+				fieldGuaranteeDate.setValue(guaranteeDate);
+			}
+			else
+			{
+				fieldGuaranteeDate.setValue(guaranteeDate);
+			}
+			centerPanel.add(label, new ALayoutConstraint(m_row++, 0));
+			centerPanel.add(fieldGuaranteeDate, null);
+		}	// GuaranteeDate
 
 		// Make sure we have at least something to edit or something to select,
 		// else there is no point in showing empty this window.
@@ -320,6 +476,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 * Add Attribute Line
 	 *
 	 * @param attribute attribute
+	 * @param product product level attribute
+	 * @param readOnly value is read only
 	 */
 	private void addAttributeLine(final I_M_Attribute attribute)
 	{
@@ -538,6 +696,35 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			return;
 		}
 		// Select Lot from existing
+		else if (event.getSource() == fieldLot)
+		{
+			final KeyNamePair pp = fieldLot.getSelectedItem();
+			if (pp != null && pp.getKey() > 0)
+			{
+				fieldLotString.setText(pp.getName());
+				fieldLotString.setEditable(false);
+			}
+			else
+			{
+				fieldLotString.setEditable(true);
+			}
+		}
+		// Create New Lot
+		else if (event.getSource() == bLot)
+		{
+			KeyNamePair pp = getM_AttributeSet().createLot(getProductId());
+			if (pp != null)
+			{
+				fieldLot.addItem(pp);
+				fieldLot.setSelectedItem(pp);
+			}
+		}
+		// Create New SerNo
+		else if (event.getSource() == bSerNo)
+		{
+			final String serNo = getM_AttributeSet().createSerNo();
+			fieldSerNo.setText(serNo);
+		}
 
 		// OK
 		else if (event.getActionCommand().equals(ConfirmPanel.A_OK))
@@ -642,6 +829,31 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 */
 	private final void setReadWrite(final boolean rw)
 	{
+		// Lot
+		if (isLotEnabled)
+		{
+			final I_M_AttributeSetInstance asiTemplate = getASITemplate();
+			final boolean isNewLot = asiTemplate == null || asiTemplate.getM_Lot_ID() <= 0;
+			fieldLotString.setEditable(rw && isNewLot);
+			if (fieldLot != null)
+			{
+				fieldLot.setReadWrite(rw);
+			}
+			bLot.setReadWrite(rw);
+		}
+
+		// Serial No
+		if (isSerNoEnabled)
+		{
+			fieldSerNo.setReadWrite(rw);
+			bSerNo.setReadWrite(rw);
+		}
+
+		// Guarantee Date
+		if (isGuaranteeDateEnabled)
+		{
+			fieldGuaranteeDate.setReadWrite(rw);
+		}
 
 		// Attribute Editors
 		for (final CEditor editor : attributeId2editor.values())
@@ -656,6 +868,11 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private void cmd_zoom()
 	{
 		int M_Lot_ID = 0;
+		KeyNamePair pp = fieldLot.getSelectedItem();
+		if (pp != null)
+		{
+			M_Lot_ID = pp.getKey();
+		}
 		MQuery zoomQuery = new MQuery("M_Lot");
 		zoomQuery.addRestriction("M_Lot_ID", Operator.EQUAL, M_Lot_ID);
 		log.info(zoomQuery.toString());
@@ -720,6 +937,70 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		//
 		boolean changed = false;
 		final Set<String> mandatory = new LinkedHashSet<>();
+
+		//
+		// Lot
+		if (isLotEnabled)
+		{
+			final String text = fieldLotString.getText();
+			if (attributeSet.isLotMandatory() && Check.isEmpty(text, true))
+			{
+				mandatory.add(msgBL.translate(getCtx(), "Lot"));
+			}
+			else
+			{
+				asi.setLot(text);
+				final KeyNamePair pp = fieldLot.getSelectedItem();
+				final int lotId = pp == null ? -1 : pp.getKey();
+				asi.setM_Lot_ID(lotId);
+				changed = true;
+			}
+		}
+		else
+		{
+			asi.setLot(null);
+			asi.setM_Lot(null);
+		}
+
+		//
+		// Serial No
+		if (isSerNoEnabled)
+		{
+			final String serNo = fieldSerNo.getText();
+			if (attributeSet.isSerNoMandatory() && Check.isEmpty(serNo, true))
+			{
+				mandatory.add(msgBL.translate(getCtx(), "SerNo"));
+			}
+			else
+			{
+				asi.setSerNo(serNo);
+				changed = true;
+			}
+		}
+		else
+		{
+			asi.setSerNo(null);
+		}
+
+		//
+		// Guarantee Date (if required)
+		if (isGuaranteeDateEnabled)
+		{
+			final Timestamp guaranteeDate = fieldGuaranteeDate.getValue();
+			if (attributeSet.isGuaranteeDate() && attributeSet.isGuaranteeDateMandatory() && guaranteeDate == null)
+			{
+				mandatory.add(msgBL.translate(getCtx(), I_M_AttributeSetInstance.COLUMNNAME_GuaranteeDate));
+			}
+			else
+			{
+				asi.setGuaranteeDate(guaranteeDate);
+				changed = true;
+			}
+		}
+		else
+		{
+			asi.setGuaranteeDate(null);
+		}
 
 		//
 		// New Instance

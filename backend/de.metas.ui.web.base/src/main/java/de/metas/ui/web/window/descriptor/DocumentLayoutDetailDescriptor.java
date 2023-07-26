@@ -1,18 +1,18 @@
 package de.metas.ui.web.window.descriptor;
 
+import static de.metas.util.Check.assumeNotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.base.MoreObjects;
+
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-
-import static de.metas.util.Check.assumeNotNull;
 
 /*
  * #%L
@@ -41,38 +41,27 @@ import static de.metas.util.Check.assumeNotNull;
  */
 public final class DocumentLayoutDetailDescriptor
 {
-	public static Builder builder(
+	public static final Builder builder(
 			@NonNull final WindowId windowId,
 			@NonNull final DetailId detailId)
 	{
 		return new Builder(windowId, detailId);
 	}
 
-	@Getter
 	private final WindowId windowId;
-	@Getter
 	private final DetailId detailId;
-	@Getter
 	private final String internalName;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 
-	@Getter
 	private final ViewLayout gridLayout;
-	@Getter
 	private final DocumentLayoutSingleRow singleRowLayout;
 
-	@Getter
-	@Nullable private final QuickInputSupportDescriptor quickInputSupport;
-	@Getter
+	private final boolean supportQuickInput;
 	private final boolean queryOnActivate;
-	@Getter
-	@NonNull private final IncludedTabNewRecordInputMode newRecordInputMode;
 
-	/**
-	 * May be {@code true} for a tab that can have just zero or one record and that shall be displayed in detail (i.e. not grid) layout.
-	 */
+	/** May be {@code true} for a tab that can have just zero or one record and that shall be displayed in detail (i.e. not grid) layout. */
 	@Getter
 	private final boolean singleRowDetailLayout;
 
@@ -93,9 +82,8 @@ public final class DocumentLayoutDetailDescriptor
 		gridLayout = builder.buildGridLayout();
 		singleRowLayout = builder.buildSingleRowLayout();
 
-		quickInputSupport = builder.getQuickInputSupport();
+		supportQuickInput = builder.isSupportQuickInput();
 		queryOnActivate = builder.queryOnActivate;
-		newRecordInputMode = builder.getNewRecordInputModeEffective();
 
 		subTabLayouts = builder.subTabLayouts;
 
@@ -112,6 +100,31 @@ public final class DocumentLayoutDetailDescriptor
 				.toString();
 	}
 
+	public WindowId getWindowId()
+	{
+		return windowId;
+	}
+
+	public DetailId getDetailId()
+	{
+		return detailId;
+	}
+
+	public String getInternalName()
+	{
+		return internalName;
+	}
+
+	public ViewLayout getGridLayout()
+	{
+		return gridLayout;
+	}
+
+	public DocumentLayoutSingleRow getSingleRowLayout()
+	{
+		return singleRowLayout;
+	}
+
 	public boolean isEmpty()
 	{
 		final boolean hasSubLayouts = !Check.isEmpty(subTabLayouts);
@@ -124,6 +137,16 @@ public final class DocumentLayoutDetailDescriptor
 		return !hasSubLayouts && !hasFields;
 	}
 
+	public boolean isSupportQuickInput()
+	{
+		return supportQuickInput;
+	}
+
+	public boolean isQueryOnActivate()
+	{
+		return queryOnActivate;
+	}
+
 	public String getCaption(@NonNull final String adLanguage)
 	{
 		return caption.translate(adLanguage);
@@ -134,13 +157,6 @@ public final class DocumentLayoutDetailDescriptor
 		return description.translate(adLanguage);
 	}
 
-	//
-	//
-	// -----------------------------------------------------------
-	//
-	//
-
-	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private final WindowId windowId;
@@ -150,7 +166,7 @@ public final class DocumentLayoutDetailDescriptor
 		private ViewLayout.Builder gridLayout = null;
 		private DocumentLayoutSingleRow.Builder singleRowLayout = null;
 
-		@Nullable private QuickInputSupportDescriptor quickInputSupport;
+		private boolean supportQuickInput;
 
 		private boolean queryOnActivate;
 
@@ -160,8 +176,6 @@ public final class DocumentLayoutDetailDescriptor
 
 		private ITranslatableString caption;
 		private ITranslatableString description;
-
-		private IncludedTabNewRecordInputMode newRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
 
 		private Builder(@NonNull final WindowId windowId, @NonNull final DetailId detailId)
 		{
@@ -221,9 +235,7 @@ public final class DocumentLayoutDetailDescriptor
 			return this;
 		}
 
-		/**
-		 * The default is {@code false}
-		 */
+		/** The default is {@code false} */
 		public Builder singleRowDetailLayout(final boolean singleRowDetailLayout)
 		{
 			this.singleRowDetailLayout = singleRowDetailLayout;
@@ -242,16 +254,15 @@ public final class DocumentLayoutDetailDescriptor
 			return this;
 		}
 
-		public Builder quickInputSupport(@Nullable final QuickInputSupportDescriptor quickInputSupport)
+		public Builder supportQuickInput(final boolean supportQuickInput)
 		{
-			this.quickInputSupport = quickInputSupport;
+			this.supportQuickInput = supportQuickInput;
 			return this;
 		}
 
-		@Nullable
-		public QuickInputSupportDescriptor getQuickInputSupport()
+		public boolean isSupportQuickInput()
 		{
-			return quickInputSupport;
+			return supportQuickInput;
 		}
 
 		public Builder caption(@NonNull final ITranslatableString caption)
@@ -276,18 +287,6 @@ public final class DocumentLayoutDetailDescriptor
 		{
 			this.subTabLayouts.addAll(subTabLayouts);
 			return this;
-		}
-
-		public Builder newRecordInputMode(@NonNull final IncludedTabNewRecordInputMode newRecordInputMode)
-		{
-			this.newRecordInputMode = newRecordInputMode;
-			return this;
-		}
-
-		private IncludedTabNewRecordInputMode getNewRecordInputModeEffective()
-		{
-			final boolean hasQuickInputSupport = getQuickInputSupport() != null;
-			return newRecordInputMode.orCompatibleIfAllowQuickInputIs(hasQuickInputSupport);
 		}
 	}
 }

@@ -38,11 +38,7 @@ public class ExternalSystems
 		registerExternalSystem(AlbertaExternalSystem.ALBERTA);
 		registerExternalSystem(Shopware6ExternalSystem.SHOPWARE6);
 		registerExternalSystem(OtherExternalSystem.OTHER);
-		registerExternalSystem(EbayExternalSystem.EBAY);
 		registerExternalSystem(WoocommerceExternalSystem.WOOCOMMERCE);
-		registerExternalSystem(GRSSignumExternalSystem.GRSSIGNUM);
-		registerExternalSystem(LeichUndMehlExternalSystem.LEICHUNDMEHL);
-		registerExternalSystem(SAPExternalSystem.SAP);
 	}
 
 	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();

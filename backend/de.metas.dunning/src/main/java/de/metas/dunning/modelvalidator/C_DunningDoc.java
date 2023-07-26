@@ -1,10 +1,10 @@
 package de.metas.dunning.modelvalidator;
 
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.dunning.Dunning_Constants;
 import de.metas.dunning.api.impl.DunningDocDocumentLocationAdapterFactory;
 import de.metas.dunning.export.async.C_DunningDoc_CreateExportData;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -28,7 +28,7 @@ public class C_DunningDoc
 				.builder()
 				.adClientId(dunningDoc.getAD_Client_ID())
 				.adOrgId(dunningDoc.getAD_Org_ID())
-				.docBaseType(DocBaseType.DunningDoc)
+				.docBaseType(Dunning_Constants.DocBaseType_Dunnig)
 				.build();
 
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(query);

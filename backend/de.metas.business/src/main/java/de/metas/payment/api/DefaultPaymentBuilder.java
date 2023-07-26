@@ -24,7 +24,6 @@ package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -48,6 +47,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -143,7 +143,7 @@ public class DefaultPaymentBuilder
 
 	private DocTypeId getDocTypeIdOrNull()
 	{
-		final DocBaseType docBaseType = payment.isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment;
+		final String docBaseType = payment.isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment;
 
 		return docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
 				.docBaseType(docBaseType)

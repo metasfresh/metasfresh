@@ -25,7 +25,7 @@ package de.metas.common.bpartner.v2.response;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.JsonPagingDescriptor;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,7 +35,7 @@ import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
-@Schema(description = "Response to a request for contact master data.")
+@ApiModel("Resonse to a request for contact master data.")
 @Value
 public class JsonResponseContactList
 {

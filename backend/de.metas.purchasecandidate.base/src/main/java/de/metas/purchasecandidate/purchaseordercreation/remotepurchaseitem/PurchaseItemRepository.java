@@ -1,17 +1,11 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderAndLineId;
-import de.metas.organization.IOrgDAO;
-import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateId;
-import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -19,12 +13,17 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.time.ZoneId;
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,7 +51,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class PurchaseItemRepository
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public void saveAll(@NonNull final List<? extends PurchaseItem> purchaseItems)
 	{
@@ -131,11 +129,8 @@ public class PurchaseItemRepository
 			record.setAD_Issue_ID(issueId.getRepoId());
 		}
 
-		if (purchaseErrorItem.getTransactionReference() != null)
-		{
-			record.setAD_Table_ID(purchaseErrorItem.getTransactionReference().getAD_Table_ID());
-			record.setRecord_ID(purchaseErrorItem.getTransactionReference().getRecord_ID());
-		}
+		record.setAD_Table_ID(purchaseErrorItem.getTransactionReference().getAD_Table_ID());
+		record.setRecord_ID(purchaseErrorItem.getTransactionReference().getRecord_ID());
 		saveRecord(record);
 	}
 
@@ -184,13 +179,12 @@ public class PurchaseItemRepository
 		{
 			final OrderAndLineId purchaseOrderAndLineId = OrderAndLineId.ofRepoIds(record.getC_OrderPO_ID(), record.getC_OrderLinePO_ID());
 			final Quantity purchasedQty = orderLineBL.getQtyOrdered(purchaseOrderAndLineId);
-			final ZoneId timeZone = orgDAO.getTimeZone(purchaseCandidate.getOrgId());
-			
+
 			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
 					.dimension(purchaseCandidate.getDimension())
 					.purchaseItemId(PurchaseItemId.ofRepoId(record.getC_PurchaseCandidate_Alloc_ID()))
-					.datePromised(TimeUtil.asZonedDateTime(record.getDatePromised(), timeZone))
+					.datePromised(TimeUtil.asZonedDateTime(record.getDatePromised()))
 					.purchasedQty(purchasedQty)
 					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)

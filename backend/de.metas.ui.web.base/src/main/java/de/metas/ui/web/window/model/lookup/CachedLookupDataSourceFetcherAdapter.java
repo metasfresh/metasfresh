@@ -63,8 +63,10 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	private final transient CCache<LookupDataSourceContext, LookupValuesPage> cache_retrieveEntities;
 	private final transient CCache<LookupDataSourceContext, LookupValue> cache_retrieveLookupValueById;
 
-	private CachedLookupDataSourceFetcherAdapter(@NonNull final LookupDataSourceFetcher delegate)
+	private CachedLookupDataSourceFetcherAdapter(final LookupDataSourceFetcher delegate)
 	{
+		super();
+		Check.assumeNotNull(delegate, "Parameter delegate is not null");
 		this.delegate = delegate;
 
 		cachePrefix = delegate.getCachePrefix();

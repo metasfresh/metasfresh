@@ -1,26 +1,28 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.time.Instant;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Invoice;
+import org.springframework.stereotype.Repository;
+
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.invoice.InvoiceId;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Invoice;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -151,7 +153,14 @@ public class InvoiceResponseRepo
 	private void updateInvoiceRecord(@NonNull final ImportedInvoiceResponse response,
 			@NonNull final I_C_Invoice invoiceRecord)
 	{
-		invoiceRecord.setIsInDispute(ImportedInvoiceResponse.Status.REJECTED.equals(response.getStatus()));
+		if (ImportedInvoiceResponse.Status.REJECTED.equals(response.getStatus()))
+		{
+			invoiceRecord.setIsInDispute(true);
+		}
+		else
+		{
+			invoiceRecord.setIsInDispute(false);
+		}
 		saveRecord(invoiceRecord);
 	}
 

@@ -104,7 +104,7 @@ public class MReplicationStrategy extends X_AD_ReplicationStrategy {
 			.setOnlyActiveRecords(true)
 			.setRequiredAccess(Access.READ)
 			.setParameters(AD_ReplicationStrategy_ID, AD_Table_ID)
-			.firstOnly(X_AD_ReplicationTable.class)
+			.firstOnly()
 		;	
 	}
 	

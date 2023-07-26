@@ -1,6 +1,7 @@
 package de.metas.material.event.transactions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
@@ -55,6 +56,9 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 	@JsonInclude(NON_NULL)
 	private final MinMaxDescriptor minMaxDescriptor;
 
+	/** note: one shipment-inoutLine might be an aggregation of multiple shipment schedules */
+	private final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys;
+
 	private final Map<Integer, BigDecimal> receiptScheduleIds2Qtys;
 
 	private final InOutAndLineId receiptId;
@@ -79,6 +83,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
+			final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			final Map<Integer, BigDecimal> receiptScheduleIds2Qtys,
 			final InOutAndLineId receiptId,
 			final InOutAndLineId shipmentId,
@@ -100,6 +105,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.huOnHandQtyChangeDescriptors = huOnHandQtyChangeDescriptors;
 
+		this.shipmentScheduleIds2Qtys = shipmentScheduleIds2Qtys;
 		this.receiptScheduleIds2Qtys = receiptScheduleIds2Qtys;
 
 		this.receiptId = receiptId;

@@ -110,7 +110,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 		}
 		if (locatorId != null)
 		{
-			huQueryBuilder.addOnlyInLocatorId(locatorId);
+			huQueryBuilder.addOnlyInLocatorId(locatorId.getRepoId());
 		}
 		if (productId != null)
 		{

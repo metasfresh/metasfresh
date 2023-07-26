@@ -22,12 +22,20 @@ package de.metas.handlingunits.model;
  * #L%
  */
 
-public interface I_M_Warehouse extends org.compiere.model.I_M_Warehouse
+public interface I_M_Warehouse extends org.adempiere.warehouse.model.I_M_Warehouse
 {
 	//@formatter:off
 	// task: http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
-	String COLUMNNAME_IsHUStorageDisabled = "IsHUStorageDisabled";
-	void setIsHUStorageDisabled(boolean IsHUStorageDisabled);
-	boolean isHUStorageDisabled();
+	public static final String COLUMNNAME_IsHUStorageDisabled = "IsHUStorageDisabled";
+	public void setIsHUStorageDisabled(boolean IsHUStorageDisabled);
+	public boolean isHUStorageDisabled();
 	//@formatter:on
+
+	//@formatter:off
+	// task #1056
+	public static final String COLUMNNAME_IsQualityReturnWarehouse = "IsQualityReturnWarehouse";
+	public void setIsQualityReturnWarehouse(boolean isQualityReturnWarehouse);
+	public boolean isQualityReturnWarehouse();
+	//@formatter:on
+
 }

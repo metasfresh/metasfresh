@@ -16,13 +16,11 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.websocket.WebsocketTopicNames;
+import de.metas.ui.web.websocket.WebsocketActiveSubscriptionsIndex;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.websocket.WebsocketTopicName;
-import de.metas.websocket.producers.WebsocketActiveSubscriptionsIndex;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -209,8 +207,7 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public boolean isWatchedByFrontend(final ViewId viewId)
 	{
-		final WebsocketTopicName topicName = WebsocketTopicNames.buildViewNotificationsTopicName(viewId.toJson());
-		return websocketActiveSubscriptionsIndex.hasSubscriptionsForTopicName(topicName);
+		return websocketActiveSubscriptionsIndex.hasViewSubscriptions(viewId);
 	}
 
 	private IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
@@ -464,7 +461,7 @@ public class ViewsRepository implements IViewsRepository
 		{
 			try
 			{
-				final boolean watchedByFrontend = isWatchedByFrontend(view.getViewId());
+				final boolean watchedByFrontend = websocketActiveSubscriptionsIndex.hasViewSubscriptions(view.getViewId());
 				view.notifyRecordsChanged(recordRefs, watchedByFrontend);
 				notifiedCount.incrementAndGet();
 			}

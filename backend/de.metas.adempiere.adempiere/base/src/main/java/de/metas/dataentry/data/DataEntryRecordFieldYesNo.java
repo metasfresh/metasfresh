@@ -1,13 +1,12 @@
 package de.metas.dataentry.data;
 
-import de.metas.CreatedUpdatedInfo;
+import javax.annotation.Nullable;
+
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -40,7 +39,7 @@ public class DataEntryRecordFieldYesNo extends DataEntryRecordField<Boolean>
 
 	public static DataEntryRecordFieldYesNo of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final Boolean value)
 	{
 		return new DataEntryRecordFieldYesNo(dataEntryFieldId, createdUpdatedInfo, value);
@@ -48,7 +47,7 @@ public class DataEntryRecordFieldYesNo extends DataEntryRecordField<Boolean>
 
 	private DataEntryRecordFieldYesNo(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final Boolean value)
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);

@@ -1,8 +1,19 @@
 package de.metas.handlingunits.sourcehu.impl;
 
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.annotation.CacheModel;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -14,17 +25,6 @@ import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
 
 /*
  * #%L
@@ -63,7 +63,6 @@ public class SourceHuDAO implements ISourceHuDAO
 	}
 
 	@Override
-	@Nullable
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID)
 	public I_M_Source_HU retrieveSourceHuMarkerOrNull(@NonNull @CacheModel final I_M_HU hu)
 	{
@@ -96,15 +95,15 @@ public class SourceHuDAO implements ISourceHuDAO
 			return ImmutableSet.of();
 		}
 
-		return queryBuilder
+		final Set<HuId> huIds = queryBuilder
 				.create()
 				.listIds()
 				.stream()
 				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+		return huIds;
 	}
 
-	@Nullable
 	private IQueryBuilder<I_M_HU> retrieveActiveSourceHusQuery(@NonNull final MatchingSourceHusQuery query)
 	{
 		if (query.getProductIds().isEmpty())
@@ -154,11 +153,9 @@ public class SourceHuDAO implements ISourceHuDAO
 				.setOnlyActiveHUs(true)
 				.setAllowEmptyStorage()
 				.addOnlyWithProductIds(ProductId.toRepoIds(query.getProductIds()));
-
-		final ImmutableSet<WarehouseId> warehouseIds = query.getWarehouseIds();
-		if (warehouseIds != null && !warehouseIds.isEmpty())
+		if (query.getWarehouseId() != null)
 		{
-			huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
+			huQueryBuilder.addOnlyInWarehouseId(query.getWarehouseId());
 		}
 
 		final IQueryFilter<I_M_HU> huFilter = huQueryBuilder.createQueryFilter();

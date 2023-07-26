@@ -22,13 +22,12 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.X_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.spi.impl.ConstantWorkpackagePrio;
-import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
-import de.metas.util.Services;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.Properties;
+import java.util.function.Function;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
@@ -37,10 +36,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Properties;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import de.metas.async.api.IWorkPackageBlockBuilder;
+import de.metas.async.api.IWorkPackageBuilder;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.X_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.impl.ConstantWorkpackagePrio;
+import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.util.Services;
 
 /**
  * Enqueue a number of workpackages and verify their priorities.
@@ -72,23 +76,28 @@ public class TestQueue_SizeBasedPrio
 
 		((SizeBasedWorkpackagePrio)SizeBasedWorkpackagePrio.INSTANCE)
 				.setAlternativeSize2constantPrio(
-						input -> {
-							switch (input)
-							{
-								case 0:
-									return ConstantWorkpackagePrio.urgent();
-								case 1:
-									return ConstantWorkpackagePrio.high();
-								case 2:
-									return ConstantWorkpackagePrio.medium();
-								case 3:
-									return ConstantWorkpackagePrio.low();
-								case 4:
-									return ConstantWorkpackagePrio.minor();
-								default:
-									throw new AdempiereException("input=" + input + " shall not happen in this test");
-							}
-						});
+				new Function<Integer, ConstantWorkpackagePrio>()
+				{
+					@Override
+					public ConstantWorkpackagePrio apply(final Integer input)
+					{
+						switch (input)
+						{
+							case 0:
+								return ConstantWorkpackagePrio.urgent();
+							case 1:
+								return ConstantWorkpackagePrio.high();
+							case 2:
+								return ConstantWorkpackagePrio.medium();
+							case 3:
+								return ConstantWorkpackagePrio.low();
+							case 4:
+								return ConstantWorkpackagePrio.minor();
+							default:
+								throw new AdempiereException("input=" + input + " shall not happen in this test");
+						}
+					}
+				});
 	}
 
 	@After
@@ -99,7 +108,7 @@ public class TestQueue_SizeBasedPrio
 	}
 
 	/**
-	 * Enqueues a number of packages.
+	 * Enqueues a number of packages. using {@link IWorkPackageBlockBuilder} and {@link IWorkPackageBuilder}. Also see {@link #init()}.
 	 */
 	@Test
 	public void testWithWorkPackageBuilder()
@@ -108,19 +117,21 @@ public class TestQueue_SizeBasedPrio
 
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
-		final I_C_Queue_WorkPackage wp1 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
+		final IWorkPackageBlockBuilder blockBuilder = queueForEnqueuing.newBlock();
+
+		final I_C_Queue_WorkPackage wp1 = blockBuilder.newWorkpackage().build();
 		assertThat(wp1.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Urgent));
 
-		final I_C_Queue_WorkPackage wp2 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
+		final I_C_Queue_WorkPackage wp2 = blockBuilder.newWorkpackage().build();
 		assertThat(wp2.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_High));
 
-		final I_C_Queue_WorkPackage wp3 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
+		final I_C_Queue_WorkPackage wp3 = blockBuilder.newWorkpackage().build();
 		assertThat(wp3.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Medium));
 
-		final I_C_Queue_WorkPackage wp4 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
+		final I_C_Queue_WorkPackage wp4 = blockBuilder.newWorkpackage().build();
 		assertThat(wp4.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Low));
 
-		final I_C_Queue_WorkPackage wp5 = queueForEnqueuing.newWorkPackage().buildAndEnqueue();
+		final I_C_Queue_WorkPackage wp5 = blockBuilder.newWorkpackage().build();
 		assertThat(wp5.getPriority(), is(X_C_Queue_WorkPackage.PRIORITY_Minor));
 	}
 }

@@ -1,11 +1,13 @@
 package de.metas.payment.paymentterm.interceptor;
 
-import de.metas.payment.paymentterm.PaymentTerm;
+import java.math.BigDecimal;
+
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PaymentTerm;
 import org.springframework.stereotype.Component;
 
 import de.metas.order.IOrderLineBL;
@@ -84,9 +86,9 @@ public class C_OrderLine
 			return;
 		}
 
-		final PaymentTerm paymentTermRecord = Services.get(IPaymentTermRepository.class).getById(paymentTermId);
-		final Percent paymentDiscount = paymentTermRecord.getDiscount();
-		orderLineRecord.setPaymentDiscount(paymentDiscount.toBigDecimal());
+		final I_C_PaymentTerm paymentTermRecord = Services.get(IPaymentTermRepository.class).getById(paymentTermId);
+		final BigDecimal paymentDiscount = paymentTermRecord.getDiscount();
+		orderLineRecord.setPaymentDiscount(paymentDiscount);
 	}
 
 	@CalloutMethod(skipIfCopying = true, columnNames = I_C_OrderLine.COLUMNNAME_IsManualPaymentTerm)

@@ -1,26 +1,30 @@
 package de.metas.security;
 
-import de.metas.document.engine.DocActionOptionsContext;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import de.metas.i18n.BooleanWithReason;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
+
+import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.ElementPermission;
+import de.metas.security.permissions.InfoWindowPermission;
 import de.metas.security.permissions.OrgResource;
 import de.metas.security.permissions.Permission;
 import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.service.ClientId;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 public interface IUserRolePermissions
 {
@@ -46,6 +50,20 @@ public interface IUserRolePermissions
 	@Deprecated
 	Permission PERMISSION_MigrationScripts = ResourceAsPermission.ofName("MigrationScripts");
 
+	Permission PERMISSION_InfoWindow_Product = InfoWindowPermission.ofInfoWindowKey("InfoProduct");
+	Permission PERMISSION_InfoWindow_BPartner = InfoWindowPermission.ofInfoWindowKey("InfoBPartner");
+	Permission PERMISSION_InfoWindow_Account = InfoWindowPermission.ofInfoWindowKey("InfoAccount");
+	Permission PERMISSION_InfoWindow_Schedule = InfoWindowPermission.ofInfoWindowKey("InfoSchedule");
+	Permission PERMISSION_InfoWindow_MRP = InfoWindowPermission.ofInfoWindowKey("InfoMRP");
+	Permission PERMISSION_InfoWindow_CRP = InfoWindowPermission.ofInfoWindowKey("InfoCRP");
+	Permission PERMISSION_InfoWindow_Order = InfoWindowPermission.ofInfoWindowKey("InfoOrder");
+	Permission PERMISSION_InfoWindow_Invoice = InfoWindowPermission.ofInfoWindowKey("InfoInvoice");
+	Permission PERMISSION_InfoWindow_InOut = InfoWindowPermission.ofInfoWindowKey("InfoInOut");
+	Permission PERMISSION_InfoWindow_Payment = InfoWindowPermission.ofInfoWindowKey("InfoPayment");
+	Permission PERMISSION_InfoWindow_CashJournal = InfoWindowPermission.ofInfoWindowKey("InfoCashLine");
+	Permission PERMISSION_InfoWindow_Resource = InfoWindowPermission.ofInfoWindowKey("InfoAssignment");
+	Permission PERMISSION_InfoWindow_Asset = InfoWindowPermission.ofInfoWindowKey("InfoAsset");
+
 	/** Access SQL Not Fully Qualified */
 	boolean SQL_NOTQUALIFIED = false;
 
@@ -59,8 +77,6 @@ public interface IUserRolePermissions
 
 	/** @return role name */
 	String getName();
-
-	RoleGroup getRoleGroup();
 
 	RoleId getRoleId();
 
@@ -186,20 +202,18 @@ public interface IUserRolePermissions
 
 	boolean isCanReport(int AD_Table_ID);
 
-	boolean isOrgAccess(OrgId OrgId, String tableName, Access access);
+	boolean isOrgAccess(OrgId OrgId, Access access);
 
 	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);
 
-	Optional<String> getOrgWhere(@Nullable String tableName, Access access);
+	String getOrgWhere(@Nullable String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 
 	// FRESH-560: Retrieve the org IDs also as a list
 	Set<OrgId> getAD_Org_IDs_AsSet();
 
-	Set<ClientId> getLoginClientIds();
-
-	OrgIdAccessList getOrgAccess(@Nullable String tableName, Access access);
+	Set<KeyNamePair> getLoginClients();
 
 	Set<OrgResource> getLoginOrgs();
 

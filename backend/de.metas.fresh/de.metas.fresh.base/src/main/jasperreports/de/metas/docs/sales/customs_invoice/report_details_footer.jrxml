@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\it.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -26,23 +26,27 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT nettoTotalWeight,
-       UOM,
-       QtyPattern,
-       bruttoTotalWeight
-FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_Customs_Invoice_Id}, $P{ad_language});]]>
+		<![CDATA[select
+ SUM(il.InvoicedQty) as catchweight,
+       COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOM,
+       CASE
+           WHEN uom.StdPrecision = 0
+               THEN '#,##0'
+           ELSE Substring('#,##0.0000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END AS QtyPattern
+from C_Customs_Invoice_Line il
+  LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = il.c_uom_id
+  LEFT OUTER JOIN C_UOM_Trl uomt on uomt.c_UOM_ID = uom.C_UOM_ID and uomt.AD_Language = $P{ad_language}
+where il.C_Customs_Invoice_Id =  $P{C_Customs_Invoice_Id}
+group by uomt.UOMSymbol, uom.UOMSymbol, uom.StdPrecision;]]>
 	</queryString>
-	<field name="nettototalweight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="nettototalweight"/>
+	<field name="catchweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
 	</field>
 	<field name="uom" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
 	<field name="qtypattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
-	</field>
-	<field name="bruttototalweight" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="bruttototalweight"/>
 	</field>
 	<title>
 		<band height="37">
@@ -51,7 +55,7 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nettototalweight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField>
@@ -62,33 +66,11 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
 			</textField>
 			<textField pattern="0.00">
-				<reportElement x="74" y="7" width="62" height="12" uuid="0ca927b5-2e8f-437b-bd67-ceace3241d62"/>
+				<reportElement x="80" y="7" width="56" height="12" uuid="0ca927b5-2e8f-437b-bd67-ceace3241d62"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{weight}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="194" y="21" width="100" height="12" uuid="baa00a65-8daf-4472-88bc-0661494a9c2f"/>
-				<textElement>
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="136" y="21" width="54" height="12" uuid="4ff26313-199c-4196-9f0b-db3e68cbac33"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{bruttototalweight}]]></textFieldExpression>
-				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="74" y="21" width="62" height="12" uuid="a3e8ac96-f70a-4e73-b495-43dece26b51e"/>
-				<textElement>
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{bruttoweight}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

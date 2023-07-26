@@ -24,7 +24,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -37,7 +37,6 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.report.ReportResultData;
 import de.metas.scheduler.AdSchedulerId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -73,6 +72,7 @@ import org.compiere.model.MNote;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MTask;
 import org.compiere.model.X_AD_Scheduler;
+import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -143,10 +143,6 @@ public class Scheduler extends AdempiereServer
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
 
-	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.scheduler.enable";
-	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 	/**
 	 * Sets AD_Scheduler.Status and save the record
 	 */
@@ -201,31 +197,22 @@ public class Scheduler extends AdempiereServer
 	@Override
 	protected void doWork()
 	{
-		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
-		if(!perfMonIsActive)
-		{
-			doWork0();
-		}
-		else
-		{
-			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-					PerformanceMonitoringService.class,
-					NoopPerformanceMonitoringService.INSTANCE);
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
 
-			service.monitor(
-					this::doWork0,
-					Metadata.builder()
-							.className("Scheduler")
-							.functionName("doWork")
-							.type(Type.SCHEDULER)
-							.label("scheduler.name", m_model.getName())
-							.build());
-		}
+		service.monitorTransaction(
+				this::doWork0,
+				TransactionMetadata.builder()
+						.name("Scheduler - " + m_model.getName())
+						.type(Type.SCHEDULER)
+						.label("scheduler.name", m_model.getName())
+						.build());
 	}
 
 	private void doWork0()
 	{
-		// metas us1030 updating status
+		// metas us1030 updating staus
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, null);
 
 		m_summary = new StringBuffer(m_model.toString()).append(" - ");
@@ -368,7 +355,7 @@ public class Scheduler extends AdempiereServer
 							orgId,
 							adUserId,
 							Env.getLocalDate(schedulerCtx))
-					.orElse(null);
+					.orNull();
 
 			// gh #2092: without a role, we won't be able to run the process, because ProcessExecutor.assertPermissions() will fail.
 			Check.errorIf(role == null,
@@ -412,12 +399,12 @@ public class Scheduler extends AdempiereServer
 
 		// Report
 		final Properties ctx = pi.getCtx();
-		final ReportResultData reportData = pi.getResult().getReportData();
-		if (reportData == null)
+		final ReportEngine re = ReportEngine.get(ctx, pi);
+		if (re == null)
 		{
 			return "Cannot create Report AD_Process_ID=" + process.getAD_Process_ID() + " - " + process.getName();
 		}
-		final File report = reportData.writeToTemporaryFile("report_");
+		final File report = re.getPDF();
 		// Notice
 		final int AD_Message_ID = 884;		// HARDCODED SchedulerResult
 		for (final UserId userId : m_model.getRecipientAD_User_IDs())

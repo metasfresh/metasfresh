@@ -1,20 +1,21 @@
 package de.metas.ui.web.menu.datatypes.json;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
-import de.metas.ui.web.menu.MenuNode;
-import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
-import lombok.Value;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.MutableInt;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.menu.MenuNode;
+import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
 
 /*
  * #%L
@@ -38,14 +39,10 @@ import java.util.Objects;
  * #L%
  */
 
-@Value
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class JSONMenuNode
+@SuppressWarnings("serial")
+public final class JSONMenuNode implements Serializable
 {
-	public static JSONMenuNode ofPath(
-			final List<MenuNode> path,
-			final boolean includeLastNode,
-			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+	public static final JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		if (path == null || path.isEmpty())
 		{
@@ -55,7 +52,8 @@ public class JSONMenuNode
 		{
 			final MenuNode node = path.get(0);
 			final boolean favorite = menuNodeFavoriteProvider.isFavorite(node);
-			return new JSONMenuNode(node, favorite, null);
+			final JSONMenuNode jsonChildNode = null;
+			return new JSONMenuNode(node, favorite, jsonChildNode);
 		}
 
 		int lastIndex = path.size() - 1;
@@ -85,37 +83,23 @@ public class JSONMenuNode
 		return jsonChildNode;
 	}
 
-	public static List<JSONMenuNode> ofList(
-			final Collection<MenuNode> nodes,
-			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+	public static List<JSONMenuNode> ofList(final Collection<MenuNode> nodes, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		if (nodes.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
+		final JSONMenuNode jsonChildNode = null;
 		return nodes.stream()
-				.map(node -> new JSONMenuNode(node, menuNodeFavoriteProvider.isFavorite(node), null))
+				.map(node -> new JSONMenuNode(node, menuNodeFavoriteProvider.isFavorite(node), jsonChildNode))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Nullable
-	private static JSONMenuNode newInstanceOrNull(
-			final MenuNode node,
-			final int depth,
-			final int childrenLimit,
-			final MutableInt maxLeafNodes,
-												  final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+	private static JSONMenuNode newInstanceOrNull(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
+			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		if (maxLeafNodes.getValue() <= 0)
-		{
-			return null;
-		}
-
-		final JSONMenuNode jsonNode = new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
-
-		// Avoid empty groups, makes no sense and looks ugly to show them to user.
-		if (jsonNode.isEmptyGroup())
 		{
 			return null;
 		}
@@ -125,48 +109,54 @@ public class JSONMenuNode
 			maxLeafNodes.decrementAndGet();
 		}
 
-		return jsonNode;
+		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
 	}
 
-	public static Builder builder(final MenuNode node)
+	public static final Builder builder(final MenuNode node)
 	{
 		return new Builder(node);
 	}
 
-	@JsonProperty("nodeId") String nodeId;
+	@JsonProperty("nodeId")
+	private final String nodeId;
 
 	@JsonProperty("parentId")
-	@JsonInclude(JsonInclude.Include.NON_NULL) String parentId;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String parentId;
 
-	@JsonProperty("caption") String caption;
+	@JsonProperty("caption")
+	private final String caption;
 
-	@JsonProperty("captionBreadcrumb") String captionBreadcrumb;
+	@JsonProperty("captionBreadcrumb")
+	private final String captionBreadcrumb;
 
-	@JsonProperty("type") JSONMenuNodeType type;
+	@JsonProperty("type")
+	private final JSONMenuNodeType type;
 
 	@JsonProperty("elementId")
-	@JsonInclude(JsonInclude.Include.NON_NULL) String elementId;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String elementId;
 
 	@JsonProperty("children")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY) List<JSONMenuNode> children;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONMenuNode> children;
 
 	@JsonProperty("matched")
-	@JsonInclude(JsonInclude.Include.NON_NULL) Boolean matched;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean matched;
 
-	@JsonProperty("favorite") boolean favorite;
+	@JsonProperty("favorite")
+	private final boolean favorite;
 
-	private JSONMenuNode(
-			final MenuNode node,
-			final int depth,
-			final int childrenLimit,
-			final MutableInt maxLeafNodes,
-						 final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
+			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
+		super();
 		nodeId = node.getId();
 		parentId = node.getParentId();
 		caption = node.getCaption();
 		captionBreadcrumb = node.getCaptionBreadcrumb();
-		type = JSONMenuNodeType.ofNullable(node.getType());
+		type = JSONMenuNodeType.fromNullable(node.getType());
 		elementId = node.getElementId() != null ? node.getElementId().toJson() : null;
 		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
 		favorite = menuNodeFavoriteProvider.isFavorite(node);
@@ -179,26 +169,27 @@ public class JSONMenuNode
 		{
 			children = node.getChildren()
 					.stream()
-					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider))
-					.filter(Objects::nonNull)
 					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
+					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider))
+					.filter(jsonNode -> jsonNode != null)
 					.collect(ImmutableList.toImmutableList());
 		}
 	}
 
 	/**
 	 * Path constructor
+	 *
+	 * @param node
+	 * @param jsonChildNode
 	 */
-	private JSONMenuNode(
-			final MenuNode node,
-			final boolean favorite,
-			@Nullable final JSONMenuNode jsonChildNode)
+	private JSONMenuNode(final MenuNode node, final boolean favorite, final JSONMenuNode jsonChildNode)
 	{
+		super();
 		nodeId = node.getId();
 		parentId = null; // omit parentId when we are building the path!
 		caption = node.getCaption();
 		captionBreadcrumb = node.getCaptionBreadcrumb();
-		type = JSONMenuNodeType.ofNullable(node.getType());
+		type = JSONMenuNodeType.fromNullable(node.getType());
 		elementId = node.getElementId() != null ? node.getElementId().toJson() : null;
 		children = jsonChildNode == null ? ImmutableList.of() : ImmutableList.of(jsonChildNode);
 		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
@@ -228,13 +219,60 @@ public class JSONMenuNode
 		this.favorite = favorite;
 	}
 
-	//
-	// -----------------
-	//
-
-	public boolean isEmptyGroup()
+	@Override
+	public String toString()
 	{
-		return JSONMenuNodeType.group.equals(type) && (children == null || children.isEmpty());
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("nodeId", nodeId)
+				.add("parentId", parentId)
+				.add("caption", caption)
+				.add("captionBreadcrumb", captionBreadcrumb)
+				.add("type", type)
+				.add("elementId", elementId)
+				.add("matchedByFilter", matched)
+				.toString();
+	}
+
+	public String getNodeId()
+	{
+		return nodeId;
+	}
+
+	public String getCaption()
+	{
+		return caption;
+	}
+
+	public String getCaptionBreadcrumb()
+	{
+		return captionBreadcrumb;
+	}
+
+	public JSONMenuNodeType getType()
+	{
+		return type;
+	}
+
+	public String getElementId()
+	{
+		return elementId;
+	}
+
+	public List<JSONMenuNode> getChildren()
+	{
+		return children;
+	}
+
+	@JsonIgnore
+	public boolean isLeaf()
+	{
+		return children == null || children.isEmpty();
+	}
+
+	public Boolean getMatched()
+	{
+		return matched;
 	}
 
 	public static final class Builder
@@ -247,10 +285,10 @@ public class JSONMenuNode
 
 		private Builder(final MenuNode node)
 		{
+			super();
 			this.node = node;
 		}
 
-		@Nullable
 		public JSONMenuNode build()
 		{
 			final MutableInt maxLeafNodes = new MutableInt(this.maxLeafNodes);

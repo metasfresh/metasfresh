@@ -3,7 +3,6 @@ package de.metas.acct.gldistribution;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.document.DocTypeId;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 
@@ -36,18 +35,25 @@ public interface IGLDistributionDAO extends ISingletonService
 {
 	/**
 	 * Retrieves those {@link I_GL_Distribution}s which are matching the given criteria.
-	 *
+	 * 
+	 * @param ctx
+	 * @param dimension
+	 * @param PostingType
+	 * @param C_DocType_ID
+	 * @return
 	 */
-	List<I_GL_Distribution> retrieve(Properties ctx, AccountDimension dimension, String PostingType, DocTypeId C_DocType_ID);
+	List<I_GL_Distribution> retrieve(Properties ctx, AccountDimension dimension, String PostingType, int C_DocType_ID);
 
 	/**
 	 * Retrieves {@link I_GL_DistributionLine}s of given {@link I_GL_Distribution}.
 	 * 
+	 * @param glDistribution
 	 * @return active {@link I_GL_DistributionLine}s.
 	 */
 	List<I_GL_DistributionLine> retrieveLines(I_GL_Distribution glDistribution);
 
 	/**
+	 * @param glDistribution
 	 * @return last {@link I_GL_DistributionLine#getLine()} of given {@link I_GL_Distribution}; if there are no lines, this method returns zero.
 	 */
 	int retrieveLastLineNo(I_GL_Distribution glDistribution);

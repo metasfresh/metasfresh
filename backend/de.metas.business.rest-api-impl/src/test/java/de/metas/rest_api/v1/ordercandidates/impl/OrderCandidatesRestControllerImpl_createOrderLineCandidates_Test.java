@@ -1,8 +1,5 @@
 package de.metas.rest_api.v1.ordercandidates.impl;
 
-import au.com.origin.snapshots.Expect;
-
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
@@ -11,9 +8,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
@@ -36,9 +31,8 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocBaseType;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -58,8 +52,6 @@ import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -83,7 +75,6 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -95,6 +86,8 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -121,9 +114,13 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
 import static de.metas.rest_api.v1.ordercandidates.impl.TestMasterdata.RESOURCE_PATH;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
 /*
@@ -148,7 +145,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
  * #L%
  */
 
-@ExtendWith({SnapshotExtension.class, AdempiereTestWatcher.class})
+@ExtendWith(AdempiereTestWatcher.class)
 public class
 OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
@@ -173,17 +170,26 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 	private static final DocBaseAndSubType DOCTYPE_SALES_INVOICE = DocBaseAndSubType.of("ARI", "KV");
 
-	private OrderCandidatesRestController orderCandidatesRestControllerImpl;
+	private OrderCandidatesRestControllerImpl orderCandidatesRestControllerImpl;
 
 	private OLCandBL olCandBL;
 
-	private Expect expect;
+	@BeforeAll
+	public static void initStatic()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	public static void afterAll()
+	{
+		validateSnapshots();
+	}
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
-		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		SystemTime.setFixedTimeSource(FIXED_TIME);
 
@@ -228,13 +234,13 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 			testMasterdata.createSalesRep("SalesRep");
 
-			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_StandardOrder));
+			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
+					X_C_DocType.DOCSUBTYPE_StandardOrder));
 
-			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder));
+			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
+					X_C_DocType.DOCSUBTYPE_PrepayOrder));
 
 			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
-
-			SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -242,7 +248,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -257,11 +263,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				jsonServiceFactory,
 				new JsonRequestConsolidateService());
 
-		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
+		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
 				jsonConverters,
 				new OLCandRepository(),
 				bpartnerRestController,
-				NoopPerformanceMonitoringService.INSTANCE);
+				new NoopPerformanceMonitoringService());
 
 		final PermissionService permissionService = Mockito.mock(PermissionService.class);
 		Mockito.doReturn(OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID())).when(permissionService).getDefaultOrgId();
@@ -352,7 +358,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final X12DE355 x12DE355 = uomDAO.getX12DE355ById(UomId.ofRepoId(productRecord.getC_UOM_ID()));
 			assertThat(x12DE355.getCode()).isEqualTo(request.getProduct().getUomCode());
 		}
-		expect.serializer("orderedJson").toMatchSnapshot(olCands);
+		expect(olCands).toMatchSnapshot();
 	}
 
 	@Test
@@ -619,7 +625,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 		assertThat(olCand.getPricingSystemId()).isEqualTo(pricingSystemId.getRepoId());
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+		expect(olCand).toMatchSnapshot();
 
 		final I_C_OLCand olCandRecord = load(olCand.getId(), I_C_OLCand.class);
 		assertThat(olCandRecord.getM_PricingSystem_ID()).isEqualByComparingTo(pricingSystemId.getRepoId());
@@ -704,7 +710,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+		expect(olCand).toMatchSnapshot();
 	}
 
 	@Test
@@ -804,7 +810,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId); // same bpartner, but different location
 		assertThat(olCand.getHandOverBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+		expect(olCand).toMatchSnapshot();
 	}
 
 	@Test
@@ -922,7 +928,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+		expect(olCand).toMatchSnapshot();
 	}
 
 	@Test
@@ -1048,7 +1054,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerLocationId.getBpartnerId().getRepoId(), expectedDropShipLocationId.getRepoId()));
 
-		expect.serializer("orderedJson").toMatchSnapshot(olCand);
+		expect(olCand).toMatchSnapshot();
 	}
 
 	/**
@@ -1073,7 +1079,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		// then
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
-		expect.serializer("orderedJson").toMatchSnapshot(jsonOLCand);
+		expect(jsonOLCand).toMatchSnapshot();
 
 		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
@@ -1146,7 +1152,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		// then
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
-		expect.serializer("orderedJson").toMatchSnapshot(jsonOLCand);
+		expect(jsonOLCand).toMatchSnapshot();
 
 		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)

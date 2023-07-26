@@ -7,9 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.column.ColumnSql;
 
-import javax.annotation.Nullable;
 import java.util.Objects;
 
 /*
@@ -41,36 +39,36 @@ import java.util.Objects;
 @ToString
 public class SqlSelectValue
 {
-	@Nullable private final String tableNameOrAlias;
-	@Nullable private final String columnName;
+	private final String tableNameOrAlias;
+	private final String columnName;
 
 	@Getter
-	@Nullable private final ColumnSql virtualColumnSql;
+	private final String virtualColumnSql;
 
 	@Getter
 	private final String columnNameAlias;
 
 	@Builder(toBuilder = true)
 	private SqlSelectValue(
-			@Nullable final String tableNameOrAlias,
-			@Nullable final String columnName,
-			@Nullable final ColumnSql virtualColumnSql,
+			final String tableNameOrAlias,
+			final String columnName,
+			final String virtualColumnSql,
 			@NonNull final String columnNameAlias)
 	{
 		this.columnNameAlias = columnNameAlias;
-		this.tableNameOrAlias = StringUtils.trimBlankToNull(tableNameOrAlias);
+		this.virtualColumnSql = StringUtils.trimBlankToNull(virtualColumnSql);
 
-		if (virtualColumnSql != null)
+		if (this.virtualColumnSql != null)
 		{
+			this.tableNameOrAlias = null;
 			this.columnName = null;
-			this.virtualColumnSql = tableNameOrAlias != null ? virtualColumnSql.withJoinOnTableNameOrAlias(tableNameOrAlias) : virtualColumnSql;
 		}
 		else
 		{
 			Check.assumeNotEmpty(columnName, "columnName is not empty");
 
+			this.tableNameOrAlias = Check.isNotBlank(tableNameOrAlias) ? tableNameOrAlias : null;
 			this.columnName = columnName;
-			this.virtualColumnSql = null;
 		}
 	}
 
@@ -83,7 +81,15 @@ public class SqlSelectValue
 	{
 		if (virtualColumnSql != null)
 		{
-			return virtualColumnSql.toSqlStringWrappedInBracketsIfNeeded();
+			if (virtualColumnSql.contains(" ")
+					&& !virtualColumnSql.startsWith("("))
+			{
+				return "(" + virtualColumnSql + ")";
+			}
+			else
+			{
+				return virtualColumnSql;
+			}
 		}
 		else if (tableNameOrAlias != null)
 		{
@@ -102,8 +108,9 @@ public class SqlSelectValue
 
 	public SqlSelectValue withJoinOnTableNameOrAlias(final String tableNameOrAlias)
 	{
-		return !Objects.equals(this.tableNameOrAlias, tableNameOrAlias)
-				? toBuilder().tableNameOrAlias(tableNameOrAlias).build()
+		final String tableNameOrAliasEffective = virtualColumnSql != null ? null : tableNameOrAlias;
+		return !Objects.equals(this.tableNameOrAlias, tableNameOrAliasEffective)
+				? toBuilder().tableNameOrAlias(tableNameOrAliasEffective).build()
 				: this;
 	}
 
@@ -111,6 +118,13 @@ public class SqlSelectValue
 	{
 		return !Objects.equals(this.columnNameAlias, columnNameAlias)
 				? toBuilder().columnNameAlias(columnNameAlias).build()
+				: this;
+	}
+
+	public SqlSelectValue withVirtualColumnSql(final String virtualColumnSql)
+	{
+		return !Objects.equals(this.virtualColumnSql, StringUtils.trimBlankToNull(virtualColumnSql))
+				? toBuilder().virtualColumnSql(virtualColumnSql).build()
 				: this;
 	}
 }

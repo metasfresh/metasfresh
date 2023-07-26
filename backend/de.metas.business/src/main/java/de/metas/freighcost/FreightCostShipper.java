@@ -1,6 +1,12 @@
 package de.metas.freighcost;
 
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Optional;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.location.CountryId;
 import de.metas.money.Money;
 import de.metas.shipping.ShipperId;
@@ -9,11 +15,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Optional;
 
 /*
  * #%L
@@ -56,12 +57,10 @@ public class FreightCostShipper
 		this.id = id;
 		this.shipperId = shipperId;
 		this.validFrom = validFrom;
-
-		final Comparator<FreightCostBreak> shipmentValueAmtMax = Comparator.comparing(freightCostBreak -> freightCostBreak.getShipmentValueAmtMax().toBigDecimal());
-		final Comparator<FreightCostBreak> seqNo = Comparator.comparing(FreightCostBreak::getSeqNo, Comparator.nullsLast(Comparator.naturalOrder()));
 		this.breaks = breaks.stream()
-				.sorted(shipmentValueAmtMax.thenComparing(seqNo))
+				.sorted(Comparator.comparing(freightCostBreak -> freightCostBreak.getShipmentValueAmtMax().toBigDecimal()))
 				.collect(ImmutableList.toImmutableList());
+
 	}
 
 	boolean isMatching(@NonNull final ShipperId shipperId, @NonNull final LocalDate date)

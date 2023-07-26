@@ -9,7 +9,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 import java.math.BigDecimal;
@@ -49,22 +48,26 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 	public ShipmentScheduleDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleDetail") final ShipmentScheduleDetail shipmentScheduleDetail,
+			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
 	{
 		super(
 				eventDescriptor,
 				materialDescriptor,
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
-				shipmentScheduleDetail,
-				shipmentScheduleId,
-				null);
+				reservedQuantity,
+				shipmentScheduleId);
 	}
 
 	@Override
-	@NonNull
+	public BigDecimal getOrderedQuantityDelta()
+	{
+		return getMaterialDescriptor().getQuantity().negate();
+	}
+
+	@Override
 	public BigDecimal getReservedQuantityDelta()
 	{
-		return getShipmentScheduleDetail().getReservedQuantity().negate();
+		return getReservedQuantity().negate();
 	}
 }

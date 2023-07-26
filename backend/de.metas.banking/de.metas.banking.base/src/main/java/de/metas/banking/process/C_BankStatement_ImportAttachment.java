@@ -22,13 +22,18 @@
 
 package de.metas.banking.process;
 
+import org.adempiere.util.api.Params;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_I_BankStatement;
+
 import com.google.common.collect.ImmutableMap;
+
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
-import de.metas.banking.api.BankAccountService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
@@ -43,14 +48,15 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.api.Params;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_I_BankStatement;
 
 public class C_BankStatement_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
+	/*
+	Having DataImportConfigId hardcoded is fine.
+	We could use a sysconfig, but what shall we store there? the ID? the InternalName? (internal name is editable by user). That won't change/fix anything.
+	If you have a better suggestion, please ping me.
+	 */
+	public static final DataImportConfigId HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID = DataImportConfigId.ofRepoId(540009);
 	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
@@ -61,7 +67,6 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 	private final IMsgBL iMsgBL = Services.get(IMsgBL.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final transient DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
-	private final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -83,13 +88,6 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 			return ProcessPreconditionsResolution.reject(iMsgBL.getTranslatableMsgText(BANK_STATEMENT_MUST_BE_IN_PROGRESS_MSG));
 		}
 
-		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(selectedBankStatement.getC_BP_BankAccount_ID());
-
-		if(bankAccountId == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("The Bank Account must be set");
-		}
-
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -101,7 +99,7 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 
 		dataImportService.importDataFromResource(DataImportRequest.builder()
 				.data(data)
-				.dataImportConfigId(computeDataImportConfigId())
+				.dataImportConfigId(HARDCODED_BANK_STATEMENT_DATA_IMPORT_REPO_ID)
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.userId(getUserId())
@@ -109,14 +107,6 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 				.build());
 
 		return MSG_OK;
-	}
-
-	private DataImportConfigId computeDataImportConfigId()
-	{
-		final I_C_BankStatement bankStatementRecord = bankStatementBL.getById(BankStatementId.ofRepoId(getRecord_ID()));
-		final BankAccountId bankAccountId = BankAccountId.ofRepoId(bankStatementRecord.getC_BP_BankAccount_ID());
-
-		return bankAccountService.getDataImportConfigIdForBankAccount(bankAccountId);
 	}
 
 	private Params computeImportProcessParams()

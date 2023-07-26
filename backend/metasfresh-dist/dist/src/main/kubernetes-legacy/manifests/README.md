@@ -1,1 +1,0 @@
-new version moved to: metasfresh\distribution\kubernetes

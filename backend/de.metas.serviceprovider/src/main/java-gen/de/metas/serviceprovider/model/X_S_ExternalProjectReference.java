@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.serviceprovider.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for S_ExternalProjectReference
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_S_ExternalProjectReference extends org.compiere.model.PO implements I_S_ExternalProjectReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1674828672L;
+	private static final long serialVersionUID = -1118222642L;
 
     /** Standard Constructor */
     public X_S_ExternalProjectReference (final Properties ctx, final int S_ExternalProjectReference_ID, @Nullable final String trxName)
@@ -134,30 +134,15 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public de.metas.serviceprovider.model.I_S_ExternalProjectReference getS_ExternalProjectReference_Effort()
+	public void setSeqNo (final int SeqNo)
 	{
-		return get_ValueAsPO(COLUMNNAME_S_ExternalProjectReference_Effort_ID, de.metas.serviceprovider.model.I_S_ExternalProjectReference.class);
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
 	@Override
-	public void setS_ExternalProjectReference_Effort(final de.metas.serviceprovider.model.I_S_ExternalProjectReference S_ExternalProjectReference_Effort)
+	public int getSeqNo() 
 	{
-		set_ValueFromPO(COLUMNNAME_S_ExternalProjectReference_Effort_ID, de.metas.serviceprovider.model.I_S_ExternalProjectReference.class, S_ExternalProjectReference_Effort);
-	}
-
-	@Override
-	public void setS_ExternalProjectReference_Effort_ID (final int S_ExternalProjectReference_Effort_ID)
-	{
-		if (S_ExternalProjectReference_Effort_ID < 1) 
-			set_Value (COLUMNNAME_S_ExternalProjectReference_Effort_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_ExternalProjectReference_Effort_ID, S_ExternalProjectReference_Effort_ID);
-	}
-
-	@Override
-	public int getS_ExternalProjectReference_Effort_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_S_ExternalProjectReference_Effort_ID);
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override
@@ -173,17 +158,5 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	public int getS_ExternalProjectReference_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_ExternalProjectReference_ID);
-	}
-
-	@Override
-	public void setSeqNo (final int SeqNo)
-	{
-		set_Value (COLUMNNAME_SeqNo, SeqNo);
-	}
-
-	@Override
-	public int getSeqNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

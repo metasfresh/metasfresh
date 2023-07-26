@@ -37,7 +37,7 @@ public class LocationRepository
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(locationRecord);
 
-		final I_C_Country countryRecord = Services.get(ICountryDAO.class).getById(CountryId.ofRepoId(locationRecord.getC_Country_ID()));
+		I_C_Country countryRecord = Services.get(ICountryDAO.class).getById(CountryId.ofRepoId(locationRecord.getC_Country_ID()));
 		return Location.builder()
 				.id(LocationId.ofRepoId(locationRecord.getC_Location_ID()))
 				.address(address)

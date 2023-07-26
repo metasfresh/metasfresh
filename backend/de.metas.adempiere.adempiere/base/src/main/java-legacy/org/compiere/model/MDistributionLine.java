@@ -43,8 +43,6 @@ public class MDistributionLine extends X_GL_DistributionLine
 			//
 			setOverwriteAcct (false);
 			setOverwriteActivity (false);
-			setOverwriteOrder(false);
-			setOverwriteSectionCode(false);
 			setOverwriteBPartner (false);
 			setOverwriteCampaign (false);
 			setOverwriteLocFrom (false);

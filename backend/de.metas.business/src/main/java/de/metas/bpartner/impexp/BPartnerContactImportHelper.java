@@ -1,17 +1,19 @@
 package de.metas.bpartner.impexp;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_I_BPartner;
+import org.compiere.model.ModelValidationEngine;
+
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.impexp.BPartnersCache.BPartner;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_I_BPartner;
-import org.compiere.model.ModelValidationEngine;
 
 /*
  * #%L
@@ -43,6 +45,7 @@ import org.compiere.model.ModelValidationEngine;
 	}
 
 	// services
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private BPartnerImportProcess process;
 
 	private BPartnerContactImportHelper()
@@ -58,7 +61,7 @@ import org.compiere.model.ModelValidationEngine;
 	public void importRecord(@NonNull final BPartnerImportContext context)
 	{
 		final I_I_BPartner importRecord = context.getCurrentImportRecord();
-		final String importContactName = IUserBL.buildContactName(importRecord.getFirstname(), importRecord.getLastname());
+		final String importContactName = userBL.buildContactName(importRecord.getFirstname(), importRecord.getLastname());
 
 		final BPartner bpartner = context.getCurrentBPartner();
 
@@ -132,6 +135,9 @@ import org.compiere.model.ModelValidationEngine;
 
 	/**
 	 * Similar to {@link #updateWithAvailableImportRecordFields(I_I_BPartner, I_AD_User)}, but also {@code null} values are copied from the given {@code importRecord}.
+	 *
+	 * @param importRecord
+	 * @param user
 	 */
 	private static void updateWithImportRecordFields(final I_I_BPartner importRecord, final I_AD_User user)
 	{
@@ -155,6 +161,9 @@ import org.compiere.model.ModelValidationEngine;
 
 	/**
 	 * If a particular field is set in the given {@code importRecord}, the given {@code user} user's respective file is updated.
+	 *
+	 * @param importRecord
+	 * @param user
 	 */
 	private static void updateWithAvailableImportRecordFields(@NonNull final I_I_BPartner importRecord, @NonNull final I_AD_User user)
 	{

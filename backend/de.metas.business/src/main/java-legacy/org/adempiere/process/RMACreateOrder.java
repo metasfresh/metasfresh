@@ -17,13 +17,9 @@
 
 package org.adempiere.process;
 
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import de.metas.order.IOrderBL;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
@@ -31,6 +27,11 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
+
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.IOrderBL;
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  *  Creates Order from RMA document
@@ -96,8 +97,6 @@ public class RMACreateOrder extends JavaProcess
         mOrder.setM_PricingSystem_ID(originalOrder.getM_PricingSystem_ID());
         mOrder.setC_PaymentTerm_ID(originalOrder.getC_PaymentTerm_ID());
         mOrder.setRef_RMA_ID(rmaId);
-        mOrder.setEMail(originalOrder.getEMail());
-        mOrder.setAD_InputDataSource_ID(originalOrder.getAD_InputDataSource_ID());
         // end: metas c.ghita@metas.ro
 
         if (!order.save())

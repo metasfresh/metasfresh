@@ -4,10 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.ZoneId;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -107,6 +105,10 @@ public class PlainCurrencyDAO extends CurrencyDAO
 	 * <li>ConversionType: default
 	 * <li>Client/Org: from {@link Env#getCtx()}
 	 * </ul>
+	 *
+	 * @param currencyFrom
+	 * @param currencyTo
+	 * @param rate
 	 */
 	public void setRate(
 			@NonNull final CurrencyId currencyFromId,
@@ -118,7 +120,7 @@ public class PlainCurrencyDAO extends CurrencyDAO
 		final Properties ctx = Env.getCtx();
 		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
 		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
-		final Instant date = LocalDate.of(1970, Month.JANUARY, 1).atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant();
+		final LocalDate date = LocalDate.of(1970, Month.JANUARY, 1);
 		final CurrencyConversionTypeId conversionTypeId = getDefaultConversionTypeId(clientId, orgId, date);
 		final CurrencyConversionContext conversionCtx = CurrencyConversionContext.builder()
 				.clientId(clientId)

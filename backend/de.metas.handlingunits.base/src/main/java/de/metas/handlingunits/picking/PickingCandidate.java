@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
@@ -15,7 +16,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import lombok.ToString;
-import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -63,24 +63,22 @@ public class PickingCandidate
 	private PickingCandidateApprovalStatus approvalStatus;
 
 	@NonNull
-	@Setter(AccessLevel.PRIVATE)
-	private PickFrom pickFrom;
+	private final PickFrom pickFrom;
 
 	@NonNull
 	private Quantity qtyPicked;
 	@Nullable
 	private BigDecimal qtyReview;
-	@Nullable
-	private QtyRejectedWithReason qtyRejected;
 
-	@Nullable private PackToSpec packToSpec;
+	@Nullable
+	private HuPackingInstructionsId packToInstructionsId;
+	@Nullable
 	@Setter(AccessLevel.PRIVATE)
-	@Nullable private HuId packedToHuId;
+	private HuId packedToHuId;
 
 	@NonNull
 	private final ShipmentScheduleId shipmentScheduleId;
 	@Nullable
-	@With
 	private final PickingSlotId pickingSlotId;
 
 	@NonNull
@@ -88,40 +86,37 @@ public class PickingCandidate
 
 	@Builder(toBuilder = true)
 	private PickingCandidate(
-			@Nullable final PickingCandidateId id,
+			@Nullable PickingCandidateId id,
 			//
-			@Nullable final PickingCandidateStatus processingStatus,
-			@Nullable final PickingCandidatePickStatus pickStatus,
-			@Nullable final PickingCandidateApprovalStatus approvalStatus,
+			@Nullable PickingCandidateStatus processingStatus,
+			@Nullable PickingCandidatePickStatus pickStatus,
+			@Nullable PickingCandidateApprovalStatus approvalStatus,
 			//
-			@NonNull final PickFrom pickFrom,
+			@NonNull PickFrom pickFrom,
 			//
-			@NonNull final Quantity qtyPicked,
-			@Nullable final BigDecimal qtyReview,
-			@Nullable final QtyRejectedWithReason qtyRejected,
+			@NonNull Quantity qtyPicked,
+			@Nullable BigDecimal qtyReview,
 			//
-			@Nullable final PackToSpec packToSpec,
-			@Nullable final HuId packedToHuId,
+			@Nullable HuPackingInstructionsId packToInstructionsId,
+			@Nullable HuId packedToHuId,
 			//
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@Nullable final PickingSlotId pickingSlotId,
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@Nullable PickingSlotId pickingSlotId,
 			//
-			@Nullable @Singular("issueToPickingOrder") final ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+			@Nullable @Singular("issueToPickingOrder") ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
 		this.id = id;
-		this.processingStatus = CoalesceUtil.coalesceNotNull(processingStatus, PickingCandidateStatus.Draft);
-		this.pickStatus = CoalesceUtil.coalesceNotNull(pickStatus, PickingCandidatePickStatus.TO_BE_PICKED);
-		this.approvalStatus = CoalesceUtil.coalesceNotNull(approvalStatus, PickingCandidateApprovalStatus.TO_BE_APPROVED);
+		this.processingStatus = CoalesceUtil.coalesce(processingStatus, PickingCandidateStatus.Draft);
+		this.pickStatus = CoalesceUtil.coalesce(pickStatus, PickingCandidatePickStatus.TO_BE_PICKED);
+		this.approvalStatus = CoalesceUtil.coalesce(approvalStatus, PickingCandidateApprovalStatus.TO_BE_APPROVED);
 
 		this.pickFrom = pickFrom;
 		this.pickingSlotId = pickingSlotId;
 
-		Quantity.assertSameUOM(qtyPicked, qtyRejected != null ? qtyRejected.toQuantity() : null);
 		this.qtyPicked = qtyPicked;
 		this.qtyReview = qtyReview;
-		this.qtyRejected = qtyRejected;
 
-		this.packToSpec = packToSpec;
+		this.packToInstructionsId = packToInstructionsId;
 		this.packedToHuId = packedToHuId;
 
 		this.shipmentScheduleId = shipmentScheduleId;
@@ -163,7 +158,10 @@ public class PickingCandidate
 		}
 	}
 
-	public boolean isDraft() {return getProcessingStatus().isDraft();}
+	public boolean isDraft()
+	{
+		return PickingCandidateStatus.Draft.equals(getProcessingStatus());
+	}
 
 	public void assertProcessed()
 	{
@@ -176,7 +174,7 @@ public class PickingCandidate
 
 	public boolean isProcessed()
 	{
-		return getProcessingStatus().isProcessed();
+		return PickingCandidateStatus.Processed.equals(getProcessingStatus());
 	}
 
 	public boolean isRejectedToPick()
@@ -190,7 +188,7 @@ public class PickingCandidate
 				&& getPackedToHuId() != null;
 	}
 
-	public void assertNotApproved()
+	private void assertNotApproved()
 	{
 		if (approvalStatus.isApproved())
 		{
@@ -201,7 +199,6 @@ public class PickingCandidate
 
 	public void changeStatusToDraft()
 	{
-		setPackedToHuId(null);
 		setProcessingStatus(PickingCandidateStatus.Draft);
 	}
 
@@ -224,10 +221,10 @@ public class PickingCandidate
 	public void pick(@NonNull final Quantity qtyPicked)
 	{
 		assertDraft();
+		assertNotApproved();
 
 		this.qtyPicked = qtyPicked;
-		pickStatus = computePickOrPackStatus(this.packToSpec);
-		approvalStatus = computeApprovalStatus(this.qtyPicked, this.qtyReview, this.pickStatus);
+		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
 	}
 
 	public void rejectPicking(@NonNull final Quantity qtyRejected)
@@ -239,16 +236,7 @@ public class PickingCandidate
 		pickStatus = PickingCandidatePickStatus.WILL_NOT_BE_PICKED;
 	}
 
-	public void rejectPickingPartially(@NonNull final QtyRejectedWithReason qtyRejected)
-	{
-		assertDraft();
-		// assertNotApproved();
-		Quantity.assertSameUOM(qtyPicked, qtyRejected.toQuantity());
-
-		this.qtyRejected = qtyRejected;
-	}
-
-	public void packTo(@Nullable final PackToSpec packToSpec)
+	public void packTo(final HuPackingInstructionsId packToInstructionsId)
 	{
 		assertDraft();
 
@@ -257,8 +245,8 @@ public class PickingCandidate
 			throw new AdempiereException("Invalid status when changing packing instructions: " + pickStatus);
 		}
 
-		this.packToSpec = packToSpec;
-		pickStatus = computePickOrPackStatus(this.packToSpec);
+		this.packToInstructionsId = packToInstructionsId;
+		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
 	}
 
 	public void reviewPicking(final BigDecimal qtyReview)
@@ -267,16 +255,11 @@ public class PickingCandidate
 
 		if (!pickStatus.isEligibleForReview())
 		{
-			throw new AdempiereException("Picking candidate cannot be approved because it's not picked or packed yet: " + this);
+			throw new AdempiereException("Picking candidate is not approvable because it's not picked or packed: " + this);
 		}
 
 		this.qtyReview = qtyReview;
 		approvalStatus = computeApprovalStatus(qtyPicked, this.qtyReview, pickStatus);
-	}
-
-	public void reviewPicking()
-	{
-		reviewPicking(qtyPicked.toBigDecimal());
 	}
 
 	private static PickingCandidateApprovalStatus computeApprovalStatus(final Quantity qtyPicked, final BigDecimal qtyReview, final PickingCandidatePickStatus pickStatus)
@@ -308,9 +291,9 @@ public class PickingCandidate
 		}
 	}
 
-	private static PickingCandidatePickStatus computePickOrPackStatus(@Nullable final PackToSpec packToSpec)
+	private static PickingCandidatePickStatus computePickOrPackStatus(final HuPackingInstructionsId packToInstructionsId)
 	{
-		return packToSpec != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
+		return packToInstructionsId != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
 	}
 
 	public boolean isPickFromPickingOrder()
@@ -318,21 +301,10 @@ public class PickingCandidate
 		return getPickFrom().isPickFromPickingOrder();
 	}
 
-	public void issueToPickingOrder(@Nullable final List<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+	public void issueToPickingOrder(List<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
 		this.issuesToPickingOrder = issuesToPickingOrder != null
 				? ImmutableList.copyOf(issuesToPickingOrder)
 				: ImmutableList.of();
-	}
-
-	public PickingCandidateSnapshot snapshot()
-	{
-		return PickingCandidateSnapshot.builder()
-				.id(getId())
-				.qtyReview(getQtyReview())
-				.pickStatus(getPickStatus())
-				.approvalStatus(getApprovalStatus())
-				.processingStatus(getProcessingStatus())
-				.build();
 	}
 }

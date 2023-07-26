@@ -37,16 +37,17 @@
     <version>10.0.0</version>
 
     <properties>
-        <java.version>17</java.version>
-        <spring-boot.version>2.7.11</spring-boot.version>
-        <camel.version>3.14.7</camel.version>
+        <java.version>14</java.version>
+        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
+        <camel.version>3.7.3</camel.version>
+        <guava.version>30.1.1-jre</guava.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
         <assertj.version>3.19.0</assertj.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
-        <jackson.version>2.14.1</jackson.version>
+        <jackson.version>2.12.1</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -91,11 +92,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.camel.springboot</groupId>
-            <artifactId>camel-jcache-starter</artifactId>
-            <version>${camel.version}</version>
-        </dependency>
 
         <!-- unit test -->
         <dependency>
@@ -107,23 +103,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>${byte-buddy.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-            <version>${byte-buddy.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-            <version>${objenesis.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -150,14 +129,27 @@
         </dependency>
 
         <dependency>
-             <groupId>org.apache.geronimo</groupId>
-            <artifactId>geronimo-jcache-simple</artifactId>
-            <version>1.0.5</version>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jackson</artifactId>
         </dependency>
+
 
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-jackson</artifactId>
+            <artifactId>camel-jcache</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>3.9-EA</version>
         </dependency>
 
         <dependency>
@@ -182,6 +174,7 @@
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
             <version>10.0.0</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.metas.common.ordercandidates</groupId>
@@ -189,16 +182,20 @@
             <version>${metasfresh-common.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
             <!-- Allows the example to be run via 'mvn camel:run' -->
             <plugin>
                 <groupId>org.apache.camel</groupId>

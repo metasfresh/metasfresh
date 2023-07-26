@@ -22,7 +22,17 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermBL;
+import java.math.BigDecimal;
+import java.util.List;
+
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -33,18 +43,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -53,7 +53,6 @@ public class C_Invoice_Candidate
 	private static final AdMessageKey MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P = AdMessageKey.of("DataEntry_Error_AlreadyCompleted_Text");
 
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void closeDirectly(final I_C_Invoice_Candidate invoiceCand)
@@ -219,9 +218,6 @@ public class C_Invoice_Candidate
 				}
 			}
 		}
-
-		interimInvoiceFlatrateTermBL.updateInvoicedQtyForPartialPayment(invoiceCand);
-
 	}
 
 	/**

@@ -1,22 +1,20 @@
 package de.metas.i18n;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.time.SystemTime;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.LocalDateAndOrgId;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Set;
-import java.util.TimeZone;
 
+import de.metas.common.util.time.SystemTime;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
+
+import com.google.common.collect.ImmutableSet;
+
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -50,7 +48,7 @@ final class DateTimeTranslatableString implements ITranslatableString
 
 	static DateTimeTranslatableString ofDate(@NonNull final LocalDate date)
 	{
-		final Instant instant = date.atStartOfDay(SystemTime.zoneId()).toInstant();
+		final Instant instant = date.atStartOfDay(de.metas.common.util.time.SystemTime.zoneId()).toInstant();
 		final boolean dateTime = false;
 		return new DateTimeTranslatableString(instant, dateTime);
 	}
@@ -83,11 +81,6 @@ final class DateTimeTranslatableString implements ITranslatableString
 		return new DateTimeTranslatableString(instant, DisplayType.Time);
 	}
 
-	static DateTimeTranslatableString ofObject(@NonNull final Object obj)
-	{
-		return ofObject(obj, -1);
-	}
-
 	static DateTimeTranslatableString ofObject(@NonNull final Object obj, final int displayType)
 	{
 		if (obj instanceof java.util.Date)
@@ -102,7 +95,7 @@ final class DateTimeTranslatableString implements ITranslatableString
 			{
 				return ofDateTime(date);
 			}
-			else // default:
+			else
 			{
 				return ofDateTime(date);
 			}
@@ -118,18 +111,6 @@ final class DateTimeTranslatableString implements ITranslatableString
 		else if (obj instanceof Instant)
 		{
 			return ofDateTime((Instant)obj);
-		}
-		else if (obj instanceof ZonedDateTime)
-		{
-			return ofDateTime((ZonedDateTime)obj);
-		}
-		else if (obj instanceof InstantAndOrgId)
-		{
-			return ofDateTime(((InstantAndOrgId)obj).toInstant());
-		}
-		else if (obj instanceof LocalDateAndOrgId)
-		{
-			return ofDate(((LocalDateAndOrgId)obj).toLocalDate());
 		}
 		else
 		{
@@ -164,8 +145,8 @@ final class DateTimeTranslatableString implements ITranslatableString
 	{
 		final Language language = Language.getLanguage(adLanguage);
 		final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType, language);
-		dateFormat.setTimeZone(TimeZone.getTimeZone(SystemTime.zoneId()));
-		return dateFormat.format(toDate());
+		final String dateStr = dateFormat.format(toDate());
+		return dateStr;
 	}
 
 	private java.util.Date toDate()
@@ -177,8 +158,8 @@ final class DateTimeTranslatableString implements ITranslatableString
 	public String getDefaultValue()
 	{
 		final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType);
-		dateFormat.setTimeZone(TimeZone.getTimeZone(SystemTime.zoneId()));
-		return dateFormat.format(toDate());
+		final String dateStr = dateFormat.format(toDate());
+		return dateStr;
 	}
 
 	@Override

@@ -22,55 +22,35 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model.order;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_ORDER_CUSTOMER;
-
 @Value
-@JsonDeserialize(builder = OrderCandidate.OrderCandidateBuilder.class)
+@Builder
 public class OrderCandidate
 {
 	@NonNull
-	@JsonProperty("jsonOrder")
 	JsonOrder jsonOrder;
 
-	@NonNull
-	@JsonProperty("orderNode")
-	JsonNode orderNode;
+	@Nullable
+	String customBPartnerId;
 
 	@Nullable
-	@JsonProperty("salesRepId")
 	String salesRepId;
 
 	@NonNull
-	@JsonProperty("customer")
-	Customer customer;
-
-	@Builder
-	public OrderCandidate(
-			@JsonProperty("jsonOrder") @NonNull final JsonOrder jsonOrder,
-			@JsonProperty("orderNode") @NonNull final JsonNode orderNode,
-			@JsonProperty("salesRepId") @Nullable final String salesRepId)
+	public String getEffectiveCustomerId()
 	{
-		this.jsonOrder = jsonOrder;
-		this.orderNode = orderNode;
-		this.salesRepId = salesRepId;
-
-		this.customer = Customer.of(orderNode.get(JSON_NODE_ORDER_CUSTOMER), jsonOrder.getOrderCustomer());
+		return CoalesceUtil.coalesce(customBPartnerId, getShopwareCustomerId());
 	}
 
-	@Nullable
-	public JsonNode getCustomNode(@NonNull final String customPath)
+	@NonNull
+	public String getShopwareCustomerId()
 	{
-		final JsonNode customNode = orderNode.get(customPath);
-
-		return (customNode == null || customNode.isMissingNode() || customNode.isNull()) ? null : customNode;
+		return jsonOrder.getOrderCustomer().getCustomerId();
 	}
 }

@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="4.0"/>
 	<property name="ireport.x" value="99"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -130,9 +130,6 @@
 	</field>
 	<field name="iscampaignprice" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="iscampaignprice"/>
-	</field>
-	<field name="isprintwhenpackingmaterial" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="isprintwhenpackingmaterial"/>
 	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
@@ -360,7 +357,7 @@ $F{shiplocation}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="12">
-				<printWhenExpression><![CDATA[$F{ishu} && $F{isprintwhenpackingmaterial}.equals("Y")]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{ishu}]]></printWhenExpression>
 				<textField>
 					<reportElement key="textField-19" x="426" y="0" width="40" height="12" forecolor="#000000" uuid="abf845aa-feb5-4936-9920-5f767128c6e3"/>
 					<textElement textAlignment="Right" markup="none">
@@ -714,7 +711,7 @@ $F{shiplocation}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
-			<printWhenExpression><![CDATA[$F{ishu} && $F{isprintwhenpackingmaterial}.equals("Y")]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{ishu}]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="143" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">

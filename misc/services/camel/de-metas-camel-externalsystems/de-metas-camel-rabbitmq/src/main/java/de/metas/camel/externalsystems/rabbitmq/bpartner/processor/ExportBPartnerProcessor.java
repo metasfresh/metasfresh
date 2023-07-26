@@ -40,11 +40,11 @@ public class ExportBPartnerProcessor implements Processor
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
-		final String remoteUrl = request.getParameters().get(ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_HTTP_URL);
+		final String remoteUrl = request.getParameters().get(ExternalSystemConstants.PARAM_RABBITMQ_HTTP_URL);
 
 		if (Check.isBlank(remoteUrl))
 		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_EXTERNAL_SYSTEM_HTTP_URL);
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_RABBITMQ_HTTP_URL);
 		}
 
 		final String routingKey = request.getParameters().get(ExternalSystemConstants.PARAM_RABBITMQ_HTTP_ROUTING_KEY);

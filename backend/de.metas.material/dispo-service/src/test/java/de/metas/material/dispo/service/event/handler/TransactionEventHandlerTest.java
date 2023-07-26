@@ -7,15 +7,12 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
-import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.transactions.TransactionCreatedEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -74,11 +71,6 @@ public class TransactionEventHandlerTest
 				.date(AFTER_NOW)
 				.build();
 
-		final TransactionCreatedEvent transactionCreatedEvent = TransactionCreatedEvent.builder()
-				.transactionId(30)
-				.materialDescriptor(materialDescriptor)
-				.build();
-
 		final Candidate candidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(100))
 				.parentId(CandidateId.ofRepoId(200))
@@ -86,10 +78,6 @@ public class TransactionEventHandlerTest
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.businessCase(CandidateBusinessCase.PURCHASE)
-				.businessCaseDetail(PurchaseDetail.builder()
-											.qty(new BigDecimal("23"))
-											.advised(Flag.FALSE_DONT_UPDATE)
-											.build())
 				.build();
 
 		final TransactionDetail transactionDetail = TransactionDetail.builder()
@@ -102,7 +90,7 @@ public class TransactionEventHandlerTest
 				.build();
 
 		// invoke the method under test
-		final List<Candidate> result = transactionEventHandler.createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(candidate, transactionDetail, transactionCreatedEvent);
+		final List<Candidate> result = transactionEventHandler.createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(candidate, transactionDetail);
 		assertThat(result).hasSize(2);
 
 		assertThat(result.get(1).getId()).isEqualTo(candidate.getId());

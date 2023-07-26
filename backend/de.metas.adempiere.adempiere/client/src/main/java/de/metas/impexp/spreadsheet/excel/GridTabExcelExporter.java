@@ -46,8 +46,8 @@ import lombok.NonNull;
  */
 public class GridTabExcelExporter extends AbstractExcelExporter
 {
-	private final MLookupFactory lookupFactory = MLookupFactory.newInstance();
 	private final GridTab m_tab;
+
 	private int rowNumber = 0;
 
 	@Builder
@@ -137,7 +137,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		}
 
 		// Hide simple button fields without a value
-		if (f.getDisplayType() == DisplayType.Button && f.getAD_Reference_Value_ID() == null)
+		if (f.getDisplayType() == DisplayType.Button && f.getAD_Reference_Value_ID() <= 0)
 		{
 			return false;
 		}
@@ -175,15 +175,15 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		}
 
 		// TODO: refactor with org.compiere.grid.ed.VButton.setField(GridField)
-		if (mField.getColumnName().endsWith("_ID") && !IColumnBL.isRecordIdColumnName(mField.getColumnName()))
+		if (mField.getColumnName().endsWith("_ID") && !Services.get(IColumnBL.class).isRecordIdColumnName(mField.getColumnName()))
 		{
-			lookup = lookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
+			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 					mField.getAD_Column_ID(), DisplayType.Search);
 		}
-		else if (mField.getAD_Reference_Value_ID() != null)
+		else if (mField.getAD_Reference_Value_ID() > 0)
 		{
 			// Assuming List
-			lookup = lookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
+			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 					mField.getAD_Column_ID(), DisplayType.List);
 		}
 		//

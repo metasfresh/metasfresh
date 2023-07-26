@@ -22,33 +22,36 @@ package de.metas.async.api;
  * #L%
  */
 
-import de.metas.async.AsyncBatchId;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
-import de.metas.async.processor.QueuePackageProcessorId;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.util.ISingletonService;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.ISingletonService;
 
 /**
  * Async Queue related DAO
  *
  * @author tsa
+ *
  */
 public interface IQueueDAO extends ISingletonService
 {
 	void save(I_C_Async_Batch asyncBatch);
+
+	void save(I_C_Queue_Block block);
 
 	void save(I_C_Queue_WorkPackage workpackage);
 
@@ -78,37 +81,27 @@ public interface IQueueDAO extends ISingletonService
 
 	/**
 	 * Retrieves the POs that are referenced by the given workPackage's {@link I_C_Queue_Element}s.
-	 * <p>
-	 * NOTE: this method is returning all those items which <b>were not already scheduled in a previous not-yet-processed work-package.</b>
 	 *
-	 * @param clazz note that {@link TableRecordReference} is supported as well
+	 * NOTE: this method is returning all those items which were not already scheduled in a previous not processed work-package.
+	 *
 	 * @throws de.metas.async.exceptions.PackageItemNotAvailableException if one of the work package's elements references a record which no longer exists.
-	 * @deprecated Please Consider using {@link #retrieveAllItems(I_C_Queue_WorkPackage, Class)} instead.
-	 * Filtering out items which were already enqueued in an older, not-yet-processed workpackage costs a lot of performance.
-	 * Since today we have just one thread per processor, this can't happen. Therefore AFAIS we don't need this anymore.
 	 */
-	@Deprecated
 	<T> List<T> retrieveItems(I_C_Queue_WorkPackage workPackage, Class<T> clazz, String trxName);
 
 	/**
-	 * Similar to {@link #retrieveAllItems(I_C_Queue_WorkPackage, Class)}, but
-	 * <li>does not make a fuzz about elements whose referenced records do no longer exist.</li>
-	 *
-	 * @param clazz note that {@link TableRecordReference} is supported as well
+	 * Similar to {@link #retrieveItems(I_C_Queue_WorkPackage, Class, String)}, but does not make a fuzz about elements whose referenced records do no longer exist.
 	 */
-	<T> List<T> retrieveAllItemsSkipMissing(I_C_Queue_WorkPackage workPackage, Class<T> clazz);
+	<T> List<T> retrieveItemsSkipMissing(I_C_Queue_WorkPackage workPackage, Class<T> clazz, String trxName);
 
 	/**
-	 * Return all active POs, even the ones that are caught in other packages
-	 *
-	 * @param clazz note that {@link TableRecordReference} is supported as well
+	 * return all active POs, even the ones that are caught in other packages
 	 */
 	<T> List<T> retrieveAllItems(I_C_Queue_WorkPackage workPackage, Class<T> clazz);
 
 	/**
 	 * Creates a query builder which is used to retrieve all records of given <code>clazz</code>.
 	 *
-	 * @param clazz                     model class
+	 * @param clazz model class
 	 * @param skipAlreadyScheduledItems true if we shall skip all elements which are pointing to records (AD_Table_ID/Record_ID) which were already enqueued
 	 * @return query builder
 	 */
@@ -134,6 +127,4 @@ public interface IQueueDAO extends ISingletonService
 	Set<Integer> retrieveAllItemIds(I_C_Queue_WorkPackage workPackage);
 
 	List<I_C_Queue_WorkPackage> retrieveUnprocessedWorkPackagesByEnqueuedRecord(Class<? extends IWorkpackageProcessor> packageProcessorClass, TableRecordReference recordRef);
-
-	int assignAsyncBatchForProcessing(Set<QueuePackageProcessorId> queuePackageProcessorId, AsyncBatchId asyncBatchId);
 }

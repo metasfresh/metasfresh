@@ -22,22 +22,13 @@
 
 package de.metas.camel.externalsystems.shopware6.common;
 
-import de.metas.common.util.Check;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERNAL_ID_PREFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
 
 public class ExternalIdentifierFormat
 {
-	@Nullable
-	public static String formatExternalIdOrNull(@Nullable final String externalId)
-	{
-		return Check.isBlank(externalId) ? null : formatExternalId(externalId);
-	}
-
 	@NonNull
 	public static String formatExternalId(@NonNull final String externalId)
 	{

@@ -1,11 +1,11 @@
 package de.metas.inout.api;
 
-import de.metas.calendar.standard.CalendarId;
+import javax.annotation.Nullable;
+
+import de.metas.calendar.CalendarId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L

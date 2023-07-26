@@ -1,8 +1,18 @@
 package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
@@ -12,7 +22,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
@@ -25,15 +34,6 @@ import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
-
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /*
  * #%L
@@ -60,6 +60,7 @@ import java.util.Map;
 @ToString
 public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 {
+	private final OrgId orgId;
 	private final BPartnerId vendorId;
 	private final VendorGatewayService vendorGatewayService;
 
@@ -67,9 +68,11 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 
 	@Builder
 	private RealVendorGatewayInvoker(
+			@NonNull final OrgId orgId,
 			@NonNull final BPartnerId vendorId,
 			@NonNull final VendorGatewayService vendorGatewayService)
 	{
+		this.orgId = orgId;
 		this.vendorId = vendorId;
 		this.vendorGatewayService = vendorGatewayService;
 	}
@@ -82,7 +85,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 				Maps.uniqueIndex(purchaseCandidates, RealVendorGatewayInvoker::createPurchaseOrderRequestItem);
 
 		final PurchaseOrderRequest purchaseOrderRequest = PurchaseOrderRequest.builder()
-				.orgId(getOrgIdFromPurchaseCandidates(purchaseCandidates).getRepoId())
+				.orgId(orgId.getRepoId())
 				.vendorId(vendorId.getRepoId())
 				.items(requestItem2Candidate.keySet())
 				.build();
@@ -128,7 +131,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 					Loggables
 							.get()
 							.addLog("The current remotePurchaseOrderCreatedItem has no confirmedDeliveryDate; "
-											+ "falling back to the purchase candidate's purchaseDatePromised={}; remotePurchaseOrderCreatedItem={}",
+									+ "falling back to the purchase candidate's purchaseDatePromised={}; remotePurchaseOrderCreatedItem={}",
 									correspondingRequestCandidate.getPurchaseDatePromised(),
 									remotePurchaseOrderCreatedItem);
 					confirmedDeliveryDate = correspondingRequestCandidate.getPurchaseDatePromised();
@@ -149,19 +152,6 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 
 		map = mapBuilder.build();
 		return result.build();
-	}
-
-	@NonNull
-	private OrgId getOrgIdFromPurchaseCandidates(final Collection<PurchaseCandidate> purchaseCandidates)
-	{
-		final OrgId orgId = purchaseCandidates.stream()
-				.map(PurchaseCandidate::getOrgId)
-				.reduce((a, b) -> {
-					throw new AdempiereException("Can only process purchase candidates from a single organization.");
-				})
-				.orElseThrow(() -> new AdempiereException("No purchase candidates available. Can't derive OrgId."));
-		Check.errorIf(orgId.isAny(), "Cannot process purchase candidates with orgId = ANY");
-		return orgId;
 	}
 
 	private static Map<Integer, I_C_UOM> extractUOMsMap(Collection<PurchaseCandidate> purchaseCandidates)

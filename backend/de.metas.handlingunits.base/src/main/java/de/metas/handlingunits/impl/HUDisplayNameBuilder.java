@@ -1,6 +1,12 @@
 package de.metas.handlingunits.impl;
 
-import de.metas.ad_reference.ADReferenceService;
+import java.util.Properties;
+
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -14,11 +20,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import java.util.Properties;
 
 public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 {
@@ -96,16 +97,16 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 
 		if (X_M_HU.HUSTATUS_Shipped.equals(getM_HU().getHUStatus()))
 		{
-			final ADReferenceService adReferenceService = ADReferenceService.get();
-			final String destroyedStr = adReferenceService.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);
+			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);
 			displayNameBuilder.append(STR_NewLine).append("(").append(escape(destroyedStr)).append(")");
 		}
 		//
 		// Display "Destroyed" if HU was destroyed
 		else if (showIfDestroyed && handlingUnitsBL.isDestroyed(getM_HU()))
 		{
-			final ADReferenceService adReferenceService = ADReferenceService.get();
-			final String destroyedStr = adReferenceService.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Destroyed);
+			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Destroyed);
 			displayNameBuilder.append(STR_NewLine).append("(").append(escape(destroyedStr)).append(")");
 		}
 

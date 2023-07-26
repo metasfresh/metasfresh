@@ -730,7 +730,7 @@ public class MSequence extends X_AD_Sequence
 			s_log.debug("Returning 'false' because isAdempiereSys()==true for AD_Client_ID {}", AD_Client_ID);
 			return false;
 		}
-		if (Ini.getRunMode() == RunMode.BACKEND && !Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
+		if (Ini.getRunMode() == RunMode.BACKEND)
 		{
 			s_log.debug("Returning 'false' because RunMode == BACKEND");
 			return false; // task 08011: we are running on the server; we don't need central ID because we won't record SQL-scripts

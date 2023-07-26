@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_ProjectType
  *  @author metasfresh (generated) 
@@ -236,33 +235,6 @@ public interface I_C_ProjectType
 
 	ModelColumn<I_C_ProjectType, Object> COLUMN_ProjectCategory = new ModelColumn<>(I_C_ProjectType.class, "ProjectCategory", null);
 	String COLUMNNAME_ProjectCategory = "ProjectCategory";
-
-	/**
-	 * Set Status Category.
-	 * Request Status Category
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setR_StatusCategory_ID (int R_StatusCategory_ID);
-
-	/**
-	 * Get Status Category.
-	 * Request Status Category
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getR_StatusCategory_ID();
-
-	@Nullable org.compiere.model.I_R_StatusCategory getR_StatusCategory();
-
-	void setR_StatusCategory(@Nullable org.compiere.model.I_R_StatusCategory R_StatusCategory);
-
-	ModelColumn<I_C_ProjectType, org.compiere.model.I_R_StatusCategory> COLUMN_R_StatusCategory_ID = new ModelColumn<>(I_C_ProjectType.class, "R_StatusCategory_ID", org.compiere.model.I_R_StatusCategory.class);
-	String COLUMNNAME_R_StatusCategory_ID = "R_StatusCategory_ID";
 
 	/**
 	 * Get Updated.

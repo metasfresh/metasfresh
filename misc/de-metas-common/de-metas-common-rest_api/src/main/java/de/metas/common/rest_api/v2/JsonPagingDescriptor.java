@@ -24,25 +24,26 @@ package de.metas.common.rest_api.v2;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
-@Schema(description = "Included in various responses that are so big that they require pagination")
+@ApiModel(description = "Included in various responses that are so big that they require pagination")
 @Value
 @Builder
 public class JsonPagingDescriptor
 {
-	@Schema(description = "Epoch timestamp in ms. Can be stored by the API client and used as `since` value in a later invocation.")
+	@ApiModelProperty("Epoch timestamp in ms. Can be stored by the API client and used as `since` value in a later invocation.")
 	long resultTimestamp;
 
-	@Schema(description = "Total number of results. If bigger than `pageSize`, the API client can use the given `nextPage` to retrieve the next page.")
+	@ApiModelProperty("Total number of results. If bigger than `pageSize`, the API client can use the given `nextPage` to retrieve the next page.")
 	int totalSize;
 
-	@Schema(description = "Number of results in the current page.")
+	@ApiModelProperty("Number of results in the current page.")
 	int pageSize;
 
-	@Schema(description = "If provided, then the overal result has further pages and the next page can be retrieved using the given value")
+	@ApiModelProperty("If provided, then the overal result has further pages and the next page can be retrieved using the given value")
 	@JsonInclude(Include.NON_EMPTY)
 	String nextPage;
 }

@@ -177,7 +177,6 @@ export default class GlobalContextShortcuts extends Component {
   setCaretPosition = (ctrl, pos) => {
     ctrl.focus();
     ctrl.setSelectionRange(pos, pos);
-    ctrl.scrollLeft = pos ? ctrl.scrollWidth : pos;
   };
 
   shouldComponentUpdate = (nextProps) =>

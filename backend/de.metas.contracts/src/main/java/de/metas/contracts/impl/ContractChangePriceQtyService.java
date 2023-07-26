@@ -1,19 +1,19 @@
 package de.metas.contracts.impl;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.springframework.stereotype.Service;
+
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 /*
  * #%L
@@ -39,18 +39,16 @@ import java.util.List;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @Service
 public class ContractChangePriceQtyService
 {
-	ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-
 	public void changePriceIfNeeded(@NonNull final I_C_Flatrate_Term contract, final BigDecimal priceActual)
 	{
 		if (priceActual != null)
 		{
 			changeFlatrateTermPrice(contract, priceActual);
-			subscriptionBL.createPriceChange(contract);
 		}
 	}
 
@@ -59,7 +57,6 @@ public class ContractChangePriceQtyService
 		if (plannedQtyPerUnit != null)
 		{
 			changeFlatrateTermQty(contract, plannedQtyPerUnit);
-			subscriptionBL.createQtyChange(contract, plannedQtyPerUnit);
 			changeQtyInSubscriptionProgressOfFlatrateTerm(contract, plannedQtyPerUnit);
 		}
 	}
@@ -102,5 +99,4 @@ public class ContractChangePriceQtyService
 		});
 
 	}
-
 }

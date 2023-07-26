@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -77,7 +76,7 @@ import de.metas.util.Services;
 
 public abstract class AbstractDLMService implements IDLMService
 {
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	// gh #1411
@@ -501,10 +500,14 @@ public abstract class AbstractDLMService implements IDLMService
 			for (final I_DLM_Partition_Config_Reference ref : refs)
 			{
 				final RefBuilder refBuilder = lineBuilder.ref()
-						.setReferencedTableName(adTableDAO.retrieveTableName(ref.getDLM_Referenced_Table_ID()))
-						.setReferencingColumnName(adTableDAO.retrieveColumnName(ref.getDLM_Referencing_Column_ID()))
+						.setReferencedTableName(ref.getDLM_Referenced_Table().getTableName())
+						.setReferencingColumnName(ref.getDLM_Referencing_Column().getColumnName())
 						.setDLM_Partition_Config_Reference_ID(ref.getDLM_Partition_Config_Reference_ID())
-						.setIsPartitionBoundary(adTableDAO.getMinimalColumnInfo(AdColumnId.ofRepoId(ref.getDLM_Referencing_Column_ID())).isDLMPartitionBoundary());
+
+						// IsPartitionBoundary is loaded from AD_Column
+						.setIsPartitionBoundary(
+								InterfaceWrapperHelper.create(ref.getDLM_Referencing_Column(), de.metas.dlm.model.I_AD_Column.class)
+										.isDLMPartitionBoundary());
 
 				refBuilder.endRef();
 			}
@@ -586,8 +589,8 @@ public abstract class AbstractDLMService implements IDLMService
 				final int referencedTableID = adTableDAO.retrieveTableId(ref.getReferencedTableName());
 				configRefDB.setDLM_Referenced_Table_ID(referencedTableID);
 
-				final AdColumnId referencingColumnId = adTableDAO.retrieveColumnId(line.getTableName(), ref.getReferencingColumnName());
-				configRefDB.setDLM_Referencing_Column_ID(referencingColumnId.getRepoId());
+				final I_AD_Column referencingColumn = InterfaceWrapperHelper.create(adTableDAO.retrieveColumn(line.getTableName(), ref.getReferencingColumnName()), I_AD_Column.class);
+				configRefDB.setDLM_Referencing_Column(referencingColumn);
 
 				InterfaceWrapperHelper.save(configRefDB);
 				ref.setDLM_Partition_Config_Reference_ID(configRefDB.getDLM_Partition_Config_Reference_ID());

@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.metas.organization.OrgId;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;

@@ -49,7 +49,7 @@ public class FlatrateUserNotificationsProducer
 
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.contracts.UserNotifications")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	public FlatrateUserNotificationsProducer notifyUser(

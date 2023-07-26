@@ -2,7 +2,7 @@
  * #%L
  * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.github;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
@@ -34,6 +35,7 @@ import de.metas.serviceprovider.issue.importer.IssueImporterService;
 import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -43,7 +45,8 @@ import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import static de.metas.serviceprovider.external.ExternalSystem.GITHUB;
-import static de.metas.serviceprovider.github.config.GithubConfigName.ACCESS_TOKEN;
+import static de.metas.serviceprovider.github.GithubImporterConstants.GitHubConfig.ACCESS_TOKEN;
+import static de.metas.serviceprovider.github.GithubImporterConstants.GitHubConfig.LOOK_FOR_PARENT;
 
 public class GithubImportProcess extends JavaProcess
 {
@@ -60,7 +63,7 @@ public class GithubImportProcess extends JavaProcess
 	private final IssueImporterService issueImporterService = SpringContextHolder.instance.getBean(IssueImporterService.class);
 	private final GithubImporterService githubImporterService = SpringContextHolder.instance.getBean(GithubImporterService.class);
 	private final GithubConfigRepository githubConfigRepository = SpringContextHolder.instance.getBean(GithubConfigRepository.class);
-	private final GithubService githubIssueService = SpringContextHolder.instance.getBean(GithubService.class);
+
 
 	@Override
 	protected String doIt() throws Exception
@@ -68,11 +71,11 @@ public class GithubImportProcess extends JavaProcess
 		final ImmutableList<ExternalProjectReference> allActiveGithubProjects =
 				externalProjectRepository.getByExternalSystem(GITHUB);
 
-		final GithubIssueLinkMatcher githubIssueLinkMatcher = githubIssueService.getGithubLinkMatcher(allActiveGithubProjects);
+		final GithubIssueLinkMatcher githubIssueLinkMatcher = getGithubLinkMatcher(allActiveGithubProjects);
 
-		final ImmutableList<ImportIssuesRequest> importIssuesRequests = importAllProjects()
-				? buildRequestsForAllRepos(allActiveGithubProjects, githubIssueLinkMatcher)
-				: ImmutableList.of(buildSpecificRequest(allActiveGithubProjects, issueNumbers, githubIssueLinkMatcher));
+		final ImmutableList<ImportIssuesRequest> importIssuesRequests =
+				importAllProjects() ?  buildRequestsForAllRepos(allActiveGithubProjects, githubIssueLinkMatcher)
+									:  ImmutableList.of(buildSpecificRequest(allActiveGithubProjects, issueNumbers, githubIssueLinkMatcher));
 
 		issueImporterService.importIssues(importIssuesRequests, githubImporterService);
 
@@ -95,9 +98,8 @@ public class GithubImportProcess extends JavaProcess
 	}
 
 	@NonNull
-	private ImmutableList<ImportIssuesRequest> buildRequestsForAllRepos(
-			@NonNull final ImmutableList<ExternalProjectReference> githubProjects,
-			@Nullable final GithubIssueLinkMatcher githubIssueLinkMatcher)
+	private ImmutableList<ImportIssuesRequest> buildRequestsForAllRepos(@NonNull final ImmutableList<ExternalProjectReference> githubProjects,
+			                                                            @Nullable final GithubIssueLinkMatcher githubIssueLinkMatcher)
 	{
 		return githubProjects
 				.stream()
@@ -116,8 +118,8 @@ public class GithubImportProcess extends JavaProcess
 						.filter(githubProject -> githubProject.getExternalProjectReferenceId().getRepoId() == this.externalProjectReferenceId)
 						.findFirst()
 						.orElseThrow(() -> new AdempiereException("The selected project is not a Github one!")
-								.appendParametersToMessage()
-								.setParameter("Selected externalProjectReferencedId", externalProjectReferenceId));
+											.appendParametersToMessage()
+											.setParameter("Selected externalProjectReferencedId", externalProjectReferenceId));
 
 		final ImmutableList<String> issueNoList = Check.isNotBlank(issueNumbers)
 				? Stream.of( issueNumbers.split(",") )
@@ -141,11 +143,33 @@ public class GithubImportProcess extends JavaProcess
 				.repoOwner(externalProjectReference.getProjectOwner())
 				.orgId(externalProjectReference.getOrgId())
 				.projectId(externalProjectReference.getProjectId())
-				.oAuthToken(githubConfigRepository.getConfigByNameAndOrg(ACCESS_TOKEN, externalProjectReference.getOrgId()))
+				.oAuthToken(githubConfigRepository.getValueByName(ACCESS_TOKEN.getName()))
 				.issueNoList(issueNoList)
 				.dateFrom(this.dateFrom)
 				.githubIssueLinkMatcher(githubIssueLinkMatcher)
 				.build();
+	}
+
+	@Nullable
+	private GithubIssueLinkMatcher getGithubLinkMatcher(@NonNull final ImmutableList<ExternalProjectReference> externalProjectReferences)
+	{
+		final Boolean lookForParent = StringUtils.toBooleanOrNull(githubConfigRepository.getValueByName(LOOK_FOR_PARENT.getName()));
+
+		if (!Boolean.TRUE.equals(lookForParent))
+		{
+			return null;
+		}
+
+		final ImmutableSet.Builder<String> owners = ImmutableSet.builder();
+		final ImmutableSet.Builder<String> projects = ImmutableSet.builder();
+
+		externalProjectReferences.forEach(projectRef ->
+		{
+			owners.add(projectRef.getProjectOwner());
+			projects.add(projectRef.getExternalProjectReference());
+		});
+
+		return GithubIssueLinkMatcher.of(owners.build(), projects.build());
 	}
 
 	private boolean importAllProjects()

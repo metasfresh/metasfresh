@@ -1,6 +1,8 @@
 package de.metas.order.voidorderandrelateddocs;
 
-import de.metas.ad_reference.ADReferenceService;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.compiere.util.Env;
+
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
@@ -13,7 +15,6 @@ import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.util.Env;
 
 /*
  * #%L
@@ -87,16 +88,17 @@ public interface VoidOrderAndRelatedDocsHandler
 	{
 		final I_C_Order orderRecord = Services.get(IOrderDAO.class).getById(orderId, I_C_Order.class);
 
-		final ADReferenceService adReferenceService = ADReferenceService.get();
-		final String docStatusTrl = adReferenceService.retrieveListNameTrl(DocStatus.AD_REFERENCE_ID, docStatus.getCode());
+		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final String docStatusTrl = referenceDAO.retrieveListNameTrl(DocStatus.AD_REFERENCE_ID, docStatus.getCode());
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		return msgBL.getTranslatableMsgText(
+		final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(
 				Msg_OrderDocumentCancelNotAllowed_4P,
 				orderRecord.getDocumentNo(),
 				msgBL.translate(Env.getCtx(), documentTrlValue),
 				documentNo,
 				docStatusTrl);
+		return errorMsg;
 	}
 }

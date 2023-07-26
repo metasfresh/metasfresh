@@ -72,4 +72,6 @@ public interface ITaxAccountable
 	void setC_Tax(final I_C_Tax tax);
 
 	int getC_Tax_ID();
+
+	I_C_Tax getC_Tax();
 }

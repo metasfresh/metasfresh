@@ -1,14 +1,7 @@
 package de.metas.ui.web.notification;
 
-import com.google.common.base.Splitter;
-import de.metas.notification.UserNotificationsList;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.notification.json.JSONNotificationsList;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.user.UserId;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.adempiere.ad.dao.QueryLimit;
+import java.util.List;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,7 +12,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.google.common.base.Splitter;
+
+import de.metas.notification.UserNotificationsList;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.notification.json.JSONNotificationsList;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.user.UserId;
+import io.swagger.annotations.Api;
 
 /*
  * #%L
@@ -43,7 +44,7 @@ import java.util.List;
  * #L%
  */
 
-@Tag(name = "NotificationRestController")
+@Api
 @RestController
 @RequestMapping(value = NotificationRestController.ENDPOINT)
 public class NotificationRestController
@@ -73,7 +74,7 @@ public class NotificationRestController
 		userSession.assertLoggedIn();
 
 		final UserId adUserId = userSession.getLoggedUserId();
-		final UserNotificationsList notifications = userNotificationsService.getNotifications(adUserId, QueryLimit.ofInt(limit));
+		final UserNotificationsList notifications = userNotificationsService.getNotifications(adUserId, limit);
 
 		final JSONOptions jsonOpts = JSONOptions.of(userSession);
 		return JSONNotificationsList.of(notifications, jsonOpts);

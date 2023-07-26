@@ -1,60 +1,72 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Tab
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_AD_Tab 
 {
 
-	String Table_Name = "AD_Tab";
+    /** TableName=AD_Tab */
+    public static final String Table_Name = "AD_Tab";
 
-//	/** AD_Table_ID=106 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=106 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 4 - System
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Client>(I_AD_Tab.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Link Column.
-	 * Link Column for Multi-Parent tables
+	 * Set Spalte.
+	 * Column in the table
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Column_ID (int AD_Column_ID);
+	public void setAD_Column_ID (int AD_Column_ID);
 
 	/**
-	 * Get Link Column.
-	 * Link Column for Multi-Parent tables
+	 * Get Spalte.
+	 * Column in the table
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Column_ID();
+	public int getAD_Column_ID();
 
-	@Nullable org.compiere.model.I_AD_Column getAD_Column();
+	public org.compiere.model.I_AD_Column getAD_Column();
 
-	void setAD_Column(@Nullable org.compiere.model.I_AD_Column AD_Column);
+	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new ModelColumn<>(I_AD_Tab.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
-	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
+    /** Column definition for AD_Column_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column>(I_AD_Tab.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
+    /** Column name AD_Column_ID */
+    public static final String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
 	/**
 	 * Set Order Column.
@@ -64,7 +76,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_ColumnSortOrder_ID (int AD_ColumnSortOrder_ID);
+	public void setAD_ColumnSortOrder_ID (int AD_ColumnSortOrder_ID);
 
 	/**
 	 * Get Order Column.
@@ -74,14 +86,16 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_ColumnSortOrder_ID();
+	public int getAD_ColumnSortOrder_ID();
 
-	@Nullable org.compiere.model.I_AD_Column getAD_ColumnSortOrder();
+	public org.compiere.model.I_AD_Column getAD_ColumnSortOrder();
 
-	void setAD_ColumnSortOrder(@Nullable org.compiere.model.I_AD_Column AD_ColumnSortOrder);
+	public void setAD_ColumnSortOrder(org.compiere.model.I_AD_Column AD_ColumnSortOrder);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column> COLUMN_AD_ColumnSortOrder_ID = new ModelColumn<>(I_AD_Tab.class, "AD_ColumnSortOrder_ID", org.compiere.model.I_AD_Column.class);
-	String COLUMNNAME_AD_ColumnSortOrder_ID = "AD_ColumnSortOrder_ID";
+    /** Column definition for AD_ColumnSortOrder_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column> COLUMN_AD_ColumnSortOrder_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column>(I_AD_Tab.class, "AD_ColumnSortOrder_ID", org.compiere.model.I_AD_Column.class);
+    /** Column name AD_ColumnSortOrder_ID */
+    public static final String COLUMNNAME_AD_ColumnSortOrder_ID = "AD_ColumnSortOrder_ID";
 
 	/**
 	 * Set Included Column.
@@ -91,7 +105,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_ColumnSortYesNo_ID (int AD_ColumnSortYesNo_ID);
+	public void setAD_ColumnSortYesNo_ID (int AD_ColumnSortYesNo_ID);
 
 	/**
 	 * Get Included Column.
@@ -101,14 +115,16 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_ColumnSortYesNo_ID();
+	public int getAD_ColumnSortYesNo_ID();
 
-	@Nullable org.compiere.model.I_AD_Column getAD_ColumnSortYesNo();
+	public org.compiere.model.I_AD_Column getAD_ColumnSortYesNo();
 
-	void setAD_ColumnSortYesNo(@Nullable org.compiere.model.I_AD_Column AD_ColumnSortYesNo);
+	public void setAD_ColumnSortYesNo(org.compiere.model.I_AD_Column AD_ColumnSortYesNo);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column> COLUMN_AD_ColumnSortYesNo_ID = new ModelColumn<>(I_AD_Tab.class, "AD_ColumnSortYesNo_ID", org.compiere.model.I_AD_Column.class);
-	String COLUMNNAME_AD_ColumnSortYesNo_ID = "AD_ColumnSortYesNo_ID";
+    /** Column definition for AD_ColumnSortYesNo_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column> COLUMN_AD_ColumnSortYesNo_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column>(I_AD_Tab.class, "AD_ColumnSortYesNo_ID", org.compiere.model.I_AD_Column.class);
+    /** Column name AD_ColumnSortYesNo_ID */
+    public static final String COLUMNNAME_AD_ColumnSortYesNo_ID = "AD_ColumnSortYesNo_ID";
 
 	/**
 	 * Set System-Element.
@@ -118,7 +134,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Element_ID (int AD_Element_ID);
+	public void setAD_Element_ID (int AD_Element_ID);
 
 	/**
 	 * Get System-Element.
@@ -128,112 +144,132 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Element_ID();
+	public int getAD_Element_ID();
 
-	org.compiere.model.I_AD_Element getAD_Element();
+	public org.compiere.model.I_AD_Element getAD_Element();
 
-	void setAD_Element(org.compiere.model.I_AD_Element AD_Element);
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Element> COLUMN_AD_Element_ID = new ModelColumn<>(I_AD_Tab.class, "AD_Element_ID", org.compiere.model.I_AD_Element.class);
-	String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
+    /** Column definition for AD_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Element> COLUMN_AD_Element_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Element>(I_AD_Tab.class, "AD_Element_ID", org.compiere.model.I_AD_Element.class);
+    /** Column name AD_Element_ID */
+    public static final String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
 	/**
-	 * Set Image.
+	 * Set Bild.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Image_ID (int AD_Image_ID);
+	public void setAD_Image_ID (int AD_Image_ID);
 
 	/**
-	 * Get Image.
+	 * Get Bild.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Image_ID();
+	public int getAD_Image_ID();
 
-	@Nullable org.compiere.model.I_AD_Image getAD_Image();
+	public org.compiere.model.I_AD_Image getAD_Image();
 
-	void setAD_Image(@Nullable org.compiere.model.I_AD_Image AD_Image);
+	public void setAD_Image(org.compiere.model.I_AD_Image AD_Image);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Image> COLUMN_AD_Image_ID = new ModelColumn<>(I_AD_Tab.class, "AD_Image_ID", org.compiere.model.I_AD_Image.class);
-	String COLUMNNAME_AD_Image_ID = "AD_Image_ID";
+    /** Column definition for AD_Image_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Image> COLUMN_AD_Image_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Image>(I_AD_Tab.class, "AD_Image_ID", org.compiere.model.I_AD_Image.class);
+    /** Column name AD_Image_ID */
+    public static final String COLUMNNAME_AD_Image_ID = "AD_Image_ID";
 
 	/**
-	 * Set Message.
+	 * Set Statusleistenmeldung.
 	 * System Message
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Message_ID (int AD_Message_ID);
+	public void setAD_Message_ID (int AD_Message_ID);
 
 	/**
-	 * Get Message.
+	 * Get Statusleistenmeldung.
 	 * System Message
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Message_ID();
+	public int getAD_Message_ID();
 
-	String COLUMNNAME_AD_Message_ID = "AD_Message_ID";
+	public org.compiere.model.I_AD_Message getAD_Message();
+
+	public void setAD_Message(org.compiere.model.I_AD_Message AD_Message);
+
+    /** Column definition for AD_Message_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Message> COLUMN_AD_Message_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Message>(I_AD_Tab.class, "AD_Message_ID", org.compiere.model.I_AD_Message.class);
+    /** Column name AD_Message_ID */
+    public static final String COLUMNNAME_AD_Message_ID = "AD_Message_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Org>(I_AD_Tab.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Process.
+	 * Set Prozess.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Process_ID (int AD_Process_ID);
+	public void setAD_Process_ID (int AD_Process_ID);
 
 	/**
-	 * Get Process.
+	 * Get Prozess.
 	 * Process or Report
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Process_ID();
+	public int getAD_Process_ID();
 
-	@Nullable org.compiere.model.I_AD_Process getAD_Process();
+	public org.compiere.model.I_AD_Process getAD_Process();
 
-	void setAD_Process(@Nullable org.compiere.model.I_AD_Process AD_Process);
+	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new ModelColumn<>(I_AD_Tab.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
-	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
+    /** Column definition for AD_Process_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Process>(I_AD_Tab.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
+    /** Column name AD_Process_ID */
+    public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
 	 * Set Register.
@@ -243,7 +279,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Tab_ID (int AD_Tab_ID);
+	public void setAD_Tab_ID (int AD_Tab_ID);
 
 	/**
 	 * Get Register.
@@ -253,80 +289,93 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Tab_ID();
+	public int getAD_Tab_ID();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_AD_Tab_ID = new ModelColumn<>(I_AD_Tab.class, "AD_Tab_ID", null);
-	String COLUMNNAME_AD_Tab_ID = "AD_Tab_ID";
+    /** Column definition for AD_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_AD_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "AD_Tab_ID", null);
+    /** Column name AD_Tab_ID */
+    public static final String COLUMNNAME_AD_Tab_ID = "AD_Tab_ID";
 
 	/**
-	 * Set Table.
+	 * Set DB-Tabelle.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Table_ID (int AD_Table_ID);
+	public void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get Table.
+	 * Get DB-Tabelle.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Table_ID();
+	public int getAD_Table_ID();
 
-	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	public org.compiere.model.I_AD_Table getAD_Table();
+
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
+
+    /** Column definition for AD_Table_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Table>(I_AD_Tab.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Window.
+	 * Set Fenster.
 	 * Data entry or display window
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Window_ID (int AD_Window_ID);
+	public void setAD_Window_ID (int AD_Window_ID);
 
 	/**
-	 * Get Window.
+	 * Get Fenster.
 	 * Data entry or display window
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Window_ID();
+	public int getAD_Window_ID();
 
-	org.compiere.model.I_AD_Window getAD_Window();
+	public org.compiere.model.I_AD_Window getAD_Window();
 
-	void setAD_Window(org.compiere.model.I_AD_Window AD_Window);
+	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new ModelColumn<>(I_AD_Tab.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
-	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+    /** Column definition for AD_Window_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Window>(I_AD_Tab.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
+    /** Column name AD_Window_ID */
+    public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
-	 * Set Schnelleingabe abschalten.
+	 * Set Schnelleingabe einschalten.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAllowQuickInput (boolean AllowQuickInput);
+	public void setAllowQuickInput (boolean AllowQuickInput);
 
 	/**
-	 * Get Schnelleingabe abschalten.
+	 * Get Schnelleingabe einschalten.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAllowQuickInput();
+	public boolean isAllowQuickInput();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_AllowQuickInput = new ModelColumn<>(I_AD_Tab.class, "AllowQuickInput", null);
-	String COLUMNNAME_AllowQuickInput = "AllowQuickInput";
+    /** Column definition for AllowQuickInput */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_AllowQuickInput = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "AllowQuickInput", null);
+    /** Column name AllowQuickInput */
+    public static final String COLUMNNAME_AllowQuickInput = "AllowQuickInput";
 
 	/**
 	 * Set Speicherwarnung.
@@ -336,7 +385,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCommitWarning (@Nullable java.lang.String CommitWarning);
+	public void setCommitWarning (java.lang.String CommitWarning);
 
 	/**
 	 * Get Speicherwarnung.
@@ -346,35 +395,42 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCommitWarning();
+	public java.lang.String getCommitWarning();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_CommitWarning = new ModelColumn<>(I_AD_Tab.class, "CommitWarning", null);
-	String COLUMNNAME_CommitWarning = "CommitWarning";
+    /** Column definition for CommitWarning */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_CommitWarning = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "CommitWarning", null);
+    /** Column name CommitWarning */
+    public static final String COLUMNNAME_CommitWarning = "CommitWarning";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_Created = new ModelColumn<>(I_AD_Tab.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_User>(I_AD_Tab.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Default Selected Record.
@@ -384,7 +440,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDefaultWhereClause (@Nullable java.lang.String DefaultWhereClause);
+	public void setDefaultWhereClause (java.lang.String DefaultWhereClause);
 
 	/**
 	 * Get Default Selected Record.
@@ -394,31 +450,35 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDefaultWhereClause();
+	public java.lang.String getDefaultWhereClause();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_DefaultWhereClause = new ModelColumn<>(I_AD_Tab.class, "DefaultWhereClause", null);
-	String COLUMNNAME_DefaultWhereClause = "DefaultWhereClause";
+    /** Column definition for DefaultWhereClause */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_DefaultWhereClause = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "DefaultWhereClause", null);
+    /** Column name DefaultWhereClause */
+    public static final String COLUMNNAME_DefaultWhereClause = "DefaultWhereClause";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_Description = new ModelColumn<>(I_AD_Tab.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Anzeigelogik.
@@ -428,7 +488,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDisplayLogic (@Nullable java.lang.String DisplayLogic);
+	public void setDisplayLogic (java.lang.String DisplayLogic);
 
 	/**
 	 * Get Anzeigelogik.
@@ -438,10 +498,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDisplayLogic();
+	public java.lang.String getDisplayLogic();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_DisplayLogic = new ModelColumn<>(I_AD_Tab.class, "DisplayLogic", null);
-	String COLUMNNAME_DisplayLogic = "DisplayLogic";
+    /** Column definition for DisplayLogic */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_DisplayLogic = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "DisplayLogic", null);
+    /** Column name DisplayLogic */
+    public static final String COLUMNNAME_DisplayLogic = "DisplayLogic";
 
 	/**
 	 * Set Entitäts-Art.
@@ -452,7 +514,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setEntityType (java.lang.String EntityType);
+	public void setEntityType (java.lang.String EntityType);
 
 	/**
 	 * Get Entitäts-Art.
@@ -463,10 +525,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getEntityType();
+	public java.lang.String getEntityType();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_Tab.class, "EntityType", null);
-	String COLUMNNAME_EntityType = "EntityType";
+    /** Column definition for EntityType */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "EntityType", null);
+    /** Column name EntityType */
+    public static final String COLUMNNAME_EntityType = "EntityType";
 
 	/**
 	 * Set Has Tree.
@@ -476,7 +540,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setHasTree (boolean HasTree);
+	public void setHasTree (boolean HasTree);
 
 	/**
 	 * Get Has Tree.
@@ -486,33 +550,37 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isHasTree();
+	public boolean isHasTree();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_HasTree = new ModelColumn<>(I_AD_Tab.class, "HasTree", null);
-	String COLUMNNAME_HasTree = "HasTree";
+    /** Column definition for HasTree */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_HasTree = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "HasTree", null);
+    /** Column name HasTree */
+    public static final String COLUMNNAME_HasTree = "HasTree";
 
 	/**
-	 * Set Help.
+	 * Set Kommentar/Hilfe.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setHelp (@Nullable java.lang.String Help);
+	public void setHelp (java.lang.String Help);
 
 	/**
-	 * Get Help.
+	 * Get Kommentar/Hilfe.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getHelp();
+	public java.lang.String getHelp();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_Help = new ModelColumn<>(I_AD_Tab.class, "Help", null);
-	String COLUMNNAME_Help = "Help";
+    /** Column definition for Help */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "Help", null);
+    /** Column name Help */
+    public static final String COLUMNNAME_Help = "Help";
 
 	/**
 	 * Set Import Fields.
@@ -522,7 +590,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setImportFields (@Nullable java.lang.String ImportFields);
+	public void setImportFields (java.lang.String ImportFields);
 
 	/**
 	 * Get Import Fields.
@@ -532,10 +600,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getImportFields();
+	public java.lang.String getImportFields();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_ImportFields = new ModelColumn<>(I_AD_Tab.class, "ImportFields", null);
-	String COLUMNNAME_ImportFields = "ImportFields";
+    /** Column definition for ImportFields */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_ImportFields = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "ImportFields", null);
+    /** Column name ImportFields */
+    public static final String COLUMNNAME_ImportFields = "ImportFields";
 
 	/**
 	 * Set Included Tab.
@@ -545,7 +615,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIncluded_Tab_ID (int Included_Tab_ID);
+	public void setIncluded_Tab_ID (int Included_Tab_ID);
 
 	/**
 	 * Get Included Tab.
@@ -555,81 +625,66 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getIncluded_Tab_ID();
+	public int getIncluded_Tab_ID();
 
-	@Nullable org.compiere.model.I_AD_Tab getIncluded_Tab();
+	public org.compiere.model.I_AD_Tab getIncluded_Tab();
 
-	void setIncluded_Tab(@Nullable org.compiere.model.I_AD_Tab Included_Tab);
+	public void setIncluded_Tab(org.compiere.model.I_AD_Tab Included_Tab);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab> COLUMN_Included_Tab_ID = new ModelColumn<>(I_AD_Tab.class, "Included_Tab_ID", org.compiere.model.I_AD_Tab.class);
-	String COLUMNNAME_Included_Tab_ID = "Included_Tab_ID";
-
-	/**
-	 * Set New Record Input Mode.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIncludedTabNewRecordInputMode (java.lang.String IncludedTabNewRecordInputMode);
+    /** Column definition for Included_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab> COLUMN_Included_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab>(I_AD_Tab.class, "Included_Tab_ID", org.compiere.model.I_AD_Tab.class);
+    /** Column name Included_Tab_ID */
+    public static final String COLUMNNAME_Included_Tab_ID = "Included_Tab_ID";
 
 	/**
-	 * Get New Record Input Mode.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getIncludedTabNewRecordInputMode();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_IncludedTabNewRecordInputMode = new ModelColumn<>(I_AD_Tab.class, "IncludedTabNewRecordInputMode", null);
-	String COLUMNNAME_IncludedTabNewRecordInputMode = "IncludedTabNewRecordInputMode";
-
-	/**
-	 * Set Internal Name.
+	 * Set Interner Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInternalName (@Nullable java.lang.String InternalName);
+	public void setInternalName (java.lang.String InternalName);
 
 	/**
-	 * Get Internal Name.
+	 * Get Interner Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getInternalName();
+	public java.lang.String getInternalName();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_InternalName = new ModelColumn<>(I_AD_Tab.class, "InternalName", null);
-	String COLUMNNAME_InternalName = "InternalName";
+    /** Column definition for InternalName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "InternalName", null);
+    /** Column name InternalName */
+    public static final String COLUMNNAME_InternalName = "InternalName";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Tab.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Advanced Tab.
@@ -639,7 +694,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsAdvancedTab (boolean IsAdvancedTab);
+	public void setIsAdvancedTab (boolean IsAdvancedTab);
 
 	/**
 	 * Get Advanced Tab.
@@ -649,31 +704,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAdvancedTab();
+	public boolean isAdvancedTab();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsAdvancedTab = new ModelColumn<>(I_AD_Tab.class, "IsAdvancedTab", null);
-	String COLUMNNAME_IsAdvancedTab = "IsAdvancedTab";
-
-	/**
-	 * Set Autodetect Default Date Filter .
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAutodetectDefaultDateFilter (boolean IsAutodetectDefaultDateFilter);
-
-	/**
-	 * Get Autodetect Default Date Filter .
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAutodetectDefaultDateFilter();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsAutodetectDefaultDateFilter = new ModelColumn<>(I_AD_Tab.class, "IsAutodetectDefaultDateFilter", null);
-	String COLUMNNAME_IsAutodetectDefaultDateFilter = "IsAutodetectDefaultDateFilter";
+    /** Column definition for IsAdvancedTab */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsAdvancedTab = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsAdvancedTab", null);
+    /** Column name IsAdvancedTab */
+    public static final String COLUMNNAME_IsAdvancedTab = "IsAdvancedTab";
 
 	/**
 	 * Set Check Parents Changed.
@@ -683,7 +719,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCheckParentsChanged (boolean IsCheckParentsChanged);
+	public void setIsCheckParentsChanged (boolean IsCheckParentsChanged);
 
 	/**
 	 * Get Check Parents Changed.
@@ -693,10 +729,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isCheckParentsChanged();
+	public boolean isCheckParentsChanged();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsCheckParentsChanged = new ModelColumn<>(I_AD_Tab.class, "IsCheckParentsChanged", null);
-	String COLUMNNAME_IsCheckParentsChanged = "IsCheckParentsChanged";
+    /** Column definition for IsCheckParentsChanged */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsCheckParentsChanged = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsCheckParentsChanged", null);
+    /** Column name IsCheckParentsChanged */
+    public static final String COLUMNNAME_IsCheckParentsChanged = "IsCheckParentsChanged";
 
 	/**
 	 * Set Grid Mode Only.
@@ -706,7 +744,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsGridModeOnly (boolean IsGridModeOnly);
+	public void setIsGridModeOnly (boolean IsGridModeOnly);
 
 	/**
 	 * Get Grid Mode Only.
@@ -716,10 +754,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isGridModeOnly();
+	public boolean isGridModeOnly();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsGridModeOnly = new ModelColumn<>(I_AD_Tab.class, "IsGridModeOnly", null);
-	String COLUMNNAME_IsGridModeOnly = "IsGridModeOnly";
+    /** Column definition for IsGridModeOnly */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsGridModeOnly = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsGridModeOnly", null);
+    /** Column name IsGridModeOnly */
+    public static final String COLUMNNAME_IsGridModeOnly = "IsGridModeOnly";
 
 	/**
 	 * Set Accounting Tab.
@@ -729,7 +769,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsInfoTab (boolean IsInfoTab);
+	public void setIsInfoTab (boolean IsInfoTab);
 
 	/**
 	 * Get Accounting Tab.
@@ -739,10 +779,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isInfoTab();
+	public boolean isInfoTab();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsInfoTab = new ModelColumn<>(I_AD_Tab.class, "IsInfoTab", null);
-	String COLUMNNAME_IsInfoTab = "IsInfoTab";
+    /** Column definition for IsInfoTab */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsInfoTab = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsInfoTab", null);
+    /** Column name IsInfoTab */
+    public static final String COLUMNNAME_IsInfoTab = "IsInfoTab";
 
 	/**
 	 * Set Insert Record.
@@ -752,7 +794,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsInsertRecord (boolean IsInsertRecord);
+	public void setIsInsertRecord (boolean IsInsertRecord);
 
 	/**
 	 * Get Insert Record.
@@ -762,33 +804,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isInsertRecord();
+	public boolean isInsertRecord();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsInsertRecord = new ModelColumn<>(I_AD_Tab.class, "IsInsertRecord", null);
-	String COLUMNNAME_IsInsertRecord = "IsInsertRecord";
-
-	/**
-	 * Set Allow querying when not filtered.
-	 * Allow view querying even if user didn't apply any filter.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsQueryIfNoFilters (boolean IsQueryIfNoFilters);
-
-	/**
-	 * Get Allow querying when not filtered.
-	 * Allow view querying even if user didn't apply any filter.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isQueryIfNoFilters();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsQueryIfNoFilters = new ModelColumn<>(I_AD_Tab.class, "IsQueryIfNoFilters", null);
-	String COLUMNNAME_IsQueryIfNoFilters = "IsQueryIfNoFilters";
+    /** Column definition for IsInsertRecord */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsInsertRecord = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsInsertRecord", null);
+    /** Column name IsInsertRecord */
+    public static final String COLUMNNAME_IsInsertRecord = "IsInsertRecord";
 
 	/**
 	 * Set Query data on load.
@@ -797,7 +818,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsQueryOnLoad (boolean IsQueryOnLoad);
+	public void setIsQueryOnLoad (boolean IsQueryOnLoad);
 
 	/**
 	 * Get Query data on load.
@@ -806,10 +827,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isQueryOnLoad();
+	public boolean isQueryOnLoad();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsQueryOnLoad = new ModelColumn<>(I_AD_Tab.class, "IsQueryOnLoad", null);
-	String COLUMNNAME_IsQueryOnLoad = "IsQueryOnLoad";
+    /** Column definition for IsQueryOnLoad */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsQueryOnLoad = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsQueryOnLoad", null);
+    /** Column name IsQueryOnLoad */
+    public static final String COLUMNNAME_IsQueryOnLoad = "IsQueryOnLoad";
 
 	/**
 	 * Set Schreibgeschützt.
@@ -819,7 +842,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsReadOnly (boolean IsReadOnly);
+	public void setIsReadOnly (boolean IsReadOnly);
 
 	/**
 	 * Get Schreibgeschützt.
@@ -829,10 +852,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isReadOnly();
+	public boolean isReadOnly();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsReadOnly = new ModelColumn<>(I_AD_Tab.class, "IsReadOnly", null);
-	String COLUMNNAME_IsReadOnly = "IsReadOnly";
+    /** Column definition for IsReadOnly */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsReadOnly = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsReadOnly", null);
+    /** Column name IsReadOnly */
+    public static final String COLUMNNAME_IsReadOnly = "IsReadOnly";
 
 	/**
 	 * Set Refresh All On Activate.
@@ -842,7 +867,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsRefreshAllOnActivate (boolean IsRefreshAllOnActivate);
+	public void setIsRefreshAllOnActivate (boolean IsRefreshAllOnActivate);
 
 	/**
 	 * Get Refresh All On Activate.
@@ -852,10 +877,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isRefreshAllOnActivate();
+	public boolean isRefreshAllOnActivate();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsRefreshAllOnActivate = new ModelColumn<>(I_AD_Tab.class, "IsRefreshAllOnActivate", null);
-	String COLUMNNAME_IsRefreshAllOnActivate = "IsRefreshAllOnActivate";
+    /** Column definition for IsRefreshAllOnActivate */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsRefreshAllOnActivate = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsRefreshAllOnActivate", null);
+    /** Column name IsRefreshAllOnActivate */
+    public static final String COLUMNNAME_IsRefreshAllOnActivate = "IsRefreshAllOnActivate";
 
 	/**
 	 * Set Refresh view on change events.
@@ -864,7 +891,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsRefreshViewOnChangeEvents (boolean IsRefreshViewOnChangeEvents);
+	public void setIsRefreshViewOnChangeEvents (boolean IsRefreshViewOnChangeEvents);
 
 	/**
 	 * Get Refresh view on change events.
@@ -873,10 +900,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isRefreshViewOnChangeEvents();
+	public boolean isRefreshViewOnChangeEvents();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsRefreshViewOnChangeEvents = new ModelColumn<>(I_AD_Tab.class, "IsRefreshViewOnChangeEvents", null);
-	String COLUMNNAME_IsRefreshViewOnChangeEvents = "IsRefreshViewOnChangeEvents";
+    /** Column definition for IsRefreshViewOnChangeEvents */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsRefreshViewOnChangeEvents = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsRefreshViewOnChangeEvents", null);
+    /** Column name IsRefreshViewOnChangeEvents */
+    public static final String COLUMNNAME_IsRefreshViewOnChangeEvents = "IsRefreshViewOnChangeEvents";
 
 	/**
 	 * Set Search Active.
@@ -886,7 +915,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsSearchActive (boolean IsSearchActive);
+	public void setIsSearchActive (boolean IsSearchActive);
 
 	/**
 	 * Get Search Active.
@@ -896,10 +925,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isSearchActive();
+	public boolean isSearchActive();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsSearchActive = new ModelColumn<>(I_AD_Tab.class, "IsSearchActive", null);
-	String COLUMNNAME_IsSearchActive = "IsSearchActive";
+    /** Column definition for IsSearchActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsSearchActive = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsSearchActive", null);
+    /** Column name IsSearchActive */
+    public static final String COLUMNNAME_IsSearchActive = "IsSearchActive";
 
 	/**
 	 * Set Collapse Search Panel.
@@ -908,7 +939,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSearchCollapsed (boolean IsSearchCollapsed);
+	public void setIsSearchCollapsed (boolean IsSearchCollapsed);
 
 	/**
 	 * Get Collapse Search Panel.
@@ -917,10 +948,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSearchCollapsed();
+	public boolean isSearchCollapsed();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsSearchCollapsed = new ModelColumn<>(I_AD_Tab.class, "IsSearchCollapsed", null);
-	String COLUMNNAME_IsSearchCollapsed = "IsSearchCollapsed";
+    /** Column definition for IsSearchCollapsed */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsSearchCollapsed = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsSearchCollapsed", null);
+    /** Column name IsSearchCollapsed */
+    public static final String COLUMNNAME_IsSearchCollapsed = "IsSearchCollapsed";
 
 	/**
 	 * Set Single Row Layout.
@@ -930,7 +963,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSingleRow (boolean IsSingleRow);
+	public void setIsSingleRow (boolean IsSingleRow);
 
 	/**
 	 * Get Single Row Layout.
@@ -940,10 +973,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSingleRow();
+	public boolean isSingleRow();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsSingleRow = new ModelColumn<>(I_AD_Tab.class, "IsSingleRow", null);
-	String COLUMNNAME_IsSingleRow = "IsSingleRow";
+    /** Column definition for IsSingleRow */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsSingleRow = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsSingleRow", null);
+    /** Column name IsSingleRow */
+    public static final String COLUMNNAME_IsSingleRow = "IsSingleRow";
 
 	/**
 	 * Set Order Tab.
@@ -953,7 +988,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSortTab (boolean IsSortTab);
+	public void setIsSortTab (boolean IsSortTab);
 
 	/**
 	 * Get Order Tab.
@@ -963,10 +998,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSortTab();
+	public boolean isSortTab();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsSortTab = new ModelColumn<>(I_AD_Tab.class, "IsSortTab", null);
-	String COLUMNNAME_IsSortTab = "IsSortTab";
+    /** Column definition for IsSortTab */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsSortTab = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsSortTab", null);
+    /** Column name IsSortTab */
+    public static final String COLUMNNAME_IsSortTab = "IsSortTab";
 
 	/**
 	 * Set Übersetzungsregister.
@@ -976,7 +1013,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsTranslationTab (boolean IsTranslationTab);
+	public void setIsTranslationTab (boolean IsTranslationTab);
 
 	/**
 	 * Get Übersetzungsregister.
@@ -986,10 +1023,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isTranslationTab();
+	public boolean isTranslationTab();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_IsTranslationTab = new ModelColumn<>(I_AD_Tab.class, "IsTranslationTab", null);
-	String COLUMNNAME_IsTranslationTab = "IsTranslationTab";
+    /** Column definition for IsTranslationTab */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsTranslationTab = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsTranslationTab", null);
+    /** Column name IsTranslationTab */
+    public static final String COLUMNNAME_IsTranslationTab = "IsTranslationTab";
 
 	/**
 	 * Set Max. Suchergebnisse.
@@ -999,7 +1038,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMaxQueryRecords (int MaxQueryRecords);
+	public void setMaxQueryRecords (int MaxQueryRecords);
 
 	/**
 	 * Get Max. Suchergebnisse.
@@ -1009,10 +1048,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getMaxQueryRecords();
+	public int getMaxQueryRecords();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_MaxQueryRecords = new ModelColumn<>(I_AD_Tab.class, "MaxQueryRecords", null);
-	String COLUMNNAME_MaxQueryRecords = "MaxQueryRecords";
+    /** Column definition for MaxQueryRecords */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_MaxQueryRecords = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "MaxQueryRecords", null);
+    /** Column name MaxQueryRecords */
+    public static final String COLUMNNAME_MaxQueryRecords = "MaxQueryRecords";
 
 	/**
 	 * Set Name.
@@ -1021,7 +1062,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -1030,10 +1071,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_Name = new ModelColumn<>(I_AD_Tab.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Sql ORDER BY.
@@ -1043,7 +1086,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOrderByClause (@Nullable java.lang.String OrderByClause);
+	public void setOrderByClause (java.lang.String OrderByClause);
 
 	/**
 	 * Get Sql ORDER BY.
@@ -1053,10 +1096,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getOrderByClause();
+	public java.lang.String getOrderByClause();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_OrderByClause = new ModelColumn<>(I_AD_Tab.class, "OrderByClause", null);
-	String COLUMNNAME_OrderByClause = "OrderByClause";
+    /** Column definition for OrderByClause */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_OrderByClause = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "OrderByClause", null);
+    /** Column name OrderByClause */
+    public static final String COLUMNNAME_OrderByClause = "OrderByClause";
 
 	/**
 	 * Set Parent Column.
@@ -1066,7 +1111,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setParent_Column_ID (int Parent_Column_ID);
+	public void setParent_Column_ID (int Parent_Column_ID);
 
 	/**
 	 * Get Parent Column.
@@ -1076,77 +1121,39 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getParent_Column_ID();
+	public int getParent_Column_ID();
 
-	@Nullable org.compiere.model.I_AD_Column getParent_Column();
+	public org.compiere.model.I_AD_Column getParent_Column();
 
-	void setParent_Column(@Nullable org.compiere.model.I_AD_Column Parent_Column);
+	public void setParent_Column(org.compiere.model.I_AD_Column Parent_Column);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column> COLUMN_Parent_Column_ID = new ModelColumn<>(I_AD_Tab.class, "Parent_Column_ID", org.compiere.model.I_AD_Column.class);
-	String COLUMNNAME_Parent_Column_ID = "Parent_Column_ID";
+    /** Column definition for Parent_Column_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column> COLUMN_Parent_Column_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Column>(I_AD_Tab.class, "Parent_Column_ID", org.compiere.model.I_AD_Column.class);
+    /** Column name Parent_Column_ID */
+    public static final String COLUMNNAME_Parent_Column_ID = "Parent_Column_ID";
 
 	/**
-	 * Set Process Now.
+	 * Set Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProcessing (boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Process Now.
+	 * Get Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessing();
+	public boolean isProcessing();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_Processing = new ModelColumn<>(I_AD_Tab.class, "Processing", null);
-	String COLUMNNAME_Processing = "Processing";
-
-	/**
-	 * Set Quick Input Close Button Caption.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQuickInput_CloseButton_Caption (@Nullable java.lang.String QuickInput_CloseButton_Caption);
-
-	/**
-	 * Get Quick Input Close Button Caption.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getQuickInput_CloseButton_Caption();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInput_CloseButton_Caption = new ModelColumn<>(I_AD_Tab.class, "QuickInput_CloseButton_Caption", null);
-	String COLUMNNAME_QuickInput_CloseButton_Caption = "QuickInput_CloseButton_Caption";
-
-	/**
-	 * Set Quick Input Open Button Caption.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQuickInput_OpenButton_Caption (@Nullable java.lang.String QuickInput_OpenButton_Caption);
-
-	/**
-	 * Get Quick Input Open Button Caption.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getQuickInput_OpenButton_Caption();
-
-	ModelColumn<I_AD_Tab, Object> COLUMN_QuickInput_OpenButton_Caption = new ModelColumn<>(I_AD_Tab.class, "QuickInput_OpenButton_Caption", null);
-	String COLUMNNAME_QuickInput_OpenButton_Caption = "QuickInput_OpenButton_Caption";
+    /** Column definition for Processing */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "Processing", null);
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Read Only Logic.
@@ -1156,7 +1163,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setReadOnlyLogic (@Nullable java.lang.String ReadOnlyLogic);
+	public void setReadOnlyLogic (java.lang.String ReadOnlyLogic);
 
 	/**
 	 * Get Read Only Logic.
@@ -1166,13 +1173,15 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getReadOnlyLogic();
+	public java.lang.String getReadOnlyLogic();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_ReadOnlyLogic = new ModelColumn<>(I_AD_Tab.class, "ReadOnlyLogic", null);
-	String COLUMNNAME_ReadOnlyLogic = "ReadOnlyLogic";
+    /** Column definition for ReadOnlyLogic */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_ReadOnlyLogic = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "ReadOnlyLogic", null);
+    /** Column name ReadOnlyLogic */
+    public static final String COLUMNNAME_ReadOnlyLogic = "ReadOnlyLogic";
 
 	/**
-	 * Set SeqNo.
+	 * Set Reihenfolge.
 	 * Method of ordering records;
  lowest number comes first
 	 *
@@ -1180,10 +1189,10 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setSeqNo (int SeqNo);
+	public void setSeqNo (int SeqNo);
 
 	/**
-	 * Get SeqNo.
+	 * Get Reihenfolge.
 	 * Method of ordering records;
  lowest number comes first
 	 *
@@ -1191,10 +1200,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getSeqNo();
+	public int getSeqNo();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_SeqNo = new ModelColumn<>(I_AD_Tab.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Tab Level.
@@ -1204,7 +1215,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTabLevel (int TabLevel);
+	public void setTabLevel (int TabLevel);
 
 	/**
 	 * Get Tab Level.
@@ -1214,10 +1225,12 @@ public interface I_AD_Tab
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getTabLevel();
+	public int getTabLevel();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_TabLevel = new ModelColumn<>(I_AD_Tab.class, "TabLevel", null);
-	String COLUMNNAME_TabLevel = "TabLevel";
+    /** Column definition for TabLevel */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_TabLevel = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "TabLevel", null);
+    /** Column name TabLevel */
+    public static final String COLUMNNAME_TabLevel = "TabLevel";
 
 	/**
 	 * Set Template Tab.
@@ -1226,7 +1239,7 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setTemplate_Tab_ID (int Template_Tab_ID);
+	public void setTemplate_Tab_ID (int Template_Tab_ID);
 
 	/**
 	 * Get Template Tab.
@@ -1235,60 +1248,69 @@ public interface I_AD_Tab
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getTemplate_Tab_ID();
+	public int getTemplate_Tab_ID();
 
-	@Nullable org.compiere.model.I_AD_Tab getTemplate_Tab();
+	public org.compiere.model.I_AD_Tab getTemplate_Tab();
 
-	void setTemplate_Tab(@Nullable org.compiere.model.I_AD_Tab Template_Tab);
+	public void setTemplate_Tab(org.compiere.model.I_AD_Tab Template_Tab);
 
-	ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab> COLUMN_Template_Tab_ID = new ModelColumn<>(I_AD_Tab.class, "Template_Tab_ID", org.compiere.model.I_AD_Tab.class);
-	String COLUMNNAME_Template_Tab_ID = "Template_Tab_ID";
+    /** Column definition for Template_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab> COLUMN_Template_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab>(I_AD_Tab.class, "Template_Tab_ID", org.compiere.model.I_AD_Tab.class);
+    /** Column name Template_Tab_ID */
+    public static final String COLUMNNAME_Template_Tab_ID = "Template_Tab_ID";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Tab.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_User>(I_AD_Tab.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set SQL WHERE.
+	 * Set Sql WHERE.
 	 * Fully qualified SQL WHERE clause
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setWhereClause (@Nullable java.lang.String WhereClause);
+	public void setWhereClause (java.lang.String WhereClause);
 
 	/**
-	 * Get SQL WHERE.
+	 * Get Sql WHERE.
 	 * Fully qualified SQL WHERE clause
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getWhereClause();
+	public java.lang.String getWhereClause();
 
-	ModelColumn<I_AD_Tab, Object> COLUMN_WhereClause = new ModelColumn<>(I_AD_Tab.class, "WhereClause", null);
-	String COLUMNNAME_WhereClause = "WhereClause";
+    /** Column definition for WhereClause */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_WhereClause = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "WhereClause", null);
+    /** Column name WhereClause */
+    public static final String COLUMNNAME_WhereClause = "WhereClause";
 }

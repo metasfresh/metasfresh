@@ -41,7 +41,7 @@ public class InvoiceMatchingModeByPaySelectionTrxTypeValRule extends AbstractJav
 	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.of(PARAM_PaySelectionTrxType);
 
 	@Override
-	public Set<String> getParameters(@Nullable final String contextTableName)
+	public Set<String> getParameters()
 	{
 		return PARAMETERS;
 	}

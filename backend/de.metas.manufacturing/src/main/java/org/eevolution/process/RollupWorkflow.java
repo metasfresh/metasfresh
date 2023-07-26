@@ -408,7 +408,7 @@ public class RollupWorkflow extends JavaProcess
 
 		public BigDecimal getCostAsBigDecimal()
 		{
-			return cost.toBigDecimal();
+			return cost.getValue();
 		}
 	}
 }

@@ -25,8 +25,7 @@ package de.metas.invoice.service.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -37,22 +36,12 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceVerificationBL;
 import de.metas.invoice.service.InvoiceVerificationRunStatus;
 import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxQuery;
-import de.metas.tax.api.VatCodeId;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.PlainStringLoggable;
@@ -61,14 +50,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Invoice_Verification_Run;
 import org.compiere.model.I_C_Invoice_Verification_RunLine;
 import org.compiere.model.I_C_Invoice_Verification_SetLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -76,8 +63,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -87,10 +72,6 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public void createVerificationSetLines(@NonNull final InvoiceVerificationSetId verificationSetId, @NonNull final Collection<InvoiceId> invoiceIds)
@@ -112,17 +93,6 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 				.map(setLine -> this.verifySetLine(runId, setLine))
 				.collect(ImmutableList.toImmutableList());
 		results.forEach(result -> createVerificationRunLine(runId, result));
-	}
-
-	public InvoiceVerificationRunStatus getStatusFor(@NonNull final InvoiceVerificationRunId runId)
-	{
-		final I_C_Invoice_Verification_Run run = queryBL.createQueryBuilder(I_C_Invoice_Verification_Run.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Verification_Run.COLUMN_C_Invoice_Verification_Run_ID, runId)
-				.create()
-				.firstOnly(I_C_Invoice_Verification_Run.class);
-
-		return run == null ? InvoiceVerificationRunStatus.Planned : InvoiceVerificationRunStatus.ofNullableCode(run.getStatus());
 	}
 
 	private InvoiceVerificationRunResult verifySetLine(@NonNull final InvoiceVerificationRunId runId, @NonNull final I_C_Invoice_Verification_SetLine setLine)
@@ -155,47 +125,38 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 		save(runLine);
 	}
 
-	@NonNull
 	private I_C_Invoice_Verification_Run getVerificationRunFor(@NonNull final InvoiceVerificationRunId invoiceVerificationRunId)
 	{
 		return Check.assumeNotNull(queryBL.createQueryBuilder(I_C_Invoice_Verification_Run.class)
-										   .addOnlyActiveRecordsFilter()
-										   .addEqualsFilter(I_C_Invoice_Verification_Run.COLUMN_C_Invoice_Verification_Run_ID, invoiceVerificationRunId)
-										   .create()
-										   .firstOnly(I_C_Invoice_Verification_Run.class), "No C_Invoice_Verification_Run for ID: {}", invoiceVerificationRunId);
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Verification_Run.COLUMN_C_Invoice_Verification_Run_ID, invoiceVerificationRunId)
+				.create()
+				.first(), "No C_Invoice_Verification_Run for ID: {}", invoiceVerificationRunId);
 	}
 
-	@NonNull
-	private InvoiceVerificationRunResult getVerificationRunResultForSetLine(
-			@NonNull final I_C_Invoice_Verification_SetLine setLine,
-			@Nullable final Timestamp dateOfInterestOverride)
+	private InvoiceVerificationRunResult getVerificationRunResultForSetLine(@NonNull final I_C_Invoice_Verification_SetLine setLine, @Nullable final Timestamp dateOfInterestOverride)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(setLine.getC_Invoice_ID());
+		final I_C_InvoiceLine line = invoiceDAO.retrieveLineById(InvoiceLineId.ofRepoId(invoiceId, setLine.getC_InvoiceLine_ID()));
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-		final I_C_InvoiceLine invoiceLine = invoiceDAO.retrieveLineById(InvoiceLineId.ofRepoId(invoiceId, setLine.getC_InvoiceLine_ID()));
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-
-		final CountryId taxCountryId = getTaxCountryId(invoice, invoiceLine);
-
-		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_ID());
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpartnerId, invoice.getC_BPartner_Location_ID(), invoice.getC_BPartner_Location_Value_ID());
+		final OrgId orgId = OrgId.ofRepoId(setLine.getAD_Org_ID());
 
 		final TaxQuery query = TaxQuery.builder()
 				.orgId(orgId)
 				.warehouseId(WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID()))
-				.bPartnerId(bpartnerId)
-				.shippingCountryId(taxCountryId)
-				.taxCategoryId(getTaxCategoryId(invoice, invoiceLine, taxCountryId))
+				.bPartnerLocationId(bpartnerLocationId)
+				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(line.getC_TaxCategory_ID()))
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
 				.dateOfInterest(CoalesceUtil.coalesce(dateOfInterestOverride, setLine.getRelevantDate()))
-				.vatCodeId(VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID()))
 				.build();
 
 		final PlainStringLoggable loggable = Loggables.newPlainStringLoggable();
 		try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(loggable))
 		{
 			final Tax resultingTax = taxDAO.getBy(query);
-			final Tax invoiceTax = taxDAO.getTaxById(invoiceLine.getC_Tax_ID());
+			final Tax invoiceTax = taxDAO.getTaxById(line.getC_Tax_ID());
 			return InvoiceVerificationRunResult.builder()
 					.setLineId(InvoiceVerificationSetLineId.ofRepoId(setLine.getC_Invoice_Verification_SetLine_ID()))
 					.invoiceTax(invoiceTax)
@@ -228,75 +189,30 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 	private Collection<InvoiceId> getInvoiceIdsForVerificationSet(@NonNull final InvoiceVerificationSetId verificationSetId)
 	{
 		return new ArrayList<>(queryBL.createQueryBuilder(I_C_Invoice_Verification_SetLine.class)
-									   .addEqualsFilter(I_C_Invoice_Verification_SetLine.COLUMNNAME_C_Invoice_Verification_Set_ID, verificationSetId)
-									   .andCollect(I_C_Invoice_Verification_SetLine.COLUMN_C_Invoice_ID)
-									   .create()
-									   .listIds(InvoiceId::ofRepoId));
+				.addEqualsFilter(I_C_Invoice_Verification_SetLine.COLUMNNAME_C_Invoice_Verification_Set_ID, verificationSetId)
+				.andCollect(I_C_Invoice_Verification_SetLine.COLUMN_C_Invoice_ID)
+				.create()
+				.listIds(InvoiceId::ofRepoId));
 	}
 
-	@NonNull
-	private TaxCategoryId getTaxCategoryId(
-			@NonNull final I_C_Invoice invoice,
-			@NonNull final I_C_InvoiceLine invoiceLine,
-			@NonNull final CountryId taxCountryId)
+	public InvoiceVerificationRunStatus getStatusFor(@NonNull final InvoiceVerificationRunId runId)
 	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-
-		final I_C_UOM uom = uomDAO.getById(invoiceLine.getPrice_UOM_ID());
-
-		final IEditablePricingContext pricingContext = pricingBL.createInitialContext(OrgId.ofRepoId(invoice.getAD_Org_ID()),
-																					  ProductId.ofRepoId(invoiceLine.getM_Product_ID()),
-																					  bPartnerId,
-																					  Quantity.of(invoiceLine.getQtyInvoicedInPriceUOM(), uom),
-																					  SOTrx.ofBoolean(invoice.isSOTrx()))
-				.setCountryId(taxCountryId);
-
-		final IPricingResult priceResult = pricingBL.calculatePrice(pricingContext);
-
-		if (!priceResult.isCalculated())
-		{
-			throw new AdempiereException("Price could not be calculated for C_InvoiceLine")
-					.appendParametersToMessage()
-					.setParameter("C_InvoiceLine_ID", invoiceLine.getC_InvoiceLine_ID());
-		}
-
-		return priceResult.getTaxCategoryId();
-	}
-
-	@NonNull
-	private CountryId getTaxCountryId(@NonNull final I_C_Invoice invoice, @NonNull final I_C_InvoiceLine invoiceLine)
-	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-
-		final Supplier<LocationId> getLocationFromBillPartner = () -> {
-			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, invoice.getC_BPartner_Location_ID());
-			return bpartnerDAO.getLocationId(bPartnerLocationId);
-		};
-
-		final LocationId locationId = Stream.of(invoiceLine.getC_Shipping_Location_ID(), invoice.getC_BPartner_Location_Value_ID())
-				.map(LocationId::ofRepoIdOrNull)
-				.filter(Objects::nonNull)
-				.findFirst()
-				.orElseGet(getLocationFromBillPartner);
-
-		return locationDAO.getCountryIdByLocationId(locationId);
+		final I_C_Invoice_Verification_Run run = queryBL.createQueryBuilder(I_C_Invoice_Verification_Run.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Verification_Run.COLUMN_C_Invoice_Verification_Run_ID, runId)
+				.create()
+				.firstOnly(I_C_Invoice_Verification_Run.class);
+		return run == null ? InvoiceVerificationRunStatus.Planned : InvoiceVerificationRunStatus.ofNullableCode(run.getStatus());
 	}
 
 	@Value
 	private static class InvoiceVerificationRunResult
 	{
-		@NonNull
-		Tax invoiceTax;
-
-		@Nullable
-		Tax resultingTax;
-
-		@NonNull
-		InvoiceVerificationSetLineId setLineId;
-
+		@NonNull Tax invoiceTax;
+		@Nullable Tax resultingTax;
+		@NonNull InvoiceVerificationSetLineId setLineId;
 		@NonNull
 		OrgId orgId;
-
 		@Nullable
 		String log;
 

@@ -3,8 +3,6 @@ package de.metas.shipping.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.util.Services;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
@@ -38,7 +36,6 @@ import de.metas.document.engine.IDocument;
 @Component
 public class ShipperTransportationDocActionCustomizer implements IDocActionOptionsCustomizer
 {
-	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 	@Override
 	public String getAppliesToTableName()
 	{
@@ -60,15 +57,6 @@ public class ShipperTransportationDocActionCustomizer implements IDocActionOptio
 		else if (IDocument.STATUS_Completed.equals(docStatus))
 		{
 			docActions.add(IDocument.ACTION_ReActivate);
-		}
-
-		final boolean isDeliveryInstruction = shipperTransportationBL.isDeliveryInstruction(optionsCtx.getDocTypeId());
-		if(isDeliveryInstruction)
-		{
-			docActions.remove(IDocument.ACTION_ReActivate);
-			docActions.remove(IDocument.ACTION_Close);
-
-			docActions.add(IDocument.ACTION_Void);
 		}
 
 		//

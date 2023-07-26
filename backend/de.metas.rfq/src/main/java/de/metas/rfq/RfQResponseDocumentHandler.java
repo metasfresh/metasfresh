@@ -1,10 +1,16 @@
 package de.metas.rfq;
 
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.rfq.event.IRfQEventDispacher;
 import de.metas.rfq.exceptions.RfQResponseInvalidException;
 import de.metas.rfq.exceptions.RfQResponseLineInvalidException;
@@ -16,11 +22,6 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.model.X_C_RfQResponse;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import java.io.File;
-import java.math.BigDecimal;
-import java.util.List;
 
 /*
  * #%L
@@ -69,10 +70,10 @@ class RfQResponseDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
-		final I_C_RfQResponse record = extractRfQResponse(docFields);
-		return InstantAndOrgId.ofTimestamp(record.getDateResponse(), OrgId.ofRepoId(record.getAD_Org_ID()));
+		final I_C_RfQResponse rfcRecord = extractRfQResponse(docFields);
+		return TimeUtil.asLocalDate(rfcRecord.getDateResponse());
 	}
 
 	@Override

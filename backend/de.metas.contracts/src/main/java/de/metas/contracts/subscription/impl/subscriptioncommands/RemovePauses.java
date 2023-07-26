@@ -1,8 +1,17 @@
 package de.metas.contracts.subscription.impl.subscriptioncommands;
 
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
@@ -10,17 +19,8 @@ import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -199,7 +199,7 @@ public class RemovePauses
 
 				if (pauseRecord.getM_ShipmentSchedule_ID() > 0)
 				{
-					Services.get(IShipmentScheduleBL.class).openShipmentSchedule(InterfaceWrapperHelper.load(pauseRecord.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
+					Services.get(IShipmentScheduleBL.class).openShipmentSchedule(pauseRecord.getM_ShipmentSchedule());
 				}
 			}
 			subtractFromSeqNoAndSave(pauseRecord, seqNoOffset);
@@ -207,7 +207,7 @@ public class RemovePauses
 		return seqNoOffset;
 	}
 
-	private static void subtractFromSeqNoAndSave(final I_C_SubscriptionProgress record, final int seqNoOffset)
+	private static void subtractFromSeqNoAndSave(final I_C_SubscriptionProgress record, int seqNoOffset)
 	{
 		record.setSeqNo(record.getSeqNo() - seqNoOffset); // might be a not-within-pause-record if there are multiple pause periods between pausesFrom and pausesUntil
 		save(record);

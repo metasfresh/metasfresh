@@ -84,7 +84,7 @@ public class DocumentReportResult
 		return reportResultData == null || reportResultData.isEmpty();
 	}
 
-	@NonNull
+	@Nullable
 	public Optional<Resource> getReportData()
 	{
 		if (reportResultData == null)

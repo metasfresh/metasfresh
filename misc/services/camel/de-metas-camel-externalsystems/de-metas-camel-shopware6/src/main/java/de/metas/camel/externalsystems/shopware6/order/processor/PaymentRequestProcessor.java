@@ -22,8 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
-import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransaction;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
@@ -31,7 +30,6 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.PaymentMethodTyp
 import de.metas.camel.externalsystems.shopware6.api.model.order.TechnicalNameEnum;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -43,13 +41,6 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_
 
 public class PaymentRequestProcessor implements Processor
 {
-	private final ProcessLogger processLogger;
-
-	public PaymentRequestProcessor(@NonNull final ProcessLogger processLogger)
-	{
-		this.processLogger = processLogger;
-	}
-
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
@@ -63,32 +54,29 @@ public class PaymentRequestProcessor implements Processor
 	}
 
 	@NonNull
-	private Optional<JsonOrderPaymentCreateRequest> buildOrderPaymentCreateRequest(@NonNull final ImportOrdersRouteContext context)
+	private Optional<JsonOrderPaymentCreateRequest> buildOrderPaymentCreateRequest(
+			@NonNull final ImportOrdersRouteContext context)
 	{
 		final JsonPaymentMethod paymentMethod = context.getCompositeOrderNotNull().getJsonPaymentMethod();
 		final JsonOrderTransaction orderTransaction = context.getCompositeOrderNotNull().getOrderTransaction();
-		final JsonOrder order = context.getOrderNotNull().getJsonOrder();
 
 		final boolean isPaypalType = PaymentMethodType.PAY_PAL_PAYMENT_HANDLER.getValue().equals(paymentMethod.getShortName());
 		final boolean isPaid = TechnicalNameEnum.PAID.getValue().equals(orderTransaction.getStateMachine().getTechnicalName());
 
-		if (!(isPaypalType && isPaid))
+		if (!isPaypalType || !isPaid)
 		{
-			processLogger.logMessage("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): Not sending current payment to metasfresh; it would have to be 'paypal' and 'paid'!"
-											 + " PaymentId = " + orderTransaction.getId()
-											 + " paidStatus = " + isPaid
-											 + " paypalType = " + isPaypalType, JsonMetasfreshId.toValue(context.getPInstanceId()));
 			return Optional.empty();
 		}
 
-		final String currencyCode = context.getCurrencyInfoProvider().getIsoCodeByCurrencyIdNotNull(order.getCurrencyId());
+		final JsonOrder order = context.getOrderNotNull().getJsonOrder();
 
-		final String bPartnerIdentifier = context.getBPExternalIdentifier().getIdentifier();
+		final String currencyCode = context.getCurrencyInfoProvider().getIsoCodeByCurrencyIdNotNull(order.getCurrencyId());
+		final String bPartnerIdentifier = context.getOrderNotNull().getEffectiveCustomerId();
 
 		return Optional.of(JsonOrderPaymentCreateRequest.builder()
 								   .orgCode(context.getOrgCode())
 								   .externalPaymentId(orderTransaction.getId())
-								   .bpartnerIdentifier(bPartnerIdentifier)
+								   .bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(bPartnerIdentifier))
 
 								   .amount(orderTransaction.getAmount().getTotalPrice())
 								   .currencyCode(currencyCode)

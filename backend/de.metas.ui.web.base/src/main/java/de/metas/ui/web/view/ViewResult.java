@@ -1,22 +1,23 @@
 package de.metas.ui.web.view;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-import java.util.List;
-import java.util.Map;
 
 /*
  * #%L
@@ -62,6 +63,22 @@ public final class ViewResult
 				.build();
 	}
 
+	public static ViewResult ofViewAndRowIds(
+			final IView view,
+			final int firstRow,
+			final int pageLength,
+			final DocumentQueryOrderByList orderBys,
+			final List<DocumentId> rowIds)
+	{
+		return builder()
+				.view(view)
+				.firstRow(firstRow)
+				.pageLength(pageLength)
+				.orderBys(orderBys)
+				.rowIds(rowIds)
+				.build();
+	}
+
 	/**
 	 * Creates a view result without any loaded page.
 	 */
@@ -80,10 +97,6 @@ public final class ViewResult
 	private final long size;
 	private final int queryLimit;
 	private final boolean queryLimitHit;
-
-	@Nullable
-	@Getter
-	private final EmptyReason emptyReason;
 
 	private final DocumentFilterList stickyFilters;
 	private final DocumentFilterList filters;
@@ -109,7 +122,6 @@ public final class ViewResult
 			@NonNull final DocumentQueryOrderByList orderBys,
 			@Nullable final List<DocumentId> rowIds,
 			@Nullable final List<? extends IViewRow> rows,
-			@Nullable final EmptyReason emptyReason,
 			@Nullable final List<ViewResultColumn> columnInfos)
 	{
 		this.viewId = view.getViewId();
@@ -120,7 +132,6 @@ public final class ViewResult
 		this.size = view.size();
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
-		this.emptyReason = emptyReason;
 
 		stickyFilters = view.getStickyFilters();
 		filters = view.getFilters();
@@ -140,9 +151,7 @@ public final class ViewResult
 				: ImmutableMap.of();
 	}
 
-	/**
-	 * View (WITHOUT loaded page) constructor
-	 */
+	/** View (WITHOUT loaded page) constructor */
 	private ViewResult(final IView view)
 	{
 		this.viewId = view.getViewId();
@@ -153,7 +162,6 @@ public final class ViewResult
 		this.size = view.size();
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
-		this.emptyReason = view.getEmptyReason();
 
 		stickyFilters = view.getStickyFilters();
 		filters = view.getFilters();
@@ -203,7 +211,6 @@ public final class ViewResult
 		return parentViewId;
 	}
 
-	@Nullable
 	public String getViewDescription(final String adLanguage)
 	{
 		if (viewDescription == null)
@@ -211,7 +218,7 @@ public final class ViewResult
 			return null;
 		}
 		final String viewDescriptionStr = viewDescription.translate(adLanguage);
-		return !Check.isBlank(viewDescriptionStr) ? viewDescriptionStr : null;
+		return !Check.isEmpty(viewDescriptionStr, true) ? viewDescriptionStr : null;
 	}
 
 	public ViewHeaderProperties getHeaderProperties()

@@ -59,7 +59,7 @@ final class ParentChildModelCacheInvalidateRequestFactory implements ModelCacheI
 	@Override
 	public List<CacheInvalidateRequest> createRequestsFromModel(
 			final ICacheSourceModel model,
-			final ModelCacheInvalidationTiming timing_NOTUSED)
+			final ModelCacheInvalidationTiming timing)
 	{
 		final int rootRecordId = model.getValueAsInt(childLinkColumnName, -1);
 		if (rootRecordId < 0)

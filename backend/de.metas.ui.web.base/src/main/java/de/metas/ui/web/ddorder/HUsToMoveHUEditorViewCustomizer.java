@@ -22,7 +22,7 @@
 
 package de.metas.ui.web.ddorder;
 
-import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine;
+import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewCustomizer;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform;

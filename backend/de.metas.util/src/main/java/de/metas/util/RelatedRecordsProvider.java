@@ -2,7 +2,7 @@ package de.metas.util;
 
 import java.util.List;
 
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import lombok.NonNull;

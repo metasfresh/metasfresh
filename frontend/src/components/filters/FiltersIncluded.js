@@ -38,9 +38,9 @@ class FiltersIncluded extends PureComponent {
    * @method toggleDropdown
    * @summary Toggles the dropdown. Executed when you click on a filter header and the dropdown should show up
    *          This also updates the openFilterId content after it does some checks
-   * @param {boolean} isOpenDropdown
+   * @param {boolean} value
    */
-  toggleDropdown = (isOpenDropdown) => {
+  toggleDropdown = (value) => {
     const { active, data, dropdownToggled } = this.props;
     const toCheckAgainst = data.map((item) => item.filterId);
     let openFilterIdValue = null;
@@ -53,21 +53,13 @@ class FiltersIncluded extends PureComponent {
         foundInActive.length && active ? active[0].filterId : null;
     }
 
-    // If we are asked to open the dropdown and there is no filter found to be opened and if we have only one filter,
-    // then open it
-    if (isOpenDropdown && !openFilterIdValue) {
-      if (data && data.length === 1 && data[0].filterId) {
-        openFilterIdValue = data[0].filterId;
-      }
-    }
-
     // when hiding the dropdown invalidate the filter fields in the store
-    if (!isOpenDropdown) {
+    if (!value) {
       dropdownToggled();
     }
 
     this.setState({
-      isOpenDropdown,
+      isOpenDropdown: value,
       openFilterId: openFilterIdValue,
     });
   };
@@ -108,11 +100,7 @@ class FiltersIncluded extends PureComponent {
         activeFiltersCaptions[activeFilter.filterId]) ||
       [];
     let panelCaption = activeFilter.isActive ? activeFilter.caption : '';
-    let buttonCaption = activeFilter.isActive
-      ? activeFilter.caption
-      : counterpart.translate('window.filters.noActiveFilter.caption', {
-          fallback: 'Filter',
-        });
+    let buttonCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
 
     if (captions.length) {
       buttonCaption = captions[0];
@@ -122,7 +110,7 @@ class FiltersIncluded extends PureComponent {
     return (
       <div className="filter-wrapper filters-not-frequent">
         <button
-          onClick={() => this.toggleDropdown(!isOpenDropdown)}
+          onClick={() => this.toggleDropdown(true)}
           className={classnames(
             'btn btn-filter btn-meta-outline-secondary toggle-filters',
             'btn-distance btn-sm',
@@ -152,9 +140,7 @@ class FiltersIncluded extends PureComponent {
               )}: ${buttonCaption}`
             )
           ) : (
-            `${counterpart.translate('window.filters.noActiveFilter.caption', {
-              fallback: 'Filter',
-            })}`
+            'Filter'
           )}
         </button>
 

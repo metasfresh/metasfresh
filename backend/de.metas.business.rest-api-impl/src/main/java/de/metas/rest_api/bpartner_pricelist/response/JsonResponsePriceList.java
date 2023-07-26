@@ -42,7 +42,7 @@ public class JsonResponsePriceList
 {
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
-	List<JsonResponsePrice> prices;
+	private List<JsonResponsePrice> prices;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular

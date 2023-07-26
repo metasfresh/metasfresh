@@ -1,11 +1,8 @@
 package de.metas.dunning.printing.spi.impl;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.bpartner.service.IBPartnerDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
 import de.metas.document.archive.model.I_AD_Archive;
@@ -45,22 +42,7 @@ public class DunningPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_DunningDoc.class))
 		{
 			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Mahnung);
-
-			final I_C_DunningDoc dunningDoc = InterfaceWrapperHelper.create(archiveRerencedModel, I_C_DunningDoc.class);
-			handleDunnings(queueItem, dunningDoc);
 		}
-	}
-
-	private void handleDunnings(final I_C_Printing_Queue queueItem, final I_C_DunningDoc dunningDoc)
-	{
-		queueItem.setBill_BPartner_ID(dunningDoc.getC_BPartner_ID());
-		queueItem.setBill_Location_ID(dunningDoc.getC_BPartner_Location_ID());
-		queueItem.setC_BPartner_ID(dunningDoc.getC_BPartner_ID());
-		queueItem.setC_BPartner_Location_ID(dunningDoc.getC_BPartner_Location_ID());
-
-		logger.debug(
-				"Setting columns of C_Printing_Queue {} from C_Invoice {}: [Bill_BPartner_ID={}, Bill_Location_ID={}, C_BPartner_ID={}, C_BPartner_Location_ID={}, Copies={}]",
-				queueItem, dunningDoc, dunningDoc.getC_BPartner_ID(), dunningDoc.getC_BPartner_Location_ID(), dunningDoc.getC_BPartner_ID(), dunningDoc.getC_BPartner_Location_ID(), queueItem.getCopies());
 	}
 
 	@Override

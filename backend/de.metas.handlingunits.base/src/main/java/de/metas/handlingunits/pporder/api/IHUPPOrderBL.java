@@ -1,23 +1,20 @@
 package de.metas.handlingunits.pporder.api;
 
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Provides specific business logic for interconnection between manufacturing order and handling units module.
@@ -75,10 +72,4 @@ public interface IHUPPOrderBL extends ISingletonService
 	void addAssignedHandlingUnits(I_PP_Order_BOMLine ppOrderBOMLine, Collection<I_M_HU> hus);
 
 	void closeOrder(PPOrderId ppOrderId);
-
-	Stream<I_PP_Order> streamManufacturingOrders(ManufacturingOrderQuery query);
-
-	void save(org.eevolution.model.I_PP_Order ppOrder);
-
-	List<HuId> retrieveAvailableToIssue(I_PP_Order_BOMLine ppOrderBomLine);
 }

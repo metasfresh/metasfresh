@@ -17,6 +17,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -24,8 +25,8 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_AttachmentEntry;
@@ -121,8 +122,9 @@ final class DocumentAttachments
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void addEntry(@NonNull final MultipartFile file) throws IOException
+	public void addEntry(final MultipartFile file) throws IOException
 	{
+		Check.assumeNotNull(file, "Parameter file is not null");
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 

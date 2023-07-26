@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import de.metas.document.dimension.Dimension;
-import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import org.mockito.Mockito;
@@ -70,7 +69,6 @@ public class RepositoryTestHelper
 				.activityId(ActivityId.ofRepoIdOrNull(-1))
 				.campaignId(0)
 				.projectId(ProjectId.ofRepoIdOrNull(-1))
-				.productId(ProductId.ofRepoIdOrNull(-1))
 				.userElement1Id(0)
 				.userElement2Id(0)
 				.userElementString1(null)

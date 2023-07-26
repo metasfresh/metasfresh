@@ -34,7 +34,6 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
-import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -105,32 +104,24 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	{
 		final I_PP_Product_Planning productPlanning = Services.get(IProductPlanningDAO.class)
 				.find(ProductPlanningQuery.builder()
-							  .orgId(orgId)
-							  .productId(productId)
-							  .includeWithNullProductId(false)
-							  .build())
+						.orgId(orgId)
+						.productId(productId)
+						.build())
 				.orElse(null);
 
-		ProductBOMVersionsId bomVersionsId = null;
+		ProductBOMId productBOMId = null;
 		if (productPlanning != null)
 		{
-			bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanning.getPP_Product_BOMVersions_ID());
+			productBOMId = ProductBOMId.ofRepoIdOrNull(productPlanning.getPP_Product_BOM_ID());
 		}
 		else
 		{
 			createNotice(productId, "@NotFound@ @PP_Product_Planning_ID@");
 		}
-
-		ProductBOMId productBOMId;
-		if (bomVersionsId != null)
-		{
-			productBOMId = productBOMsRepo.getLatestBOMByVersion(bomVersionsId).orElse(null);
-		}
-		else
+		if (productBOMId == null)
 		{
 			productBOMId = productBOMsRepo.getDefaultBOMIdByProductId(productId).orElse(null);
 		}
-
 		if (productBOMId == null)
 		{
 			createNotice(productId, "@NotFound@ @PP_Product_BOM_ID@");

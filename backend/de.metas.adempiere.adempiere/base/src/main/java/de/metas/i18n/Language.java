@@ -1,24 +1,6 @@
 package de.metas.i18n;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSize;
-import java.awt.*;
+import java.awt.ComponentOrientation;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormatSymbols;
@@ -30,6 +12,26 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -328,8 +330,9 @@ public final class Language implements Serializable
 	 *
 	 * @param baseADLanguageSupplier base language supplier
 	 */
-	public static void setBaseLanguage(@NonNull final Supplier<String> baseADLanguageSupplier)
+	public static void setBaseLanguage(final Supplier<String> baseADLanguageSupplier)
 	{
+		Check.assumeNotNull(baseADLanguageSupplier, "baseADLanguageSupplier not null");
 		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(() -> {
 			final String baseADLanguage = baseADLanguageSupplier.get();
 			final Language language = getLanguage(baseADLanguage);
@@ -586,19 +589,6 @@ public final class Language implements Serializable
 
 	private final MediaSize _mediaSize;
 
-	//
-	// Because it seems like "DateFormat.getDateInstance" returns slightly different formats from OS to OS,
-	// we need a way in unit tests to have a fixed format
-	private static final String JUNIT_FIXED_DATETIME_FORMAT = "dd.MM.yyyy, HH:mm:ss";
-	private static final String JUNIT_FIXED_DATE_FORMAT = "dd.MM.yyyy";
-	private static final String JUNIT_FIXED_TIME_FORMAT = "HH:mm:ss";
-	private static boolean useJUnitFixedFormats = false;
-	public static void setUseJUnitFixedFormats(boolean useJUnitFixedFormats)
-	{
-		Language.useJUnitFixedFormats = useJUnitFixedFormats;
-	}
-
-
 	/**
 	 * Get Language Name.
 	 * e.g. English
@@ -741,12 +731,6 @@ public final class Language implements Serializable
 	 */
 	public SimpleDateFormat getDateFormat()
 	{
-		if(Adempiere.isUnitTestMode() && useJUnitFixedFormats)
-		{
-			log.warn("Using fixed date format: {}", JUNIT_FIXED_DATE_FORMAT);
-			return new SimpleDateFormat(JUNIT_FIXED_DATE_FORMAT);
-		}
-
 		if (_dateFormatThreadLocal == null)
 		{
 			_dateFormatThreadLocal = new ThreadLocal<>();
@@ -775,16 +759,11 @@ public final class Language implements Serializable
 	 */
 	public SimpleDateFormat getDateTimeFormat()
 	{
-		if(Adempiere.isUnitTestMode() && useJUnitFixedFormats)
-		{
-			log.warn("Using fixed datetime format: {}", JUNIT_FIXED_DATETIME_FORMAT);
-			return new SimpleDateFormat(JUNIT_FIXED_DATETIME_FORMAT);
-		}
-
-		return (SimpleDateFormat)DateFormat.getDateTimeInstance(
+		SimpleDateFormat retValue = (SimpleDateFormat)DateFormat.getDateTimeInstance(
 				DateFormat.MEDIUM,  // dateStyle
 				getTimeStyle(),  // timeStyle
 				m_locale);
+		return retValue;
 	}	// getDateTimeFormat
 
 	/**
@@ -795,12 +774,6 @@ public final class Language implements Serializable
 	 */
 	public SimpleDateFormat getTimeFormat()
 	{
-		if(Adempiere.isUnitTestMode() && useJUnitFixedFormats)
-		{
-			log.warn("Using fixed time format: {}", JUNIT_FIXED_TIME_FORMAT);
-			return new SimpleDateFormat(JUNIT_FIXED_TIME_FORMAT);
-		}
-
 		return (SimpleDateFormat)DateFormat.getTimeInstance(
 				getTimeStyle(),  // dateStyle
 				m_locale // timeStyle

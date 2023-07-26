@@ -1,33 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
-import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
-import de.metas.handlingunits.expectations.HUsExpectation;
-import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.inout.IInOutDAO;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Package;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.w3c.dom.Node;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -55,6 +27,35 @@ import static org.junit.Assert.assertThat;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import de.metas.organization.ClientAndOrgId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Package;
+import org.compiere.util.Env;
+import org.junit.Assert;
+import org.w3c.dom.Node;
+
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
+import de.metas.handlingunits.expectations.HUsExpectation;
+import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.inout.IInOutDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+
 /**
  * Test case:
  * <ul>
@@ -66,12 +67,6 @@ import static org.junit.Assert.assertThat;
  */
 public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest extends AbstractHUShipmentProcessIntegrationTest
 {
-	@Override
-	public void test()
-	{
-		//todo: temporary skipped test
-	}
-
 	@Override
 	protected void step10_createShipmentSchedules()
 	{

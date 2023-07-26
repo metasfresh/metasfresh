@@ -22,30 +22,21 @@
 
 package de.metas.common.util;
 
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
 import lombok.NonNull;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public final class StringUtils
 {
-	public static final String REGEXP_STREET_AND_NUMBER_SPLIT = "^([^0-9]+) ?([0-9]+.*$)?";
-
 	private StringUtils()
 	{
 	}
@@ -75,12 +66,6 @@ public final class StringUtils
 		}
 
 		return strTrim;
-	}
-
-	@NonNull
-	public static String removeWhitespaces(@NonNull final String str)
-	{
-		return str.replaceAll("\\s+", "");
 	}
 
 	/**
@@ -326,30 +311,6 @@ public final class StringUtils
 		return messageFormated;
 	}
 
-	@Nullable
-	public static String maskString(@Nullable final String sensitiveString)
-	{
-		if (Check.isBlank(sensitiveString))
-		{
-			return sensitiveString;
-		}
-
-		final int length = sensitiveString.length();
-
-		if (length >= 8)
-		{
-			return sensitiveString.substring(0, 4) + sensitiveString.substring(4, length).replaceAll(".", "*");
-		}
-		else if (length >= 4)
-		{
-			return sensitiveString.charAt(0) + sensitiveString.substring(1, length).replaceAll(".", "*");
-		}
-		else
-		{
-			return sensitiveString.replaceAll(".", "*");
-		}
-	}
-
 	@SafeVarargs
 	@Nullable
 	private static Object[] invokeSuppliers(final Object... params)
@@ -500,57 +461,9 @@ public final class StringUtils
 	 * @param in input {@link String}
 	 * @return {@param in} if != null, empty string otherwise
 	 */
-	@NonNull
+	@Nullable
 	public static String nullToEmpty(@Nullable final String in)
 	{
 		return in != null ? in : "";
-	}
-
-	@Nullable
-	public static String createHash(@Nullable final String str, @Nullable final String algorithm) throws NoSuchAlgorithmException
-	{
-		if (str == null || str.isEmpty())
-		{
-			return null;
-		}
-
-		final String algorithmToUse = algorithm != null ? algorithm : "SHA-512";
-
-		final MessageDigest md = MessageDigest.getInstance(algorithmToUse);
-
-		// Update MessageDigest with input text in bytes
-		md.update(str.getBytes(StandardCharsets.UTF_8));
-
-		// Get the hashbytes
-		final byte[] hashBytes = md.digest();
-
-		//Convert hash bytes to hex format
-		final StringBuilder sb = new StringBuilder();
-
-		for (final byte b : hashBytes)
-		{
-			sb.append(String.format("%02x", b));
-		}
-
-		return sb.toString();
-	}
-
-	@Nullable
-	public static IPair<String, String> splitStreetAndHouseNumberOrNull(@Nullable final String streetAndNumber)
-	{
-		if (EmptyUtil.isBlank(streetAndNumber))
-		{
-			return null;
-		}
-		final Pattern pattern = Pattern.compile(StringUtils.REGEXP_STREET_AND_NUMBER_SPLIT);
-		final Matcher matcher = pattern.matcher(streetAndNumber);
-		if (!matcher.matches())
-		{
-			return null;
-		}
-
-		final String street = matcher.group(1);
-		final String number = matcher.group(2);
-		return ImmutablePair.of(trim(street), trim(number));
 	}
 }

@@ -1,6 +1,28 @@
 package de.metas.impexp.product;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.ModelValidationEngine;
+
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
@@ -14,28 +36,10 @@ import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.ModelValidationEngine;
-
-import javax.annotation.Nullable;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
 
 public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pharma_Product>
 {
-	private static final String DEACTIVATE_OPERATION_CODE = "2";
+	private final String DEACTIVATE_OPERATION_CODE = "2";
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
@@ -63,7 +67,7 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 	}
 
 	@Override
-	protected I_I_Pharma_Product retrieveImportRecord(final Properties ctx, final ResultSet rs)
+	protected I_I_Pharma_Product retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_Pharma_Product(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -78,7 +82,6 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 		.ctx(getCtx())
 		.tableName(getImportTableName())
 		.valueName(I_I_Pharma_Product.COLUMNNAME_A00PZN)
-		.build()
 		.updateIPharmaProduct();
 	}
 
@@ -148,7 +151,8 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 			productPriceCloning.cloneProductPrice();
 		});
 
-		MProductImportTableSqlUpdater.dbUpdateIsPriceCopiedToYes(I_I_Pharma_Product.Table_Name, I_I_Pharma_Product.COLUMNNAME_IsPriceCopied);
+		final String whereClause = I_I_Pharma_Product.COLUMNNAME_IsPriceCopied + " = 'N' ";
+		MProductImportTableSqlUpdater.dbUpdateIsPriceCopiedToYes(whereClause, I_I_Pharma_Product.COLUMNNAME_IsPriceCopied);
 	}
 
 	private List<I_M_PriceList_Version> retrieveLatestPriceListVersion()
@@ -169,6 +173,7 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 
 	/**
 	 * create a set of price lists from the records which don't have the price copies <code>I_I_Pharma_Product.COLUMNNAME_IsPriceCopied</code> on 'N'
+	 * @return
 	 */
 	private Set<PriceListId> retrievePriceLists()
 	{
@@ -193,7 +198,7 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.listDistinct(I_M_PriceList.COLUMNNAME_M_PriceList_ID)
 				.stream()
-				.map(this::extractPriceListIdorNull)
+				.map(map -> extractPriceListIdorNull(map))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}

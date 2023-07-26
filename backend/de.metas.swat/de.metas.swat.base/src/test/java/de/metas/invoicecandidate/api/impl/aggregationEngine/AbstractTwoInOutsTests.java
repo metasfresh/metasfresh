@@ -22,20 +22,20 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.material.MovementType;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 
 /**
  * Test case:
@@ -44,11 +44,12 @@ import static org.junit.Assert.assertThat;
  * <li>two shipments, the first one with one line, the second one with two lines..each line has the same product etc
  * <li>both iols belong to the same order line and thus are associated to the same invoice candidate
  * </ul>
- * <p>
+ *
  * => Expectation: see subclasses
  * <p>
  *
  * @author ts
+ *
  */
 public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngineTests
 {
@@ -67,8 +68,6 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 
 	abstract protected boolean config_IsSOTrx();
 
-	private MovementType config_MovementType() {return config_IsSOTrx() ? MovementType.CustomerShipment : MovementType.VendorReceipts;}
-
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
@@ -84,7 +83,7 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 		{
 			final String inOutDocumentNo = "1";
 			final StockQtyAndUOMQty qtysDelivered_1_32 = StockQtyAndUOMQtys.create(partialQty1_32, productId, new BigDecimal("320"), uomId);
-			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo, config_MovementType()); // DocumentNo
+			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
 			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_1_32, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut1);
 		}
@@ -93,7 +92,7 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 			final String inOutDocumentNo = "2";
 			final StockQtyAndUOMQty qtysDelivered_2_8 = StockQtyAndUOMQtys.create(partialQty2_8, productId, new BigDecimal("80"), uomId);
 			final StockQtyAndUOMQty qtysDelivered_3_4 = StockQtyAndUOMQtys.create(partialQty3_4, productId, new BigDecimal("40"), uomId);
-			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo, config_MovementType()); // DocumentNo
+			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
 			iol21 = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_2_8, inOutDocumentNo + "_1"); // inOutLineDescription
 			iol22 = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_3_4, inOutDocumentNo + "_2"); // inOutLineDescription
 			completeInOut(inOut2);

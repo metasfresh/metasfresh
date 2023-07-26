@@ -1,18 +1,19 @@
 package de.metas.costing;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.organization.OrgId;
-import de.metas.util.GuavaCollectors;
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.compiere.model.X_C_AcctSchema;
 
-import javax.annotation.Nullable;
-import java.util.NoSuchElementException;
-import java.util.stream.Stream;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.organization.OrgId;
+import de.metas.util.GuavaCollectors;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,27 +39,29 @@ import java.util.stream.Stream;
 
 public enum CostingLevel
 {
-	Client(X_C_AcctSchema.COSTINGLEVEL_Client),
-	Organization(X_C_AcctSchema.COSTINGLEVEL_Organization),
+	Client(X_C_AcctSchema.COSTINGLEVEL_Client), //
+	Organization(X_C_AcctSchema.COSTINGLEVEL_Organization), //
 	BatchLot(X_C_AcctSchema.COSTINGLEVEL_BatchLot);
 
 	@Getter
 	private final String code;
-
-	private static final ImmutableMap<String, CostingLevel> code2type = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(CostingLevel::getCode));
 
 	CostingLevel(final String code)
 	{
 		this.code = code;
 	}
 
-	public static CostingLevel ofNullableCode(@Nullable final String code)
+	public static CostingLevel forNullableCode(final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		if (code == null)
+		{
+			return null;
+		}
+
+		return forCode(code);
 	}
 
-	public static CostingLevel ofCode(@NonNull final String code)
+	public static CostingLevel forCode(final String code)
 	{
 		final CostingLevel type = code2type.get(code);
 		if (type == null)
@@ -67,6 +70,9 @@ public enum CostingLevel
 		}
 		return type;
 	}
+
+	private static final ImmutableMap<String, CostingLevel> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(CostingLevel::getCode));
 
 	public ClientId effectiveValue(@NonNull final ClientId clientId)
 	{
@@ -87,7 +93,7 @@ public enum CostingLevel
 		return effectiveValueOr(orgId, null);
 	}
 
-	private OrgId effectiveValueOr(@NonNull final OrgId orgId, @Nullable final OrgId nullValue)
+	private OrgId effectiveValueOr(@NonNull final OrgId orgId, final OrgId nullValue)
 	{
 		if (this == Client)
 		{
@@ -121,7 +127,7 @@ public enum CostingLevel
 		return effectiveValueOr(asiId, null);
 	}
 
-	private AttributeSetInstanceId effectiveValueOr(@NonNull final AttributeSetInstanceId asiId, @Nullable final AttributeSetInstanceId nullValue)
+	private AttributeSetInstanceId effectiveValueOr(@NonNull final AttributeSetInstanceId asiId, final AttributeSetInstanceId nullValue)
 	{
 		if (this == Client)
 		{

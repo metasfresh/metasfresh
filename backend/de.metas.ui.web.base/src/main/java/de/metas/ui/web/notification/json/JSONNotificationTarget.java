@@ -1,19 +1,21 @@
 package de.metas.ui.web.notification.json;
 
+import java.io.Serializable;
+
+import org.slf4j.Logger;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.logging.LogManager;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationTargetType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.slf4j.Logger;
-
-import java.io.Serializable;
 
 /*
  * #%L
@@ -37,14 +39,16 @@ import java.io.Serializable;
  * #L%
  */
 
+@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JSONNotificationTarget implements Serializable
 {
 	/**
+	 * @param notification
 	 * @return JSON target or <code>null</code>
 	 */
-	static JSONNotificationTarget of(final UserNotification notification)
+	static final JSONNotificationTarget of(final UserNotification notification)
 	{
 		final UserNotificationTargetType targetType = notification.getTargetType();
 		switch (targetType)
@@ -52,13 +56,13 @@ public class JSONNotificationTarget implements Serializable
 			case Window:
 				return JSONNotificationTarget.builder()
 						.targetType(UserNotificationTargetType.Window)
-						.windowId(notification.getTargetWindowIdAsString())
+						.windowId(notification.getTargetDocumentType())
 						.documentId(notification.getTargetDocumentId())
 						.build();
 			case View:
 				return JSONNotificationTarget.builder()
 						.targetType(UserNotificationTargetType.View)
-						.windowId(notification.getTargetWindowIdAsString())
+						.windowId(notification.getTargetDocumentType())
 						.viewId(notification.getTargetViewId())
 						.build();
 			case None:
@@ -73,28 +77,28 @@ public class JSONNotificationTarget implements Serializable
 	private static final Logger logger = LogManager.getLogger(JSONNotificationTarget.class);
 
 	@JsonProperty("targetType")
-	UserNotificationTargetType targetType;
+	private final UserNotificationTargetType targetType;
 
 	//
 	// Target: Window/Document
 	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	String windowId;
+	private String windowId;
 	//
 	@JsonProperty("documentType")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
 	@Deprecated
-	String documentType;
+	private String documentType;
 	//
 	@JsonProperty("documentId")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	String documentId;
+	private String documentId;
 
 	//
 	// Target: View
 	@JsonProperty("viewId")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	String viewId;
+	private String viewId;
 
 	@Builder
 	@JsonCreator

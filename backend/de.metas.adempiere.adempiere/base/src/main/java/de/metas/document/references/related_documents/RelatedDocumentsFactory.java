@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RelatedDocumentsFactory
@@ -130,7 +129,7 @@ public class RelatedDocumentsFactory
 	 * <p>
 	 * NOTE: Records count is not checked
 	 */
-	public Optional<RelatedDocuments> retrieveRelatedDocuments(
+	public RelatedDocuments retrieveRelatedDocuments(
 			@NonNull final IZoomSource fromDocument,
 			@NonNull final AdWindowId targetWindowId,
 			@Nullable final RelatedDocumentsId relatedDocumentsId,
@@ -148,6 +147,7 @@ public class RelatedDocumentsFactory
 				.stream()
 				.filter(candidatesGroup -> relatedDocumentsId == null || candidatesGroup.isMatching(relatedDocumentsId))
 				.flatMap(candidatesGroup -> candidatesGroup.evaluateAndStream(context))
-				.findFirst();
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No related documents found for source=" + fromDocument + ", targetWindowId=" + targetWindowId));
 	}
 }

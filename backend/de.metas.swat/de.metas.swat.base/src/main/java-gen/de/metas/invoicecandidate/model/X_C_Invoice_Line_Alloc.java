@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Line_Alloc
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C_Invoice_Line_Alloc, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1893886973L;
+	private static final long serialVersionUID = -430439243L;
 
     /** Standard Constructor */
     public X_C_Invoice_Line_Alloc (final Properties ctx, final int C_Invoice_Line_Alloc_ID, @Nullable final String trxName)
@@ -102,31 +102,6 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	public int getC_Invoice_Line_Alloc_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Line_Alloc_ID);
-	}
-
-	/** 
-	 * C_Invoice_Line_Alloc_Type AD_Reference_ID=541501
-	 * Reference name: C_Invoice_Line_Alloc_Type
-	 */
-	public static final int C_INVOICE_LINE_ALLOC_TYPE_AD_Reference_ID=541501;
-	/** CreatedFromIC = CreatedFromIC */
-	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreatedFromIC = "CreatedFromIC";
-	/** CreditMemoReinvoicable = CreditMemoReinvoiceable */
-	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreditMemoReinvoicable = "CreditMemoReinvoiceable";
-	/** CreditMemoNotReinvoicable = CreditMemoNotReinvoiceable */
-	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreditMemoNotReinvoicable = "CreditMemoNotReinvoiceable";
-	/** InvoiceVoided = InvoiceVoided */
-	public static final String C_INVOICE_LINE_ALLOC_TYPE_InvoiceVoided = "InvoiceVoided";
-	@Override
-	public void setC_Invoice_Line_Alloc_Type (final @Nullable java.lang.String C_Invoice_Line_Alloc_Type)
-	{
-		set_Value (COLUMNNAME_C_Invoice_Line_Alloc_Type, C_Invoice_Line_Alloc_Type);
-	}
-
-	@Override
-	public java.lang.String getC_Invoice_Line_Alloc_Type() 
-	{
-		return get_ValueAsString(COLUMNNAME_C_Invoice_Line_Alloc_Type);
 	}
 
 	@Override

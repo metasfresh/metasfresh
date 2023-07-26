@@ -32,12 +32,10 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
@@ -107,14 +105,13 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final IViewsRepository viewsRepo,
 			@NonNull final DocumentCollection documentsCollection,
-			@NonNull final ADProcessService adProcessService,
-			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
+			@NonNull final ADProcessService adProcessService)
 	{
 		this.userSession = userSession;
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.viewsRepo = viewsRepo;
 		this.documentsCollection = documentsCollection;
-		this.processDescriptorFactory = new ADProcessDescriptorsFactory(adProcessService, lookupDescriptorProviders);
+		this.processDescriptorFactory = new ADProcessDescriptorsFactory(adProcessService);
 	}
 
 	@Override
@@ -186,7 +183,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 							parameter.getColumnName(),
 							value,
 							() -> "default parameter value",
-							DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE
+							true // ignoreReadonlyFlag
 					))
 					.updateDefaultValue(parametersDoc.getFieldViews(), field -> DocumentFieldAsProcessDefaultParameter.of(windowNo, field));
 
@@ -469,11 +466,5 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				return result;
 			}
 		}
-	}
-
-
-	public void addProcessParameters(final ProcessId processId, final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
-	{
-		processDescriptorFactory.addProcessParameters(processId, parametersDescriptorBuilder);
 	}
 }

@@ -22,16 +22,19 @@ package de.metas.security.permissions;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
+import java.io.Serializable;
+import java.util.Set;
+
+import javax.annotation.concurrent.Immutable;
+
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
-import javax.annotation.concurrent.Immutable;
-import java.io.Serializable;
-import java.util.Set;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 
 /**
  * Organization permissions.
@@ -39,7 +42,7 @@ import java.util.Set;
 @Immutable
 public final class OrgPermission extends AbstractPermission implements Serializable
 {
-	public static OrgPermission ofResourceAndReadOnly(final OrgResource resource, final boolean readOnly)
+	public static final OrgPermission ofResourceAndReadOnly(final OrgResource resource, final boolean readOnly)
 	{
 		final ImmutableSet.Builder<Access> accesses = ImmutableSet.builder();
 
@@ -53,7 +56,7 @@ public final class OrgPermission extends AbstractPermission implements Serializa
 		}
 
 		// LOGIN access:
-		if (!resource.isGroupingOrg())
+		if (!resource.isSummaryOrganization())
 		{
 			accesses.add(Access.LOGIN);
 		}
@@ -108,8 +111,11 @@ public final class OrgPermission extends AbstractPermission implements Serializa
 	@Override
 	public String toString()
 	{
-		return resource + ", " + accesses;
-	}
+		final StringBuilder sb = new StringBuilder();
+		sb.append(resource);
+		sb.append(", ").append(accesses);
+		return sb.toString();
+	}	// toString
 
 	@Override
 	public boolean hasAccess(Access access)
@@ -158,6 +164,7 @@ public final class OrgPermission extends AbstractPermission implements Serializa
 	/**
 	 * Creates a copy of this permission but it will use the given resource.
 	 * 
+	 * @param resource
 	 * @return copy of this permission but having the given resource
 	 */
 	public OrgPermission copyWithResource(final OrgResource resource)

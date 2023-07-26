@@ -22,7 +22,8 @@
 
 package de.metas.common.product.v2.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -32,104 +33,86 @@ import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.B
 @Getter
 @ToString
 @EqualsAndHashCode
-@Schema(description = "Contains an external id and the actual bpartner-product-item to insert or update. ")
+@ApiModel(description = "Contains an external id and the actual bpartner-product-item to insert or update. ")
 public class JsonRequestBPartnerProductUpsert
 {
-	@Schema(required = true, description = BPARTNER_IDENTIFIER_DOC)
+	@ApiModelProperty(position = 10, required = true, value = BPARTNER_IDENTIFIER_DOC)
 	private String bpartnerIdentifier;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean bpartnerSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.isActive")
+	@ApiModelProperty(position = 20, value = "Corresponding to I_C_BPartner_Product.isActive", allowEmptyValue = true)
 	private Boolean active;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.seqNo")
+	@ApiModelProperty(position = 30, value = "Corresponding to I_C_BPartner_Product.seqNo", allowEmptyValue = true)
 	private Integer seqNo;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean seqNoSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.productNo")
+	@ApiModelProperty(position = 40, value = "Corresponding to I_C_BPartner_Product.productNo", allowEmptyValue = true)
 	private String productNo;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean productNoSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.Description")
+	@ApiModelProperty(position = 50, value = "Corresponding to I_C_BPartner_Product.Description", allowEmptyValue = true)
 	private String description;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean descriptionSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.EAN_CU")
+	@ApiModelProperty(position = 60, value = "Corresponding to I_C_BPartner_Product.EAN_CU", allowEmptyValue = true)
 	private String cuEAN;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean cuEANSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.GTIN")
+	@ApiModelProperty(position = 70, value = "Corresponding to I_C_BPartner_Product.GTIN", allowEmptyValue = true)
 	private String gtin;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean gtinSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.customerLabelName")
+	@ApiModelProperty(position = 80, value = "Corresponding to I_C_BPartner_Product.customerLabelName", allowEmptyValue = true)
 	private String customerLabelName;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean customerLabelNameSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.ingredients")
+	@ApiModelProperty(position = 90, value = "Corresponding to I_C_BPartner_Product.ingredients", allowEmptyValue = true)
 	private String ingredients;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean ingredientsSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.isCurrentVendor")
+	@ApiModelProperty(position = 100, value = "Corresponding to I_C_BPartner_Product.isCurrentVendor", allowEmptyValue = true)
 	private Boolean currentVendor;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean currentVendorSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.isExcludedFromSales")
+	@ApiModelProperty(position = 110, value = "Corresponding to I_C_BPartner_Product.isExcludedFromSales", allowEmptyValue = true)
 	private Boolean excludedFromSales;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean excludedFromSalesSet;
 
-	@Schema(description = "Corresponding to I_C_BPartner_Product.ExclusionFromSaleReason")
+	@ApiModelProperty(position = 120, value = "Corresponding to I_C_BPartner_Product.ExclusionFromSaleReason", allowEmptyValue = true)
 	private String exclusionFromSalesReason;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean exclusionFromSalesReasonSet;
 
-	@Schema(description = "")
+	@ApiModelProperty(position = 130, value = "", allowEmptyValue = true)
 	private Boolean dropShip;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean dropShipSet;
-
-	@Schema(description = "Corresponding to I_C_BPartner_Product.UsedForVendor")
-	private Boolean usedForVendor;
-
-	@Schema(hidden = true)
-	private boolean usedForVendorSet;
-
-	@Schema(description = "Corresponding to I_C_BPartner_Product.isExcludedFromPurchase")
-	private Boolean excludedFromPurchase;
-
-	@Schema(hidden = true)
-	private boolean excludedFromPurchaseSet;
-
-	@Schema(description = "Corresponding to I_C_BPartner_Product.ExclusionFromPurchaseReason")
-	private String exclusionFromPurchaseReason;
-
-	@Schema(hidden = true)
-	private boolean exclusionFromPurchaseReasonSet;
 
 	public void setBpartnerIdentifier(final String bpartnerIdentifier)
 	{
@@ -212,23 +195,5 @@ public class JsonRequestBPartnerProductUpsert
 	{
 		this.dropShip = dropShip;
 		dropShipSet = true;
-	}
-
-	public void setUsedForVendor(final Boolean usedForVendor)
-	{
-		this.usedForVendor = usedForVendor;
-		usedForVendorSet = true;
-	}
-
-	public void setExcludedFromPurchase(final Boolean excludedFromPurchase)
-	{
-		this.excludedFromPurchase = excludedFromPurchase;
-		excludedFromPurchaseSet = true;
-	}
-
-	public void setExclusionFromPurchaseReason(final String exclusionFromPurchaseReason)
-	{
-		this.exclusionFromPurchaseReason = exclusionFromPurchaseReason;
-		exclusionFromPurchaseReasonSet = true;
 	}
 }

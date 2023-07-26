@@ -10,33 +10,35 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+
+import java.util.Date;
+import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+import org.compiere.util.TimeUtil;
+
 import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.util.Check;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.compiere.util.TimeUtil;
-
-import javax.annotation.Nullable;
-import java.util.Date;
-import java.util.Properties;
 
 /**
  * Dunning context
- *
+ * 
  * @author tsa
+ * 
  */
 public class DunningContext extends AbstractDunningContext
 {
@@ -44,21 +46,11 @@ public class DunningContext extends AbstractDunningContext
 	private final Properties ctx;
 	private final Date dunningDate;
 	private final I_C_DunningLevel dunningLevel;
-
+	
 	private final String trxName;
 	private final ITrxRunConfig trxRunnerConfig;
-
-	@Nullable
-	private final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery;
-
-	public DunningContext(
-			final Properties ctx,
-			final IDunningConfig config,
-			final I_C_DunningLevel dunningLevel,
-			final Date dunningDate,
-			final ITrxRunConfig trxRunnerConfig,
-			final String trxName,
-			@Nullable final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery)
+	
+	public DunningContext(final Properties ctx, final IDunningConfig config, final I_C_DunningLevel dunningLevel, final Date dunningDate, final ITrxRunConfig trxRunnerConfig, final String trxName)
 	{
 		super();
 
@@ -71,7 +63,6 @@ public class DunningContext extends AbstractDunningContext
 		this.dunningDate = dunningDate == null ? null : TimeUtil.trunc(dunningDate, TimeUtil.TRUNC_DAY);
 		this.trxName = trxName;
 		this.trxRunnerConfig = trxRunnerConfig;
-		this.recomputeDunningCandidatesQuery = recomputeDunningCandidatesQuery;
 	}
 
 	public DunningContext(final IDunningContext context, final String trxName)
@@ -84,7 +75,6 @@ public class DunningContext extends AbstractDunningContext
 		this.dunningDate = context.getDunningDate();
 		this.trxName = trxName;
 		this.trxRunnerConfig = context.getTrxRunnerConfig();
-		this.recomputeDunningCandidatesQuery = context.getRecomputeDunningCandidatesQuery();
 	}
 
 	@Override
@@ -96,7 +86,6 @@ public class DunningContext extends AbstractDunningContext
 				+ ", trxName=" + trxName
 				+ ", config=" + dunningConfig
 				+ ", ctx=" + ctx
-				+ ", recomputeDunningCandidatesQuery=" + recomputeDunningCandidatesQuery
 				+ "]";
 	}
 
@@ -117,7 +106,7 @@ public class DunningContext extends AbstractDunningContext
 	{
 		return trxRunnerConfig;
 	}
-
+	
 	@Override
 	public I_C_DunningLevel getC_DunningLevel()
 	{
@@ -140,10 +129,4 @@ public class DunningContext extends AbstractDunningContext
 		return (Date)dunningDate.clone();
 	}
 
-	@Nullable
-	@Override
-	public RecomputeDunningCandidatesQuery getRecomputeDunningCandidatesQuery()
-	{
-		return recomputeDunningCandidatesQuery;
-	}
 }

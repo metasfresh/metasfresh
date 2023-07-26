@@ -1,5 +1,9 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -7,15 +11,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
+
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
-import lombok.Getter;
-
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /*
  * #%L
@@ -75,7 +75,6 @@ public abstract class JSONDocumentBase
 
 	@JsonProperty("fieldsByName")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Getter
 	private Map<String, JSONDocumentField> fieldsByName;
 
 	/** Any other properties */
@@ -114,6 +113,15 @@ public abstract class JSONDocumentBase
 		}
 
 		tabid = tabId;
+	}
+
+	protected JSONDocumentBase(final WindowId windowId, final DocumentId id, final String tabId, final DocumentId rowId)
+	{
+		this.windowId = windowId;
+		this.id = id;
+		this.tabId = tabId;
+		this.tabid = tabId;
+		this.rowId = rowId;
 	}
 
 	protected JSONDocumentBase(final DocumentId documentId)
@@ -173,13 +181,13 @@ public abstract class JSONDocumentBase
 	}
 
 	@JsonAnyGetter
-	private Map<String, Object> getOtherProperties()
+	private final Map<String, Object> getOtherProperties()
 	{
 		return otherProperties;
 	}
 
 	@JsonAnySetter
-	private void putOtherProperty(final String name, final Object jsonValue)
+	private final void putOtherProperty(final String name, final Object jsonValue)
 	{
 		otherProperties.put(name, jsonValue);
 	}
@@ -192,7 +200,7 @@ public abstract class JSONDocumentBase
 
 	public final void setFields(final Collection<JSONDocumentField> fields)
 	{
-		setFields(fields == null ? null : Maps.uniqueIndex(fields, JSONDocumentField::getField));
+		setFields(fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField()));
 	}
 
 	protected final void setFields(final Map<String, JSONDocumentField> fieldsByName)

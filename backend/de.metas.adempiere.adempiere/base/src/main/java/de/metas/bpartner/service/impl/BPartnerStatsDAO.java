@@ -2,29 +2,30 @@ package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.sectionCode.SectionCodeId;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.shipping.model.X_M_ShipperTransportation;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -54,14 +55,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
-	private IQueryBL queryBL = Services.get(IQueryBL.class);
-	private IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
-
 	@Override
 	public BPartnerStats getCreateBPartnerStats(@NonNull final I_C_BPartner partner)
 	{
-
-		I_C_BPartner_Stats statsRecord = queryBL
+		I_C_BPartner_Stats statsRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Stats.class) // using current trx, because we will save in current trx too
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
@@ -72,17 +69,14 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			statsRecord = createBPartnerStats(partner);
 		}
-
+		
 		return BPartnerStats.builder()
 				.repoId(statsRecord.getC_BPartner_Stats_ID())
 				.bpartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))
 				.actualLifeTimeValue(statsRecord.getActualLifeTimeValue())
 				.openItems(statsRecord.getOpenItems())
-				.soCreditStatus(CreditStatus.ofNullableCode(statsRecord.getSOCreditStatus()))
+				.soCreditStatus(statsRecord.getSOCreditStatus())
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
-				.deliveryCreditUsed(statsRecord.getDelivery_CreditUsed())
-				.deliveryCreditStatus(CreditStatus.ofNullableCode(statsRecord.getDelivery_CreditStatus()))
-				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(statsRecord.getM_SectionCode_ID()))
 				.build();
 	}
 
@@ -92,18 +86,14 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(partner.getC_BP_Group_ID());
-
-		final I_C_BP_Group bpGroup = bpGroupDAO.getByIdInInheritedTrx(bpGroupId);
-
+		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getByIdInInheritedTrx(bpGroupId);
+		
 		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
 		final String status = bpGroup.getSOCreditStatus();
 		stat.setC_BPartner_ID(partner.getC_BPartner_ID());
-		stat.setM_SectionCode(partner.getM_SectionCode());
 		stat.setSOCreditStatus(status);
-		stat.setSO_CreditUsed(BigDecimal.ZERO);
-		stat.setDelivery_CreditStatus(status);
-		stat.setDelivery_CreditUsed(BigDecimal.ZERO);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
+		stat.setSO_CreditUsed(BigDecimal.ZERO);
 		stat.setOpenItems(BigDecimal.ZERO);
 
 		saveRecord(stat);
@@ -188,40 +178,54 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			DB.close(rs, pstmt);
 		}
 	}
+
+
 	@Override
-	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final CreditStatus soCreditStatus)
+	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
 	{
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
-		stats.setSOCreditStatus(CreditStatus.toCodeOrNull(soCreditStatus));
+		stats.setSOCreditStatus(soCreditStatus);
 
 		saveRecord(stats);
 
 	}
 
-	@Override
-	public void setDeliveryCreditStatus(@NonNull final BPartnerStats bpStats, final CreditStatus deliveryCreditStatus)
-	{
-		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-
-		stats.setDelivery_CreditStatus(CreditStatus.toCodeOrNull(deliveryCreditStatus));
-
-		saveRecord(stats);
-
-	}
-
-	@Override
-	public I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
+	private I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
 	{
 		return load(bpStats.getRepoId(), I_C_BPartner_Stats.class);
 	}
 
 	@Override
-	@Nullable
-	public BigDecimal computeActualLifeTimeValue(@NonNull final BPartnerId partnerId)
+	public void updateBPartnerStatistics(BPartnerStats bpStats)
 	{
+		updateOpenItems(bpStats);
+		updateActualLifeTimeValue(bpStats);
+		updateSOCreditUsed(bpStats);
+		updateSOCreditStatus(bpStats);
+		updateCreditLimitIndicator(bpStats);
+	}
+
+	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
+	{
+		// load the statistics
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+
+		final BigDecimal openItems = retrieveOpenItems(bpStats);
+
+		// update the statistics with the up tp date openItems
+		stats.setOpenItems(openItems);
+
+		// save in db
+		saveRecord(stats);
+	}
+
+	private void updateActualLifeTimeValue(final BPartnerStats bpStats)
+	{
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+
 		BigDecimal actualLifeTimeValue = null;
-		final Object[] sqlParams = new Object[] { partnerId.getRepoId() };
+		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
 
 		// Legacy sql
 
@@ -254,7 +258,84 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		{
 			DB.close(rs, pstmt);
 		}
-		return actualLifeTimeValue;
+
+		stats.setActualLifeTimeValue(actualLifeTimeValue);
+		saveRecord(stats);
 	}
 
+	private void updateSOCreditUsed(final BPartnerStats bpStats)
+	{
+		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+		stats.setSO_CreditUsed(SO_CreditUsed);
+		saveRecord(stats);
+	}
+
+	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
+	{
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+
+		// load the statistics
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
+
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
+
+		final String initialCreditStatus = bpStats.getSOCreditStatus();
+
+		String creditStatusToSet;
+
+		// Nothing to do
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
+				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
+		{
+			return;
+		}
+
+		// Above Credit Limit
+		if (creditLimit.compareTo(creditUsed) < 0)
+		{
+			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
+		}
+		else
+		{
+			// Above Watch Limit
+			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+
+			if (watchAmt.compareTo(creditUsed) < 0)
+			{
+				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
+			}
+			else
+			{
+				// is OK
+				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
+			}
+		}
+
+		setSOCreditStatus(bpStats, creditStatusToSet);
+	}
+
+	private void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)
+	{
+		// load the statistics
+		final I_C_BPartner_Stats stats = loadDataRecord(bstats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
+
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+
+		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
+		final Locale locale = Locale.getDefault();
+		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
+		fmt.setMinimumFractionDigits(1);
+		fmt.setMaximumFractionDigits(1);
+		final String percentSring = fmt.format(percent);
+
+		stats.setCreditLimitIndicator(percentSring);
+		
+		saveRecord(stats);
+	}
 }

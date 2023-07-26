@@ -308,7 +308,6 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		huAttribute.setM_HU(hu);
 		huAttribute.setM_HU_PI_Attribute_ID(piAttr.getM_HU_PI_Attribute_ID());
 		huAttribute.setM_Attribute_ID(piAttr.getM_Attribute_ID());
-		huAttribute.setIsUnique(piAttr.isUnique());
 
 		// NOTE: don't save it!
 

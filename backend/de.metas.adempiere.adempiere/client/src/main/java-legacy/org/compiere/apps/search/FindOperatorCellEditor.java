@@ -63,7 +63,7 @@ class FindOperatorCellEditor extends FindCellEditor
 			// final String columnName = searchField.getColumnName();
 			final int displayType = searchField.getDisplayType();
 			final boolean isColumnSQL = searchField.isVirtualColumn();
-			final boolean isReference = searchField.getAD_Reference_Value_ID() != null;
+			final boolean isReference = searchField.getAD_Reference_Value_ID() > 0;
 
 			if (isColumnSQL && isReference)
 			{

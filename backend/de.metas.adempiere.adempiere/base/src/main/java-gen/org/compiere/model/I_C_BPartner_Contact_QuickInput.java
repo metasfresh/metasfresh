@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_Contact_QuickInput
  *  @author metasfresh (generated) 
@@ -52,30 +51,7 @@ public interface I_C_BPartner_Contact_QuickInput
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Birthday.
-	 * Birthday or Anniversary day
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBirthday (@Nullable java.sql.Timestamp Birthday);
-
-	/**
-	 * Get Birthday.
-	 * Birthday or Anniversary day
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getBirthday();
-
-	ModelColumn<I_C_BPartner_Contact_QuickInput, Object> COLUMN_Birthday = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "Birthday", null);
-	String COLUMNNAME_Birthday = "Birthday";
-
-	/**
-	 * Set Contact.
+	 * Set New BPartner Conatct QuickInput.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -84,7 +60,7 @@ public interface I_C_BPartner_Contact_QuickInput
 	void setC_BPartner_Contact_QuickInput_ID (int C_BPartner_Contact_QuickInput_ID);
 
 	/**
-	 * Get Contact.
+	 * Get New BPartner Conatct QuickInput.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -235,50 +211,7 @@ public interface I_C_BPartner_Contact_QuickInput
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Default Contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDefaultContact (boolean IsDefaultContact);
-
-	/**
-	 * Get Default Contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDefaultContact();
-
-	ModelColumn<I_C_BPartner_Contact_QuickInput, Object> COLUMN_IsDefaultContact = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "IsDefaultContact", null);
-	String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
-
-	/**
-	 * Set Invoice Email Enabled.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsInvoiceEmailEnabled (@Nullable java.lang.String IsInvoiceEmailEnabled);
-
-	/**
-	 * Get Invoice Email Enabled.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsInvoiceEmailEnabled();
-
-	ModelColumn<I_C_BPartner_Contact_QuickInput, Object> COLUMN_IsInvoiceEmailEnabled = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "IsInvoiceEmailEnabled", null);
-	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
-
-	/**
 	 * Set Is Membership Contact.
-	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -288,7 +221,6 @@ public interface I_C_BPartner_Contact_QuickInput
 
 	/**
 	 * Get Is Membership Contact.
-	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -365,50 +297,6 @@ public interface I_C_BPartner_Contact_QuickInput
 
 	ModelColumn<I_C_BPartner_Contact_QuickInput, Object> COLUMN_Phone = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "Phone", null);
 	String COLUMNNAME_Phone = "Phone";
-
-	/**
-	 * Set Phone (alternative).
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPhone2 (@Nullable java.lang.String Phone2);
-
-	/**
-	 * Get Phone (alternative).
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPhone2();
-
-	ModelColumn<I_C_BPartner_Contact_QuickInput, Object> COLUMN_Phone2 = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "Phone2", null);
-	String COLUMNNAME_Phone2 = "Phone2";
-
-	/**
-	 * Set Title.
-	 * Name this entity is referred to as
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTitle (@Nullable java.lang.String Title);
-
-	/**
-	 * Get Title.
-	 * Name this entity is referred to as
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getTitle();
-
-	ModelColumn<I_C_BPartner_Contact_QuickInput, Object> COLUMN_Title = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "Title", null);
-	String COLUMNNAME_Title = "Title";
 
 	/**
 	 * Get Updated.

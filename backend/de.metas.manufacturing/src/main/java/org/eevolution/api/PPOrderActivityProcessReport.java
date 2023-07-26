@@ -1,14 +1,14 @@
 package org.eevolution.api;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 import de.metas.common.util.time.SystemTime;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.Duration;
-import java.time.Instant;
 
 /*
  * #%L
@@ -52,5 +52,5 @@ public class PPOrderActivityProcessReport
 
 	@NonNull
 	@Default
-	Instant finishDate = SystemTime.asInstant();
+	LocalDateTime finishDate = SystemTime.asLocalDateTime();
 }

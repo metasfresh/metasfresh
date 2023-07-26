@@ -57,7 +57,6 @@ public class CustomerReturns_AddSpareParts
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final RepairCustomerReturnsService repairCustomerReturnsService = SpringContextHolder.instance.getBean(RepairCustomerReturnsService.class);
-	private final LookupDataSourceFactory lookupDataSourceFactory = SpringContextHolder.instance.getBean(LookupDataSourceFactory.class);
 
 	private static final String PARAM_M_Product_ID = "M_Product_ID";
 	@Param(parameterName = PARAM_M_Product_ID, mandatory = true)
@@ -88,7 +87,7 @@ public class CustomerReturns_AddSpareParts
 	public LookupValuesList getProducts()
 	{
 		final ImmutableSet<ProductId> sparePartIds = getSparePartsCalculation().getAllowedSparePartIds();
-		return lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name).findByIdsOrdered(sparePartIds);
+		return LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name).findByIdsOrdered(sparePartIds);
 	}
 
 	@Override

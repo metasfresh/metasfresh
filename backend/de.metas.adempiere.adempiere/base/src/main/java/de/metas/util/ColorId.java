@@ -51,7 +51,7 @@ public class ColorId implements RepoIdAware
 
 	private ColorId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Color_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "colorId");
 	}
 
 	@Override

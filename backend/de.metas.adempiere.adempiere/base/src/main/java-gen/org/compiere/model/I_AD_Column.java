@@ -53,7 +53,7 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
 	/**
-	 * Set System Element.
+	 * Set System-Element.
 	 * System Element enables the central maintenance of column description and help.
 	 *
 	 * <br>Type: Search
@@ -63,7 +63,7 @@ public interface I_AD_Column
 	void setAD_Element_ID (int AD_Element_ID);
 
 	/**
-	 * Get System Element.
+	 * Get System-Element.
 	 * System Element enables the central maintenance of column description and help.
 	 *
 	 * <br>Type: Search
@@ -129,8 +129,8 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Reference Overwrite.
-	 * System Reference - optional Overwrite
+	 * Set Referenz.
+	 * System Reference and Validation
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -139,8 +139,8 @@ public interface I_AD_Column
 	void setAD_Reference_ID (int AD_Reference_ID);
 
 	/**
-	 * Get Reference Overwrite.
-	 * System Reference - optional Overwrite
+	 * Get Referenz.
+	 * System Reference and Validation
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -156,7 +156,7 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
 
 	/**
-	 * Set Reference Key.
+	 * Set Referenzschlüssel.
 	 * Required to specify, if data type is Table or List
 	 *
 	 * <br>Type: Table
@@ -166,7 +166,7 @@ public interface I_AD_Column
 	void setAD_Reference_Value_ID (int AD_Reference_Value_ID);
 
 	/**
-	 * Get Reference Key.
+	 * Get Referenzschlüssel.
 	 * Required to specify, if data type is Table or List
 	 *
 	 * <br>Type: Table
@@ -181,33 +181,6 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Value_ID = new ModelColumn<>(I_AD_Column.class, "AD_Reference_Value_ID", org.compiere.model.I_AD_Reference.class);
 	String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
-
-	/**
-	 * Set Sequence.
-	 * Document Sequence
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Sequence_ID (int AD_Sequence_ID);
-
-	/**
-	 * Get Sequence.
-	 * Document Sequence
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Sequence_ID();
-
-	@Nullable org.compiere.model.I_AD_Sequence getAD_Sequence();
-
-	void setAD_Sequence(@Nullable org.compiere.model.I_AD_Sequence AD_Sequence);
-
-	ModelColumn<I_AD_Column, org.compiere.model.I_AD_Sequence> COLUMN_AD_Sequence_ID = new ModelColumn<>(I_AD_Column.class, "AD_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
-	String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
 
 	/**
 	 * Set Table.
@@ -232,7 +205,8 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Validation Rule.
+	 * Set Dynamische Validierung.
+	 * Dynamic Validation Rule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -241,7 +215,8 @@ public interface I_AD_Column
 	void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
 
 	/**
-	 * Get Validation Rule.
+	 * Get Dynamische Validierung.
+	 * Dynamic Validation Rule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -257,28 +232,7 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
-	 * Set Cloning Strategy.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCloningStrategy (java.lang.String CloningStrategy);
-
-	/**
-	 * Get Cloning Strategy.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getCloningStrategy();
-
-	ModelColumn<I_AD_Column, Object> COLUMN_CloningStrategy = new ModelColumn<>(I_AD_Column.class, "CloningStrategy", null);
-	String COLUMNNAME_CloningStrategy = "CloningStrategy";
-
-	/**
-	 * Set DB Column Name.
+	 * Set Spaltenname.
 	 * Name of the column in the database
 	 *
 	 * <br>Type: String
@@ -288,7 +242,7 @@ public interface I_AD_Column
 	void setColumnName (java.lang.String ColumnName);
 
 	/**
-	 * Get DB Column Name.
+	 * Get Spaltenname.
 	 * Name of the column in the database
 	 *
 	 * <br>Type: String
@@ -372,7 +326,7 @@ public interface I_AD_Column
 	String COLUMNNAME_DDL_NoForeignKey = "DDL_NoForeignKey";
 
 	/**
-	 * Set Default Logic.
+	 * Set Standardwert-Logik.
 	 * Default value hierarchy, separated by ;
 
 	 *
@@ -383,7 +337,7 @@ public interface I_AD_Column
 	void setDefaultValue (@Nullable java.lang.String DefaultValue);
 
 	/**
-	 * Get Default Logic.
+	 * Get Standardwert-Logik.
 	 * Default value hierarchy, separated by ;
 
 	 *
@@ -418,8 +372,9 @@ public interface I_AD_Column
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entity Type.
-	 * Entity Type
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -428,8 +383,9 @@ public interface I_AD_Column
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entity Type.
-	 * Entity Type
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -462,7 +418,7 @@ public interface I_AD_Column
 	String COLUMNNAME_FacetFilterSeqNo = "FacetFilterSeqNo";
 
 	/**
-	 * Set Length.
+	 * Set Länge.
 	 * Length of the column in the database
 	 *
 	 * <br>Type: Integer
@@ -472,7 +428,7 @@ public interface I_AD_Column
 	void setFieldLength (int FieldLength);
 
 	/**
-	 * Get Length.
+	 * Get Länge.
 	 * Length of the column in the database
 	 *
 	 * <br>Type: Integer
@@ -525,33 +481,6 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_FilterOperator = new ModelColumn<>(I_AD_Column.class, "FilterOperator", null);
 	String COLUMNNAME_FilterOperator = "FilterOperator";
-
-	/**
-	 * Set Filter Validation Rule.
-	 * Validation Rule used for filtering
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFilter_Val_Rule_ID (int Filter_Val_Rule_ID);
-
-	/**
-	 * Get Filter Validation Rule.
-	 * Validation Rule used for filtering
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getFilter_Val_Rule_ID();
-
-	@Nullable org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule();
-
-	void setFilter_Val_Rule(@Nullable org.compiere.model.I_AD_Val_Rule Filter_Val_Rule);
-
-	ModelColumn<I_AD_Column, org.compiere.model.I_AD_Val_Rule> COLUMN_Filter_Val_Rule_ID = new ModelColumn<>(I_AD_Column.class, "Filter_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
-	String COLUMNNAME_Filter_Val_Rule_ID = "Filter_Val_Rule_ID";
 
 	/**
 	 * Set Format Pattern.
@@ -670,7 +599,7 @@ public interface I_AD_Column
 
 	/**
 	 * Set Always Updateable.
-	 * The column's field is always updateable, even if the record is not active or processed
+	 * The column is always updateable, even if the record is not active or processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -680,7 +609,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get Always Updateable.
-	 * The column's field is always updateable, even if the record is not active or processed
+	 * The column is always updateable, even if the record is not active or processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -692,8 +621,8 @@ public interface I_AD_Column
 	String COLUMNNAME_IsAlwaysUpdateable = "IsAlwaysUpdateable";
 
 	/**
-	 * Set Auto-apply validation rule.
-	 * If a new record is created where this column or field is empty, then insert the first possible record reference. If set, then AD_Val_Rule_ID is used for filtering and AD_Reference_Value_ID is used for ordering.
+	 * Set Validierungsregel automatisch anwenden.
+	 * If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -702,8 +631,8 @@ public interface I_AD_Column
 	void setIsAutoApplyValidationRule (boolean IsAutoApplyValidationRule);
 
 	/**
-	 * Get Auto-apply validation rule.
-	 * If a new record is created where this column or field is empty, then insert the first possible record reference. If set, then AD_Val_Rule_ID is used for filtering and AD_Reference_Value_ID is used for ordering.
+	 * Get Validierungsregel automatisch anwenden.
+	 * If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -738,7 +667,7 @@ public interface I_AD_Column
 	String COLUMNNAME_IsAutocomplete = "IsAutocomplete";
 
 	/**
-	 * Set Calculated.
+	 * Set Berechnet.
 	 * The value is calculated by the system
 	 *
 	 * <br>Type: YesNo
@@ -748,7 +677,7 @@ public interface I_AD_Column
 	void setIsCalculated (boolean IsCalculated);
 
 	/**
-	 * Get Calculated.
+	 * Get Berechnet.
 	 * The value is calculated by the system
 	 *
 	 * <br>Type: YesNo
@@ -761,31 +690,8 @@ public interface I_AD_Column
 	String COLUMNNAME_IsCalculated = "IsCalculated";
 
 	/**
-	 * Set Partitionsgrenze.
-	 * Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDLMPartitionBoundary (boolean IsDLMPartitionBoundary);
-
-	/**
-	 * Get Partitionsgrenze.
-	 * Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDLMPartitionBoundary();
-
-	ModelColumn<I_AD_Column, Object> COLUMN_IsDLMPartitionBoundary = new ModelColumn<>(I_AD_Column.class, "IsDLMPartitionBoundary", null);
-	String COLUMNNAME_IsDLMPartitionBoundary = "IsDLMPartitionBoundary";
-
-	/**
-	 * Set Column Encryption.
-	 * Test and enable Column Encryption
+	 * Set Encrypted.
+	 * Display or Storage is encrypted
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -794,8 +700,8 @@ public interface I_AD_Column
 	void setIsEncrypted (java.lang.String IsEncrypted);
 
 	/**
-	 * Get Column Encryption.
-	 * Test and enable Column Encryption
+	 * Get Encrypted.
+	 * Display or Storage is encrypted
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -875,7 +781,7 @@ public interface I_AD_Column
 
 	/**
 	 * Set GenericZoom Quellspalte.
-	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 * Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -885,7 +791,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get GenericZoom Quellspalte.
-	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
+	 * Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -920,7 +826,7 @@ public interface I_AD_Column
 	String COLUMNNAME_IsIdentifier = "IsIdentifier";
 
 	/**
-	 * Set Key column.
+	 * Set Schlüssel-Spalte.
 	 * This column is the key in this table
 	 *
 	 * <br>Type: YesNo
@@ -930,7 +836,7 @@ public interface I_AD_Column
 	void setIsKey (boolean IsKey);
 
 	/**
-	 * Get Key column.
+	 * Get Schlüssel-Spalte.
 	 * This column is the key in this table
 	 *
 	 * <br>Type: YesNo
@@ -964,7 +870,7 @@ public interface I_AD_Column
 	String COLUMNNAME_IsLazyLoading = "IsLazyLoading";
 
 	/**
-	 * Set mandatory.
+	 * Set Pflichtangabe.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -974,7 +880,7 @@ public interface I_AD_Column
 	void setIsMandatory (boolean IsMandatory);
 
 	/**
-	 * Get mandatory.
+	 * Get Pflichtangabe.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -1008,29 +914,6 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_IsParent = new ModelColumn<>(I_AD_Column.class, "IsParent", null);
 	String COLUMNNAME_IsParent = "IsParent";
-
-	/**
-	 * Set REST-API Custom Column.
-	 * If true, it allows users to update the column's value via "extendedProps" field in the corresponding model's REST API payload. (only for REST API endpoints which support the feature)
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsRestAPICustomColumn (boolean IsRestAPICustomColumn);
-
-	/**
-	 * Get REST-API Custom Column.
-	 * If true, it allows users to update the column's value via "extendedProps" field in the corresponding model's REST API payload. (only for REST API endpoints which support the feature)
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isRestAPICustomColumn();
-
-	ModelColumn<I_AD_Column, Object> COLUMN_IsRestAPICustomColumn = new ModelColumn<>(I_AD_Column.class, "IsRestAPICustomColumn", null);
-	String COLUMNNAME_IsRestAPICustomColumn = "IsRestAPICustomColumn";
 
 	/**
 	 * Set Selection Column.
@@ -1125,8 +1008,8 @@ public interface I_AD_Column
 	String COLUMNNAME_IsStaleable = "IsStaleable";
 
 	/**
-	 * Set Synchronize Column.
-	 * Change database table definition from application dictionary
+	 * Set Synchronize Database.
+	 * Change database table definition when changing dictionary definition
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1135,8 +1018,8 @@ public interface I_AD_Column
 	void setIsSyncDatabase (@Nullable java.lang.String IsSyncDatabase);
 
 	/**
-	 * Get Synchronize Column.
-	 * Change database table definition from application dictionary
+	 * Get Synchronize Database.
+	 * Change database table definition when changing dictionary definition
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1171,7 +1054,7 @@ public interface I_AD_Column
 	String COLUMNNAME_IsTranslated = "IsTranslated";
 
 	/**
-	 * Set Updatable.
+	 * Set Updateable.
 	 * Determines, if the field can be updated
 	 *
 	 * <br>Type: YesNo
@@ -1181,7 +1064,7 @@ public interface I_AD_Column
 	void setIsUpdateable (boolean IsUpdateable);
 
 	/**
-	 * Get Updatable.
+	 * Get Updateable.
 	 * Determines, if the field can be updated
 	 *
 	 * <br>Type: YesNo
@@ -1420,7 +1303,7 @@ public interface I_AD_Column
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Max. Value.
+	 * Set Max. Wert.
 	 * Maximum Value for a field
 	 *
 	 * <br>Type: String
@@ -1430,7 +1313,7 @@ public interface I_AD_Column
 	void setValueMax (@Nullable java.lang.String ValueMax);
 
 	/**
-	 * Get Max. Value.
+	 * Get Max. Wert.
 	 * Maximum Value for a field
 	 *
 	 * <br>Type: String
@@ -1443,7 +1326,7 @@ public interface I_AD_Column
 	String COLUMNNAME_ValueMax = "ValueMax";
 
 	/**
-	 * Set Min. Value.
+	 * Set Min. Wert.
 	 * Minimum Value for a field
 	 *
 	 * <br>Type: String
@@ -1453,7 +1336,7 @@ public interface I_AD_Column
 	void setValueMin (@Nullable java.lang.String ValueMin);
 
 	/**
-	 * Get Min. Value.
+	 * Get Min. Wert.
 	 * Minimum Value for a field
 	 *
 	 * <br>Type: String

@@ -22,13 +22,14 @@ package de.metas.adempiere.gui.search;
  * #L%
  */
 
+import java.math.BigDecimal;
+
+import org.compiere.apps.search.IInfoSimple;
+
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
-import org.compiere.apps.search.IInfoSimple;
-
-import java.math.BigDecimal;
 
 /**
  * Service used for manipulating {@link IHUPackingAware}.

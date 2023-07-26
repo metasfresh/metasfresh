@@ -23,36 +23,32 @@
 package de.metas.cucumber.stepdefs.stock;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MD_Stock_StepDef
 {
-	private final static transient Logger logger = LogManager.getLogger(MD_Stock_StepDef.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final M_Product_StepDefData productTable;
-
-	public MD_Stock_StepDef(final M_Product_StepDefData productTable)
+	@Given("metasfresh initially has no MD_Stock data")
+	public void setupMD_Stock_Data()
 	{
-		this.productTable = productTable;
+		truncateMDStockData();
 	}
 
 	@And("after not more than {int} seconds metasfresh has MD_Stock data")
@@ -64,21 +60,29 @@ public class MD_Stock_StepDef
 
 		StepDefUtil.tryAndWait(timeoutSeconds, 500, supplier);
 
-		for (final Map<String, String> row : rows)
-		{
-			validateMD_Stock(row);
-		}
+		rows.forEach(this::validateMD_Stock);
+	}
+
+	private void truncateMDStockData()
+	{
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE M_Transaction cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE M_InventoryLine cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE M_Inventory cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE M_Cost cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE MD_Stock", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu_item_storage cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu_storage cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu_trx_line cascade", ITrx.TRXNAME_None);
 	}
 
 	private boolean waitForStock(@NonNull final Map<String, String> row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
-		final int productId = productTable.get(productIdentifier).getM_Product_ID();
-
+		final int productIdentifier = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalForColumnName(row, "QtyOnHand");
 
 		final I_MD_Stock mdStock = queryBL.createQueryBuilder(I_MD_Stock.class)
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productIdentifier)
 				.create()
 				.firstOnly(I_MD_Stock.class);
 		return mdStock != null && mdStock.getQtyOnHand().compareTo(qtyOnHand) == 0;
@@ -86,13 +90,11 @@ public class MD_Stock_StepDef
 
 	private void validateMD_Stock(@NonNull final Map<String, String> row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
+		final int productIdentifier = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalForColumnName(row, "QtyOnHand");
 
-		final I_M_Product product = productTable.get(productIdentifier);
-
 		final I_MD_Stock mdStock = queryBL.createQueryBuilder(I_MD_Stock.class)
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productIdentifier)
 				.create()
 				.firstOnly(I_MD_Stock.class);
 		assertThat(mdStock).isNotNull();

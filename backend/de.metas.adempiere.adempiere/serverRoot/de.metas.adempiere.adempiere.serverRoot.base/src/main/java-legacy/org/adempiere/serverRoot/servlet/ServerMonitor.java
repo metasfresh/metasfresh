@@ -16,12 +16,28 @@
  *****************************************************************************/
 package org.adempiere.serverRoot.servlet;
 
-import ch.qos.logback.classic.Level;
-import de.metas.Profiles;
-import de.metas.cache.CacheMgt;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import org.adempiere.ad.service.ADSystemInfo;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadMXBean;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -52,6 +68,7 @@ import org.compiere.Adempiere;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.model.AdempiereProcessorLog;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.MClient;
 import org.compiere.model.MStore;
 import org.compiere.server.AdempiereServer;
@@ -64,26 +81,11 @@ import org.compiere.util.WebDoc;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadMXBean;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
+import ch.qos.logback.classic.Level;
+import de.metas.Profiles;
+import de.metas.cache.CacheMgt;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Server Monitor
@@ -777,25 +779,32 @@ public class ServerMonitor extends HttpServlet
 			final table table = newPropertiesTable();
 			body.addElement(table);
 
+			//
+			final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
+			{
+				tr line = new tr();
+				line.addElement(new th().addElement(system.getDBAddress()));
+				line.addElement(new td().addElement(Ini.getMetasfreshHome()));
+				table.addElement(line);
+			}
+
 			// OS + Name
 			{
 				tr line = new tr();
-
+				String info = System.getProperty("os.name")
+						+ " " + System.getProperty("os.version");
+				final String s = System.getProperty("sun.os.patch.level");
+				if (s != null && s.length() > 0)
 				{
-					String info = System.getProperty("os.name")
-							+ " " + System.getProperty("os.version");
-					final String s = System.getProperty("sun.os.patch.level");
-					if (s != null && s.length() > 0)
-					{
-						info += " (" + s + ")";
-					}
-					line.addElement(new th().addElement(info));
+					info += " (" + s + ")";
 				}
-
+				line.addElement(new th().addElement(info));
+				info = system.getName();
+				if (system.getCustomPrefix() != null)
 				{
-					line.addElement(new td().addElement(""));
+					info += " (" + system.getCustomPrefix() + ")";
 				}
-
+				line.addElement(new td().addElement(info));
 				table.addElement(line);
 			}
 
@@ -805,7 +814,7 @@ public class ServerMonitor extends HttpServlet
 				String info = System.getProperty("java.vm.name")
 						+ " " + System.getProperty("java.vm.version");
 				line.addElement(new th().addElement(info));
-				line.addElement(new td().addElement("-"/* registration user name */));
+				line.addElement(new td().addElement(system.getUserName()));
 				table.addElement(line);
 			}
 
@@ -818,6 +827,11 @@ public class ServerMonitor extends HttpServlet
 				line.addElement(new th().addElement(info));
 				line.addElement(new td().addElement(cc.getConnectionURL()));
 				// line.addElement(new td().addElement(system.getDBInstance()));
+				table.addElement(line);
+				// Processors/Support
+				line = new tr();
+				line.addElement(new th().addElement("Processor/Support"));
+				line.addElement(new td().addElement(system.getNoProcessors() + "/" + system.getSupportUnits()));
 				table.addElement(line);
 			}
 

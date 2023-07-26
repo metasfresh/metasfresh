@@ -146,9 +146,9 @@ public class RequestBLTest
 
 		ddOrder.setIsSOTrx(true);
 
- 		ddOrder.setC_BPartner_ID(createPartner("Partner 2").getC_BPartner_ID());
+		ddOrder.setC_BPartner(createPartner("Partner 2"));
 
-		ddOrder.setAD_User_ID(createUser("User 2").getAD_User_ID());
+		ddOrder.setAD_User(createUser("User 2"));
 
 		ddOrder.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
@@ -181,7 +181,7 @@ public class RequestBLTest
 	{
 		final I_DD_OrderLine line = newInstance(I_DD_OrderLine.class);
 		line.setDD_Order(ddOrder);
-		line.setM_Product_ID(createProduct("Product2").getM_Product_ID());
+		line.setM_Product(createProduct("Product2"));
 		line.setDescription("Description DDOrderLine");
 
 		save(line);

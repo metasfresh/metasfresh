@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,26 +38,29 @@ import javax.annotation.Nullable;
 @JsonDeserialize(builder = JsonOutOfStockNoticeRequest.JsonOutOfStockNoticeRequestBuilder.class)
 public class JsonOutOfStockNoticeRequest
 {
-	@Schema(
-			description = "Identifier of the product in question. Can be\n"
+	@ApiModelProperty(
+			value = "Identifier of the product in question. Can be\n"
 					+ "* a plain `<M_Product_ID>`,\n"
 					+ "* the M_Product.Value as `<val-M_Product.Value>`\n"
-					+ "* or something like `ext-<ExternalSystemName>-<M_Product_ID.ExternalId>`")
+					+ "* or something like `ext-<ExternalSystemName>-<M_Product_ID.ExternalId>")
 	@NonNull
 	@JsonProperty("productIdentifier")
 	String productIdentifier;
 
-	@Schema(description = "Optional; Specifies if metasfresh shall create and complete an inventory document for this out of stock notice. Default if omitted: `true`")
+	@ApiModelProperty(
+			value = "Optional; Specifies if metasfresh shall create and complete an inventory document for this out of stock notice. Default if omitted: `true`")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@NonNull
 	Boolean createInventory;
 
-	@Schema(description = "Optional; Specifies if unprocessed shipment schedules with with this request's warehouse, product ans attributes shall be closed. Default if omitted: `true`")
+	@ApiModelProperty(
+			value = "Optional; Specifies if unprocessed shipment schedules with with this request's warehouse, product ans attributes shall be closed. Default if omitted: `true`")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@NonNull
 	Boolean closePendingShipmentSchedules;
 
-	@Schema(description = "AD_Org.value")
+	@ApiModelProperty(
+			value = "AD_Org.value")
 	@Nullable
 	@JsonProperty("orgCode")
 	String orgCode;

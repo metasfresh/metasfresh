@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.MoreObjects;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -31,6 +30,7 @@ import lombok.NonNull;
 
 /**
  * Holds a weak reference to a given {@link Field} to prevent classloader memory leaks.
+ * 
  * If the weak reference expired, it will try to load the {@link Field} using current thread's class loader.
  * 
  * @author metas-dev <dev@metasfresh.com>
@@ -38,7 +38,7 @@ import lombok.NonNull;
  */
 public final class FieldReference
 {
-	public static FieldReference of(@NonNull final Field field)
+	public static final FieldReference of(final Field field)
 	{
 		return new FieldReference(field);
 	}
@@ -48,8 +48,12 @@ public final class FieldReference
 	private final ClassReference<?> classRef;
 	private final String fieldName;
 
-	private FieldReference(@NonNull final Field field)
+	private FieldReference(final Field field)
 	{
+		if (field == null)
+		{
+			throw new NullPointerException("field is null");
+		}
 		fieldRef = new AtomicReference<>(new WeakReference<>(field));
 		classRef = ClassReference.of(field.getDeclaringClass());
 		fieldName = field.getName();

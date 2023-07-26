@@ -40,6 +40,7 @@ import static de.metas.camel.externalsystems.rabbitmq.RabbitMQDispatcherRouteBui
 import static de.metas.camel.externalsystems.rabbitmq.RabbitMQDispatcherRouteBuilder.RABBITMQ_DISPATCHER_ROUTE_ID;
 import static de.metas.camel.externalsystems.rabbitmq.RabbitMQDispatcherRouteBuilder.RABBITMQ_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.rabbitmq.RabbitMQDispatcherRouteBuilder.RABBITMQ_MESSAGE_SENDER;
+import static de.metas.camel.externalsystems.rabbitmq.RabbitMQDispatcherRouteBuilder.RABBITMQ_PUBLISH_ENDPOINT;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class RabbitMQDispatcherRouteBuilderTests extends CamelTestSupport
@@ -66,7 +67,7 @@ public class RabbitMQDispatcherRouteBuilderTests extends CamelTestSupport
 		final DispatchMessageRequest dispatchMessageRequest = objectMapper.readValue(dispatchMessageRequestIS, DispatchMessageRequest.class);
 
 		final MockEndpoint rabbitMqEndpoint = getMockEndpoint(MOCK_RABBIT_MQ_ENDPOINT);
-		rabbitMqEndpoint.expectedHeaderReceived(Exchange.HTTP_URI, dispatchMessageRequest.getUrl());
+		rabbitMqEndpoint.expectedHeaderReceived(Exchange.HTTP_URI, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
 		rabbitMqEndpoint.expectedBodiesReceived(objectMapper.writeValueAsString(dispatchMessageRequest.getMessage()));
 
 		//when
@@ -93,7 +94,7 @@ public class RabbitMQDispatcherRouteBuilderTests extends CamelTestSupport
 		final MockEndpoint rabbitMqEndpoint = getMockEndpoint(MOCK_RABBIT_MQ_ENDPOINT);
 		final String jsonHttpMessageRequest =  objectMapper.writeValueAsString(dispatchMessageRequest.getMessage());
 		rabbitMqEndpoint.expectedBodiesReceived(jsonHttpMessageRequest, jsonHttpMessageRequest, jsonHttpMessageRequest);
-		rabbitMqEndpoint.expectedHeaderReceived(Exchange.HTTP_URI, dispatchMessageRequest.getUrl());
+		rabbitMqEndpoint.expectedHeaderReceived(Exchange.HTTP_URI, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
 
 		//when
 		template.sendBody("direct:" + RABBITMQ_DISPATCHER_ROUTE_ID, dispatchMessageRequest);

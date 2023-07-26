@@ -17,9 +17,6 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.metas.acct.Account;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -27,13 +24,9 @@ import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.doc.AcctDocRequiredServicesFacade;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -48,6 +41,8 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -61,76 +56,97 @@ import java.util.function.Consumer;
  */
 public final class Fact
 {
-
-	// services
-	static final Logger log = LogManager.getLogger(Fact.class);
-	@NonNull final AcctDocRequiredServicesFacade services;
-
-	final Doc<?> m_doc;
-	private final AcctSchema acctSchema;
-	private final PostingType postingType;
-	private ArrayList<FactLine> m_lines = new ArrayList<>();
-	@Nullable private FactTrxStrategy _factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
-	@Nullable private CurrencyConversionContext currencyConversionContext = null;
-
+	/**
+	 * Constructor
+	 *
+	 * @param document    pointer to document
+	 * @param acctSchema  Account Schema to create accounts
+	 * @param postingType the default Posting type (actual,..) for this posting
+	 */
 	public Fact(
 			@NonNull final Doc<?> document,
 			@NonNull final AcctSchema acctSchema,
 			@NonNull final PostingType postingType)
 	{
-		this.services = document.services;
-
 		this.m_doc = document;
 		this.acctSchema = acctSchema;
 		this.postingType = postingType;
 	}
 
-	public Fact setFactTrxLinesStrategy(@Nullable final FactTrxStrategy factTrxLinesStrategy)
+	// services
+	static final transient Logger log = LogManager.getLogger(Fact.class);
+
+	/**
+	 * Document
+	 */
+	final Doc<?> m_doc;
+	/**
+	 * Accounting Schema
+	 */
+	private final AcctSchema acctSchema;
+
+	/**
+	 * Posting Type
+	 */
+	private final PostingType postingType;
+
+	/**
+	 * Is Converted
+	 */
+	private boolean m_converted = false;
+
+	/**
+	 * Lines
+	 */
+	private List<FactLine> m_lines = new ArrayList<>();
+
+	private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+
+	public Fact setFactTrxLinesStrategy(@NonNull final FactTrxStrategy factTrxLinesStrategy)
 	{
-		this._factTrxLinesStrategy = factTrxLinesStrategy;
+		this.factTrxLinesStrategy = factTrxLinesStrategy;
 		return this;
 	}
 
-	@Nullable
-	private FactTrxStrategy getFactTrxLinesStrategyEffective()
-	{
-		if (acctSchema.isAllowMultiDebitAndCredit())
-		{
-			return null;
-		}
-
-		return _factTrxLinesStrategy;
-	}
-
-	public Fact setCurrencyConversionContext(@Nullable final CurrencyConversionContext currencyConversionContext)
-	{
-		this.currencyConversionContext = currencyConversionContext;
-		return this;
-	}
-
-	@Nullable
-	CurrencyConversionContext getCurrencyConversionContext()
-	{
-		return currencyConversionContext;
-	}
-
+	/**
+	 * Dispose
+	 */
 	public void dispose()
 	{
 		m_lines.clear();
 		m_lines = null;
-	}
+	}   // dispose
 
-	public FactLine createLine(final DocLine<?> docLine,
-							   final Account account,
-							   @NonNull final CurrencyId currencyId,
-							   @Nullable final BigDecimal debitAmt,
-							   @Nullable final BigDecimal creditAmt)
+	/**
+	 * Create and convert Fact Line. Used to create a DR and/or CR entry
+	 *
+	 * @param docLine    the document line or null
+	 * @param account    if null, line is not created
+	 * @param currencyId the currency
+	 * @param debitAmt   debit amount, can be null
+	 * @param creditAmt  credit amount, can be null
+	 * @return Fact Line
+	 */
+	public FactLine createLine(
+			@Nullable final DocLine<?> docLine,
+			final MAccount account,
+			final CurrencyId currencyId,
+			@Nullable final BigDecimal debitAmt, @Nullable final BigDecimal creditAmt)
 	{
 		return createLine()
 				.setDocLine(docLine)
 				.setAccount(account)
 				.setAmtSource(currencyId, debitAmt, creditAmt)
 				.buildAndAdd();
+	}
+
+	public FactLine createLine(final DocLine<?> docLine,
+			final MAccount account,
+			final int C_Currency_ID,
+			final BigDecimal debitAmt, final BigDecimal creditAmt)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(C_Currency_ID);
+		return createLine(docLine, account, currencyId, debitAmt, creditAmt);
 	}
 
 	public FactLineBuilder createLine()
@@ -149,13 +165,11 @@ public final class Fact
 	 * @param qty        quantity, can be null and in that case the standard qty from DocLine/Doc will be used.
 	 * @return Fact Line or null
 	 */
-	public FactLine createLine(
-			@Nullable final DocLine<?> docLine,
-			@NonNull final Account account,
+	public FactLine createLine(final DocLine<?> docLine,
+			final MAccount account,
 			final CurrencyId currencyId,
-			@Nullable final BigDecimal debitAmt,
-			@Nullable final BigDecimal creditAmt,
-			@Nullable final BigDecimal qty)
+			final BigDecimal debitAmt, final BigDecimal creditAmt,
+			final BigDecimal qty)
 	{
 		return createLine()
 				.setDocLine(docLine)
@@ -166,10 +180,10 @@ public final class Fact
 	}    // createLine
 
 	public FactLine createLine(final DocLine<?> docLine,
-							   final Account account,
-							   final int C_Currency_ID,
-							   final BigDecimal debitAmt, final BigDecimal creditAmt,
-							   final BigDecimal qty)
+			final MAccount account,
+			final int C_Currency_ID,
+			final BigDecimal debitAmt, final BigDecimal creditAmt,
+			final BigDecimal qty)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(C_Currency_ID);
 		return createLine(docLine, account, currencyId, debitAmt, creditAmt, qty);
@@ -205,8 +219,7 @@ public final class Fact
 	 * @param Amt        if negative Cr else Dr
 	 * @return FactLine
 	 */
-	@Deprecated
-	public FactLine createLine(DocLine<?> docLine, Account account, CurrencyId currencyId, BigDecimal Amt)
+	public FactLine createLine(DocLine<?> docLine, MAccount account, CurrencyId currencyId, BigDecimal Amt)
 	{
 		return createLine()
 				.setDocLine(docLine)
@@ -216,10 +229,25 @@ public final class Fact
 				.buildAndAdd();
 	}   // createLine
 
+	/**
+	 * Is converted
+	 *
+	 * @return true if converted
+	 */
+	public boolean isConverted()
+	{
+		return m_converted;
+	}    // isConverted
+
+	/**
+	 * Get AcctSchema
+	 *
+	 * @return AcctSchema; never returns null
+	 */
 	public AcctSchema getAcctSchema()
 	{
 		return acctSchema;
-	}
+	}    // getAcctSchema
 
 	public AcctSchemaId getAcctSchemaId()
 	{
@@ -239,83 +267,102 @@ public final class Fact
 	public boolean isSingleCurrency()
 	{
 		final ImmutableList<CurrencyId> distinctCurrencyIds = CollectionUtils.extractDistinctElements(m_lines, FactLine::getCurrencyId);
-		return distinctCurrencyIds.size() < 2;
+
+		final boolean lessThanTwoCurrencies = distinctCurrencyIds.size() < 2;
+		return lessThanTwoCurrencies;
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	/**************************************************************************
+	 * Are the lines Source Balanced
+	 *
+	 * @return true if source lines balanced
+	 */
 	public boolean isSourceBalanced()
 	{
 		// AZ Goodwill
 		// Multi-Currency documents are source balanced by definition
 		// No lines -> balanced
-		if (m_lines.isEmpty() || m_doc.isMultiCurrency())
+		if (m_lines.size() == 0 || m_doc.isMultiCurrency())
 		{
 			return true;
 		}
-
-		Balance balance = getSourceBalance();
-		if (balance.isBalanced())
+		BigDecimal balance = getSourceBalance();
+		boolean retValue = balance.signum() == 0;
+		if (retValue)
 		{
 			log.trace("{}", this);
-			return true;
 		}
 		else
 		{
-			log.warn("NO - Diff={} - {}", balance, this);
-			return false;
+			log.warn("NO - Diff=" + balance + " - " + toString());
 		}
-	}
-
-	private Balance getSourceBalance()
-	{
-		return m_lines.stream()
-				.map(FactLine::getSourceBalance)
-				.collect(Balance.sum())
-				.orElseGet(() -> Balance.zero(acctSchema.getCurrencyId())); // NOTE we use the acct schema currency because there is no other currency to use
-	}
+		return retValue;
+	}    // isSourceBalanced
 
 	/**
-	 * Create Source Line for Suspense Balancing.
-	 * Only if Suspense Balancing is enabled and not a multi-currency document (double check as otherwise the rule should not have fired) If not balanced
-	 * create balancing entry in currency of the document
+	 * Return Source Balance
+	 *
+	 * @return source balance
 	 */
-	public void balanceSource()
+	protected BigDecimal getSourceBalance()
+	{
+		BigDecimal result = BigDecimal.ZERO;
+		for (FactLine line : m_lines)
+		{
+			result = result.add(line.getSourceBalance());
+		}
+		// log.debug("getSourceBalance - " + result.toString());
+		return result;
+	}    // getSourceBalance
+
+	/**
+	 * Create Source Line for Suspense Balancing. Only if Suspense Balancing is enabled and not a multi-currency document (double check as otherwise the rule should not have fired) If not balanced
+	 * create balancing entry in currency of the document
+	 *
+	 * @return FactLine
+	 */
+	public FactLine balanceSource()
 	{
 		final AcctSchema acctSchema = getAcctSchema();
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		if (!acctSchemaGL.isSuspenseBalancing() || m_doc.isMultiCurrency())
 		{
-			return;
+			return null;
 		}
-
-		final Money diff = getSourceBalance().toMoney();
-		log.trace("Diff={}", diff);
+		BigDecimal diff = getSourceBalance();
+		log.trace("Diff=" + diff);
 
 		// new line
-		final FactLine line = new FactLine(services, m_doc.get_Table_ID(), m_doc.get_ID());
+		FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 		line.setDocumentInfo(m_doc, null);
 		line.setPostingType(getPostingType());
 
 		// Account
-		line.setAccount(acctSchema, acctSchemaGL.getSuspenseBalancingAcct());
+		line.setAccount(acctSchema, acctSchemaGL.getSuspenseBalancingAcctId());
 
 		// Amount
 		if (diff.signum() < 0)
 		{
-			line.setAmtSource(diff.abs(), null);
+			line.setAmtSource(m_doc.getCurrencyId(), diff.abs(), BigDecimal.ZERO);
 		}
 		else
 		{
 			// positive balance => CR
-			line.setAmtSource(null, diff);
+			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, diff);
 		}
 
+		// Convert
 		line.convert();
-
+		//
 		add(line);
+		return line;
 	}   // balancingSource
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	/**************************************************************************
+	 * Are all segments balanced
+	 *
+	 * @return true if segments are balanced
+	 */
 	public boolean isSegmentBalanced()
 	{
 		// AZ Goodwill
@@ -349,19 +396,33 @@ public final class Fact
 	{
 		if (segmentType.equals(AcctSchemaElementType.Organization))
 		{
-			final ImmutableMap<OrgId, Balance> map = m_lines.stream()
-					.collect(ImmutableMap.toImmutableMap(FactLine::getOrgId, FactLine::getSourceBalance, Balance::add));
-
-			// check if all keys are zero
-			for (final Balance orgBalance : map.values())
+			HashMap<Integer, BigDecimal> map = new HashMap<>();
+			// Add up values by key
+			for (FactLine line : m_lines)
 			{
-				if (!orgBalance.isBalanced())
+				Integer key = new Integer(line.getAD_Org_ID());
+				BigDecimal bal = line.getSourceBalance();
+				BigDecimal oldBal = map.get(key);
+				if (oldBal != null)
 				{
-					log.warn("({}) NO - {}, Balance={}", segmentType, this, orgBalance);
+					bal = bal.add(oldBal);
+				}
+				map.put(key, bal);
+				// System.out.println("Add Key=" + key + ", Bal=" + bal + " <- " + line);
+			}
+			// check if all keys are zero
+			Iterator<BigDecimal> values = map.values().iterator();
+			while (values.hasNext())
+			{
+				BigDecimal bal = values.next();
+				if (bal.signum() != 0)
+				{
+					map.clear();
+					log.warn("(" + segmentType + ") NO - " + toString() + ", Balance=" + bal);
 					return false;
 				}
 			}
-
+			map.clear();
 			return true;
 		}
 		else
@@ -401,107 +462,139 @@ public final class Fact
 		// Org
 		if (elementType.equals(AcctSchemaElementType.Organization))
 		{
-			final ImmutableMap<OrgId, Balance> map = m_lines.stream()
-					.collect(ImmutableMap.toImmutableMap(FactLine::getOrgId, FactLine::getSourceBalance, Balance::add));
+			HashMap<Integer, Balance> map = new HashMap<>();
+			// Add up values by key
+			for (FactLine line : m_lines)
+			{
+				Integer key = new Integer(line.getAD_Org_ID());
+				// BigDecimal balance = line.getSourceBalance();
+				Balance oldBalance = map.get(key);
+				if (oldBalance == null)
+				{
+					oldBalance = new Balance(line.getAmtSourceDr(), line.getAmtSourceCr());
+					map.put(key, oldBalance);
+				}
+				else
+				{
+					oldBalance.add(line.getAmtSourceDr(), line.getAmtSourceCr());
+					// log.info("Key=" + key + ", Balance=" + balance + " - " + line);
+				}
+			}
 
 			// Create entry for non-zero element
-			for (final OrgId orgId : map.keySet())
+			Iterator<Integer> keys = map.keySet().iterator();
+			while (keys.hasNext())
 			{
-				final Balance orgBalance = map.get(orgId);
-				if (!orgBalance.isBalanced())
+				Integer key = keys.next();
+				Balance difference = map.get(key);
+
+				//
+				if (!difference.isZeroBalance())
 				{
 					// Create Balancing Entry
-					final FactLine line = new FactLine(services, m_doc.get_Table_ID(), m_doc.get_ID());
+					final FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 					line.setDocumentInfo(m_doc, null);
 					line.setPostingType(getPostingType());
 					// Amount & Account
 					final AcctSchema acctSchema = getAcctSchema();
 					final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
-					if (orgBalance.signum() < 0)
+					if (difference.getBalance().signum() < 0)
 					{
-						if (orgBalance.isReversal())
+						if (difference.isReversal())
 						{
-							line.setAccount(acctSchema, acctSchemaGL.getDueToAcct(elementType));
-							line.setAmtSource(null, orgBalance.getPostBalance());
+							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
+							line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 						else
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
-							line.setAmtSource(orgBalance.getPostBalance(), null);
+							line.setAmtSource(m_doc.getCurrencyId(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 					}
 					else
 					{
-						if (orgBalance.isReversal())
+						if (difference.isReversal())
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
-							line.setAmtSource(orgBalance.getPostBalance(), null);
+							line.setAmtSource(m_doc.getCurrencyId(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 						else
 						{
-							line.setAccount(acctSchema, acctSchemaGL.getDueToAcct(elementType));
-							line.setAmtSource(null, orgBalance.getPostBalance());
+							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
+							line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 					}
 					line.convert();
-					line.setAD_Org_ID(orgId);
+					line.setAD_Org_ID(key.intValue());
 					//
 					add(line);
 					log.debug("({}) - {}", elementType, line);
 				}
 			}
+			map.clear();
 		}
 	}   // balanceSegment
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	/**************************************************************************
+	 * Are the lines Accounting Balanced
+	 *
+	 * @return true if accounting lines are balanced
+	 */
 	public boolean isAcctBalanced()
 	{
 		// no lines -> balanced
-		if (m_lines.isEmpty())
+		if (m_lines.size() == 0)
 		{
 			return true;
 		}
-
-		final Money balance = getAcctBalance().toMoney();
-		if (balance.isZero())
+		BigDecimal balance = getAcctBalance();
+		boolean retValue = balance.signum() == 0;
+		if (retValue)
 		{
-			return true;
+			log.trace(toString());
 		}
 		else
 		{
-			log.warn("NO - Diff={} - {}", balance, this);
-			return false;
+			log.warn("NO - Diff=" + balance + " - " + toString());
 		}
+		return retValue;
 	}    // isAcctBalanced
 
-	public Balance getAcctBalance()
+	/**
+	 * Return Accounting Balance
+	 *
+	 * @return true if accounting lines are balanced
+	 */
+	protected BigDecimal getAcctBalance()
 	{
-		return m_lines.stream()
-				.map(FactLine::getAcctBalance)
-				.collect(Balance.sum())
-				.orElseGet(() -> Balance.zero(acctSchema.getCurrencyId()));
-	}
+		BigDecimal result = BigDecimal.ZERO;
+		for (FactLine line : m_lines)
+		{
+			result = result.add(line.getAcctBalance());
+		}
+		// log.debug(result.toString());
+		return result;
+	}    // getAcctBalance
 
 	/**
-	 * Balance Accounting Currency.
-	 * If the accounting currency is not balanced, if Currency balancing is enabled create a new line using the currency balancing account with zero source balance or
+	 * Balance Accounting Currency. If the accounting currency is not balanced, if Currency balancing is enabled create a new line using the currency balancing account with zero source balance or
 	 * adjust the line with the largest balance sheet account or if no balance sheet account exist, the line with the largest amount
+	 *
+	 * @return FactLine
 	 */
-	public void balanceAccounting()
+	public FactLine balanceAccounting()
 	{
-		final AcctSchema acctSchema = getAcctSchema();
-		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
-		final Money ZERO = Money.zero(acctCurrencyId);
+		BigDecimal diff = getAcctBalance();        // DR-CR
+		FactLine line = null;
 
-		Money diff = getAcctBalance().toMoney();        // DR-CR
-
-		Money BSamount = ZERO;
+		BigDecimal BSamount = BigDecimal.ZERO;
 		FactLine BSline = null;
-		Money PLamount = ZERO;
+		BigDecimal PLamount = BigDecimal.ZERO;
 		FactLine PLline = null;
 
 		//
 		// Find line biggest BalanceSheet or P&L line
+		final CurrencyId acctCurrencyId = getAcctSchema().getCurrencyId();
 		for (final FactLine l : m_lines)
 		{
 			// Consider only the lines which are in foreign currency
@@ -510,7 +603,7 @@ public final class Fact
 				continue;
 			}
 
-			final Money amt = l.getAcctBalance().toMoney().abs();
+			final BigDecimal amt = l.getAcctBalance().abs();
 			if (l.isBalanceSheet() && amt.compareTo(BSamount) > 0)
 			{
 				BSamount = amt;
@@ -524,23 +617,23 @@ public final class Fact
 		}
 
 		// Create Currency Balancing Entry
-		final FactLine line;
+		final AcctSchema acctSchema = getAcctSchema();
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		if (acctSchemaGL.isCurrencyBalancing())
 		{
-			line = new FactLine(services, m_doc.get_Table_ID(), m_doc.get_ID());
+			line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 			line.setDocumentInfo(m_doc, null);
 			line.setPostingType(getPostingType());
-			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcct());
+			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcctId());
 
 			// Amount
 			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO);
 			line.convert();
 			// Accounted
-			Money drAmt = ZERO;
-			Money crAmt = ZERO;
+			BigDecimal drAmt = BigDecimal.ZERO;
+			BigDecimal crAmt = BigDecimal.ZERO;
 			boolean isDR = diff.signum() < 0;
-			Money difference = diff.abs();
+			BigDecimal difference = diff.abs();
 			if (isDR)
 			{
 				drAmt = difference;
@@ -555,8 +648,8 @@ public final class Fact
 					|| (!BSline.isDrSourceBalance() && !isDR));
 			if (switchIt)
 			{
-				drAmt = ZERO;
-				crAmt = ZERO;
+				drAmt = BigDecimal.ZERO;
+				crAmt = BigDecimal.ZERO;
 				if (isDR)
 				{
 					crAmt = difference.negate();
@@ -586,12 +679,13 @@ public final class Fact
 			}
 			else
 			{
-				log.debug("Adjusting Amt={}; Line={}", diff, line);
+				log.debug("Adjusting Amt=" + diff + "; Line=" + line);
 				line.currencyCorrect(diff);
 				log.debug(line.toString());
 			}
 		}   // correct biggest amount
 
+		return line;
 	}   // balanceAccounting
 
 	/**
@@ -641,7 +735,7 @@ public final class Fact
 		final List<FactLine> linesAfterDistribution = FactGLDistributor.newInstance()
 				.distribute(m_lines);
 
-		m_lines = new ArrayList<>(linesAfterDistribution);
+		m_lines = linesAfterDistribution;
 		// TODO
 	}
 
@@ -653,10 +747,12 @@ public final class Fact
 	@Override
 	public String toString()
 	{
-		return "Fact[" + m_doc
-				+ "," + getAcctSchema()
-				+ ",PostType=" + getPostingType()
-				+ "]";
+		StringBuilder sb = new StringBuilder("Fact[");
+		sb.append(m_doc);
+		sb.append(",").append(getAcctSchema());
+		sb.append(",PostType=").append(getPostingType());
+		sb.append("]");
+		return sb.toString();
 	}
 
 	public boolean isEmpty()
@@ -672,12 +768,12 @@ public final class Fact
 	}    // getLines
 
 	@NonNull
-	public FactLine getSingleLineByAccountId(final AccountId accountId)
+	public FactLine getSingleLineByAccountId(final MAccount account)
 	{
 		FactLine lineFound = null;
 		for (FactLine line : m_lines)
 		{
-			if (line.getAccount_ID() == accountId.getRepoId())
+			if (line.getAccount_ID() == account.getAccount_ID())
 			{
 				if (lineFound == null)
 				{
@@ -685,7 +781,7 @@ public final class Fact
 				}
 				else
 				{
-					throw new AdempiereException("More than one fact line found for AccountId: " + accountId.getRepoId() + ": " + lineFound + ", " + line);
+					throw new AdempiereException("More than one fact line found for " + account + ": " + lineFound + ", " + line);
 				}
 			}
 
@@ -693,7 +789,7 @@ public final class Fact
 
 		if (lineFound == null)
 		{
-			throw new AdempiereException("No fact line found for AccountId: " + accountId.getRepoId() + " in " + m_lines);
+			throw new AdempiereException("No fact line found for " + account + " in " + m_lines);
 		}
 
 		return lineFound;
@@ -701,17 +797,9 @@ public final class Fact
 
 	public void save()
 	{
-		final FactTrxStrategy factTrxLinesStrategy = getFactTrxLinesStrategyEffective();
-		if (factTrxLinesStrategy != null)
-		{
-			factTrxLinesStrategy
-					.createFactTrxLines(m_lines)
-					.forEach(this::save);
-		}
-		else
-		{
-			m_lines.forEach(line -> InterfaceWrapperHelper.save(line, ITrx.TRXNAME_ThreadInherited));
-		}
+		factTrxLinesStrategy
+				.createFactTrxLines(m_lines)
+				.forEach(this::save);
 	}
 
 	private void save(final FactTrxLines factTrxLines)
@@ -762,4 +850,107 @@ public final class Fact
 		m_lines.forEach(consumer);
 	}
 
+	/**
+	 * Fact Balance Utility
+	 *
+	 * @author Jorg Janke
+	 * @version $Id: Fact.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
+	 */
+	private static final class Balance
+	{
+		/**
+		 * New Balance
+		 *
+		 * @param dr DR
+		 * @param cr CR
+		 */
+		public Balance(final BigDecimal dr, final BigDecimal cr)
+		{
+			super();
+			DR = dr;
+			CR = cr;
+		}
+
+		/**
+		 * DR Amount
+		 */
+		private BigDecimal DR = BigDecimal.ZERO;
+		/**
+		 * CR Amount
+		 */
+		private BigDecimal CR = BigDecimal.ZERO;
+
+		/**
+		 * Add
+		 *
+		 * @param dr DR
+		 * @param cr CR
+		 */
+		public void add(BigDecimal dr, BigDecimal cr)
+		{
+			DR = DR.add(dr);
+			CR = CR.add(cr);
+		}
+
+		/**
+		 * Get Balance
+		 *
+		 * @return balance
+		 */
+		public BigDecimal getBalance()
+		{
+			return DR.subtract(CR);
+		}    // getBalance
+
+		/**
+		 * Get Post Balance
+		 *
+		 * @return absolute balance - negative if reversal
+		 */
+		public BigDecimal getPostBalance()
+		{
+			BigDecimal bd = getBalance().abs();
+			if (isReversal())
+			{
+				return bd.negate();
+			}
+			return bd;
+		}    // getPostBalance
+
+		/**
+		 * Zero Balance
+		 *
+		 * @return true if 0
+		 */
+		public boolean isZeroBalance()
+		{
+			return getBalance().signum() == 0;
+		}    // isZeroBalance
+
+		/**
+		 * Reversal
+		 *
+		 * @return true if both DR/CR are negative or zero
+		 */
+		public boolean isReversal()
+		{
+			return DR.signum() <= 0 && CR.signum() <= 0;
+		}    // isReversal
+
+		/**
+		 * String Representation
+		 *
+		 * @return info
+		 */
+		@Override
+		public String toString()
+		{
+			final StringBuilder sb = new StringBuilder("Balance[");
+			sb.append("DR=").append(DR)
+					.append("-CR=").append(CR)
+					.append(" = ").append(getBalance())
+					.append("]");
+			return sb.toString();
+		} // toString
+	}    // Balance
 }   // Fact

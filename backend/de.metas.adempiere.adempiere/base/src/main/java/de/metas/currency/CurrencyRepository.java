@@ -1,9 +1,10 @@
 package de.metas.currency;
 
+import org.springframework.stereotype.Repository;
+
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.springframework.stereotype.Repository;
 
 /*
  * #%L
@@ -31,14 +32,12 @@ import org.springframework.stereotype.Repository;
 public class CurrencyRepository
 {
 	final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
-	@NonNull
+	
 	public Currency getById(@NonNull final CurrencyId currencyId)
 	{
 		return currencyDAO.getById(currencyId);
 	}
 
-	@NonNull
 	public Currency getById(final int currencyId)
 	{
 		return getById(CurrencyId.ofRepoId(currencyId));

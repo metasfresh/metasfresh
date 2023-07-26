@@ -1,28 +1,28 @@
 package de.metas.acct.api.impl;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.util.Check;
+import java.util.Map;
+import java.util.Properties;
+
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.ModelColumn;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
-import org.compiere.util.Env;
 
-import java.util.Map;
-import java.util.Properties;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -71,7 +71,7 @@ public class AccountDAO implements IAccountDAO
 
 	@Override
 	@Cached(cacheName = MAccount.Table_Name)
-	public @NonNull MAccount getById(@CacheCtx final Properties ctx, final int validCombinationId)
+	public MAccount getById(@CacheCtx final Properties ctx, final int validCombinationId)
 	{
 		Check.assume(validCombinationId > 0, "validCombinationId > 0");
 		final MAccount account = new MAccount(ctx, validCombinationId, ITrx.TRXNAME_None);
@@ -83,7 +83,7 @@ public class AccountDAO implements IAccountDAO
 	}
 
 	@Override
-	public @NonNull MAccount getById(final Properties ctx, @NonNull final AccountId accountId)
+	public MAccount getById(final Properties ctx, @NonNull final AccountId accountId)
 	{
 		return getById(ctx, accountId.getRepoId());
 	}
@@ -137,46 +137,4 @@ public class AccountDAO implements IAccountDAO
 		final I_C_ValidCombination existingAccount = queryBuilder.create().firstOnly(I_C_ValidCombination.class);
 		return LegacyAdapters.convertToPO(existingAccount);
 	}
-
-	@Override
-	@NonNull
-	public AccountId getOrCreate(@NonNull final AccountDimension dimension)
-	{
-		// Existing
-		final MAccount existingAccount = retrieveAccount(Env.getCtx(), dimension);
-		if (existingAccount != null)
-		{
-			return AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID());
-		}
-
-		final MAccount vc = InterfaceWrapperHelper.newInstanceOutOfTrx(MAccount.class);
-		vc.setAD_Org_ID(dimension.getAD_Org_ID());
-		vc.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
-		vc.setAccount_ID(dimension.getC_ElementValue_ID());
-		vc.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
-		vc.setM_Product_ID(dimension.getM_Product_ID());
-		vc.setC_BPartner_ID(dimension.getC_BPartner_ID());
-		vc.setAD_OrgTrx_ID(dimension.getAD_OrgTrx_ID());
-		vc.setC_LocFrom_ID(dimension.getC_LocFrom_ID());
-		vc.setC_LocTo_ID(dimension.getC_LocTo_ID());
-		vc.setC_SalesRegion_ID(dimension.getC_SalesRegion_ID());
-		vc.setC_Project_ID(dimension.getC_Project_ID());
-		vc.setC_Campaign_ID(dimension.getC_Campaign_ID());
-		vc.setC_Activity_ID(dimension.getC_Activity_ID());
-		vc.setUser1_ID(dimension.getUser1_ID());
-		vc.setUser2_ID(dimension.getUser2_ID());
-		vc.setUserElement1_ID(dimension.getUserElement1_ID());
-		vc.setUserElement2_ID(dimension.getUserElement2_ID());
-		vc.setUserElementString1(dimension.getUserElementString1());
-		vc.setUserElementString2(dimension.getUserElementString2());
-		vc.setUserElementString3(dimension.getUserElementString3());
-		vc.setUserElementString4(dimension.getUserElementString4());
-		vc.setUserElementString5(dimension.getUserElementString5());
-		vc.setUserElementString6(dimension.getUserElementString6());
-		vc.setUserElementString7(dimension.getUserElementString7());
-		InterfaceWrapperHelper.save(vc);
-
-		return AccountId.ofRepoId(vc.getC_ValidCombination_ID());
-	}	// get
-
 }

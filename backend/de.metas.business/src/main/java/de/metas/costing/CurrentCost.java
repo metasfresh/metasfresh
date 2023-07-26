@@ -174,8 +174,12 @@ public final class CurrentCost
 			@NonNull final Quantity qty,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
-
 		assertCostCurrency(amt);
+
+		if (qty.signum() == 0 && amt.signum() != 0)
+		{
+			throw new AdempiereException("Qty shall not be zero when amount is non zero: " + amt);
+		}
 
 		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);
@@ -196,16 +200,11 @@ public final class CurrentCost
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty)
 	{
+		assertCostCurrency(amt);
 		assertCostUOM(qty);
 
-		addCumulatedAmt(amt);
-		cumulatedQty = cumulatedQty.add(qty);
-	}
-
-	public void addCumulatedAmt(@NonNull final CostAmount amt)
-	{
-		assertCostCurrency(amt);
 		cumulatedAmt = cumulatedAmt.add(amt);
+		cumulatedQty = cumulatedQty.add(qty);
 	}
 
 	public void addToCurrentQtyAndCumulate(

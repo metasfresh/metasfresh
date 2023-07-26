@@ -185,38 +185,6 @@ public final class Debouncer<T>
 
 	}
 
-	public int getCurrentBufferSize()
-	{
-		synchronized (lock)
-		{
-			return buffer.size();
-		}
-	}
-
-	public void processAndClearBufferSync()
-	{
-		synchronized (lock)
-		{
-			if (!buffer.isEmpty())
-			{
-				final ArrayList<T> itemsToConsume = new ArrayList<>(buffer);
-
-				consumer.accept(itemsToConsume);
-
-				buffer.clear();
-
-			}
-		}
-	}
-
-	public void purgeBuffer()
-	{
-		synchronized (lock)
-		{
-			buffer.clear();
-		}
-	}
-
 	/*
 	public static void main(String[] args) throws InterruptedException
 	{

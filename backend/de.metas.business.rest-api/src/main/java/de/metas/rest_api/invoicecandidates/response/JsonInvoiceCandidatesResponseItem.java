@@ -2,7 +2,7 @@ package de.metas.rest_api.invoicecandidates.response;
 
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.rest_api.utils.MetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,13 +33,13 @@ import lombok.Value;
 @Builder
 public class JsonInvoiceCandidatesResponseItem
 {
-	@Schema(type = "java.lang.String")
+	@ApiModelProperty(position = 10, dataType = "java.lang.String")
 	JsonExternalId externalHeaderId;
 
-	@Schema(type = "java.lang.String")
+	@ApiModelProperty(position = 20, dataType = "java.lang.String")
 	JsonExternalId externalLineId;
 
-	@Schema(type = "java.lang.Long", description = "The metasfresh-ID of the upserted record")
+	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the upserted record")
 	@NonNull
 	MetasfreshId metasfreshId;
 }
