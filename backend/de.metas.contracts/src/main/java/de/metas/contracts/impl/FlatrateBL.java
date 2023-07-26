@@ -38,6 +38,7 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
@@ -2400,37 +2401,39 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public I_C_Flatrate_Conditions cloneConditionsToNewYear(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Year newYear)
+	public ConditionsId cloneConditionsToNewYear(@NonNull final ConditionsId conditionsId, @NonNull final YearId newYearId)
 	{
 		//
 		// make sure it's Modular Contracts first
-		if (!isModularContract(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID())))
+		if (!isModularContract(conditionsId))
 		{
 			throw new AdempiereException("Not Modular Contract Term");
 		}
 
-		final I_C_Flatrate_Conditions newFlatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
+		final I_C_Flatrate_Conditions newConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
 
 		final PO from = InterfaceWrapperHelper.getPO(conditions);
-		final PO to = InterfaceWrapperHelper.getPO(newFlatrateConditions);
+		final PO to = InterfaceWrapperHelper.getPO(newConditions);
 
 		PO.copyValues(from, to, true);
 
-		newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
+		final I_C_Year newYear = InterfaceWrapperHelper.load(newYearId, I_C_Year.class);
+		newConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
 
 		final I_ModCntr_Settings modCntrSettings = cloneModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
 
-		newFlatrateConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
-		newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
+		newConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
+		newConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
 
-		InterfaceWrapperHelper.save(newFlatrateConditions);
+		InterfaceWrapperHelper.save(newConditions);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
 		childCRS.setParentPO(to);
 		childCRS.setBase(true);
 		childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(conditions));
 
-		return newFlatrateConditions;
+		return ConditionsId.ofRepoId(newConditions.getC_Flatrate_Conditions_ID());
 
 	}
 

@@ -353,7 +353,7 @@ public class C_Flatrate_Term_StepDef
 						.firstOnlyNotNull(I_C_Flatrate_Term.class));
 	}
 
-	@When("^extend C_Flatrate_Term identified by (.*) starting from (.*) will fail with message \"(.*)\"$")
+	@Then("^extend C_Flatrate_Term identified by (.*) starting from (.*) will fail with message \"(.*)\"$")
 	public void failWithMessageWhenExtendingC_Flatrate_TermsStartingFromWithMessage(@NonNull final String contractIdentifier, @NonNull final String startingDate, @NonNull final String message)
 	{
 		assertThat(message).isNotBlank();
