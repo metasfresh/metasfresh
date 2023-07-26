@@ -130,4 +130,6 @@ public interface IADProcessDAO extends ISingletonService
 	void updateColumnNameByAdElementId(
 			@NonNull AdElementId adElementId,
 			@Nullable String newColumnName);
+
+	ProcessType retrieveProcessType(@NonNull AdProcessId processId);
 }
