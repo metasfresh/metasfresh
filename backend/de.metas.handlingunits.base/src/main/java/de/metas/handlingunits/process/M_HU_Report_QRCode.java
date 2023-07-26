@@ -38,6 +38,17 @@ public class M_HU_Report_QRCode extends JavaProcess
 {
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
+
+	private static final String PARAM_AD_Process_ID = "AD_Process_ID";
+	private static final String PARAM_IsDirectPrint = "IsDirectPrint";
+
+	@Param(parameterName = PARAM_AD_Process_ID)
+	private int processId;
+
+	@Param(parameterName = PARAM_IsDirectPrint)
+	private boolean isDirectPrint;
+
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
