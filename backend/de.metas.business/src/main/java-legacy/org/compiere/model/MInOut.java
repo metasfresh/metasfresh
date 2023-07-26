@@ -1671,7 +1671,7 @@ public class MInOut extends X_M_InOut implements IDocument
 							.invoiceLine(iLine)
 							.inoutLine(sLine)
 							.dateTrx(getMovementDate())
-							.considerQtysAlreadyMatched(false) // backward compatibility
+							.considerQtysAlreadyMatched(true)
 							.allowQtysOfOppositeSigns() // backward compatibility
 							.skipIfMatchingsAlreadyExist() // backward compatibility
 							.build();
