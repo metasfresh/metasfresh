@@ -1179,9 +1179,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	@Nullable
+	@NonNull
 	public WarehouseId getWarehouseIdForHuId(@NonNull final HuId huId)
 	{
-		return warehouseDAO.getWarehouseIdByLocatorRepoId(getById(huId).getM_Locator_ID());
+		final WarehouseId warehouseIdByLocatorRepoId = warehouseDAO.getWarehouseIdByLocatorRepoId(getById(huId).getM_Locator_ID());
+		Check.assumeNotNull(warehouseIdByLocatorRepoId, "Warehouse cannot be determined for hu: {}", huId);
+		return warehouseIdByLocatorRepoId;
 	}
 }

@@ -31,6 +31,7 @@ import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
@@ -121,6 +122,7 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 				.productId(productId)
 				.qtyOnHand(quantityInProductUom.toBigDecimal())
 				.warehouseId(warehouseId)
+				.storageAttributesKey(AttributesKey.ALL) // it's reserved, don't care about attributes at this point
 				.build();
 
 	}
