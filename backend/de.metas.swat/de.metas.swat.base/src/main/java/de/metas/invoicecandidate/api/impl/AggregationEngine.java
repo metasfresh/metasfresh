@@ -11,6 +11,7 @@ import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -52,8 +53,8 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -131,6 +132,8 @@ public final class AggregationEngine
 	@Nullable
 	private final ForexContractRef forexContractRef;
 	private final AdTableId inoutLineTableId;
+	@Nullable
+	private final BankAccountId bankAccountId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
@@ -146,7 +149,8 @@ public final class AggregationEngine
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@Nullable final ForexContractRef forexContractRef,
-			@Nullable final DimensionService dimensionService)
+			@Nullable final DimensionService dimensionService,
+			@Nullable final BankAccountId bankAccountId)
 	{
 		this.bpartnerBL = coalesceNotNull(bpartnerBL, () -> Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, () -> SpringContextHolder.instance.getBean(MatchInvoiceService.class));
@@ -164,6 +168,7 @@ public final class AggregationEngine
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
+		this.bankAccountId = bankAccountId;
 	}
 
 	public static AggregationEngine newInstance()
@@ -507,6 +512,7 @@ public final class AggregationEngine
 			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
 			invoiceHeader.setC_PaymentInstruction_ID(icRecord.getC_PaymentInstruction_ID());
 			invoiceHeader.setC_Tax_Departure_Country_ID(icRecord.getC_Tax_Departure_Country_ID());
+			invoiceHeader.setBankAccountId(BankAccountId.toRepoId(bankAccountId));
 		}
 		catch (final RuntimeException rte)
 		{

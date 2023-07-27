@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.dimension.Dimension;
@@ -112,4 +113,7 @@ public interface IInvoiceHeader
 
 	@Nullable
 	CountryId getC_Tax_Departure_Country_ID();
+
+	@Nullable
+	BankAccountId getBankAccountId();
 }
