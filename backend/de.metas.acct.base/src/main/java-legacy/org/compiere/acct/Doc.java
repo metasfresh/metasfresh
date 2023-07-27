@@ -356,7 +356,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		//
-		// Delete existing Accounting
+		// Check posting allowed
 		if (repost)
 		{
 			if (isPosted() && !isPeriodOpen())    // already posted - don't delete if period closed
@@ -365,9 +365,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setPreserveDocumentPostedStatus()
 						.setDetailMessage("@PeriodClosed@");
 			}
-
-			// delete existing accounting records
-			deleteAcct();
 		}
 		else if (isPosted())
 		{
@@ -377,36 +374,22 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		//
-		// Create Fact per AcctSchema
-		final List<Fact> facts = new ArrayList<>();
-		for (final AcctSchema acctSchema : acctSchemas)
-		{
-			if (isSkipPosting(acctSchema))
-			{
-				continue;
-			}
-
-			// post
-			final List<Fact> factsForAcctSchema = postLogic(acctSchema);
-			facts.addAll(factsForAcctSchema);
-		}
+		// Create Facts
+		final List<Fact> facts = postLogic();
 
 		//
 		// Fire event: BEFORE_POST
 		services.fireBeforePostEvent(getDocModel());
 
 		//
-		// Update Open Items Matching
-		for (final Fact fact : facts)
+		// Save facts to database
 		{
-			fact.forEach(FactLine::updateFAOpenItemTrxInfo);
-		}
+			if (repost)
+			{
+				deleteAcct();
+			}
 
-		//
-		// Save facts
-		for (final Fact fact : facts)
-		{
-			fact.save();
+			facts.forEach(Fact::save);
 		}
 
 		//
@@ -414,13 +397,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		services.fireAfterPostEvent(getDocModel());
 		// Execute after document posted code
 		afterPost();
-
-		//
-		// Dispose facts
-		for (final Fact fact : facts)
-		{
-			fact.dispose();
-		}
 	}
 
 	private boolean isSkipPosting(final AcctSchema acctSchema)
@@ -449,6 +425,35 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	private void deleteAcct() {services.deleteFactAcctByDocumentModel(getDocModel());}
+
+	@NonNull
+	private List<Fact> postLogic()
+	{
+		//
+		// Create Facts
+		final List<Fact> facts = new ArrayList<>();
+		for (final AcctSchema acctSchema : acctSchemas)
+		{
+			if (isSkipPosting(acctSchema))
+			{
+				continue;
+			}
+
+			// post
+			final List<Fact> factsForAcctSchema = postLogic(acctSchema);
+			facts.addAll(factsForAcctSchema);
+		}
+
+		//
+		// Update Open Items Matching
+		for (final Fact fact : facts)
+		{
+			fact.forEach(FactLine::updateFAOpenItemTrxInfo);
+		}
+
+		//
+		return facts;
+	}
 
 	private List<Fact> postLogic(final AcctSchema acctSchema)
 	{
@@ -1052,14 +1057,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_Description;
 	}
 
-	protected final CurrencyId getCurrencyId()
+	protected final CurrencyId getCurrencyId() {return getCurrencyIdOptional().orElse(null);}
+
+	protected final Optional<CurrencyId> getCurrencyIdOptional()
 	{
 		if (_currencyId == null)
 		{
 			_currencyId = getValueAsOptionalId("C_Currency_ID", CurrencyId::ofRepoIdOrNull);
 		}
-
-		return _currencyId.orElse(null);
+		return _currencyId;
 	}
 
 	protected final void setC_Currency_ID(final CurrencyId currencyId)
@@ -1070,8 +1076,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final void setNoCurrency()
 	{
-		final CurrencyId currencyId = null;
-		setC_Currency_ID(currencyId);
+		setC_Currency_ID(null);
 	}
 
 	protected final boolean isMultiCurrency()
@@ -1091,19 +1096,18 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public final CurrencyPrecision getStdPrecision()
 	{
-		if (_currencyPrecision != null)
+		if (_currencyPrecision == null)
 		{
-			return _currencyPrecision;
+			_currencyPrecision = computeStdPrecision();
 		}
-
-		final CurrencyId currencyId = getCurrencyId();
-		if (currencyId == null)
-		{
-			return ICurrencyDAO.DEFAULT_PRECISION;
-		}
-
-		_currencyPrecision = services.getCurrencyStandardPrecision(currencyId);
 		return _currencyPrecision;
+	}
+
+	private CurrencyPrecision computeStdPrecision()
+	{
+		return getCurrencyIdOptional()
+				.map(services::getCurrencyStandardPrecision)
+				.orElse(ICurrencyDAO.DEFAULT_PRECISION);
 	}
 
 	protected final GLCategoryId getGL_Category_ID()
@@ -1157,9 +1161,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				() -> _dateDoc,
 				() -> getValueAsLocalDateOrNull("DateDoc"),
 				() -> getValueAsLocalDateOrNull("MovementDate"),
-				() -> {
-					throw new AdempiereException("No DateDoc");
-				});
+				() -> {throw new AdempiereException("No DateDoc");});
 	}
 
 	@NonNull
