@@ -182,4 +182,12 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		docTypesRepo.save(dt);
 	}
+
+	@Override
+	public boolean isModularManufacturingOrder(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCBASETYPE_ModularOrder.equals(dt.getDocBaseType());
+	}
 }
