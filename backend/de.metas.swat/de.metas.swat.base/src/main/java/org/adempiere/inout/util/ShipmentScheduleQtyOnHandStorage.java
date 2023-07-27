@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ import java.util.stream.Stream;
  * Allows to change (in memory!) the qtyOnHand.
  */
 @ToString(of = "stockDetails")
-public class ShipmentScheduleQtyOnHandStorage
+public class ShipmentScheduleQtyOnHandStorage implements IShipmentScheduleQtyOnHandStorage
 {
 	// services
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -211,11 +212,12 @@ public class ShipmentScheduleQtyOnHandStorage
 		return !stockDetails.isEmpty();
 	}
 
-	public ShipmentScheduleAvailableStock getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule sched)
+	@Override
+	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(final @NonNull I_M_ShipmentSchedule sched)
 	{
 		if (!hasStockDetails())
 		{
-			return ShipmentScheduleAvailableStock.of();
+			return Collections.emptyList();
 		}
 		else
 		{
@@ -231,7 +233,7 @@ public class ShipmentScheduleQtyOnHandStorage
 			final PPOrderId pickFromOrderId = PPOrderId.ofRepoIdOrNull(sched.getPickFrom_Order_ID());
 			availableStockDetails.addAll(createPickFromStockDetails(mainProductQuery, pickFromOrderId));
 
-			return ShipmentScheduleAvailableStock.of(availableStockDetails);
+			return availableStockDetails;
 		}
 	}
 
