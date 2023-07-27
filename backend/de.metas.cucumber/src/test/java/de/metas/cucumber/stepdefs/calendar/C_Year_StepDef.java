@@ -73,6 +73,8 @@ public class C_Year_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_Year.class);
 
+			assertThat(yearRecord).as("No Record found for Calendar: {} and FiscalYear: {}", calendar.getName(), fiscalYear).isNotNull();
+
 			final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 			yearTable.put(yearIdentifier, yearRecord);
 		}

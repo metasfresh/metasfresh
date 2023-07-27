@@ -37,6 +37,7 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommissionSettings_StepDefData;
@@ -45,6 +46,7 @@ import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Ma
 import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettings_StepDefData;
 import de.metas.cucumber.stepdefs.interiminvoice.settings.C_Interim_Invoice_Settings_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.product.M_Product_StepDef;
 import de.metas.order.InvoiceRule;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -56,9 +58,11 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Interim_Invoice_Settings;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 
 import java.util.List;
 import java.util.Map;
@@ -72,6 +76,7 @@ import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Lice
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_MediatedCommissionSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_DocStatus;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_InvoiceRule;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_OnFlatrateTermExtend;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
@@ -92,6 +97,7 @@ public class C_Flatrate_Conditions_StepDef
 	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
 	private final ModCntr_Settings_StepDefData modCntrSettingsTable;
 	private final C_Year_StepDefData yearTable;
+	private final M_Product_StepDefData productTable;
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
@@ -102,7 +108,8 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
 			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable,
 			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable,
-			@NonNull final C_Year_StepDefData yearTable)
+			@NonNull final C_Year_StepDefData yearTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;
@@ -113,6 +120,7 @@ public class C_Flatrate_Conditions_StepDef
 		this.interimInvoiceSettingsTable = interimInvoiceSettingsTable;
 		this.modCntrSettingsTable = modCntrSettingsTable;
 		this.yearTable = yearTable;
+		this.productTable = productTable;
 	}
 
 	@Given("metasfresh contains C_Flatrate_Conditions:")
@@ -237,7 +245,7 @@ public class C_Flatrate_Conditions_StepDef
 		final I_C_Flatrate_Conditions condition = conditionsTable.get(flatrateConditionsIdentifier);
 		assertThat(condition).isNotNull();
 
-		final String yearIdentifier = tableRow.get(I_C_Year.COLUMNNAME_C_Year_ID + TABLECOLUMN_IDENTIFIER);
+		final String yearIdentifier = tableRow.get(I_C_Year.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 		assertThat(yearIdentifier).isNotBlank();
 
 		final I_C_Year year = yearTable.get(yearIdentifier);
@@ -246,16 +254,35 @@ public class C_Flatrate_Conditions_StepDef
 		final String clonedConditionsIdentifier = tableRow.get("CLONE." + COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
 		assertThat(clonedConditionsIdentifier).isNotBlank();
 
-		//
-		// calling the BL called in the process -- only method used
-		final ConditionsId conditionsId = ConditionsId.ofRepoId(condition.getC_Flatrate_Conditions_ID());
-		final YearId yearId = YearId.ofRepoId(year.getC_Year_ID());
+		final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + "ErrorMessage");
 
-		final ConditionsId clonedConditionId = flatrateBL.cloneConditionsToNewYear(conditionsId, yearId);
+		try
+		{
+			//
+			// calling the BL called in the process -- only method used
+			final ConditionsId conditionsId = ConditionsId.ofRepoId(condition.getC_Flatrate_Conditions_ID());
+			final YearId yearId = YearId.ofRepoId(year.getC_Year_ID());
 
-		final I_C_Flatrate_Conditions clonedCondition = InterfaceWrapperHelper.load(clonedConditionId, I_C_Flatrate_Conditions.class);
+			final ConditionsId clonedConditionId = flatrateBL.cloneConditionsToNewYear(conditionsId, yearId);
 
-		conditionsTable.put(clonedConditionsIdentifier, clonedCondition);
+			final I_C_Flatrate_Conditions clonedCondition = InterfaceWrapperHelper.load(clonedConditionId, I_C_Flatrate_Conditions.class);
+			conditionsTable.put(clonedConditionsIdentifier, clonedCondition);
+
+		}
+		catch (final Exception exception)
+		{
+			if (errorMessage != null)
+			{
+				assertThat(exception).isNotNull();
+				assertThat(exception).isExactlyInstanceOf(AdempiereException.class);
+				assertThat(exception.getMessage()).isEqualTo(errorMessage);
+			}
+			else
+			{
+				fail(exception.getMessage(), exception);
+			}
+		}
+
 	}
 
 	@Then("validate cloned C_Flatrate_Conditions:")
@@ -282,7 +309,15 @@ public class C_Flatrate_Conditions_StepDef
 		final I_C_Flatrate_Conditions clonedConditions = conditionsTable.get(clonedConditionsIdentifier);
 		assertThat(clonedConditions).isNotNull();
 
-		final I_C_Year harvestYear = yearTable.get("y2023");
+		final I_ModCntr_Settings clonedSettings = clonedConditions.getModCntr_Settings();
+		assertThat(clonedSettings).isNotNull();
+
+		final String clonedSettingsIDentifier = tableRow.get("CLONE." + COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
+		assertThat(clonedSettingsIDentifier).as("CLONE." + COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER + " is mandatory in this context").isNotBlank();
+
+		modCntrSettingsTable.put(clonedSettingsIDentifier, clonedSettings);
+
+		final I_C_Year harvestYear = clonedSettings.getC_Year();
 		assertThat(harvestYear).isNotNull();
 
 		assertThat(clonedConditions.getName()).endsWith("-" + harvestYear.getFiscalYear()); // UUID is added to the name to avoid unique name constraint
@@ -292,24 +327,40 @@ public class C_Flatrate_Conditions_StepDef
 
 	}
 
-	@And("^validate cloned ModCntr_Settings had harvest year (.*)$")
-	public void validate_cloned_ModCntr_Settings(@NonNull final String harvestYearIdentifier)
+	@And("validate cloned ModCntr_Settings:")
+	public void validate_cloned_ModCntr_Settings(@NonNull final DataTable dataTable)
 	{
-		final I_C_Flatrate_Conditions clonedConditions = conditionsTable.get("cloned_flatrate_conditions");
-		assertThat(clonedConditions).isNotNull();
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		final Map<String, String> tableRow = tableRows.get(0);
 
-		final I_C_Year harvestYear = yearTable.get(harvestYearIdentifier);
-		assertThat(harvestYear).isNotNull();
-		//
-		// validate the cloned settings
-		final I_ModCntr_Settings clonedSettings = clonedConditions.getModCntr_Settings();
+		final String clonedSettingsIdentifier = tableRow.get(COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
+		assertThat(clonedSettingsIdentifier).as(COLUMNNAME_ModCntr_Settings_ID + " is mandatory").isNotBlank();
+
+		final I_ModCntr_Settings clonedSettings = modCntrSettingsTable.get(clonedSettingsIdentifier);
 		assertThat(clonedSettings).isNotNull();
 
-		final I_C_Year year = clonedSettings.getC_Year();
-		assertThat(year).isNotNull();
-		assertThat(year.getC_Calendar_ID()).isEqualTo(harvestYear.getC_Calendar_ID());
-		assertThat(year.getC_Year_ID()).isEqualTo(harvestYear.getC_Year_ID());
+		//name
+		final String name = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Name);
+		assertThat(clonedSettings.getName()).isEqualTo(name);
 
+		// product
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		assertThat(productIdentifier).as(I_ModCntr_Settings.COLUMNNAME_M_Product_ID + " is a mandatory column").isNotBlank();
+
+		final I_M_Product product = productTable.get(productIdentifier);
+		assertThat(product).isNotNull();
+		assertThat(clonedSettings.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+
+		// year & calendar
+		final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+		assertThat(yearIdentifier).as(I_ModCntr_Settings.COLUMNNAME_C_Year_ID + " is a mandatory column").isNotBlank();
+
+		final I_C_Year year = yearTable.get(yearIdentifier);
+		assertThat(year).isNotNull();
+		assertThat(clonedSettings.getC_Year_ID()).isEqualTo(year.getC_Year_ID());
+		assertThat(clonedSettings.getC_Calendar_ID()).isEqualTo(year.getC_Calendar_ID());
+
+		// ModCntr_Modules
 		final int clonedModulesCounter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, clonedSettings.getModCntr_Settings_ID())
@@ -319,27 +370,4 @@ public class C_Flatrate_Conditions_StepDef
 		assertThat(clonedModulesCounter).isEqualTo(1);
 	}
 
-	@Then("^fail with message \"(.*)\" when clonning C_Flatrate_Conditions identified by (.*) for year identified by (.*)$")
-	public void failWithMessageWhenClonningC_Flatrate_ConditionsIdentifiedBy_ForYearIdentifiedBy(@NonNull final String message, String flatrateConditionsIdentifier, String yearIdentifier)
-	{
-		final I_C_Flatrate_Conditions conditions = conditionsTable.get(flatrateConditionsIdentifier);
-		final I_C_Year year = yearTable.get(yearIdentifier);
-
-		assertThat(conditions).isNotNull();
-		assertThat(year).isNotNull();
-		assertThat(message).isNotBlank();
-
-		try
-		{
-			final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
-			final YearId yearId = YearId.ofRepoId(year.getC_Year_ID());
-
-			flatrateBL.cloneConditionsToNewYear(conditionsId, yearId);
-		}
-		catch (final Exception e)
-		{
-			assertThat(e).isExactlyInstanceOf(AdempiereException.class);
-			assertThat(e.getMessage()).isEqualTo(message); // dev note : MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS
-		}
-	}
 }

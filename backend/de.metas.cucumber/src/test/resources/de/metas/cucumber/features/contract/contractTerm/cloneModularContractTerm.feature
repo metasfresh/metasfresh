@@ -45,14 +45,16 @@ Feature: Clone Modular Contract Term
   - validate modular contract settings cloned for the harvest year 2023
 
     When clone C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier
-      | modularContractTerm_2022            | y2023                | clonedModularContractTerm_2022
+      | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier |
+      | modularContractTerm_2022            | y2023                | clonedModularContractTerm_2022            |
 
     Then validate cloned C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                          | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.DocStatus |
-      | clonedModularContractTerm_2022      | modularContractTerm_2022_2023 | ModularContract | Ex                       | DR            |
+      | C_Flatrate_Conditions_ID.Identifier | Name                          | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.DocStatus | CLONE.ModCntr_Settings_ID.Identifier |
+      | clonedModularContractTerm_2022      | modularContractTerm_2022_2023 | ModularContract | Ex                       | DR            | clonedModCntr_settings_1             |
 
-    And validate cloned ModCntr_Settings had harvest year y2023
+    And validate cloned ModCntr_Settings:
+      | ModCntr_Settings_ID.Identifier | Name                | M_Product_ID.Identifier | C_Year_ID.Identifier |
+      | clonedModCntr_settings_1       | Settings_17072023_1 | contract_module_product | y2023                |
 
 
   @from:cucumber
@@ -61,4 +63,6 @@ Feature: Clone Modular Contract Term
   - clone the Modular Contract for harvest year 2022
   - fail with message "Einstellungen mit demselben Jahr sind bereits vorhanden"
 
-    Then fail with message "Einstellungen mit demselben Jahr sind bereits vorhanden" when clonning C_Flatrate_Conditions identified by modularContractTerm_2022 for year identified by y2022
+    Then clone C_Flatrate_Conditions:
+      | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier | OPT.ErrorMessage                                        |
+      | modularContractTerm_2022            | y2022                | clonedModularContractTerm_2022            | Einstellungen mit demselben Jahr sind bereits vorhanden |
