@@ -48,24 +48,20 @@ public class Tax
 	public static final int C_TAX_ID_NO_TAX_FOUND = 100;
 
 	@NonNull TaxId taxId;
+	@NonNull String name;
 	boolean isSummary;
 	@NonNull OrgId orgId;
 	@NonNull Timestamp validFrom;
-	@Nullable
-	CountryId countryId;
-	@Nullable
-	CountryId toCountryId;
-	@Nullable
-	TypeOfDestCountry typeOfDestCountry;
+	@Nullable CountryId countryId;
+	@Nullable CountryId toCountryId;
+	@Nullable TypeOfDestCountry typeOfDestCountry;
 	@NonNull TaxCategoryId taxCategoryId;
 	boolean requiresTaxCertificate;
 	SOPOType sopoType;
-	@Nullable
-	Boolean isTaxExempt;
-	@Nullable
-	Boolean isFiscalRepresentation;
-	@Nullable
-	Boolean isSmallBusiness;
+	@Nullable Boolean isTaxExempt;
+	@Nullable Boolean isFiscalRepresentation;
+	@Nullable Boolean isSmallBusiness;
+	boolean isSalesTax;
 	boolean isWholeTax;
 	boolean isReverseCharge;
 	boolean isDocumentLevel;
@@ -77,6 +73,7 @@ public class Tax
 	@Builder
 	public Tax(
 			@NonNull final TaxId taxId,
+			@NonNull final String name,
 			final boolean isSummary,
 			@NonNull final OrgId orgId,
 			@NonNull final Timestamp validFrom,
@@ -89,6 +86,7 @@ public class Tax
 			final boolean isTaxExempt,
 			@Nullable final Boolean isFiscalRepresentation,
 			@Nullable final Boolean isSmallBusiness,
+			final boolean isSalesTax,
 			final boolean isWholeTax,
 			final boolean isReverseCharge,
 			final boolean isDocumentLevel,
@@ -98,6 +96,7 @@ public class Tax
 			@Nullable final String taxCode)
 	{
 		this.taxId = taxId;
+		this.name = name;
 		this.isSummary = isSummary;
 		this.orgId = orgId;
 		this.validFrom = validFrom;
@@ -110,6 +109,7 @@ public class Tax
 		this.isTaxExempt = isTaxExempt;
 		this.isFiscalRepresentation = isFiscalRepresentation;
 		this.isSmallBusiness = isSmallBusiness;
+		this.isSalesTax = isSalesTax;
 		this.isWholeTax = isWholeTax;
 		this.isReverseCharge = isReverseCharge;
 		this.isDocumentLevel = isDocumentLevel;
