@@ -34,6 +34,9 @@ import java.util.List;
  */
 public interface IShipmentScheduleQtyOnHandStorage
 {
+	/**
+	 * @implSpec the calling API will not check if the returned storages overlap.
+	 */
 	List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule shipmentSchedule);
 
 	@Nullable

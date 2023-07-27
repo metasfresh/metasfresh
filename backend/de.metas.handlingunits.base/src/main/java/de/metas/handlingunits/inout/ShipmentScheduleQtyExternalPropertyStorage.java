@@ -25,7 +25,7 @@ package de.metas.handlingunits.inout;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
@@ -33,13 +33,12 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.order.OrderLineId;
-import de.metas.product.IProductDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.inout.util.IShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
@@ -54,17 +53,24 @@ import java.util.List;
  */
 public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentScheduleQtyOnHandStorage
 {
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IUOMConversionBL uomConversionBL;
+	private final IProductBL productBL;
+	private final IHandlingUnitsBL handlingUnitsBL;
 
 	private final HUReservationRepository huReservationRepository;
 	private final HUDescriptorService huDescriptorService;
 
-	public ShipmentScheduleQtyExternalPropertyStorage(final HUReservationRepository huReservationRepository, final HUDescriptorService huDescriptorService)
+	public ShipmentScheduleQtyExternalPropertyStorage(@NonNull final HUReservationRepository huReservationRepository,
+			@NonNull final HUDescriptorService huDescriptorService,
+			@NonNull final IUOMConversionBL uomConversionBL,
+			@NonNull final IProductBL productBL,
+			@NonNull final IHandlingUnitsBL handlingUnitsBL)
 	{
 		this.huReservationRepository = huReservationRepository;
 		this.huDescriptorService = huDescriptorService;
+		this.uomConversionBL = uomConversionBL;
+		this.productBL = productBL;
+		this.handlingUnitsBL = handlingUnitsBL;
 	}
 
 	@Override
@@ -106,8 +112,8 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 	private ShipmentScheduleAvailableStockDetail toShipmentScheduleAvailableStockDetail(@NonNull final HuId vhuId, final @NonNull HUReservation huRes, @NonNull final I_M_ShipmentSchedule sched)
 	{
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
-		final UomId uomId = UomId.ofRepoId(productDAO.getById(productId).getC_UOM_ID());
-		final WarehouseId warehouseId = handlingUnitsDAO.getWarehouseIdForHuId(vhuId);
+		final UomId uomId = productBL.getStockUOMId(productId);
+		final WarehouseId warehouseId = handlingUnitsBL.getWarehouseIdForHuId(vhuId);
 
 		final Quantity reservedQtyByVhuId = huRes.getReservedQtyByVhuId(vhuId);
 		final Quantity quantityInProductUom = uomConversionBL.convertQuantityTo(reservedQtyByVhuId, productId, uomId);

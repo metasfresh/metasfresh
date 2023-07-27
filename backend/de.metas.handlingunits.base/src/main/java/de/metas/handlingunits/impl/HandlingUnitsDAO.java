@@ -967,12 +967,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public WarehouseId getWarehouseIdForHuId(@NonNull final HuId huId)
-	{
-		return warehouseDAO.getWarehouseIdByLocatorRepoId(getById(huId).getM_Locator_ID());
-	}
-
-	@Override
 	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
 	{
 		if (hus.isEmpty())

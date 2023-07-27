@@ -5,7 +5,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-import de.metas.cache.CCache;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.TableRecordMDC;
@@ -33,7 +32,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -51,8 +52,8 @@ public class ShipmentScheduleQtyOnHandStorage implements IShipmentScheduleQtyOnH
 	private final IPPOrderBL ppOrdersBL = Services.get(IPPOrderBL.class);
 
 	private final ImmutableList<ShipmentScheduleAvailableStockDetail> stockDetails;
-	private final CCache<ArrayKey, StockDataQuery> cachedMaterialQueries = CCache.newLRUCache("QtyOnHandCachedMaterialQueries", 200, CCache.EXPIREMINUTES_Never);
-	private final CCache<PPOrderId, Optional<QtyCalculationsBOM>> cachedPickingBOMs = CCache.newLRUCache("QtyOnHandCachedPickingBOMs", 200, CCache.EXPIREMINUTES_Never);
+	private final Map<ArrayKey, StockDataQuery> cachedMaterialQueries = new HashMap<>();
+	private final Map<PPOrderId, Optional<QtyCalculationsBOM>> cachedPickingBOMs = new HashMap<>();
 
 	public ShipmentScheduleQtyOnHandStorage(
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
@@ -123,7 +124,7 @@ public class ShipmentScheduleQtyOnHandStorage implements IShipmentScheduleQtyOnH
 				I_M_ShipmentSchedule.Table_Name,
 				sched.getM_ShipmentSchedule_ID());
 
-		return cachedMaterialQueries.getOrLoad(materialQueryCacheKey, k -> toQuery0(sched));
+		return cachedMaterialQueries.computeIfAbsent(materialQueryCacheKey, k -> toQuery0(sched));
 	}
 
 	private StockDataQuery toQuery0(@NonNull final I_M_ShipmentSchedule sched)
@@ -183,7 +184,7 @@ public class ShipmentScheduleQtyOnHandStorage implements IShipmentScheduleQtyOnH
 	private Optional<QtyCalculationsBOM> getPickingBOM(@Nullable final PPOrderId pickingOrderId)
 	{
 		return pickingOrderId != null
-				? cachedPickingBOMs.getOrLoad(pickingOrderId, ppOrdersBL::getOpenPickingOrderBOM)
+				? cachedPickingBOMs.computeIfAbsent(pickingOrderId, ppOrdersBL::getOpenPickingOrderBOM)
 				: Optional.empty();
 	}
 
@@ -210,7 +211,6 @@ public class ShipmentScheduleQtyOnHandStorage implements IShipmentScheduleQtyOnH
 	{
 		return !stockDetails.isEmpty();
 	}
-
 
 	@Override
 	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(final @NonNull I_M_ShipmentSchedule sched)

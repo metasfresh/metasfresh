@@ -32,7 +32,7 @@ import java.util.List;
 @Service
 public class ShipmentScheduleQtyOnHandProvider implements IShipmentScheduleQtyOnHandProvider
 {
-	final StockRepository stockRepository;
+	private final StockRepository stockRepository;
 
 	public ShipmentScheduleQtyOnHandProvider(@NonNull final StockRepository stockRepository)
 	{

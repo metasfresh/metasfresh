@@ -92,6 +92,8 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -124,6 +126,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -844,7 +848,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id) {return handlingUnitsRepo.getPackingInstructionById(id);}
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id)
+	{
+		return handlingUnitsRepo.getPackingInstructionById(id);
+	}
 
 	@Override
 	public String getPIName(@NonNull final HuPackingInstructionsId id)
@@ -1169,5 +1176,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return Check.isBlank(hu.getClearanceStatus()) ||
 				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
+	}
+
+	@Override
+	@Nullable
+	public WarehouseId getWarehouseIdForHuId(@NonNull final HuId huId)
+	{
+		return warehouseDAO.getWarehouseIdByLocatorRepoId(getById(huId).getM_Locator_ID());
 	}
 }
