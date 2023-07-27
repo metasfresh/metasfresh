@@ -110,12 +110,6 @@ public final class Fact
 		return currencyConversionContext;
 	}
 
-	public void dispose()
-	{
-		m_lines.clear();
-		m_lines = null;
-	}
-
 	public FactLine createLine(final DocLine<?> docLine,
 							   final Account account,
 							   @NonNull final CurrencyId currencyId,
