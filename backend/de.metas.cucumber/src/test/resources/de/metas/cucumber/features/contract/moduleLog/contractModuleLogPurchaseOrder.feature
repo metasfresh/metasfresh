@@ -28,11 +28,12 @@ Feature: Modular contract log from purchase order
       | bp_moduleLogPO_Location | 5803098505483 | bp_moduleLogPO           | true                | true                |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
+
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year                 | 2022       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year                 | 2022       | harvesting_calendar      |
 
 
   @Id:S0282_100
