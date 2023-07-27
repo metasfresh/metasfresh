@@ -57,6 +57,7 @@ import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
@@ -236,6 +237,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return invoiceDAO.retrieveLineById(invoiceLineId);
 	}
+
+	@Override
+	public List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId) {return invoiceDAO.retrieveTaxes(invoiceId);}
 
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)

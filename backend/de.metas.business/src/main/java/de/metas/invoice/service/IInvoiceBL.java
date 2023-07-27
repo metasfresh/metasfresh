@@ -16,6 +16,7 @@ import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -145,6 +146,8 @@ public interface IInvoiceBL extends ISingletonService
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
+
+	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Create a credit memo for the given invoice.
