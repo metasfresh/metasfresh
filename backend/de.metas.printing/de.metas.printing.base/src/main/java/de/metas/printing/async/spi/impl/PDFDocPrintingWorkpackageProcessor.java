@@ -67,8 +67,8 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
-	private final String PDFArchiveName = "PDFDocPrintingWorkpackageProcessor_ArchiveName";
-	private final String PDFPrintJob_Done = "PDFPrintingAsyncBatchListener_PrintJob_Done_2";
+	private final static String PDFArchiveName = "PDFDocPrintingWorkpackageProcessor_ArchiveName";
+	private final static String PDFPrintJob_Done = "PDFPrintingAsyncBatchListener_PrintJob_Done_2";
 
 	public static final AdProcessId SummaryPdfPrinting_AD_Process_ID = AdProcessId.ofRepoId(540661);
 
@@ -94,7 +94,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 			{
 				print(printjobInstructions, workpackage);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				throw AdempiereException.wrapIfNeeded(e);
 			}

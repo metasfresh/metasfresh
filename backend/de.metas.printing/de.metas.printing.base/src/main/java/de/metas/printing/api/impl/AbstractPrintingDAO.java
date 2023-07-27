@@ -36,7 +36,6 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 import org.slf4j.Logger;
@@ -74,7 +73,7 @@ import java.util.Properties;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
 {
-	private final static transient Logger logger = LogManager.getLogger(AbstractPrintingDAO.class);
+	private final static Logger logger = LogManager.getLogger(AbstractPrintingDAO.class);
 
 	/**
 	 * Flag used to indicate if a change on {@link I_C_Printing_Queue_Recipient} shall NOT automatically trigger an update to {@link I_C_Printing_Queue#setPrintingQueueAggregationKey(String)}
@@ -201,8 +200,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public final I_AD_Printer_Config retrievePrinterConfig(@Nullable final String hostKey, @Nullable final UserId userToPrintId)
 	{
-		try (MDC.MDCCloseable ignore = MDC.putCloseable("hostKey", hostKey);
-				MDC.MDCCloseable ignore2 = MDC.putCloseable("userToPrintId", Integer.toString(UserId.toRepoId(userToPrintId))))
+		try (final MDC.MDCCloseable ignore = MDC.putCloseable("hostKey", hostKey);
+				final MDC.MDCCloseable ignore2 = MDC.putCloseable("userToPrintId", Integer.toString(UserId.toRepoId(userToPrintId))))
 		{
 			final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL
 					.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class)
