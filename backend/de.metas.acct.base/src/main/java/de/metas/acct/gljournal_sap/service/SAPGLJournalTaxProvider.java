@@ -1,5 +1,6 @@
 package de.metas.acct.gljournal_sap.service;
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.TaxAccountsRepository;
 import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AcctSchemaId;
@@ -14,7 +15,6 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -32,6 +32,12 @@ public class SAPGLJournalTaxProvider
 	{
 		this.taxAccountsRepository = taxAccountsRepository;
 		this.moneyService = moneyService;
+	}
+
+	public boolean isReverseCharge(final TaxId taxId)
+	{
+		final Tax tax = taxBL.getTaxById(taxId);
+		return tax.isReverseCharge();
 	}
 
 	@NonNull
@@ -56,13 +62,7 @@ public class SAPGLJournalTaxProvider
 		final CurrencyId currencyId = baseAmt.getCurrencyId();
 		final CurrencyPrecision precision = moneyService.getStdPrecision(currencyId);
 		final Tax tax = taxBL.getTaxById(taxId);
-		if (tax.isReverseCharge())
-		{
-			throw new AdempiereException("Reverse Charge Tax is not supported");
-		}
-
 		final BigDecimal taxAmtBD = tax.calculateTax(baseAmt.toBigDecimal(), false, precision.toInt()).getTaxAmount();
-
 		return Money.of(taxAmtBD, currencyId);
 	}
 }

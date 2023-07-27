@@ -252,9 +252,12 @@ public class SAPGLJournal
 			}
 			else if (line.isBaseTaxLine())
 			{
-				final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
-				it.add(taxLine);
-				hasChanges = true;
+				final List<SAPGLJournalLine> taxLines = createTaxLines(line, taxProvider, currencyConverter);
+				if (!taxLines.isEmpty())
+				{
+					taxLines.forEach(it::add);
+					hasChanges = true;
+				}
 			}
 		}
 
@@ -265,7 +268,7 @@ public class SAPGLJournal
 		}
 	}
 
-	private SAPGLJournalLine createTaxLine(
+	private List<SAPGLJournalLine> createTaxLines(
 			@NonNull final SAPGLJournalLine baseLine,
 			@NonNull final SAPGLJournalTaxProvider taxProvider,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
@@ -276,17 +279,39 @@ public class SAPGLJournal
 		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
-		return SAPGLJournalLine.builder()
-				.parentId(baseLine.getIdNotNull())
-				.line(baseLine.getLine()) // will be updated later
-				.account(taxAccount)
-				.postingSign(taxPostingSign)
-				.amount(taxAmt)
-				.amountAcct(taxAmtAcct)
-				.taxId(taxId)
-				.orgId(baseLine.getOrgId())
-				.dimension(baseLine.getDimension())
-				.build();
+		final ArrayList<SAPGLJournalLine> result = new ArrayList<>();
+		result.add(
+				SAPGLJournalLine.builder()
+						.parentId(baseLine.getIdNotNull())
+						.line(baseLine.getLine()) // will be updated later
+						.account(taxAccount)
+						.postingSign(taxPostingSign)
+						.amount(taxAmt)
+						.amountAcct(taxAmtAcct)
+						.taxId(taxId)
+						.orgId(baseLine.getOrgId())
+						.dimension(baseLine.getDimension())
+						.build()
+		);
+
+		if (taxProvider.isReverseCharge(taxId))
+		{
+			result.add(
+					SAPGLJournalLine.builder()
+							.parentId(baseLine.getIdNotNull())
+							.line(baseLine.getLine()) // will be updated later
+							.account(taxProvider.getTaxAccount(taxId, acctSchemaId, taxPostingSign.reverse()))
+							.postingSign(taxPostingSign.reverse())
+							.amount(taxAmt)
+							.amountAcct(taxAmtAcct)
+							.taxId(taxId)
+							.orgId(baseLine.getOrgId())
+							.dimension(baseLine.getDimension())
+							.build()
+			);
+		}
+
+		return result;
 	}
 
 	public void removeLinesIf(final Predicate<SAPGLJournalLine> predicate)
