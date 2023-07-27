@@ -224,6 +224,7 @@ Feature: sales order
   @Id:S0296_100
   Scenario: validate warehouse assignment
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value true for sys config de.metas.warehouseassignment.ProductWarehouseAssignmentService.EnforceWarehouseAssignmentsForProduct
     And metasfresh contains M_Products:
       | Identifier | Name                    |
       | p_1        | salesProduct_07142023_1 |
@@ -253,6 +254,45 @@ Feature: sales order
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | warehouse_2                   |
     Then metasfresh contains C_OrderLine expecting error:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.ErrorMessage                                                                       |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | ErrorMessage                                                                           |
       | ol_1       | o_1                   | p_1                     | 10         | The warehouses assigned to both the sales/purchase order and the product do not match. |
+    And set sys config boolean value false for sys config de.metas.warehouseassignment.ProductWarehouseAssignmentService.EnforceWarehouseAssignmentsForProduct
+
+  @from:cucumber
+  @Id:S0296_200
+  Scenario: validate warehouse assignment
+    Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value true for sys config de.metas.warehouseassignment.ProductWarehouseAssignmentService.EnforceWarehouseAssignmentsForProduct
+    And metasfresh contains M_Products:
+      | Identifier | Name                    | ProductType |
+      | p_1        | salesProduct_07272023_1 | S           |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_07272023_1 | pricing_system_value_07272023_1 | pricing_system_description_07272023_1 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_07272023_1 | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                      | ValidFrom  |
+      | plv_1      | pl_1                      | salesOrder-PLV_07272023_1 | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 0.0      | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                     | Name                     |
+      | warehouse_1               | warehouseValue_07272023_1 | warehouseName_07272023_1 |
+      | warehouse_2               | warehouseValue_07272023_2 | warehouseName_07272023_2 |
+    And metasfresh contains M_Product_Warehouse
+      | M_Product_Warehouse_ID.Identifier | M_Product_ID.Identifier | M_Warehouse_ID.Identifier |
+      | a_1                               | p_1                     | warehouse_1               |
+    And metasfresh contains C_BPartners:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_07272023_1 | N            | Y              | ps_1                          |
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | 2021-04-17  | warehouse_2                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 10         |
+    And set sys config boolean value false for sys config de.metas.warehouseassignment.ProductWarehouseAssignmentService.EnforceWarehouseAssignmentsForProduct
 

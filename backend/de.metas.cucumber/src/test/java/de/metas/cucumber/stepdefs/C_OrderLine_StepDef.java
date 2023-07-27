@@ -50,6 +50,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -449,10 +450,12 @@ public class C_OrderLine_StepDef
 		try
 		{
 			metasfresh_contains_c_order_lines(dataTable);
+
+			Assertions.assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
 		}
 		catch (final AdempiereException exception)
 		{
-			final String errorMsg = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "OPT.ErrorMessage");
+			final String errorMsg = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "ErrorMessage");
 
 			assertThat(exception.getMessage()).contains(errorMsg);
 		}
