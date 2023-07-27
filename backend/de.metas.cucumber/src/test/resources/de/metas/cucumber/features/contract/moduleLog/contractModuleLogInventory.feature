@@ -41,7 +41,7 @@ Feature: Modular contract log from inventory
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_07042023_1 | module_log_product      | harvesting_calendar      | year                 | moduleLogPricingSystem            |
+      | modCntr_settings_0             | testSettings_07042023_0 | module_log_product      | harvesting_calendar      | year                 | moduleLogPricingSystem            |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name               | Value              | Classname                                                           |
@@ -49,11 +49,11 @@ Feature: Modular contract log from inventory
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_07042023_1 | module_log_product      | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | modCntr_module_1             | 10    | moduleTest_07042023_1 | module_log_product      | Kosten         | modCntr_settings_0             | modCntr_type_1             |
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_07042023_1 | ModularContract | moduleLogPricingSystem            | Ca                       | modCntr_settings_1                 |
+      | moduleLogConditions_PO              | moduleLogConditions_po_07042023_1 | ModularContract | moduleLogPricingSystem            | Ca                       | modCntr_settings_0                 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
