@@ -26,6 +26,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.OrderLineId;
+import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -33,7 +35,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -161,5 +162,12 @@ public final class OlAndSched
 	public String getSalesOrderPORef()
 	{
 		return salesOrder.map(I_C_Order::getPOReference).orElse(null);
+	}
+
+	@NonNull
+	public Optional<OrderLineId> getOrderLineId()
+	{
+		return salesOrderLine.map(org.compiere.model.I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId);
 	}
 }
