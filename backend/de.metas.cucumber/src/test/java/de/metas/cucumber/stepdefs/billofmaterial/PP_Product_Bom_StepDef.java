@@ -135,7 +135,15 @@ public class PP_Product_Bom_StepDef
 		bomLine.setM_Product_ID(productRecord.getM_Product_ID());
 		bomLine.setC_UOM_ID(productRecord.getC_UOM_ID());
 
-		bomLine.setComponentType(BOMComponentType.Component.getCode());
+		final String componentTypeCode = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_BOMLine.COLUMNNAME_ComponentType);
+		if (Check.isNotBlank(componentTypeCode))
+		{
+			bomLine.setComponentType(BOMComponentType.ofCode(componentTypeCode).getCode());
+		}
+		else
+		{
+			bomLine.setComponentType(BOMComponentType.Component.getCode());
+		}
 
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_ValidFrom);
 		final BigDecimal qtyBatch = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);

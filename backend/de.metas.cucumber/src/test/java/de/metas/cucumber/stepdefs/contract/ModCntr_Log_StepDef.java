@@ -34,11 +34,13 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -87,6 +89,7 @@ public class ModCntr_Log_StepDef
 	private final M_InventoryLine_StepDefData inventoryLineTable;
 
 	private final M_InOutLine_StepDefData inOutLineTable;
+	private final PP_Order_StepDefData manufacturingOrderTable;
 
 	public ModCntr_Log_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -99,7 +102,8 @@ public class ModCntr_Log_StepDef
 			@NonNull final C_Year_StepDefData yearTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
-			@NonNull final M_InOutLine_StepDefData inOutLineTable)
+			@NonNull final M_InOutLine_StepDefData inOutLineTable,
+			@NonNull final PP_Order_StepDefData manufacturingOrderTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.warehouseTable = warehouseTable;
@@ -112,6 +116,7 @@ public class ModCntr_Log_StepDef
 		this.orderLineTable = orderLineTable;
 		this.inventoryLineTable = inventoryLineTable;
 		this.inOutLineTable = inOutLineTable;
+		this.manufacturingOrderTable = manufacturingOrderTable;
 	}
 
 	@And("ModCntr_Logs are found:")
@@ -141,10 +146,14 @@ public class ModCntr_Log_StepDef
 			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
 			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
 			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
+			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);
 		}
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Product productRecord = productTable.get(productIdentifier);
 
 		final I_ModCntr_Log modCntrLogRecord = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter()
@@ -152,6 +161,7 @@ public class ModCntr_Log_StepDef
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, recordId)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getC_Flatrate_Term_ID())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Qty, quantity)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 				.create()
 				.firstOnlyOptional()
 				.orElseThrow(() -> new AdempiereException("\n Context: " + getLogContextForWarehouseId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))));
@@ -170,13 +180,6 @@ public class ModCntr_Log_StepDef
 		{
 			final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
 			softly.assertThat(modCntrLogRecord.getM_Warehouse_ID()).as(I_ModCntr_Log.COLUMNNAME_M_Warehouse_ID).isEqualTo(warehouseRecord.getM_Warehouse_ID());
-		}
-
-		final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(productIdentifier))
-		{
-			final I_M_Product productRecord = productTable.get(productIdentifier);
-			softly.assertThat(modCntrLogRecord.getM_Product_ID()).as(I_ModCntr_Log.COLUMNNAME_M_Product_ID).isEqualTo(productRecord.getM_Product_ID());
 		}
 
 		final String producerBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_Producer_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);

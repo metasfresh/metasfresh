@@ -24,6 +24,7 @@ package org.adempiere.warehouse.api.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
@@ -343,5 +344,13 @@ public class WarehouseBL implements IWarehouseBL
 	public OrgId getOrgIdByLocatorRepoId(final int locatorId)
 	{
 		return warehouseDAO.retrieveOrgIdByLocatorId(locatorId);
+	}
+
+	@NonNull
+	@Override
+	public BPartnerId getBPartnerId(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return BPartnerId.ofRepoId(warehouse.getC_BPartner_ID());
 	}
 }
