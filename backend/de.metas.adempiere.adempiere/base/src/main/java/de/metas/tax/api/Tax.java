@@ -57,7 +57,7 @@ public class Tax
 	@Nullable TypeOfDestCountry typeOfDestCountry;
 	@NonNull TaxCategoryId taxCategoryId;
 	boolean requiresTaxCertificate;
-	SOPOType sopoType;
+	@Nullable SOPOType sopoType;
 	@Nullable Boolean isTaxExempt;
 	@Nullable Boolean isFiscalRepresentation;
 	@Nullable Boolean isSmallBusiness;
@@ -65,8 +65,8 @@ public class Tax
 	boolean isWholeTax;
 	boolean isReverseCharge;
 	boolean isDocumentLevel;
-	BigDecimal rate;
-	BoilerPlateId boilerPlateId;
+	@NonNull BigDecimal rate;
+	@Nullable BoilerPlateId boilerPlateId;
 	@NonNull Integer seqNo;
 	@Nullable String taxCode;
 
@@ -81,8 +81,8 @@ public class Tax
 			@Nullable final CountryId toCountryId,
 			@Nullable final TypeOfDestCountry typeOfDestCountry,
 			@NonNull final TaxCategoryId taxCategoryId,
-			@Nullable final Boolean requiresTaxCertificate,
-			final SOPOType sopoType,
+			final boolean requiresTaxCertificate,
+			@Nullable final SOPOType sopoType,
 			final boolean isTaxExempt,
 			@Nullable final Boolean isFiscalRepresentation,
 			@Nullable final Boolean isSmallBusiness,
@@ -124,6 +124,7 @@ public class Tax
 		return C_TAX_ID_NO_TAX_FOUND == taxId.getRepoId();
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isZeroTax() {return this.rate.signum() == 0;}
 
 	/**
@@ -146,7 +147,7 @@ public class Tax
 			}
 			else
 			{
-				final BigDecimal taxAmt = calculateTax(amount, taxIncluded, scale).getTaxAmount();
+				final BigDecimal taxAmt = calculateTax(amount, true, scale).getTaxAmount();
 				return amount.subtract(taxAmt);
 			}
 		}
@@ -197,7 +198,7 @@ public class Tax
 		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, RoundingMode.HALF_UP);
 		final BigDecimal reverseChargeTaxAmtFinal = reverseChargeAmt.setScale(scale, RoundingMode.HALF_UP);
 
-		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}] / reverse charge = {} [{}]",
+		log.debug("calculateTax: amount={} (incl={}, multiplier={}, scale={}) = {} [{}] / reverse charge = {} [{}]",
 				amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt, reverseChargeAmt, reverseChargeTaxAmtFinal);
 
 		return CalculateTaxResult.builder()
