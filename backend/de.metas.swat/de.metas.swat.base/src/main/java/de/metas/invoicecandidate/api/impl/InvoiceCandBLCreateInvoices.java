@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -95,6 +96,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -449,10 +451,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
 			invoice.setC_Tax_Departure_Country_ID(CountryId.toRepoId(invoiceHeader.getC_Tax_Departure_Country_ID()));
+			invoice.setC_BP_BankAccount_ID(BankAccountId.toRepoId(invoiceHeader.getBankAccountId()));
 
 			dimensionService.updateRecordUserElements(invoice, invoiceHeader.getDimension());
-
-
 
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
@@ -962,6 +963,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.overrideDueDateParam(invoicingParams != null ? invoicingParams.getOverrideDueDate() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.forexContractRef(invoicingParams != null ? invoicingParams.getForexContractRef() : null)
+				.bankAccountId(Optional.ofNullable(invoicingParams).map(InvoicingParams::getBankAccountId).orElse(null))
 				.build();
 	}
 

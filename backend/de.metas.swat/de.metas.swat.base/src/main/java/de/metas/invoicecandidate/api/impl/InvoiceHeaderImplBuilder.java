@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.dimension.Dimension;
@@ -14,6 +15,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -102,6 +104,9 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_Tax_Departure_Country_ID;
 
+	@Getter
+	private int bankAccountId;
+
 	InvoiceHeaderImplBuilder()
 	{
 	}
@@ -160,6 +165,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
 		invoiceHeader.setC_Tax_Departure_Country_ID(CountryId.ofRepoIdOrNull(getC_Tax_Departure_Country_ID()));
+		invoiceHeader.setBankAccountId(BankAccountId.ofRepoIdOrNull(getBankAccountId()));
 
 		invoiceHeader.setDimension(this.dimension);
 
@@ -621,5 +627,10 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Tax_Departure_Country_ID(final int C_Tax_Departure_Country_ID)
 	{
 		this.C_Tax_Departure_Country_ID = checkOverrideID("C_Tax_Departure_Country_ID", this.C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
+	}
+
+	public void setBankAccountId(final int bankAccountId)
+	{
+		this.bankAccountId = checkOverrideID("C_BP_BankAccount_ID", this.bankAccountId, bankAccountId);
 	}
 }
