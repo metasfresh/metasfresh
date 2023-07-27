@@ -14,4 +14,7 @@ public class InvoiceTax
 	@NonNull TaxId taxId;
 	@NonNull BigDecimal taxAmt;
 	@NonNull BigDecimal taxBaseAmt;
+	boolean isTaxIncluded;
+	boolean isReverseCharge;
+	@NonNull BigDecimal reverseChargeTaxAmt;
 }

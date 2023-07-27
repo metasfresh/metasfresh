@@ -313,7 +313,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
 				.taxAmt(record.getTaxAmt())
 				.taxBaseAmt(record.getTaxBaseAmt())
-				// TODO
+				.isTaxIncluded(record.isTaxIncluded())
+				.isReverseCharge(record.isReverseCharge())
+				.reverseChargeTaxAmt(record.getReverseChargeTaxAmt())
 				.build();
 	}
 
