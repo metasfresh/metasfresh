@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -71,11 +73,13 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_SectionCode;
@@ -141,6 +145,8 @@ public class C_Order_StepDef
 	private final AD_Message_StepDefData messageTable;
 	private final M_SectionCode_StepDefData sectionCodeTable;
 	private final M_InOut_StepDefData inoutTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -153,7 +159,9 @@ public class C_Order_StepDef
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final AD_Message_StepDefData messageTable,
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
-			@NonNull final M_InOut_StepDefData inoutTable)
+			@NonNull final M_InOut_StepDefData inoutTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
@@ -166,6 +174,8 @@ public class C_Order_StepDef
 		this.messageTable = messageTable;
 		this.sectionCodeTable = sectionCodeTable;
 		this.inoutTable = inoutTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -347,6 +357,20 @@ public class C_Order_StepDef
 			if (salesRepID > 0)
 			{
 				order.setSalesRep_ID(salesRepID);
+			}
+
+			final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(harvestingCalendarIdentifier))
+			{
+				final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
+				order.setC_Harvesting_Calendar_ID(harvestingCalendarRecord.getC_Calendar_ID());
+			}
+
+			final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(harvestingYearIdentifier))
+			{
+				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
+				order.setHarvesting_Year_ID(harvestingYearRecord.getC_Year_ID());
 			}
 
 			saveRecord(order);
