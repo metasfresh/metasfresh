@@ -49,7 +49,7 @@ import java.util.Base64;
 import java.util.List;
 
 @Service
-public class PrintingRestControllerPDFFileStorer
+public class PrintingClientPDFFileStorer
 {
 	private static final String OUTPUTTYPE_Queue = "Queue";
 
@@ -104,15 +104,13 @@ public class PrintingRestControllerPDFFileStorer
 					final int archivePageNums = reader.getNumberOfPages();
 
 					int pageFrom = segment.getPageFrom();
-					int pageDiff = 0;
 					if (pageFrom <= 0)
 					{
 						// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
-						pageDiff = 1 - pageFrom;
 						pageFrom = 1;
 					}
 
-					int pageTo = segment.getPageTo() + pageDiff;
+					int pageTo = segment.getPageTo();
 					if (pageTo > archivePageNums)
 					{
 						// shall not happen at this point

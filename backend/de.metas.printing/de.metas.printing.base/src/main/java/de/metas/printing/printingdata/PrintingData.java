@@ -24,11 +24,11 @@ package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
 import com.lowagie.text.pdf.PdfReader;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.printing.OutputType;
 import de.metas.printing.PrintingQueueItemId;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -170,14 +170,12 @@ public class PrintingData
 			}
 
 			int pageFrom = printingSegment.getPageFrom();
-			int pageDiff = 0;
 			if (pageFrom <= 0)
 			{
 				// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
-				pageDiff = 1 - pageFrom;
 				pageFrom = 1;
 			}
-			int pageTo = printingSegment.getPageTo() + pageDiff;
+			int pageTo = printingSegment.getPageTo();
 			if (pageTo <= 0)
 			{
 				pageTo = numberOfPagesAvailable;

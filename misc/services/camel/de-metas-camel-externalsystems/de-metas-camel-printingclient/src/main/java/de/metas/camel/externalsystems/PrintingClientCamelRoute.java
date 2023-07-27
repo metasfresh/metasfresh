@@ -42,12 +42,12 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class PrintingClientCamelRoute extends RouteBuilder
 {
-    private final PrintingRestControllerPDFFileStorer printingRestControllerPDFFileStorer;
+    private final PrintingClientPDFFileStorer printingClientPDFFileStorer;
 	private static final String PRINTING_CLIENT_ROUTE_ID = "PrintingClient-printingClient";
 
-	public PrintingClientCamelRoute(final PrintingRestControllerPDFFileStorer printingRestControllerPDFFileStorer)
+	public PrintingClientCamelRoute(final PrintingClientPDFFileStorer printingClientPDFFileStorer)
 	{
-		this.printingRestControllerPDFFileStorer = printingRestControllerPDFFileStorer;
+		this.printingClientPDFFileStorer = printingClientPDFFileStorer;
 	}
 
 	@Override
@@ -104,7 +104,7 @@ public class PrintingClientCamelRoute extends RouteBuilder
 
 		try
 		{
-			printingRestControllerPDFFileStorer.storeInFileSystem(request, context.getTargetDirectory());
+			printingClientPDFFileStorer.storeInFileSystem(request, context.getTargetDirectory());
 		}
 		catch (final PrintingException e)
 		{
