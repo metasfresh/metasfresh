@@ -69,6 +69,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.Assertions.*;
 
 public class ModCntr_Log_StepDef
 {
@@ -256,6 +257,12 @@ public class ModCntr_Log_StepDef
 			softly.assertThat(modCntrLogRecord.getDescription()).as(I_ModCntr_Log.COLUMNNAME_Description).isEqualTo(description);
 		}
 
+		final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_IsSOTrx);
+		if (isSoTrx != null)
+		{
+			softly.assertThat(modCntrLogRecord.isSOTrx()).as(I_ModCntr_Log.COLUMNNAME_Processed).isEqualTo(isSoTrx);
+		}
+
 		softly.assertAll();
 
 		final String modCntrLogIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -286,5 +293,40 @@ public class ModCntr_Log_StepDef
 										 .append("\n"));
 
 		return "Current ModCntr_Logs available for C_Flatrate_Term_ID:\n\n" + messageBuilder;
+	}
+
+	@And("no ModCntr_Logs are found:")
+	public void noModCntr_Logs_found(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			validateNoModCntr_LogFound(row);
+		}
+	}
+
+	private void validateNoModCntr_LogFound(@NonNull final Map<String, String> tableRow)
+	{
+		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
+		final int tableId = tableDAO.retrieveTableId(tableName);
+
+		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int recordId;
+		switch (tableName)
+		{
+			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
+			default -> throw new AdempiereException("Unsupported TableName !")
+					.appendParametersToMessage()
+					.setParameter("TableName", tableName);
+		}
+
+		final I_ModCntr_Log modCntrLogRecord = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, recordId)
+				.create()
+				.firstOnlyOrNull(I_ModCntr_Log.class);
+
+		assertThat(modCntrLogRecord).isNull();
 	}
 }
