@@ -273,7 +273,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
 
-	@Nullable
+	@NonNull
 	WarehouseId getWarehouseIdForHuId(@NonNull HuId huId);
 
 	@Builder
