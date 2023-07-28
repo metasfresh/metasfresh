@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -161525088L;
+	private static final long serialVersionUID = -1714280892L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -907,6 +907,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
+	@Override
+	public void setModular_Flatrate_Term_ID (final int Modular_Flatrate_Term_ID)
+	{
+		if (Modular_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_Modular_Flatrate_Term_ID, Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getModular_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Modular_Flatrate_Term_ID);
 	}
 
 	@Override

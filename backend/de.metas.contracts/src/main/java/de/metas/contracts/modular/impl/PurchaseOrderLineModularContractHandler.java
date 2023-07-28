@@ -37,7 +37,6 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
@@ -93,13 +92,10 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	public final ModularContractLogDAO modularContractLogDAO;
-	public final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
-	public PurchaseOrderLineModularContractHandler(@NonNull final ModularContractLogDAO modularContractLogDAO,
-			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
+	public PurchaseOrderLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
-		this.modularContractLogDAO = modularContractLogDAO;
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
 	}
 

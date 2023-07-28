@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
@@ -39,6 +40,8 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.uom.IUOMDAO;
@@ -57,6 +60,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -74,6 +78,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -88,6 +93,8 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -97,6 +104,7 @@ public class C_OrderLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_StepDefData partnerTable;
@@ -116,6 +124,7 @@ public class C_OrderLine_StepDef
 	private final M_Shipper_StepDefData shipperTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Currency_StepDefData currencyTable;
+	private final AD_Message_StepDefData messageTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -135,7 +144,8 @@ public class C_OrderLine_StepDef
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_Currency_StepDefData currencyTable)
+			@NonNull final C_Currency_StepDefData currencyTable,
+			@NonNull final AD_Message_StepDefData messageTable)
 	{
 		this.productTable = productTable;
 		this.partnerTable = partnerTable;
@@ -155,6 +165,7 @@ public class C_OrderLine_StepDef
 		this.shipperTable = shipperTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.currencyTable = currencyTable;
+		this.messageTable = messageTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -779,4 +790,51 @@ public class C_OrderLine_StepDef
 			assertThat(attributeInstance.getValue()).isEqualTo(expectedAttrValue);
 		}
 	}
+
+	@Given("^the order line identified by (.*) is (deleted) expecting error$")
+	public void order_action_expecting_error(@NonNull final String orderLineIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		boolean errorThrown = false;
+
+		try
+		{
+			orderLineAction(orderLineIdentifier, action);
+		}
+		catch (final Exception e)
+		{
+			errorThrown = true;
+
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (errorMessageIdentifier != null)
+			{
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+			}
+		}
+
+		assertThat(errorThrown).isTrue();
+	}
+
+	private void orderLineAction(@NonNull final String orderLineIdentifier, @NonNull final String action)
+	{
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+
+		switch (StepDefAction.valueOf(action))
+		{
+			case deleted ->
+			{
+				queryBL.createQueryBuilder(I_C_OrderLine.class)
+						.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
+						.create()
+						.delete();
+			}
+			default -> throw new AdempiereException("Unhandled C_OrderLine action")
+					.appendParametersToMessage()
+					.setParameter("action:", action);
+		}
+	}
+
 }

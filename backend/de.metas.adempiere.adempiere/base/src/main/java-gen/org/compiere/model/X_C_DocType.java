@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -439331784L;
+	private static final long serialVersionUID = 448849407L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -79,14 +79,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0)
+		if (C_DocType_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID()
+	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
@@ -106,14 +106,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_Invoicing_Pool_ID (final int C_DocType_Invoicing_Pool_ID)
 	{
-		if (C_DocType_Invoicing_Pool_ID < 1)
+		if (C_DocType_Invoicing_Pool_ID < 1) 
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, C_DocType_Invoicing_Pool_ID);
 	}
 
 	@Override
-	public int getC_DocType_Invoicing_Pool_ID()
+	public int getC_DocType_Invoicing_Pool_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
 	}
@@ -121,14 +121,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
 	{
-		if (C_DocTypeDifference_ID < 1)
+		if (C_DocTypeDifference_ID < 1) 
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
 	}
 
 	@Override
-	public int getC_DocTypeDifference_ID()
+	public int getC_DocTypeDifference_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
 	}
@@ -317,6 +317,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	/** Cost Revaluation = CRD */
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
+	/** ModularOrder = MMO */
+	public static final String DOCBASETYPE_ModularOrder = "MMO";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -764,14 +766,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
 	{
-		if (LotNo_Sequence_ID < 1)
+		if (LotNo_Sequence_ID < 1) 
 			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
 	}
 
 	@Override
-	public int getLotNo_Sequence_ID()
+	public int getLotNo_Sequence_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
