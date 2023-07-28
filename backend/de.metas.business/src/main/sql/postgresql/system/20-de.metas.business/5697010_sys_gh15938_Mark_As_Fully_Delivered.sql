@@ -182,3 +182,32 @@ UPDATE AD_Ref_List_Trl SET Name='In Verarbeitung',Updated=TO_TIMESTAMP('2023-07-
 -- 2023-07-27T07:51:47.236Z
 UPDATE AD_Ref_List_Trl SET Name='In Verarbeitung',Updated=TO_TIMESTAMP('2023-07-27 10:51:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=543531
 ;
+
+-- Column: C_Order.OrderStatus
+-- Column SQL (old): ( CASE  WHEN C_Order.DocStatus = 'IP' THEN 'IP' WHEN C_Order.DocStatus = 'VO' THEN 'VO' WHEN C_Order.DocStatus = 'CO' AND C_Order.QtyOrdered > C_Order.QtyMoved THEN 'CO' WHEN C_Order.QtyOrdered = C_Order.QtyMoved THEN 'FD' ELSE 'DR'  END )
+-- 2023-07-27T13:15:05.109Z
+UPDATE AD_Column SET ColumnSQL='( CASE  WHEN C_Order.DocStatus = ''IP'' THEN ''IP'' WHEN C_Order.DocStatus IN (''VO'',''RE'') THEN ''VO'' WHEN C_Order.DocStatus IN (''CO'',''CL'') AND C_Order.QtyOrdered > C_Order.QtyMoved THEN ''CO'' WHEN C_Order.QtyOrdered = C_Order.QtyMoved THEN ''FD'' ELSE ''DR''  END )',Updated=TO_TIMESTAMP('2023-07-27 16:15:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587172
+;
+
+-- Column: C_Order.OrderStatus
+-- Column SQL (old): ( CASE  WHEN C_Order.DocStatus = 'IP' THEN 'IP' WHEN C_Order.DocStatus IN ('VO','RE') THEN 'VO' WHEN C_Order.DocStatus IN ('CO','CL') AND C_Order.QtyOrdered > C_Order.QtyMoved THEN 'CO' WHEN C_Order.QtyOrdered = C_Order.QtyMoved THEN 'FD' ELSE 'DR'  END )
+-- 2023-07-27T14:13:47.062Z
+UPDATE AD_Column SET ColumnSQL='( CASE  WHEN C_Order.DocStatus = ''DR'' THEN ''DR'' WHEN C_Order.DocStatus = ''IP'' THEN ''IP'' WHEN C_Order.DocStatus IN (''VO'',''RE'') THEN ''VO'' WHEN C_Order.DocStatus IN (''CO'',''CL'') AND C_Order.QtyOrdered > C_Order.QtyMoved THEN ''CO'' WHEN C_Order.QtyOrdered = C_Order.QtyMoved THEN ''FD'' ELSE ''DR''  END )',Updated=TO_TIMESTAMP('2023-07-27 17:13:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587172
+;
+
+-- Column: C_Order.OrderStatus
+-- 2023-07-27T14:15:20.846Z
+UPDATE AD_Column SET FilterDefaultValue='FD',Updated=TO_TIMESTAMP('2023-07-27 17:15:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587172
+;
+
+-- Column: C_Order.OrderStatus
+-- Column SQL (old): ( CASE  WHEN C_Order.DocStatus = 'DR' THEN 'DR' WHEN C_Order.DocStatus = 'IP' THEN 'IP' WHEN C_Order.DocStatus IN ('VO','RE') THEN 'VO' WHEN C_Order.DocStatus IN ('CO','CL') AND C_Order.QtyOrdered > C_Order.QtyMoved THEN 'CO' WHEN C_Order.QtyOrdered = C_Order.QtyMoved THEN 'FD' ELSE 'DR'  END )
+-- 2023-07-27T14:52:26.213Z
+UPDATE AD_Column SET ColumnSQL='( CASE  WHEN C_Order.DocStatus = ''DR'' THEN ''DR'' WHEN C_Order.DocStatus = ''IP'' THEN ''IP'' WHEN C_Order.DocStatus IN (''VO'',''RE'') THEN ''VO'' WHEN C_Order.DocStatus IN (''CO'',''CL'') AND (SELECT SUM(qtyordered - qtydelivered) from C_OrderLine where C_Order_ID = @C_Order_ID/-1@) > 0 THEN ''CO'' WHEN (SELECT SUM(qtyordered - qtydelivered) from C_OrderLine where C_Order_ID = @C_Order_ID/-1@) = 0 THEN ''FD'' ELSE ''DR''  END )',Updated=TO_TIMESTAMP('2023-07-27 17:52:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587172
+;
+
+-- Column: C_Order.OrderStatus
+-- Column SQL (old): ( CASE  WHEN C_Order.DocStatus = 'DR' THEN 'DR' WHEN C_Order.DocStatus = 'IP' THEN 'IP' WHEN C_Order.DocStatus IN ('VO','RE') THEN 'VO' WHEN C_Order.DocStatus IN ('CO','CL') AND (SELECT SUM(qtyordered - qtydelivered) from C_OrderLine where C_Order_ID = @C_Order_ID/-1@) > 0 THEN 'CO' WHEN (SELECT SUM(qtyordered - qtydelivered) from C_OrderLine where C_Order_ID = @C_Order_ID/-1@) = 0 THEN 'FD' ELSE 'DR'  END )
+-- 2023-07-27T15:53:19.070Z
+UPDATE AD_Column SET ColumnSQL='( CASE  WHEN C_Order.DocStatus = ''DR'' THEN ''DR'' WHEN C_Order.DocStatus = ''IP'' THEN ''IP'' WHEN C_Order.DocStatus IN (''VO'',''RE'') THEN ''VO'' WHEN C_Order.DocStatus IN (''CO'',''CL'') AND (SELECT SUM(qtyordered - qtydelivered) from C_OrderLine where C_Order_ID = @JoinTableNameOrAliasIncludingDot@c_order_id) > 0 THEN ''CO'' WHEN (SELECT SUM(qtyordered - qtydelivered) from C_OrderLine where C_Order_ID = @JoinTableNameOrAliasIncludingDot@c_order_id) = 0 THEN ''FD'' ELSE ''DR''  END )',Updated=TO_TIMESTAMP('2023-07-27 18:53:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587172
+;

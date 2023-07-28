@@ -26,31 +26,32 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_Order;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProcessPrecondition
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-	private final String markAsFullyDeliveredParamName = "MarkAsFullyDelivered";
-	@Param(parameterName = markAsFullyDeliveredParamName)
+	private final String PARAM_MarkAsFullyDelivered = "MarkAsFullyDelivered";
+	@Param(parameterName = PARAM_MarkAsFullyDelivered)
 	private Boolean markAsFullyDelivered;
 
 	@Override
@@ -66,7 +67,7 @@ public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProces
 
 		if (!order.getDocStatus().equals(X_C_Order.DOCSTATUS_Completed))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Order with ID=" + order.getC_Order_ID() + " is not completed.");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Order is not completed.");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -75,18 +76,39 @@ public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProces
 	@Override
 	protected String doIt() throws Exception
 	{
-		// make sure that if the process runs with parameter on false, make sure that qtyordered is set based on qtyentered and all the linked schedules are open
-		// look where qtyordered is set base on qtyentered on the current flow
-		// qtyentered from C_Order.C_UOM_ID and qtyordered is in C_UOM_ID from product
+		final List<I_C_Order> selectedOrders = getProcessInfo().getSelectedIncludedRecords()
+				.stream()
+				.map(tableRecordReference -> orderBL.getById(OrderId.ofRepoId(tableRecordReference.getRecord_ID())))
+				.collect(ImmutableList.toImmutableList());
 
-		final List<I_C_Order> selectedOrders = getSelectedIncludedRecords(I_C_Order.class);
-
-		selectedOrders.stream()
+		final ImmutableSet<I_C_OrderLine> orderLines = selectedOrders.stream()
 				.map(order -> orderBL.getLinesByOrderIds(ImmutableSet.of(OrderId.ofRepoId(order.getC_Order_ID()))))
 				.flatMap(Collection::stream)
-				.peek(orderBL::closeLine)
-				.peek(orderLine -> shipmentScheduleBL.openShipmentSchedulesFor(ImmutableList.of(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))));
+				.collect(ImmutableSet.toImmutableSet());
+
+		//
+
+		if (markAsFullyDelivered)
+		{
+			orderLines.forEach(orderBL::closeLine);
+		}
+		else
+		{
+			orderLines.forEach(orderBL::reopenLine);
+			orderLines.forEach(this::setQtyOrderedBasedOnQtyEntered);
+			// shipmentScheduleBL.openShipmentSchedulesFor(ImmutableList.copyOf(TableRecordReference
+			// 																		 .ofRecordIds(I_C_OrderLine.Table_Name, orderLines.stream()
+			// 																				 .map(I_C_OrderLine::getC_OrderLine_ID)
+			// 																				 .collect(ImmutableList.toImmutableList()))));
+		}
 
 		return MSG_OK;
+	}
+
+	private void setQtyOrderedBasedOnQtyEntered(@NonNull final I_C_OrderLine orderLine)
+	{
+		final Quantity qtyEnteredToStockUOM = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
+		orderLine.setQtyOrdered(qtyEnteredToStockUOM.toBigDecimal());
+		InterfaceWrapperHelper.saveRecord(orderLine);
 	}
 }
