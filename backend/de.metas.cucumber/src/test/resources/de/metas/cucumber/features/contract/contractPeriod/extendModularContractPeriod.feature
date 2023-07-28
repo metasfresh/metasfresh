@@ -14,7 +14,7 @@ Feature: Extend Modular Contract Period
       | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
       | y2022                | 2022       | harvesting_calendar      |
 
-
+  @Id:S0300_300
   @from:cucumber
   Scenario: Fail Extend - Contract Period with Contract Term of type Modular Contract & OnFlatrateTermExtend = Extension Not Allowed is OK
   - Contract Conditions of type Modular Contract & OnFlatrateTermExtend is Extension Not Allowed already exists
@@ -50,13 +50,17 @@ Feature: Extend Modular Contract Period
       | Identifier        | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
       | modularCntrTerm_1 | modularCntrConditions_1             | bp_modularCntrPeriod        | 2021-10-31 | 2022-10-30 | module_log_product          |
 
+    And load AD_Message:
+      | Identifier            | Value                                         |
+      | extension_not_allowed | MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED |
+
     And add I_AD_PInstance with id 240720231
 
     Then extend C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | StartDate  | AD_PInstance_ID | OPT.ErrorMessage            |
-      | modularCntrTerm_1             | 2022-10-31 | 240720231       | Verlängerung nicht zulässig |
+      | C_Flatrate_Term_ID.Identifier | StartDate  | AD_PInstance_ID | OPT.AD_Message_ID.Identifier |
+      | modularCntrTerm_1             | 2022-10-31 | 240720231       | extension_not_allowed        |
 
-
+  @Id:S0300_400
   @from:cucumber
   Scenario:  Regression - Extend Contract Period with any Contract Term had OnFlatrateTermExtend = Ex (Extension Not Allowed)
   - Contract Period with Contract Term (Subscription) had OnFlatrateTermExtend=Ca already exists in metasfresh
