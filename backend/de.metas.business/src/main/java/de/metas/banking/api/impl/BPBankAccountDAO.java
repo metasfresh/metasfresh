@@ -1,18 +1,25 @@
 package de.metas.banking.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
+import de.metas.banking.api.CreateBPBankAccountRequest;
+import de.metas.banking.api.GetBPBankAccountQuery;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.DisplayNameQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 
 import java.util.Optional;
@@ -68,8 +75,10 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 	{
 		return BankAccount.builder()
 				.id(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
 				.bankId(BankId.ofRepoIdOrNull(record.getC_Bank_ID())) // C_BP_BankAccount.C_Bank_ID is not mandatory!
 				.accountName(StringUtils.trimBlankToNull(record.getA_Name()))
+				.name(StringUtils.trimBlankToNull(record.getName()))
 				.esrRenderedAccountNo(record.getESR_RenderedAccountNo())
 				.IBAN(StringUtils.trimBlankToNull(record.getIBAN()))
 				.QR_IBAN(StringUtils.trimBlankToNull(record.getQR_IBAN()))
@@ -129,11 +138,99 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 	public Optional<BankAccountId> getBankAccountIdByIBAN(
 			@NonNull final String iban)
 	{
+		return getBankAccountByIBAN(iban)
+				.map(BankAccount::getId);
+	}
+
+	@Override
+	@NonNull
+	public Optional<BankAccount> getBankAccountByIBAN(
+			@NonNull final String iban)
+	{
 		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnlyOptional(I_C_BP_BankAccount.class)
-				.map(bpBankAccount -> BankAccountId.ofRepoId(bpBankAccount.getC_BP_BankAccount_ID()));
+				.map(BPBankAccountDAO::toBankAccount);
+	}
+
+	@NonNull
+	public BankAccount update(@NonNull final BankAccount bankAccount)
+	{
+		final I_C_BP_BankAccount record = InterfaceWrapperHelper.load(bankAccount.getId(), I_C_BP_BankAccount.class);
+
+		updateRecord(record, bankAccount);
+
+		InterfaceWrapperHelper.save(record);
+
+		return toBankAccount(record);
+	}
+
+	@NonNull
+	public BankAccount create(@NonNull final CreateBPBankAccountRequest createBPBankAccountRequest)
+	{
+		final I_C_BP_BankAccount record = createRecord(createBPBankAccountRequest);
+
+		InterfaceWrapperHelper.save(record);
+
+		return toBankAccount(record);
+	}
+
+	@NonNull
+	public ImmutableList<BankAccount> listByQuery(@NonNull final GetBPBankAccountQuery query)
+	{
+		final IQueryBuilder<I_C_BP_BankAccount> queryBuilder = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, query.getBPartnerIds());
+
+		if (Check.isNotBlank(query.getSearchTerm()))
+		{
+			queryBuilder.addFilter(DisplayNameQueryFilter.of(I_C_BP_BankAccount.class, query.getSearchTerm()));
+		}
+
+		return queryBuilder.create()
+				.stream()
+				.map(BPBankAccountDAO::toBankAccount)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static I_C_BP_BankAccount updateRecord(
+			@NonNull final I_C_BP_BankAccount record,
+			@NonNull final BankAccount bankAccount)
+	{
+		record.setAccountNo(bankAccount.getAccountNo());
+		record.setRoutingNo(bankAccount.getRoutingNo());
+		record.setName(bankAccount.getName());
+		record.setA_Name(bankAccount.getAccountName());
+		record.setIBAN(bankAccount.getIBAN());
+		record.setQR_IBAN(bankAccount.getQR_IBAN());
+		record.setSEPA_CreditorIdentifier(bankAccount.getSEPA_CreditorIdentifier());
+		record.setESR_RenderedAccountNo(bankAccount.getEsrRenderedAccountNo());
+
+		record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
+		record.setAD_Org_ID(bankAccount.getOrgId().getRepoId());
+		record.setC_BPartner_ID(bankAccount.getBPartnerId().getRepoId());
+		record.setC_Bank_ID(BankId.toRepoId(bankAccount.getBankId()));
+
+		return record;
+	}
+
+	@NonNull
+	private static I_C_BP_BankAccount createRecord(@NonNull final CreateBPBankAccountRequest request)
+	{
+		final I_C_BP_BankAccount record = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+
+		record.setAccountNo(request.getAccountNo());
+		record.setRoutingNo(request.getRoutingNo());
+		record.setName(request.getName());
+		record.setIBAN(request.getIban());
+
+		record.setC_Currency_ID(request.getCurrencyId().getRepoId());
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setC_BPartner_ID(request.getBPartnerId().getRepoId());
+
+		return record;
 	}
 }
