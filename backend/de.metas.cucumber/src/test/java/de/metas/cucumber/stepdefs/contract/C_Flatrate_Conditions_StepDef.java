@@ -115,7 +115,8 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable,
 			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable,
 			@NonNull final C_Year_StepDefData yearTable,
-			@NonNull final M_Product_StepDefData productTable, final AD_Message_StepDefData messageTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final AD_Message_StepDefData messageTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;

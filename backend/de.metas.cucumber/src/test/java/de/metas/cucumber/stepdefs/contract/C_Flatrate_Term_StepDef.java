@@ -114,7 +114,8 @@ public class C_Flatrate_Term_StepDef
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSysTable, final AD_Message_StepDefData messageTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
+			@NonNull final AD_Message_StepDefData messageTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.productTable = productTable;
@@ -382,8 +383,6 @@ public class C_Flatrate_Term_StepDef
 
 		final Integer ad_PInstance_ID = Integer.valueOf(pInstanceID);
 		assertThat(ad_PInstance_ID).isNotNull();
-
-
 
 		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
 				.AD_PInstance_ID(PInstanceId.ofRepoId(ad_PInstance_ID))
