@@ -72,6 +72,30 @@ export function getViewRowsByIds(windowId, viewId, docIds) {
   );
 }
 
+export const getViewFieldDropdown = ({
+  windowId,
+  viewId,
+  rowId,
+  fieldName,
+}) => {
+  return axios.get(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`
+  );
+};
+
+export const getViewFieldTypeahead = ({
+  windowId,
+  viewId,
+  rowId,
+  fieldName,
+  query,
+}) => {
+  const queryParams = getQueryString({ query });
+  return axios.get(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/edit/${fieldName}/typeahead?${queryParams}`
+  );
+};
+
 export function patchRequest({
   // HOTFIX: before refactoring all calls explicity set docId to `null`
   // instead of `undefined` so default value 'NEW' was never used!
