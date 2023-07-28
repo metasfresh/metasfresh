@@ -221,5 +221,5 @@ UPDATE AD_Column SET ColumnSQL='( CASE     WHEN C_Order.DocStatus = ''DR'' THEN 
 -- Column: C_Order.DeliveryStatus
 -- Column SQL (old): ( CASE WHEN C_Order.QtyOrdered <= C_Order.QtyMoved AND C_Order.QtyOrdered > 0 THEN 'CD' WHEN C_Order.QtyOrdered > C_Order.QtyMoved AND C_Order.QtyMoved > 0 THEN 'PD' ELSE 'O' END )
 -- 2023-07-28T10:38:26.868Z
-UPDATE AD_Column SET ColumnSQL='( CASE     WHEN (SELECT SUM(qtydelivered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) > 0 THEN ''PD''     WHEN C_Order.DocStatus <> ''DR'' AND (SELECT SUM(qtydelivered - qtyordered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) >= 0 THEN ''CD''   ELSE ''O''  END )',Updated=TO_TIMESTAMP('2023-07-28 13:38:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552710
+UPDATE AD_Column SET ColumnSQL='( CASE     WHEN C_Order.DocStatus <> ''DR'' AND (SELECT SUM(qtydelivered - qtyordered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) >= 0 THEN ''CD''     WHEN (SELECT SUM(qtydelivered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) > 0 THEN ''PD''   ELSE ''O''  END )',Updated=TO_TIMESTAMP('2023-07-28 13:38:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552710
 ;
