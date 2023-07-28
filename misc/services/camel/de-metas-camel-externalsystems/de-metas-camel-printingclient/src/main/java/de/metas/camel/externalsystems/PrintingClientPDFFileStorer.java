@@ -33,7 +33,6 @@ import de.metas.common.rest_api.v2.printing.response.JsonPrinterTray;
 import de.metas.common.rest_api.v2.printing.response.JsonPrintingData;
 import de.metas.common.rest_api.v2.printing.response.JsonPrintingDataResponse;
 import de.metas.common.rest_api.v2.printing.response.JsonPrintingSegment;
-import de.metas.common.util.Check;
 import de.metas.common.util.FileUtil;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -184,7 +183,7 @@ public class PrintingClientPDFFileStorer
 			Path path = null;
 			final int trayId = segment.getTrayId();
 
-			if (!Check.isEmpty(trayId))
+			if (trayId > 0)
 			{
 				final List<JsonPrinterTray> trays = printer.getTrays();
 				for (final JsonPrinterTray tray : trays)
