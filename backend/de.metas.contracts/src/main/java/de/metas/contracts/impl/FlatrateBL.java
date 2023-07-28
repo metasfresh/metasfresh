@@ -35,6 +35,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.calendar.standard.YearAndCalendarId;
@@ -69,8 +70,6 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -130,7 +129,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -171,7 +169,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class FlatrateBL implements IFlatrateBL
 {
-
 	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
 
 	private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
@@ -2369,19 +2366,18 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year newYear)
+	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
 	{
 
-		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
-		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(newYear.getC_Year_ID(), newYear.getC_Calendar_ID());
+		//
+		//  double check as we have already a unique index on this columns
+		final boolean isSettingsExists = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, CalendarId.ofRepoId(year.getC_Calendar_ID()))
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, YearId.ofRepoId(year.getC_Year_ID()))
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, ProductId.ofRepoId(settings.getM_Product_ID()))
+				.anyMatch();
 
-		final ModularContractSettingsQuery query = ModularContractSettingsQuery.builder()
-				.productId(productId)
-				.yearAndCalendarId(yearAndCalendarId)
-				.build();
-
-		final ModularContractSettingsDAO modularContractSettingsDAO  = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
-		if (modularContractSettingsDAO.isSettingsExists(query))
+		if (isSettingsExists)
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
 		}
@@ -2393,7 +2389,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		PO.copyValues(from, to, true);
 
-		newModCntrSettings.setC_Year_ID(newYear.getC_Year_ID());
+		newModCntrSettings.setC_Year_ID(year.getC_Year_ID());
 
 		InterfaceWrapperHelper.save(newModCntrSettings);
 

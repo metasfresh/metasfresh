@@ -52,8 +52,8 @@ Feature: Modular contract log from inventory
       | modCntr_module_S0282_500_1   | 10    | modCntr_module_S0282_500_1 | module_log_S0282_500    | Kosten         | modCntr_settings_S0282_500     | modCntr_type_S0282_500_1   |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO_S0282_500    | moduleLogConditions_PO_S0282_500 | ModularContract | moduleLogPricingSystem_S0282_500  | Ca                       | modCntr_settings_S0282_500         |
+      | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | moduleLogConditions_PO_S0282_500    | moduleLogConditions_PO_S0282_500 | ModularContract | moduleLogPricingSystem_S0282_500  | Ca                       | modCntr_settings_S0282_500         | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -120,8 +120,8 @@ Feature: Modular contract log from inventory
       | modCntr_module_S0282_600_1   | 10    | modCntr_module_S0282_600_1 | module_log_S0282_600    | Kosten         | modCntr_settings_S0282_600_1   | modCntr_type_S0282_600_1   |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO_S0282_600    | moduleLogConditions_PO_S0282_600 | ModularContract | moduleLogPricingSystem_S0282_600  | Ca                       | modCntr_settings_S0282_600_1       |
+      | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | moduleLogConditions_PO_S0282_600    | moduleLogConditions_PO_S0282_600 | ModularContract | moduleLogPricingSystem_S0282_600  | Ca                       | modCntr_settings_S0282_600_1       | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -192,8 +192,8 @@ Feature: Modular contract log from inventory
       | modCntr_module_S0282_700_1   | 10    | moduleTest_07052023_2 | module_log_S0282_700    | Kosten         | modCntr_settings_S0282_700_1   | modCntr_type_S0282_700_1   |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_07052023_2 | ModularContract | moduleLogPricingSystem_S0282_700  | Ca                       | modCntr_settings_S0282_700_1       |
+      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | moduleLogConditions_PO              | moduleLogConditions_po_07052023_2 | ModularContract | moduleLogPricingSystem_S0282_700  | Ca                       | modCntr_settings_S0282_700_1       | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
