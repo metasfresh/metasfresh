@@ -193,7 +193,6 @@ public class MediatedOrderFactoryTest
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
-		;
 		orgInfo.setAD_Org_ID(orgId.getRepoId());
 		orgInfo.setStoreCreditCardData(STORECREDITCARDDATA_Speichern);
 		InterfaceWrapperHelper.save(orgInfo);

@@ -210,10 +210,10 @@ class JsonInsertInvoiceCandidateServiceTest
 				.qtyOrdered(TEN)
 				.soTrx(JsonSOTrx.SALES)
 				.build();
-		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest.builder()
+
+		return JsonCreateInvoiceCandidatesRequest.builder()
 				.item(minimalItem)
 				.build();
-		return request;
 	}
 
 	@Test
