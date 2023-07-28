@@ -28,12 +28,14 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_Year_StepDef
 {
@@ -41,9 +43,12 @@ public class C_Year_StepDef
 
 	private final C_Year_StepDefData yearTable;
 
-	public C_Year_StepDef(@NonNull final C_Year_StepDefData yearTable)
+	private final C_Calendar_StepDefData calendarTable;
+
+	public C_Year_StepDef(@NonNull final C_Year_StepDefData yearTable, final C_Calendar_StepDefData calendarTable)
 	{
 		this.yearTable = yearTable;
+		this.calendarTable = calendarTable;
 	}
 
 	@And("load C_Year from metasfresh:")
@@ -53,11 +58,22 @@ public class C_Year_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String fiscalYear = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_FiscalYear);
+			assertThat(fiscalYear).as(I_C_Year.COLUMNNAME_FiscalYear + "is a mandatory column").isNotBlank();
+
+			final String calendarIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_C_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+			assertThat(calendarIdentifier).as(I_C_Year.COLUMNNAME_C_Calendar_ID + "is a mandatory column").isNotBlank();
+
+			final I_C_Calendar calendar = calendarTable.get(calendarIdentifier);
+			assertThat(calendar).as("No calendar found for identifier: {}", calendarIdentifier).isNotNull();
 
 			final I_C_Year yearRecord = queryBL.createQueryBuilder(I_C_Year.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Year.COLUMNNAME_C_Calendar_ID, calendar.getC_Calendar_ID())
 					.addEqualsFilter(I_C_Year.COLUMNNAME_FiscalYear, fiscalYear)
 					.create()
 					.firstOnlyNotNull(I_C_Year.class);
+
+			assertThat(yearRecord).as("No Record found for Calendar: {} and FiscalYear: {}", calendar.getName(), fiscalYear).isNotNull();
 
 			final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Year.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 			yearTable.put(yearIdentifier, yearRecord);

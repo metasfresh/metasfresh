@@ -132,7 +132,7 @@ public class ModularContractSettingsDAO
 				.anyMatch();
 	}
 
-	public boolean isSettingsExists(final @NonNull ModularContractSettingsQuery query)
+	public boolean isSettingsExist(final @NonNull ModularContractSettingsQuery query)
 	{
 		final YearAndCalendarId yearAndCalendarId = query.yearAndCalendarId();
 		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)

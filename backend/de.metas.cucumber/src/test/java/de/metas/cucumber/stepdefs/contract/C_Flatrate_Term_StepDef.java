@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.contract;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -37,7 +38,11 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.PMM_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.process.PInstanceId;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -47,17 +52,21 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_Message;
+import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -72,9 +81,11 @@ import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_T
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_StartDate;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 
 public class C_Flatrate_Term_StepDef
 {
@@ -86,11 +97,14 @@ public class C_Flatrate_Term_StepDef
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_PricingSystem_StepDefData pricingSysTable;
+	private final AD_Message_StepDefData messageTable;
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public C_Flatrate_Term_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -100,7 +114,8 @@ public class C_Flatrate_Term_StepDef
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSysTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
+			@NonNull final AD_Message_StepDefData messageTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.productTable = productTable;
@@ -110,6 +125,7 @@ public class C_Flatrate_Term_StepDef
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
 		this.pricingSysTable = pricingSysTable;
+		this.messageTable = messageTable;
 	}
 
 	@Given("metasfresh contains C_Flatrate_Terms:")
@@ -343,5 +359,69 @@ public class C_Flatrate_Term_StepDef
 						.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 						.create()
 						.firstOnlyNotNull(I_C_Flatrate_Term.class));
+	}
+
+	@Then("extend C_Flatrate_Term:")
+	public void extend_C_Flatrate_Term(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		final Map<String, String> row = tableRows.get(0);
+
+		final String contractIdentifier = row.get(COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+		assertThat(contractIdentifier).as(COLUMNNAME_C_Flatrate_Term_ID + "is a mandatory column").isNotBlank();
+
+		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+		assertThat(contract).as("No Contract Period found for Identifier {}", contractIdentifier).isNotNull();
+
+		final Timestamp startDate = DataTableUtil.extractDateTimestampForColumnName(row, COLUMNNAME_StartDate);
+		assertThat(startDate).as(COLUMNNAME_StartDate + "is a mandatory column").isNotNull();
+
+		final Integer pInstanceID = DataTableUtil.extractIntForColumnName(row, I_AD_PInstance.COLUMNNAME_AD_PInstance_ID);
+		assertThat(pInstanceID).as(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID + "is a mandatory column").isNotNull();
+
+		assertThat(contract.getC_FlatrateTerm_Next()).isNull();  // contract not extended yet
+
+		final Integer ad_PInstance_ID = Integer.valueOf(pInstanceID);
+		assertThat(ad_PInstance_ID).isNotNull();
+
+		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
+				.AD_PInstance_ID(PInstanceId.ofRepoId(ad_PInstance_ID))
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(false)
+				.nextTermStartDate(startDate)
+				.build();
+
+		try
+		{
+			flatrateBL.extendContractAndNotifyUser(contractExtendingRequest);
+		}
+		catch (final Exception e)
+		{
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (errorMessageIdentifier != null)
+			{
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+			}
+			else
+			{
+				fail(e.getMessage(), e);
+			}
+
+		}
+
+	}
+
+	@Then("^C_Flatrate_Term identified by (.*) is extended$")
+	public void c_flatrate_termIsExtended(@NonNull final String contractIdentifier)
+	{
+		assertThat(contractIdentifier).isNotBlank();
+
+		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+		assertThat(contract).isNotNull();
+
+		final I_C_Flatrate_Term nextContract = contract.getC_FlatrateTerm_Next();
+		assertThat(nextContract).isNotNull(); // next term created & contract extended
 	}
 }
