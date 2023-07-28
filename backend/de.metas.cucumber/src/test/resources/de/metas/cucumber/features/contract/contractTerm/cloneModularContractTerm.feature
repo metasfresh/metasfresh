@@ -20,8 +20,8 @@ Feature: Clone Modular Contract Term
       | y2023                | 2023       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_1             | Settings_17072023_1 | contract_module_product | harvesting_calendar      | y2022                |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
+      | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                     | Value                    | Classname                                                               |
@@ -29,11 +29,11 @@ Feature: Clone Modular Contract Term
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_17072023_1 | contract_module_product | Kosten         | modCntr_settings_1             | modCntr_Types_1            |
+      | modCntr_module_1             | 10    | moduleTest_17072023_1 | contract_module_product | Kosten         | modCntr_settings_toclone       | modCntr_Types_1            |
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                     | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2022            | modularContractTerm_2022 | ModularContract | Ex                       | modCntr_settings_1                 | CO            |
+      | modularContractTerm_2022            | modularContractTerm_2022 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
 
 
   @from:cucumber
@@ -64,5 +64,5 @@ Feature: Clone Modular Contract Term
   - fail with message "Einstellungen mit demselben Jahr sind bereits vorhanden"
 
     Then clone C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier | OPT.ErrorMessage                                        |
-      | modularContractTerm_2022            | y2022                | clonedModularContractTerm_2022            | Einstellungen mit demselben Jahr sind bereits vorhanden |
+      | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier | OPT.ErrorCode                      |
+      | modularContractTerm_2022            | y2022                | clonedModularContractTerm_2022            | ModCntr_Settings_cannot_be_changed |
