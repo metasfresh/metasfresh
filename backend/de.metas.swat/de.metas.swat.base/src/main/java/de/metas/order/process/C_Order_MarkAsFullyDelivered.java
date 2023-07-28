@@ -22,33 +22,25 @@
 
 package de.metas.order.process;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_Order;
 
-import java.util.Collection;
 import java.util.List;
 
 public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProcessPrecondition
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private final String PARAM_MarkAsFullyDelivered = "MarkAsFullyDelivered";
 	@Param(parameterName = PARAM_MarkAsFullyDelivered)
@@ -63,9 +55,9 @@ public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProces
 		}
 
 		final OrderId orderId = OrderId.ofRepoId(context.getSingleSelectedRecordId());
-		final org.compiere.model.I_C_Order order = orderBL.getById(orderId);
+		final I_C_Order order = orderBL.getById(orderId);
 
-		if (!order.getDocStatus().equals(X_C_Order.DOCSTATUS_Completed))
+		if (!DocStatus.ofNullableCodeOrUnknown(order.getDocStatus()).isCompleted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Order is not completed.");
 		}
@@ -74,41 +66,29 @@ public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProces
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final List<I_C_Order> selectedOrders = getProcessInfo().getSelectedIncludedRecords()
-				.stream()
-				.map(tableRecordReference -> orderBL.getById(OrderId.ofRepoId(tableRecordReference.getRecord_ID())))
-				.collect(ImmutableList.toImmutableList());
-
-		final ImmutableSet<I_C_OrderLine> orderLines = selectedOrders.stream()
-				.map(order -> orderBL.getLinesByOrderIds(ImmutableSet.of(OrderId.ofRepoId(order.getC_Order_ID()))))
-				.flatMap(Collection::stream)
-				.collect(ImmutableSet.toImmutableSet());
-
-		//
-
-		if (markAsFullyDelivered)
+		if (markAsFullyDelivered == null)
 		{
-			orderLines.forEach(orderBL::closeLine);
+			throw new FillMandatoryException(PARAM_MarkAsFullyDelivered);
 		}
-		else
-		{
-			orderLines.forEach(orderBL::reopenLine);
-			orderLines.forEach(this::setQtyOrderedBasedOnQtyEntered);
-			// shipmentScheduleBL.openShipmentSchedulesFor(ImmutableList.copyOf(TableRecordReference
-			// 																		 .ofRecordIds(I_C_OrderLine.Table_Name, orderLines.stream()
-			// 																				 .map(I_C_OrderLine::getC_OrderLine_ID)
-			// 																				 .collect(ImmutableList.toImmutableList()))));
-		}
+
+		final OrderId orderId = OrderId.ofRepoId(getRecord_ID());
+		final List<I_C_OrderLine> orderLines = orderBL.getLinesByOrderId(orderId);
+		orderLines.forEach(this::processLine);
 
 		return MSG_OK;
 	}
 
-	private void setQtyOrderedBasedOnQtyEntered(@NonNull final I_C_OrderLine orderLine)
+	private void processLine(final I_C_OrderLine orderLine)
 	{
-		final Quantity qtyEnteredToStockUOM = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
-		orderLine.setQtyOrdered(qtyEnteredToStockUOM.toBigDecimal());
-		InterfaceWrapperHelper.saveRecord(orderLine);
+		if (markAsFullyDelivered)
+		{
+			orderBL.closeLine(orderLine);
+		}
+		else
+		{
+			orderBL.reopenLine(orderLine);
+		}
 	}
 }
