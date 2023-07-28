@@ -9,6 +9,8 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.RepoIdAware;
 import io.swagger.annotations.ApiModel;
 import lombok.NonNull;
@@ -203,6 +205,24 @@ public class JSONDocumentChangedEvent
 		else
 		{
 			throw new AdempiereException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + IntegerLookupValue.class);
+		}
+	}
+
+	@Nullable
+	public <T extends ReferenceListAwareEnum> T getValueAsEnum(Class<T> enumType)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		else if (enumType.isInstance(value))
+		{
+			//noinspection unchecked
+			return (T)value;
+		}
+		else
+		{
+			return ReferenceListAwareEnums.ofNullableCode(value.toString(), enumType);
 		}
 	}
 
