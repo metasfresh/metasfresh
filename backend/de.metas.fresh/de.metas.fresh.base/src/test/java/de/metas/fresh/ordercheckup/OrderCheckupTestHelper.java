@@ -14,6 +14,7 @@ import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
+import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
 import de.metas.resource.ManufacturingResourceType;
 import de.metas.resource.ResourceService;
 import de.metas.util.Services;
@@ -38,6 +39,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,8 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class OrderCheckupTestHelper
 {
@@ -60,6 +64,8 @@ public class OrderCheckupTestHelper
 		SpringContextHolder.registerJUnitBean(ResourceService.newInstanceForJUnitTesting());
 
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance);
+
+		SpringContextHolder.registerJUnitBean(new ExternalSystemsPrintingNotifier(new ArrayList<>()));
 
 		printOutputFacade = new PrintOutputFacade(
 				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),

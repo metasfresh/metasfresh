@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 37626431L;
+	private static final long serialVersionUID = -571636833L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -41,7 +41,7 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public String getAuditFileFolder() 
+	public String getAuditFileFolder()
 	{
 		return get_ValueAsString(COLUMNNAME_AuditFileFolder);
 	}
@@ -53,7 +53,7 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public String getDescription() 
+	public String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -80,7 +80,7 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public String getName() 
+	public String getName()
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
@@ -112,6 +112,9 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Metasfresh = "metasfresh";
 	/** Amazon = AMZ */
 	public static final String TYPE_Amazon = "AMZ";
+	/** PrintingClient = PC */
+	public static final String TYPE_PrintingClient = "PC";
+
 	@Override
 	public void setType (final String Type)
 	{
@@ -119,7 +122,7 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public String getType() 
+	public String getType()
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
