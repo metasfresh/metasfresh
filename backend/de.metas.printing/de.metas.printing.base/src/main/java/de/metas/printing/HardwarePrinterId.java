@@ -50,7 +50,7 @@ public class HardwarePrinterId implements RepoIdAware
 
 	private HardwarePrinterId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_PrinterHW_ID");
 	}
 
 	@Override
