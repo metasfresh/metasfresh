@@ -142,12 +142,55 @@ import java.util.function.IntFunction;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public abstract class Doc<DocLineType extends DocLine<?>>
 {
-	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
-
-	@Getter(AccessLevel.PROTECTED)
-	@NonNull protected final AcctDocRequiredServicesFacade services;
-
+	//
+	// services
 	private static final Logger log = LogManager.getLogger(Doc.class);
+	@Getter(AccessLevel.PROTECTED) @NonNull protected final AcctDocRequiredServicesFacade services;
+	private AccountProvider _accountProvider; // lazy
+
+	//
+	// Params
+	private final ImmutableList<AcctSchema> acctSchemas;
+	private final AcctDocModel docModel;
+
+	//
+	// State
+	private boolean documentDetailsLoaded = false;
+	private DocBaseType _docBaseType = null;
+	private final DocStatus _docStatus;
+	private String m_DocumentNo = null;
+	private String m_Description = null;
+	private GLCategoryId m_GL_Category_ID;
+	private MPeriod m_period = null;
+	private int m_C_Period_ID = 0;
+	@Nullable private final LocationId locationFromId = null;
+	@Nullable private final LocationId locationToId = null;
+	private LocalDateAndOrgId _dateAcct = null;
+	private LocalDateAndOrgId _dateDoc = null;
+	/**
+	 * Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced)
+	 */
+	private boolean m_MultiCurrency = false;
+	@Nullable private Optional<SalesRegionId> m_BP_C_SalesRegion_ID = null; // lazy
+	@Nullable private Optional<BPartnerId> _bpartnerId; // lazy
+
+	/**
+	 * Bank Account
+	 */
+	@Nullable private Optional<BankAccountId> _bankAccountId = null; // lazy
+	@Nullable private BankAccount bankAccount = null;
+	/**
+	 * Cach Book
+	 */
+	@Nullable private Optional<CurrencyId> _currencyId; // lazy
+	@Nullable private CurrencyPrecision _currencyPrecision; // lazy
+
+	/**
+	 * Contained Doc Lines
+	 */
+	private List<DocLineType> docLines;
+
+	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
 	protected Doc(final AcctDocContext ctx)
 	{
@@ -162,73 +205,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		this._docStatus = docModel.getDocStatus();
 		setDocBaseType(defaultDocBaseType);
 	}
-
-	/**
-	 * Accounting Schemas
-	 */
-	private final ImmutableList<AcctSchema> acctSchemas;
-	private final AcctDocModel docModel;
-	/**
-	 * Document Type
-	 */
-	private DocBaseType _docBaseType = null;
-	/**
-	 * Document Status
-	 */
-	private final DocStatus _docStatus;
-	/**
-	 * Document No
-	 */
-	private String m_DocumentNo = null;
-	/**
-	 * Description
-	 */
-	private String m_Description = null;
-	/**
-	 * GL Category
-	 */
-	private GLCategoryId m_GL_Category_ID;
-	/**
-	 * GL Period
-	 */
-	private MPeriod m_period = null;
-	/**
-	 * Period ID
-	 */
-	private int m_C_Period_ID = 0;
-	@Nullable private final LocationId locationFromId = null;
-	@Nullable private final LocationId locationToId = null;
-	private LocalDateAndOrgId _dateAcct = null;
-	private LocalDateAndOrgId _dateDoc = null;
-	/**
-	 * Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced)
-	 */
-	private boolean m_MultiCurrency = false;
-	/**
-	 * BP Sales Region
-	 */
-	@Nullable private Optional<SalesRegionId> m_BP_C_SalesRegion_ID = null; // lazy
-	@Nullable private Optional<BPartnerId> _bpartnerId; // lazy
-
-	/**
-	 * Bank Account
-	 */
-	@Nullable private Optional<BankAccountId> _bankAccountId = null; // lazy
-	@Nullable private BankAccount bankAccount = null;
-	/**
-	 * Cach Book
-	 */
-	private int m_C_CashBook_ID = -1;
-
-	@Nullable private Optional<CurrencyId> _currencyId; // lazy
-	@Nullable private CurrencyPrecision _currencyPrecision; // lazy
-
-	/**
-	 * Contained Doc Lines
-	 */
-	private List<DocLineType> docLines;
-
-	private AccountProvider _accountProvider; // lazy
 
 	public final String get_TableName()
 	{
@@ -343,17 +319,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 							+ ", AcctSchema=" + acctSchemas.get(0).getClientId());
 		}
 
-		//
-		// Load document details
-		try
-		{
-			loadDocumentDetails();
-		}
-		catch (final Exception ex)
-		{
-			throw newPostingException(ex)
-					.setPreserveDocumentPostedStatus();
-		}
+		loadDocumentDetailsIfNeeded();
 
 		//
 		// Check posting allowed
@@ -427,8 +393,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private void deleteAcct() {services.deleteFactAcctByDocumentModel(getDocModel());}
 
 	@NonNull
-	private List<Fact> postLogic()
+	public List<Fact> postLogic()
 	{
+		loadDocumentDetailsIfNeeded();
+
 		//
 		// Create Facts
 		final List<Fact> facts = new ArrayList<>();
@@ -1263,34 +1231,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return bankAccount;
 	}
 
-	protected final int getC_CashBook_ID()
-	{
-		if (m_C_CashBook_ID == -1)
-		{
-			m_C_CashBook_ID = getValueAsIntOrZero("C_CashBook_ID");
-			if (m_C_CashBook_ID <= 0)
-			{
-				m_C_CashBook_ID = 0;
-			}
-		}
-		return m_C_CashBook_ID;
-	}
-
-	protected final void setC_CashBook_ID(final int C_CashBook_ID)
-	{
-		m_C_CashBook_ID = C_CashBook_ID;
-	}
-
 	protected final WarehouseId getWarehouseId()
 	{
 		return getValueAsIdOrNull("M_Warehouse_ID", WarehouseId::ofRepoIdOrNull);
 	}
 
-	/**
-	 * Get C_BPartner_ID
-	 *
-	 * @return BPartner
-	 */
 	protected final BPartnerId getBPartnerId()
 	{
 		if (_bpartnerId == null)
@@ -1439,6 +1384,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	protected String getValueAsString(final String columnName)
 	{
 		return getDocModel().getValueAsString(columnName);
+	}
+
+	private void loadDocumentDetailsIfNeeded()
+	{
+		if (documentDetailsLoaded)
+		{
+			return;
+		}
+
+		try
+		{
+			loadDocumentDetails();
+			documentDetailsLoaded = true;
+		}
+		catch (final Exception ex)
+		{
+			throw newPostingException(ex).setPreserveDocumentPostedStatus();
+		}
 	}
 
 	/**

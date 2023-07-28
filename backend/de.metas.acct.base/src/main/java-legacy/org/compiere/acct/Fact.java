@@ -599,12 +599,10 @@ public final class Fact
 		return m_lines.isEmpty();
 	}
 
-	public FactLine[] getLines()
+	public ImmutableList<FactLine> getLines()
 	{
-		final FactLine[] temp = new FactLine[m_lines.size()];
-		m_lines.toArray(temp);
-		return temp;
-	}    // getLines
+		return ImmutableList.copyOf(m_lines);
+	}
 
 	@NonNull
 	public FactLine getSingleLineByAccountId(final MAccount account)

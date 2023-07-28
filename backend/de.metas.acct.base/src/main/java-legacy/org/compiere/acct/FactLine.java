@@ -645,7 +645,7 @@ public class FactLine
 	}
 
 	@NonNull
-	private CurrencyId getAcctCurrencyId()
+	public CurrencyId getAcctCurrencyId()
 	{
 		return getAcctSchema().getCurrencyId();
 	}
