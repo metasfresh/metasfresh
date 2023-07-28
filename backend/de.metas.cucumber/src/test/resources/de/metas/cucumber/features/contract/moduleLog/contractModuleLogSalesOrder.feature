@@ -35,11 +35,11 @@ Feature: Modular contract log from sales order
       | locatorModularContract  | locator_07262023 | warehouseModularContract  |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year_2023            | 2023       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year_2023            | 2023       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name            | Value           | Classname                                                               |
