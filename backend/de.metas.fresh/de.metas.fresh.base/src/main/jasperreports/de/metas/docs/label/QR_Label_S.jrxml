@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="QR Label" printOrder="Horizontal" pageWidth="135" pageHeight="90" columnWidth="131" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" resourceBundle="de/metas/docs/label/report" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="QR Label" printOrder="Horizontal" pageWidth="128" pageHeight="83" columnWidth="124" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" resourceBundle="de/metas/docs/label/report" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
-	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[select t.* , s.T_Selection_id as hu
@@ -50,9 +42,9 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 		<property name="com.jaspersoft.studio.field.label" value="hu"/>
 	</field>
 	<detail>
-		<band height="85" splitType="Stretch">
+		<band height="78" splitType="Stretch">
 			<componentElement>
-				<reportElement positionType="Float" x="4" y="7" width="70" height="70" uuid="8e1e65e5-36d3-4f4c-853d-118d34f0253e">
+				<reportElement positionType="Float" x="4" y="4" width="70" height="70" uuid="8e1e65e5-36d3-4f4c-853d-118d34f0253e">
 					<property name="com.jaspersoft.studio.unit.margin" value="mm"/>
 				</reportElement>
 				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" margin="0" errorCorrectionLevel="M">
@@ -60,9 +52,9 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				</jr:QRCode>
 			</componentElement>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="76" y="34" width="54" height="16" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
+				<reportElement x="76" y="34" width="52" height="10" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
 				<textElement textAlignment="Left" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hu}]]></textFieldExpression>
 			</textField>
