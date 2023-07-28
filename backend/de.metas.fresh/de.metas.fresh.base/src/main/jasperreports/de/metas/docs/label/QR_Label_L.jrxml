@@ -80,7 +80,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$R{prodname}+" : "]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="FixRelativeToBottom" x="11" y="255" width="169" height="16" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
+				<reportElement positionType="FixRelativeToBottom" x="11" y="261" width="169" height="14" uuid="7fde2959-85e7-48ba-9215-bdaa594769a0"/>
 				<textElement textAlignment="Center" markup="none">
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
