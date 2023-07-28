@@ -29,7 +29,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
-@Builder
+@Builder(toBuilder = true)
 public record LogEntryReverseRequest(
 		@Nullable ModularContractLogEntryId id,
 		@Nullable TableRecordReference referencedModel,
