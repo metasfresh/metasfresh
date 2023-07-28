@@ -1,7 +1,5 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
-import javax.annotation.Nullable;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
@@ -11,10 +9,10 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -59,18 +57,6 @@ public final class ShipmentCandidatesView extends AbstractCustomView<ShipmentCan
 	public String getTableNameOrNull(final DocumentId documentId)
 	{
 		return null;
-	}
-
-	@Override
-	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

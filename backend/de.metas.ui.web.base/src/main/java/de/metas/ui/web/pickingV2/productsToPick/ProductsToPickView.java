@@ -1,9 +1,6 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
@@ -17,12 +14,12 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+
+import java.util.List;
 
 /*
  * #%L
@@ -88,7 +85,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 	@Override
 	public boolean isAllowClosingPerUserRequest()
 	{
-		// don't allow closing per user request because the same view is used the the Picker and the Reviewer.
+		// don't allow closing per user request because the same view is used the Picker and the Reviewer.
 		// So the first one which is closing the view would delete it.
 		return false;
 	}
@@ -96,7 +93,6 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 	@Override
 	public String getTableNameOrNull(final DocumentId documentId)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -137,17 +133,5 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 
 		return streamByIds(DocumentIdsSelection.ALL)
 				.allMatch(ProductsToPickRow::isApproved);
-	}
-
-	@Override
-	public LookupValuesPage getFieldTypeahead(RowEditingContext ctx, String fieldName, String query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName)
-	{
-		throw new UnsupportedOperationException();
 	}
 }
