@@ -1,4 +1,3 @@
-@dev:cloneFeature
 Feature: Clone Modular Contract Term
 
   Background:
