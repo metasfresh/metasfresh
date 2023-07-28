@@ -132,4 +132,14 @@ public class ModularContractSettingsDAO
 				.anyMatch();
 	}
 
+	public boolean isSettingsExist(final @NonNull ModularContractSettingsQuery query)
+	{
+		final YearAndCalendarId yearAndCalendarId = query.yearAndCalendarId();
+		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, query.productId())
+				.anyMatch();
+	}
 }

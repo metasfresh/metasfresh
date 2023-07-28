@@ -35,7 +35,6 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.calendar.standard.YearAndCalendarId;
@@ -70,6 +69,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -129,6 +130,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -215,6 +217,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -2368,16 +2371,12 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
 	{
-
-		//
-		//  double check as we have already a unique index on this columns
-		final boolean isSettingsExists = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, CalendarId.ofRepoId(year.getC_Calendar_ID()))
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, YearId.ofRepoId(year.getC_Year_ID()))
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, ProductId.ofRepoId(settings.getM_Product_ID()))
-				.anyMatch();
-
-		if (isSettingsExists)
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
+		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
+		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
+				.yearAndCalendarId(yearAndCalendarId)
+				.productId(productId)
+				.build()))
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
 		}
