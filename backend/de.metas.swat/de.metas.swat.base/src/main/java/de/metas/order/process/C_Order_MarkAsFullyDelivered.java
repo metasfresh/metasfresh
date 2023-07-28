@@ -25,7 +25,6 @@ package de.metas.order.process;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -40,7 +39,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Order;
 
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProcessPrecondition
 {
@@ -82,7 +81,14 @@ public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProces
 		final OrderId orderId = OrderId.ofRepoId(getRecord_ID());
 		final I_C_Order order = orderBL.getById(orderId);
 		final List<I_C_OrderLine> orderLines = orderBL.getLinesByOrderId(orderId);
-		orderLines.forEach(orderLine -> processLine(orderLine, order.isSOTrx()));
+		orderLines.forEach(orderLine -> {
+			processLine(orderLine, order.isSOTrx());
+
+			if (!order.isSOTrx())
+			{
+				processReceiptSchedule(orderLine);
+			}
+		});
 
 		return MSG_OK;
 	}
@@ -92,24 +98,25 @@ public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProces
 		if (markAsFullyDelivered)
 		{
 			orderBL.closeLine(orderLine);
-			processReceiptScheduleFromLine(orderLine, isSOTrx, receiptScheduleBL::close);
 		}
 		else
 		{
 			orderBL.reopenLine(orderLine);
-			processReceiptScheduleFromLine(orderLine, isSOTrx, receiptScheduleBL::reopen);
 		}
 	}
 
-	private void processReceiptScheduleFromLine(
-			@NonNull final I_C_OrderLine orderLine,
-			final boolean isSOTrx,
-			final Consumer<I_M_ReceiptSchedule> processMethod)
+	private void processReceiptSchedule(@NonNull final I_C_OrderLine orderLine)
 	{
-		if (!isSOTrx)
-		{
-			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
-			processMethod.accept(receiptSchedule);
-		}
+		Optional.ofNullable(receiptScheduleDAO.retrieveForRecord(orderLine))
+				.ifPresent(receiptSchedule -> {
+					if (markAsFullyDelivered)
+					{
+						receiptScheduleBL.close(receiptSchedule);
+					}
+					else
+					{
+						receiptScheduleBL.reopen(receiptSchedule);
+					}
+				});
 	}
 }
