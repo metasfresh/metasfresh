@@ -2818,6 +2818,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.invoiceLine(invoiceLine)
 				.inoutLine(inOutLine)
 				.dateTrx(invoice.getDateInvoiced())
+				.considerQtysAlreadyMatched(true)
 				.build();
 	}
 }

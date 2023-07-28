@@ -27,6 +27,7 @@ package de.metas.allocation.api;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -92,9 +93,7 @@ public class C_AllocationHdr_ProcessInterceptor implements IProcessInterceptor
 			// Update Balance / Credit used - Counterpart of MInvoice.completeIt
 			if (invoice != null)
 			{
-				final boolean ignoreProcessed = false;
-				Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
-				InterfaceWrapperHelper.save(invoice);
+				Services.get(IInvoiceBL.class).testAllocated(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 			}
 		}
 		

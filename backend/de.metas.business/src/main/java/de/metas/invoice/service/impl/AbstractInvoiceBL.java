@@ -122,7 +122,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
@@ -519,6 +518,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 					invoiceDAO.save(invoice);
 				});
 	}
+
+	@Override
+	public void testAllocated(@NonNull final InvoiceId invoiceId)
+	{
+		testAllocated(ImmutableList.of(invoiceId));
+	}
+
+	@Override
+	public boolean testAllocated(@NonNull final InvoiceId invoiceId, final boolean ignoreProcessed)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		final boolean hasChanges = testAllocation(invoice, ignoreProcessed);
+		invoiceDAO.save(invoice);
+		return hasChanges;
+	}
+
 
 	@Override
 	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, final boolean ignoreProcessed)

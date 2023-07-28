@@ -681,10 +681,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID());
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
-		queryBuilder.addCompositeQueryFilter()
+
+		final @NonNull IQueryFilter<I_C_InvoiceLine> filter = queryBL.createCompositeQueryFilter(I_C_InvoiceLine.class)
 				.setJoinOr()
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inoutLineId)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID, orderLineId);
+
+		queryBuilder.addFilter(filter);
 
 		final ImmutableList<I_C_InvoiceLine> invoiceLines = queryBuilder.list();
 		if (invoiceLines.isEmpty())
