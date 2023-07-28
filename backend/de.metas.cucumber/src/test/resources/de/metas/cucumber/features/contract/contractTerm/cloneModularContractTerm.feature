@@ -53,8 +53,8 @@ Feature: Clone Modular Contract Term
       | clonedModularContractTerm_2022      | modularContractTerm_2022_2023 | ModularContract | Ex                       | DR            | clonedModCntr_settings_1             |
 
     And validate cloned ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                | M_Product_ID.Identifier | C_Year_ID.Identifier |
-      | clonedModCntr_settings_1       | Settings_17072023_1 | contract_module_product | y2023                |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Year_ID.Identifier |
+      | clonedModCntr_settings_1       | modCntr_settings_toclone | contract_module_product | y2023                |
 
   @Id:S0300_200
   @from:cucumber
