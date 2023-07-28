@@ -45,8 +45,10 @@ import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSet
 import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Margin_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettings_StepDefData;
 import de.metas.cucumber.stepdefs.interiminvoice.settings.C_Interim_Invoice_Settings_StepDefData;
+import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
-import de.metas.cucumber.stepdefs.product.M_Product_StepDef;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.order.InvoiceRule;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -58,11 +60,12 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_Interim_Invoice_Settings;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 
 import java.util.List;
 import java.util.Map;
@@ -82,10 +85,12 @@ import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_OnFlat
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 
 public class C_Flatrate_Conditions_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
@@ -98,6 +103,7 @@ public class C_Flatrate_Conditions_StepDef
 	private final ModCntr_Settings_StepDefData modCntrSettingsTable;
 	private final C_Year_StepDefData yearTable;
 	private final M_Product_StepDefData productTable;
+	private final AD_Message_StepDefData messageTable;
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
@@ -109,7 +115,7 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable,
 			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable,
 			@NonNull final C_Year_StepDefData yearTable,
-			@NonNull final M_Product_StepDefData productTable)
+			@NonNull final M_Product_StepDefData productTable, final AD_Message_StepDefData messageTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;
@@ -121,6 +127,7 @@ public class C_Flatrate_Conditions_StepDef
 		this.modCntrSettingsTable = modCntrSettingsTable;
 		this.yearTable = yearTable;
 		this.productTable = productTable;
+		this.messageTable = messageTable;
 	}
 
 	@Given("metasfresh contains C_Flatrate_Conditions:")
@@ -254,8 +261,6 @@ public class C_Flatrate_Conditions_StepDef
 		final String clonedConditionsIdentifier = tableRow.get("CLONE." + COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
 		assertThat(clonedConditionsIdentifier).isNotBlank();
 
-		final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + "ErrorMessage");
-
 		try
 		{
 			//
@@ -269,17 +274,17 @@ public class C_Flatrate_Conditions_StepDef
 			conditionsTable.put(clonedConditionsIdentifier, clonedCondition);
 
 		}
-		catch (final Exception exception)
+		catch (final Exception e)
 		{
-			if (errorMessage != null)
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (errorMessageIdentifier != null)
 			{
-				assertThat(exception).isNotNull();
-				assertThat(exception).isExactlyInstanceOf(AdempiereException.class);
-				assertThat(exception.getMessage()).isEqualTo(errorMessage);
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
 			}
 			else
 			{
-				fail(exception.getMessage(), exception);
+				fail(e.getMessage(), e);
 			}
 		}
 

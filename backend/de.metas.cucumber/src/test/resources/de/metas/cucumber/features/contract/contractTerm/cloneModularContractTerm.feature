@@ -1,3 +1,4 @@
+@dev:cloneFeature
 Feature: Clone Modular Contract Term
 
   Background:
@@ -35,7 +36,7 @@ Feature: Clone Modular Contract Term
       | C_Flatrate_Conditions_ID.Identifier | Name                     | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
       | modularContractTerm_2022            | modularContractTerm_2022 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
 
-
+  @Id:S0300_100
   @from:cucumber
   Scenario: Happy flow - clone a Modular Contract Term -> new cloned Contract Term with Settings had the new harvest year
   - Contract Term of type Modular Contract for harvest year 2022 already exists
@@ -56,13 +57,17 @@ Feature: Clone Modular Contract Term
       | ModCntr_Settings_ID.Identifier | Name                | M_Product_ID.Identifier | C_Year_ID.Identifier |
       | clonedModCntr_settings_1       | Settings_17072023_1 | contract_module_product | y2023                |
 
-
+  @Id:S0300_200
   @from:cucumber
   Scenario: Clone fail - for Modular Contract Terms with an existing harvest year
   - Modular Contract term already exists  for harvest year 2022
   - clone the Modular Contract for harvest year 2022
-  - fail with message "Einstellungen mit demselben Jahr sind bereits vorhanden"
+  - fail with a user message : Settings with the same year already exist
+
+    Given load AD_Message:
+      | Identifier              | Value                                      |
+      | settings_already_exists | MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS |
 
     Then clone C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier | OPT.ErrorCode                      |
-      | modularContractTerm_2022            | y2022                | clonedModularContractTerm_2022            | ModCntr_Settings_cannot_be_changed |
+      | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier | OPT.AD_Message_ID.Identifier |
+      | modularContractTerm_2022            | y2022                | clonedModularContractTerm_2022            | settings_already_exists      |
