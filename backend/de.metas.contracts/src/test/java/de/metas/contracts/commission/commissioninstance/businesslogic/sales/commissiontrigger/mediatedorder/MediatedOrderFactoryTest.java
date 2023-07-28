@@ -219,6 +219,7 @@ public class MediatedOrderFactoryTest
 
 		//tax
 		final I_C_Tax taxRecord = newInstance(I_C_Tax.class);
+		taxRecord.setName("tax");
 		taxRecord.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		taxRecord.setRate(BigDecimal.TEN);
