@@ -23,6 +23,9 @@
 package de.metas.order.process;
 
 import de.metas.document.engine.DocStatus;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -37,12 +40,15 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_Order;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProcessPrecondition
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
-	private final String PARAM_MarkAsFullyDelivered = "MarkAsFullyDelivered";
+	private static final String PARAM_MarkAsFullyDelivered = "MarkAsFullyDelivered";
 	@Param(parameterName = PARAM_MarkAsFullyDelivered)
 	private Boolean markAsFullyDelivered;
 
@@ -74,21 +80,36 @@ public class C_Order_MarkAsFullyDelivered extends JavaProcess implements IProces
 		}
 
 		final OrderId orderId = OrderId.ofRepoId(getRecord_ID());
+		final I_C_Order order = orderBL.getById(orderId);
 		final List<I_C_OrderLine> orderLines = orderBL.getLinesByOrderId(orderId);
-		orderLines.forEach(this::processLine);
+		orderLines.forEach(orderLine -> processLine(orderLine, order.isSOTrx()));
 
 		return MSG_OK;
 	}
 
-	private void processLine(final I_C_OrderLine orderLine)
+	private void processLine(@NonNull final I_C_OrderLine orderLine, final boolean isSOTrx)
 	{
 		if (markAsFullyDelivered)
 		{
 			orderBL.closeLine(orderLine);
+			processReceiptScheduleFromLine(orderLine, isSOTrx, receiptScheduleBL::close);
 		}
 		else
 		{
 			orderBL.reopenLine(orderLine);
+			processReceiptScheduleFromLine(orderLine, isSOTrx, receiptScheduleBL::reopen);
+		}
+	}
+
+	private void processReceiptScheduleFromLine(
+			@NonNull final I_C_OrderLine orderLine,
+			final boolean isSOTrx,
+			final Consumer<I_M_ReceiptSchedule> processMethod)
+	{
+		if (!isSOTrx)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
+			processMethod.accept(receiptSchedule);
 		}
 	}
 }
