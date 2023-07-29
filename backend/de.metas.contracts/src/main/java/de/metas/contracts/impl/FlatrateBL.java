@@ -2395,8 +2395,11 @@ public class FlatrateBL implements IFlatrateBL
 
 		InterfaceWrapperHelper.save(newModCntrSettings);
 
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name);
-		childCRS.copyChildren(from, to);
+		CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name)
+				.setParentLink(InterfaceWrapperHelper.getPO(newModCntrSettings), I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID)
+				.copyChildren(
+						InterfaceWrapperHelper.getPO(newModCntrSettings),
+						InterfaceWrapperHelper.getPO(settings));
 
 		return newModCntrSettings;
 	}
@@ -2429,8 +2432,11 @@ public class FlatrateBL implements IFlatrateBL
 
 		InterfaceWrapperHelper.save(newConditions);
 
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
-		childCRS.copyChildren(from, to);
+		CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name)
+				.setParentLink(InterfaceWrapperHelper.getPO(newConditions), I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID)
+				.copyChildren(
+						InterfaceWrapperHelper.getPO(newConditions),
+						InterfaceWrapperHelper.getPO(conditions));
 
 		return ConditionsId.ofRepoId(newConditions.getC_Flatrate_Conditions_ID());
 
