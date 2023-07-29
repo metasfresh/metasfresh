@@ -209,7 +209,7 @@ public class JSONDocumentChangedEvent
 	}
 
 	@Nullable
-	public <T extends ReferenceListAwareEnum> T getValueAsEnum(Class<T> enumType)
+	public <T extends ReferenceListAwareEnum> T getValueAsEnum(@NonNull final Class<T> enumType)
 	{
 		if (value == null)
 		{
@@ -220,10 +220,33 @@ public class JSONDocumentChangedEvent
 			//noinspection unchecked
 			return (T)value;
 		}
+
+		final String valueStr;
+		if (value instanceof Map)
+		{
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
+			final LookupValue.StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
+			valueStr = lookupValue.getIdAsString();
+		}
+		else if (value instanceof JSONLookupValue)
+		{
+			final JSONLookupValue json = (JSONLookupValue)value;
+			valueStr = json.getKey();
+		}
 		else
 		{
-			return ReferenceListAwareEnums.ofNullableCode(value.toString(), enumType);
+			valueStr = value.toString();
 		}
+
+		try
+		{
+			return ReferenceListAwareEnums.ofNullableCode(valueStr, enumType);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + value + "` (" + value.getClass().getSimpleName() + ") to " + enumType.getSimpleName(), ex);
+		}
+
 	}
 
 }
