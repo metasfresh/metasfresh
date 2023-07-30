@@ -27,7 +27,7 @@ import { getSettingFromStateAsPositiveInt } from '../../utils/settings';
 import {
   OIViewHeader,
   OIViewHeader_WINDOW_ID,
-} from '../deliveryPlanning/OIViewHeader';
+} from '../acctOpenItems/OIViewHeader';
 import { DocumentListHeaderProperties } from './DocumentListHeaderProperties';
 
 /**

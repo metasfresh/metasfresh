@@ -21,7 +21,7 @@ import { renderHeaderPropertiesGroups } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import ModalButton from './ModalButton';
-import { OIViewHeader_WINDOW_ID } from '../deliveryPlanning/OIViewHeader';
+import { OIViewHeader_WINDOW_ID } from '../acctOpenItems/OIViewHeader';
 
 /**
  * @file Class based component.
