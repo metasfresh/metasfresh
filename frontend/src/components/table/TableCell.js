@@ -293,6 +293,7 @@ TableCell.propTypes = {
   viewId: PropTypes.string,
   rowId: PropTypes.string,
   docId: PropTypes.any,
+  isModal: PropTypes.bool,
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   colIndex: PropTypes.number,
   tabIndex: PropTypes.number,

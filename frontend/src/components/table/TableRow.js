@@ -784,6 +784,7 @@ TableRow.propTypes = {
   updatePropertyValue: PropTypes.func,
   onFastInlineEdit: PropTypes.func,
   navigationActive: PropTypes.bool,
+  isModal: PropTypes.bool,
 };
 
 export default TableRow;

@@ -5,7 +5,11 @@ import * as types from '../constants/ActionTypes';
 
 import { fetchQuickActions } from './Actions';
 import { showIncludedView } from './ViewActions';
-import { deleteViewAttributes, fetchViewAttributes, fetchViewAttributesLayout, } from './IndependentWidgetsActions';
+import {
+  deleteViewAttributes,
+  fetchViewAttributes,
+  fetchViewAttributesLayout,
+} from './IndependentWidgetsActions';
 
 import { getView } from '../reducers/viewHandler';
 import { getSupportAttribute, getTable } from '../reducers/tables';
@@ -136,6 +140,7 @@ export function clearTableData(id) {
  * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
  *
  * @param {string} id - table id
+ * @param {boolean} active
  */
 export function setTableNavigation(id, active) {
   return {

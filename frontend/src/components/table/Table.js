@@ -130,7 +130,7 @@ export default class Table extends PureComponent {
   handleClick = (e, item) => {
     const { keyProperty, selected, onSelect, onDeselect, featureType } =
       this.props;
-    const disableMultiSel = featureType === 'SEARCH' ? true : false;
+    const disableMultiSel = featureType === 'SEARCH';
     const id = item[keyProperty];
 
     this.clearMultiSelectionStartIdx();

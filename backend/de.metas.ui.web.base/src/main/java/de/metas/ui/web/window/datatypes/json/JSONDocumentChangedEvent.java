@@ -150,6 +150,7 @@ public class JSONDocumentChangedEvent
 		return value != null ? toBigDecimal(value) : defaultValueIfNull;
 	}
 
+	@SuppressWarnings("unused")
 	public Optional<BigDecimal> getValueAsBigDecimalOptional()
 	{
 		return Optional.ofNullable(getValueAsBigDecimal(null));
