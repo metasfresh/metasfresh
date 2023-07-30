@@ -1,5 +1,6 @@
 package de.metas.acct.acct_simulation;
 
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.Amount;
 import de.metas.ui.web.view.IViewRow;
@@ -9,6 +10,8 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
@@ -23,57 +26,59 @@ import java.util.Set;
 
 public class AcctRow implements IViewRow
 {
-	private static final String FIELDNAME_PostingSign = "PostingSign";
+	static final String FIELDNAME_PostingSign = "PostingSign";
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, fieldName = FIELDNAME_PostingSign, editor = ViewEditorRenderMode.ALWAYS)
 	@NonNull private final PostingSign postingSign;
 
-	private static final String FIELDNAME_Account_ID = "Account_ID";
+	static final String FIELDNAME_Account_ID = "Account_ID";
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Lookup, fieldName = FIELDNAME_Account_ID, editor = ViewEditorRenderMode.ALWAYS)
 	@Nullable private final LookupValue account;
 
-	private static final String FIELDNAME_Amount_DC = "Amount_DC";
+	static final String FIELDNAME_Amount_DC = "Amount_DC";
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Amount, fieldName = FIELDNAME_Amount_DC, editor = ViewEditorRenderMode.ALWAYS)
 	@NonNull private final Amount amount_DC;
 
-	private static final String FIELDNAME_Amount_LC = "Amount_LC";
+	static final String FIELDNAME_Amount_LC = "Amount_LC";
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, fieldName = FIELDNAME_Amount_LC)
 	@NonNull private final Amount amount_LC;
 
-	private static final String FIELDNAME_C_Tax_ID = "C_Tax_ID";
+	static final String FIELDNAME_C_Tax_ID = "C_Tax_ID";
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Lookup, fieldName = FIELDNAME_C_Tax_ID, editor = ViewEditorRenderMode.ALWAYS)
 	@Nullable private final LookupValue tax;
 
-	private static final String FIELDNAME_Description = "Description";
+	static final String FIELDNAME_Description = "Description";
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Text, fieldName = FIELDNAME_Description, editor = ViewEditorRenderMode.ALWAYS)
 	@Nullable private final String description;
 
-	private static final String FIELDNAME_M_SectionCode_ID = "M_SectionCode_ID";
+	static final String FIELDNAME_M_SectionCode_ID = "M_SectionCode_ID";
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Lookup, fieldName = FIELDNAME_M_SectionCode_ID, editor = ViewEditorRenderMode.ALWAYS)
 	@Nullable private final LookupValue sectionCode;
 
-	private static final String FIELDNAME_M_Product_ID = "M_Product_ID";
+	static final String FIELDNAME_M_Product_ID = "M_Product_ID";
 	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Lookup, fieldName = FIELDNAME_M_Product_ID, editor = ViewEditorRenderMode.ALWAYS)
 	@Nullable private final LookupValue product;
 
-	private static final String FIELDNAME_UserElementString1 = "UserElementString1";
+	static final String FIELDNAME_UserElementString1 = "UserElementString1";
 	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Text, fieldName = FIELDNAME_UserElementString1, editor = ViewEditorRenderMode.ALWAYS)
 	@Nullable private final String userElementString1;
 
-	private static final String FIELDNAME_C_OrderSO_ID = "C_OrderSO_ID";
+	static final String FIELDNAME_C_OrderSO_ID = "C_OrderSO_ID";
 	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Lookup, fieldName = FIELDNAME_C_OrderSO_ID, editor = ViewEditorRenderMode.ALWAYS)
 	@Nullable private final LookupValue orderSO;
 
-	private static final String FIELDNAME_C_Activity_ID = "C_Activity_ID";
+	static final String FIELDNAME_C_Activity_ID = "C_Activity_ID";
 	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.Lookup, fieldName = FIELDNAME_C_Activity_ID, editor = ViewEditorRenderMode.ALWAYS)
 	@Nullable private final LookupValue activity;
 
 	//
 	//
+	private final AcctRowLookups lookups;
 	private final ViewRowFieldNameAndJsonValuesHolder<AcctRow> values;
 	@NonNull private final DocumentId rowId;
 
 	@Builder(toBuilder = true)
 	private AcctRow(
+			@NonNull final AcctRowLookups lookups,
 			@NonNull final DocumentId rowId,
 			@NonNull final PostingSign postingSign,
 			@Nullable final LookupValue account,
@@ -87,6 +92,7 @@ public class AcctRow implements IViewRow
 			@Nullable final LookupValue orderSO,
 			@Nullable final LookupValue activity)
 	{
+		this.lookups = lookups;
 		this.postingSign = postingSign;
 		this.account = account;
 		this.amount_DC = amount_DC;
@@ -120,6 +126,10 @@ public class AcctRow implements IViewRow
 	@Override
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues() {return values.get(this);}
 
+	public LookupValuesPage getFieldTypeahead(String fieldName, String query) {return lookups.getFieldTypeahead(fieldName, query);}
+
+	public LookupValuesList getFieldDropdown(String fieldName) {return lookups.getFieldDropdown(fieldName);}
+
 	public AcctRow withPatch(final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
 		final AcctRowBuilder builder = toBuilder();
@@ -138,7 +148,7 @@ public class AcctRow implements IViewRow
 			}
 			else if (FIELDNAME_Account_ID.equals(fieldName))
 			{
-				// TODO
+				builder.account(lookups.lookupElementValue(event.getValueAsId(ElementValueId::ofRepoIdOrNull)));
 			}
 			else if (FIELDNAME_Amount_DC.equals(fieldName))
 			{

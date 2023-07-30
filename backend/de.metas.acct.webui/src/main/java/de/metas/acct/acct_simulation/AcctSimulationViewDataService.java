@@ -7,10 +7,8 @@ import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.edi.model.I_C_Order;
 import de.metas.money.MoneyService;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -19,11 +17,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_SectionCode;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,12 +29,7 @@ public class AcctSimulationViewDataService
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final AcctDocRegistry acctDocRegistry;
 	private final MoneyService moneyService;
-	private final LookupDataSource elementValueLookup;
-	private final LookupDataSource taxLookup;
-	private final LookupDataSource sectionCodeLookup;
-	private final LookupDataSource productLookup;
-	private final LookupDataSource orderLookup;
-	private final LookupDataSource activityLookup;
+	private final AcctRowLookups lookups;
 
 	public AcctSimulationViewDataService(
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
@@ -51,12 +39,7 @@ public class AcctSimulationViewDataService
 		this.acctDocRegistry = acctDocRegistry;
 		this.moneyService = moneyService;
 
-		this.elementValueLookup = lookupDataSourceFactory.searchInTableLookup(I_C_ElementValue.Table_Name);
-		this.taxLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Tax.Table_Name);
-		this.sectionCodeLookup = lookupDataSourceFactory.searchInTableLookup(I_M_SectionCode.Table_Name);
-		this.productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
-		this.orderLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Order.Table_Name);
-		this.activityLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Activity.Table_Name);
+		this.lookups = new AcctRowLookups(lookupDataSourceFactory);
 	}
 
 	public AcctSimulationViewData getViewData(
@@ -117,18 +100,19 @@ public class AcctSimulationViewDataService
 		}
 
 		return AcctRow.builder()
+				.lookups(lookups)
 				.rowId(DocumentId.of("generated_" + index))
 				.postingSign(postingSign)
-				.account(elementValueLookup.findById(factLine.getAccount_ID()))
+				.account(lookups.lookupElementValue(factLine.getAccount_ID()))
 				.amount_DC(amount_DC)
 				.amount_LC(amount_LC)
-				.tax(taxLookup.findById(factLine.getTaxId()))
+				.tax(lookups.lookupTax(factLine.getTaxId()))
 				.description(factLine.getDescription())
-				.sectionCode(sectionCodeLookup.findById(factLine.getM_SectionCode_ID()))
-				.product(productLookup.findById(factLine.getM_Product_ID()))
+				.sectionCode(lookups.lookupSectionCode(factLine.getM_SectionCode_ID()))
+				.product(lookups.lookupProduct(factLine.getM_Product_ID()))
 				.userElementString1(factLine.getUserElementString1())
-				.orderSO(orderLookup.findById(factLine.getC_OrderSO_ID()))
-				.activity(activityLookup.findById(factLine.getC_Activity_ID()))
+				.orderSO(lookups.lookupOrder(factLine.getC_OrderSO_ID()))
+				.activity(lookups.lookupActivity(factLine.getC_Activity_ID()))
 				.build();
 	}
 }

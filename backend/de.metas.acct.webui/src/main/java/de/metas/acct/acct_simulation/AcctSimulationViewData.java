@@ -51,7 +51,7 @@ public class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 	@Override
 	public void invalidateAll()
 	{
-		loadRows();
+		//loadRows();
 	}
 
 	private void loadRows()

@@ -6,6 +6,8 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -35,4 +37,8 @@ public class AcctSimulationView extends AbstractCustomView<AcctRow> implements I
 	}
 
 	public TableRecordReference getDocRecordRef() {return getRowsData().getDocRecordRef();}
+
+	public LookupValuesPage getFieldTypeahead(RowEditingContext ctx, String fieldName, String query) {return getById(ctx.getRowId()).getFieldTypeahead(fieldName, query);}
+
+	public LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName) {return getById(ctx.getRowId()).getFieldDropdown(fieldName);}
 }
