@@ -16,6 +16,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -28,7 +29,7 @@ public class AcctRow implements IViewRow
 {
 	static final String FIELDNAME_PostingSign = "PostingSign";
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, fieldName = FIELDNAME_PostingSign, editor = ViewEditorRenderMode.ALWAYS)
-	@NonNull private final PostingSign postingSign;
+	@Getter @NonNull private final PostingSign postingSign;
 
 	static final String FIELDNAME_Account_ID = "Account_ID";
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Lookup, fieldName = FIELDNAME_Account_ID, editor = ViewEditorRenderMode.ALWAYS)
@@ -36,11 +37,11 @@ public class AcctRow implements IViewRow
 
 	static final String FIELDNAME_Amount_DC = "Amount_DC";
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Amount, fieldName = FIELDNAME_Amount_DC, editor = ViewEditorRenderMode.ALWAYS)
-	@NonNull private final Amount amount_DC;
+	@Getter @NonNull private final Amount amount_DC;
 
 	static final String FIELDNAME_Amount_LC = "Amount_LC";
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Amount, fieldName = FIELDNAME_Amount_LC)
-	@NonNull private final Amount amount_LC;
+	@Getter @NonNull private final Amount amount_LC;
 
 	static final String FIELDNAME_C_Tax_ID = "C_Tax_ID";
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.Lookup, fieldName = FIELDNAME_C_Tax_ID, editor = ViewEditorRenderMode.ALWAYS)

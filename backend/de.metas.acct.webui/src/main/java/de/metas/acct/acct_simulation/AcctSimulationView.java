@@ -3,6 +3,7 @@ package de.metas.acct.acct_simulation;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -41,4 +42,7 @@ public class AcctSimulationView extends AbstractCustomView<AcctRow> implements I
 	public LookupValuesPage getFieldTypeahead(RowEditingContext ctx, String fieldName, String query) {return getById(ctx.getRowId()).getFieldTypeahead(fieldName, query);}
 
 	public LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName) {return getById(ctx.getRowId()).getFieldDropdown(fieldName);}
+
+	@Override
+	public ViewHeaderProperties getHeaderProperties() {return getRowsData().getHeaderProperties();}
 }
