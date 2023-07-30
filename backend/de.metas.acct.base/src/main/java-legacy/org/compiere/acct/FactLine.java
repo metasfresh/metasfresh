@@ -995,7 +995,7 @@ public class FactLine
 		}
 	}    // convert
 
-	private CurrencyRate getCurrencyRate(final CurrencyId currencyFromId, final CurrencyId currencyToId)
+	public CurrencyRate getCurrencyRate(final CurrencyId currencyFromId, final CurrencyId currencyToId)
 	{
 		final CurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
 		return services.getCurrencyRate(conversionCtx, currencyFromId, currencyToId);

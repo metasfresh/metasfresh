@@ -3,6 +3,9 @@ package de.metas.acct.acct_simulation;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRate;
+import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -15,10 +18,12 @@ import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.acct.FactLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -73,13 +78,17 @@ public class AcctRow implements IViewRow
 
 	//
 	//
-	private final AcctRowLookups lookups;
 	private final ViewRowFieldNameAndJsonValuesHolder<AcctRow> values;
+	@NonNull private final AcctRowLookups lookups;
+	@NonNull private final CurrencyCodeToCurrencyIdBiConverter currencyCodeToCurrencyIdBiConverter;
 	@NonNull private final DocumentId rowId;
+	@Nullable private final FactLine factLine;
 
 	@Builder(toBuilder = true)
 	private AcctRow(
 			@NonNull final AcctRowLookups lookups,
+			@NonNull final CurrencyCodeToCurrencyIdBiConverter currencyCodeToCurrencyIdBiConverter,
+			@Nullable final FactLine factLine,
 			@NonNull final DocumentId rowId,
 			@NonNull final PostingSign postingSign,
 			@Nullable final LookupValue account,
@@ -94,6 +103,8 @@ public class AcctRow implements IViewRow
 			@Nullable final LookupValue activity)
 	{
 		this.lookups = lookups;
+		this.factLine = factLine;
+
 		this.postingSign = postingSign;
 		this.account = account;
 		this.amount_DC = amount_DC;
@@ -105,9 +116,8 @@ public class AcctRow implements IViewRow
 		this.userElementString1 = userElementString1;
 		this.orderSO = orderSO;
 		this.activity = activity;
-
-		//
 		this.rowId = rowId;
+		this.currencyCodeToCurrencyIdBiConverter = currencyCodeToCurrencyIdBiConverter;
 		this.values = ViewRowFieldNameAndJsonValuesHolder.newInstance(AcctRow.class);
 	}
 
@@ -153,8 +163,9 @@ public class AcctRow implements IViewRow
 			}
 			else if (FIELDNAME_Amount_DC.equals(fieldName))
 			{
-				final BigDecimal valueBD = event.getValueAsBigDecimal(BigDecimal.ZERO);
-				builder.amount_DC(Amount.of(valueBD, amount_DC.getCurrencyCode()));
+				final Amount newAmountDC = Amount.of(event.getValueAsBigDecimal(BigDecimal.ZERO), amount_DC.getCurrencyCode());
+				final Amount newAmountLC = convert(newAmountDC, amount_LC.getCurrencyCode());
+				builder.amount_DC(newAmountDC).amount_LC(newAmountLC);
 			}
 			else
 			{
@@ -163,5 +174,16 @@ public class AcctRow implements IViewRow
 		}
 
 		return builder.build();
+	}
+
+	private Amount convert(final Amount amountDC, CurrencyCode currencyTo)
+	{
+		final FactLine factLine = Check.assumeNotNull(this.factLine, "factLine is set");
+		final CurrencyRate currencyRate = factLine.getCurrencyRate(
+				currencyCodeToCurrencyIdBiConverter.getCurrencyIdByCurrencyCode(amountDC.getCurrencyCode()),
+				currencyCodeToCurrencyIdBiConverter.getCurrencyIdByCurrencyCode(currencyTo));
+
+		return currencyRate.convertAmount(amountDC.toMoney(currencyCodeToCurrencyIdBiConverter::getCurrencyIdByCurrencyCode))
+				.toAmount(currencyCodeToCurrencyIdBiConverter::getCurrencyCodeByCurrencyId);
 	}
 }

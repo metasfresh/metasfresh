@@ -7,6 +7,7 @@ import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -81,8 +82,10 @@ public class AcctSimulationViewDataService
 
 	public AcctRow toRow(final FactLine factLine, final int index)
 	{
-		final CurrencyCode documentCurrency = moneyService.getCurrencyCodeByCurrencyId(factLine.getCurrencyId());
-		final CurrencyCode localCurrency = moneyService.getCurrencyCodeByCurrencyId(factLine.getAcctCurrencyId());
+		final CurrencyId documentCurrencyId = factLine.getCurrencyId();
+		final CurrencyCode documentCurrency = moneyService.getCurrencyCodeByCurrencyId(documentCurrencyId);
+		final CurrencyId localCurrencyId = factLine.getAcctCurrencyId();
+		final CurrencyCode localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
 		final PostingSign postingSign;
 		final Amount amount_LC; // amount (local currency)
 		final Amount amount_DC; // amount (document/foreign currency)
@@ -101,6 +104,8 @@ public class AcctSimulationViewDataService
 
 		return AcctRow.builder()
 				.lookups(lookups)
+				.currencyCodeToCurrencyIdBiConverter(moneyService)
+				.factLine(factLine)
 				.rowId(DocumentId.of("generated_" + index))
 				.postingSign(postingSign)
 				.account(lookups.lookupElementValue(factLine.getAccount_ID()))
