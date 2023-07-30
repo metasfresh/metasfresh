@@ -1,5 +1,5 @@
-import { produce, original } from 'immer';
-import { get, difference, forEach } from 'lodash';
+import { original, produce } from 'immer';
+import { difference, forEach, get } from 'lodash';
 import { createSelector } from 'reselect';
 import { merge } from 'merge-anything';
 
@@ -183,6 +183,30 @@ const reducer = produce((draftState, action) => {
         rows,
         ...updatedSelected,
       };
+
+      return;
+    }
+
+    case types.PARTIAL_UPDATE_TABLE_DATA: {
+      const { tableId, rowsToUpdate } = action.payload;
+      const keyProperty = draftState[tableId].keyProperty;
+
+      const rowsToUpdateById = rowsToUpdate.reduce((acc, row) => {
+        acc[row[keyProperty]] = row;
+        return acc;
+      }, {});
+
+      draftState[tableId].rows = original(draftState[tableId].rows).map(
+        (row) => {
+          const rowId = row[keyProperty];
+          const rowToUpdate = rowsToUpdateById[rowId];
+          if (rowToUpdate != null) {
+            return merge(row, rowToUpdate);
+          } else {
+            return row;
+          }
+        }
+      );
 
       return;
     }

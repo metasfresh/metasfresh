@@ -166,6 +166,7 @@ class TableCell extends PureComponent {
       mainTable,
       viewId,
       modalVisible,
+      isModal,
       onClickOutside,
       updateHeight,
       rowIndex,
@@ -244,6 +245,7 @@ class TableCell extends PureComponent {
               entity,
               updateHeight,
               updateRow,
+              isModal,
             }}
             suppressChange={isEdited}
             clearValue={this.clearWidgetValue}

@@ -5,11 +5,7 @@ import * as types from '../constants/ActionTypes';
 
 import { fetchQuickActions } from './Actions';
 import { showIncludedView } from './ViewActions';
-import {
-  deleteViewAttributes,
-  fetchViewAttributes,
-  fetchViewAttributesLayout,
-} from './IndependentWidgetsActions';
+import { deleteViewAttributes, fetchViewAttributes, fetchViewAttributesLayout, } from './IndependentWidgetsActions';
 
 import { getView } from '../reducers/viewHandler';
 import { getSupportAttribute, getTable } from '../reducers/tables';
@@ -399,6 +395,13 @@ export function updateGridTableData({
     }
 
     return Promise.resolve(false);
+  };
+}
+
+export function partialUpdateGridTableRows({ tableId, rowsToUpdate }) {
+  return {
+    type: types.PARTIAL_UPDATE_TABLE_DATA,
+    payload: { tableId, rowsToUpdate },
   };
 }
 

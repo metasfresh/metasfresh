@@ -96,6 +96,19 @@ export const getViewFieldTypeahead = ({
   );
 };
 
+export const patchModalView = ({
+  windowId,
+  viewId,
+  rowId,
+  fieldName,
+  value,
+}) => {
+  return patch(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/edit`,
+    createPatchRequestPayload(fieldName, value)
+  ).then((rawResponse) => rawResponse.data);
+};
+
 export function patchRequest({
   // HOTFIX: before refactoring all calls explicity set docId to `null`
   // instead of `undefined` so default value 'NEW' was never used!
