@@ -22,46 +22,24 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import de.metas.material.MovementType;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
+import de.metas.material.MovementType;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import lombok.NonNull;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * There is no inoutLine with inDispute, so the quality discount is actually zero. This test sets an override discount and verifies the aggregation result.
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		//
-		CurrencyRepository.class,
-		MoneyService.class,
-		InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTestQualityDiscountPercentOverride
 {
 
@@ -78,7 +56,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 			completeInOut(inOut1);
 		}
 
-		return Arrays.asList(iol11);
+		return Collections.singletonList(iol11);
 	}
 
 	@Override
@@ -96,12 +74,12 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
-		assertThat(ic.getQtyToInvoiceBeforeDiscount(), comparesEqualTo(new BigDecimal("100")));
-		assertThat(ic.getQtyToInvoice(), comparesEqualTo(new BigDecimal("90")));
+		assertThat(ic.getQtyToInvoiceBeforeDiscount()).isEqualByComparingTo("100");
+		assertThat(ic.getQtyToInvoice()).isEqualByComparingTo("90");
 
 		// Check QtyWithIssues (from linked inout lines): shall be zero because there are no inout lines with IsInDispute=Y
-		assertThat(ic.getQtyWithIssues(), comparesEqualTo(new BigDecimal("0")));
-		assertThat(ic.getQtyWithIssues_Effective(), comparesEqualTo(new BigDecimal("10")));
+		assertThat(ic.getQtyWithIssues()).isEqualByComparingTo("0");
+		assertThat(ic.getQtyWithIssues_Effective()).isEqualByComparingTo("10");
 	}
 
 	@Override
@@ -113,6 +91,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 
-		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("90")));
+		assertThat(il1).isNotNull();
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal()).isEqualByComparingTo("90");
 	}
 }

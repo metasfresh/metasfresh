@@ -23,6 +23,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -31,6 +32,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -50,6 +52,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
@@ -275,6 +278,45 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addColumn(I_C_InvoiceLine.COLUMNNAME_Line);
 
 		return queryBuilder.create().list(I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId)
+	{
+		return retrieveTaxRecords(invoiceId)
+				.stream()
+				.map(AbstractInvoiceDAO::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_InvoiceTax.class)
+				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public void deleteTaxes(@NonNull final InvoiceId invoiceId)
+	{
+		queryBL.createQueryBuilder(I_C_InvoiceTax.class)
+				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.create()
+				.deleteDirectly();
+	}
+
+	private static InvoiceTax fromRecord(final I_C_InvoiceTax record)
+	{
+		return InvoiceTax.builder()
+				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
+				.taxAmt(record.getTaxAmt())
+				.taxBaseAmt(record.getTaxBaseAmt())
+				.isTaxIncluded(record.isTaxIncluded())
+				.isReverseCharge(record.isReverseCharge())
+				.reverseChargeTaxAmt(record.getReverseChargeTaxAmt())
+				.build();
 	}
 
 	@Override

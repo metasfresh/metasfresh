@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -90,6 +90,7 @@ public class C_BankStatementLine_Test
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
 		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
 		bankAccount.setC_Currency_ID(111);
+		bankAccount.setC_BPartner_ID(1001);
 		saveRecord(bankAccount);
 
 		final I_C_BankStatement bankStatement = newInstance(I_C_BankStatement.class);

@@ -154,6 +154,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		saveRecord(bpartnerLocationRecord);
 
 		final I_C_Tax taxRecord = newInstance(I_C_Tax.class);
+		taxRecord.setName("tax");
 		taxRecord.setC_TaxCategory_ID(pricingTestHelper.getTaxCategoryId().getRepoId());
 		taxRecord.setC_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
 		taxRecord.setTo_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
@@ -209,10 +210,10 @@ class JsonInsertInvoiceCandidateServiceTest
 				.qtyOrdered(TEN)
 				.soTrx(JsonSOTrx.SALES)
 				.build();
-		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest.builder()
+
+		return JsonCreateInvoiceCandidatesRequest.builder()
 				.item(minimalItem)
 				.build();
-		return request;
 	}
 
 	@Test

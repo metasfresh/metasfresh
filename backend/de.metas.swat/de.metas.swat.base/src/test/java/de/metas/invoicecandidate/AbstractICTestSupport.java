@@ -19,9 +19,9 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.location.impl.DocumentLocationBL;
@@ -104,7 +104,6 @@ import org.compiere.model.X_C_PaymentTerm;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -120,6 +119,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class AbstractICTestSupport extends AbstractTestSupport
 {
@@ -403,6 +403,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_NotFound.setC_TaxCategory_ID(taxCategory_None.getC_TaxCategory_ID());
 		tax_NotFound.setValidFrom(plvDate);
 		tax_NotFound.setC_Country_ID(100);
+		tax_NotFound.setName("TaxNotFound");
 		InterfaceWrapperHelper.save(tax_NotFound);
 
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
@@ -415,6 +416,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_Default.setC_TaxCategory_ID(taxCategory_Default.getC_TaxCategory_ID());
 		tax_Default.setValidFrom(plvDate);
 		tax_Default.setC_Country_ID(100);
+		tax_Default.setName("Default Tax");
 		InterfaceWrapperHelper.save(tax_Default);
 	}
 
@@ -680,7 +682,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
 					.anyMatch();
-			Assert.assertFalse("Existing invalid invoice candidates", existingInvalidCandidates);
+			assertThat(existingInvalidCandidates).as("Existing invalid invoice candidates").isFalse();
 		}
 	}
 

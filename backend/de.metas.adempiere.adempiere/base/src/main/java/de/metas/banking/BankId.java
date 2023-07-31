@@ -65,7 +65,7 @@ public class BankId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final BankId id)
+	public static int toRepoId(@Nullable final BankId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

@@ -22,11 +22,13 @@ import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.logging.LogManager;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -61,7 +63,7 @@ public class MAccount extends X_C_ValidCombination
 							   int AD_OrgTrx_ID,
 							   int C_LocFrom_ID,
 							   int C_LocTo_ID,
-							   int C_SalesRegion_ID,
+							   @Nullable SalesRegionId C_SalesRegion_ID,
 							   int C_Project_ID,
 							   int C_Campaign_ID,
 							   int C_Activity_ID,
