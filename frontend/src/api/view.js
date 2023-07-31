@@ -78,8 +78,9 @@ export const getViewFieldDropdown = ({
   rowId,
   fieldName,
 }) => {
+  const rowIdEncoded = encodeURIComponent(rowId);
   return axios.get(
-    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowIdEncoded}/edit/${fieldName}/dropdown`
   );
 };
 
@@ -90,9 +91,10 @@ export const getViewFieldTypeahead = ({
   fieldName,
   query,
 }) => {
+  const rowIdEncoded = encodeURIComponent(rowId);
   const queryParams = getQueryString({ query });
   return axios.get(
-    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/edit/${fieldName}/typeahead?${queryParams}`
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowIdEncoded}/edit/${fieldName}/typeahead?${queryParams}`
   );
 };
 
@@ -103,8 +105,9 @@ export const patchModalView = ({
   fieldName,
   value,
 }) => {
+  const rowIdEncoded = encodeURIComponent(rowId);
   return patch(
-    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/edit`,
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowIdEncoded}/edit`,
     createPatchRequestPayload(fieldName, value)
   ).then((rawResponse) => rawResponse.data);
 };
@@ -125,7 +128,8 @@ export function patchRequest({
   viewId,
   isEdit,
 }) {
-  let payload =
+  const rowIdEncoded = rowId != null ? encodeURIComponent(rowId) : null;
+  const payload =
     docId !== 'NEW' ? createPatchRequestPayload(property, value) : [];
 
   return patch(
@@ -136,7 +140,7 @@ export function patchRequest({
       (viewId ? '/' + viewId : '') +
       (docId ? '/' + docId : '') +
       (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
+      (rowIdEncoded ? '/' + rowIdEncoded : '') +
       (subentity ? '/' + subentity : '') +
       (subentityId ? '/' + subentityId : '') +
       (isAdvanced ? '?advanced=true' : '') +
