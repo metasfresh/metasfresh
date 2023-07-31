@@ -1,14 +1,17 @@
 package de.metas.acct.acct_simulation;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.doc.AcctDocRegistry;
+import de.metas.acct.factacct_userchanges.FactAcctChanges;
+import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.gljournal_sap.PostingSign;
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
-import de.metas.money.CurrencyId;
+import de.metas.costing.CostElementId;
+import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.tax.api.TaxId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
@@ -18,11 +21,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 public class AcctSimulationViewDataService
@@ -30,17 +33,20 @@ public class AcctSimulationViewDataService
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final AcctDocRegistry acctDocRegistry;
 	private final MoneyService moneyService;
+	private final FactAcctUserChangesService factAcctUserChangesService;
 	private final AcctRowLookups lookups;
 
 	public AcctSimulationViewDataService(
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final AcctDocRegistry acctDocRegistry,
-			@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService,
+			@NonNull final FactAcctUserChangesService factAcctUserChangesService)
 	{
 		this.acctDocRegistry = acctDocRegistry;
 		this.moneyService = moneyService;
 
 		this.lookups = new AcctRowLookups(lookupDataSourceFactory);
+		this.factAcctUserChangesService = factAcctUserChangesService;
 	}
 
 	public AcctSimulationViewData getViewData(
@@ -61,59 +67,63 @@ public class AcctSimulationViewDataService
 		final List<AcctSchema> acctSchemas = acctSchemaBL.getAllByClientId(clientId);
 		final Doc<?> acctDoc = acctDocRegistry.get(acctSchemas, docRecordRef);
 		final List<Fact> facts = acctDoc.postLogic();
-		return facts.stream()
-				.flatMap(this::toRowsAndStream)
-				.collect(ImmutableList.toImmutableList());
-	}
 
-	public Stream<AcctRow> toRowsAndStream(final Fact fact)
-	{
+		final ImmutableMap<String, FactAcctChanges> userChangesByMatchKey = factAcctUserChangesService.getByDocRecordRef(docRecordRef)
+				.stream()
+				.filter(lineChanges -> lineChanges.getMatchKey() != null)
+				.collect(ImmutableMap.toImmutableMap(FactAcctChanges::getMatchKey, lineChanges -> lineChanges));
+
 		final ArrayList<AcctRow> result = new ArrayList<>();
-		final ImmutableList<FactLine> lines = fact.getLines();
-		for (int i = 0; i < lines.size(); i++)
+		for (final Fact fact : facts)
 		{
-			final FactLine factLine = lines.get(i);
-			final AcctRow row = toRow(factLine, i);
-			result.add(row);
+			final ImmutableList<FactLine> lines = fact.getLines();
+			for (int i = 0; i < lines.size(); i++)
+			{
+				final FactLine factLine = lines.get(i);
+				final String matchKey = extractMatchKey(factLine);
+
+				FactAcctChanges userChanges = userChangesByMatchKey.get(matchKey);
+				if (userChanges == null)
+				{
+					userChanges = extractUserChanges(factLine);
+				}
+
+				result.add(
+						AcctRow.builder()
+								.lookups(lookups)
+								.currencyIdToCurrencyCodeConverter(moneyService)
+								.factLine(factLine)
+								.userChanges(userChanges)
+								.rowId(DocumentId.of(userChanges.getMatchKey()))
+								.build()
+				);
+			}
 		}
 
-		return result.stream();
+		return result;
 	}
 
-	public AcctRow toRow(final FactLine factLine, final int index)
+	private static FactAcctChanges extractUserChanges(final FactLine factLine)
 	{
-		return AcctRow.builder()
-				.lookups(lookups)
-				.currencyCodeToCurrencyIdBiConverter(moneyService)
-				.factLine(factLine)
-				.userChanges(extractUserChanges(factLine, moneyService))
-				.rowId(DocumentId.of("generated_" + index))
-				.build();
-	}
-
-	private static FactLineChanges extractUserChanges(final FactLine factLine, final MoneyService moneyService)
-	{
-		final CurrencyId documentCurrencyId = factLine.getCurrencyId();
-		final CurrencyCode documentCurrency = moneyService.getCurrencyCodeByCurrencyId(documentCurrencyId);
-		final CurrencyId localCurrencyId = factLine.getAcctCurrencyId();
-		final CurrencyCode localCurrency = moneyService.getCurrencyCodeByCurrencyId(localCurrencyId);
 		final PostingSign postingSign;
-		final Amount amount_LC; // amount (local currency)
-		final Amount amount_DC; // amount (document/foreign currency)
+		final Money amount_LC; // amount (local currency)
+		final Money amount_DC; // amount (document/foreign currency)
 		if (factLine.getAmtSourceCr().signum() != 0)
 		{
 			postingSign = PostingSign.CREDIT;
-			amount_DC = Amount.of(factLine.getAmtSourceCr(), documentCurrency);
-			amount_LC = Amount.of(factLine.getAmtAcctCr(), localCurrency);
+			amount_DC = factLine.getAmtSourceCrAsMoney();
+			amount_LC = factLine.getAmtAcctCrAsMoney();
 		}
 		else
 		{
 			postingSign = PostingSign.DEBIT;
-			amount_DC = Amount.of(factLine.getAmtSourceDr(), documentCurrency);
-			amount_LC = Amount.of(factLine.getAmtAcctDr(), localCurrency);
+			amount_DC = factLine.getAmtSourceDrAsMoney();
+			amount_LC = factLine.getAmtAcctDrAsMoney();
 		}
 
-		return FactLineChanges.builder()
+		return FactAcctChanges.builder()
+				.matchKey(extractMatchKey(factLine))
+				.acctSchemaId(factLine.getAcctSchemaId())
 				.postingSign(postingSign)
 				.accountId(factLine.getAccount_ID())
 				.amount_DC(amount_DC)
@@ -126,5 +136,27 @@ public class AcctSimulationViewDataService
 				.salesOrderId(factLine.getC_OrderSO_ID())
 				.activityId(factLine.getC_Activity_ID())
 				.build();
+	}
+
+	private static String extractMatchKey(@NonNull final FactLine factLine)
+	{
+		return Util.ArrayKey.builder()
+				// no need to include AD_Table_ID/Record_ID because we always match on document level
+				.append(Math.max(factLine.getLine_ID(), 0))
+				.append(factLine.getAccountConceptualName())
+				.append(CostElementId.toRepoId(factLine.getCostElementId()))
+				.append(TaxId.toRepoId(factLine.getTaxId()))
+				.append(Math.max(factLine.getM_Locator_ID(), 0))
+				.build()
+				.toString();
+	}
+
+	public void save(final List<AcctRow> rows, final TableRecordReference docRecordRef)
+	{
+		final ImmutableList<FactAcctChanges> factAcctChanges = rows.stream()
+				.map(AcctRow::getUserChanges)
+				.collect(ImmutableList.toImmutableList());
+
+		factAcctUserChangesService.save(factAcctChanges, docRecordRef);
 	}
 }

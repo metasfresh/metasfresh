@@ -807,6 +807,14 @@ public class FactLine
 		return amtRounded;
 	}
 
+	public Money getAmtSourceDrAsMoney() {return Money.of(getAmtSourceDr(), getCurrencyId());}
+
+	public Money getAmtSourceCrAsMoney() {return Money.of(getAmtSourceCr(), getCurrencyId());}
+
+	public Money getAmtAcctDrAsMoney() {return Money.of(getAmtAcctDr(), getAcctCurrencyId());}
+
+	public Money getAmtAcctCrAsMoney() {return Money.of(getAmtAcctCr(), getAcctCurrencyId());}
+
 	public Doc<?> getDoc() {return m_doc;}
 
 	public DocLine<?> getDocLine()
@@ -1000,6 +1008,8 @@ public class FactLine
 		final CurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
 		return services.getCurrencyRate(conversionCtx, currencyFromId, currencyToId);
 	}
+
+	public CurrencyRate getCurrencyRateFromDocumentToAcctCurrency() {return getCurrencyRate(getCurrencyId(), getAcctCurrencyId());}
 
 	public void setCurrencyConversionCtx(final CurrencyConversionContext currencyConversionCtx)
 	{

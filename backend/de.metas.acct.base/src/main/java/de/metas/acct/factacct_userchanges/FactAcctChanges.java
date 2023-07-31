@@ -1,8 +1,9 @@
-package de.metas.acct.acct_simulation;
+package de.metas.acct.factacct_userchanges;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.PostingSign;
-import de.metas.currency.Amount;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -16,12 +17,16 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder(toBuilder = true)
-public class FactLineChanges
+public class FactAcctChanges
 {
+	@Nullable String matchKey;
+
+	@NonNull AcctSchemaId acctSchemaId;
+
 	@NonNull PostingSign postingSign;
 	@Nullable ElementValueId accountId;
-	@NonNull Amount amount_DC;
-	@NonNull Amount amount_LC;
+	@NonNull Money amount_DC;
+	@NonNull Money amount_LC;
 	@Nullable TaxId taxId;
 	@Nullable String description;
 	@Nullable SectionCodeId sectionCodeId;

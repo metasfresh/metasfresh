@@ -1,11 +1,11 @@
 package de.metas.acct.acct_simulation;
 
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.factacct_userchanges.FactAcctChanges;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRate;
-import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
+import de.metas.money.CurrencyIdToCurrencyCodeConverter;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -85,29 +85,30 @@ public class AcctRow implements IViewRow
 	//
 	private final ViewRowFieldNameAndJsonValuesHolder<AcctRow> values;
 	@NonNull private final AcctRowLookups lookups;
-	@NonNull private final CurrencyCodeToCurrencyIdBiConverter currencyCodeToCurrencyIdBiConverter;
+	@SuppressWarnings({ "FieldCanBeLocal", "unused" }) // needs to be here for toBuilder()
+	@NonNull private final CurrencyIdToCurrencyCodeConverter currencyIdToCurrencyCodeConverter;
 	@NonNull private final DocumentId rowId;
 	@Nullable private final FactLine factLine;
-	@Getter @NonNull final FactLineChanges userChanges;
+	@Getter @NonNull final FactAcctChanges userChanges;
 
 	@Builder(toBuilder = true)
 	private AcctRow(
 			@NonNull final AcctRowLookups lookups,
-			@NonNull final CurrencyCodeToCurrencyIdBiConverter currencyCodeToCurrencyIdBiConverter,
+			@NonNull final CurrencyIdToCurrencyCodeConverter currencyIdToCurrencyCodeConverter,
 			@Nullable final FactLine factLine,
-			@NonNull final FactLineChanges userChanges,
+			@NonNull final FactAcctChanges userChanges,
 			@NonNull final DocumentId rowId)
 	{
 		this.lookups = lookups;
-		this.currencyCodeToCurrencyIdBiConverter = currencyCodeToCurrencyIdBiConverter;
+		this.currencyIdToCurrencyCodeConverter = currencyIdToCurrencyCodeConverter;
 		this.factLine = factLine;
 		this.userChanges = userChanges;
 		this.rowId = rowId;
 
 		this.postingSign = userChanges.getPostingSign();
 		this.account = lookups.lookupElementValue(userChanges.getAccountId());
-		this.amount_DC = userChanges.getAmount_DC();
-		this.amount_LC = userChanges.getAmount_LC();
+		this.amount_DC = userChanges.getAmount_DC().toAmount(currencyIdToCurrencyCodeConverter::getCurrencyCodeByCurrencyId);
+		this.amount_LC = userChanges.getAmount_LC().toAmount(currencyIdToCurrencyCodeConverter::getCurrencyCodeByCurrencyId);
 		this.tax = lookups.lookupTax(userChanges.getTaxId());
 		this.description = userChanges.getDescription();
 		this.sectionCode = lookups.lookupSectionCode(userChanges.getSectionCodeId());
@@ -141,7 +142,7 @@ public class AcctRow implements IViewRow
 
 	public AcctRow withPatch(final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		final FactLineChanges.FactLineChangesBuilder changes = getUserChanges().toBuilder();
+		final FactAcctChanges.FactAcctChangesBuilder newChanges = userChanges.toBuilder();
 		for (final JSONDocumentChangedEvent event : fieldChangeRequests)
 		{
 			event.assertReplaceOperation();
@@ -154,45 +155,45 @@ public class AcctRow implements IViewRow
 				{
 					throw new AdempiereException("PostingSign is mandatory");
 				}
-				changes.postingSign(postingSign);
+				newChanges.postingSign(postingSign);
 			}
 			else if (FIELDNAME_Account_ID.equals(fieldName))
 			{
-				changes.accountId(event.getValueAsId(ElementValueId::ofRepoIdOrNull));
+				newChanges.accountId(event.getValueAsId(ElementValueId::ofRepoIdOrNull));
 			}
 			else if (FIELDNAME_Amount_DC.equals(fieldName))
 			{
-				final Amount newAmountDC = Amount.of(event.getValueAsBigDecimal(BigDecimal.ZERO), amount_DC.getCurrencyCode());
-				final Amount newAmountLC = convert(newAmountDC, amount_LC.getCurrencyCode());
-				changes.amount_DC(newAmountDC).amount_LC(newAmountLC);
+				final Money newAmountDC = Money.of(event.getValueAsBigDecimal(BigDecimal.ZERO), userChanges.getAmount_DC().getCurrencyId());
+				final Money newAmountLC = convertToLocalCurrency(newAmountDC);
+				newChanges.amount_DC(newAmountDC).amount_LC(newAmountLC);
 			}
 			else if (FIELDNAME_C_Tax_ID.equals(fieldName))
 			{
-				changes.taxId(event.getValueAsId(TaxId::ofRepoIdOrNull));
+				newChanges.taxId(event.getValueAsId(TaxId::ofRepoIdOrNull));
 			}
 			else if (FIELDNAME_Description.equals(fieldName))
 			{
-				changes.description(event.getValueAsString(null));
+				newChanges.description(event.getValueAsString(null));
 			}
 			else if (FIELDNAME_M_SectionCode_ID.equals(fieldName))
 			{
-				changes.sectionCodeId(event.getValueAsId(SectionCodeId::ofRepoIdOrNull));
+				newChanges.sectionCodeId(event.getValueAsId(SectionCodeId::ofRepoIdOrNull));
 			}
 			else if (FIELDNAME_M_Product_ID.equals(fieldName))
 			{
-				changes.productId(event.getValueAsId(ProductId::ofRepoIdOrNull));
+				newChanges.productId(event.getValueAsId(ProductId::ofRepoIdOrNull));
 			}
 			else if (FIELDNAME_UserElementString1.equals(fieldName))
 			{
-				changes.userElementString1(event.getValueAsString(null));
+				newChanges.userElementString1(event.getValueAsString(null));
 			}
 			else if (FIELDNAME_C_OrderSO_ID.equals(fieldName))
 			{
-				changes.salesOrderId(event.getValueAsId(OrderId::ofRepoIdOrNull));
+				newChanges.salesOrderId(event.getValueAsId(OrderId::ofRepoIdOrNull));
 			}
 			else if (FIELDNAME_C_Activity_ID.equals(fieldName))
 			{
-				changes.activityId(event.getValueAsId(ActivityId::ofRepoIdOrNull));
+				newChanges.activityId(event.getValueAsId(ActivityId::ofRepoIdOrNull));
 			}
 			else
 			{
@@ -200,17 +201,13 @@ public class AcctRow implements IViewRow
 			}
 		}
 
-		return toBuilder().userChanges(changes.build()).build();
+		return toBuilder().userChanges(newChanges.build()).build();
 	}
 
-	private Amount convert(final Amount amountDC, CurrencyCode currencyTo)
+	private Money convertToLocalCurrency(final Money amountDC)
 	{
-		final FactLine factLine = Check.assumeNotNull(this.factLine, "factLine is set");
-		final CurrencyRate currencyRate = factLine.getCurrencyRate(
-				currencyCodeToCurrencyIdBiConverter.getCurrencyIdByCurrencyCode(amountDC.getCurrencyCode()),
-				currencyCodeToCurrencyIdBiConverter.getCurrencyIdByCurrencyCode(currencyTo));
-
-		return currencyRate.convertAmount(amountDC.toMoney(currencyCodeToCurrencyIdBiConverter::getCurrencyIdByCurrencyCode))
-				.toAmount(currencyCodeToCurrencyIdBiConverter::getCurrencyCodeByCurrencyId);
+		return Check.assumeNotNull(this.factLine, "factLine is set")
+				.getCurrencyRateFromDocumentToAcctCurrency()
+				.convertAmount(amountDC);
 	}
 }

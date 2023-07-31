@@ -157,4 +157,9 @@ public class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 			return credit != null ? credit.negate() : null;
 		}
 	}
+
+	public void save()
+	{
+		dataService.save(rowsHolder.list(), docRecordRef);
+	}
 }
