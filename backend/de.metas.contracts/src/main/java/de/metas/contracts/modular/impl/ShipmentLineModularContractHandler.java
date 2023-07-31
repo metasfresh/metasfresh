@@ -41,6 +41,8 @@ import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
@@ -63,10 +65,12 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.stream.Stream;
+
 @Component
 public class ShipmentLineModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
@@ -80,6 +84,10 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.DocActionNotAllowed");
+	private static final AdMessageKey MSG_ERROR_DOC_ACTION_UNSUPPORTED = AdMessageKey.of("de.metas.contracts.DocActionUnsupported");
+	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
+	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public ShipmentLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
@@ -97,7 +105,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isSales();
+		return (SOTrx.ofBoolean(inOutRecord.isSOTrx()).isSales() && inOutLineRecord.getC_Order_ID() > 0);
 	}
 
 	@Override
@@ -113,6 +121,8 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(flatrateTermId);
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
+
+		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_COMPLETED);
 
 		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
 				.stream()
@@ -136,7 +146,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 				.amount(null)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(), OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
 				.year(modularContractSettings.getYearAndCalendarId().yearId())
-				.description("Shipment completed")
+				.description(msgText.translate(Env.getAD_Language()))
 				.modularContractTypeId(contractTypeId)
 				.build());
 	}
@@ -144,10 +154,12 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	@Override
 	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
 	{
+		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_REVERSED);
+
 		return Optional.of(LogEntryReverseRequest.builder()
 								   .referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
 								   .flatrateTermId(flatrateTermId)
-								   .description("Shipment reversed")
+								   .description(msgText.translate(Env.getAD_Language()))
 								   .build());
 	}
 
@@ -157,10 +169,8 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(inOutLineRecord.getC_Order_ID()));
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
-		assert warehouseId != null;
 
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
-		assert harvestingYearId != null;
 
 		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
@@ -173,6 +183,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
 	}
+
 	@NonNull
 	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermRequest request)
 	{
@@ -182,9 +193,16 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	@Override
 	public void validateDocAction(final @NonNull I_M_InOutLine model, final ModularContractService.@NonNull ModelAction action)
 	{
-		if (action == ModularContractService.ModelAction.VOIDED)
+		switch (action)
 		{
-			throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+			case VOIDED, REACTIVATED ->
+			{
+				throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+			}
+			case COMPLETED,REVERSED ->
+			{
+			}
+			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 }
