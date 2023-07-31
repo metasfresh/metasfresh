@@ -451,7 +451,7 @@ public class C_OrderLine_StepDef
 		{
 			metasfresh_contains_c_order_lines(dataTable);
 
-			Assertions.assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+			Assertions.fail("An Exception should have been thrown !");
 		}
 		catch (final AdempiereException exception)
 		{
