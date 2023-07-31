@@ -16,6 +16,7 @@ import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -127,11 +128,6 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isReversal(I_C_Invoice invoice);
 
 	/**
-	 * @return true if the given invoice is a AR CreditMemo (ARC)
-	 */
-	boolean isARCreditMemo(I_C_Invoice invoice);
-
-	/**
 	 * Writes off the given openAmt from the given invoice.
 	 *
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
@@ -145,6 +141,8 @@ public interface IInvoiceBL extends ISingletonService
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
+
+	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Create a credit memo for the given invoice.
@@ -214,10 +212,8 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Sets Target Document Type and IsSOTrx.
-	 *
-	 * @return true if document type found and set
 	 */
-	boolean setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
+	void setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice
@@ -228,14 +224,8 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Sort and then renumber all invoice lines.
-	 *
-	 * @param step start and step
-	 */
-	void renumberLines(de.metas.adempiere.model.I_C_Invoice invoice, int step);
-
-	/**
-	 * Similar to {@link #renumberLines(de.metas.adempiere.model.I_C_Invoice, int)}, but in addition, leave alone lines which were flagged using {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}
-	 * and don't assign their <code>Line</code> value to any other line.
+	 * This method does not touch lines that were flagged using {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
+	 * Also, it will not assign their <code>Line</code> value to any other line.
 	 */
 	void renumberLines(List<I_C_InvoiceLine> lines, int step);
 

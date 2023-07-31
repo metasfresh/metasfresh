@@ -2,12 +2,14 @@ package de.metas.acct.gldistribution.impl;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.gldistribution.IGLDistributionDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocTypeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -65,7 +67,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 	}
 
 	@Override
-	public List<I_GL_Distribution> retrieve(final Properties ctx, final AccountDimension dimension, final String PostingType, final DocTypeId C_DocType_ID)
+	public List<I_GL_Distribution> retrieve(final Properties ctx, @NonNull final AccountDimension dimension, final PostingType postingType, final DocTypeId C_DocType_ID)
 	{
 		Check.assumeNotNull(dimension, "dimension not null");
 
@@ -82,8 +84,9 @@ public class GLDistributionDAO implements IGLDistributionDAO
 			{
 				continue;
 			}
+
 			// Only Posting Type
-			if (glDistribution.getPostingType() != null && !Objects.equals(glDistribution.getPostingType(), PostingType))
+			if (glDistribution.getPostingType() != null && !Objects.equals(glDistribution.getPostingType(), postingType.getCode()))
 			{
 				continue;
 			}

@@ -193,7 +193,6 @@ public class MediatedOrderFactoryTest
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
-		;
 		orgInfo.setAD_Org_ID(orgId.getRepoId());
 		orgInfo.setStoreCreditCardData(STORECREDITCARDDATA_Speichern);
 		InterfaceWrapperHelper.save(orgInfo);
@@ -219,6 +218,7 @@ public class MediatedOrderFactoryTest
 
 		//tax
 		final I_C_Tax taxRecord = newInstance(I_C_Tax.class);
+		taxRecord.setName("tax");
 		taxRecord.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		taxRecord.setRate(BigDecimal.TEN);

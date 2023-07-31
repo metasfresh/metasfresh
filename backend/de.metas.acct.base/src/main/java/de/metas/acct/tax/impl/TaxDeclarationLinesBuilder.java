@@ -22,14 +22,20 @@ package de.metas.acct.tax.impl;
  * #L%
  */
 
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.tax.ITaxAccountable;
+import de.metas.acct.tax.ITaxDeclarationDAO;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -41,26 +47,19 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.I_C_TaxDeclarationAcct;
 import org.compiere.model.I_C_TaxDeclarationLine;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
-import org.compiere.util.TrxRunnable;
 
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.gljournal.IGLJournalLineBL;
-import de.metas.acct.tax.ITaxAccountable;
-import de.metas.acct.tax.ITaxDeclarationDAO;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Builder class which creates the {@link I_C_TaxDeclarationLine}s and {@link I_C_TaxDeclarationAcct}s.
@@ -114,7 +113,7 @@ public class TaxDeclarationLinesBuilder
 		return this;
 	}
 
-	private final I_C_TaxDeclaration getC_TaxDeclaration()
+	private I_C_TaxDeclaration getC_TaxDeclaration()
 	{
 		Check.assumeNotNull(_taxDeclaration, "_taxDeclaration not null");
 		return _taxDeclaration;
@@ -171,18 +170,18 @@ public class TaxDeclarationLinesBuilder
 		}
 	}
 
-	private final <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass)
+	private <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass)
 	{
 		return queryBL.createQueryBuilder(modelClass, getC_TaxDeclaration()) // FIXME
 		;
 	}
 
-	private final Properties getCtx()
+	private Properties getCtx()
 	{
 		return InterfaceWrapperHelper.getCtx(getC_TaxDeclaration());
 	}
 
-	private final String getTrxNameInitial()
+	private String getTrxNameInitial()
 	{
 		return InterfaceWrapperHelper.getTrxName(getC_TaxDeclaration());
 	}
@@ -256,7 +255,7 @@ public class TaxDeclarationLinesBuilder
 	private boolean addInvoice(final I_C_Invoice invoice)
 	{
 		final AtomicBoolean addedRef = new AtomicBoolean(false);
-		trxManager.run(getTrxNameInitial(), (TrxRunnable)localTrxName -> {
+		trxManager.run(getTrxNameInitial(), localTrxName -> {
 			final boolean added = addInvoice0(invoice);
 			addedRef.set(added);
 		});
@@ -276,11 +275,11 @@ public class TaxDeclarationLinesBuilder
 
 		//
 		// Tax declaration lines (one for each invoice tax record)
-		final List<I_C_InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(invoice);
-		final Map<Integer, I_C_TaxDeclarationLine> taxId2taxDeclarationLine = new HashMap<>(invoiceTaxes.size());
-		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
+		final List<InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		final Map<TaxId, I_C_TaxDeclarationLine> taxId2taxDeclarationLine = new HashMap<>(invoiceTaxes.size());
+		for (final InvoiceTax invoiceTax : invoiceTaxes)
 		{
-			final int taxId = invoiceTax.getC_Tax_ID();
+			final TaxId taxId = invoiceTax.getTaxId();
 			final I_C_TaxDeclarationLine taxDeclarationLine = createTaxDeclarationLine(invoice, invoiceTax);
 			final I_C_TaxDeclarationLine taxDeclarationLineOld = taxId2taxDeclarationLine.put(taxId, taxDeclarationLine);
 			Check.assumeNull(taxDeclarationLineOld, "More than one invoice tax line for {}, taxId={}", invoice, taxId);
@@ -304,7 +303,7 @@ public class TaxDeclarationLinesBuilder
 			I_C_TaxDeclarationLine taxDeclarationLine = null;
 			if (factAcctRecord.getLine_ID() <= 0)
 			{
-				final int taxId = factAcctRecord.getC_Tax_ID();
+				final TaxId taxId = TaxId.ofRepoId(factAcctRecord.getC_Tax_ID());
 				taxDeclarationLine = taxId2taxDeclarationLine.get(taxId);
 			}
 
@@ -314,7 +313,7 @@ public class TaxDeclarationLinesBuilder
 		return true;
 	}
 
-	private final I_C_TaxDeclarationLine newTaxDeclarationLine()
+	private I_C_TaxDeclarationLine newTaxDeclarationLine()
 	{
 		final I_C_TaxDeclaration taxDeclaration = getC_TaxDeclaration();
 		final I_C_TaxDeclarationLine taxDeclarationLine = InterfaceWrapperHelper.create(getCtx(), I_C_TaxDeclarationLine.class, ITrx.TRXNAME_ThreadInherited);
@@ -323,7 +322,7 @@ public class TaxDeclarationLinesBuilder
 		return taxDeclarationLine;
 	}
 
-	private final I_C_TaxDeclarationLine createTaxDeclarationLine(final I_C_Invoice invoice, final I_C_InvoiceTax invoiceTax)
+	private I_C_TaxDeclarationLine createTaxDeclarationLine(final I_C_Invoice invoice, final InvoiceTax invoiceTax)
 	{
 		final I_C_TaxDeclarationLine taxDeclarationLine = newTaxDeclarationLine();
 
@@ -338,7 +337,7 @@ public class TaxDeclarationLinesBuilder
 		taxDeclarationLine.setC_DocType_ID(invoice.getC_DocType_ID());
 		taxDeclarationLine.setDocumentNo(invoice.getDocumentNo());
 		//
-		taxDeclarationLine.setC_Tax_ID(invoiceTax.getC_Tax_ID());
+		taxDeclarationLine.setC_Tax_ID(invoiceTax.getTaxId().getRepoId());
 		taxDeclarationLine.setTaxBaseAmt(invoiceTax.getTaxBaseAmt());
 		taxDeclarationLine.setTaxAmt(invoiceTax.getTaxAmt());
 
@@ -347,7 +346,7 @@ public class TaxDeclarationLinesBuilder
 		return taxDeclarationLine;
 	}
 
-	private final void save(final I_C_TaxDeclarationLine taxDeclarationLine)
+	private void save(final I_C_TaxDeclarationLine taxDeclarationLine)
 	{
 		final int line = lineNoOffset_TaxDeclarationLine + (countLinesCreated + 1) * 10;
 
@@ -365,7 +364,7 @@ public class TaxDeclarationLinesBuilder
 		}
 	}
 
-	private final I_C_TaxDeclarationAcct createTaxDeclarationAcct(final I_C_TaxDeclarationLine taxDeclarationLine, final I_Fact_Acct fact)
+	private void createTaxDeclarationAcct(final I_C_TaxDeclarationLine taxDeclarationLine, final I_Fact_Acct fact)
 	{
 		final I_C_TaxDeclaration taxDeclaration = getC_TaxDeclaration();
 
@@ -394,10 +393,9 @@ public class TaxDeclarationLinesBuilder
 		InterfaceWrapperHelper.save(taxDeclarationAcct);
 		countAcctLinesCreated++;
 
-		return taxDeclarationAcct;
 	}
 
-	private final Iterator<I_GL_JournalLine> retrieveGLJournalLines()
+	private Iterator<I_GL_JournalLine> retrieveGLJournalLines()
 	{
 		final I_C_TaxDeclaration taxDeclaration = getC_TaxDeclaration();
 
@@ -440,7 +438,7 @@ public class TaxDeclarationLinesBuilder
 	private boolean addGLJournalLine(final I_GL_JournalLine glJournalLine)
 	{
 		final AtomicBoolean addedRef = new AtomicBoolean(false);
-		trxManager.run(getTrxNameInitial(), (TrxRunnable)localTrxName -> {
+		trxManager.run(getTrxNameInitial(), localTrxName -> {
 			final boolean added = addGLJournalLine0(glJournalLine);
 			addedRef.set(added);
 		});
@@ -467,7 +465,7 @@ public class TaxDeclarationLinesBuilder
 		return true;
 	}
 
-	private final I_C_TaxDeclarationLine createTaxDeclarationLine(final I_GL_JournalLine glJournalLine)
+	private I_C_TaxDeclarationLine createTaxDeclarationLine(final I_GL_JournalLine glJournalLine)
 	{
 		final String summary = journalLineBL.getDocumentNo(glJournalLine);
 

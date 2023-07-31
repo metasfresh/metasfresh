@@ -1,5 +1,6 @@
 package de.metas.tax.api;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -87,4 +88,6 @@ public class TaxId implements RepoIdAware
 	{
 		return repoId == Tax.C_TAX_ID_NO_TAX_FOUND;
 	}
+
+	public static boolean equals(@Nullable TaxId taxId1, @Nullable TaxId taxId2) { return Objects.equals(taxId1, taxId2);}
 }

@@ -1,12 +1,14 @@
 package de.metas.tax.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.common.util.StringUtils;
 import de.metas.i18n.ITranslatableString;
@@ -70,7 +72,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class TaxDAO implements ITaxDAO
 {
-	private final static transient Logger logger = LogManager.getLogger(TaxDAO.class);
+	private final static Logger logger = LogManager.getLogger(TaxDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -81,7 +83,11 @@ public class TaxDAO implements ITaxDAO
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
-	private final IBPartnerBL bpartnerBL  = Services.get(IBPartnerBL.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
+	private final CCache<TaxId, ImmutableList<Tax>> childTaxes = CCache.<TaxId, ImmutableList<Tax>>builder()
+			.tableName(I_C_Tax.Table_Name)
+			.build();
 
 	@Override
 	public Tax getTaxById(final int taxRepoId)
@@ -175,17 +181,6 @@ public class TaxDAO implements ITaxDAO
 				.firstOnlyNotNull(I_C_Tax.class);
 
 		return TaxId.ofRepoId(tax.getC_Tax_ID());
-	}
-
-	@Override
-	@Cached(cacheName = I_C_TaxCategory.Table_Name + "#NoTaxFound")
-	public I_C_TaxCategory retrieveNoTaxCategoryFound(@CacheCtx final Properties ctx)
-	{
-		return queryBL.createQueryBuilder(I_C_TaxCategory.class, ctx, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, TaxCategoryId.NOT_FOUND)
-				.create()
-				.firstOnlyNotNull(I_C_TaxCategory.class);
 	}
 
 	@Override
@@ -316,11 +311,10 @@ public class TaxDAO implements ITaxDAO
 	@NonNull
 	private List<Tax> getTaxesFromQuery(@NonNull final TaxQuery taxQuery)
 	{
-		final IQueryBuilder<I_C_Tax> queryBuilder = getTaxQueryBuilder(taxQuery);
-		return queryBuilder.create()
+		return toSqlQuery(taxQuery)
 				.stream()
 				.map(TaxUtils::from)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -334,7 +328,7 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@NonNull
-	private IQueryBuilder<I_C_Tax> getTaxQueryBuilder(@NonNull final TaxQuery taxQuery)
+	private IQueryBuilder<I_C_Tax> toSqlQuery(@NonNull final TaxQuery taxQuery)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
@@ -524,5 +518,27 @@ public class TaxDAO implements ITaxDAO
 		}
 
 		return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(bpartnerLocation.getC_Location_ID()));
+	}
+
+	@Override
+	public List<Tax> getChildTaxes(@NonNull final TaxId taxId)
+	{
+		return childTaxes.getOrLoad(taxId, this::retrieveChildTaxes);
+	}
+
+	private ImmutableList<Tax> retrieveChildTaxes(@NonNull final TaxId taxId)
+	{
+		final Tax tax = getTaxById(taxId);
+		if (!tax.isSummary())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Tax.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_Parent_Tax_ID, taxId)
+				.stream()
+				.map(TaxUtils::from)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

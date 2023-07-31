@@ -686,6 +686,7 @@ public class ESRImportBLTest extends ESRTestBase
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setC_Currency_ID(currencyEUR.getRepoId());
+		account.setC_BPartner_ID(partner.getC_BPartner_ID());
 		save(account);
 
 		final BigDecimal invoiceGrandTotal = INVOICE_GRANDTOTAL;
