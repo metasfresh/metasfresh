@@ -455,9 +455,9 @@ public class C_OrderLine_StepDef
 		}
 		catch (final AdempiereException exception)
 		{
-			final String errorMsg = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "ErrorMessage");
+			final String errorCode = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "ErrorCode");
 
-			assertThat(exception.getMessage()).contains(errorMsg);
+			assertThat(exception.getErrorCode()).isEqualTo(errorCode);
 		}
 	}
 

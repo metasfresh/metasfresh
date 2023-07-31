@@ -222,7 +222,7 @@ Feature: sales order
 
   @from:cucumber
   @Id:S0296_100
-  Scenario: validate warehouse assignment
+  Scenario: validate warehouse assignment is enforced if EnforceWarehouseAssignmentsForProduct is Y
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config de.metas.warehouseassignment.ProductWarehouseAssignmentService.EnforceWarehouseAssignmentsForProduct
     And metasfresh contains M_Products:
@@ -254,13 +254,13 @@ Feature: sales order
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | warehouse_2                   |
     Then metasfresh contains C_OrderLine expecting error:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | ErrorMessage                                                                           |
-      | ol_1       | o_1                   | p_1                     | 10         | The warehouses assigned to both the sales/purchase order and the product do not match. |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | ErrorCode                 |
+      | ol_1       | o_1                   | p_1                     | 10         | ORDER_DIFFERENT_WAREHOUSE |
     And set sys config boolean value false for sys config de.metas.warehouseassignment.ProductWarehouseAssignmentService.EnforceWarehouseAssignmentsForProduct
 
   @from:cucumber
   @Id:S0296_200
-  Scenario: validate warehouse assignment
+  Scenario: validate warehouse assignment is not enforced for a service-product, even if EnforceWarehouseAssignmentsForProduct is Y
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config de.metas.warehouseassignment.ProductWarehouseAssignmentService.EnforceWarehouseAssignmentsForProduct
     And metasfresh contains M_Products:
