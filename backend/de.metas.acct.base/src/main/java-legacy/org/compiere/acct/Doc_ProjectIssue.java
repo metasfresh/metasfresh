@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.accounts.ProjectAccountType;
 import de.metas.acct.api.AcctSchema;
@@ -25,7 +26,6 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.document.DocBaseType;
 import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
@@ -35,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.SpringContextHolder;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
@@ -144,10 +143,6 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		String ProjectCategory = project.getProjectCategory();
 		I_M_Product product = Services.get(IProductDAO.class).getById(m_issue.getM_Product_ID());
 
-		// Line pointers
-		FactLine dr = null;
-		FactLine cr = null;
-
 		// Issue Cost
 		CostAmount cost = null;
 		if (m_issue.getM_InOutLine_ID() > 0)
@@ -171,27 +166,29 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			{
 				acctType = ProjectAccountType.PJ_Asset_Acct;
 			}
-			dr = fact.createLine(m_line,
-					getProjectAccount(acctType, as),
-					cost.getCurrencyId(),
-					cost.toBigDecimal(), null);
-			dr.setQty(m_line.getQty().negate());
+			fact.createLine()
+					.setDocLine(m_line)
+					.setAccount(getProjectAccount(acctType, as))
+					.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
+					.setQty(m_line.getQty().negate())
+					.buildAndAdd();
 		}
 
 		//
 		// Inventory CR
 		{
 			ProductAcctType acctType = ProductAcctType.P_Asset_Acct;
-			if (Services.get(IProductBL.class).isService(product))
+			if (!services.isProductStocked(product))
 			{
 				acctType = ProductAcctType.P_Expense_Acct;
 			}
-			cr = fact.createLine(m_line,
-					m_line.getAccount(acctType, as),
-					cost.getCurrencyId(),
-					null, cost.toBigDecimal());
-			cr.setM_Locator_ID(m_line.getM_Locator_ID());
-			cr.setLocationFromLocator(m_line.getM_Locator_ID(), true);    // from Loc
+			fact.createLine()
+					.setDocLine(m_line)
+					.setAccount(m_line.getAccount(acctType, as))
+					.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())
+					.locatorId(m_line.getM_Locator_ID())
+					.fromLocationOfLocator(m_line.getM_Locator_ID())
+					.buildAndAdd();
 		}
 
 		//

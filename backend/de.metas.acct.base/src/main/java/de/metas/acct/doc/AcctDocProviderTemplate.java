@@ -90,18 +90,18 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 				.build());
 	}
 
-	private PO retrieveDocumentModel(final TableRecordReference documentRef)
+	private AcctDocModel retrieveDocumentModel(final TableRecordReference documentRef)
 	{
-		final PO documentModel = TableModelLoader.instance.getPO(
+		final PO po = TableModelLoader.instance.getPO(
 				Env.getCtx(),
 				documentRef.getTableName(),
 				documentRef.getRecord_ID(),
 				ITrx.TRXNAME_ThreadInherited);
-		if (documentModel == null)
+		if (po == null)
 		{
-			throw new AdempiereException("No ducument found for " + documentRef);
+			throw new AdempiereException("No document found for " + documentRef);
 		}
-		return documentModel;
+		return new POAcctDocModel(po);
 	}
 
 	@FunctionalInterface

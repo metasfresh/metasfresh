@@ -64,7 +64,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -75,8 +74,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Post MatchInv Documents.
@@ -133,7 +130,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	public Doc_MatchInv(final AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.MatchInvoice);
-		this.matchInv = MatchInvoiceRepository.fromRecord(InterfaceWrapperHelper.create(ctx.getDocumentModel(), I_M_MatchInv.class));
+		this.matchInv = MatchInvoiceRepository.fromRecord(ctx.getDocumentModel().unboxAs(I_M_MatchInv.class));
 
 	}
 
@@ -277,6 +274,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// NotInvoicedReceipt DR
 		// From Receipt
 		final Money receiptAmt = costs.getAmountBeforeAdjustment().toMoney();
+		final I_M_InOutLine receiptLine = getReceiptLine();
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(costElementId != null
 						? getCostElementAccount(as, costElementId, CostElementAccountType.P_CostClearing_Acct)
@@ -286,8 +284,13 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				.setQty(getQty())
 				.costElement(costElementId)
 				.bpartnerId(getReceiptBPartnerId())
+				.orgId(OrgId.ofRepoIdOrAny(receiptLine.getAD_Org_ID()))
+				.orgTrxId(OrgId.ofRepoIdOrAny(receiptLine.getAD_OrgTrx_ID()))
+				.locatorId(receiptLine.getM_Locator_ID())
 				.buildAndAdd();
-		updateFromReceiptLine(dr_NotInvoicedReceipts);
+
+		//dr_NotInvoicedReceipts.setC_UOM_ID(UomId.ofRepoId(receiptLine.getC_UOM_ID()));
+		dr_NotInvoicedReceipts.setFromDimension(services.extractDimensionFromModel(receiptLine));
 
 		//
 		// InventoryClearing CR
@@ -527,26 +530,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 
 		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-		fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));
+		//fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));
 
 		final Dimension invoiceLineDimension = services.extractDimensionFromModel(invoiceLine);
 		fl.setFromDimension(invoiceLineDimension);
-	}
-
-	private void updateFromReceiptLine(@Nullable final FactLine fl)
-	{
-		if (fl == null)
-		{
-			return;
-		}
-
-		final I_M_InOutLine receiptLine = getReceiptLine();
-		fl.setAD_Org_ID(receiptLine.getAD_Org_ID()); // Org for cross charge
-		fl.setAD_OrgTrx_ID(receiptLine.getAD_OrgTrx_ID());
-		fl.setM_Locator_ID(receiptLine.getM_Locator_ID());
-		fl.setC_UOM_ID(receiptLine.getC_UOM_ID());
-
-		fl.setFromDimension(services.extractDimensionFromModel(receiptLine));
 	}
 
 	private CostAmountDetailed getCreateCostDetails(final AcctSchema as)

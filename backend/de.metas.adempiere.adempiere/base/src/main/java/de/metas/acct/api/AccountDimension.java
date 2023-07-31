@@ -26,10 +26,14 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Immutable {@link AccountDimension} implementation
@@ -83,12 +87,12 @@ public final class AccountDimension
 
 	public int getAD_Client_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Client),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Client), 0);
 	}
 
 	public int getAD_Org_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Organization),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Organization), 0);
 	}
 
 	public AcctSchemaId getAcctSchemaId()
@@ -98,87 +102,87 @@ public final class AccountDimension
 
 	public int getC_ElementValue_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Account),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Account), 0);
 	}
 
 	public int getC_SubAcct_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SubAccount),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SubAccount), 0);
 	}
 
 	public int getM_Product_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Product),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Product), 0);
 	}
 
 	public int getC_BPartner_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.BPartner),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.BPartner), 0);
 	}
 
 	public int getAD_OrgTrx_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.OrgTrx),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.OrgTrx), 0);
 	}
 
 	public int getC_LocFrom_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationFrom),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationFrom), 0);
 	}
 
 	public int getC_LocTo_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationTo),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationTo), 0);
 	}
 
 	public int getC_SalesRegion_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesRegion),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesRegion), 0);
 	}
 
 	public int getC_Project_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Project),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Project), 0);
 	}
 
 	public int getC_Campaign_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Campaign),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Campaign), 0);
 	}
 
 	public int getC_Activity_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity), 0);
 	}
 
 	public int getSalesOrderId()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesOrder),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesOrder), 0);
 	}
 
 	public int getM_SectionCode_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SectionCode),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SectionCode), 0);
 	}
 
 	public int getUser1_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList1),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList1), 0);
 	}
 
 	public int getUser2_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList2),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList2), 0);
 	}
 
 	public int getUserElement1_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement1),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement1), 0);
 	}
 
 	public int getUserElement2_ID()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement2),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement2), 0);
 	}
 
 	public String getUserElementString1()
@@ -221,7 +225,7 @@ public final class AccountDimension
 	{
 		private String alias = null;
 		private AcctSchemaId acctSchemaId;
-		private final Map<AcctSegmentType, Object> segmentValues = new HashMap<>();
+		private final HashMap<AcctSegmentType, Object> segmentValues = new HashMap<>();
 
 		private Builder()
 		{
@@ -239,9 +243,18 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setSegmentValue(final AcctSegmentType segmentType, final Object value)
+		public Builder setSegmentValue(@NonNull final AcctSegmentType segmentType, @Nullable final Object value)
 		{
-			if(value instanceof Integer)
+			if (value == null)
+			{
+				segmentValues.put(segmentType, "");
+			}
+			else if (value instanceof RepoIdAware)
+			{
+				final int intValue = ((RepoIdAware)value).getRepoId();
+				segmentValues.put(segmentType, intValue);
+			}
+			else if (value instanceof Integer)
 			{
 				final int intValue = NumberUtils.asInt(value, 0);
 				segmentValues.put(segmentType, intValue);
@@ -314,6 +327,12 @@ public final class AccountDimension
 			return this;
 		}
 
+		public Builder setC_ElementValue_ID(final ElementValueId C_ElementValue_ID)
+		{
+			setSegmentValue(AcctSegmentType.Account, ElementValueId.toRepoId(C_ElementValue_ID));
+			return this;
+		}
+
 		public Builder setC_SubAcct_ID(final int C_SubAcct_ID)
 		{
 			setSegmentValue(AcctSegmentType.SubAccount, C_SubAcct_ID);
@@ -350,9 +369,9 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setC_SalesRegion_ID(final int C_SalesRegion_ID)
+		public Builder setC_SalesRegion_ID(final SalesRegionId C_SalesRegion_ID)
 		{
-			setSegmentValue(AcctSegmentType.SalesRegion, C_SalesRegion_ID);
+			setSegmentValue(AcctSegmentType.SalesRegion, SalesRegionId.toRepoId(C_SalesRegion_ID));
 			return this;
 		}
 

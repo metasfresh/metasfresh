@@ -39,6 +39,7 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -333,6 +334,8 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveBusinessPartners();
 
 	Set<Integer> retrieveForSectionGroupPartner(BPartnerId sectionGroupPartnerId);
+
+	Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Value
 	@Builder

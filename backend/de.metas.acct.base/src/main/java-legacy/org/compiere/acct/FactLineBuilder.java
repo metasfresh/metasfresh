@@ -1,8 +1,6 @@
 package org.compiere.acct;
 
 import de.metas.acct.Account;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
@@ -16,10 +14,11 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -71,21 +70,25 @@ public final class FactLineBuilder
 	@Nullable private BigDecimal amtAcctDr;
 	@Nullable private BigDecimal amtAcctCr;
 
-	private BigDecimal qty = null;
-	private UomId uomId;
+	private Quantity qty = null;
 
 	private boolean alsoAddZeroLine = false;
 
 	// Other dimensions
 	private OrgId orgId;
+	private OrgId orgTrxId;
 	@Nullable private BPartnerId bpartnerId;
 	@Nullable private BPartnerLocationId bPartnerLocationId;
 	@Nullable private TaxId C_Tax_ID;
 	private Integer locatorId;
 	private ActivityId activityId;
+	private ProjectId projectId;
+	private int campaignId;
 	private LocationId fromLocationId;
 	private LocationId toLocationId;
 	private CostElementId costElementId;
+
+	private String additionalDescription = null;
 
 	private FAOpenItemTrxInfo openItemTrxInfo;
 
@@ -118,67 +121,40 @@ public final class FactLineBuilder
 		markAsBuilt();
 
 		// Data Check
-		final Account account = getAccount();
 		if (account == null)
 		{
 			throw new AdempiereException("No account for " + this);
 		}
 
 		//
-		final Doc<?> doc = getDoc();
-		final DocLine<?> docLine = getDocLine();
-		final FactLine line = new FactLine(
-				doc.getServices(),
-				doc.get_Table_ID(), // AD_Table_ID
-				doc.get_ID(), // Record_ID
-				docLine == null ? 0 : docLine.get_ID()); // Line_ID
-
-		// Set Document, Line, Sub Line
-		line.setDocumentInfo(doc, docLine);
-		final Integer subLine_ID = getSubLine_ID();
-		if (subLine_ID != null)
-		{
-			line.setSubLine_ID(subLine_ID);
-		}
-
-		// Account
-		line.setPostingType(getPostingType());
-		line.setAccount(getAcctSchema(), account);
-
-		//
-		// Qty
-		final BigDecimal qty = getQty();
-		if (qty != null)
-		{
-			line.setQty(qty);
-		}
-		final UomId uomId = getUomId();
-		if (uomId != null)
-		{
-			line.setC_UOM_ID(uomId.getRepoId());
-		}
+		final Doc<?> doc = fact.m_doc;
+		final AcctDocRequiredServicesFacade services = doc.getServices();
+		final FactLine line = FactLine.builder()
+				.services(services)
+				.doc(doc)
+				.docLine(docLine)
+				.docRecordRef(doc.getRecordRef())
+				.Line_ID(docLine == null ? 0 : docLine.get_ID())
+				.SubLine_ID(getSubLine_ID())
+				.postingType(fact.getPostingType())
+				.acctSchema(fact.getAcctSchema())
+				.account(services.getAccountById(this.account.getAccountId()))
+				.accountConceptualName(this.account.getAccountConceptualName())
+				.qty(qty)
+				.M_Locator_ID(locatorId)
+				.projectId(projectId)
+				.activityId(activityId)
+				.additionalDescription(additionalDescription)
+				.build();
 
 		//
 		// Amounts - one needs to be not zero
-		final Money amtSourceDr = getAmtSourceDr();
-		final Money amtSourceCr = getAmtSourceCr();
-		line.setAmtSource(amtSourceDr, amtSourceCr);
-		if (line.isZeroAmtSource())
-		{
-			if (line.getQty().signum() == 0)
-			{
-				log.debug("Both amounts & qty = 0/Null - {}", this);
-				// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
-				if (!alsoAddZeroLine)
-				{
-					return null;
-				}
-			}
+		line.setAmtSource(getAmtSourceDr(), getAmtSourceCr());
 
-			if (log.isDebugEnabled())
-			{
-				log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + this);
-			}
+		// Skip zero amount & qty lines
+		if (!alsoAddZeroLine && line.isZeroAmtSourceAndQty())
+		{
+			return null;
 		}
 
 		//
@@ -205,55 +181,42 @@ public final class FactLineBuilder
 
 		//
 		// Set the other dimensions
-		final Integer locatorId = getLocatorId();
-		if (locatorId != null)
-		{
-			// NOTE: set locator before org because when locator is set, the org is reset.
-			line.setM_Locator_ID(locatorId);
-		}
-		//
-		final OrgId orgId = getOrgId();
 		if (orgId != null)
 		{
-			line.setAD_Org_ID(orgId.getRepoId());
+			line.setAD_Org_ID(orgId);
+		}
+		if (orgTrxId != null)
+		{
+			line.setAD_OrgTrx_ID(orgTrxId);
 		}
 		//
-		if (getBPartnerLocationId() != null)
+		if (bPartnerLocationId != null)
 		{
-			line.setBPartnerIdAndLocation(getBpartnerId(), getBPartnerLocationId());
+			line.setBPartnerIdAndLocation(bpartnerId, bPartnerLocationId);
 		}
-		else if (getBpartnerId() != null)
+		else if (bpartnerId != null)
 		{
-			line.setBPartnerId(getBpartnerId());
-		}
-		//
-		final TaxId taxId = getC_Tax_ID();
-		if (taxId != null)
-		{
-			line.setC_Tax_ID(taxId.getRepoId());
+			line.setBPartnerId(bpartnerId);
 		}
 		//
-		final ActivityId activityId = getActivityId();
-		if (activityId != null)
+		if (C_Tax_ID != null)
 		{
-			line.setC_Activity_ID(activityId.getRepoId());
+			line.setTaxIdAndUpdateVatCode(C_Tax_ID);
 		}
 
 		if (fromLocationId != null)
 		{
-			line.setC_LocFrom_ID(fromLocationId.getRepoId());
+			line.setC_LocFrom_ID(fromLocationId);
 		}
 		if (toLocationId != null)
 		{
-			line.setC_LocTo_ID(toLocationId.getRepoId());
+			line.setC_LocTo_ID(toLocationId);
 		}
 
 		if (costElementId != null)
 		{
-			line.setM_CostElement_ID(costElementId.getRepoId());
+			line.setCostElementId(costElementId);
 		}
-
-		line.setAccountConceptualName(account.getAccountConceptualName());
 
 		line.setOpenItemTrxInfo(openItemTrxInfo);
 
@@ -281,21 +244,9 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	private Account getAccount()
-	{
-		// TODO: check if we can enforce it all the time
-		// Check.assumeNotNull(account, "account not null for {}", this);
-		return account;
-	}
-
 	private AcctDocRequiredServicesFacade getServices()
 	{
 		return fact.services;
-	}
-
-	private Doc<?> getDoc()
-	{
-		return fact.m_doc;
 	}
 
 	public FactLineBuilder setDocLine(final DocLine<?> docLine)
@@ -303,11 +254,6 @@ public final class FactLineBuilder
 		assertNotBuild();
 		this.docLine = docLine;
 		return this;
-	}
-
-	private DocLine<?> getDocLine()
-	{
-		return docLine;
 	}
 
 	public FactLineBuilder setSubLine_ID(final int subLineId)
@@ -321,44 +267,16 @@ public final class FactLineBuilder
 		return subLineId;
 	}
 
-	private AcctSchema getAcctSchema()
-	{
-		return fact.getAcctSchema();
-	}
-
 	private CurrencyId getAcctCurrencyId()
 	{
 		return fact.getAcctSchema().getCurrencyId();
 	}
 
-	private PostingType getPostingType()
-	{
-		return fact.getPostingType();
-	}
-
-	public FactLineBuilder setQty(final BigDecimal qty)
+	public FactLineBuilder setQty(@NonNull final Quantity qty)
 	{
 		assertNotBuild();
 		this.qty = qty;
 		return this;
-	}
-
-	public FactLineBuilder setQty(@NonNull final Quantity qty)
-	{
-		assertNotBuild();
-		this.qty = qty.toBigDecimal();
-		this.uomId = qty.getUomId();
-		return this;
-	}
-
-	private BigDecimal getQty()
-	{
-		return qty;
-	}
-
-	private UomId getUomId()
-	{
-		return uomId;
 	}
 
 	public FactLineBuilder setAmtSource(final CurrencyId currencyId, @Nullable final BigDecimal amtSourceDr, @Nullable final BigDecimal amtSourceCr)
@@ -554,9 +472,11 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	private OrgId getOrgId()
+	public FactLineBuilder orgTrxId(final OrgId orgTrxId)
 	{
-		return orgId;
+		assertNotBuild();
+		this.orgTrxId = orgTrxId;
+		return this;
 	}
 
 	@Deprecated
@@ -596,18 +516,6 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	@Nullable
-	private BPartnerId getBpartnerId()
-	{
-		return bpartnerId;
-	}
-
-	@Nullable
-	private BPartnerLocationId getBPartnerLocationId()
-	{
-		return bPartnerLocationId;
-	}
-
 	public FactLineBuilder setC_Tax_ID(final Integer taxId)
 	{
 		assertNotBuild();
@@ -615,17 +523,11 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	public FactLineBuilder setC_Tax_ID(final TaxId taxId)
+	public FactLineBuilder setC_Tax_ID(@Nullable final TaxId taxId)
 	{
 		assertNotBuild();
 		this.C_Tax_ID = taxId;
 		return this;
-	}
-
-	@Nullable
-	private TaxId getC_Tax_ID()
-	{
-		return C_Tax_ID;
 	}
 
 	public FactLineBuilder locatorId(final int locatorId)
@@ -635,21 +537,25 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	private Integer getLocatorId()
-	{
-		return locatorId;
-	}
-
-	public FactLineBuilder activityId(final ActivityId activityId)
+	public FactLineBuilder activityId(@Nullable final ActivityId activityId)
 	{
 		assertNotBuild();
 		this.activityId = activityId;
 		return this;
 	}
 
-	private ActivityId getActivityId()
+	public FactLineBuilder projectId(@Nullable final ProjectId projectId)
 	{
-		return activityId;
+		assertNotBuild();
+		this.projectId = projectId;
+		return this;
+	}
+
+	public FactLineBuilder campaignId(final int campaignId)
+	{
+		assertNotBuild();
+		this.campaignId = campaignId;
+		return this;
 	}
 
 	public FactLineBuilder fromLocation(final Optional<LocationId> optionalLocationId)
@@ -693,6 +599,12 @@ public final class FactLineBuilder
 	public FactLineBuilder costElement(@Nullable final CostElement costElement)
 	{
 		return costElement(costElement != null ? costElement.getId() : null);
+	}
+
+	public FactLineBuilder additionalDescription(@Nullable final String additionalDescription)
+	{
+		this.additionalDescription = StringUtils.trimBlankToNull(additionalDescription);
+		return this;
 	}
 
 	public FactLineBuilder openItemKey(@Nullable FAOpenItemTrxInfo openItemTrxInfo)

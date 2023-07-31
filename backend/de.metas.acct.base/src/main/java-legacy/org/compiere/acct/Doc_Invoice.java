@@ -32,36 +32,27 @@ import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MPeriod;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -94,7 +85,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	/**
 	 * Contained Optional Tax Lines
 	 */
-	private List<DocTax> _taxes = null;
+	private ImmutableList<DocTax> _taxes = null; // lazy
 	/**
 	 * All lines are Service
 	 */
@@ -153,7 +144,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		setAmount(Doc.AMTTYPE_Net, invoice.getTotalLines());
 		setAmount(Doc.AMTTYPE_Charge, invoice.getChargeAmt());
 
-		setDocLines(loadLines(invoice));
+		setDocLines(loadLines());
 	}
 
 	private List<DocTax> getTaxes()
@@ -165,59 +156,35 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		return _taxes;
 	}
 
-	private List<DocTax> loadTaxes()
+	private ImmutableList<DocTax> loadTaxes()
 	{
-		final String sql = "SELECT it.C_Tax_ID, t.Name, t.Rate, it.TaxBaseAmt, it.TaxAmt, t.IsSalesTax " // 1..6
-				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsTaxIncluded // 7
-				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsReverseCharge // 8
-				+ ", it." + I_C_InvoiceTax.COLUMNNAME_ReverseChargeTaxAmt // 9
-				+ " FROM C_Tax t, C_InvoiceTax it "
-				+ " WHERE t.C_Tax_ID=it.C_Tax_ID AND it.C_Invoice_ID=?";
-		final Object[] sqlParams = new Object[] { get_ID() };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		final InvoiceId invoiceId = getInvoiceId();
+		final ImmutableList.Builder<DocTax> result = ImmutableList.builder();
+		for (final InvoiceTax invoiceTax : invoiceBL.getTaxes(invoiceId))
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, sqlParams);
+			final Tax tax = services.getTaxById(invoiceTax.getTaxId());
+			result.add(DocTax.builder()
+					.accountProvider(getAccountProvider())
+					.taxId(invoiceTax.getTaxId())
+					.taxName(tax.getName())
+					.taxBaseAmt(invoiceTax.getTaxBaseAmt())
+					.taxAmt(invoiceTax.getTaxAmt())
+					.salesTax(tax.isSalesTax())
+					.taxIncluded(invoiceTax.isTaxIncluded())
+					.isReverseCharge(invoiceTax.isReverseCharge())
+					.reverseChargeTaxAmt(invoiceTax.getReverseChargeTaxAmt())
+					.build());
+		}
 
-			rs = pstmt.executeQuery();
-			//
-			final ImmutableList.Builder<DocTax> docTaxes = ImmutableList.builder();
-			while (rs.next())
-			{
-				final DocTax taxLine = DocTax.builder()
-						.accountProvider(getAccountProvider())
-						.taxId(TaxId.ofRepoId(rs.getInt(1)))
-						.taxName(rs.getString(2))
-						//.taxRate(rs.getBigDecimal(3))
-						.taxBaseAmt(rs.getBigDecimal(4))
-						.taxAmt(rs.getBigDecimal(5))
-						.salesTax(DisplayType.toBoolean(rs.getString(6)))
-						.taxIncluded(DisplayType.toBoolean(rs.getString(7)))
-						.isReverseCharge(StringUtils.toBoolean(rs.getString(8)))
-						.reverseChargeTaxAmt(rs.getBigDecimal(9))
-						.build();
-				docTaxes.add(taxLine);
-			}
-
-			return docTaxes.build();
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+		return result.build();
 	}    // loadTaxes
 
-	private List<DocLine_Invoice> loadLines(final I_C_Invoice invoice)
+	private List<DocLine_Invoice> loadLines()
 	{
-		final List<DocLine_Invoice> docLines = new ArrayList<>();
-		//
-		for (final I_C_InvoiceLine line : Services.get(IInvoiceDAO.class).retrieveLines(invoice))
+		final InvoiceId invoiceId = getInvoiceId();
+
+		final ArrayList<DocLine_Invoice> docLines = new ArrayList<>();
+		for (final I_C_InvoiceLine line : invoiceBL.getLines(invoiceId))
 		{
 			// Skip invoice description lines
 			if (line.isDescription())
@@ -426,7 +393,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						getCurrencyId(), null, taxAmt);
 				if (tl != null)
 				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
+					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
 				}
 			}
 		}
@@ -539,7 +506,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						getCurrencyId(), taxAmt, null);
 				if (tl != null)
 				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
+					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
 				}
 			}
 		}
@@ -945,7 +912,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 	private void postDependingMatchInvsIfNeeded()
 	{
-		if (!Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
+		if (!services.getSysConfigBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{
 			return;
 		}
