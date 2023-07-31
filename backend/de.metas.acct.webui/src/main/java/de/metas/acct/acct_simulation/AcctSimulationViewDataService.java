@@ -82,6 +82,17 @@ public class AcctSimulationViewDataService
 
 	public AcctRow toRow(final FactLine factLine, final int index)
 	{
+		return AcctRow.builder()
+				.lookups(lookups)
+				.currencyCodeToCurrencyIdBiConverter(moneyService)
+				.factLine(factLine)
+				.userChanges(extractUserChanges(factLine, moneyService))
+				.rowId(DocumentId.of("generated_" + index))
+				.build();
+	}
+
+	private static FactLineChanges extractUserChanges(final FactLine factLine, final MoneyService moneyService)
+	{
 		final CurrencyId documentCurrencyId = factLine.getCurrencyId();
 		final CurrencyCode documentCurrency = moneyService.getCurrencyCodeByCurrencyId(documentCurrencyId);
 		final CurrencyId localCurrencyId = factLine.getAcctCurrencyId();
@@ -102,22 +113,18 @@ public class AcctSimulationViewDataService
 			amount_LC = Amount.of(factLine.getAmtAcctDr(), localCurrency);
 		}
 
-		return AcctRow.builder()
-				.lookups(lookups)
-				.currencyCodeToCurrencyIdBiConverter(moneyService)
-				.factLine(factLine)
-				.rowId(DocumentId.of("generated_" + index))
+		return FactLineChanges.builder()
 				.postingSign(postingSign)
-				.account(lookups.lookupElementValue(factLine.getAccount_ID()))
+				.accountId(factLine.getAccount_ID())
 				.amount_DC(amount_DC)
 				.amount_LC(amount_LC)
-				.tax(lookups.lookupTax(factLine.getTaxId()))
+				.taxId(factLine.getTaxId())
 				.description(factLine.getDescription())
-				.sectionCode(lookups.lookupSectionCode(factLine.getM_SectionCode_ID()))
-				.product(lookups.lookupProduct(factLine.getM_Product_ID()))
+				.sectionCodeId(factLine.getM_SectionCode_ID())
+				.productId(factLine.getM_Product_ID())
 				.userElementString1(factLine.getUserElementString1())
-				.orderSO(lookups.lookupOrder(factLine.getC_OrderSO_ID()))
-				.activity(lookups.lookupActivity(factLine.getC_Activity_ID()))
+				.salesOrderId(factLine.getC_OrderSO_ID())
+				.activityId(factLine.getC_Activity_ID())
 				.build();
 	}
 }

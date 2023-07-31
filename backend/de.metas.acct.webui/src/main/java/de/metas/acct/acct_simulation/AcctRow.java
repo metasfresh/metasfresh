@@ -6,6 +6,11 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRate;
 import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.tax.api.TaxId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -83,41 +88,34 @@ public class AcctRow implements IViewRow
 	@NonNull private final CurrencyCodeToCurrencyIdBiConverter currencyCodeToCurrencyIdBiConverter;
 	@NonNull private final DocumentId rowId;
 	@Nullable private final FactLine factLine;
+	@Getter @NonNull final FactLineChanges userChanges;
 
 	@Builder(toBuilder = true)
 	private AcctRow(
 			@NonNull final AcctRowLookups lookups,
 			@NonNull final CurrencyCodeToCurrencyIdBiConverter currencyCodeToCurrencyIdBiConverter,
 			@Nullable final FactLine factLine,
-			@NonNull final DocumentId rowId,
-			@NonNull final PostingSign postingSign,
-			@Nullable final LookupValue account,
-			@NonNull final Amount amount_DC,
-			@NonNull final Amount amount_LC,
-			@Nullable final LookupValue tax,
-			@Nullable final String description,
-			@Nullable final LookupValue sectionCode,
-			@Nullable final LookupValue product,
-			@Nullable final String userElementString1,
-			@Nullable final LookupValue orderSO,
-			@Nullable final LookupValue activity)
+			@NonNull final FactLineChanges userChanges,
+			@NonNull final DocumentId rowId)
 	{
 		this.lookups = lookups;
-		this.factLine = factLine;
-
-		this.postingSign = postingSign;
-		this.account = account;
-		this.amount_DC = amount_DC;
-		this.amount_LC = amount_LC;
-		this.tax = tax;
-		this.description = description;
-		this.sectionCode = sectionCode;
-		this.product = product;
-		this.userElementString1 = userElementString1;
-		this.orderSO = orderSO;
-		this.activity = activity;
-		this.rowId = rowId;
 		this.currencyCodeToCurrencyIdBiConverter = currencyCodeToCurrencyIdBiConverter;
+		this.factLine = factLine;
+		this.userChanges = userChanges;
+		this.rowId = rowId;
+
+		this.postingSign = userChanges.getPostingSign();
+		this.account = lookups.lookupElementValue(userChanges.getAccountId());
+		this.amount_DC = userChanges.getAmount_DC();
+		this.amount_LC = userChanges.getAmount_LC();
+		this.tax = lookups.lookupTax(userChanges.getTaxId());
+		this.description = userChanges.getDescription();
+		this.sectionCode = lookups.lookupSectionCode(userChanges.getSectionCodeId());
+		this.product = lookups.lookupProduct(userChanges.getProductId());
+		this.userElementString1 = userChanges.getUserElementString1();
+		this.orderSO = lookups.lookupOrder(userChanges.getSalesOrderId());
+		this.activity = lookups.lookupActivity(userChanges.getActivityId());
+
 		this.values = ViewRowFieldNameAndJsonValuesHolder.newInstance(AcctRow.class);
 	}
 
@@ -143,11 +141,12 @@ public class AcctRow implements IViewRow
 
 	public AcctRow withPatch(final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		final AcctRowBuilder builder = toBuilder();
+		final FactLineChanges.FactLineChangesBuilder changes = getUserChanges().toBuilder();
 		for (final JSONDocumentChangedEvent event : fieldChangeRequests)
 		{
 			event.assertReplaceOperation();
 			final String fieldName = event.getPath();
+
 			if (FIELDNAME_PostingSign.equals(fieldName))
 			{
 				final PostingSign postingSign = event.getValueAsEnum(PostingSign.class);
@@ -155,17 +154,45 @@ public class AcctRow implements IViewRow
 				{
 					throw new AdempiereException("PostingSign is mandatory");
 				}
-				builder.postingSign(postingSign);
+				changes.postingSign(postingSign);
 			}
 			else if (FIELDNAME_Account_ID.equals(fieldName))
 			{
-				builder.account(lookups.lookupElementValue(event.getValueAsId(ElementValueId::ofRepoIdOrNull)));
+				changes.accountId(event.getValueAsId(ElementValueId::ofRepoIdOrNull));
 			}
 			else if (FIELDNAME_Amount_DC.equals(fieldName))
 			{
 				final Amount newAmountDC = Amount.of(event.getValueAsBigDecimal(BigDecimal.ZERO), amount_DC.getCurrencyCode());
 				final Amount newAmountLC = convert(newAmountDC, amount_LC.getCurrencyCode());
-				builder.amount_DC(newAmountDC).amount_LC(newAmountLC);
+				changes.amount_DC(newAmountDC).amount_LC(newAmountLC);
+			}
+			else if (FIELDNAME_C_Tax_ID.equals(fieldName))
+			{
+				changes.taxId(event.getValueAsId(TaxId::ofRepoIdOrNull));
+			}
+			else if (FIELDNAME_Description.equals(fieldName))
+			{
+				changes.description(event.getValueAsString(null));
+			}
+			else if (FIELDNAME_M_SectionCode_ID.equals(fieldName))
+			{
+				changes.sectionCodeId(event.getValueAsId(SectionCodeId::ofRepoIdOrNull));
+			}
+			else if (FIELDNAME_M_Product_ID.equals(fieldName))
+			{
+				changes.productId(event.getValueAsId(ProductId::ofRepoIdOrNull));
+			}
+			else if (FIELDNAME_UserElementString1.equals(fieldName))
+			{
+				changes.userElementString1(event.getValueAsString(null));
+			}
+			else if (FIELDNAME_C_OrderSO_ID.equals(fieldName))
+			{
+				changes.salesOrderId(event.getValueAsId(OrderId::ofRepoIdOrNull));
+			}
+			else if (FIELDNAME_C_Activity_ID.equals(fieldName))
+			{
+				changes.activityId(event.getValueAsId(ActivityId::ofRepoIdOrNull));
 			}
 			else
 			{
@@ -173,7 +200,7 @@ public class AcctRow implements IViewRow
 			}
 		}
 
-		return builder.build();
+		return toBuilder().userChanges(changes.build()).build();
 	}
 
 	private Amount convert(final Amount amountDC, CurrencyCode currencyTo)
