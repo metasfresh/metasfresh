@@ -63,7 +63,7 @@ public class BPBankAccountImportTableSqlUpdater
 				+ " WHERE i." + I_I_BP_BankAccount.COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void updateCurrencyID(@NonNull final ImportRecordsSelection selection)
@@ -78,7 +78,7 @@ public class BPBankAccountImportTableSqlUpdater
 				+ " WHERE i." + I_I_BP_BankAccount.COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void validateBPartnerId(@NonNull final ImportRecordsSelection selection)
@@ -91,7 +91,7 @@ public class BPBankAccountImportTableSqlUpdater
 				+ " AND i." + I_I_BP_BankAccount.COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void validateCurrencyId(@NonNull final ImportRecordsSelection selection)
@@ -104,6 +104,6 @@ public class BPBankAccountImportTableSqlUpdater
 				+ " AND i." + I_I_BP_BankAccount.COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 }
