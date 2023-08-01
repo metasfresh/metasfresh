@@ -776,6 +776,11 @@ public class C_Order
 				.forEach(line -> {
 					final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
 
+					if (!productBL.getProductType(productId).isItem())
+					{
+						return;
+					}
+					
 					final ProductWarehouseAssignments assignments = productWarehouseAssignmentService.getByProductIdOrError(productId);
 
 					if (!assignments.isWarehouseAssigned(orderWarehouseId))

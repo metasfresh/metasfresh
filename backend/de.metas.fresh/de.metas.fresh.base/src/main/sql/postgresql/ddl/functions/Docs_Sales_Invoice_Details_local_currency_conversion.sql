@@ -71,7 +71,7 @@ WITH records as (
              INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
              INNER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
              INNER JOIN c_location l ON i.c_bpartner_location_value_id = l.c_location_id
-             INNER JOIN c_country co ON l.c_country_id = co.c_country_id
+             INNER JOIN c_country co ON COALESCE(i.c_tax_departure_country_id,l.c_country_id) = co.c_country_id
              INNER JOIN c_currency cu ON co.c_currency_id = cu.c_currency_id
              LEFT JOIN c_doctype_taxreporting tr ON i.c_doctype_id = tr.c_doctype_id AND co.c_country_id = tr.c_country_id
     WHERE it.C_Invoice_ID = p_C_invoice_id

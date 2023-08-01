@@ -30,6 +30,7 @@ import lombok.ToString;
 import lombok.With;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @EqualsAndHashCode
 @ToString
@@ -56,6 +57,13 @@ public final class Account
 	public static Account of(@NonNull final AccountId accountId, @NonNull final String accountConceptualName)
 	{
 		return new Account(accountId, AccountConceptualName.ofString(accountConceptualName));
+	}
+
+	@NonNull
+	public static Optional<Account> optionalOfRepoId(final int accountRepoId, @NonNull final String accountConceptualName)
+	{
+		final AccountId accountId = AccountId.ofRepoIdOrNull(accountRepoId);
+		return accountId != null ? Optional.of(of(accountId, accountConceptualName)) : Optional.empty();
 	}
 
 	@NonNull

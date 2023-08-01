@@ -18,13 +18,10 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
-import de.metas.acct.AccountConceptualName;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.acct.doc.AcctDocContext;
@@ -33,24 +30,25 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_C_Tax_Acct;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceTax;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -81,6 +79,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 {
 	private static final Logger logger = LogManager.getLogger(Doc_AllocationHdr.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	public Doc_AllocationHdr(final AcctDocContext ctx)
 	{
@@ -493,13 +492,11 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Update fact line dimensions
 		Check.assumeNotNull(fl_Payment, "fl_Payment not null");
 		fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
-		fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
-		fl_Payment.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
+		fl_Payment.setBPartnerIdAndLocation(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
 		//
 		Check.assumeNotNull(fl_Discount, "fl_Discount not null");
 		fl_Discount.setAD_Org_ID(payment.getAD_Org_ID());
-		fl_Discount.setC_BPartner_ID(payment.getC_BPartner_ID());
-		fl_Discount.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
+		fl_Discount.setBPartnerIdAndLocation(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
 	}
 
 	/**
@@ -591,9 +588,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		final AmountSourceAndAcct.Builder discountAmtSourceAndAcct = AmountSourceAndAcct.builder();
 
-		final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
-		final MInvoiceTax[] taxes = invoicePO.getTaxes(true);
-		if (taxes == null || taxes.length == 0)
+		final List<InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		if (invoiceTaxes.isEmpty())
 		{
 			// old behavior
 			final FactLine fl;
@@ -610,8 +606,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			if (payment != null)
 			{
 				fl.setAD_Org_ID(payment.getAD_Org_ID());
-				fl.setC_BPartner_ID(payment.getC_BPartner_ID());
-				fl.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
+				fl.setBPartnerIdAndLocation(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
 			}
 
 		}
@@ -623,12 +618,13 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 
 			Money discountSum = Money.zero(currencyId);
-			for (int i = 0; i < taxes.length; i++)
+			for (int i = 0; i < invoiceTaxes.size(); i++)
 			{
+				final InvoiceTax invoiceTax = invoiceTaxes.get(i);
 				// TaxDiscountAmt = TaxBaseAmt * Skonto * (1+TaxRate)
 				// but we are calculating differently to avoid division by zero when calculating TaxRate=TaxAmt/TaxBaseAmt
-				final BigDecimal taxAmt = taxes[i].getTaxAmt();
-				final BigDecimal taxBaseAmt = taxes[i].getTaxBaseAmt();
+				final BigDecimal taxAmt = invoiceTax.getTaxAmt();
+				final BigDecimal taxBaseAmt = invoiceTax.getTaxBaseAmt();
 				final BigDecimal baseAndTaxAmt = taxBaseAmt.add(taxAmt);
 				Money taxDiscountAmt = Money.of(baseAndTaxAmt.multiply(discountFactor).setScale(2, RoundingMode.HALF_UP), currencyId);
 				if (taxAmt.signum() == 0)
@@ -637,7 +633,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				}
 
 				discountSum = discountSum.add(taxDiscountAmt);
-				if (i == taxes.length - 1)
+				if (i == invoiceTaxes.size() - 1)
 				{
 					// last tax, check amounts
 					if (!discountSum.isEqualByComparingTo(discountAmt_CMAdjusted))
@@ -648,8 +644,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 				//
 				// Get tax specific discount account
-				final int taxId = taxes[i].getC_Tax_ID();
-				Account account = getTaxDiscountAccount(taxId, isDiscountExpense, as);
+				final TaxId taxId = invoiceTax.getTaxId();
+				Account account = getAccountProvider().getTaxAccounts(as.getId(), taxId).getPayDiscountAccount(isDiscountExpense).orElse(null);
 				if (account == null)
 				{
 					// no taxDiscountAcct found, use standard account...
@@ -670,12 +666,11 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				}
 				if (fl != null)
 				{
-					fl.setC_Tax_ID(taxId);
+					fl.setTaxIdAndUpdateVatCode(taxId);
 					if (payment != null)
 					{
 						fl.setAD_Org_ID(payment.getAD_Org_ID());
-						fl.setC_BPartner_ID(payment.getC_BPartner_ID());
-						fl.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
+						fl.setBPartnerIdAndLocation(payment.getC_BPartner_ID(), payment.getC_BPartner_Location_ID());
 					}
 					discountAmtSourceAndAcct.add(fl.getAmtSourceAndAcctDrOrCr());
 				}
@@ -717,46 +712,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		final BigDecimal discountFactor = discountAmt.divide(invoiceGrandTotalAbs, 8, RoundingMode.HALF_UP);
 		return discountFactor;
-	}
-
-	/**
-	 * @return early payment discount account for given tax.
-	 */
-	private static Account getTaxDiscountAccount(final int taxId, final boolean isDiscountExpense, final AcctSchema as)
-	{
-		return getTaxDiscountAccount(taxId, isDiscountExpense, as.getId());
-	}
-
-	static Account getTaxDiscountAccount(final int taxId, final boolean isDiscountExpense, final AcctSchemaId acctSchemaId)
-	{
-		if (taxId <= 0)
-		{
-			return null;
-		}
-
-		final String sql;
-		final AccountConceptualName accountConceptualName;
-		if (isDiscountExpense)
-		{
-			sql = "SELECT T_PayDiscount_Exp_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-			accountConceptualName = AccountConceptualName.ofString(I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Exp_Acct);
-		}
-		else
-		{
-			sql = "SELECT T_PayDiscount_Rev_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-			accountConceptualName = AccountConceptualName.ofString(I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Rev_Acct);
-		}
-
-		final int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, taxId, acctSchemaId);
-		// No account
-		if (Account_ID <= 0)
-		{
-			logger.error("NO account for C_Tax_ID=" + taxId);
-			return null;
-		}
-
-		// Return Account
-		return Account.of(AccountId.ofRepoId(Account_ID), accountConceptualName);
 	}
 
 	/**
@@ -1047,20 +1002,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		// Update created gain/loss fact line (description, dimensions etc)
-		fl.setAD_Org_ID(invoiceFactLine.getAD_Org_ID());
-		fl.setC_BPartner_ID(invoiceFactLine.getC_BPartner_ID());
-		fl.setC_BPartner_Location_ID(invoiceFactLine.getC_BPartner_Location_ID());
+		fl.setAD_Org_ID(invoiceFactLine.getOrgId());
+		fl.setBPartnerIdAndLocation(invoiceFactLine.getC_BPartner_ID(), invoiceFactLine.getC_BPartner_Location_ID());
 		fl.addDescription(description);
 
 	}
 
 	/**************************************************************************
 	 * Create Tax Correction facts if required by accounting schema
-	 *
 	 * Requirement: Adjust the tax amount, if you did not receive the full amount of the invoice (payment discount, write-off).
-	 *
 	 * Applies to many countries with VAT.
-	 *
 	 * Example:
 	 *
 	 * <pre>
@@ -1179,7 +1130,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	private final boolean isDiscountExpense;
 	//
 	private I_Fact_Acct _invoiceGrandTotalFact;
-	private final List<I_Fact_Acct> _invoiceTaxFacts = new ArrayList<>();
+	private final ArrayList<I_Fact_Acct> _invoiceTaxFacts = new ArrayList<>();
 
 	private PostingException newPostingException()
 	{
@@ -1251,14 +1202,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		return !_invoiceTaxFacts.isEmpty();
 	}
 
-	private Account getTaxDiscountAcct(final AcctSchema as, final int taxId)
+	private Account getTaxDiscountAcct(@NonNull final AcctSchema as, @NonNull final TaxId taxId)
 	{
-		final Account discountAccount = Doc_AllocationHdr.getTaxDiscountAccount(taxId, isDiscountExpense, as.getId());
-		if (discountAccount != null)
-		{
-			return discountAccount;
-		}
-		return standardDiscountAccount;
+		return doc.getAccountProvider()
+				.getTaxAccounts(as.getId(), taxId)
+				.getPayDiscountAccount(isDiscountExpense)
+				.orElse(standardDiscountAccount);
 	}
 
 	/**
@@ -1287,15 +1236,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			//
 			// Get the C_Tax_ID
-			final int taxId = taxFactAcct.getC_Tax_ID();
-			if (taxId <= 0)
+			final TaxId taxId = TaxId.ofRepoIdOrNull(taxFactAcct.getC_Tax_ID());
+			if (taxId == null)
 			{
 				// shall not happen
-				newPostingException()
+				throw newPostingException()
 						.setAcctSchema(as)
-						.setFactLine(taxFactAcct)
 						.setDocLine(line)
-						.setDetailMessage("No tax found");
+						.setDetailMessage("No tax found")
+						.setParameter("taxFactAcct", taxFactAcct)
+						.appendParametersToMessage();
 			}
 
 			//
@@ -1306,9 +1256,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			{
 				throw newPostingException()
 						.setAcctSchema(as)
-						.setFactLine(taxFactAcct)
 						.setDocLine(line)
-						.setDetailMessage("Tax Account not found/created");
+						.setDetailMessage("Tax Account not found/created")
+						.setParameter("taxFactAcct", taxFactAcct)
+						.appendParametersToMessage();
 			}
 
 			//

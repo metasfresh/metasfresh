@@ -17,6 +17,7 @@ import org.compiere.model.I_C_TaxCategory;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -51,13 +52,6 @@ public interface ITaxDAO extends ISingletonService
 	 */
 	TaxId retrieveNoTaxFoundId(Properties ctx);
 
-	/**
-	 * If the taxBL can't find a tax category, it shall return this one instead
-	 *
-	 * @return placeholder tax category that is used when no other tax was found (note: not used yet; may be helpful in the future)
-	 */
-	I_C_TaxCategory retrieveNoTaxCategoryFound(Properties ctx);
-
 	int findTaxCategoryId(TaxCategoryQuery query);
 
 	I_C_TaxCategory getTaxCategoryById(TaxCategoryId id);
@@ -77,6 +71,8 @@ public interface ITaxDAO extends ISingletonService
 
 	@Nullable
 	Tax getTaxFromVatCodeIfManualOrNull(@Nullable VatCodeId vatCodeId);
+
+	List<Tax> getChildTaxes(@NonNull TaxId taxId);
 
 	@Builder
 	@Value

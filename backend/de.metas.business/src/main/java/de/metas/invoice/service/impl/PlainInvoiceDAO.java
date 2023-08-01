@@ -34,11 +34,8 @@ import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
-import org.compiere.model.I_M_InOutLine;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -137,9 +134,4 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 		});
 	}
 
-	@Override
-	public List<I_C_InvoiceTax> retrieveTaxes(org.compiere.model.I_C_Invoice invoice)
-	{
-		throw new UnsupportedOperationException();
-	}
 }

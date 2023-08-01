@@ -28,6 +28,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.order.OrderId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -186,7 +187,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int AD_OrgTrx_ID = 0;
 		int C_LocFrom_ID = 0;
 		int C_LocTo_ID = 0;
-		int C_SalesRegion_ID = 0;
+		SalesRegionId C_SalesRegion_ID = null;
 		int C_Project_ID = 0;
 		int C_Campaign_ID = 0;
 		int C_Activity_ID = 0;
@@ -258,7 +259,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			}
 			else if (elementType.equals(AcctSchemaElementType.SalesRegion))
 			{
-				C_SalesRegion_ID = sourceAccount.getC_SalesRegion_ID();
+				C_SalesRegion_ID = SalesRegionId.ofRepoIdOrNull(sourceAccount.getC_SalesRegion_ID());
 			}
 			else if (elementType.equals(AcctSchemaElementType.UserList1))
 			{

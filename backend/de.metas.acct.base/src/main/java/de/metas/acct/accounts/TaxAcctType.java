@@ -36,7 +36,8 @@ public enum TaxAcctType
 	TaxReceivables(I_C_Tax_Acct.COLUMNNAME_T_Receivables_Acct),
 	TaxExpense(I_C_Tax_Acct.COLUMNNAME_T_Expense_Acct),
 	T_Revenue_Acct(I_C_Tax_Acct.COLUMNNAME_T_Revenue_Acct),
-
+	T_PayDiscount_Exp_Acct(I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Exp_Acct),
+	T_PayDiscount_Rev_Acct(I_C_Tax_Acct.COLUMNNAME_T_PayDiscount_Rev_Acct),
 	;
 
 	@Getter @NonNull private final String columnName;

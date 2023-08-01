@@ -34,6 +34,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -138,14 +139,18 @@ public interface IInvoiceDAO extends ISingletonService
 	@Deprecated
 	BigDecimal retrieveOpenAmt(org.compiere.model.I_C_Invoice invoice);
 
-	List<I_C_InvoiceTax> retrieveTaxes(org.compiere.model.I_C_Invoice invoice);
-
 	/**
 	 * Retrieves the reversal line for the given invoice line and C_Invoice_ID, using the line's <code>C_InvoiceLine.Line</code> value.
 	 *
 	 * @return the reversal line or <code>null</code> if the reversal invoice has no line with the given <code>line</code>'s number.
 	 */
 	I_C_InvoiceLine retrieveReversalLine(I_C_InvoiceLine line, int reversalInvoiceId);
+
+	List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId);
+
+	List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId);
+
+	void deleteTaxes(@NonNull InvoiceId invoiceId);
 
 	/**
 	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.

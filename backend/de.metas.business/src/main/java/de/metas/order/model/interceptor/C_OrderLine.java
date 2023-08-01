@@ -511,13 +511,13 @@ public class C_OrderLine
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
 	public void checkProductWarehouseAssignment(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		if (!productWarehouseAssignmentService.enforceWarehouseAssignmentsForProducts())
+		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
+		if (!productBL.getProductType(productId).isItem() || !productWarehouseAssignmentService.enforceWarehouseAssignmentsForProducts())
 		{
 			return;
 		}
 
 		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
-		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
 
 		final ProductWarehouseAssignments assignments = productWarehouseAssignmentService
 				.getByProductIdOrError(productId);
