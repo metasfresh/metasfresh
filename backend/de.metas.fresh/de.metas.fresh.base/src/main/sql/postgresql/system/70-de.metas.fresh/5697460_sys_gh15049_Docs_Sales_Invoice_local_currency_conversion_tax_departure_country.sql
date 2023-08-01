@@ -39,7 +39,7 @@ $$
 WITH records as (
     SELECT it.C_Invoice_ID,
            CASE
-               WHEN (i.m_inout_id IS NULL AND tr.taxreportingratebase = 'S') OR i.c_order_id IS NULL THEN FALSE --aggregated ICs aren't printed
+               WHEN (i.m_inout_id IS NULL AND tr.taxreportingratebase = 'S') OR i.c_order_id IS NULL   THEN FALSE --aggregated ICs aren't printed
                WHEN tr.taxreportingratebase IS NULL                THEN FALSE --if tax reporting has no entry in doctype
                WHEN i.isprintlocalcurrencyinfo = 'N'               THEN FALSE
                WHEN bp.isprintlocalcurrencyinfo = 'N'
@@ -52,12 +52,12 @@ WITH records as (
            CASE
                WHEN (i.m_inout_id IS NULL AND tr.taxreportingratebase = 'S') OR i.c_order_id IS NULL THEN NULL --aggregated ICs aren't printed
                WHEN tr.taxreportingratebase IS NULL THEN NULL --if tax reporting has no entry in doctype
-               ELSE
-                 getlocaltaxreportingconversionratedate(
-                         tr.taxreportingratebase,
-                         tr.c_calendar_id,
-                         i.dateinvoiced,
-                         m.movementdate)
+                                                                 ELSE
+                                                                     getlocaltaxreportingconversionratedate(
+                                                                             tr.taxreportingratebase,
+                                                                             tr.c_calendar_id,
+                                                                             i.dateinvoiced,
+                                                                             m.movementdate)
            END AS conversion_date,
            tr.c_conversiontype_id,
            i.ad_client_id,
@@ -99,36 +99,36 @@ SELECT
     local_iso_code,
     CASE
         WHEN conversion_date IS NULL THEN NULL
-         ELSE
-             currencyrate(currency_from,
-                          currency_to,
-                          conversion_date,
-                          c_conversiontype_id,
-                          ad_client_id,
-                          ad_org_id)
+                                     ELSE
+                                         currencyrate(currency_from,
+                                                      currency_to,
+                                                      conversion_date,
+                                                      c_conversiontype_id,
+                                                      ad_client_id,
+                                                      ad_org_id)
     END AS conversion_rate,
     conversion_date,
     CASE
         WHEN conversion_date IS NULL THEN NULL
-         ELSE
-             currencyconvert(TaxBaseAmt,
-                             currency_from,
-                             currency_to,
-                             conversion_date,
-                             c_conversiontype_id,
-                             ad_client_id,
-                             ad_org_id)
+                                     ELSE
+                                         currencyconvert(TaxBaseAmt,
+                                                         currency_from,
+                                                         currency_to,
+                                                         conversion_date,
+                                                         c_conversiontype_id,
+                                                         ad_client_id,
+                                                         ad_org_id)
     END AS local_taxbaseamt,
     CASE
         WHEN conversion_date IS NULL THEN NULL
-         ELSE
-             currencyconvert(TaxAmt,
-                             currency_from,
-                             currency_to,
-                             conversion_date,
-                             c_conversiontype_id,
-                             ad_client_id,
-                             ad_org_id)
+                                     ELSE
+                                         currencyconvert(TaxAmt,
+                                                         currency_from,
+                                                         currency_to,
+                                                         conversion_date,
+                                                         c_conversiontype_id,
+                                                         ad_client_id,
+                                                         ad_org_id)
     END AS local_taxamt
 
 FROM records
