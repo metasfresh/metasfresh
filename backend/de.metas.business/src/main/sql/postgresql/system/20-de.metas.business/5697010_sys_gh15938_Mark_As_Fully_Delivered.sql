@@ -223,27 +223,3 @@ UPDATE AD_Column SET ColumnSQL='( CASE     WHEN C_Order.DocStatus = ''DR'' THEN 
 -- 2023-07-28T10:38:26.868Z
 UPDATE AD_Column SET ColumnSQL='( CASE     WHEN C_Order.DocStatus <> ''DR'' AND (SELECT SUM(qtydelivered - qtyordered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) >= 0 THEN ''CD''     WHEN (SELECT SUM(qtydelivered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) > 0 THEN ''PD''   ELSE ''O''  END )',Updated=TO_TIMESTAMP('2023-07-28 13:38:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552710
 ;
-
--- Value: de.metas.deliveryplanning.DeliveryPlanningService.OrderFullyDelivered
--- 2023-07-31T16:25:22.385Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545314,0,TO_TIMESTAMP('2023-07-31 19:25:21','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Order is fully delivered.','I',TO_TIMESTAMP('2023-07-31 19:25:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.deliveryplanning.DeliveryPlanningService.OrderFullyDelivered')
-;
-
--- 2023-07-31T16:25:22.385Z
-INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545314 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
-;
-
--- Value: de.metas.deliveryplanning.DeliveryPlanningService.OrderFullyDelivered
--- 2023-07-31T16:26:01.968Z
-UPDATE AD_Message_Trl SET MsgText='Die Bestellung wird vollständig geliefert.',Updated=TO_TIMESTAMP('2023-07-31 19:26:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545314
-;
-
--- Value: de.metas.deliveryplanning.DeliveryPlanningService.OrderFullyDelivered
--- 2023-07-31T16:26:04.708Z
-UPDATE AD_Message_Trl SET MsgText='Die Bestellung wird vollständig geliefert.',Updated=TO_TIMESTAMP('2023-07-31 19:26:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545314
-;
-
--- Value: de.metas.deliveryplanning.DeliveryPlanningService.OrderFullyDelivered
--- 2023-07-31T16:26:08.041Z
-UPDATE AD_Message_Trl SET MsgText='Die Bestellung wird vollständig geliefert.',Updated=TO_TIMESTAMP('2023-07-31 19:26:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545314
-;
