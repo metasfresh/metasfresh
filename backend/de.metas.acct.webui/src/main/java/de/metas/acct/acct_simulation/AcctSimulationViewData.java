@@ -18,22 +18,20 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.SynchronizedMutable;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class AcctSimulationViewData implements IEditableRowsData<AcctRow>
+class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 {
 	public static AcctSimulationViewData cast(final IRowsData<AcctRow> data) {return (AcctSimulationViewData)data;}
 
 	private final AcctSimulationViewDataService dataService;
-	@Getter private final @NonNull TableRecordReference docRecordRef;
-	private final @NonNull ClientId clientId;
+
+	@NonNull @Getter private final AcctSimulationDocInfo docInfo;
 
 	//
 	// state
@@ -43,12 +41,10 @@ public class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 	@Builder
 	private AcctSimulationViewData(
 			final @NonNull AcctSimulationViewDataService dataService,
-			final @NonNull TableRecordReference docRecordRef,
-			final @NonNull ClientId clientId)
+			final @NonNull AcctSimulationDocInfo docInfo)
 	{
 		this.dataService = dataService;
-		this.docRecordRef = docRecordRef;
-		this.clientId = clientId;
+		this.docInfo = docInfo;
 
 		loadRows();
 	}
@@ -68,7 +64,7 @@ public class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	private void loadRows()
 	{
-		rowsHolder.setRows(dataService.retrieveRows(docRecordRef, clientId));
+		rowsHolder.setRows(dataService.retrieveRows(docInfo));
 	}
 
 	@Override
@@ -160,6 +156,17 @@ public class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void save()
 	{
-		dataService.save(rowsHolder.list(), docRecordRef);
+		dataService.save(rowsHolder.list(), docInfo);
 	}
+
+	public void addNewRow()
+	{
+		rowsHolder.addRow(dataService.newRow(docInfo));
+	}
+
+	public void removeRowsById(@NonNull final DocumentIdsSelection rowIds)
+	{
+		rowsHolder.removeRowsById(rowIds);
+	}
+
 }

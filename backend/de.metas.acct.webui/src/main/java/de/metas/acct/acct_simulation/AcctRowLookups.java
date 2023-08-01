@@ -24,7 +24,7 @@ import org.compiere.util.Evaluatees;
 
 import javax.annotation.Nullable;
 
-public class AcctRowLookups
+class AcctRowLookups
 {
 	private final LookupDataSource postingSignLookup;
 	private final LookupDataSource elementValueLookup;

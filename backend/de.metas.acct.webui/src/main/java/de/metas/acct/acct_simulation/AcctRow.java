@@ -23,12 +23,10 @@ import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.acct.FactLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -88,22 +86,22 @@ public class AcctRow implements IViewRow
 	@SuppressWarnings({ "FieldCanBeLocal", "unused" }) // needs to be here for toBuilder()
 	@NonNull private final CurrencyIdToCurrencyCodeConverter currencyIdToCurrencyCodeConverter;
 	@NonNull private final DocumentId rowId;
-	@Nullable private final FactLine factLine;
+	@NonNull private final AcctRowCurrencyRate currencyRate;
 	@Getter @NonNull final FactAcctChanges userChanges;
 
 	@Builder(toBuilder = true)
 	private AcctRow(
 			@NonNull final AcctRowLookups lookups,
 			@NonNull final CurrencyIdToCurrencyCodeConverter currencyIdToCurrencyCodeConverter,
-			@Nullable final FactLine factLine,
 			@NonNull final FactAcctChanges userChanges,
-			@NonNull final DocumentId rowId)
+			@NonNull final DocumentId rowId,
+			@NonNull final AcctRowCurrencyRate currencyRate)
 	{
 		this.lookups = lookups;
 		this.currencyIdToCurrencyCodeConverter = currencyIdToCurrencyCodeConverter;
-		this.factLine = factLine;
 		this.userChanges = userChanges;
 		this.rowId = rowId;
+		this.currencyRate = currencyRate;
 
 		this.postingSign = userChanges.getPostingSign();
 		this.account = lookups.lookupElementValue(userChanges.getAccountId());
@@ -164,7 +162,7 @@ public class AcctRow implements IViewRow
 			else if (FIELDNAME_Amount_DC.equals(fieldName))
 			{
 				final Money newAmountDC = Money.of(event.getValueAsBigDecimal(BigDecimal.ZERO), userChanges.getAmount_DC().getCurrencyId());
-				final Money newAmountLC = convertToLocalCurrency(newAmountDC);
+				final Money newAmountLC = currencyRate.convertToLocalCurrency(newAmountDC);
 				newChanges.amount_DC(newAmountDC).amount_LC(newAmountLC);
 			}
 			else if (FIELDNAME_C_Tax_ID.equals(fieldName))
@@ -202,12 +200,5 @@ public class AcctRow implements IViewRow
 		}
 
 		return toBuilder().userChanges(newChanges.build()).build();
-	}
-
-	private Money convertToLocalCurrency(final Money amountDC)
-	{
-		return Check.assumeNotNull(this.factLine, "factLine is set")
-				.getCurrencyRateFromDocumentToAcctCurrency()
-				.convertAmount(amountDC);
 	}
 }

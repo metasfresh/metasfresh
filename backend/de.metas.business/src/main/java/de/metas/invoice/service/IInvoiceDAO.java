@@ -90,7 +90,7 @@ public interface IInvoiceDAO extends ISingletonService
 	List<I_C_InvoiceLine> retrieveLines(I_M_InOutLine inoutLine);
 
 	List<I_C_LandedCost> retrieveLandedCosts(I_C_InvoiceLine invoiceLine,
-			String whereClause, String trxName);
+											 String whereClause, String trxName);
 
 	I_C_LandedCost createLandedCost(String trxName);
 
@@ -170,6 +170,13 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
 
+	@Nullable
+	default org.compiere.model.I_C_Invoice getByIdInTrxIfExists(@NonNull final InvoiceId invoiceId)
+	{
+		final List<? extends org.compiere.model.I_C_Invoice> invoices = getByIdsInTrx(ImmutableSet.of(invoiceId));
+		return invoices.size() == 1 ? invoices.get(0) : null;
+	}
+
 	List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
 
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
@@ -196,5 +203,6 @@ public interface IInvoiceDAO extends ISingletonService
 
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
-	@Nullable I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
+	@Nullable
+	I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
 }

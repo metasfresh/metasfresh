@@ -10,6 +10,7 @@ import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.document.engine.DocStatus;
 import de.metas.forex.ForexContractId;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
@@ -262,6 +263,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * @return true if invoice's DocStatus is COmpleted, CLosed or REversed.
 	 */
 	boolean isComplete(org.compiere.model.I_C_Invoice invoice);
+
+	DocStatus getDocStatus(@NonNull InvoiceId invoiceId);
 
 	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_Invoice invoice);
 

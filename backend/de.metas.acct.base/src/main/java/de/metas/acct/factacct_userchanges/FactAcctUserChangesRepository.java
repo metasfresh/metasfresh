@@ -1,6 +1,5 @@
 package de.metas.acct.factacct_userchanges;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.gljournal_sap.PostingSign;
@@ -25,7 +24,6 @@ import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Repository
 public class FactAcctUserChangesRepository
@@ -33,7 +31,7 @@ public class FactAcctUserChangesRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public void save(
-			@NonNull final List<FactAcctChanges> lineChangesList,
+			@NonNull final FactAcctChangesList lineChangesList,
 			@NonNull final TableRecordReference docRecordRef)
 	{
 		final InvoiceId invoiceId;
@@ -57,18 +55,18 @@ public class FactAcctUserChangesRepository
 		}
 	}
 
-	public List<FactAcctChanges> getByDocRecordRef(@NonNull final TableRecordReference docRecordRef)
+	public FactAcctChangesList getByDocRecordRef(@NonNull final TableRecordReference docRecordRef)
 	{
 		final IQueryBuilder<I_Fact_Acct_UserChange> queryBuilder = queryByDocRecordRef(docRecordRef);
 		if (queryBuilder == null)
 		{
-			return ImmutableList.of();
+			return FactAcctChangesList.EMPTY;
 		}
 
 		return queryBuilder
 				.stream()
 				.map(FactAcctUserChangesRepository::fromRecord)
-				.collect(ImmutableList.toImmutableList());
+				.collect(FactAcctChangesList.collect());
 	}
 
 	private void deleteByDocRecordRef(final @NonNull TableRecordReference docRecordRef)

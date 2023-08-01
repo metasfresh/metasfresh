@@ -14,7 +14,7 @@ import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.api.impl.FactAcctDAO;
-import de.metas.acct.factacct_userchanges.FactAcctChanges;
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
 import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemsService;
@@ -111,7 +111,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Optional;
 
 /*
@@ -597,7 +596,7 @@ public class AcctDocRequiredServicesFacade
 		return acctDocLockService.unlock(docModel, newPostingStatus, postingErrorIssueId);
 	}
 
-	public List<FactAcctChanges> getFactAcctChanges(@NonNull final TableRecordReference docRecordRef)
+	public FactAcctChangesList getFactAcctChanges(@NonNull final TableRecordReference docRecordRef)
 	{
 		return factAcctUserChangesService.getByDocRecordRef(docRecordRef);
 	}

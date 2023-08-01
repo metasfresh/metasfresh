@@ -253,6 +253,41 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
 	}
 
+	public ImmutableRowsIndex<T> removingRowIds(@NonNull final DocumentIdsSelection rowIdsToRemove)
+	{
+		if (rowIdsToRemove.isEmpty())
+		{
+			return this;
+		}
+		else if (rowIdsToRemove.isAll())
+		{
+			if (rowIds.isEmpty())
+			{
+				return this; // already empty, nothing to remove
+			}
+			return new ImmutableRowsIndex<>(this.initialRowIds, ImmutableList.of());
+		}
+		else
+		{
+			final int sizeBeforeRemove = rowIds.size();
+			final ArrayList<T> rowsAfterRemove = new ArrayList<>(sizeBeforeRemove);
+			for (final DocumentId rowId : this.rowIds)
+			{
+				if (!rowIdsToRemove.contains(rowId))
+				{
+					rowsAfterRemove.add(rowsById.get(rowId));
+				}
+			}
+
+			if (rowsAfterRemove.size() == sizeBeforeRemove)
+			{
+				return this; // nothing was deleted
+			}
+
+			return new ImmutableRowsIndex<>(this.initialRowIds, rowsAfterRemove);
+		}
+	}
+
 	public <ID extends RepoIdAware> ImmutableSet<ID> getRecordIdsToRefresh(
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final Function<DocumentId, ID> idMapper)

@@ -1,8 +1,6 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.accounts.AccountProvider;
@@ -18,7 +16,7 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocModel;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
-import de.metas.acct.factacct_userchanges.FactAcctChanges;
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
 import de.metas.acct.factacct_userchanges.FactLineMatchKey;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
@@ -546,17 +544,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private void applyUserChanges(final ArrayList<Fact> facts)
 	{
 		final TableRecordReference docRecordRef = getDocModel().getRecordRef();
-		final ImmutableMap<FactLineMatchKey, FactAcctChanges> factAcctChangesByKey = Maps.uniqueIndex(services.getFactAcctChanges(docRecordRef), FactAcctChanges::getMatchKey);
+		final FactAcctChangesList changesList = services.getFactAcctChanges(docRecordRef);
 		for (final Fact fact : facts)
 		{
 			for (final FactLine factLine : fact.getLines())
 			{
 				final FactLineMatchKey matchKey = FactLineMatchKey.ofFactLine(factLine);
-				final FactAcctChanges factAcctChanges = factAcctChangesByKey.get(matchKey);
-				if (factAcctChanges != null)
-				{
-					factLine.updateFrom(factAcctChanges);
-				}
+				changesList.getByMatchKey(matchKey).ifPresent(factLine::updateFrom);
 			}
 		}
 	}
@@ -777,7 +771,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
+	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
 	{
 		return services.createCurrencyConversionContext(
 				getDateAcct(),
@@ -1003,9 +997,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getDocModel().toString();
 	}
 
-	protected final ClientId getClientId() {return getDocModel().getClientId();}
+	public final ClientId getClientId() {return getDocModel().getClientId();}
 
-	protected final OrgId getOrgId() {return getDocModel().getOrgId();}
+	public final OrgId getOrgId() {return getDocModel().getOrgId();}
 
 	protected String getDocumentNo()
 	{
@@ -1042,7 +1036,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final CurrencyId getCurrencyId() {return getCurrencyIdOptional().orElse(null);}
 
-	protected final Optional<CurrencyId> getCurrencyIdOptional()
+	public final Optional<CurrencyId> getCurrencyIdOptional()
 	{
 		if (_currencyId == null)
 		{

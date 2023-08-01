@@ -18,13 +18,13 @@ public class FactAcctUserChangesService
 	}
 
 	public void save(
-			@NonNull final List<FactAcctChanges> lineChangesList,
+			@NonNull final FactAcctChangesList lineChangesList,
 			@NonNull final TableRecordReference docRecordRef)
 	{
 		repository.save(lineChangesList, docRecordRef);
 	}
 
-	public List<FactAcctChanges> getByDocRecordRef(@NonNull final TableRecordReference docRecordRef)
+	public FactAcctChangesList getByDocRecordRef(@NonNull final TableRecordReference docRecordRef)
 	{
 		return repository.getByDocRecordRef(docRecordRef);
 	}

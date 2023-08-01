@@ -83,6 +83,21 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		holder.compute(remappingFunction);
 	}
 
+	public void addRow(@NonNull final T row)
+	{
+		compute(rows -> rows.addingRow(row));
+	}
+
+	public void removeRowsById(@NonNull final DocumentIdsSelection rowIds)
+	{
+		if (rowIds.isEmpty())
+		{
+			return;
+		}
+
+		compute(rows -> rows.removingRowIds(rowIds));
+	}
+
 	public void changeRowById(@NonNull DocumentId rowId, @NonNull final UnaryOperator<T> rowMapper)
 	{
 		compute(rows -> rows.changingRow(rowId, rowMapper));

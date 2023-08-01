@@ -893,7 +893,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	}
 
 	@Override
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
+	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
 	{
 		CurrencyConversionContext invoiceCurrencyConversionCtx = this._invoiceCurrencyConversionCtx;
 		if (invoiceCurrencyConversionCtx == null)
