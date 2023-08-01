@@ -31,7 +31,7 @@ public class SqlAcctDocLockService implements AcctDocLockService
 			sql.append(" AND Posted='N'");
 		}
 
-		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		return updatedCount == 1;
 	}
 
@@ -74,7 +74,7 @@ public class SqlAcctDocLockService implements AcctDocLockService
 
 		sql.append("\n WHERE ").append(keyColumnName).append("=").append(recordId);
 
-		final int updateCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updateCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		return updateCount == 1;
 	}
 

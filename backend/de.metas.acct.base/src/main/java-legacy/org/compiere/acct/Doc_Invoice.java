@@ -509,7 +509,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						.setDocLine(null)
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(getCurrencyId(), taxAmt, null)
-						.setTaxIdAndUpdateVatCode(docTax.getTaxId())
+						.setC_Tax_ID(docTax.getTaxId())
 						.alsoAddZeroLine()
 						.buildAndAdd();
 			}

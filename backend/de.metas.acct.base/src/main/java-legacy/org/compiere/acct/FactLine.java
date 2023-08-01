@@ -61,12 +61,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.MAccount;
-import org.slf4j.Logger;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -147,6 +148,8 @@ public class FactLine
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString5;
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString6;
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString7;
+	@Getter @Setter(AccessLevel.PRIVATE) private Instant userElementDate1;
+	@Getter @Setter(AccessLevel.PRIVATE) private Instant userElementDate2;
 
 	@Getter @Nullable private FAOpenItemTrxInfo openItemTrxInfo;
 
@@ -383,6 +386,8 @@ public class FactLine
 		this.userElementString5 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString5, this.acctSchema, m_doc, m_docLine).orElse(null);
 		this.userElementString6 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString6, this.acctSchema, m_doc, m_docLine).orElse(null);
 		this.userElementString7 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString7, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementDate1 = computeAcctSchemaElementAsDate(AcctSchemaElementType.UserElementDate1, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementDate2 = computeAcctSchemaElementAsDate(AcctSchemaElementType.UserElementDate2, this.acctSchema, m_doc, m_docLine).orElse(null);
 	}   // FactLine
 
 	private static ClientId computeClientId(
@@ -645,39 +650,33 @@ public class FactLine
 		return Optional.ofNullable(value);
 	}
 
-	private void updateUserElementDates()
+	private static Optional<Instant> computeAcctSchemaElementAsDate(
+			@NonNull final AcctSchemaElementType acctSchemaElementType,
+			@NonNull final AcctSchema acctSchema,
+			@NonNull final Doc<?> doc,
+			@Nullable final DocLine<?> docLine)
 	{
-		updateUserElementDate(AcctSchemaElementType.UserElementDate1);
-		updateUserElementDate(AcctSchemaElementType.UserElementDate2);
-	}
-
-	private void updateUserElementDate(@NonNull final AcctSchemaElementType dateElementType)
-	{
-		final AcctSchemaElement userElementDateElement = acctSchema.getSchemaElementByType(dateElementType);
-		if (userElementDateElement != null)
+		final AcctSchemaElement acctSchemaElement = acctSchema.getSchemaElementByType(acctSchemaElementType);
+		if (acctSchemaElement == null)
 		{
-			final String userElementDateColumnName = userElementDateElement.getDisplayColumnName();
-			LocalDateAndOrgId userElementLocalDate = null;
-
-			if (m_docLine != null)
-			{
-				userElementLocalDate = m_docLine.getValueAsLocalDateOrNull(userElementDateColumnName);
-
-			}
-
-			if (userElementLocalDate == null)
-			{
-				userElementLocalDate = m_doc.getValueAsLocalDateOrNull(userElementDateColumnName);
-			}
-
-			if (userElementLocalDate != null)
-			{
-				set_Value(userElementDateColumnName, TimeUtil.asTimestamp(userElementLocalDate.toLocalDate()));
-			}
+			return Optional.empty();
 		}
+
+		final String columnName = acctSchemaElement.getDisplayColumnName();
+		LocalDateAndOrgId value = null;
+		if (docLine != null)
+		{
+			value = docLine.getValueAsLocalDateOrNull(columnName);
+		}
+		if (value == null)
+		{
+			value = doc.getValueAsLocalDateOrNull(columnName);
+		}
+
+		return Optional.ofNullable(value)
+				.map(date -> date.toInstant(doc.getServices()::getTimeZone));
 	}
 
-	@NonNull
 	public CurrencyId getAcctCurrencyId()
 	{
 		return getAcctSchema().getCurrencyId();
@@ -1318,6 +1317,8 @@ public class FactLine
 		setUserElementString5(dimension.getUserElementString5());
 		setUserElementString6(dimension.getUserElementString6());
 		setUserElementString7(dimension.getUserElementString7());
+		setUserElementDate1(dimension.getUserElementDate1());
+		setUserElementDate2(dimension.getUserElementDate2());
 	}
 
 	public void updateFromDimension(final AccountDimension dim)
@@ -1430,6 +1431,14 @@ public class FactLine
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString7))
 		{
 			setUserElementString7(dim.getUserElementString7());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementDate1))
+		{
+			setUserElementDate1(dim.getUserElementDate1());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementDate2))
+		{
+			setUserElementDate2(dim.getUserElementDate2());
 		}
 	}
 
