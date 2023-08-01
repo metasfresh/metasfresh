@@ -268,7 +268,8 @@ public class SAPGLJournal
 		}
 	}
 
-	private List<SAPGLJournalLine> createTaxLines(
+	@NonNull
+	private ImmutableList<SAPGLJournalLine> createTaxLines(
 			@NonNull final SAPGLJournalLine baseLine,
 			@NonNull final SAPGLJournalTaxProvider taxProvider,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
@@ -279,39 +280,23 @@ public class SAPGLJournal
 		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
-		final ArrayList<SAPGLJournalLine> result = new ArrayList<>();
-		result.add(
-				SAPGLJournalLine.builder()
-						.parentId(baseLine.getIdNotNull())
-						.line(baseLine.getLine()) // will be updated later
-						.account(taxAccount)
-						.postingSign(taxPostingSign)
-						.amount(taxAmt)
-						.amountAcct(taxAmtAcct)
-						.taxId(taxId)
-						.orgId(baseLine.getOrgId())
-						.dimension(baseLine.getDimension())
-						.build()
-		);
+		final SAPGLJournalLine line = SAPGLJournalLine.builder()
+				.parentId(baseLine.getIdNotNull())
+				.line(baseLine.getLine()) // will be updated later
+				.account(taxAccount)
+				.postingSign(taxPostingSign)
+				.amount(taxAmt)
+				.amountAcct(taxAmtAcct)
+				.taxId(taxId)
+				.orgId(baseLine.getOrgId())
+				.dimension(baseLine.getDimension())
+				.build();
 
-		if (taxProvider.isReverseCharge(taxId))
-		{
-			result.add(
-					SAPGLJournalLine.builder()
-							.parentId(baseLine.getIdNotNull())
-							.line(baseLine.getLine()) // will be updated later
-							.account(taxProvider.getTaxAccount(taxId, acctSchemaId, taxPostingSign.reverse()))
-							.postingSign(taxPostingSign.reverse())
-							.amount(taxAmt)
-							.amountAcct(taxAmtAcct)
-							.taxId(taxId)
-							.orgId(baseLine.getOrgId())
-							.dimension(baseLine.getDimension())
-							.build()
-			);
-		}
+		final ImmutableList.Builder<SAPGLJournalLine> resultBuilder = ImmutableList.builder();
+		resultBuilder.add(line);
+		line.getReverseChargeCounterPart(taxProvider, acctSchemaId).ifPresent(resultBuilder::add);
 
-		return result;
+		return resultBuilder.build();
 	}
 
 	public void removeLinesIf(final Predicate<SAPGLJournalLine> predicate)
