@@ -157,3 +157,10 @@ UPDATE AD_Column SET Filter_Val_Rule_ID=NULL, IsSelectionColumn='N',Updated=TO_T
 -- 2023-08-01T09:10:10.199Z
 UPDATE AD_Column SET FilterDefaultValue='', IsSelectionColumn='N',Updated=TO_TIMESTAMP('2023-08-01 12:10:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587172
 ;
+
+
+-- Column: C_Order.NotFullyDelivered
+-- Column SQL (old): ( CASE WHEN (SELECT SUM(qtydelivered - qtyordered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) >= 0 THEN 'N'     ELSE 'Y'    END )
+-- 2023-08-01T16:13:43.386Z
+UPDATE AD_Column SET ColumnSQL='( CASE    WHEN C_Order.DocStatus IN (''VO'',''RE'',''DR'',''IP'') THEN ''Y'' WHEN (SELECT SUM(qtydelivered - qtyordered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) >= 0 THEN ''N''     ELSE ''Y''    END )',Updated=TO_TIMESTAMP('2023-08-01 19:13:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587241
+;
