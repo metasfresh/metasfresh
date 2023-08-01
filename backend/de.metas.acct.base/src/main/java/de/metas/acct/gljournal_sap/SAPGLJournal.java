@@ -252,9 +252,12 @@ public class SAPGLJournal
 			}
 			else if (line.isBaseTaxLine())
 			{
-				final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
-				it.add(taxLine);
-				hasChanges = true;
+				final List<SAPGLJournalLine> taxLines = createTaxLines(line, taxProvider, currencyConverter);
+				if (!taxLines.isEmpty())
+				{
+					taxLines.forEach(it::add);
+					hasChanges = true;
+				}
 			}
 		}
 
@@ -265,7 +268,8 @@ public class SAPGLJournal
 		}
 	}
 
-	private SAPGLJournalLine createTaxLine(
+	@NonNull
+	private ImmutableList<SAPGLJournalLine> createTaxLines(
 			@NonNull final SAPGLJournalLine baseLine,
 			@NonNull final SAPGLJournalTaxProvider taxProvider,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
@@ -276,7 +280,7 @@ public class SAPGLJournal
 		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
-		return SAPGLJournalLine.builder()
+		final SAPGLJournalLine line = SAPGLJournalLine.builder()
 				.parentId(baseLine.getIdNotNull())
 				.line(baseLine.getLine()) // will be updated later
 				.account(taxAccount)
@@ -287,6 +291,12 @@ public class SAPGLJournal
 				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())
 				.build();
+
+		final ImmutableList.Builder<SAPGLJournalLine> resultBuilder = ImmutableList.builder();
+		resultBuilder.add(line);
+		line.getReverseChargeCounterPart(taxProvider, acctSchemaId).ifPresent(resultBuilder::add);
+
+		return resultBuilder.build();
 	}
 
 	public void removeLinesIf(final Predicate<SAPGLJournalLine> predicate)
