@@ -31,7 +31,6 @@ public class AcctSimulationViewFactory implements IViewFactory
 	public static final String WINDOWID_String = "acctSimulation";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOWID_String);
 
-	//private static final String VIEW_PARAM_DocRecordRef = "docRecordRef";
 	private static final String VIEW_PARAM_DocInfo = "docInfo";
 
 	private final AcctSimulationViewDataService dataService;
