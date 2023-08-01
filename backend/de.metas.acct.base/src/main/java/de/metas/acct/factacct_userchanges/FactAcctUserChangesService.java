@@ -4,8 +4,6 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class FactAcctUserChangesService
 {

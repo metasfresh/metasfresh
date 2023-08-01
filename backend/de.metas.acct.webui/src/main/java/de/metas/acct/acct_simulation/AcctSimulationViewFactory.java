@@ -54,7 +54,7 @@ public class AcctSimulationViewFactory implements IViewFactory
 				.setWindowId(WINDOW_ID)
 				.setCaption(TranslatableStrings.anyLanguage("Accounting Simulation"))
 				.setAllowOpeningRowDetails(false)
-				.allowViewCloseAction(ViewCloseAction.DONE)
+				.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.addElementsFromViewRowClass(AcctRow.class, viewDataType)
 				.setFilters(ImmutableList.of())
 				.build();
@@ -83,8 +83,9 @@ public class AcctSimulationViewFactory implements IViewFactory
 	/**
 	 * @deprecated Don't call it directly. Shall be called only by API!
 	 */
-	@Deprecated
 	@Override
+	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	public IView createView(@NonNull final CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
@@ -95,6 +96,8 @@ public class AcctSimulationViewFactory implements IViewFactory
 				.rowsData(getViewData(request))
 				.relatedProcess(createProcessDescriptor(10, AcctSimulationView_AddRow.class))
 				.relatedProcess(createProcessDescriptor(20, AcctSimulationView_RemoveRows.class))
+				.relatedProcess(createProcessDescriptor(30, AcctSimulationView_UpdateSimulation.class))
+				.relatedProcess(createProcessDescriptor(40, AcctSimulationView_Save.class))
 				.build();
 	}
 

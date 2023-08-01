@@ -5,7 +5,6 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -59,12 +58,6 @@ public class AcctSimulationView extends AbstractCustomView<AcctRow> implements I
 	@Override
 	public ViewHeaderProperties getHeaderProperties() {return getRowsData().getHeaderProperties();}
 
-	@Override
-	public void close(final ViewCloseAction closeAction)
-	{
-		getRowsData().save();
-	}
-
 	public void addNewRow()
 	{
 		getRowsData().addNewRow();
@@ -75,5 +68,10 @@ public class AcctSimulationView extends AbstractCustomView<AcctRow> implements I
 	{
 		getRowsData().removeRowsById(rowIds);
 		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
+	}
+
+	public void save()
+	{
+		getRowsData().save();
 	}
 }

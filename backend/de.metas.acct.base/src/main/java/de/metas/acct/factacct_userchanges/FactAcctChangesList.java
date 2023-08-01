@@ -1,31 +1,42 @@
 package de.metas.acct.factacct_userchanges;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collector;
 
 @EqualsAndHashCode
 @ToString
-public class FactAcctChangesList implements Iterable<FactAcctChanges>
+public class FactAcctChangesList
 {
 	public static final FactAcctChangesList EMPTY = new FactAcctChangesList(ImmutableList.of());
 
-	private final ImmutableList<FactAcctChanges> list;
-	private final ImmutableMap<FactLineMatchKey, FactAcctChanges> byMatchKey;
+	@Getter private final ImmutableList<FactAcctChanges> allLines;
+	private final ImmutableListMultimap<AcctSchemaId, FactAcctChanges> linesToAddByAcctSchemaId;
+	private final ImmutableMap<FactLineMatchKey, FactAcctChanges> linesToChangeByKey;
+	private final ImmutableMap<FactLineMatchKey, FactAcctChanges> linesToRemoveByKey;
 
 	private FactAcctChangesList(@NonNull final List<FactAcctChanges> list)
 	{
-		this.list = ImmutableList.copyOf(list);
-		this.byMatchKey = Maps.uniqueIndex(list, FactAcctChanges::getMatchKey);
+		this.allLines = ImmutableList.copyOf(list);
+		this.linesToAddByAcctSchemaId = list.stream()
+				.filter(changes -> changes.getType().isAdd())
+				.collect(ImmutableListMultimap.toImmutableListMultimap(FactAcctChanges::getAcctSchemaId, changes -> changes));
+		this.linesToChangeByKey = list.stream()
+				.filter(changes -> changes.getType().isChange())
+				.collect(ImmutableMap.toImmutableMap(FactAcctChanges::getMatchKey, changes -> changes));
+		this.linesToRemoveByKey = list.stream()
+				.filter(changes -> changes.getType().isDelete())
+				.collect(ImmutableMap.toImmutableMap(FactAcctChanges::getMatchKey, changes -> changes));
 	}
 
 	public static FactAcctChangesList ofList(@NonNull final List<FactAcctChanges> list)
@@ -38,11 +49,12 @@ public class FactAcctChangesList implements Iterable<FactAcctChanges>
 		return GuavaCollectors.collectUsingListAccumulator(FactAcctChangesList::ofList);
 	}
 
-	@Override
-	public Iterator<FactAcctChanges> iterator() {return list.iterator();}
-
-	public Optional<FactAcctChanges> getByMatchKey(@NonNull final FactLineMatchKey matchKey)
+	public Optional<FactAcctChanges> getLinesToChangeByKey(@NonNull final FactLineMatchKey matchKey)
 	{
-		return Optional.ofNullable(byMatchKey.get(matchKey));
+		return Optional.ofNullable(linesToChangeByKey.get(matchKey));
 	}
+
+	public boolean isRemove(@NonNull final FactLineMatchKey matchKey) {return linesToRemoveByKey.containsKey(matchKey);}
+
+	public ImmutableListMultimap<AcctSchemaId, FactAcctChanges> getLinesToAddGroupedByAcctSchemaId() {return linesToAddByAcctSchemaId;}
 }

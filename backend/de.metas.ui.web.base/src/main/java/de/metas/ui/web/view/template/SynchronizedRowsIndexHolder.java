@@ -93,6 +93,7 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		compute(rows -> rows.addingRow(row));
 	}
 
+	@SuppressWarnings("unused")
 	public void removeRowsById(@NonNull final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isEmpty())

@@ -2,6 +2,7 @@ package de.metas.acct.acct_simulation;
 
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.factacct_userchanges.FactAcctChanges;
+import de.metas.acct.factacct_userchanges.FactAcctChangesType;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.Amount;
 import de.metas.money.CurrencyIdToCurrencyCodeConverter;
@@ -134,6 +135,8 @@ public class AcctRow implements IViewRow
 	@Override
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues() {return values.get(this);}
 
+	public boolean isNotRemoved() {return !userChanges.getType().isDelete();}
+
 	public LookupValuesPage getFieldTypeahead(String fieldName, String query) {return lookups.getFieldTypeahead(fieldName, query);}
 
 	public LookupValuesList getFieldDropdown(String fieldName) {return lookups.getFieldDropdown(fieldName);}
@@ -200,5 +203,22 @@ public class AcctRow implements IViewRow
 		}
 
 		return toBuilder().userChanges(newChanges.build()).build();
+	}
+
+	public @NonNull FactAcctChangesType getChangeType()
+	{
+		return userChanges.getType();
+	}
+
+	public AcctRow asRemoved()
+	{
+		if (userChanges.getType().isDelete())
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.userChanges(userChanges.toBuilder().type(FactAcctChangesType.Delete).build())
+				.build();
 	}
 }

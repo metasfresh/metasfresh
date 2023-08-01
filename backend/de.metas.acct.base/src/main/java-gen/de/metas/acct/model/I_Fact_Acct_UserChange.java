@@ -165,6 +165,27 @@ public interface I_Fact_Acct_UserChange
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set ChangeType.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setChangeType (java.lang.String ChangeType);
+
+	/**
+	 * Get ChangeType.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getChangeType();
+
+	ModelColumn<I_Fact_Acct_UserChange, Object> COLUMN_ChangeType = new ModelColumn<>(I_Fact_Acct_UserChange.class, "ChangeType", null);
+	String COLUMNNAME_ChangeType = "ChangeType";
+
+	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -305,7 +326,7 @@ public interface I_Fact_Acct_UserChange
 	String COLUMNNAME_Document_Currency_ID = "Document_Currency_ID";
 
 	/**
-	 * Set Fact Acct User Change.
+	 * Set Accounting override/adjustments.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -314,7 +335,7 @@ public interface I_Fact_Acct_UserChange
 	void setFact_Acct_UserChange_ID (int Fact_Acct_UserChange_ID);
 
 	/**
-	 * Get Fact Acct User Change.
+	 * Get Accounting override/adjustments.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

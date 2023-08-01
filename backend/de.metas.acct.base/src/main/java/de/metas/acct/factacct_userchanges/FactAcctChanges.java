@@ -12,7 +12,7 @@ import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.acct.FactLine;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -20,10 +20,10 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class FactAcctChanges
 {
-	@NonNull FactLineMatchKey matchKey;
+	@NonNull FactAcctChangesType type;
+	@Nullable FactLineMatchKey matchKey;
 
 	@NonNull AcctSchemaId acctSchemaId;
-
 	@NonNull PostingSign postingSign;
 	@Nullable ElementValueId accountId;
 	@NonNull Money amount_DC;
@@ -35,4 +35,64 @@ public class FactAcctChanges
 	@Nullable String userElementString1;
 	@Nullable OrderId salesOrderId;
 	@Nullable ActivityId activityId;
+
+	@Builder
+	private FactAcctChanges(
+			@NonNull final FactAcctChangesType type,
+			@Nullable final FactLineMatchKey matchKey,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final PostingSign postingSign,
+			@Nullable final ElementValueId accountId,
+			@NonNull final Money amount_DC,
+			@NonNull final Money amount_LC,
+			@Nullable final TaxId taxId,
+			@Nullable final String description,
+			@Nullable final SectionCodeId sectionCodeId,
+			@Nullable final ProductId productId,
+			@Nullable final String userElementString1,
+			@Nullable final OrderId salesOrderId,
+			@Nullable final ActivityId activityId)
+	{
+		if (type.isChangeOrDelete() && matchKey == null)
+		{
+			throw new AdempiereException("MatchKey is mandatory when type is " + type);
+		}
+
+		this.type = type;
+		this.matchKey = matchKey;
+		this.acctSchemaId = acctSchemaId;
+		this.postingSign = postingSign;
+		this.accountId = accountId;
+		this.amount_DC = amount_DC;
+		this.amount_LC = amount_LC;
+		this.taxId = taxId;
+		this.description = description;
+		this.sectionCodeId = sectionCodeId;
+		this.productId = productId;
+		this.userElementString1 = userElementString1;
+		this.salesOrderId = salesOrderId;
+		this.activityId = activityId;
+	}
+
+	public ElementValueId getAccountIdNotNull()
+	{
+		final ElementValueId accountId = getAccountId();
+		if (accountId == null)
+		{
+			throw new AdempiereException("accountId shall be set for " + this);
+		}
+		return accountId;
+	}
+
+	@Nullable
+	public Money getAmtSourceDr() {return postingSign.isDebit() ? amount_DC : null;}
+
+	@Nullable
+	public Money getAmtSourceCr() {return postingSign.isCredit() ? amount_DC : null;}
+
+	@Nullable
+	public Money getAmtAcctDr() {return postingSign.isDebit() ? amount_LC : null;}
+
+	@Nullable
+	public Money getAmtAcctCr() {return postingSign.isCredit() ? amount_LC : null;}
 }

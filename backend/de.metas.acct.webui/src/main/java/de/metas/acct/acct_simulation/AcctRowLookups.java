@@ -69,37 +69,24 @@ class AcctRowLookups
 
 	private LookupDataSource getLookupDataSource(@NonNull final String fieldName)
 	{
-		if (AcctRow.FIELDNAME_PostingSign.equals(fieldName))
+		switch (fieldName)
 		{
-			return postingSignLookup;
-		}
-		else if (AcctRow.FIELDNAME_Account_ID.equals(fieldName))
-		{
-			return elementValueLookup;
-		}
-		else if (AcctRow.FIELDNAME_C_Tax_ID.equals(fieldName))
-		{
-			return taxLookup;
-		}
-		else if (AcctRow.FIELDNAME_M_SectionCode_ID.equals(fieldName))
-		{
-			return sectionCodeLookup;
-		}
-		else if (AcctRow.FIELDNAME_M_Product_ID.equals(fieldName))
-		{
-			return productLookup;
-		}
-		else if (AcctRow.FIELDNAME_C_OrderSO_ID.equals(fieldName))
-		{
-			return orderLookup;
-		}
-		else if (AcctRow.FIELDNAME_C_Activity_ID.equals(fieldName))
-		{
-			return activityLookup;
-		}
-		else
-		{
-			throw new AdempiereException("Field " + fieldName + " does not exist or it's not a lookup field");
+			case AcctRow.FIELDNAME_PostingSign:
+				return postingSignLookup;
+			case AcctRow.FIELDNAME_Account_ID:
+				return elementValueLookup;
+			case AcctRow.FIELDNAME_C_Tax_ID:
+				return taxLookup;
+			case AcctRow.FIELDNAME_M_SectionCode_ID:
+				return sectionCodeLookup;
+			case AcctRow.FIELDNAME_M_Product_ID:
+				return productLookup;
+			case AcctRow.FIELDNAME_C_OrderSO_ID:
+				return orderLookup;
+			case AcctRow.FIELDNAME_C_Activity_ID:
+				return activityLookup;
+			default:
+				throw new AdempiereException("Field " + fieldName + " does not exist or it's not a lookup field");
 		}
 	}
 }

@@ -7,6 +7,7 @@ import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.factacct_userchanges.FactAcctChanges;
 import de.metas.acct.factacct_userchanges.FactAcctChangesList;
+import de.metas.acct.factacct_userchanges.FactAcctChangesType;
 import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.factacct_userchanges.FactLineMatchKey;
 import de.metas.acct.gljournal_sap.PostingSign;
@@ -80,14 +81,17 @@ public class AcctSimulationViewDataService
 		final AcctSchema acctSchema = acctSchemaBL.getById(acctSchemaId);
 		final CurrencyId localCurrencyId = acctSchema.getCurrencyId();
 
+		final CurrencyId documentCurrencyId = acctDoc.getCurrencyIdOptional().orElseThrow(() -> new AdempiereException("Cannot determine document currency"));
+
 		return AcctSimulationDocInfo.builder()
 				.recordRef(acctDoc.getRecordRef())
 				.clientId(clientId)
 				.orgId(orgId)
 				.acctSchemaId(acctSchemaId)
-				.documentCurrencyId(acctDoc.getCurrencyIdOptional()
-						.orElseThrow(() -> new AdempiereException("Cannot determine document currency")))
+				.documentCurrencyId(documentCurrencyId)
+				.documentCurrencyCode(moneyService.getCurrencyCodeByCurrencyId(documentCurrencyId))
 				.localCurrencyId(localCurrencyId)
+				.localCurrencyCode(moneyService.getCurrencyCodeByCurrencyId(localCurrencyId))
 				.currencyConversionContext(acctDoc.getCurrencyConversionContext(acctSchema))
 				.build();
 	}
@@ -116,7 +120,7 @@ public class AcctSimulationViewDataService
 				final FactLine factLine = lines.get(i);
 
 				final FactLineMatchKey matchKey = extractMatchKey(factLine);
-				final FactAcctChanges userChanges = userChangesList.getByMatchKey(matchKey)
+				final FactAcctChanges userChanges = userChangesList.getLinesToChangeByKey(matchKey)
 						.orElseGet(() -> extractUserChanges(factLine));
 
 				result.add(
@@ -153,6 +157,7 @@ public class AcctSimulationViewDataService
 		}
 
 		return FactAcctChanges.builder()
+				.type(FactAcctChangesType.Change)
 				.matchKey(extractMatchKey(factLine))
 				.acctSchemaId(factLine.getAcctSchemaId())
 				.postingSign(postingSign)
@@ -195,23 +200,26 @@ public class AcctSimulationViewDataService
 
 	public AcctRow newRow(final AcctSimulationDocInfo docInfo)
 	{
-		final FactLineMatchKey matchKey = FactLineMatchKey.ofString(UUID.randomUUID().toString());
-
-		final CurrencyRate currencyRate = moneyService.getCurrencyRate(docInfo.getDocumentCurrencyId(), docInfo.getLocalCurrencyId(), docInfo.getCurrencyConversionContext());
-
 		return AcctRow.builder()
 				.lookups(lookups)
 				.currencyIdToCurrencyCodeConverter(moneyService)
 				.userChanges(FactAcctChanges.builder()
-						.matchKey(matchKey)
+						.type(FactAcctChangesType.Add)
+						.matchKey(null)
 						.acctSchemaId(docInfo.getAcctSchemaId())
 						.postingSign(PostingSign.DEBIT)
 						.accountId(null)
 						.amount_DC(Money.zero(docInfo.getDocumentCurrencyId()))
 						.amount_LC(Money.zero(docInfo.getLocalCurrencyId()))
 						.build())
-				.rowId(DocumentId.of(matchKey.getAsString()))
-				.currencyRate(AcctRowCurrencyRate.ofCurrencyRate(currencyRate))
+				.rowId(DocumentId.ofString(UUID.randomUUID().toString()))
+				.currencyRate(getCurrencyRate(docInfo))
 				.build();
+	}
+
+	private AcctRowCurrencyRate getCurrencyRate(final AcctSimulationDocInfo docInfo)
+	{
+		final CurrencyRate currencyRate = moneyService.getCurrencyRate(docInfo.getDocumentCurrencyId(), docInfo.getLocalCurrencyId(), docInfo.getCurrencyConversionContext());
+		return AcctRowCurrencyRate.ofCurrencyRate(currencyRate);
 	}
 }

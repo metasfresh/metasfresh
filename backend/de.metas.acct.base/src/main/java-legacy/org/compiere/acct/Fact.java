@@ -46,7 +46,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * Accounting Fact
@@ -581,6 +583,25 @@ public final class Fact
 	public ImmutableList<FactLine> getLines()
 	{
 		return ImmutableList.copyOf(m_lines);
+	}
+
+	public void mapEachLine(final UnaryOperator<FactLine> mapper)
+	{
+		final ListIterator<FactLine> it = m_lines.listIterator();
+		while (it.hasNext())
+		{
+			FactLine line = it.next();
+
+			final FactLine changedLine = mapper.apply(line);
+			if (changedLine == null)
+			{
+				it.remove();
+			}
+			else
+			{
+				it.set(changedLine);
+			}
+		}
 	}
 
 	@NonNull

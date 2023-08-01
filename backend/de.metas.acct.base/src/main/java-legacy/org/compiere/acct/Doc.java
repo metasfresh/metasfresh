@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.accounts.AccountProvider;
@@ -12,10 +13,13 @@ import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocModel;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.factacct_userchanges.FactAcctChanges;
 import de.metas.acct.factacct_userchanges.FactAcctChangesList;
 import de.metas.acct.factacct_userchanges.FactLineMatchKey;
 import de.metas.banking.BankAccount;
@@ -393,6 +397,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return skip;
 	}
 
+	public AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
+	{
+		return acctSchemas.stream()
+				.filter(acctSchema -> AcctSchemaId.equals(acctSchema.getId(), acctSchemaId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No accounting schema found for " + acctSchemaId + " in " + acctSchemas));
+	}
+
 	private void deleteAcct() {services.deleteFactAcctByDocumentModel(getDocModel());}
 
 	@NonNull
@@ -541,18 +553,56 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	private void applyUserChanges(final ArrayList<Fact> facts)
+	private void applyUserChanges(@NonNull final ArrayList<Fact> facts)
 	{
 		final TableRecordReference docRecordRef = getDocModel().getRecordRef();
 		final FactAcctChangesList changesList = services.getFactAcctChanges(docRecordRef);
+
+		//
+		// Change and Remove lines
 		for (final Fact fact : facts)
 		{
-			for (final FactLine factLine : fact.getLines())
-			{
+			fact.mapEachLine(factLine -> {
 				final FactLineMatchKey matchKey = FactLineMatchKey.ofFactLine(factLine);
-				changesList.getByMatchKey(matchKey).ifPresent(factLine::updateFrom);
+				if (changesList.isRemove(matchKey))
+				{
+					return null;
+				}
+				else
+				{
+					changesList.getLinesToChangeByKey(matchKey).ifPresent(factLine::updateFrom);
+					return factLine;
+				}
+			});
+		}
+
+		//
+		// Lines to add
+		final ImmutableListMultimap<AcctSchemaId, FactAcctChanges> linesToAddGroupedByAcctSchemaId = changesList.getLinesToAddGroupedByAcctSchemaId();
+		for (final AcctSchemaId acctSchemaId : linesToAddGroupedByAcctSchemaId.keySet())
+		{
+			final AcctSchema acctSchema = getAcctSchemaById(acctSchemaId);
+			final Fact fact = new Fact(this, acctSchema, PostingType.Actual);
+			facts.add(fact);
+			
+			for (final FactAcctChanges changesToAdd : linesToAddGroupedByAcctSchemaId.get(acctSchemaId))
+			{
+				fact.createLine()
+						.setAccount(changesToAdd.getAccountIdNotNull())
+						.setAmtSource(changesToAdd.getAmtSourceDr(), changesToAdd.getAmtSourceCr())
+						.setAmtAcct(changesToAdd.getAmtAcctDr(), changesToAdd.getAmtAcctCr())
+						.setC_Tax_ID(changesToAdd.getTaxId())
+						.description(changesToAdd.getDescription())
+						.sectionCodeId(changesToAdd.getSectionCodeId())
+						.productId(changesToAdd.getProductId())
+						.userElementString1(changesToAdd.getUserElementString1())
+						.salesOrderId(changesToAdd.getSalesOrderId())
+						.activityId(changesToAdd.getActivityId())
+						.buildAndAdd();
+
 			}
 		}
+
 	}
 
 	/**

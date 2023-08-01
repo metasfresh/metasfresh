@@ -46,7 +46,7 @@ public class FactAcctUserChangesRepository
 
 		deleteByDocRecordRef(docRecordRef);
 
-		for (final FactAcctChanges lineChanges : lineChangesList)
+		for (final FactAcctChanges lineChanges : lineChangesList.getAllLines())
 		{
 			final I_Fact_Acct_UserChange record = InterfaceWrapperHelper.newInstance(I_Fact_Acct_UserChange.class);
 			record.setC_Invoice_ID(InvoiceId.toRepoId(invoiceId));
@@ -99,9 +99,10 @@ public class FactAcctUserChangesRepository
 		return queryBuilder;
 	}
 
-	private static FactAcctChanges fromRecord(final I_Fact_Acct_UserChange record)
+	private static FactAcctChanges fromRecord(@NonNull final I_Fact_Acct_UserChange record)
 	{
 		return FactAcctChanges.builder()
+				.type(FactAcctChangesType.ofCode(record.getChangeType()))
 				.matchKey(FactLineMatchKey.ofNullableString(record.getMatchKey()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				.postingSign(PostingSign.ofCode(record.getPostingSign()))
@@ -120,6 +121,7 @@ public class FactAcctUserChangesRepository
 
 	private static void updateRecord(final I_Fact_Acct_UserChange record, final FactAcctChanges from)
 	{
+		record.setChangeType(from.getType().getCode());
 		record.setMatchKey(from.getMatchKey() != null ? from.getMatchKey().getAsString() : null);
 		record.setC_AcctSchema_ID(from.getAcctSchemaId().getRepoId());
 		record.setPostingSign(from.getPostingSign().getCode());

@@ -14,7 +14,6 @@ import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.acct.factacct_userchanges.FactAcctChanges;
-import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
@@ -153,6 +152,7 @@ public class FactLine
 
 	private CurrencyConversionContext currencyConversionCtx = null;
 
+	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	@Builder
 	private FactLine(
 			@NonNull final AcctDocRequiredServicesFacade services,
@@ -166,14 +166,19 @@ public class FactLine
 			@Nullable final ElementValueId accountId,
 			@Nullable final MAccount account,
 			@Nullable final AccountConceptualName accountConceptualName,
+			@Nullable final Optional<ProductId> productId,
 			@Nullable final Quantity qty,
 			@Nullable final ClientId clientId,
 			@Nullable final OrgId orgId,
 			@Nullable final OrgId orgTrxId,
 			@Nullable final Integer M_Locator_ID,
 			@Nullable final ProjectId projectId,
-			@Nullable final ActivityId activityId,
+			@Nullable final Optional<ActivityId> activityId,
 			@Nullable final Integer campaignId,
+			@Nullable final Optional<SectionCodeId> sectionCodeId,
+			@Nullable final Optional<OrderId> salesOrderId,
+			@Nullable final Optional<String> userElementString1,
+			@Nullable final Optional<String> description,
 			@Nullable final String additionalDescription)
 	{
 		this.services = services;
@@ -224,14 +229,14 @@ public class FactLine
 		this.docStatus = doc.getDocStatus();
 
 		// Description
-		this.description = computeDescription(doc, docLine, additionalDescription);
+		this.description = computeDescription(description, doc, docLine, additionalDescription);
 
 		// Journal Info
 		this.GL_Budget_ID = doc.getGL_Budget_ID();
 		this.GL_Category_ID = doc.getGL_Category_ID();
 
 		// Product
-		this.M_Product_ID = computeProductId(doc, docLine, account);
+		this.M_Product_ID = computeProductId(productId, doc, docLine, account);
 
 		// Qty
 		if (qty != null)
@@ -294,26 +299,13 @@ public class FactLine
 		);
 
 		// Activity
-		this.C_Activity_ID = CoalesceUtil.coalesceSuppliers(
-				() -> activityId,
-				() -> m_docLine != null ? m_docLine.getActivityId() : null,
-				m_doc::getActivityId,
-				() -> account != null ? ActivityId.ofRepoIdOrNull(account.getC_Activity_ID()) : null
-		);
+		this.C_Activity_ID = computeActivityId(activityId, m_doc, m_docLine, account);
 
 		// Order
-		this.C_OrderSO_ID = CoalesceUtil.coalesceSuppliers(
-				() -> m_docLine != null ? m_docLine.getSalesOrderId() : null,
-				m_doc::getSalesOrderId,
-				() -> account != null ? OrderId.ofRepoIdOrNull(account.getC_OrderSO_ID()) : null
-		);
+		this.C_OrderSO_ID = computeSalesOrderId(salesOrderId, m_doc, m_docLine, account);
 
 		// SectionCode
-		this.M_SectionCode_ID = CoalesceUtil.coalesceSuppliers(
-				() -> m_docLine != null ? m_docLine.getSectionCodeId() : null,
-				m_doc::getSectionCodeId,
-				() -> account != null ? SectionCodeId.ofRepoIdOrNull(account.getM_SectionCode_ID()) : null
-		);
+		this.M_SectionCode_ID = computeSectionCodeId(sectionCodeId, m_doc, m_docLine, account);
 
 		// C_BPartner_ID2
 		this.C_BPartner2_ID = CoalesceUtil.coalesceSuppliers(
@@ -338,14 +330,74 @@ public class FactLine
 		this.userElement1_ID = computeAcctSchemaElementAsId(AcctSchemaElementType.UserElement1, acctSchema, m_doc, m_docLine).orElse(0);
 		this.userElement2_ID = computeAcctSchemaElementAsId(AcctSchemaElementType.UserElement2, acctSchema, m_doc, m_docLine).orElse(0);
 
-		this.userElementString1 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString1, this.acctSchema, m_doc, m_docLine).orElse(null);
-		this.userElementString2 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString2, this.acctSchema, m_doc, m_docLine).orElse(null);
-		this.userElementString3 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString3, this.acctSchema, m_doc, m_docLine).orElse(null);
-		this.userElementString4 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString4, this.acctSchema, m_doc, m_docLine).orElse(null);
-		this.userElementString5 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString5, this.acctSchema, m_doc, m_docLine).orElse(null);
-		this.userElementString6 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString6, this.acctSchema, m_doc, m_docLine).orElse(null);
-		this.userElementString7 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString7, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementString1 = computeAcctSchemaElementAsString(userElementString1, AcctSchemaElementType.UserElementString1, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementString2 = computeAcctSchemaElementAsString(null, AcctSchemaElementType.UserElementString2, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementString3 = computeAcctSchemaElementAsString(null, AcctSchemaElementType.UserElementString3, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementString4 = computeAcctSchemaElementAsString(null, AcctSchemaElementType.UserElementString4, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementString5 = computeAcctSchemaElementAsString(null, AcctSchemaElementType.UserElementString5, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementString6 = computeAcctSchemaElementAsString(null, AcctSchemaElementType.UserElementString6, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.userElementString7 = computeAcctSchemaElementAsString(null, AcctSchemaElementType.UserElementString7, this.acctSchema, m_doc, m_docLine).orElse(null);
 	}   // FactLine
+
+	@Nullable
+	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
+	private static ActivityId computeActivityId(
+			final @Nullable Optional<ActivityId> activityId,
+			final @NonNull Doc<?> doc,
+			final @Nullable DocLine<?> docLine,
+			final @Nullable MAccount account)
+	{
+		if (activityId != null)
+		{
+			return activityId.orElse(null);
+		}
+
+		return CoalesceUtil.coalesceSuppliers(
+				() -> docLine != null ? docLine.getActivityId() : null,
+				doc::getActivityId,
+				() -> account != null ? ActivityId.ofRepoIdOrNull(account.getC_Activity_ID()) : null
+		);
+	}
+
+	@Nullable
+	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
+	private static OrderId computeSalesOrderId(
+			@Nullable Optional<OrderId> salesOrderId,
+			@NonNull final Doc<?> doc,
+			@Nullable final DocLine<?> docLine,
+			@Nullable final MAccount account)
+	{
+		if (salesOrderId != null)
+		{
+			return salesOrderId.orElse(null);
+		}
+
+		return CoalesceUtil.coalesceSuppliers(
+				() -> docLine != null ? docLine.getSalesOrderId() : null,
+				doc::getSalesOrderId,
+				() -> account != null ? OrderId.ofRepoIdOrNull(account.getC_OrderSO_ID()) : null
+		);
+	}
+
+	@Nullable
+	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
+	private static SectionCodeId computeSectionCodeId(
+			@Nullable final Optional<SectionCodeId> sectionCodeId,
+			@NonNull final Doc<?> doc,
+			@Nullable final DocLine<?> docLine,
+			@Nullable final MAccount account)
+	{
+		if (sectionCodeId != null)
+		{
+			return sectionCodeId.orElse(null);
+		}
+
+		return CoalesceUtil.coalesceSuppliers(
+				() -> docLine != null ? docLine.getSectionCodeId() : null,
+				doc::getSectionCodeId,
+				() -> account != null ? SectionCodeId.ofRepoIdOrNull(account.getM_SectionCode_ID()) : null
+		);
+	}
 
 	private static ElementValueId computeAccountId(@Nullable ElementValueId accountId, @Nullable MAccount account)
 	{
@@ -438,27 +490,36 @@ public class FactLine
 	}
 
 	@NonNull
+	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	private static String computeDescription(
+			@Nullable Optional<String> description,
 			@NonNull final Doc<?> doc,
 			@Nullable final DocLine<?> docLine,
 			@Nullable final String additionalDescription)
 	{
 		final StringBuilder result = new StringBuilder(doc.getDocumentNo());
-		if (docLine != null)
+		if (description != null)
 		{
-			result.append(" #").append(docLine.getLine());
-			if (docLine.getDescription() != null)
+			result.append(description.orElse(""));
+		}
+		else
+		{
+			if (docLine != null)
 			{
-				result.append(" (").append(docLine.getDescription()).append(")");
+				result.append(" #").append(docLine.getLine());
+				if (docLine.getDescription() != null)
+				{
+					result.append(" (").append(docLine.getDescription()).append(")");
+				}
+				else if (doc.getDescription() != null && doc.getDescription().length() > 0)
+				{
+					result.append(" (").append(doc.getDescription()).append(")");
+				}
 			}
 			else if (doc.getDescription() != null && doc.getDescription().length() > 0)
 			{
 				result.append(" (").append(doc.getDescription()).append(")");
 			}
-		}
-		else if (doc.getDescription() != null && doc.getDescription().length() > 0)
-		{
-			result.append(" (").append(doc.getDescription()).append(")");
 		}
 
 		if (additionalDescription != null && !Check.isBlank(additionalDescription))
@@ -486,11 +547,19 @@ public class FactLine
 		);
 	}
 
+	@Nullable
+	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	private static ProductId computeProductId(
+			@Nullable final Optional<ProductId> productId,
 			@NonNull final Doc<?> doc,
 			@Nullable final DocLine<?> docLine,
 			@Nullable final MAccount account)
 	{
+		if (productId != null)
+		{
+			return productId.orElse(null);
+		}
+
 		return CoalesceUtil.coalesceSuppliers(
 				() -> docLine != null ? docLine.getProductId() : null,
 				doc::getProductId,
@@ -604,12 +673,19 @@ public class FactLine
 		return id > 0 ? OptionalInt.of(id) : OptionalInt.empty();
 	}
 
+	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	private static Optional<String> computeAcctSchemaElementAsString(
+			@Nullable Optional<String> providedValue,
 			@NonNull final AcctSchemaElementType acctSchemaElementType,
 			@NonNull final AcctSchema acctSchema,
 			@NonNull final Doc<?> doc,
 			@Nullable final DocLine<?> docLine)
 	{
+		if (providedValue != null)
+		{
+			return providedValue;
+		}
+
 		final AcctSchemaElement acctSchemaElement = acctSchema.getSchemaElementByType(acctSchemaElementType);
 		if (acctSchemaElement == null)
 		{
@@ -1466,17 +1542,8 @@ public class FactLine
 
 	public void updateFrom(@NonNull FactAcctChanges changes)
 	{
-		final PostingSign postingSign = changes.getPostingSign();
-		if (postingSign.isDebit())
-		{
-			setAmtSource(changes.getAmount_DC(), null);
-			setAmtAcct(changes.getAmount_LC(), null);
-		}
-		else if (postingSign.isCredit())
-		{
-			setAmtSource(null, changes.getAmount_DC());
-			setAmtAcct(null, changes.getAmount_LC());
-		}
+		setAmtSource(changes.getAmtSourceDr(), changes.getAmtSourceCr());
+		setAmtAcct(changes.getAmtAcctDr(), changes.getAmtAcctCr());
 		updateCurrencyRate();
 
 		if (changes.getAccountId() != null)

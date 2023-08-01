@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_Fact_Acct_UserChange extends org.compiere.model.PO implements I_Fact_Acct_UserChange, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 155741027L;
+	private static final long serialVersionUID = -780999996L;
 
     /** Standard Constructor */
     public X_Fact_Acct_UserChange (final Properties ctx, final int Fact_Acct_UserChange_ID, @Nullable final String trxName)
@@ -116,6 +116,29 @@ public class X_Fact_Acct_UserChange extends org.compiere.model.PO implements I_F
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	/** 
+	 * ChangeType AD_Reference_ID=541813
+	 * Reference name: Fact_Acct_UserChange_ChangeType
+	 */
+	public static final int CHANGETYPE_AD_Reference_ID=541813;
+	/** Change = C */
+	public static final String CHANGETYPE_Change = "C";
+	/** Add = A */
+	public static final String CHANGETYPE_Add = "A";
+	/** Delete = D */
+	public static final String CHANGETYPE_Delete = "D";
+	@Override
+	public void setChangeType (final java.lang.String ChangeType)
+	{
+		set_Value (COLUMNNAME_ChangeType, ChangeType);
+	}
+
+	@Override
+	public java.lang.String getChangeType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ChangeType);
 	}
 
 	@Override
