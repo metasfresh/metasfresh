@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 51728151L;
+	private static final long serialVersionUID = 10179219L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1400,8 +1400,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final int INVOICESTATUS_AD_Reference_ID=540560;
 	/** Open = O */
 	public static final String INVOICESTATUS_Open = "O";
-	/** Partly Invoiced = PI */
-	public static final String INVOICESTATUS_PartlyInvoiced = "PI";
+	/** Partially Invoiced = PI */
+	public static final String INVOICESTATUS_PartiallyInvoiced = "PI";
 	/** Completely Invoiced = CI */
 	public static final String INVOICESTATUS_CompletelyInvoiced = "CI";
 	@Override
@@ -1836,6 +1836,31 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.lang.String getOrderline_includedTab() 
 	{
 		return get_ValueAsString(COLUMNNAME_Orderline_includedTab);
+	}
+
+	/** 
+	 * OrderStatus AD_Reference_ID=541809
+	 * Reference name: Order Status
+	 */
+	public static final int ORDERSTATUS_AD_Reference_ID=541809;
+	/** Drafted = DR */
+	public static final String ORDERSTATUS_Drafted = "DR";
+	/** Voided = VO */
+	public static final String ORDERSTATUS_Voided = "VO";
+	/** Completed = CO */
+	public static final String ORDERSTATUS_Completed = "CO";
+	/** Fully Delivered = FD */
+	public static final String ORDERSTATUS_FullyDelivered = "FD";
+	@Override
+	public void setOrderStatus (final java.lang.String OrderStatus)
+	{
+		set_Value (COLUMNNAME_OrderStatus, OrderStatus);
+	}
+
+	@Override
+	public java.lang.String getOrderStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_OrderStatus);
 	}
 
 	@Override

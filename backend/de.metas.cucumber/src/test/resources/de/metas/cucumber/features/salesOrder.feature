@@ -221,6 +221,7 @@ Feature: sales order
 
 
   @from:cucumber
+  @Id:S0296_100
   Scenario: validate warehouse assignment
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:

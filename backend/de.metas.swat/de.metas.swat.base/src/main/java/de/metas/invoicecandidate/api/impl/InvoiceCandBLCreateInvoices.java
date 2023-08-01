@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -398,7 +399,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
 
-
 			invoice.setDueDate(TimeUtil.asTimestamp(invoiceHeader.getOverrideDueDate(), timeZone));
 
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
@@ -464,10 +464,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
 			invoice.setC_Tax_Departure_Country_ID(CountryId.toRepoId(invoiceHeader.getC_Tax_Departure_Country_ID()));
+			invoice.setC_BP_BankAccount_ID(BankAccountId.toRepoId(invoiceHeader.getBankAccountId()));
 
 			dimensionService.updateRecordUserElements(invoice, invoiceHeader.getDimension());
-
-
 
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
@@ -502,9 +501,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
 				// That way we can undo all invoice lines if the creation of one of them fails.
 				final DefaultInvoiceLineGeneratorRunnable genLines = new DefaultInvoiceLineGeneratorRunnable(invoice,
-						aggregate, processedLines,
-						errorCandidates, errorException,
-						trxName);
+																											 aggregate, processedLines,
+																											 errorCandidates, errorException,
+																											 trxName);
 
 				// task 08927: we already do the ILAs in here, so we won't need to update them again.
 				InvoiceCandBL.DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.setValue(invoice, Boolean.TRUE);
@@ -582,9 +581,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private final String trxName;
 
 		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice,
-													final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
-													final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
-													final String trxName)
+				final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
+				final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
+				final String trxName)
 		{
 			createdLines = new ArrayList<>();
 
@@ -979,6 +978,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.forexContractRef(invoicingParams != null ? invoicingParams.getForexContractRef() : null)
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
+				.bankAccountId(Optional.ofNullable(invoicingParams).map(InvoicingParams::getBankAccountId).orElse(null))
 				.build();
 	}
 
@@ -992,7 +992,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
 		{
 			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
-					aggregationResult.size(), aggregationResult);
+						  aggregationResult.size(), aggregationResult);
 		}
 
 		//
@@ -1092,8 +1092,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
 					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
-							.map(AdMessageId::getRepoId)
-							.orElse(-1));
+												  .map(AdMessageId::getRepoId)
+												  .orElse(-1));
 
 					note.setAD_User_ID(userId);
 

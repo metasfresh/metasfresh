@@ -45,6 +45,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -135,12 +136,12 @@ class PaymentRestEndpointTest
 		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 
 		// run the "before_complete" interceptor
-		final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository = new ProductWarehouseAssignmentRepository();
+		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
 		new C_Order(bpartnerBL, 
 					new OrderLineDetailRepository(), 
 					documentLocationBL, 
 					new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
-					productWarehouseAssignmentRepository)
+					productWarehouseAssignmentService)
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

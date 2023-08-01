@@ -270,6 +270,11 @@ final class DeliveryPlanningGenerateProcessesHelper
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
 		}
 
+		if (orderBL.isFullyDelivered(shipmentInfo.getSalesOrderId()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Delivery planning based on order that is fully delivered");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -308,6 +313,11 @@ final class DeliveryPlanningGenerateProcessesHelper
 		if (preventReceiptIfMissingDeliveryInstructions && !deliveryPlanningService.hasCompleteDeliveryInstruction(deliveryPlanningId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
+		}
+
+		if (orderBL.isFullyDelivered(receiptInfo.getPurchaseOrderId()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Delivery planning based on order that is fully delivered");
 		}
 
 		return ProcessPreconditionsResolution.accept();

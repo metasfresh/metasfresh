@@ -1378,4 +1378,9 @@ public class OrderBL implements IOrderBL
 	{
 		return orderDAO.getOrdersByQuery(query);	
 	}
+
+	public boolean isFullyDelivered(@NonNull final OrderId orderId)
+	{
+		return orderDAO.getById(orderId).getOrderStatus().equals(X_C_Order.ORDERSTATUS_FullyDelivered);
+	}
 }
