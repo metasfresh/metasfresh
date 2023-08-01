@@ -72,6 +72,8 @@ import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeSer
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
+import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -161,7 +163,8 @@ public class ProductsRestControllerTest
 
 		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
 
-		final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService = new ProductWarehouseAssignmentRestService(new ProductWarehouseAssignmentRepository(), externalIdentifierResolver);
+		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
+		final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService = new ProductWarehouseAssignmentRestService(productWarehouseAssignmentService, externalIdentifierResolver);
 		//
 		final ProductRestService productRestService = new ProductRestService(productRepository,
 																			 productWarehouseAssignmentRestService,

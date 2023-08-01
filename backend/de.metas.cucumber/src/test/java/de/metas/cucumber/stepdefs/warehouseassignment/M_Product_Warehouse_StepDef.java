@@ -31,7 +31,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -52,7 +52,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class M_Product_Warehouse_StepDef
 {
-	private final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository = SpringContextHolder.instance.getBean(ProductWarehouseAssignmentRepository.class);
+	private final ProductWarehouseAssignmentService productWarehouseAssignmentService = SpringContextHolder.instance.getBean(ProductWarehouseAssignmentService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Product_StepDefData productTable;
@@ -118,7 +118,7 @@ public class M_Product_Warehouse_StepDef
 				.warehouseIds(warehouseIds)
 				.build();
 
-		productWarehouseAssignmentRepository.save(productWarehouseAssignment);
+		productWarehouseAssignmentService.save(productWarehouseAssignment);
 		final ImmutableList<I_M_Product_Warehouse> createdWarehouseAssignments = getByProductId(productId);
 
 		if (createdWarehouseAssignments.size() != warehouseIds.size())

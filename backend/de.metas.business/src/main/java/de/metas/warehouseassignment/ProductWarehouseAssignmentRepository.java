@@ -42,7 +42,7 @@ public class ProductWarehouseAssignmentRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public Optional<ProductWarehouseAssignments> getByProductId(@NonNull final ProductId productId)
+	Optional<ProductWarehouseAssignments> getByProductId(@NonNull final ProductId productId)
 	{
 		return Optional.of(getWarehouseIds(productId))
 				.filter(warehouseIds -> !warehouseIds.isEmpty())
@@ -52,7 +52,7 @@ public class ProductWarehouseAssignmentRepository
 						.build());
 	}
 
-	public void save(@NonNull final ProductWarehouseAssignments productWarehouseAssignment)
+	void save(@NonNull final ProductWarehouseAssignments productWarehouseAssignment)
 	{
 		final ProductId productId = productWarehouseAssignment.getProductId();
 		final ImmutableSet<WarehouseId> storedWarehouseIds = getWarehouseIds(productWarehouseAssignment.getProductId());

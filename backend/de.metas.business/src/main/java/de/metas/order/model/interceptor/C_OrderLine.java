@@ -32,7 +32,8 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
+import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -104,7 +105,7 @@ public class C_OrderLine
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
 
 	private final DimensionService dimensionService;
-	private final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository;
+	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	C_OrderLine(
@@ -112,13 +113,13 @@ public class C_OrderLine
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService,
 			@NonNull final DimensionService dimensionService,
-			@NonNull final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository)
+			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.bPartnerSupplierApprovalService = bPartnerSupplierApprovalService;
 		this.dimensionService = dimensionService;
-		this.productWarehouseAssignmentRepository = productWarehouseAssignmentRepository;
+		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -510,19 +511,26 @@ public class C_OrderLine
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
 	public void checkProductWarehouseAssignment(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+		if (!productWarehouseAssignmentService.enforceWarehouseAssignmentsForProducts())
+		{
+			return;
+		}
 
-		productWarehouseAssignmentRepository
-				.getByProductId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
-				.filter(assignments -> !assignments.isWarehouseAssigned(WarehouseId.ofRepoId(order.getM_Warehouse_ID())))
-				.ifPresent(assignments -> {
-					throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
-							.appendParametersToMessage()
-							.setParameter("C_Order_ID", orderLineRecord.getC_Order_ID())
-							.setParameter("C_OrderLine_ID", orderLineRecord.getC_OrderLine_ID())
-							.setParameter("C_Order.M_Warehouse_ID", order.getM_Warehouse_ID())
-							.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
-							.markAsUserValidationError();
-				});
+		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
+
+		final ProductWarehouseAssignments assignments = productWarehouseAssignmentService
+				.getByProductIdOrError(productId);
+
+		if (!assignments.isWarehouseAssigned(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID())))
+		{
+			throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
+					.appendParametersToMessage()
+					.setParameter("C_Order_ID", orderRecord.getC_Order_ID())
+					.setParameter("C_OrderLine_ID", orderLineRecord.getC_OrderLine_ID())
+					.setParameter("C_Order.M_Warehouse_ID", orderRecord.getM_Warehouse_ID())
+					.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
+					.markAsUserValidationError();
+		}
 	}
 }

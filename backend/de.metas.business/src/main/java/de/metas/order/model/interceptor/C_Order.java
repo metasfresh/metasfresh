@@ -57,7 +57,8 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
+import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -113,7 +114,7 @@ public class C_Order
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
-	private final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository;
+	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -125,13 +126,13 @@ public class C_Order
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
-			@NonNull final ProductWarehouseAssignmentRepository productWarehouseAssignmentRepository)
+			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
-		this.productWarehouseAssignmentRepository = productWarehouseAssignmentRepository;
+		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -751,22 +752,42 @@ public class C_Order
 	@ModelChange(
 			timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ifColumnsChanged = I_C_Order.COLUMNNAME_M_Warehouse_ID)
-	public void checkProductWarehouseAssignment(@NonNull final I_C_Order orderRecord)
+	public void beforeWarehouseChange(@NonNull final I_C_Order orderRecord)
 	{
+		checkProductWarehouseAssignment(orderRecord);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void validateWarehouseAssignmentsBeforeComplete(@NonNull final I_C_Order orderRecord)
+	{
+		checkProductWarehouseAssignment(orderRecord);
+	}
+
+	private void checkProductWarehouseAssignment(@NonNull final I_C_Order orderRecord)
+	{
+		if (!productWarehouseAssignmentService.enforceWarehouseAssignmentsForProducts())
+		{
+			return;
+		}
+
 		final WarehouseId orderWarehouseId = WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID());
 
 		orderBL.getLinesByOrderIds(ImmutableSet.of(OrderId.ofRepoId(orderRecord.getC_Order_ID())))
-				.forEach(line -> productWarehouseAssignmentRepository
-						.getByProductId(ProductId.ofRepoId(line.getM_Product_ID()))
-						.filter(assignments -> !assignments.isWarehouseAssigned(orderWarehouseId))
-						.ifPresent(assignments -> {
-							throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
-									.appendParametersToMessage()
-									.setParameter("C_Order_ID", orderRecord.getC_Order_ID())
-									.setParameter("C_OrderLine_ID", line.getC_OrderLine_ID())
-									.setParameter("C_Order.M_Warehouse_ID", orderRecord.getM_Warehouse_ID())
-									.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
-									.markAsUserValidationError();
-						}));
+				.forEach(line -> {
+					final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+
+					final ProductWarehouseAssignments assignments = productWarehouseAssignmentService.getByProductIdOrError(productId);
+
+					if (!assignments.isWarehouseAssigned(orderWarehouseId))
+					{
+						throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
+								.appendParametersToMessage()
+								.setParameter("C_Order_ID", orderRecord.getC_Order_ID())
+								.setParameter("C_OrderLine_ID", line.getC_OrderLine_ID())
+								.setParameter("C_Order.M_Warehouse_ID", orderRecord.getM_Warehouse_ID())
+								.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
+								.markAsUserValidationError();
+					}
+				});
 	}
 }

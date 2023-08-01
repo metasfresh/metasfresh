@@ -33,6 +33,7 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -87,6 +88,7 @@ import java.util.Set;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
 	private final LookupDescriptorProviders lookupDescriptorProviders;
+	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
 
 	private final OrderLineQuickInputCallout callout;
 
@@ -97,12 +99,14 @@ import java.util.Set;
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
 			@NonNull final LookupDescriptorProviders lookupDescriptorProviders,
 			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper,
-			@NonNull final UserSession userSession)
+			@NonNull final UserSession userSession,
+			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService)
 	{
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
 		this.availableForSaleAdapter = availableForSaleAdapter;
 		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
 		this.lookupDescriptorProviders = lookupDescriptorProviders;
+		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
 
 		callout = OrderLineQuickInputCallout.builder()
 				.bpartnersService(bpartnersService)
@@ -191,6 +195,7 @@ import java.util.Set;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
+					.productWarehouseAssignmentService(productWarehouseAssignmentService)
 					.build();
 		}
 		else
@@ -205,6 +210,7 @@ import java.util.Set;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
+					.productWarehouseAssignmentService(productWarehouseAssignmentService)
 					.build();
 		}
 	}
