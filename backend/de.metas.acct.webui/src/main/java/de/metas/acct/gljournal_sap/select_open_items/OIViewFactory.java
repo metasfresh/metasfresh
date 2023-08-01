@@ -166,7 +166,6 @@ public class OIViewFactory implements IViewFactory
 	private DocumentFilterDescriptor getFilterDescriptor()
 	{
 		DocumentFilterDescriptor filterDescriptor = this._filterDescriptor;
-		filterDescriptor = null;// FIXME DEBUG
 		if (filterDescriptor == null)
 		{
 			final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(ClientId.METASFRESH);
