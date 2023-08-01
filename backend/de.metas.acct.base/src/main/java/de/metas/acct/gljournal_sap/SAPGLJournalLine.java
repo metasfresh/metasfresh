@@ -1,6 +1,8 @@
 package de.metas.acct.gljournal_sap;
 
 import de.metas.acct.Account;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
@@ -18,6 +20,7 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(doNotUseGetters = true)
@@ -88,4 +91,16 @@ public class SAPGLJournalLine
 		return parentId == null && taxId != null && !determineTaxBaseSAP;
 	}
 
+	@NonNull
+	public Optional<SAPGLJournalLine> getReverseChargeCounterPart(
+			@NonNull final SAPGLJournalTaxProvider taxProvider,
+			@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return Optional.ofNullable(taxId)
+				.filter(taxProvider::isReverseCharge)
+				.map(reverseChargeTaxId -> toBuilder()
+						.postingSign(getPostingSign().reverse())
+						.account(taxProvider.getTaxAccount(reverseChargeTaxId, acctSchemaId, getPostingSign().reverse()))
+						.build());
+	}
 }
