@@ -61,6 +61,11 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		return getRowsIndex().getDocumentId2TopLevelRows();
 	}
 
+	public ImmutableMap<DocumentId, T> getDocumentId2TopLevelRows(@NonNull final Predicate<T> filter)
+	{
+		return getRowsIndex().getDocumentId2TopLevelRows(filter);
+	}
+
 	public <ID extends RepoIdAware> ImmutableSet<ID> getRecordIdsToRefresh(
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final Function<DocumentId, ID> idMapper)

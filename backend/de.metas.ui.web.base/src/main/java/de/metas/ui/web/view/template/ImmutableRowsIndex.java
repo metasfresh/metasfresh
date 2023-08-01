@@ -85,7 +85,13 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 
 	public ImmutableMap<DocumentId, T> getDocumentId2TopLevelRows()
 	{
+		return getDocumentId2TopLevelRows(row -> true);
+	}
+
+	public ImmutableMap<DocumentId, T> getDocumentId2TopLevelRows(@NonNull final Predicate<T> filter)
+	{
 		return streamInOrder()
+				.filter(filter)
 				.collect(GuavaCollectors.toImmutableMapByKey(IViewRow::getId));
 	}
 
@@ -184,7 +190,10 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 				}
 				else
 				{
-					resultRows.add(rowChanged);
+					if (rowChanged != null)
+					{
+						resultRows.add(rowChanged);
+					}
 					changed = true;
 				}
 			}
@@ -217,7 +226,10 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 					return this;
 				}
 
-				resultRows.add(rowChanged);
+				if (rowChanged != null)
+				{
+					resultRows.add(rowChanged);
+				}
 				changed = true;
 			}
 			else
