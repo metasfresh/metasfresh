@@ -7,6 +7,7 @@ import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.doc.AcctDocRegistry;
 import de.metas.acct.factacct_userchanges.FactAcctChanges;
 import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
+import de.metas.acct.factacct_userchanges.FactLineMatchKey;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.costing.CostElementId;
 import de.metas.money.Money;
@@ -68,7 +69,7 @@ public class AcctSimulationViewDataService
 		final Doc<?> acctDoc = acctDocRegistry.get(acctSchemas, docRecordRef);
 		final List<Fact> facts = acctDoc.postLogic();
 
-		final ImmutableMap<String, FactAcctChanges> userChangesByMatchKey = factAcctUserChangesService.getByDocRecordRef(docRecordRef)
+		final ImmutableMap<FactLineMatchKey, FactAcctChanges> userChangesByMatchKey = factAcctUserChangesService.getByDocRecordRef(docRecordRef)
 				.stream()
 				.filter(lineChanges -> lineChanges.getMatchKey() != null)
 				.collect(ImmutableMap.toImmutableMap(FactAcctChanges::getMatchKey, lineChanges -> lineChanges));
@@ -80,8 +81,8 @@ public class AcctSimulationViewDataService
 			for (int i = 0; i < lines.size(); i++)
 			{
 				final FactLine factLine = lines.get(i);
-				final String matchKey = extractMatchKey(factLine);
 
+				final FactLineMatchKey matchKey = extractMatchKey(factLine);
 				FactAcctChanges userChanges = userChangesByMatchKey.get(matchKey);
 				if (userChanges == null)
 				{
@@ -94,7 +95,7 @@ public class AcctSimulationViewDataService
 								.currencyIdToCurrencyCodeConverter(moneyService)
 								.factLine(factLine)
 								.userChanges(userChanges)
-								.rowId(DocumentId.of(userChanges.getMatchKey()))
+								.rowId(DocumentId.of(matchKey.getAsString()))
 								.build()
 				);
 			}
@@ -125,7 +126,7 @@ public class AcctSimulationViewDataService
 				.matchKey(extractMatchKey(factLine))
 				.acctSchemaId(factLine.getAcctSchemaId())
 				.postingSign(postingSign)
-				.accountId(factLine.getAccount_ID())
+				.accountId(factLine.getAccountId())
 				.amount_DC(amount_DC)
 				.amount_LC(amount_LC)
 				.taxId(factLine.getTaxId())
@@ -138,17 +139,19 @@ public class AcctSimulationViewDataService
 				.build();
 	}
 
-	private static String extractMatchKey(@NonNull final FactLine factLine)
+	private static FactLineMatchKey extractMatchKey(@NonNull final FactLine factLine)
 	{
-		return Util.ArrayKey.builder()
-				// no need to include AD_Table_ID/Record_ID because we always match on document level
-				.append(Math.max(factLine.getLine_ID(), 0))
-				.append(factLine.getAccountConceptualName())
-				.append(CostElementId.toRepoId(factLine.getCostElementId()))
-				.append(TaxId.toRepoId(factLine.getTaxId()))
-				.append(Math.max(factLine.getM_Locator_ID(), 0))
-				.build()
-				.toString();
+		return FactLineMatchKey.ofString(
+				Util.ArrayKey.builder()
+						// no need to include AD_Table_ID/Record_ID because we always match on document level
+						.append(Math.max(factLine.getLine_ID(), 0))
+						.append(factLine.getAccountConceptualName())
+						.append(CostElementId.toRepoId(factLine.getCostElementId()))
+						.append(TaxId.toRepoId(factLine.getTaxId()))
+						.append(Math.max(factLine.getM_Locator_ID(), 0))
+						.build()
+						.toString()
+		);
 	}
 
 	public void save(final List<AcctRow> rows, final TableRecordReference docRecordRef)

@@ -12,6 +12,7 @@ import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.acct.FactLine;
 
 import javax.annotation.Nullable;
 
@@ -19,7 +20,7 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class FactAcctChanges
 {
-	@Nullable String matchKey;
+	@NonNull FactLineMatchKey matchKey;
 
 	@NonNull AcctSchemaId acctSchemaId;
 

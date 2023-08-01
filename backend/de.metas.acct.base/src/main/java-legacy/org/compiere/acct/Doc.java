@@ -1,6 +1,8 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.accounts.AccountProvider;
@@ -16,6 +18,8 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocModel;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.factacct_userchanges.FactAcctChanges;
+import de.metas.acct.factacct_userchanges.FactLineMatchKey;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
@@ -341,7 +345,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Create Facts
-		final List<Fact> facts = postLogic();
+		final ArrayList<Fact> facts = postLogic();
+		applyUserChanges(facts);
 
 		//
 		// Fire event: BEFORE_POST
@@ -393,13 +398,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private void deleteAcct() {services.deleteFactAcctByDocumentModel(getDocModel());}
 
 	@NonNull
-	public List<Fact> postLogic()
+	public ArrayList<Fact> postLogic()
 	{
 		loadDocumentDetailsIfNeeded();
 
 		//
 		// Create Facts
-		final List<Fact> facts = new ArrayList<>();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final AcctSchema acctSchema : acctSchemas)
 		{
 			if (isSkipPosting(acctSchema))
@@ -458,24 +463,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Process facts: validate, GL distribution, balance etc
-		for (final Fact fact : facts)
-		{
-			processFacts(fact);
-		}
+		facts.forEach(this::processFacts);
 
 		return facts;
 	}   // postLogic
 
-	private void processFacts(final Fact fact)
+	private void processFacts(@NonNull final Fact fact)
 	{
-		if (fact == null)
-		{
-			throw newPostingException()
-					// .setAcctSchema(acctSchema)
-					.setPostingStatus(PostingStatus.Error)
-					.setDetailMessage("No fact");
-		}
-
 		final AcctSchema acctSchema = fact.getAcctSchema();
 
 		// check accounts
@@ -503,6 +497,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
 		}
 
+		//
 		// Balance source amounts
 		if (fact.isSingleCurrency() && !fact.isSourceBalanced())
 		{
@@ -517,7 +512,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 
-		// balanceSegments
+		//
+		// Balance Segments
 		if (!fact.isSegmentBalanced())
 		{
 			fact.balanceSegments();
@@ -531,7 +527,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 
-		// balanceAccounting
+		//
+		// Balance accounted amounts
 		if (!fact.isAcctBalanced())
 		{
 			fact.balanceAccounting();
@@ -542,6 +539,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setPostingStatus(PostingStatus.NotBalanced)
 						.setFact(fact)
 						.setDetailMessage("Accountable amounts not balanced");
+			}
+		}
+	}
+
+	private void applyUserChanges(final ArrayList<Fact> facts)
+	{
+		final TableRecordReference docRecordRef = getDocModel().getRecordRef();
+		final ImmutableMap<FactLineMatchKey, FactAcctChanges> factAcctChangesByKey = Maps.uniqueIndex(services.getFactAcctChanges(docRecordRef), FactAcctChanges::getMatchKey);
+		for (final Fact fact : facts)
+		{
+			for (final FactLine factLine : fact.getLines())
+			{
+				final FactLineMatchKey matchKey = FactLineMatchKey.ofFactLine(factLine);
+				final FactAcctChanges factAcctChanges = factAcctChangesByKey.get(matchKey);
+				if (factAcctChanges != null)
+				{
+					factLine.updateFrom(factAcctChanges);
+				}
 			}
 		}
 	}

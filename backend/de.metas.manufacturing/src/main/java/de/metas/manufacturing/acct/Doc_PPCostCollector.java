@@ -33,7 +33,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -193,7 +192,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAmtSource(cost.getCurrencyId(), cost.toBigDecimal(), null)
 				.setQty(qty)
 				.additionalDescription(description)
-				.projectId(ProjectId.ofRepoIdOrNull(docLine.getC_Project_ID()))
+				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
 				.campaignId(docLine.getC_Campaign_ID())
 				.locatorId(docLine.getM_Locator_ID())
@@ -204,7 +203,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.setAmtSource(cost.getCurrencyId(), null, cost.toBigDecimal())
 				.setQty(qty)
 				.additionalDescription(description)
-				.projectId(ProjectId.ofRepoIdOrNull(docLine.getC_Project_ID()))
+				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
 				.campaignId(docLine.getC_Campaign_ID())
 				.locatorId(docLine.getM_Locator_ID())

@@ -24,6 +24,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Repository
@@ -45,7 +46,7 @@ public class FactAcctUserChangesRepository
 			throw new AdempiereException("Searching by " + docRecordRef.getTableName() + " is not supported");
 		}
 
-		queryByDocRecordRef(docRecordRef).create().delete();
+		deleteByDocRecordRef(docRecordRef);
 
 		for (final FactAcctChanges lineChanges : lineChangesList)
 		{
@@ -58,13 +59,30 @@ public class FactAcctUserChangesRepository
 
 	public List<FactAcctChanges> getByDocRecordRef(@NonNull final TableRecordReference docRecordRef)
 	{
-		return queryByDocRecordRef(docRecordRef)
+		final IQueryBuilder<I_Fact_Acct_UserChange> queryBuilder = queryByDocRecordRef(docRecordRef);
+		if (queryBuilder == null)
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBuilder
 				.stream()
 				.map(FactAcctUserChangesRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@NonNull
+	private void deleteByDocRecordRef(final @NonNull TableRecordReference docRecordRef)
+	{
+		final IQueryBuilder<I_Fact_Acct_UserChange> queryBuilder = queryByDocRecordRef(docRecordRef);
+		if (queryBuilder == null)
+		{
+			return;
+		}
+
+		queryBuilder.create().delete();
+	}
+
+	@Nullable
 	private IQueryBuilder<I_Fact_Acct_UserChange> queryByDocRecordRef(final @NonNull TableRecordReference docRecordRef)
 	{
 		final IQueryBuilder<I_Fact_Acct_UserChange> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct_UserChange.class)
@@ -77,7 +95,7 @@ public class FactAcctUserChangesRepository
 		}
 		else
 		{
-			throw new AdempiereException("Searching by " + docRecordRef.getTableName() + " is not supported");
+			return null;
 		}
 
 		return queryBuilder;
@@ -86,7 +104,7 @@ public class FactAcctUserChangesRepository
 	private static FactAcctChanges fromRecord(final I_Fact_Acct_UserChange record)
 	{
 		return FactAcctChanges.builder()
-				.matchKey(StringUtils.trimBlankToNull(record.getMatchKey()))
+				.matchKey(FactLineMatchKey.ofNullableString(record.getMatchKey()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				.postingSign(PostingSign.ofCode(record.getPostingSign()))
 				.accountId(ElementValueId.ofRepoId(record.getAccount_ID()))
@@ -104,7 +122,7 @@ public class FactAcctUserChangesRepository
 
 	private static void updateRecord(final I_Fact_Acct_UserChange record, final FactAcctChanges from)
 	{
-		record.setMatchKey(StringUtils.trimBlankToNull(from.getMatchKey()));
+		record.setMatchKey(from.getMatchKey() != null ? from.getMatchKey().getAsString() : null);
 		record.setC_AcctSchema_ID(from.getAcctSchemaId().getRepoId());
 		record.setPostingSign(from.getPostingSign().getCode());
 		record.setAccount_ID(ElementValueId.toRepoId(from.getAccountId()));

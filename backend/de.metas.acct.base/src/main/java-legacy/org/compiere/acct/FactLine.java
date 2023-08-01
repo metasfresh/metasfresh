@@ -13,6 +13,8 @@ import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.factacct_userchanges.FactAcctChanges;
+import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
@@ -106,14 +108,14 @@ public class FactLine
 	@Getter private final DocTypeId C_DocType_ID;
 	@Getter private final String poReference;
 
-	@Getter @Setter(AccessLevel.PRIVATE) private ProductId M_Product_ID;
+	@Getter private ProductId M_Product_ID;
 	@Getter private final Quantity qty;
 	@Getter private int M_Locator_ID;
 
 	@Getter @NonNull private final PostingType postingType;
 	@Getter private final AcctSchema acctSchema;
-	private final MAccount m_acct;
-	@Getter private final ElementValueId account_ID;
+	// private final MAccount m_acct;
+	@Getter @NonNull private ElementValueId accountId;
 	@Getter private final int C_SubAcct_ID;
 	@Nullable @Getter private final AccountConceptualName accountConceptualName;
 
@@ -121,7 +123,7 @@ public class FactLine
 
 	@Getter @Setter private String description;
 
-	@Getter @Setter(AccessLevel.PRIVATE) private OrderId C_OrderSO_ID;
+	@Getter private OrderId C_OrderSO_ID;
 	@Getter @Setter(AccessLevel.PACKAGE) private LocationId C_LocFrom_ID;
 	@Getter @Setter(AccessLevel.PACKAGE) private LocationId C_LocTo_ID;
 	@Getter private SectionCodeId M_SectionCode_ID;
@@ -132,11 +134,11 @@ public class FactLine
 	@Getter private final int GL_Budget_ID;
 	@Getter private final GLCategoryId GL_Category_ID;
 	@Getter private SalesRegionId C_SalesRegion_ID;
-	@Getter @Setter(AccessLevel.PRIVATE) private ProjectId C_Project_ID;
-	@Getter @Setter(AccessLevel.PRIVATE) private ActivityId C_Activity_ID;
-	@Getter @Setter(AccessLevel.PRIVATE) private int C_Campaign_ID;
-	@Getter @Setter(AccessLevel.PRIVATE) private int User1_ID;
-	@Getter @Setter(AccessLevel.PRIVATE) private int User2_ID;
+	@Getter private ProjectId C_Project_ID;
+	@Getter private ActivityId C_Activity_ID;
+	@Getter private int C_Campaign_ID;
+	@Getter private int User1_ID;
+	@Getter private int User2_ID;
 	@Getter @Setter(AccessLevel.PRIVATE) private int userElement1_ID;
 	@Getter @Setter(AccessLevel.PRIVATE) private int userElement2_ID;
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString1;
@@ -161,11 +163,13 @@ public class FactLine
 			final Integer SubLine_ID,
 			@NonNull final PostingType postingType,
 			@NonNull final AcctSchema acctSchema,
-			@NonNull final MAccount account,
+			@Nullable final ElementValueId accountId,
+			@Nullable final MAccount account,
 			@Nullable final AccountConceptualName accountConceptualName,
 			@Nullable final Quantity qty,
 			@Nullable final ClientId clientId,
 			@Nullable final OrgId orgId,
+			@Nullable final OrgId orgTrxId,
 			@Nullable final Integer M_Locator_ID,
 			@Nullable final ProjectId projectId,
 			@Nullable final ActivityId activityId,
@@ -181,18 +185,14 @@ public class FactLine
 
 		this.postingType = postingType;
 		this.acctSchema = acctSchema;
-		this.m_acct = account;
-		this.account_ID = ElementValueId.ofRepoId(account.getAccount_ID());
-		this.C_SubAcct_ID = account.getC_SubAcct_ID();
+		this.accountId = computeAccountId(accountId, account);
+		this.C_SubAcct_ID = account != null ? account.getC_SubAcct_ID() : 0;
 		this.accountConceptualName = accountConceptualName;
 
 		this.M_Locator_ID = M_Locator_ID != null ? M_Locator_ID : 0;
-		this.C_Project_ID = projectId;
-		this.C_Activity_ID = activityId;
-		this.C_Campaign_ID = campaignId != null ? campaignId : 0;
 		this.C_SalesRegion_ID = computeSalesRegionId(doc, docLine, account);
 
-		this.AD_Client_ID = computeClientId(clientId, doc, this.m_acct);
+		this.AD_Client_ID = computeClientId(clientId, doc);
 		this.orgId = computeOrgIdEffective(orgId, M_Locator_ID, doc, docLine, account);
 		//
 		this.amtAcctCr = BigDecimal.ZERO;
@@ -231,14 +231,7 @@ public class FactLine
 		this.GL_Category_ID = doc.getGL_Category_ID();
 
 		// Product
-		if (m_docLine != null)
-		{
-			this.M_Product_ID = m_docLine.getProductId();
-		}
-		if (this.M_Product_ID == null)
-		{
-			this.M_Product_ID = doc.getProductId();
-		}
+		this.M_Product_ID = computeProductId(doc, docLine, account);
 
 		// Qty
 		if (qty != null)
@@ -252,25 +245,16 @@ public class FactLine
 					: null;
 		}
 
-		// Loc From (maybe set earlier)
-		if (this.C_LocFrom_ID == null && m_docLine != null)
-		{
-			this.C_LocFrom_ID = m_docLine.getLocationFromId();
-		}
-		if (this.C_LocFrom_ID == null)
-		{
-			this.C_LocFrom_ID = doc.getLocationFromId();
-		}
-
-		// Loc To (maybe set earlier)
-		if (this.C_LocTo_ID == null && m_docLine != null)
-		{
-			this.C_LocTo_ID = m_docLine.getLocationToId();
-		}
-		if (this.C_LocTo_ID == null)
-		{
-			this.C_LocTo_ID = doc.getLocationToId();
-		}
+		this.C_LocFrom_ID = CoalesceUtil.coalesceSuppliers(
+				() -> m_docLine != null ? m_docLine.getLocationFromId() : null,
+				doc::getLocationFromId,
+				() -> account != null ? account.getLocFromId() : null
+		);
+		this.C_LocTo_ID = CoalesceUtil.coalesceSuppliers(
+				() -> m_docLine != null ? m_docLine.getLocationToId() : null,
+				doc::getLocationToId,
+				() -> account != null ? account.getLocToId() : null
+		);
 
 		// BPartner
 		if (m_docLine != null && (m_docLine.getBPartnerId() != null || m_docLine.getBPartnerLocationId() != null))
@@ -281,69 +265,55 @@ public class FactLine
 		{
 			setBPartnerIdAndLocation(doc.getBPartnerId(), doc.getBPartnerLocationId());
 		}
-
-		// Sales Region from BPLocation/Sales Rep
-		// NOTE: it will be set on save or on first call of getC_SalesRegion_ID() method.
-
-		// Trx Org
-		if (m_docLine != null)
+		if (getC_BPartner_ID() == null && account != null)
 		{
-			this.AD_OrgTrx_ID = m_docLine.getOrgTrxId();
+			setBPartnerIdAndLocation(BPartnerId.ofRepoIdOrNull(account.getC_BPartner_ID()), null);
 		}
-		if (this.AD_OrgTrx_ID == null)
-		{
-			this.AD_OrgTrx_ID = doc.getOrgTrxId();
-		}
+
+		this.AD_OrgTrx_ID = CoalesceUtil.coalesceSuppliers(
+				() -> orgTrxId,
+				() -> m_docLine != null ? m_docLine.getOrgTrxId() : null,
+				doc::getOrgTrxId,
+				() -> account != null ? account.getOrgTrxId() : null
+		);
 
 		// Project
-		if (m_docLine != null)
-		{
-			this.C_Project_ID = ProjectId.ofRepoIdOrNull(m_docLine.getC_Project_ID());
-		}
-		if (this.C_Project_ID == null)
-		{
-			this.C_Project_ID = doc.getC_Project_ID();
-		}
+		this.C_Project_ID = CoalesceUtil.coalesceSuppliers(
+				() -> projectId,
+				() -> m_docLine != null ? m_docLine.getC_Project_ID() : null,
+				m_doc::getC_Project_ID,
+				() -> account != null ? ProjectId.ofRepoIdOrNull(account.getC_Project_ID()) : null
+		);
 
 		// Campaign
-		if (m_docLine != null)
-		{
-			this.C_Campaign_ID = m_docLine.getC_Campaign_ID();
-		}
-		if (this.C_Campaign_ID <= 0)
-		{
-			this.C_Campaign_ID = doc.getC_Campaign_ID();
-		}
+		this.C_Campaign_ID = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
+				() -> campaignId != null ? campaignId : 0,
+				() -> docLine != null ? docLine.getC_Campaign_ID() : 0,
+				doc::getC_Campaign_ID,
+				() -> account != null ? account.getC_Campaign_ID() : 0
+		);
 
 		// Activity
-		if (m_docLine != null)
-		{
-			this.C_Activity_ID = m_docLine.getActivityId();
-		}
-		if (this.C_Activity_ID == null)
-		{
-			this.C_Activity_ID = doc.getActivityId();
-		}
+		this.C_Activity_ID = CoalesceUtil.coalesceSuppliers(
+				() -> activityId,
+				() -> m_docLine != null ? m_docLine.getActivityId() : null,
+				m_doc::getActivityId,
+				() -> account != null ? ActivityId.ofRepoIdOrNull(account.getC_Activity_ID()) : null
+		);
 
 		// Order
-		if (m_docLine != null)
-		{
-			this.C_OrderSO_ID = m_docLine.getSalesOrderId();
-		}
-		if (this.C_OrderSO_ID == null)
-		{
-			this.C_OrderSO_ID = doc.getSalesOrderId();
-		}
+		this.C_OrderSO_ID = CoalesceUtil.coalesceSuppliers(
+				() -> m_docLine != null ? m_docLine.getSalesOrderId() : null,
+				m_doc::getSalesOrderId,
+				() -> account != null ? OrderId.ofRepoIdOrNull(account.getC_OrderSO_ID()) : null
+		);
 
 		// SectionCode
-		if (m_docLine != null)
-		{
-			this.M_SectionCode_ID = m_docLine.getSectionCodeId();
-		}
-		if (this.M_SectionCode_ID == null)
-		{
-			this.M_SectionCode_ID = doc.getSectionCodeId();
-		}
+		this.M_SectionCode_ID = CoalesceUtil.coalesceSuppliers(
+				() -> m_docLine != null ? m_docLine.getSectionCodeId() : null,
+				m_doc::getSectionCodeId,
+				() -> account != null ? SectionCodeId.ofRepoIdOrNull(account.getM_SectionCode_ID()) : null
+		);
 
 		// C_BPartner_ID2
 		this.C_BPartner2_ID = CoalesceUtil.coalesceSuppliers(
@@ -352,25 +322,18 @@ public class FactLine
 		);
 
 		// User List 1
-		if (m_docLine != null)
-		{
-			this.User1_ID = m_docLine.getUser1_ID();
-		}
-		if (this.User1_ID <= 0)
-		{
-			this.User1_ID = doc.getUser1_ID();
-		}
-
-		// User List 2
-		if (m_docLine != null)
-		{
-			this.User2_ID = m_docLine.getUser2_ID();
-		}
-		if (this.User2_ID <= 0)
-		{
-			this.User2_ID = doc.getUser2_ID();
-			// References in setAccount
-		}
+		this.User1_ID = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
+				() -> (docLine != null) ? docLine.getUser1_ID() : null,
+				doc::getUser1_ID,
+				() -> account != null ? account.getUser1_ID() : 0,
+				() -> 0
+		);
+		this.User2_ID = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
+				() -> (docLine != null) ? docLine.getUser2_ID() : null,
+				doc::getUser2_ID,
+				() -> account != null ? account.getUser2_ID() : 0,
+				() -> 0
+		);
 
 		this.userElement1_ID = computeAcctSchemaElementAsId(AcctSchemaElementType.UserElement1, acctSchema, m_doc, m_docLine).orElse(0);
 		this.userElement2_ID = computeAcctSchemaElementAsId(AcctSchemaElementType.UserElement2, acctSchema, m_doc, m_docLine).orElse(0);
@@ -384,10 +347,27 @@ public class FactLine
 		this.userElementString7 = computeAcctSchemaElementAsString(AcctSchemaElementType.UserElementString7, this.acctSchema, m_doc, m_docLine).orElse(null);
 	}   // FactLine
 
-	private static ClientId computeClientId(
-			@Nullable ClientId clientId,
-			@NonNull Doc<?> doc,
-			@NonNull MAccount acct)
+	private static ElementValueId computeAccountId(@Nullable ElementValueId accountId, @Nullable MAccount account)
+	{
+		if (accountId != null)
+		{
+			if (account != null && accountId.getRepoId() != account.getAccount_ID())
+			{
+				throw new AdempiereException("AccountId and Account shall match: " + accountId + ", " + account);
+			}
+			return accountId;
+		}
+		else if (account != null)
+		{
+			return ElementValueId.ofRepoId(account.getAccount_ID());
+		}
+		else
+		{
+			throw new AdempiereException("At least one of AccountId and Account shall be provided");
+		}
+	}
+
+	private static ClientId computeClientId(@Nullable ClientId clientId, @NonNull Doc<?> doc)
 	{
 		if (clientId != null && clientId.isRegular())
 		{
@@ -395,18 +375,11 @@ public class FactLine
 		}
 
 		final ClientId docClientId = doc.getClientId();
-		if (docClientId.isRegular())
+		if (!docClientId.isRegular())
 		{
-			return docClientId;
+			throw new AdempiereException("Document shall have a regular AD_Client_ID"); // shall not happen
 		}
-
-		final ClientId acctClientId = ClientId.ofRepoId(acct.getAD_Client_ID());
-		if (acctClientId.isRegular())
-		{
-			return acctClientId;
-		}
-
-		return ClientId.SYSTEM; // shall not happen
+		return docClientId;
 	}
 
 	private static OrgId computeOrgIdEffective(
@@ -414,7 +387,7 @@ public class FactLine
 			final Integer locatorRepoId,
 			@NonNull final Doc<?> doc,
 			@Nullable final DocLine<?> docLine,
-			@NonNull final MAccount account)
+			@Nullable final MAccount account)
 	{
 		// Prio 0 - provided Org
 		if (orgId != null && orgId.isRegular())
@@ -440,8 +413,9 @@ public class FactLine
 		}
 
 		// Prio 3 - get from doc - if not GL
+		final boolean isGLJournal = DocBaseType.equals(DocBaseType.GLJournal, doc.getDocBaseType());
 		{
-			final OrgId computedOrgId = DocBaseType.equals(DocBaseType.GLJournal, doc.getDocBaseType())
+			final OrgId computedOrgId = isGLJournal && account != null
 					? OrgId.ofRepoIdOrAny(account.getAD_Org_ID())
 					: doc.getOrgId();
 			if (computedOrgId.isRegular())
@@ -451,9 +425,9 @@ public class FactLine
 		}
 		// Prio 4 - get from account - if not GL
 		{
-			final OrgId computedOrgId = DocBaseType.equals(DocBaseType.GLJournal, doc.getDocBaseType())
-					? doc.getOrgId()
-					: OrgId.ofRepoIdOrAny(account.getAD_Org_ID());
+			final OrgId computedOrgId = !isGLJournal && account != null
+					? OrgId.ofRepoIdOrAny(account.getAD_Org_ID())
+					: doc.getOrgId();
 			if (computedOrgId.isRegular())
 			{
 				return computedOrgId;
@@ -503,12 +477,24 @@ public class FactLine
 	private static SalesRegionId computeSalesRegionId(
 			@NonNull final Doc<?> doc,
 			@Nullable final DocLine<?> docLine,
-			@NonNull final MAccount account)
+			@Nullable final MAccount account)
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> docLine != null ? docLine.getC_SalesRegion_ID().orElse(null) : null,
 				() -> doc.getC_SalesRegion_ID().orElse(null),
-				() -> SalesRegionId.ofRepoIdOrNull(account.getC_SalesRegion_ID())
+				() -> account != null ? account.getSalesRegionId() : null
+		);
+	}
+
+	private static ProductId computeProductId(
+			@NonNull final Doc<?> doc,
+			@Nullable final DocLine<?> docLine,
+			@Nullable final MAccount account)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> docLine != null ? docLine.getProductId() : null,
+				doc::getProductId,
+				() -> account != null ? ProductId.ofRepoIdOrNull(account.getM_Product_ID()) : null
 		);
 	}
 
@@ -550,7 +536,7 @@ public class FactLine
 				.Line_ID(this.Line_ID)
 				.postingType(this.postingType)
 				.acctSchema(acctSchema)
-				.account(m_acct)
+				.accountId(accountId)
 				.accountConceptualName(accountConceptualName)
 				.qty(this.qty.negate())
 				.clientId(AD_Client_ID)
@@ -579,7 +565,7 @@ public class FactLine
 				.Line_ID(this.Line_ID)
 				.postingType(this.postingType)
 				.acctSchema(acctSchema)
-				.account(m_acct)
+				.accountId(accountId)
 				.accountConceptualName(accountConceptualName)
 				.clientId(AD_Client_ID)
 				.orgId(orgId)
@@ -707,11 +693,20 @@ public class FactLine
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
 	 */
-	void setAmtAcct(@NonNull final Money amtAcctDr, @NonNull final Money amtAcctCr)
+	public void setAmtAcct(@Nullable final Money amtAcctDr, @Nullable final Money amtAcctCr)
 	{
-		assertAcctCurrency(amtAcctDr);
-		assertAcctCurrency(amtAcctCr);
-		setAmtAcct(amtAcctDr.toBigDecimal(), amtAcctCr.toBigDecimal());
+		if (amtAcctDr != null)
+		{
+			assertAcctCurrency(amtAcctDr);
+		}
+		if (amtAcctCr != null)
+		{
+			assertAcctCurrency(amtAcctCr);
+		}
+
+		setAmtAcct(
+				amtAcctDr != null ? amtAcctDr.toBigDecimal() : null,
+				amtAcctCr != null ? amtAcctCr.toBigDecimal() : null);
 	}
 
 	/**
@@ -925,7 +920,7 @@ public class FactLine
 	/**
 	 * @return true if account is a balance sheet account
 	 */
-	public boolean isBalanceSheet() {return m_acct.isBalanceSheet();}
+	public boolean isBalanceSheet() {return services.getElementValueById(accountId).isBalanceSheet();}
 
 	/**
 	 * Correct Accounting Amount.
@@ -1049,16 +1044,12 @@ public class FactLine
 		return services.createCurrencyConversionContext(convDate, conversionTypeId, m_doc.getClientId());
 	}
 
-	MAccount getAccount()
-	{
-		return m_acct;
-	}    // getAccount
-
 	@Override
 	public String toString()
 	{
+		final String accountString = services.getElementValueById(accountId).toShortString();
 		String sb = "FactLine=[" + this.docRecordRef
-				+ "," + this.accountConceptualName + "/" + (m_acct != null ? m_acct.getCombination() : "?")
+				+ "," + this.accountConceptualName + "/" + accountString
 				+ ",Cur=" + this.currencyId
 				+ ", DR=" + this.amtSourceDr + "|" + this.amtAcctDr
 				+ ", CR=" + this.amtSourceCr + "|" + this.amtAcctCr
@@ -1073,56 +1064,6 @@ public class FactLine
 
 	public void updateBeforeSaveNew()
 	{
-		// Set Default Account Info
-		if (getM_Product_ID() == null)
-		{
-			setM_Product_ID(ProductId.ofRepoIdOrNull(m_acct.getM_Product_ID()));
-		}
-		if (getC_LocFrom_ID() == null)
-		{
-			setC_LocFrom_ID(LocationId.ofRepoIdOrNull(m_acct.getC_LocFrom_ID()));
-		}
-		if (getC_LocTo_ID() == null)
-		{
-			setC_LocTo_ID(LocationId.ofRepoIdOrNull(m_acct.getC_LocTo_ID()));
-		}
-		if (getC_BPartner_ID() == null)
-		{
-			setBPartnerId(BPartnerId.ofRepoIdOrNull(m_acct.getC_BPartner_ID()));
-		}
-		if (getAD_OrgTrx_ID() == null)
-		{
-			setAD_OrgTrx_ID(OrgId.ofRepoIdOrNull(m_acct.getAD_OrgTrx_ID()));
-		}
-		if (getC_Project_ID() == null)
-		{
-			setC_Project_ID(ProjectId.ofRepoIdOrNull(m_acct.getC_Project_ID()));
-		}
-		if (getC_Campaign_ID() <= 0)
-		{
-			setC_Campaign_ID(m_acct.getC_Campaign_ID());
-		}
-		if (getC_Activity_ID() == null)
-		{
-			setC_Activity_ID(ActivityId.ofRepoIdOrNull(m_acct.getC_Activity_ID()));
-		}
-		if (getC_OrderSO_ID() == null)
-		{
-			setC_OrderSO_ID(OrderId.ofRepoIdOrNull(m_acct.getC_OrderSO_ID()));
-		}
-		if (M_SectionCode_ID == null)
-		{
-			M_SectionCode_ID = SectionCodeId.ofRepoIdOrNull(m_acct.getM_SectionCode_ID());
-		}
-		if (getUser1_ID() <= 0)
-		{
-			setUser1_ID(m_acct.getUser1_ID());
-		}
-		if (getUser2_ID() <= 0)
-		{
-			setUser2_ID(m_acct.getUser2_ID());
-		}
-
 		// setVATCodeIfApplies();
 		//
 		// //
@@ -1146,7 +1087,7 @@ public class FactLine
 				.setAcctSchemaId(this.acctSchema.getId())
 				.setAD_Client_ID(ClientId.toRepoId(this.AD_Client_ID))
 				.setAD_Org_ID(getOrgId().getRepoId())
-				.setC_ElementValue_ID(this.account_ID)
+				.setC_ElementValue_ID(this.accountId)
 				.setC_SubAcct_ID(this.C_SubAcct_ID)
 				.setM_Product_ID(ProductId.toRepoId(this.M_Product_ID))
 				.setC_BPartner_ID(BPartnerId.toRepoId(this.C_BPartner_ID))
@@ -1195,7 +1136,7 @@ public class FactLine
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, Record_ID)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, Line_ID)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, m_acct.getAccount_ID());
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, getAccountId());
 		if (I_M_Movement.Table_Name.equals(tableName))
 		{
 			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Locator_ID, getM_Locator_ID());
@@ -1224,21 +1165,21 @@ public class FactLine
 
 			// Dimensions
 			setAD_OrgTrx_ID(OrgId.ofRepoIdOrAny(fact.getAD_OrgTrx_ID()));
-			setC_Project_ID(ProjectId.ofRepoIdOrNull(fact.getC_Project_ID()));
-			setC_Activity_ID(ActivityId.ofRepoIdOrNull(fact.getC_Activity_ID()));
-			setC_Campaign_ID(fact.getC_Campaign_ID());
+			this.C_Project_ID = ProjectId.ofRepoIdOrNull(fact.getC_Project_ID());
+			this.C_Activity_ID = ActivityId.ofRepoIdOrNull(fact.getC_Activity_ID());
+			this.C_Campaign_ID = Math.max(fact.getC_Campaign_ID(), 0);
 			this.C_SalesRegion_ID = SalesRegionId.ofRepoIdOrNull(fact.getC_SalesRegion_ID());
 			setC_LocFrom_ID(LocationId.ofRepoIdOrNull(fact.getC_LocFrom_ID()));
 			setC_LocTo_ID(LocationId.ofRepoIdOrNull(fact.getC_LocTo_ID()));
-			setM_Product_ID(ProductId.ofRepoIdOrNull(fact.getM_Product_ID()));
+			this.M_Product_ID = ProductId.ofRepoIdOrNull(fact.getM_Product_ID());
 			this.M_Locator_ID = fact.getM_Locator_ID();
-			setUser1_ID(fact.getUser1_ID());
-			setUser2_ID(fact.getUser2_ID());
+			this.User1_ID = fact.getUser1_ID();
+			this.User2_ID = fact.getUser2_ID();
 			//setC_UOM_ID(fact.getC_UOM_ID());
 			this.taxId = TaxId.ofRepoIdOrNull(fact.getC_Tax_ID());
 			this.vatCode = fact.getVATCode();
 			this.orgId = OrgId.ofRepoIdOrAny(fact.getAD_Org_ID());
-			setC_OrderSO_ID(OrderId.ofRepoIdOrNull(fact.getC_OrderSO_ID()));
+			this.C_OrderSO_ID = OrderId.ofRepoIdOrNull(fact.getC_OrderSO_ID());
 			this.M_SectionCode_ID = SectionCodeId.ofRepoIdOrNull(fact.getM_SectionCode_ID());
 			this.C_BPartner2_ID = BPartnerId.ofRepoIdOrNull(fact.getC_BPartner2_ID());
 
@@ -1258,7 +1199,7 @@ public class FactLine
 						+ ", adTableId=" + adTableId
 						+ ",Record_ID=" + Record_ID
 						+ ",Line_ID=" + Line_ID
-						+ ", Account_ID=" + m_acct.getAccount_ID());
+						+ ", Account_ID=" + getAccountId());
 			}
 
 			return false; // not updated
@@ -1275,15 +1216,15 @@ public class FactLine
 
 	public void setFromDimension(@NonNull final Dimension dimension)
 	{
-		setC_Project_ID(dimension.getProjectId());
-		setC_Campaign_ID(dimension.getCampaignId());
-		setC_Activity_ID(dimension.getActivityId());
-		setC_OrderSO_ID(dimension.getSalesOrderId());
+		this.C_Project_ID = dimension.getProjectId();
+		this.C_Campaign_ID = dimension.getCampaignId();
+		this.C_Activity_ID = dimension.getActivityId();
+		this.C_OrderSO_ID = dimension.getSalesOrderId();
 		this.M_SectionCode_ID = dimension.getSectionCodeId();
-		setM_Product_ID(dimension.getProductId());
+		this.M_Product_ID = dimension.getProductId();
 		this.C_BPartner2_ID = dimension.getBpartnerId2();
-		setUser1_ID(dimension.getUser1_ID());
-		setUser2_ID(dimension.getUser2_ID());
+		this.User1_ID = dimension.getUser1_ID();
+		this.User2_ID = dimension.getUser2_ID();
 		setUserElement1_ID(dimension.getUserElement1Id());
 		setUserElement2_ID(dimension.getUserElement2Id());
 		setUserElementString1(dimension.getUserElementString1());
@@ -1304,7 +1245,7 @@ public class FactLine
 		if (dim.isSegmentValueSet(AcctSegmentType.Client))
 		{
 			// fa.setAD_Client_ID(dim.getAD_Client_ID());
-			de.metas.util.Check.assume(ClientId.equals(getAD_Client_ID(), ClientId.ofRepoIdOrNull(dim.getAD_Client_ID())), "Fact_Acct and dimension shall have the same AD_Client_ID");
+			Check.assume(ClientId.equals(getAD_Client_ID(), ClientId.ofRepoIdOrNull(dim.getAD_Client_ID())), "Fact_Acct and dimension shall have the same AD_Client_ID");
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.Organization))
 		{
@@ -1312,7 +1253,7 @@ public class FactLine
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.Account))
 		{
-			Check.assumeEquals(this.account_ID, dim.getC_ElementValue_ID(), "Account_ID");
+			Check.assumeEquals(this.accountId, dim.getC_ElementValue_ID(), "Account_ID");
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.SubAccount))
 		{
@@ -1320,7 +1261,7 @@ public class FactLine
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.Product))
 		{
-			setM_Product_ID(ProductId.ofRepoIdOrNull(dim.getM_Product_ID()));
+			this.M_Product_ID = ProductId.ofRepoIdOrNull(dim.getM_Product_ID());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.BPartner))
 		{
@@ -1344,19 +1285,19 @@ public class FactLine
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.Project))
 		{
-			setC_Project_ID(ProjectId.ofRepoIdOrNull(dim.getC_Project_ID()));
+			this.C_Project_ID = ProjectId.ofRepoIdOrNull(dim.getC_Project_ID());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.Campaign))
 		{
-			setC_Campaign_ID(dim.getC_Campaign_ID());
+			this.C_Campaign_ID = Math.max(dim.getC_Campaign_ID(), 0);
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.Activity))
 		{
-			setC_Activity_ID(ActivityId.ofRepoIdOrNull(dim.getC_Activity_ID()));
+			this.C_Activity_ID = ActivityId.ofRepoIdOrNull(dim.getC_Activity_ID());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.SalesOrder))
 		{
-			setC_OrderSO_ID(OrderId.ofRepoIdOrNull(dim.getSalesOrderId()));
+			this.C_OrderSO_ID = OrderId.ofRepoIdOrNull(dim.getSalesOrderId());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.SectionCode))
 		{
@@ -1364,11 +1305,11 @@ public class FactLine
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.UserList1))
 		{
-			setUser1_ID(dim.getUser1_ID());
+			this.User1_ID = dim.getUser1_ID();
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.UserList2))
 		{
-			setUser2_ID(dim.getUser2_ID());
+			this.User2_ID = dim.getUser2_ID();
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElement1))
 		{
@@ -1471,8 +1412,13 @@ public class FactLine
 	{
 		if (getCurrencyRate().signum() == 0 || getCurrencyRate().compareTo(BigDecimal.ONE) == 0)
 		{
-			setCurrencyRate(computeCurrencyRate());
+			updateCurrencyRate();
 		}
+	}
+
+	public void updateCurrencyRate()
+	{
+		setCurrencyRate(computeCurrencyRate());
 	}
 
 	public void setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId)
@@ -1517,4 +1463,34 @@ public class FactLine
 	{
 		this.openItemTrxInfo = openItemTrxInfo;
 	}
+
+	public void updateFrom(@NonNull FactAcctChanges changes)
+	{
+		final PostingSign postingSign = changes.getPostingSign();
+		if (postingSign.isDebit())
+		{
+			setAmtSource(changes.getAmount_DC(), null);
+			setAmtAcct(changes.getAmount_LC(), null);
+		}
+		else if (postingSign.isCredit())
+		{
+			setAmtSource(null, changes.getAmount_DC());
+			setAmtAcct(null, changes.getAmount_LC());
+		}
+		updateCurrencyRate();
+
+		if (changes.getAccountId() != null)
+		{
+			this.accountId = changes.getAccountId();
+		}
+
+		setTaxIdAndUpdateVatCode(changes.getTaxId());
+		setDescription(changes.getDescription());
+		this.M_SectionCode_ID = changes.getSectionCodeId();
+		this.M_Product_ID = changes.getProductId();
+		this.userElementString1 = changes.getUserElementString1();
+		this.C_OrderSO_ID = changes.getSalesOrderId();
+		this.C_Activity_ID = changes.getActivityId();
+	}
+
 }

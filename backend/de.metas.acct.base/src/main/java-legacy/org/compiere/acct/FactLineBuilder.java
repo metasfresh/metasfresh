@@ -141,6 +141,7 @@ public final class FactLineBuilder
 				.account(services.getAccountById(this.account.getAccountId()))
 				.accountConceptualName(this.account.getAccountConceptualName())
 				.qty(qty)
+				.orgTrxId(orgTrxId)
 				.M_Locator_ID(locatorId)
 				.projectId(projectId)
 				.activityId(activityId)
@@ -184,10 +185,6 @@ public final class FactLineBuilder
 		if (orgId != null)
 		{
 			line.setAD_Org_ID(orgId);
-		}
-		if (orgTrxId != null)
-		{
-			line.setAD_OrgTrx_ID(orgTrxId);
 		}
 		//
 		if (bPartnerLocationId != null)
