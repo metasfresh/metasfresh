@@ -135,6 +135,8 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
+	Optional<I_C_Invoice> getByIdIfExists(@NonNull InvoiceId invoiceId);
+
 	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);

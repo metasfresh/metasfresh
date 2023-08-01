@@ -12,6 +12,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
 
 public class C_Invoice_AcctSimulation_Launcher extends JavaProcess implements IProcessPrecondition
 {
@@ -27,7 +28,18 @@ public class C_Invoice_AcctSimulation_Launcher extends JavaProcess implements IP
 		}
 
 		final InvoiceId invoiceId = context.getSingleSelectedRecordId(InvoiceId.class);
-		final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(invoiceId);
+		final I_C_Invoice invoice = invoiceBL.getByIdIfExists(invoiceId).orElse(null);
+		if (invoice == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not saved yet");
+		}
+
+		if (invoice.isSOTrx())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not a purchase invoice");
+		}
+
+		final DocStatus invoiceDocStatus = DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus());
 		if (!invoiceDocStatus.isDraftedOrInProgress())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not draft");
