@@ -4,16 +4,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { advSearchRequest, deleteViewRequest, patchRequest } from '../../api';
+import { advSearchRequest, patchRequest } from '../../api';
 import { PATCH_RESET } from '../../constants/ActionTypes';
 
-import { unsetIncludedView } from '../../actions/ViewActions';
+import { closeViewModal } from '../../actions/ViewActions';
 import { addNotification } from '../../actions/AppActions';
-import {
-  closeModal,
-  closeRawModal,
-  openRawModal,
-} from '../../actions/WindowActions';
+import { openRawModal } from '../../actions/WindowActions';
 
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
@@ -179,8 +175,7 @@ class RawModal extends Component {
    * @param {*} type
    */
   handleClose = async (type) => {
-    const { dispatch, viewId, windowId, requests, rawModal, featureType } =
-      this.props;
+    const { dispatch, requests, rawModal, featureType } = this.props;
 
     featureType === 'SEARCH' &&
       type === 'DONE' &&
@@ -216,7 +211,7 @@ class RawModal extends Component {
       );
     } else {
       await this.removeModal();
-      await deleteViewRequest(windowId, viewId, type);
+      // await deleteViewRequest(windowId, viewId, type);
     }
   };
 
@@ -225,24 +220,17 @@ class RawModal extends Component {
    * @method removeModal
    * @summary ToDo: Describe the method.
    */
-  removeModal = async () => {
+  removeModal = async (closeAction) => {
     const { dispatch, modalVisible, windowId, viewId } = this.props;
 
-    await Promise.all(
-      [
-        closeRawModal(),
-        closeModal(),
-        unsetIncludedView({
-          windowId: windowId,
-          viewId,
-          forceClose: true,
-        }),
-      ].map((action) => dispatch(action))
+    await dispatch(
+      closeViewModal({
+        windowId,
+        viewId,
+        modalVisible,
+        closeAction: closeAction ?? 'DONE',
+      })
     );
-
-    if (!modalVisible) {
-      document.body.style.overflow = 'auto';
-    }
   };
 
   /**
@@ -346,7 +334,10 @@ class RawModal extends Component {
 
     return (
       <div className="screen-freeze raw-modal">
-        <div className="click-overlay" onClick={this.removeModal} />
+        <div
+          className="click-overlay"
+          onClick={() => this.removeModal('CANCEL')}
+        />
         <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div

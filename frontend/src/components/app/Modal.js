@@ -452,12 +452,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse(
+          const action = handleProcessResponse({
             response,
-            windowId,
-            layout.pinstanceId,
-            parentId
-          );
+            processId: windowId,
+            pinstanceId: layout.pinstanceId,
+            parentId,
+          });
 
           await dispatch(action);
 

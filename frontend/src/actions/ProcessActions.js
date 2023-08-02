@@ -7,7 +7,11 @@ import { parseToDisplay } from '../utils/documentListHelper';
 import { findViewByViewId } from '../reducers/viewHandler';
 import { openInNewTab } from '../utils';
 import history from '../services/History';
-import { setIncludedView, unsetIncludedView } from './ViewActions';
+import {
+  closeViewModal,
+  setIncludedView,
+  unsetIncludedView,
+} from './ViewActions';
 import { getTableId } from '../reducers/tables';
 import { updateTableSelection } from './TableActions';
 import {
@@ -26,12 +30,14 @@ import {
   startProcess,
 } from '../api/process';
 
-export const handleProcessResponse = (
+export const handleProcessResponse = ({
   response,
   processId,
   pinstanceId,
-  parentId
-) => {
+  parentId,
+  contextWindowId,
+  contextViewId,
+}) => {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
 
@@ -68,6 +74,17 @@ export const handleProcessResponse = (
                 openRawModal({ windowId, viewId, profileId: action.profileId })
               );
             }
+            break;
+          }
+          case 'closeView': {
+            await dispatch(
+              closeViewModal({
+                windowId: contextWindowId,
+                viewId: contextViewId,
+                modalVisible: true,
+                closeAction: 'DONE',
+              })
+            );
             break;
           }
           case 'openReport': {
@@ -237,7 +254,14 @@ export const createProcess = ({
           const parentId = parentView ? parentView.windowId : documentType;
 
           await dispatch(
-            handleProcessResponse(response, processId, pinstanceId, parentId)
+            handleProcessResponse({
+              response,
+              processId,
+              pinstanceId,
+              parentId,
+              contextWindowId: parentId,
+              contextViewId: viewId,
+            })
           );
         } catch (error) {
           await dispatch(closeModal());

@@ -20,7 +20,7 @@ export const OPEN_MODAL = 'OPEN_MODAL';
 
 /**
  * @constant
- * @type {string} ToDo: Description for the constant.
+ * @type {string} Clear/reset modal state
  */
 export const CLOSE_MODAL = 'CLOSE_MODAL';
 
@@ -283,7 +283,7 @@ export const SET_RAW_MODAL_DESCRIPTION = 'SET_RAW_MODAL_DESCRIPTION';
 
 /**
  * @constant
- * @type {string} ToDo: Description for the constant.
+ * @type {string} Clear/reset rawModal state
  */
 export const CLOSE_RAW_MODAL = 'CLOSE_RAW_MODAL';
 
