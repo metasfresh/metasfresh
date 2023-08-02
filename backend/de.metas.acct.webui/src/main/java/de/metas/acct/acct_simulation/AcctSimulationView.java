@@ -28,11 +28,10 @@ public class AcctSimulationView extends AbstractCustomView<AcctRow> implements I
 
 	@Builder
 	private AcctSimulationView(
-			final @NonNull ViewId viewId,
 			final @NonNull AcctSimulationViewData rowsData,
 			final @NonNull @Singular ImmutableList<RelatedProcessDescriptor> relatedProcesses)
 	{
-		super(viewId, null, rowsData, NullDocumentFilterDescriptorsProvider.instance);
+		super(rowsData.getViewId(), null, rowsData, NullDocumentFilterDescriptorsProvider.instance);
 		this.relatedProcesses = relatedProcesses;
 	}
 
@@ -58,20 +57,28 @@ public class AcctSimulationView extends AbstractCustomView<AcctRow> implements I
 	@Override
 	public ViewHeaderProperties getHeaderProperties() {return getRowsData().getHeaderProperties();}
 
+	private void fireViewFullyChanged() {ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);}
+
 	public void addNewRow()
 	{
 		getRowsData().addNewRow();
-		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
+		fireViewFullyChanged();
 	}
 
 	public void removeRowsById(@NonNull final DocumentIdsSelection rowIds)
 	{
 		getRowsData().removeRowsById(rowIds);
-		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
+		fireViewFullyChanged();
+	}
+
+	public void updateSimulation() {
+		getRowsData().updateSimulation();
+		fireViewFullyChanged();
 	}
 
 	public void save()
 	{
 		getRowsData().save();
 	}
+
 }

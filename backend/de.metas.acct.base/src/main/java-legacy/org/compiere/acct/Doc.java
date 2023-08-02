@@ -555,8 +555,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	private void applyUserChanges(@NonNull final ArrayList<Fact> facts)
 	{
-		final TableRecordReference docRecordRef = getDocModel().getRecordRef();
-		final FactAcctChangesList changesList = services.getFactAcctChanges(docRecordRef);
+		final FactAcctChangesList changesList = services.getFactAcctChanges(getRecordRef());
 
 		//
 		// Change and Remove lines
@@ -564,13 +563,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		{
 			fact.mapEachLine(factLine -> {
 				final FactLineMatchKey matchKey = FactLineMatchKey.ofFactLine(factLine);
-				if (changesList.isRemove(matchKey))
+				if (changesList.isLineRemoved(matchKey))
 				{
 					return null;
 				}
 				else
 				{
-					changesList.getLinesToChangeByKey(matchKey).ifPresent(factLine::updateFrom);
+					changesList.getChangeByKey(matchKey).ifPresent(factLine::updateFrom);
 					return factLine;
 				}
 			});

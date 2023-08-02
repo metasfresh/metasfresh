@@ -12,12 +12,14 @@ import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.factacct_userchanges.FactLineMatchKey;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.costing.CostElementId;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyRate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
@@ -36,7 +38,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class AcctSimulationViewDataService
+class AcctSimulationViewDataService
 {
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final AcctDocRegistry acctDocRegistry;
@@ -57,11 +59,12 @@ public class AcctSimulationViewDataService
 		this.factAcctUserChangesService = factAcctUserChangesService;
 	}
 
-	public AcctSimulationViewData getViewData(final @NonNull AcctSimulationDocInfo docInfo)
+	public AcctSimulationViewData getViewData(final @NonNull AcctSimulationDocInfo docInfo, final @NonNull ViewId viewId)
 	{
 		return AcctSimulationViewData.builder()
 				.dataService(this)
 				.docInfo(docInfo)
+				.viewId(viewId)
 				.build();
 	}
 
@@ -105,11 +108,15 @@ public class AcctSimulationViewDataService
 
 	public List<AcctRow> retrieveRows(final @NonNull AcctSimulationDocInfo docInfo)
 	{
+		final FactAcctChangesList userChangesList = factAcctUserChangesService.getByDocRecordRef(docInfo.getRecordRef());
+		return retrieveRows(docInfo, userChangesList);
+	}
+
+	public List<AcctRow> retrieveRows(@NonNull final AcctSimulationDocInfo docInfo, @NonNull final FactAcctChangesList userChangesList)
+	{
 		final TableRecordReference docRecordRef = docInfo.getRecordRef();
 		final ClientId clientId = docInfo.getClientId();
 		final List<Fact> facts = getAcctDoc(docRecordRef, clientId).postLogic();
-
-		final FactAcctChangesList userChangesList = factAcctUserChangesService.getByDocRecordRef(docRecordRef);
 
 		final ArrayList<AcctRow> result = new ArrayList<>();
 		for (final Fact fact : facts)
@@ -120,7 +127,7 @@ public class AcctSimulationViewDataService
 				final FactLine factLine = lines.get(i);
 
 				final FactLineMatchKey matchKey = extractMatchKey(factLine);
-				final FactAcctChanges userChanges = userChangesList.getLinesToChangeByKey(matchKey)
+				final FactAcctChanges userChanges = userChangesList.getChangeByKey(matchKey)
 						.orElseGet(() -> extractUserChanges(factLine));
 
 				result.add(
@@ -189,17 +196,20 @@ public class AcctSimulationViewDataService
 		);
 	}
 
-	public void save(@NonNull final List<AcctRow> rows, @NonNull final AcctSimulationDocInfo docInfo)
+	public void save(@NonNull final FactAcctChangesList factAcctChangesList, @NonNull final AcctSimulationDocInfo docInfo)
 	{
-		final FactAcctChangesList factAcctChanges = rows.stream()
-				.map(AcctRow::getUserChanges)
-				.collect(FactAcctChangesList.collect());
-
-		factAcctUserChangesService.save(factAcctChanges, docInfo.getRecordRef());
+		factAcctUserChangesService.save(factAcctChangesList, docInfo.getRecordRef());
 	}
 
-	public AcctRow newRow(final AcctSimulationDocInfo docInfo)
+	public AcctRow newRow(
+			@NonNull final AcctSimulationDocInfo docInfo,
+			@NonNull final PostingSign postingSign,
+			@NonNull final Amount amount)
 	{
+		final AcctRowCurrencyRate currencyRate = getCurrencyRate(docInfo);
+		final Money amount_DC = amount.toMoney(moneyService::getCurrencyIdByCurrencyCode).assertCurrencyId(docInfo.getDocumentCurrencyId());
+		final Money amount_LC = currencyRate.convertToLocalCurrency(amount_DC).assertCurrencyId(docInfo.getLocalCurrencyId());
+
 		return AcctRow.builder()
 				.lookups(lookups)
 				.currencyIdToCurrencyCodeConverter(moneyService)
@@ -207,13 +217,13 @@ public class AcctSimulationViewDataService
 						.type(FactAcctChangesType.Add)
 						.matchKey(null)
 						.acctSchemaId(docInfo.getAcctSchemaId())
-						.postingSign(PostingSign.DEBIT)
+						.postingSign(postingSign)
 						.accountId(null)
-						.amount_DC(Money.zero(docInfo.getDocumentCurrencyId()))
-						.amount_LC(Money.zero(docInfo.getLocalCurrencyId()))
+						.amount_DC(amount_DC)
+						.amount_LC(amount_LC)
 						.build())
 				.rowId(DocumentId.ofString(UUID.randomUUID().toString()))
-				.currencyRate(getCurrencyRate(docInfo))
+				.currencyRate(currencyRate)
 				.build();
 	}
 

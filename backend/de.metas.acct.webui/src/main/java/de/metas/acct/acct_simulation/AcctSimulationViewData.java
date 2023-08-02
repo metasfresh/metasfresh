@@ -1,13 +1,16 @@
 package de.metas.acct.acct_simulation;
 
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
 import de.metas.acct.factacct_userchanges.FactAcctChangesType;
 import de.metas.acct.gljournal_sap.PostingSign;
+import de.metas.currency.Amount;
 import de.metas.currency.MutableAmount;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
 import de.metas.ui.web.view.ViewHeaderProperty;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.IEditableRowsData;
 import de.metas.ui.web.view.template.IRowsData;
@@ -25,26 +28,33 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import java.util.List;
 import java.util.Map;
 
-class AcctSimulationViewData implements IEditableRowsData<AcctRow>
+public class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 {
 	public static AcctSimulationViewData cast(final IRowsData<AcctRow> data) {return (AcctSimulationViewData)data;}
 
+	//
+	// Services
 	private final AcctSimulationViewDataService dataService;
 
+	//
+	// Params
 	@NonNull @Getter private final AcctSimulationDocInfo docInfo;
+	@NonNull @Getter private final ViewId viewId;
 
 	//
-	// state
+	// State
 	@NonNull private final SynchronizedRowsIndexHolder<AcctRow> rowsHolder = SynchronizedRowsIndexHolder.empty();
 	@NonNull private final SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder = SynchronizedMutable.empty();
 
 	@Builder
 	private AcctSimulationViewData(
 			final @NonNull AcctSimulationViewDataService dataService,
-			final @NonNull AcctSimulationDocInfo docInfo)
+			final @NonNull AcctSimulationDocInfo docInfo,
+			final @NonNull ViewId viewId)
 	{
 		this.dataService = dataService;
 		this.docInfo = docInfo;
+		this.viewId = viewId;
 
 		rowsHolder.setRows(this.dataService.retrieveRows(this.docInfo));
 	}
@@ -61,12 +71,17 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 		headerPropertiesHolder.setValue(null);
 	}
 
+	private void invalidateHeaderPropertiesAndNotify()
+	{
+		headerPropertiesHolder.setValue(null);
+		ViewChangesCollector.getCurrentOrAutoflush().collectHeaderPropertiesChanged(viewId);
+	}
+
 	@Override
 	public void patchRow(final IEditableView.RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
 		rowsHolder.changeRowById(ctx.getRowId(), row -> row.withPatch(fieldChangeRequests));
-		headerPropertiesHolder.setValue(null);
-		ViewChangesCollector.getCurrentOrAutoflush().collectHeaderPropertiesChanged(ctx.getViewId());
+		invalidateHeaderPropertiesAndNotify();
 	}
 
 	public ViewHeaderProperties getHeaderProperties()
@@ -145,6 +160,13 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 				.build();
 	}
 
+	private FactAcctChangesList getFactAcctChangesList()
+	{
+		return rowsHolder.stream()
+				.map(AcctRow::getUserChanges)
+				.collect(FactAcctChangesList.collect());
+	}
+
 	public void save()
 	{
 		if (!computeBalance().getInDocumentCurrency().isBalanced())
@@ -152,12 +174,26 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 			throw new AdempiereException("@NotBalanced@");
 		}
 
-		dataService.save(rowsHolder.list(), docInfo);
+		dataService.save(getFactAcctChangesList(), docInfo);
 	}
 
 	public void addNewRow()
 	{
-		rowsHolder.addRow(dataService.newRow(docInfo));
+		final PostingSign postingSign;
+		final Amount amount_DC;
+		final Amount balance = computeBalance().getInDocumentCurrency().getBalance();
+		if (balance.signum() > 0)
+		{
+			postingSign = PostingSign.CREDIT;
+			amount_DC = balance;
+		}
+		else
+		{
+			postingSign = PostingSign.DEBIT;
+			amount_DC = balance.negate();
+		}
+		rowsHolder.addRow(dataService.newRow(docInfo, postingSign, amount_DC));
+		invalidateHeaderPropertiesAndNotify();
 	}
 
 	public void removeRowsById(@NonNull final DocumentIdsSelection rowIds)
@@ -177,6 +213,18 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 				throw new AdempiereException("Unknown change type `" + changeType + "` of " + row);
 			}
 		});
+
+		invalidateHeaderPropertiesAndNotify();
 	}
 
+	public void updateSimulation()
+	{
+		// Discard delete lines changes
+		final FactAcctChangesList factAcctChangesList = getFactAcctChangesList()
+				.removingIf(line -> line.getType().isDelete());
+
+		// Ask the accounting engine to regenerate lines and then apply our changes (excluding removed lines)
+		rowsHolder.setRows(this.dataService.retrieveRows(this.docInfo, factAcctChangesList));
+		invalidateHeaderPropertiesAndNotify();
+	}
 }

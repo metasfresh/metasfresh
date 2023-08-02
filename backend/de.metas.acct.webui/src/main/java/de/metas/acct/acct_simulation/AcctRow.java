@@ -135,7 +135,9 @@ public class AcctRow implements IViewRow
 	@Override
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues() {return values.get(this);}
 
-	public boolean isNotRemoved() {return !userChanges.getType().isDelete();}
+	public boolean isRemoved() {return userChanges.getType().isDelete();}
+
+	public boolean isNotRemoved() {return !isRemoved();}
 
 	public LookupValuesPage getFieldTypeahead(String fieldName, String query) {return lookups.getFieldTypeahead(fieldName, query);}
 

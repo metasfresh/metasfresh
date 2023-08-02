@@ -91,7 +91,6 @@ public class AcctSimulationViewFactory implements IViewFactory
 		viewId.assertWindowId(WINDOW_ID);
 
 		return AcctSimulationView.builder()
-				.viewId(viewId)
 				.rowsData(getViewData(request))
 				.relatedProcess(createProcessDescriptor(10, AcctSimulationView_AddRow.class))
 				.relatedProcess(createProcessDescriptor(20, AcctSimulationView_RemoveRows.class))
@@ -108,7 +107,7 @@ public class AcctSimulationViewFactory implements IViewFactory
 			throw new AdempiereException("Parameter " + VIEW_PARAM_DocInfo + " is missing from " + request);
 		}
 
-		return dataService.getViewData(docInfo);
+		return dataService.getViewData(docInfo, request.getViewId());
 	}
 
 	private RelatedProcessDescriptor createProcessDescriptor(final int sortNo, @NonNull final Class<?> processClass)

@@ -5,7 +5,7 @@ public class AcctSimulationView_UpdateSimulation extends AcctSimulationViewBased
 	@Override
 	protected String doIt()
 	{
-		// TODO
+		getView().updateSimulation();
 		return MSG_OK;
 	}
 }

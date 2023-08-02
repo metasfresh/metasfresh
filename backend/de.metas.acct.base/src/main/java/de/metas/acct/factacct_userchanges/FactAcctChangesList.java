@@ -10,8 +10,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 
 @EqualsAndHashCode
@@ -21,14 +23,14 @@ public class FactAcctChangesList
 	public static final FactAcctChangesList EMPTY = new FactAcctChangesList(ImmutableList.of());
 
 	@Getter private final ImmutableList<FactAcctChanges> allLines;
-	private final ImmutableListMultimap<AcctSchemaId, FactAcctChanges> linesToAddByAcctSchemaId;
+	@Getter private final ImmutableListMultimap<AcctSchemaId, FactAcctChanges> linesToAddGroupedByAcctSchemaId;
 	private final ImmutableMap<FactLineMatchKey, FactAcctChanges> linesToChangeByKey;
 	private final ImmutableMap<FactLineMatchKey, FactAcctChanges> linesToRemoveByKey;
 
 	private FactAcctChangesList(@NonNull final List<FactAcctChanges> list)
 	{
 		this.allLines = ImmutableList.copyOf(list);
-		this.linesToAddByAcctSchemaId = list.stream()
+		this.linesToAddGroupedByAcctSchemaId = list.stream()
 				.filter(changes -> changes.getType().isAdd())
 				.collect(ImmutableListMultimap.toImmutableListMultimap(FactAcctChanges::getAcctSchemaId, changes -> changes));
 		this.linesToChangeByKey = list.stream()
@@ -49,12 +51,35 @@ public class FactAcctChangesList
 		return GuavaCollectors.collectUsingListAccumulator(FactAcctChangesList::ofList);
 	}
 
-	public Optional<FactAcctChanges> getLinesToChangeByKey(@NonNull final FactLineMatchKey matchKey)
+	public Optional<FactAcctChanges> getChangeByKey(@NonNull final FactLineMatchKey matchKey)
 	{
 		return Optional.ofNullable(linesToChangeByKey.get(matchKey));
 	}
 
-	public boolean isRemove(@NonNull final FactLineMatchKey matchKey) {return linesToRemoveByKey.containsKey(matchKey);}
+	public boolean isLineRemoved(@NonNull final FactLineMatchKey matchKey) {return linesToRemoveByKey.containsKey(matchKey);}
 
-	public ImmutableListMultimap<AcctSchemaId, FactAcctChanges> getLinesToAddGroupedByAcctSchemaId() {return linesToAddByAcctSchemaId;}
+	public FactAcctChangesList removingIf(@NonNull final Predicate<FactAcctChanges> predicate)
+	{
+		if (allLines.isEmpty())
+		{
+			return this;
+		}
+
+		final ArrayList<FactAcctChanges> allLinesAfterRemove = new ArrayList<>(allLines.size());
+		for (final FactAcctChanges line : allLines)
+		{
+			final boolean remove = predicate.test(line);
+			if (!remove)
+			{
+				allLinesAfterRemove.add(line);
+			}
+		}
+
+		if (allLines.size() == allLinesAfterRemove.size())
+		{
+			return this; // no changes
+		}
+
+		return ofList(allLinesAfterRemove);
+	}
 }
