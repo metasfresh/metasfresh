@@ -24,6 +24,7 @@ package de.metas.workflow.service.impl;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.copy_with_details.template.CopyTemplateCustomizer;
+import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.POInfo;
@@ -36,7 +37,7 @@ import java.time.format.DateTimeFormatter;
 public class AD_Workflow_CopyTemplateCustomizer implements CopyTemplateCustomizer
 {
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd:HH:mm:ss");
-	
+
 	@Override
 	public String getTableName()
 	{
@@ -47,6 +48,12 @@ public class AD_Workflow_CopyTemplateCustomizer implements CopyTemplateCustomize
 	public ValueToCopy extractValueToCopy(final POInfo poInfo, final String columnName)
 	{
 		return I_AD_Workflow.COLUMNNAME_Name.equals(columnName) ? ValueToCopy.explicitValueToSet(makeUniqueName()) : ValueToCopy.NOT_SPECIFIED;
+	}
+
+	@Override
+	public @NonNull InSetPredicate<String> getChildTableNames()
+	{
+		return InSetPredicate.none();
 	}
 
 	@NonNull
