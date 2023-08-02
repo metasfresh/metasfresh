@@ -62,7 +62,8 @@ import java.util.stream.Stream;
 @Component
 public class InventoryLineModularContractHandler implements IModularContractTypeHandler<I_M_InventoryLine>
 {
-	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.ReactivateNotAllowed");
+	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.DocActionNotAllowed");
+	private static final AdMessageKey MSG_ERROR_DOC_ACTION_UNSUPPORTED = AdMessageKey.of("de.metas.contracts.DocActionUnsupported");
 	private static final AdMessageKey MSG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.Description");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -183,8 +184,8 @@ public class InventoryLineModularContractHandler implements IModularContractType
 			case COMPLETED, REVERSED, VOIDED ->
 			{
 			}
-			case REACTIVATED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
-			default -> throw new AdempiereException("Unsupported model action!");
+			case REACTIVATED -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 }
