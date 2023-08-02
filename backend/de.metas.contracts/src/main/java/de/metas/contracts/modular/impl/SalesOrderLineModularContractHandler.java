@@ -30,6 +30,7 @@ import de.metas.common.util.Check;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
@@ -134,8 +135,9 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
 				.bPartnerId(warehousePartnerId)
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.yearId(harvestingYearId)
+				.harvestingYearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
+				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
 		return isModularContractInProgress(request);
@@ -223,8 +225,9 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.yearId(harvestingYearId)
+				.harvestingYearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
+				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
 		return streamModularContracts(request)
@@ -253,6 +256,6 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	@NonNull
 	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermRequest request)
 	{
-		return flatrateBL.streamModularFlatrateTerms(request);
+		return flatrateBL.streamModularFlatrateTermsByQuery(request);
 	}
 }

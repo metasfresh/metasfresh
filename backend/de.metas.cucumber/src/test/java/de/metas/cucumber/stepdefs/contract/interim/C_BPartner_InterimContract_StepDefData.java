@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,28 +20,15 @@
  * #L%
  */
 
-package de.metas.contracts.FlatrateTermRequest;
+package de.metas.cucumber.stepdefs.contract.interim;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_C_BPartner_InterimContract;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class ModularFlatrateTermRequest
+public class C_BPartner_InterimContract_StepDefData extends StepDefData<I_C_BPartner_InterimContract>
 {
-	@NonNull BPartnerId bPartnerId;
-	@Nullable ProductId productId;
-	@NonNull SOTrx soTrx;
-	@Nullable YearId harvestingYearId;
-	@NonNull TypeConditions typeConditions;
-	@Nullable CalendarId harvestingCalendarId;
+	public C_BPartner_InterimContract_StepDefData()
+	{
+		super(I_C_BPartner_InterimContract.class);
+	}
 }

@@ -242,5 +242,5 @@ public interface IFlatrateBL extends ISingletonService
 	 */
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
 
-	Stream<I_C_Flatrate_Term> streamModularFlatrateTerms(ModularFlatrateTermRequest request);
+	Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(ModularFlatrateTermRequest request);
 }

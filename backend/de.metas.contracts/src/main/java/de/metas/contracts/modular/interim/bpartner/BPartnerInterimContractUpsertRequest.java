@@ -20,28 +20,19 @@
  * #L%
  */
 
-package de.metas.contracts.FlatrateTermRequest;
+package de.metas.contracts.modular.interim.bpartner;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class ModularFlatrateTermRequest
+public class BPartnerInterimContractUpsertRequest
 {
 	@NonNull BPartnerId bPartnerId;
-	@Nullable ProductId productId;
-	@NonNull SOTrx soTrx;
-	@Nullable YearId harvestingYearId;
-	@NonNull TypeConditions typeConditions;
-	@Nullable CalendarId harvestingCalendarId;
+	@NonNull Boolean isInterimContract;
+	@NonNull YearAndCalendarId yearAndCalendarId;
 }
