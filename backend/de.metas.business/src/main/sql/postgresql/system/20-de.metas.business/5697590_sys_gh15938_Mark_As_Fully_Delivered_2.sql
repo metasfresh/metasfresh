@@ -140,3 +140,13 @@ UPDATE AD_Column SET FilterDefaultValue='', IsSelectionColumn='N',Updated=TO_TIM
 -- 2023-08-01T16:34:10.311Z
 UPDATE AD_Column SET ColumnSQL='( CASE WHEN (SELECT SUM(qtydelivered - qtyordered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) >= 0 AND C_Order.DocStatus IN (''CO'', ''CL'') THEN ''N''     ELSE ''Y''    END )',Updated=TO_TIMESTAMP('2023-08-01 19:34:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587241
 ;
+
+-- Column: C_Order.InvoiceStatus
+-- 2023-08-02T08:36:07.953Z
+UPDATE AD_Column SET FilterDefaultValue='',Updated=TO_TIMESTAMP('2023-08-02 11:36:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552695
+;
+
+-- Column: C_Order.OrderStatus
+-- 2023-08-02T08:36:30.331Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-08-02 11:36:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587172
+;
