@@ -56,6 +56,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner;
+import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_OrderFullyDelivered;
 
 final class DeliveryPlanningGenerateProcessesHelper
 {
@@ -264,15 +265,14 @@ final class DeliveryPlanningGenerateProcessesHelper
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
 		}
+		if (shipmentScheduleBL.getById(shipmentInfo.getShipmentScheduleId()).isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_OrderFullyDelivered));
+		}
 
 		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(shipmentInfo.getDeliveryPlanningId()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
-		}
-
-		if (orderBL.isFullyDelivered(shipmentInfo.getSalesOrderId()))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Delivery planning based on order that is fully delivered");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -306,6 +306,10 @@ final class DeliveryPlanningGenerateProcessesHelper
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
 		}
+		if (huReceiptScheduleBL.getById(receiptInfo.getReceiptScheduleId()).isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_OrderFullyDelivered));
+		}
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), receiptInfo.getOrgId());
 
@@ -313,11 +317,6 @@ final class DeliveryPlanningGenerateProcessesHelper
 		if (preventReceiptIfMissingDeliveryInstructions && !deliveryPlanningService.hasCompleteDeliveryInstruction(deliveryPlanningId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
-		}
-
-		if (orderBL.isFullyDelivered(receiptInfo.getPurchaseOrderId()))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Delivery planning based on order that is fully delivered");
 		}
 
 		return ProcessPreconditionsResolution.accept();
