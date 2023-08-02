@@ -1845,6 +1845,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final int ORDERSTATUS_AD_Reference_ID=541809;
 	/** Drafted = DR */
 	public static final String ORDERSTATUS_Drafted = "DR";
+	/** In Progress = IP */
+	public static final String ORDERSTATUS_InProgress = "IP";
 	/** Voided = VO */
 	public static final String ORDERSTATUS_Voided = "VO";
 	/** Completed = CO */

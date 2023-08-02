@@ -27,8 +27,10 @@ import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.elementvalue.ElementValue;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -38,7 +40,6 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
-import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;
 
@@ -46,7 +47,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * Accounting Fact
@@ -530,44 +533,23 @@ public final class Fact
 
 	}   // balanceAccounting
 
-	/**
-	 * Check Accounts of Fact Lines
-	 */
 	BooleanWithReason checkAccounts()
 	{
-		// no lines -> nothing to distribute
-		if (m_lines.isEmpty())
-		{
-			return BooleanWithReason.TRUE;
-		}
-
-		// For all fact lines
 		for (final FactLine line : m_lines)
 		{
-			final MAccount account = line.getAccount();
-			if (account == null)
-			{
-				return BooleanWithReason.falseBecause("No Account for " + line);
-			}
-
-			final I_C_ElementValue ev = account.getAccount();
-			if (ev == null)
-			{
-				return BooleanWithReason.falseBecause("No Element Value for " + account + ": " + line);
-			}
+			final ElementValue ev = services.getElementValueById(line.getAccountId());
 			if (ev.isSummary())
 			{
-				return BooleanWithReason.falseBecause("Cannot post to Summary Account " + ev + ": " + line);
+				return BooleanWithReason.falseBecause("Cannot post to Summary Account " + ev.toShortString() + ": " + line);
 			}
 			if (!ev.isActive())
 			{
-				return BooleanWithReason.falseBecause("Cannot post to Inactive Account " + ev + ": " + line);
+				return BooleanWithReason.falseBecause("Cannot post to Inactive Account " + ev.toShortString() + ": " + line);
 			}
-
-		}    // for all lines
+		}
 
 		return BooleanWithReason.TRUE;
-	}    // checkAccounts
+	}
 
 	/**
 	 * GL Distribution of Fact Lines
@@ -578,7 +560,6 @@ public final class Fact
 				.distribute(m_lines);
 
 		m_lines = new ArrayList<>(linesAfterDistribution);
-		// TODO
 	}
 
 	/**************************************************************************
@@ -605,13 +586,32 @@ public final class Fact
 		return ImmutableList.copyOf(m_lines);
 	}
 
+	public void mapEachLine(final UnaryOperator<FactLine> mapper)
+	{
+		final ListIterator<FactLine> it = m_lines.listIterator();
+		while (it.hasNext())
+		{
+			FactLine line = it.next();
+
+			final FactLine changedLine = mapper.apply(line);
+			if (changedLine == null)
+			{
+				it.remove();
+			}
+			else
+			{
+				it.set(changedLine);
+			}
+		}
+	}
+
 	@NonNull
 	public FactLine getSingleLineByAccountId(final AccountId accountId)
 	{
 		FactLine lineFound = null;
 		for (FactLine line : m_lines)
 		{
-			if (line.getAccount_ID().getRepoId() == accountId.getRepoId())
+			if (ElementValueId.equals(line.getAccountId(), account.getElementValueId()))
 			{
 				if (lineFound == null)
 				{

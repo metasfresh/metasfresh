@@ -348,6 +348,4 @@ public interface IOrderBL extends ISingletonService
 
 	@NonNull
 	List<I_C_Order> getOrdersByQuery(@NonNull GetOrdersQuery query);
-
-	boolean isFullyDelivered(@NonNull final OrderId orderId);
 }

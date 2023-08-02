@@ -8,18 +8,15 @@ import { PATCH_RESET } from '../../constants/ActionTypes';
 
 import { unsetIncludedView } from '../../actions/ViewActions';
 import { addNotification } from '../../actions/AppActions';
-import {
-  closeModal,
-  closeRawModal,
-  openRawModal,
-} from '../../actions/WindowActions';
+import { closeModal, closeRawModal, openRawModal, } from '../../actions/WindowActions';
 
 import keymap from '../../shortcuts/keymap';
 import { renderHeaderPropertiesGroups } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import ModalButton from '../modal/ModalButton';
 import ModalComponent from '../modal/ModalComponent';
-import { OIViewHeader_WINDOW_ID } from '../deliveryPlanning/OIViewHeader';
+import { OIViewHeader_WINDOW_ID } from '../acctOpenItems/OIViewHeader';
+import { AcctSimulationViewHeader_WINDOW_ID } from '../acctSimulation/AcctSimulationViewHeader';
 
 /**
  * View modal
@@ -255,7 +252,8 @@ class RawModal extends Component {
 
     const isRenderHeaderProperties =
       !!rawModal.headerProperties &&
-      String(windowId) !== OIViewHeader_WINDOW_ID;
+      String(windowId) !== OIViewHeader_WINDOW_ID &&
+      String(windowId) !== AcctSimulationViewHeader_WINDOW_ID;
 
     return (
       <ModalComponent

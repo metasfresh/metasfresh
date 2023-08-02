@@ -12,7 +12,10 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.api.impl.FactAcctDAO;
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
+import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.vatcode.IVATCodeDAO;
@@ -51,6 +54,8 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueService;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
@@ -145,6 +150,7 @@ public class AcctDocRequiredServicesFacade
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	@Getter
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	private final ElementValueService elementValueService;
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -174,9 +180,11 @@ public class AcctDocRequiredServicesFacade
 	private final DimensionService dimensionService;
 	private final SalesRegionService salesRegionService;
 	private final AcctDocLockService acctDocLockService;
+	private final FactAcctUserChangesService factAcctUserChangesService;
 
 	public AcctDocRequiredServicesFacade(
 			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService,
+			@NonNull final ElementValueService elementValueService,
 			@NonNull final GLCategoryRepository glCategoryRepository,
 			@NonNull final BankAccountService bankAccountService,
 			@NonNull final ICostingService costingService,
@@ -187,9 +195,11 @@ public class AcctDocRequiredServicesFacade
 			@NonNull final FAOpenItemsService faOpenItemsService,
 			@NonNull final DimensionService dimensionService,
 			@NonNull final SalesRegionService salesRegionService,
-			@NonNull final AcctDocLockService acctDocLockService)
+			@NonNull final AcctDocLockService acctDocLockService,
+			@NonNull final FactAcctUserChangesService factAcctUserChangesService)
 	{
 		this.modelCacheInvalidationService = modelCacheInvalidationService;
+		this.elementValueService = elementValueService;
 		this.glCategoryRepository = glCategoryRepository;
 		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
@@ -201,6 +211,7 @@ public class AcctDocRequiredServicesFacade
 		this.dimensionService = dimensionService;
 		this.salesRegionService = salesRegionService;
 		this.acctDocLockService = acctDocLockService;
+		this.factAcctUserChangesService = factAcctUserChangesService;
 	}
 
 	public void fireBeforePostEvent(@NonNull final AcctDocModel docModel)
@@ -259,6 +270,11 @@ public class AcctDocRequiredServicesFacade
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
 		return accountDAO.getById(accountId);
+	}
+
+	public ElementValue getElementValueById(@NonNull final ElementValueId elementValueId)
+	{
+		return elementValueService.getById(elementValueId);
 	}
 
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)
@@ -518,7 +534,7 @@ public class AcctDocRequiredServicesFacade
 		//
 		record.setPostingType(factLine.getPostingType().getCode());
 		record.setC_AcctSchema_ID(factLine.getAcctSchemaId().getRepoId());
-		record.setAccount_ID(factLine.getAccount_ID().getRepoId());
+		record.setAccount_ID(factLine.getAccountId().getRepoId());
 		record.setC_SubAcct_ID(factLine.getC_SubAcct_ID());
 		FactAcctDAO.setAccountConceptualName(record, factLine.getAccountConceptualName());
 		//
@@ -580,4 +596,8 @@ public class AcctDocRequiredServicesFacade
 		return acctDocLockService.unlock(docModel, newPostingStatus, postingErrorIssueId);
 	}
 
+	public FactAcctChangesList getFactAcctChanges(@NonNull final TableRecordReference docRecordRef)
+	{
+		return factAcctUserChangesService.getByDocRecordRef(docRecordRef);
+	}
 }

@@ -118,7 +118,7 @@ class AccountImportTestHelper
 		final ElementValue elementValue = elementValueService.getById(elementValueId);
 		assertThat(elementValue.getValue()).isEqualTo(importRecord.getValue());
 		assertThat(elementValue.getName()).isEqualTo(importRecord.getName());
-		assertThat(elementValue.getAccountType()).isEqualTo(importRecord.getAccountType());
+		assertThat(elementValue.getAccountType().getCode()).isEqualTo(importRecord.getAccountType());
 		assertThat(elementValue.getAccountSign()).isEqualTo(importRecord.getAccountSign());
 		assertThat(elementValue.isSummary()).isEqualTo(importRecord.isSummary());
 		assertThat(elementValue.isPostActual()).isEqualTo(importRecord.isPostActual());

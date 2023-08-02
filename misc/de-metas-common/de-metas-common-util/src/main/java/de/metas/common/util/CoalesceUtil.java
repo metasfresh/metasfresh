@@ -271,14 +271,14 @@ public class CoalesceUtil
 	@SafeVarargs
 	public int firstGreaterThanZeroIntegerSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
-		if (suppliers == null || suppliers.length == 0)
+		if (suppliers == null)
 		{
 			return 0;
 		}
 		for (final Supplier<Integer> supplier : suppliers)
 		{
 			final Integer value = supplier.get();
-			if (value > 0)
+			if (value != null && value > 0)
 			{
 				return value;
 			}

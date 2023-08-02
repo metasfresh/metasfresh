@@ -16,6 +16,8 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocModel;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
@@ -190,6 +192,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	private List<DocLineType> docLines;
 
+	private FactAcctChangesApplier _factAcctChangesApplier; // lazy
+
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
 	protected Doc(final AcctDocContext ctx)
@@ -341,7 +345,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Create Facts
-		final List<Fact> facts = postLogic();
+		final ArrayList<Fact> facts = postLogic();
 
 		//
 		// Fire event: BEFORE_POST
@@ -393,13 +397,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private void deleteAcct() {services.deleteFactAcctByDocumentModel(getDocModel());}
 
 	@NonNull
-	public List<Fact> postLogic()
+	public ArrayList<Fact> postLogic()
 	{
 		loadDocumentDetailsIfNeeded();
 
 		//
 		// Create Facts
-		final List<Fact> facts = new ArrayList<>();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final AcctSchema acctSchema : acctSchemas)
 		{
 			if (isSkipPosting(acctSchema))
@@ -411,6 +415,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			final List<Fact> factsForAcctSchema = postLogic(acctSchema);
 			facts.addAll(factsForAcctSchema);
 		}
+
+		//
+		// Apply the changes which were not yet applied
+		getFactAcctChangesApplier().applyTo(facts);
 
 		//
 		// Update Open Items Matching
@@ -458,24 +466,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Process facts: validate, GL distribution, balance etc
-		for (final Fact fact : facts)
-		{
-			processFacts(fact);
-		}
+		facts.forEach(this::processFacts);
 
 		return facts;
 	}   // postLogic
 
-	private void processFacts(final Fact fact)
+	private void processFacts(@NonNull final Fact fact)
 	{
-		if (fact == null)
-		{
-			throw newPostingException()
-					// .setAcctSchema(acctSchema)
-					.setPostingStatus(PostingStatus.Error)
-					.setDetailMessage("No fact");
-		}
-
 		final AcctSchema acctSchema = fact.getAcctSchema();
 
 		// check accounts
@@ -488,6 +485,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setDetailMessage(checkAccountsResult.getReason())
 					.setFact(fact);
 		}
+
+		getFactAcctChangesApplier().applyTo(fact);
 
 		// distribute
 		try
@@ -503,6 +502,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
 		}
 
+		//
 		// Balance source amounts
 		if (fact.isSingleCurrency() && !fact.isSourceBalanced())
 		{
@@ -517,7 +517,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 
-		// balanceSegments
+		//
+		// Balance Segments
 		if (!fact.isSegmentBalanced())
 		{
 			fact.balanceSegments();
@@ -531,7 +532,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 
-		// balanceAccounting
+		//
+		// Balance accounted amounts
 		if (!fact.isAcctBalanced())
 		{
 			fact.balanceAccounting();
@@ -544,6 +546,26 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setDetailMessage("Accountable amounts not balanced");
 			}
 		}
+	}
+
+	protected final FactAcctChangesApplier getFactAcctChangesApplier()
+	{
+		FactAcctChangesApplier factAcctChangesApplier = this._factAcctChangesApplier;
+		if (factAcctChangesApplier == null)
+		{
+			final FactAcctChangesList factAcctChanges = services.getFactAcctChanges(getRecordRef());
+			factAcctChangesApplier = this._factAcctChangesApplier = new FactAcctChangesApplier(factAcctChanges);
+		}
+		return factAcctChangesApplier;
+	}
+
+	public void setFactAcctChangesList(@NonNull final FactAcctChangesList factAcctChangesList)
+	{
+		if (_factAcctChangesApplier != null)
+		{
+			throw new AdempiereException("Changing changes applier after it was loaded is not allowed");
+		}
+		this._factAcctChangesApplier = new FactAcctChangesApplier(factAcctChangesList);
 	}
 
 	/**
@@ -762,7 +784,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
+	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
 	{
 		return services.createCurrencyConversionContext(
 				getDateAcct(),
@@ -988,9 +1010,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getDocModel().toString();
 	}
 
-	protected final ClientId getClientId() {return getDocModel().getClientId();}
+	public final ClientId getClientId() {return getDocModel().getClientId();}
 
-	protected final OrgId getOrgId() {return getDocModel().getOrgId();}
+	public final OrgId getOrgId() {return getDocModel().getOrgId();}
 
 	protected String getDocumentNo()
 	{
@@ -1027,7 +1049,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final CurrencyId getCurrencyId() {return getCurrencyIdOptional().orElse(null);}
 
-	protected final Optional<CurrencyId> getCurrencyIdOptional()
+	public final Optional<CurrencyId> getCurrencyIdOptional()
 	{
 		if (_currencyId == null)
 		{
