@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.workflow;
 
+import de.metas.copy_with_details.CopyRecordRequest;
+import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -30,8 +32,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.copy.CopyRecordRequest;
-import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
