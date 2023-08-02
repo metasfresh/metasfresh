@@ -139,6 +139,10 @@ export function populateFiltersCaptions(filters) {
                 if (value === null) {
                   captionName = '';
                   itemCaption = '';
+                } else if (value === false) {
+                  // TODO: introduce AD_Process_Param.NameWhenNotSet and propagate it to FE
+                  captionName = 'Not ' + filterParameter.caption;
+                  itemCaption = captionName;
                 }
                 break;
               case 'Switch':
