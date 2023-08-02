@@ -75,3 +75,12 @@ Feature: Interim contract settings for bpartner
       | moduleLogContract_1           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
       | moduleLogContract_2           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
+    When invoke "C_BPartner_InterimContract_Upsert" process:
+      | C_BPartner_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | IsInterimContract |
+      | bp_interimPO             | harvesting_calendar      | year_2023            | true              |
+
+    Then metasfresh contains C_BPartner_InterimContract:
+      | C_BPartner_InterimContract.Identifier | C_BPartner_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | IsInterimContract |
+      | bp_interimContractSettings            | bp_interimPO             | harvesting_calendar      | year_2023            | true              |
+
+
