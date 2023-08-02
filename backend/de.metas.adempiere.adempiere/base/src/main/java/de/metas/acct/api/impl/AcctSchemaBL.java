@@ -52,6 +52,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 @Service
 public class AcctSchemaBL implements IAcctSchemaBL
@@ -65,6 +66,9 @@ public class AcctSchemaBL implements IAcctSchemaBL
 	{
 		return acctSchemaDAO.getById(acctSchemaId);
 	}
+
+	@Override
+	public List<AcctSchema> getAllByClientId(@NonNull final ClientId clientId) {return acctSchemaDAO.getAllByClient(clientId);}
 
 	@Override
 	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId)

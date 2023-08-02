@@ -6,11 +6,16 @@ import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.api.impl.FactAcctDAO;
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
+import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.vatcode.IVATCodeDAO;
@@ -19,6 +24,7 @@ import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -47,6 +53,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.engine.DocStatus;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueService;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
@@ -60,31 +69,43 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.sales_region.SalesRegion;
+import de.metas.sales_region.SalesRegionId;
+import de.metas.sales_region.SalesRegionService;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.acct.FactLine;
+import org.compiere.acct.PostingStatus;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
-import org.compiere.model.PO;
 import org.compiere.util.TrxRunnable2;
 import org.springframework.stereotype.Service;
 
@@ -129,6 +150,7 @@ public class AcctDocRequiredServicesFacade
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	@Getter
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	private final ElementValueService elementValueService;
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -156,9 +178,13 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICostingService costingService;
 	private final DimensionService dimensionService;
+	private final SalesRegionService salesRegionService;
+	private final AcctDocLockService acctDocLockService;
+	private final FactAcctUserChangesService factAcctUserChangesService;
 
 	public AcctDocRequiredServicesFacade(
 			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService,
+			@NonNull final ElementValueService elementValueService,
 			@NonNull final GLCategoryRepository glCategoryRepository,
 			@NonNull final BankAccountService bankAccountService,
 			@NonNull final ICostingService costingService,
@@ -167,9 +193,13 @@ public class AcctDocRequiredServicesFacade
 			@NonNull final MatchInvoiceService matchInvoiceService,
 			@NonNull final OrderCostService orderCostService,
 			@NonNull final FAOpenItemsService faOpenItemsService,
-			@NonNull final DimensionService dimensionService)
+			@NonNull final DimensionService dimensionService,
+			@NonNull final SalesRegionService salesRegionService,
+			@NonNull final AcctDocLockService acctDocLockService,
+			@NonNull final FactAcctUserChangesService factAcctUserChangesService)
 	{
 		this.modelCacheInvalidationService = modelCacheInvalidationService;
+		this.elementValueService = elementValueService;
 		this.glCategoryRepository = glCategoryRepository;
 		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
@@ -179,16 +209,19 @@ public class AcctDocRequiredServicesFacade
 		this.orderCostService = orderCostService;
 		this.faOpenItemsService = faOpenItemsService;
 		this.dimensionService = dimensionService;
+		this.salesRegionService = salesRegionService;
+		this.acctDocLockService = acctDocLockService;
+		this.factAcctUserChangesService = factAcctUserChangesService;
 	}
 
-	public void fireBeforePostEvent(@NonNull final PO po)
+	public void fireBeforePostEvent(@NonNull final AcctDocModel docModel)
 	{
-		factAcctListenersService.fireBeforePost(po);
+		factAcctListenersService.fireBeforePost(docModel.unbox());
 	}
 
-	public void fireAfterPostEvent(@NonNull final PO po)
+	public void fireAfterPostEvent(@NonNull final AcctDocModel docModel)
 	{
-		factAcctListenersService.fireAfterPost(po);
+		factAcctListenersService.fireAfterPost(docModel.unbox());
 	}
 
 	public void fireDocumentChanged(
@@ -205,9 +238,9 @@ public class AcctDocRequiredServicesFacade
 		trxManager.runInThreadInheritedTrx(runnable);
 	}
 
-	public void deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
+	public void deleteFactAcctByDocumentModel(@NonNull final AcctDocModel docModel)
 	{
-		factAcctDAO.deleteForDocumentModel(documentPO);
+		factAcctDAO.deleteForDocumentModel(docModel.unbox());
 	}
 
 	public boolean getSysConfigBooleanValue(@NonNull final String sysConfigName)
@@ -237,6 +270,11 @@ public class AcctDocRequiredServicesFacade
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
 		return accountDAO.getById(accountId);
+	}
+
+	public ElementValue getElementValueById(@NonNull final ElementValueId elementValueId)
+	{
+		return elementValueService.getById(elementValueId);
 	}
 
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)
@@ -450,5 +488,116 @@ public class AcctDocRequiredServicesFacade
 		return faOpenItemsService.computeTrxInfo(factLine);
 	}
 
-	public void saveNew(I_Fact_Acct factAcct) {factAcctDAO.save(factAcct);}
+	public void saveNew(@NonNull final I_Fact_Acct factAcct) {factAcctDAO.save(factAcct);}
+
+	public void saveNew(@NonNull final FactLine factLine)
+	{
+		if (factLine.getIdOrNull() != null)
+		{
+			throw new AdempiereException("Already created: " + factLine);
+		}
+
+		factLine.updateBeforeSaveNew();
+
+		final I_Fact_Acct record = InterfaceWrapperHelper.newInstance(I_Fact_Acct.class);
+
+		record.setCounterpart_Fact_Acct_ID(FactAcctId.toRepoId(factLine.getCounterpart_Fact_Acct_ID()));
+		Check.assumeEquals(record.getAD_Client_ID(), factLine.getAD_Client_ID().getRepoId(), "AD_Client_ID");
+		record.setAD_Org_ID(factLine.getOrgId().getRepoId());
+		record.setDateTrx(factLine.getDateTrx());
+		record.setDateAcct(factLine.getDateAcct());
+		record.setC_Period_ID(factLine.getC_Period_ID());
+		//
+		record.setAmtAcctDr(factLine.getAmtAcctDr());
+		record.setAmtAcctCr(factLine.getAmtAcctCr());
+		record.setC_Currency_ID(factLine.getCurrencyId().getRepoId());
+		record.setAmtSourceDr(factLine.getAmtSourceDr());
+		record.setAmtSourceCr(factLine.getAmtSourceCr());
+		record.setCurrencyRate(factLine.getCurrencyRate());
+		//
+		record.setC_Tax_ID(TaxId.toRepoId(factLine.getTaxId()));
+		record.setVATCode(factLine.getVatCode());
+		//
+		record.setAD_Table_ID(factLine.getDocRecordRef().getAD_Table_ID());
+		record.setRecord_ID(factLine.getDocRecordRef().getRecord_ID());
+		record.setLine_ID(factLine.getLine_ID());
+		record.setSubLine_ID(factLine.getSubLine_ID());
+		record.setDocumentNo(factLine.getDocumentNo());
+		record.setDocBaseType(factLine.getDocBaseType().getCode());
+		record.setDocStatus(DocStatus.toCodeOrNull(factLine.getDocStatus()));
+		record.setC_DocType_ID(DocTypeId.toRepoId(factLine.getC_DocType_ID()));
+		//
+		record.setM_Product_ID(ProductId.toRepoId(factLine.getM_Product_ID()));
+		record.setM_Locator_ID(factLine.getM_Locator_ID());
+		record.setQty(factLine.getQty() != null ? factLine.getQty().toBigDecimal() : null);
+		record.setC_UOM_ID(factLine.getQty() != null ? factLine.getQty().getUomId().getRepoId() : -1);
+		//
+		record.setPostingType(factLine.getPostingType().getCode());
+		record.setC_AcctSchema_ID(factLine.getAcctSchemaId().getRepoId());
+		record.setAccount_ID(factLine.getAccountId().getRepoId());
+		record.setC_SubAcct_ID(factLine.getC_SubAcct_ID());
+		FactAcctDAO.setAccountConceptualName(record, factLine.getAccountConceptualName());
+		//
+		record.setM_CostElement_ID(CostElementId.toRepoId(factLine.getCostElementId()));
+		//
+		record.setDescription(StringUtils.trimBlankToNull(factLine.getDescription()));
+		//
+		record.setC_OrderSO_ID(OrderId.toRepoId(factLine.getC_OrderSO_ID()));
+		record.setC_LocFrom_ID(LocationId.toRepoId(factLine.getC_LocFrom_ID()));
+		record.setC_LocTo_ID(LocationId.toRepoId(factLine.getC_LocTo_ID()));
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(factLine.getM_SectionCode_ID()));
+		record.setAD_OrgTrx_ID(OrgId.toRepoId(factLine.getAD_OrgTrx_ID()));
+		record.setC_BPartner_ID(BPartnerId.toRepoId(factLine.getC_BPartner_ID()));
+		record.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(factLine.getC_BPartner_Location_ID()));
+		record.setC_BPartner2_ID(BPartnerId.toRepoId(factLine.getC_BPartner2_ID()));
+		record.setGL_Budget_ID(factLine.getGL_Budget_ID());
+		record.setGL_Category_ID(GLCategoryId.toRepoId(factLine.getGL_Category_ID()));
+		record.setC_SalesRegion_ID(SalesRegionId.toRepoId(factLine.getC_SalesRegion_ID()));
+		record.setC_Project_ID(ProjectId.toRepoId(factLine.getC_Project_ID()));
+		record.setC_Activity_ID(ActivityId.toRepoId(factLine.getC_Activity_ID()));
+		record.setC_Campaign_ID(factLine.getC_Campaign_ID());
+		record.setUser1_ID(factLine.getUser1_ID());
+		record.setUser2_ID(factLine.getUser2_ID());
+		record.setUserElement1_ID(factLine.getUserElement1_ID());
+		record.setUserElement2_ID(factLine.getUserElement2_ID());
+		record.setUserElementString1(factLine.getUserElementString1());
+		record.setUserElementString2(factLine.getUserElementString2());
+		record.setUserElementString3(factLine.getUserElementString3());
+		record.setUserElementString4(factLine.getUserElementString4());
+		record.setUserElementString5(factLine.getUserElementString5());
+		record.setUserElementString6(factLine.getUserElementString6());
+		record.setUserElementString7(factLine.getUserElementString7());
+		record.setPOReference(StringUtils.trimBlankToNull(factLine.getPoReference()));
+
+		record.setOI_TrxType(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getTrxType().getCode() : null);
+		record.setOpenItemKey(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getKey().getAsString() : null);
+
+		factAcctDAO.save(record);
+		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));
+	}
+
+	public Optional<SalesRegionId> getSalesRegionIdBySalesRepId(final UserId salesRepId)
+	{
+		return salesRegionService.getBySalesRepId(salesRepId).map(SalesRegion::getId);
+	}
+
+	public Optional<SalesRegionId> getSalesRegionIdByBPartnerLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnerDAO.getSalesRegionIdByBPLocationId(bpartnerLocationId);
+	}
+
+	public boolean lock(@NonNull final AcctDocModel docModel, final boolean force, final boolean repost)
+	{
+		return acctDocLockService.lock(docModel, force, repost);
+	}
+
+	public boolean unlock(@NonNull final AcctDocModel docModel, @Nullable final PostingStatus newPostingStatus, @Nullable final AdIssueId postingErrorIssueId)
+	{
+		return acctDocLockService.unlock(docModel, newPostingStatus, postingErrorIssueId);
+	}
+
+	public FactAcctChangesList getFactAcctChanges(@NonNull final TableRecordReference docRecordRef)
+	{
+		return factAcctUserChangesService.getByDocRecordRef(docRecordRef);
+	}
 }

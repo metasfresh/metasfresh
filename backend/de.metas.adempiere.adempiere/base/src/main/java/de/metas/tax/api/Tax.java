@@ -48,53 +48,56 @@ public class Tax
 	public static final int C_TAX_ID_NO_TAX_FOUND = 100;
 
 	@NonNull TaxId taxId;
+	@NonNull String name;
+	boolean isSummary;
 	@NonNull OrgId orgId;
 	@NonNull Timestamp validFrom;
-	@Nullable
-	CountryId countryId;
-	@Nullable
-	CountryId toCountryId;
-	@Nullable
-	TypeOfDestCountry typeOfDestCountry;
+	@Nullable CountryId countryId;
+	@Nullable CountryId toCountryId;
+	@Nullable TypeOfDestCountry typeOfDestCountry;
 	@NonNull TaxCategoryId taxCategoryId;
 	boolean requiresTaxCertificate;
-	SOPOType sopoType;
-	@Nullable
-	Boolean isTaxExempt;
-	@Nullable
-	Boolean isFiscalRepresentation;
-	@Nullable
-	Boolean isSmallBusiness;
+	@Nullable SOPOType sopoType;
+	@Nullable Boolean isTaxExempt;
+	@Nullable Boolean isFiscalRepresentation;
+	@Nullable Boolean isSmallBusiness;
+	boolean isSalesTax;
 	boolean isWholeTax;
 	boolean isReverseCharge;
 	boolean isDocumentLevel;
-	BigDecimal rate;
-	BoilerPlateId boilerPlateId;
+	@NonNull BigDecimal rate;
+	@Nullable BoilerPlateId boilerPlateId;
 	@NonNull Integer seqNo;
 	@Nullable String taxCode;
 
 	@Builder
 	public Tax(
 			@NonNull final TaxId taxId,
+			@NonNull final String name,
+			final boolean isSummary,
 			@NonNull final OrgId orgId,
 			@NonNull final Timestamp validFrom,
 			@Nullable final CountryId countryId,
 			@Nullable final CountryId toCountryId,
 			@Nullable final TypeOfDestCountry typeOfDestCountry,
 			@NonNull final TaxCategoryId taxCategoryId,
-			@Nullable final Boolean requiresTaxCertificate,
-			final SOPOType sopoType,
+			final boolean requiresTaxCertificate,
+			@Nullable final SOPOType sopoType,
 			final boolean isTaxExempt,
 			@Nullable final Boolean isFiscalRepresentation,
 			@Nullable final Boolean isSmallBusiness,
+			final boolean isSalesTax,
 			final boolean isWholeTax,
 			final boolean isReverseCharge,
 			final boolean isDocumentLevel,
 			@NonNull final BigDecimal rate,
 			@Nullable final BoilerPlateId boilerPlateId,
-			@NonNull final Integer seqNo, @Nullable final String taxCode)
+			@NonNull final Integer seqNo,
+			@Nullable final String taxCode)
 	{
 		this.taxId = taxId;
+		this.name = name;
+		this.isSummary = isSummary;
 		this.orgId = orgId;
 		this.validFrom = validFrom;
 		this.countryId = countryId;
@@ -106,6 +109,7 @@ public class Tax
 		this.isTaxExempt = isTaxExempt;
 		this.isFiscalRepresentation = isFiscalRepresentation;
 		this.isSmallBusiness = isSmallBusiness;
+		this.isSalesTax = isSalesTax;
 		this.isWholeTax = isWholeTax;
 		this.isReverseCharge = isReverseCharge;
 		this.isDocumentLevel = isDocumentLevel;
@@ -120,6 +124,7 @@ public class Tax
 		return C_TAX_ID_NO_TAX_FOUND == taxId.getRepoId();
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isZeroTax() {return this.rate.signum() == 0;}
 
 	/**
@@ -142,7 +147,7 @@ public class Tax
 			}
 			else
 			{
-				final BigDecimal taxAmt = calculateTax(amount, taxIncluded, scale).getTaxAmount();
+				final BigDecimal taxAmt = calculateTax(amount, true, scale).getTaxAmount();
 				return amount.subtract(taxAmt);
 			}
 		}
@@ -193,7 +198,7 @@ public class Tax
 		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, RoundingMode.HALF_UP);
 		final BigDecimal reverseChargeTaxAmtFinal = reverseChargeAmt.setScale(scale, RoundingMode.HALF_UP);
 
-		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}] / reverse charge = {} [{}]",
+		log.debug("calculateTax: amount={} (incl={}, multiplier={}, scale={}) = {} [{}] / reverse charge = {} [{}]",
 				amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt, reverseChargeAmt, reverseChargeTaxAmtFinal);
 
 		return CalculateTaxResult.builder()

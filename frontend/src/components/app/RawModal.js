@@ -21,7 +21,8 @@ import { renderHeaderPropertiesGroups } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import ModalButton from './ModalButton';
-import { OIViewHeader_WINDOW_ID } from '../deliveryPlanning/OIViewHeader';
+import { OIViewHeader_WINDOW_ID } from '../acctOpenItems/OIViewHeader';
+import { AcctSimulationViewHeader_WINDOW_ID } from '../acctSimulation/AcctSimulationViewHeader';
 
 /**
  * @file Class based component.
@@ -340,7 +341,8 @@ class RawModal extends Component {
 
     const isRenderHeaderProperties =
       !!rawModal.headerProperties &&
-      String(windowId) !== OIViewHeader_WINDOW_ID;
+      String(windowId) !== OIViewHeader_WINDOW_ID &&
+      String(windowId) !== AcctSimulationViewHeader_WINDOW_ID;
 
     return (
       <div className="screen-freeze raw-modal">

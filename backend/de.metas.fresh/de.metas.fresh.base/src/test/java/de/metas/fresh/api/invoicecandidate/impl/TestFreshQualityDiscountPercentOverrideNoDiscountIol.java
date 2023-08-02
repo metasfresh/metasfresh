@@ -22,40 +22,30 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.StartupListener;
-import de.metas.currency.CurrencyRepository;
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.impl.aggregationEngine.TestQualityDiscountPercentOverrideNoDiscountIol;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
-import de.metas.money.MoneyService;
+import lombok.NonNull;
+import org.assertj.core.api.Assertions;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Checks the {@link FreshQuantityDiscountAggregator} when using {@link I_C_Invoice_Candidate#setQualityDiscountPercent_Override(BigDecimal)}.
  * <p>
  * Note that there is also no in-dispute iol in this case.
- *
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,/* ShutdownListener.class,*/ InvoiceCandidateRecordService.class, MoneyService.class, CurrencyRepository.class })
 public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQualityDiscountPercentOverrideNoDiscountIol
 {
 	private I_C_Invoice_Candidate_Agg freshAgg;
@@ -67,7 +57,7 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> ignored)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> ignored)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 
@@ -79,7 +69,7 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 	@Override
 	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{
-		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
+		Assertions.assertThat(invoices).as("We are expecting one invoice: " + invoices).hasSize(1);
 
 		final IInvoiceHeader invoice = invoices.remove(0);
 
@@ -89,7 +79,7 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 		assertThat(invoice.isSOTrx(), is(false));
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
-		assertEquals("We are expecting two invoice lines: " + invoiceLines, 2, invoiceLines.size());
+		Assertions.assertThat(invoiceLines).as("We are expecting two invoice lines: " + invoiceLines).hasSize(2);
 
 		final IInvoiceLineRW invoiceLine1 = invoiceLines.get(0);
 		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("100")));

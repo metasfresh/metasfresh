@@ -9,6 +9,7 @@ import de.metas.acct.open_items.FAOpenItemKey;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.currency.Amount;
 import de.metas.money.CurrencyCodeToCurrencyIdBiConverter;
+import de.metas.money.CurrencyIdToCurrencyCodeConverter;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -64,7 +65,7 @@ class FutureClearingAmountMap
 	@VisibleForTesting
 	static FutureClearingAmount extractFutureClearingAmount(
 			@NonNull final SAPGLJournalLine sapGLJournalLine,
-			@NonNull final CurrencyCodeToCurrencyIdBiConverter currencyCodeConverter)
+			@NonNull final CurrencyIdToCurrencyCodeConverter currencyCodeConverter)
 	{
 		final FAOpenItemTrxInfo openItemTrxInfo = sapGLJournalLine.getOpenItemTrxInfo();
 		if (openItemTrxInfo == null)

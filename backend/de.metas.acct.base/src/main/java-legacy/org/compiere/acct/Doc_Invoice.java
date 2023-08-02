@@ -26,42 +26,34 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MPeriod;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -94,7 +86,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	/**
 	 * Contained Optional Tax Lines
 	 */
-	private List<DocTax> _taxes = null;
+	private DocTaxesList _taxes = null; // lazy
 	/**
 	 * All lines are Service
 	 */
@@ -153,10 +145,10 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		setAmount(Doc.AMTTYPE_Net, invoice.getTotalLines());
 		setAmount(Doc.AMTTYPE_Charge, invoice.getChargeAmt());
 
-		setDocLines(loadLines(invoice));
+		setDocLines(loadLines());
 	}
 
-	private List<DocTax> getTaxes()
+	private DocTaxesList getTaxes()
 	{
 		if (_taxes == null)
 		{
@@ -165,59 +157,32 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		return _taxes;
 	}
 
-	private List<DocTax> loadTaxes()
+	private DocTaxesList loadTaxes()
 	{
-		final String sql = "SELECT it.C_Tax_ID, t.Name, t.Rate, it.TaxBaseAmt, it.TaxAmt, t.IsSalesTax " // 1..6
-				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsTaxIncluded // 7
-				+ ", it." + I_C_InvoiceTax.COLUMNNAME_IsReverseCharge // 8
-				+ ", it." + I_C_InvoiceTax.COLUMNNAME_ReverseChargeTaxAmt // 9
-				+ " FROM C_Tax t, C_InvoiceTax it "
-				+ " WHERE t.C_Tax_ID=it.C_Tax_ID AND it.C_Invoice_ID=?";
-		final Object[] sqlParams = new Object[] { get_ID() };
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		final InvoiceId invoiceId = getInvoiceId();
+		final ArrayList<DocTax> docTaxes = new ArrayList<>();
+		for (final InvoiceTax invoiceTax : invoiceBL.getTaxes(invoiceId))
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, sqlParams);
+			final Tax tax = services.getTaxById(invoiceTax.getTaxId());
+			docTaxes.add(DocTax.builderFrom(tax)
+					.accountProvider(getAccountProvider())
+					.taxBaseAmt(invoiceTax.getTaxBaseAmt())
+					.taxAmt(invoiceTax.getTaxAmt())
+					.taxIncluded(invoiceTax.isTaxIncluded())
+					.isReverseCharge(invoiceTax.isReverseCharge())
+					.reverseChargeTaxAmt(invoiceTax.getReverseChargeTaxAmt())
+					.build());
+		}
 
-			rs = pstmt.executeQuery();
-			//
-			final ImmutableList.Builder<DocTax> docTaxes = ImmutableList.builder();
-			while (rs.next())
-			{
-				final DocTax taxLine = DocTax.builder()
-						.accountProvider(getAccountProvider())
-						.taxId(TaxId.ofRepoId(rs.getInt(1)))
-						.taxName(rs.getString(2))
-						//.taxRate(rs.getBigDecimal(3))
-						.taxBaseAmt(rs.getBigDecimal(4))
-						.taxAmt(rs.getBigDecimal(5))
-						.salesTax(DisplayType.toBoolean(rs.getString(6)))
-						.taxIncluded(DisplayType.toBoolean(rs.getString(7)))
-						.isReverseCharge(StringUtils.toBoolean(rs.getString(8)))
-						.reverseChargeTaxAmt(rs.getBigDecimal(9))
-						.build();
-				docTaxes.add(taxLine);
-			}
-
-			return docTaxes.build();
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+		return new DocTaxesList(docTaxes);
 	}    // loadTaxes
 
-	private List<DocLine_Invoice> loadLines(final I_C_Invoice invoice)
+	private List<DocLine_Invoice> loadLines()
 	{
-		final List<DocLine_Invoice> docLines = new ArrayList<>();
-		//
-		for (final I_C_InvoiceLine line : Services.get(IInvoiceDAO.class).retrieveLines(invoice))
+		final InvoiceId invoiceId = getInvoiceId();
+
+		final ArrayList<DocLine_Invoice> docLines = new ArrayList<>();
+		for (final I_C_InvoiceLine line : invoiceBL.getLines(invoiceId))
 		{
 			// Skip invoice description lines
 			if (line.isDescription())
@@ -232,12 +197,10 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final BigDecimal lineIncludedTaxAmt = docLine.getIncludedTaxAmt();
 			if (lineIncludedTaxAmt.signum() != 0)
 			{
-				final TaxId taxId = docLine.getTaxId().orElse(null);
-				final DocTax docTax = getDocTaxOrNull(taxId);
-				if (docTax != null)
-				{
-					docTax.addIncludedTax(lineIncludedTaxAmt);
-				}
+				final DocTaxesList taxes = getTaxes();
+				docLine.getTaxId()
+						.flatMap(taxes::getByTaxId)
+						.ifPresent(docTax -> docTax.addIncludedTax(lineIncludedTaxAmt));
 			}
 
 			//
@@ -320,20 +283,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 
 		return retValue;
-	}
-
-	final DocTax getDocTaxOrNull(final TaxId taxId)
-	{
-		if (taxId == null)
-		{
-			return null;
-		}
-
-		return getTaxes()
-				.stream()
-				.filter(docTax -> docTax.getC_Tax_ID() == taxId.getRepoId())
-				.findFirst()
-				.orElse(null);
 	}
 
 	private Fact newFact(@NonNull final AcctSchema as)
@@ -426,7 +375,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						getCurrencyId(), null, taxAmt);
 				if (tl != null)
 				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
+					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
 				}
 			}
 		}
@@ -539,7 +488,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						getCurrencyId(), taxAmt, null);
 				if (tl != null)
 				{
-					tl.setC_Tax_ID(docTax.getC_Tax_ID());
+					tl.setTaxIdAndUpdateVatCode(docTax.getTaxId());
 				}
 			}
 		}
@@ -642,32 +591,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 
 		//
-		// TaxCredit DR
-		for (final DocTax docTax : getTaxes())
-		{
-			if (docTax.isReverseCharge())
-			{
-				fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
-						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-				fact.createLine()
-						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt().negate(), null)
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-			}
-			else
-			{
-				fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
-						.setAmtSource(currencyId, docTax.getTaxAmt(), null)
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-			}
-		}
-
 		// Expense/InventoryClearing DR
 		for (final DocLine_Invoice line : getDocLines())
 		{
@@ -732,12 +655,52 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				serviceAmt = serviceAmt.add(amt);
 			}
 		}
+
+		final DocTaxesList taxes = getTaxes();
+
+		final FactAcctChangesApplier changesApplier = getFactAcctChangesApplier();
+		if (changesApplier.hasChangesToApply())
+		{
+			changesApplier.applyUpdatesTo(fact);
+			final DocTaxUpdater docTaxUpdater = new DocTaxUpdater(services, getAccountProvider(), InvoiceDocBaseType.ofDocBaseType(getDocBaseType()));
+			docTaxUpdater.collect(fact);
+			docTaxUpdater.updateDocTaxes(taxes);
+		}
+
+		//
+		// TaxCredit DR
+		for (final DocTax docTax : taxes)
+		{
+			if (docTax.isReverseCharge())
+			{
+				fact.createLine()
+						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+				fact.createLine()
+						.setAccount(docTax.getTaxDueAcct(as))
+						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt().negate(), null)
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+			}
+			else
+			{
+				fact.createLine()
+						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAmtSource(currencyId, docTax.getTaxAmt(), null)
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+			}
+		}
+
 		// Set Locations
 		fact.forEach(fl -> {
 			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
 			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
 		});
 
+		//
 		// Liability CR
 		final Account payablesId = getVendorAccount(BPartnerVendorAccountType.V_Liability, as);
 		final Account payablesServicesId = getVendorAccount(BPartnerVendorAccountType.V_Liability_Services, as);
@@ -926,7 +889,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	}
 
 	@Override
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
+	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
 	{
 		CurrencyConversionContext invoiceCurrencyConversionCtx = this._invoiceCurrencyConversionCtx;
 		if (invoiceCurrencyConversionCtx == null)
@@ -945,7 +908,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 	private void postDependingMatchInvsIfNeeded()
 	{
-		if (!Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
+		if (!services.getSysConfigBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{
 			return;
 		}
