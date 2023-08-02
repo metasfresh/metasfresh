@@ -30,6 +30,28 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Address.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAddress(@Nullable java.lang.String Address);
+
+	/**
+	 * Get Address.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getAddress();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Address = new ModelColumn<>(I_C_BPartner_Location.class, "Address", null);
+	String COLUMNNAME_Address = "Address";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -37,7 +59,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID(int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -75,27 +97,6 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_Org_Mapping> COLUMN_AD_Org_Mapping_ID = new ModelColumn<>(I_C_BPartner_Location.class, "AD_Org_Mapping_ID", org.compiere.model.I_AD_Org_Mapping.class);
 	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
-
-	/**
-	 * Set Address.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAddress (@Nullable java.lang.String Address);
-
-	/**
-	 * Get Address.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAddress();
-
-	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Address = new ModelColumn<>(I_C_BPartner_Location.class, "Address", null);
-	String COLUMNNAME_Address = "Address";
 
 	/**
 	 * Set Partner Name.
@@ -187,6 +188,31 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_C_Location_ID = "C_Location_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Created = new ModelColumn<>(I_C_BPartner_Location.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Sales Region.
 	 * Sales coverage region
 	 *
@@ -214,29 +240,26 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Set Delivery Information.
 	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Type: String
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Created = new ModelColumn<>(I_C_BPartner_Location.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+	void setDelivery_Info(@Nullable java.lang.String Delivery_Info);
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Delivery Information.
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Type: String
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	@Nullable
+	java.lang.String getDelivery_Info();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Delivery_Info = new ModelColumn<>(I_C_BPartner_Location.class, "Delivery_Info", null);
+	String COLUMNNAME_Delivery_Info = "Delivery_Info";
 
 	/**
 	 * Set eMail.
