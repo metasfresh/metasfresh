@@ -104,6 +104,12 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		compute(rows -> rows.removingRowIds(rowIds));
 	}
 
+	@SuppressWarnings("unused")
+	public void removingIf(@NonNull final Predicate<T> predicate)
+	{
+		compute(rows -> rows.removingIf(predicate));
+	}
+
 	public void changeRowById(@NonNull DocumentId rowId, @NonNull final UnaryOperator<T> rowMapper)
 	{
 		compute(rows -> rows.changingRow(rowId, rowMapper));

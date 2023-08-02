@@ -300,6 +300,28 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		}
 	}
 
+	public ImmutableRowsIndex<T> removingIf(@NonNull final Predicate<T> predicate)
+	{
+		final int sizeBeforeRemove = rowIds.size();
+		final ArrayList<T> rowsAfterRemove = new ArrayList<>(sizeBeforeRemove);
+		for (final DocumentId rowId : this.rowIds)
+		{
+			final T row = rowsById.get(rowId);
+			final boolean remove = predicate.test(row);
+			if (!remove)
+			{
+				rowsAfterRemove.add(row);
+			}
+		}
+
+		if (rowsAfterRemove.size() == sizeBeforeRemove)
+		{
+			return this; // nothing was deleted
+		}
+
+		return new ImmutableRowsIndex<>(this.initialRowIds, rowsAfterRemove);
+	}
+
 	public <ID extends RepoIdAware> ImmutableSet<ID> getRecordIdsToRefresh(
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final Function<DocumentId, ID> idMapper)
