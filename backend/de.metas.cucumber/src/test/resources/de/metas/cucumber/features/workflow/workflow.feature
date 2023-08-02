@@ -25,4 +25,4 @@ Feature: workflow tests
 
     Then validate AD_Workflow:
       | AD_Workflow_ID.Identifier | Name                   | WorkflowType | OPT.AD_WF_Node_ID.Identifier | OPT.Description | OPT.Help | OPT.AccessLevel | OPT.DurationUnit | OPT.Version | OPT.ValidFrom | OPT.ValidTo | OPT.Priority | OPT.DurationLimit | OPT.Duration | OPT.Cost | OPT.WaitingTime | OPT.IsDefault |
-      | clonedWorkflow_1          | Name_20220818:13:30:13 | M            | node_1                       | testDescription | testHelp | 1               | D                | 0           | 2022-08-18    | 2022-08-19  | 0            | 0                 | 2            | 1        | 1               | false         |
+      | clonedWorkflow_1          | Name_20220818:14:30:13 | M            | node_1                       | testDescription | testHelp | 1               | D                | 0           | 2022-08-18    | 2022-08-19  | 0            | 0                 | 2            | 1        | 1               | false         |
