@@ -232,17 +232,17 @@ UPDATE AD_Message_Trl trl SET MsgText='Purchase order is fully delivered.' WHERE
 
 -- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
 -- 2023-08-02T10:24:08.592Z
-UPDATE AD_Message_Trl SET MsgText='Bestellung wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545314
+UPDATE AD_Message_Trl SET MsgText='Bestellung ist vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545314
 ;
 
 -- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
 -- 2023-08-02T10:24:11.362Z
-UPDATE AD_Message_Trl SET MsgText='Bestellung wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545314
+UPDATE AD_Message_Trl SET MsgText='Bestellung ist vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545314
 ;
 
 -- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
 -- 2023-08-02T10:24:24.838Z
-UPDATE AD_Message_Trl SET MsgText='Bestellung wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545314
+UPDATE AD_Message_Trl SET MsgText='Bestellung ist vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545314
 ;
 
 -- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
@@ -261,15 +261,15 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered
 -- 2023-08-02T10:25:24.584Z
-UPDATE AD_Message_Trl SET MsgText='Auftrag wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:25:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545315
+UPDATE AD_Message_Trl SET MsgText='Auftrag ist vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:25:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545315
 ;
 
 -- Value: de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered
 -- 2023-08-02T10:25:38.722Z
-UPDATE AD_Message_Trl SET MsgText='Auftrag wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:25:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545315
+UPDATE AD_Message_Trl SET MsgText='Auftrag ist vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:25:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545315
 ;
 
 -- Value: de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered
 -- 2023-08-02T10:26:06.561Z
-UPDATE AD_Message_Trl SET MsgText='Auftrag wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:26:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545315
+UPDATE AD_Message_Trl SET MsgText='Auftrag ist vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:26:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545315
 ;
