@@ -105,8 +105,6 @@ public final class FactLineBuilder
 
 	private FAOpenItemTrxInfo openItemTrxInfo;
 
-	@Nullable String description;
-
 	FactLineBuilder(@NonNull final Fact fact)
 	{
 		this.fact = fact;
@@ -235,8 +233,6 @@ public final class FactLineBuilder
 		}
 
 		line.setOpenItemTrxInfo(openItemTrxInfo);
-
-		line.setDescription(getDescription());
 
 		//
 		log.debug("Built: {}", line);

@@ -1294,7 +1294,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setAccount(discountAcct)
 									.setAmtSource(as.getCurrencyId(), amountCMAdjusted, null)
 									.setC_Tax_ID(taxId)
-									.addDescription(description)
+									.additionalDescription(description)
 									.buildAndAdd();
 
 							// CR
@@ -1304,7 +1304,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted)
 									.setC_Tax_ID(taxId)
 									.alsoAddZeroLine()
-									.addDescription(description)
+									.additionalDescription(description)
 									.buildAndAdd();
 						}
 						// Discount revenue
@@ -1316,7 +1316,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setAccount(discountAcct)
 									.setAmtSource(as.getCurrencyId(), amountCMAdjusted.negate(), null)
 									.setC_Tax_ID(taxId)
-									.addDescription(description)
+									.additionalDescription(description)
 									.buildAndAdd();
 
 							// CR
@@ -1326,7 +1326,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted.negate())
 									.setC_Tax_ID(taxId)
 									.alsoAddZeroLine()
-									.addDescription(description)
+									.additionalDescription(description)
 									.buildAndAdd();
 
 						}
@@ -1360,7 +1360,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setAmtSource(as.getCurrencyId(), amountCMAdjusted, null)
 									.setC_Tax_ID(taxId)
 									.alsoAddZeroLine()
-									.addDescription(description)
+									.additionalDescription(description)
 									.buildAndAdd();
 
 							// CR
@@ -1369,7 +1369,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setAccount(discountAcct)
 									.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted)
 									.setC_Tax_ID(taxId)
-									.addDescription(description)
+									.additionalDescription(description)
 									.buildAndAdd();
 
 						}
@@ -1383,7 +1383,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setAmtSource(as.getCurrencyId(), amountCMAdjusted.negate(), null)
 									.setC_Tax_ID(taxId)
 									.alsoAddZeroLine()
-									.addDescription(description)
+									.additionalDescription(description)
 									.buildAndAdd();
 
 							// CR
@@ -1392,7 +1392,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 									.setAccount(discountAcct)
 									.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted.negate())
 									.setC_Tax_ID(taxId)
-									.addDescription(description)
+									.additionalDescription(description)
 									.buildAndAdd();
 
 						}
@@ -1422,7 +1422,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setAccount(writeOffAccount)
 								.setAmtSource(as.getCurrencyId(), amountCMAdjusted, null)
 								.setC_Tax_ID(taxId)
-								.addDescription(description)
+								.additionalDescription(description)
 								.buildAndAdd();
 
 						// CR
@@ -1432,7 +1432,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted)
 								.setC_Tax_ID(taxId)
 								.alsoAddZeroLine()
-								.addDescription(description)
+								.additionalDescription(description)
 								.buildAndAdd();
 					}
 				}
@@ -1455,7 +1455,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setAmtSource(as.getCurrencyId(), amountCMAdjusted, null)
 								.setC_Tax_ID(taxId)
 								.alsoAddZeroLine()
-								.addDescription(description)
+								.additionalDescription(description)
 								.buildAndAdd();
 
 						// CR
@@ -1464,7 +1464,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 								.setAccount(writeOffAccount)
 								.setAmtSource(as.getCurrencyId(), null, amountCMAdjusted)
 								.setC_Tax_ID(taxId)
-								.addDescription(description)
+								.additionalDescription(description)
 								.buildAndAdd();
 					}
 				}

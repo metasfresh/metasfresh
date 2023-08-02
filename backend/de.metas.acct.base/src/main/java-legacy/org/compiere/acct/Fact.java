@@ -608,6 +608,8 @@ public final class Fact
 	@NonNull
 	public FactLine getSingleLineByAccountId(final AccountId accountId)
 	{
+		final MAccount account = services.getAccountById(accountId);
+
 		FactLine lineFound = null;
 		for (FactLine line : m_lines)
 		{
