@@ -64,7 +64,7 @@ export const getProcessData = ({
 
 export const getProcessFileUrl = ({ processId, pinstanceId, filename }) => {
   let filenameNorm = filename ? filename : 'report.pdf';
-  filenameNorm = filename.replace(/[/\\?%*:|"<>]/g, '-');
+  filenameNorm = filenameNorm.replace(/[/\\?%*:|"<>]/g, '-');
   filenameNorm = encodeURIComponent(filenameNorm);
 
   return `${config.API_URL}/process/${processId}/${pinstanceId}/print/${filenameNorm}`;
