@@ -1,5 +1,5 @@
 @from:cucumber
-Feature: workflow rest controller tests
+Feature: workflow tests
 
   Background:
     Given infrastructure and metasfresh are running
