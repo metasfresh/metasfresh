@@ -53,7 +53,7 @@ class AcctSimulationViewFactory implements IViewFactory
 				.setWindowId(WINDOW_ID)
 				.setCaption(TranslatableStrings.anyLanguage("Accounting Simulation"))
 				.setAllowOpeningRowDetails(false)
-				.allowViewCloseAction(ViewCloseAction.CANCEL)
+				.allowViewCloseAction(ViewCloseAction.CLOSE)
 				.addElementsFromViewRowClass(AcctRow.class, viewDataType)
 				.setFilters(ImmutableList.of())
 				.build();

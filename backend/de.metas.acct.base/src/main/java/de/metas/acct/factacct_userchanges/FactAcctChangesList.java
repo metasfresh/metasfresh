@@ -12,18 +12,19 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 
+@Getter
 @EqualsAndHashCode
 @ToString
 public class FactAcctChangesList
 {
 	public static final FactAcctChangesList EMPTY = new FactAcctChangesList(ImmutableList.of());
 
-	@Getter private final ImmutableList<FactAcctChanges> allLines;
-	@Getter private final ImmutableListMultimap<AcctSchemaId, FactAcctChanges> linesToAddGroupedByAcctSchemaId;
+	private final ImmutableList<FactAcctChanges> allLines;
+	private final ImmutableListMultimap<AcctSchemaId, FactAcctChanges> linesToAddGroupedByAcctSchemaId;
 	private final ImmutableMap<FactLineMatchKey, FactAcctChanges> linesToChangeByKey;
 	private final ImmutableMap<FactLineMatchKey, FactAcctChanges> linesToRemoveByKey;
 
@@ -51,12 +52,12 @@ public class FactAcctChangesList
 		return GuavaCollectors.collectUsingListAccumulator(FactAcctChangesList::ofList);
 	}
 
-	public Optional<FactAcctChanges> getChangeByKey(@NonNull final FactLineMatchKey matchKey)
-	{
-		return Optional.ofNullable(linesToChangeByKey.get(matchKey));
-	}
+	public boolean isEmpty() {return allLines.isEmpty();}
 
-	public boolean isLineRemoved(@NonNull final FactLineMatchKey matchKey) {return linesToRemoveByKey.containsKey(matchKey);}
+	public void forEachRemove(@NonNull final Consumer<FactAcctChanges> consumer)
+	{
+		linesToRemoveByKey.values().forEach(consumer);
+	}
 
 	public FactAcctChangesList removingIf(@NonNull final Predicate<FactAcctChanges> predicate)
 	{

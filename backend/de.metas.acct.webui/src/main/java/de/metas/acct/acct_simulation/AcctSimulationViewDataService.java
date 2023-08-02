@@ -1,6 +1,5 @@
 package de.metas.acct.acct_simulation;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaBL;
@@ -22,6 +21,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -116,37 +116,67 @@ class AcctSimulationViewDataService
 	{
 		final TableRecordReference docRecordRef = docInfo.getRecordRef();
 		final ClientId clientId = docInfo.getClientId();
-		final List<Fact> facts = getAcctDoc(docRecordRef, clientId).postLogic();
+		final Doc<?> acctDoc = getAcctDoc(docRecordRef, clientId);
+		acctDoc.setFactAcctChangesList(userChangesList);
+		final List<Fact> facts = acctDoc.postLogic();
 
 		final ArrayList<AcctRow> result = new ArrayList<>();
+
+		//
+		// First, add removals as "hidden" rows
+		// We have to do this because they are not present in Fact/FactLine(s)
+		final AcctRowCurrencyRate docCurrencyRate = getCurrencyRate(docInfo);
+		userChangesList.forEachRemove(remove -> result.add(toRow(remove, docCurrencyRate)));
+
+		//
+		// Convert fact lines -> user changes -> rows
 		for (final Fact fact : facts)
 		{
-			final ImmutableList<FactLine> lines = fact.getLines();
-			for (int i = 0; i < lines.size(); i++)
+			for (final FactLine factLine : fact.getLines())
 			{
-				final FactLine factLine = lines.get(i);
-
-				final FactLineMatchKey matchKey = extractMatchKey(factLine);
-				final FactAcctChanges userChanges = userChangesList.getChangeByKey(matchKey)
-						.orElseGet(() -> extractUserChanges(factLine));
-
-				result.add(
-						AcctRow.builder()
-								.lookups(lookups)
-								.currencyIdToCurrencyCodeConverter(moneyService)
-								.userChanges(userChanges)
-								.rowId(DocumentId.of(matchKey.getAsString()))
-								.currencyRate(AcctRowCurrencyRate.ofCurrencyRate(factLine.getCurrencyRateFromDocumentToAcctCurrency()))
-								.build()
-				);
+				result.add(toRow(factLine));
 			}
 		}
 
 		return result;
 	}
 
+	private AcctRow toRow(@NonNull final FactLine factLine)
+	{
+		final FactAcctChanges userChanges = extractUserChanges(factLine);
+		final AcctRowCurrencyRate currencyRate = AcctRowCurrencyRate.ofCurrencyRate(factLine.getCurrencyRateFromDocumentToAcctCurrency());
+		return toRow(userChanges, currencyRate);
+	}
+
+	private AcctRow toRow(@NonNull final FactAcctChanges userChanges, @NonNull final AcctRowCurrencyRate currencyRate)
+	{
+		final DocumentId rowId;
+		if (userChanges.getType().isAdd())
+		{
+			rowId = DocumentId.ofString(UUID.randomUUID().toString());
+		}
+		else
+		{
+			final FactLineMatchKey matchKey = Check.assumeNotNull(userChanges.getMatchKey(), "match key shall not be null: {}", userChanges);
+			rowId = DocumentId.of(matchKey.getAsString());
+		}
+
+		return AcctRow.builder()
+				.lookups(lookups)
+				.currencyIdToCurrencyCodeConverter(moneyService)
+				.userChanges(userChanges)
+				.rowId(rowId)
+				.currencyRate(currencyRate)
+				.build();
+	}
+
 	private static FactAcctChanges extractUserChanges(final FactLine factLine)
 	{
+		if (factLine.getAppliedUserChanges() != null)
+		{
+			return factLine.getAppliedUserChanges();
+		}
+
 		final PostingSign postingSign;
 		final Money amount_LC; // amount (local currency)
 		final Money amount_DC; // amount (document/foreign currency)

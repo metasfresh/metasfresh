@@ -1,7 +1,6 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.accounts.AccountProvider;
@@ -13,15 +12,12 @@ import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocModel;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
-import de.metas.acct.factacct_userchanges.FactAcctChanges;
+import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
 import de.metas.acct.factacct_userchanges.FactAcctChangesList;
-import de.metas.acct.factacct_userchanges.FactLineMatchKey;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
@@ -196,6 +192,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	private List<DocLineType> docLines;
 
+	private FactAcctChangesApplier _factAcctChangesApplier; // lazy
+
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
 	protected Doc(final AcctDocContext ctx)
@@ -348,7 +346,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// Create Facts
 		final ArrayList<Fact> facts = postLogic();
-		applyUserChanges(facts);
 
 		//
 		// Fire event: BEFORE_POST
@@ -397,14 +394,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return skip;
 	}
 
-	public AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
-	{
-		return acctSchemas.stream()
-				.filter(acctSchema -> AcctSchemaId.equals(acctSchema.getId(), acctSchemaId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No accounting schema found for " + acctSchemaId + " in " + acctSchemas));
-	}
-
 	private void deleteAcct() {services.deleteFactAcctByDocumentModel(getDocModel());}
 
 	@NonNull
@@ -426,6 +415,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			final List<Fact> factsForAcctSchema = postLogic(acctSchema);
 			facts.addAll(factsForAcctSchema);
 		}
+
+		//
+		// Apply the changes which were not yet applied
+		getFactAcctChangesApplier().applyTo(facts);
 
 		//
 		// Update Open Items Matching
@@ -493,6 +486,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setFact(fact);
 		}
 
+		getFactAcctChangesApplier().applyTo(fact);
+
 		// distribute
 		try
 		{
@@ -553,55 +548,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	private void applyUserChanges(@NonNull final ArrayList<Fact> facts)
+	protected final FactAcctChangesApplier getFactAcctChangesApplier()
 	{
-		final FactAcctChangesList changesList = services.getFactAcctChanges(getRecordRef());
-
-		//
-		// Change and Remove lines
-		for (final Fact fact : facts)
+		FactAcctChangesApplier factAcctChangesApplier = this._factAcctChangesApplier;
+		if (factAcctChangesApplier == null)
 		{
-			fact.mapEachLine(factLine -> {
-				final FactLineMatchKey matchKey = FactLineMatchKey.ofFactLine(factLine);
-				if (changesList.isLineRemoved(matchKey))
-				{
-					return null;
-				}
-				else
-				{
-					changesList.getChangeByKey(matchKey).ifPresent(factLine::updateFrom);
-					return factLine;
-				}
-			});
+			final FactAcctChangesList factAcctChanges = services.getFactAcctChanges(getRecordRef());
+			factAcctChangesApplier = this._factAcctChangesApplier = new FactAcctChangesApplier(factAcctChanges);
 		}
+		return factAcctChangesApplier;
+	}
 
-		//
-		// Lines to add
-		final ImmutableListMultimap<AcctSchemaId, FactAcctChanges> linesToAddGroupedByAcctSchemaId = changesList.getLinesToAddGroupedByAcctSchemaId();
-		for (final AcctSchemaId acctSchemaId : linesToAddGroupedByAcctSchemaId.keySet())
+	public void setFactAcctChangesList(@NonNull final FactAcctChangesList factAcctChangesList)
+	{
+		if (_factAcctChangesApplier != null)
 		{
-			final AcctSchema acctSchema = getAcctSchemaById(acctSchemaId);
-			final Fact fact = new Fact(this, acctSchema, PostingType.Actual);
-			facts.add(fact);
-			
-			for (final FactAcctChanges changesToAdd : linesToAddGroupedByAcctSchemaId.get(acctSchemaId))
-			{
-				fact.createLine()
-						.setAccount(changesToAdd.getAccountIdNotNull())
-						.setAmtSource(changesToAdd.getAmtSourceDr(), changesToAdd.getAmtSourceCr())
-						.setAmtAcct(changesToAdd.getAmtAcctDr(), changesToAdd.getAmtAcctCr())
-						.setC_Tax_ID(changesToAdd.getTaxId())
-						.description(changesToAdd.getDescription())
-						.sectionCodeId(changesToAdd.getSectionCodeId())
-						.productId(changesToAdd.getProductId())
-						.userElementString1(changesToAdd.getUserElementString1())
-						.salesOrderId(changesToAdd.getSalesOrderId())
-						.activityId(changesToAdd.getActivityId())
-						.buildAndAdd();
-
-			}
+			throw new AdempiereException("Changing changes applier after it was loaded is not allowed");
 		}
-
+		this._factAcctChangesApplier = new FactAcctChangesApplier(factAcctChangesList);
 	}
 
 	/**

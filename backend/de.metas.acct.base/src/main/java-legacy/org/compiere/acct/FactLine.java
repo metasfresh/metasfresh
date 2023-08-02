@@ -152,6 +152,8 @@ public class FactLine
 
 	private CurrencyConversionContext currencyConversionCtx = null;
 
+	@Nullable @Getter private FactAcctChanges appliedUserChanges = null;
+
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	@Builder
 	private FactLine(
@@ -511,12 +513,12 @@ public class FactLine
 				{
 					result.append(" (").append(docLine.getDescription()).append(")");
 				}
-				else if (doc.getDescription() != null && doc.getDescription().length() > 0)
+				else if (doc.getDescription() != null && !doc.getDescription().isEmpty())
 				{
 					result.append(" (").append(doc.getDescription()).append(")");
 				}
 			}
-			else if (doc.getDescription() != null && doc.getDescription().length() > 0)
+			else if (doc.getDescription() != null && !doc.getDescription().isEmpty())
 			{
 				result.append(" (").append(doc.getDescription()).append(")");
 			}
@@ -964,7 +966,7 @@ public class FactLine
 	 * @return AmtSourceDr/AmtAcctDr or AmtSourceCr/AmtAcctCr, which one is not ZERO
 	 * @throws IllegalStateException if both of them are not ZERO
 	 */
-	public AmountSourceAndAcct getAmtSourceAndAcctDrOrCr()
+	AmountSourceAndAcct getAmtSourceAndAcctDrOrCr()
 	{
 		final BigDecimal amtAcctDr = getAmtAcctDr();
 		final int amtAcctDrSign = amtAcctDr == null ? 0 : amtAcctDr.signum();
@@ -1558,6 +1560,8 @@ public class FactLine
 		this.userElementString1 = changes.getUserElementString1();
 		this.C_OrderSO_ID = changes.getSalesOrderId();
 		this.C_Activity_ID = changes.getActivityId();
+
+		this.appliedUserChanges = changes;
 	}
 
 }
