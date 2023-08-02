@@ -26,10 +26,13 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workflow.service.IADWorkflowBL;
+import de.metas.workflow.service.impl.AD_Workflow_POCopyRecordSupport;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.MMenu;
@@ -41,6 +44,13 @@ import org.slf4j.Logger;
 public class AD_Workflow
 {
 	private final Logger logger = LogManager.getLogger(getClass());
+
+	@Init
+	public void init()
+	{
+		CopyRecordFactory.enableForTableName(I_AD_Workflow.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_AD_Workflow.Table_Name, AD_Workflow_POCopyRecordSupport.class);
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_AD_Workflow workflow, final ModelChangeType changeType)
