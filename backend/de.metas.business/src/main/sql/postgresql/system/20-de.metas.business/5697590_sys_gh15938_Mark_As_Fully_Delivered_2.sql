@@ -273,3 +273,163 @@ UPDATE AD_Message_Trl SET MsgText='Auftrag ist vollständig ausgeliefert.',Updat
 -- 2023-08-02T10:26:06.561Z
 UPDATE AD_Message_Trl SET MsgText='Auftrag ist vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:26:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545315
 ;
+
+-- Column: C_Order.NotCompletelyInvoiced
+-- 2023-08-02T12:22:46.389Z
+UPDATE AD_Column SET FilterDefaultValue='N',Updated=TO_TIMESTAMP('2023-08-02 15:22:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587242
+;
+
+-- Column: C_Order.NotFullyDelivered
+-- 2023-08-02T12:23:29.400Z
+UPDATE AD_Column SET FilterDefaultValue='N',Updated=TO_TIMESTAMP('2023-08-02 15:23:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587241
+;
+
+-- Column: C_Order.NotFullyDelivered
+-- Column SQL (old): ( CASE WHEN (SELECT SUM(qtydelivered - qtyordered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) >= 0 AND C_Order.DocStatus IN ('CO', 'CL') THEN 'N'     ELSE 'Y'    END )
+-- 2023-08-02T12:24:29.273Z
+UPDATE AD_Column SET ColumnSQL='( CASE WHEN (SELECT SUM(qtydelivered - qtyordered) from C_OrderLine where C_Order_ID = C_Order.c_order_id) >= 0 AND C_Order.DocStatus IN (''CO'', ''CL'') THEN ''Y''     ELSE ''N''    END )',Updated=TO_TIMESTAMP('2023-08-02 15:24:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587241
+;
+
+-- Column: C_Order.NotCompletelyInvoiced
+-- Column SQL (old): ( CASE   WHEN C_Order.QtyMoved <= C_Order.QtyInvoiced AND C_Order.QtyMoved > 0 THEN 'N' ELSE 'Y'   END )
+-- 2023-08-02T12:24:45.712Z
+UPDATE AD_Column SET ColumnSQL='( CASE   WHEN C_Order.QtyMoved <= C_Order.QtyInvoiced AND C_Order.QtyMoved > 0 THEN ''Y'' ELSE ''N''   END )',Updated=TO_TIMESTAMP('2023-08-02 15:24:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587242
+;
+
+-- 2023-08-02T12:24:54.216Z
+UPDATE AD_Element SET ColumnName='CompletelyInvoiced',Updated=TO_TIMESTAMP('2023-08-02 15:24:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620
+;
+
+-- 2023-08-02T12:24:54.232Z
+UPDATE AD_Column SET ColumnName='CompletelyInvoiced' WHERE AD_Element_ID=582620
+;
+
+-- 2023-08-02T12:24:54.232Z
+UPDATE AD_Process_Para SET ColumnName='CompletelyInvoiced' WHERE AD_Element_ID=582620
+;
+
+-- 2023-08-02T12:24:54.232Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'en_US')
+;
+
+-- Element: CompletelyInvoiced
+-- 2023-08-02T12:46:22.010Z
+UPDATE AD_Element_Trl SET Name='Vollständig fakturiert', PrintName='Vollständig fakturiert',Updated=TO_TIMESTAMP('2023-08-02 15:46:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620 AND AD_Language='de_CH'
+;
+
+-- 2023-08-02T12:46:22.010Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'de_CH')
+;
+
+-- Element: CompletelyInvoiced
+-- 2023-08-02T12:46:28.229Z
+UPDATE AD_Element_Trl SET Name='Vollständig fakturiert', PrintName='Vollständig fakturiert',Updated=TO_TIMESTAMP('2023-08-02 15:46:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620 AND AD_Language='de_DE'
+;
+
+-- 2023-08-02T12:46:28.229Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'de_DE')
+;
+
+-- Element: CompletelyInvoiced
+-- 2023-08-02T12:46:40.156Z
+UPDATE AD_Element_Trl SET Name='Completely invoiced', PrintName='Completely invoiced',Updated=TO_TIMESTAMP('2023-08-02 15:46:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620 AND AD_Language='en_US'
+;
+
+-- 2023-08-02T12:46:40.156Z
+UPDATE AD_Element SET Name='Completely invoiced', PrintName='Completely invoiced', Updated=TO_TIMESTAMP('2023-08-02 15:46:40','YYYY-MM-DD HH24:MI:SS') WHERE AD_Element_ID=582620
+;
+
+-- 2023-08-02T12:46:40.661Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582620,'en_US')
+;
+
+-- 2023-08-02T12:46:40.677Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'en_US')
+;
+
+-- Element: CompletelyInvoiced
+-- 2023-08-02T12:46:49.796Z
+UPDATE AD_Element_Trl SET Name='Completely invoiced', PrintName='Completely invoiced',Updated=TO_TIMESTAMP('2023-08-02 15:46:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620 AND AD_Language='fr_CH'
+;
+
+-- 2023-08-02T12:46:49.796Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'fr_CH')
+;
+
+-- Element: CompletelyInvoiced
+-- 2023-08-02T12:46:56.134Z
+UPDATE AD_Element_Trl SET Name='Completely invoiced', PrintName='Completely invoiced',Updated=TO_TIMESTAMP('2023-08-02 15:46:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620 AND AD_Language='nl_NL'
+;
+
+-- 2023-08-02T12:46:56.134Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'nl_NL')
+;
+
+-- 2023-08-02T12:47:51.798Z
+UPDATE AD_Element SET ColumnName='FullyDelivered',Updated=TO_TIMESTAMP('2023-08-02 15:47:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619
+;
+
+-- 2023-08-02T12:47:51.798Z
+UPDATE AD_Column SET ColumnName='FullyDelivered' WHERE AD_Element_ID=582619
+;
+
+-- 2023-08-02T12:47:51.798Z
+UPDATE AD_Process_Para SET ColumnName='FullyDelivered' WHERE AD_Element_ID=582619
+;
+
+-- 2023-08-02T12:47:51.798Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'en_US')
+;
+
+-- Element: FullyDelivered
+-- 2023-08-02T12:48:41.428Z
+UPDATE AD_Element_Trl SET Name='Vollständig ausgeliefert', PrintName='Vollständig ausgeliefert',Updated=TO_TIMESTAMP('2023-08-02 15:48:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619 AND AD_Language='de_CH'
+;
+
+-- 2023-08-02T12:48:41.443Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'de_CH')
+;
+
+-- Element: FullyDelivered
+-- 2023-08-02T12:48:49.304Z
+UPDATE AD_Element_Trl SET Name='Vollständig ausgeliefert', PrintName='Vollständig ausgeliefert',Updated=TO_TIMESTAMP('2023-08-02 15:48:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619 AND AD_Language='de_DE'
+;
+
+-- 2023-08-02T12:48:49.304Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'de_DE')
+;
+
+-- Element: FullyDelivered
+-- 2023-08-02T12:48:56.288Z
+UPDATE AD_Element_Trl SET Name='Fully delivered', PrintName='Fully delivered',Updated=TO_TIMESTAMP('2023-08-02 15:48:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619 AND AD_Language='en_US'
+;
+
+-- 2023-08-02T12:48:56.288Z
+UPDATE AD_Element SET Name='Fully delivered', PrintName='Fully delivered', Updated=TO_TIMESTAMP('2023-08-02 15:48:56','YYYY-MM-DD HH24:MI:SS') WHERE AD_Element_ID=582619
+;
+
+-- 2023-08-02T12:48:56.807Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582619,'en_US')
+;
+
+-- 2023-08-02T12:48:56.823Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'en_US')
+;
+
+-- Element: FullyDelivered
+-- 2023-08-02T12:49:13.058Z
+UPDATE AD_Element_Trl SET Name='Fully delivered', PrintName='Fully delivered',Updated=TO_TIMESTAMP('2023-08-02 15:49:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619 AND AD_Language='fr_CH'
+;
+
+-- 2023-08-02T12:49:13.058Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'fr_CH')
+;
+
+-- Element: FullyDelivered
+-- 2023-08-02T12:49:17.950Z
+UPDATE AD_Element_Trl SET Name='Fully delivered', PrintName='Fully delivered',Updated=TO_TIMESTAMP('2023-08-02 15:49:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619 AND AD_Language='nl_NL'
+;
+
+-- 2023-08-02T12:49:17.950Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'nl_NL')
+;
