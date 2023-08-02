@@ -152,6 +152,8 @@ public class FactLine
 
 	private CurrencyConversionContext currencyConversionCtx = null;
 
+	@Nullable @Getter private FactAcctChanges appliedUserChanges = null;
+
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	@Builder
 	private FactLine(
@@ -1558,6 +1560,8 @@ public class FactLine
 		this.userElementString1 = changes.getUserElementString1();
 		this.C_OrderSO_ID = changes.getSalesOrderId();
 		this.C_Activity_ID = changes.getActivityId();
+
+		this.appliedUserChanges = changes;
 	}
 
 }
