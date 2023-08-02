@@ -6,6 +6,8 @@ class AcctSimulationView_Save extends AcctSimulationViewBasedAction
 	protected String doIt()
 	{
 		getView().save();
+		getResult().setCloseWebuiModalView(true);
+
 		return MSG_OK;
 	}
 }

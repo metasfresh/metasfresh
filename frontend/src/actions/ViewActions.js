@@ -1,6 +1,7 @@
 import {
   browseViewRequest,
   createViewRequest,
+  deleteViewRequest,
   filterViewRequest,
   getViewLayout,
   headerPropertiesRequest,
@@ -44,7 +45,7 @@ import {
 } from './TableActions';
 import { createFilter, deleteFilter } from './FiltersActions';
 import { deleteQuickActions, fetchQuickActions } from './Actions';
-import { setRawModalTitle } from './WindowActions';
+import { closeModal, closeRawModal, setRawModalTitle } from './WindowActions';
 import { patchModalView } from '../api/view';
 
 /**
@@ -280,6 +281,9 @@ export function setIncludedView({
 /**
  * @method unsetIncludedView
  * @summary reset included view's id in the store
+ * @param windowId
+ * @param viewId
+ * @param forceClose if true then it clears the includedView state even if the windowId and viewId not matching
  */
 export function unsetIncludedView({
   windowId,
@@ -651,3 +655,26 @@ export function patchViewAction({ windowId, viewId, rowId, fieldName, value }) {
     );
   };
 }
+
+export const closeViewModal = async ({
+  windowId,
+  viewId,
+  modalVisible,
+  closeAction,
+}) => {
+  return async (dispatch) => {
+    await Promise.all(
+      [
+        closeRawModal(),
+        closeModal(),
+        unsetIncludedView({ windowId, viewId, forceClose: true }),
+      ].map((action) => dispatch(action))
+    );
+
+    if (!modalVisible) {
+      document.body.style.overflow = 'auto';
+    }
+
+    await deleteViewRequest(windowId, viewId, closeAction ?? 'DONE');
+  };
+};
