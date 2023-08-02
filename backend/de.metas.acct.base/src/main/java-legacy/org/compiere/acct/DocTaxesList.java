@@ -15,7 +15,7 @@ import java.util.function.UnaryOperator;
 
 class DocTaxesList implements Iterable<DocTax>
 {
-	private HashMap<TaxId, DocTax> taxesByTaxId;
+	private final HashMap<TaxId, DocTax> taxesByTaxId;
 
 	public DocTaxesList(@NonNull final List<DocTax> list)
 	{
