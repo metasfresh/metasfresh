@@ -150,3 +150,126 @@ UPDATE AD_Column SET FilterDefaultValue='',Updated=TO_TIMESTAMP('2023-08-02 11:3
 -- 2023-08-02T08:36:30.331Z
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-08-02 11:36:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=587172
 ;
+
+-- Element: NotFullyDelivered
+-- 2023-08-02T10:21:02.775Z
+UPDATE AD_Element_Trl SET Name='Not fully delivered', PrintName='Not fully delivered',Updated=TO_TIMESTAMP('2023-08-02 13:21:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619 AND AD_Language='en_US'
+;
+
+-- 2023-08-02T10:21:02.776Z
+UPDATE AD_Element SET Name='Not fully delivered', PrintName='Not fully delivered', Updated=TO_TIMESTAMP('2023-08-02 13:21:02','YYYY-MM-DD HH24:MI:SS') WHERE AD_Element_ID=582619
+;
+
+-- 2023-08-02T10:21:03.298Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582619,'en_US')
+;
+
+-- 2023-08-02T10:21:03.304Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'en_US')
+;
+
+-- Element: NotFullyDelivered
+-- 2023-08-02T10:21:11.123Z
+UPDATE AD_Element_Trl SET Name='Not fully delivered', PrintName='Not fully delivered',Updated=TO_TIMESTAMP('2023-08-02 13:21:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619 AND AD_Language='fr_CH'
+;
+
+-- 2023-08-02T10:21:11.125Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'fr_CH')
+;
+
+-- Element: NotFullyDelivered
+-- 2023-08-02T10:21:15.944Z
+UPDATE AD_Element_Trl SET Name='Not fully delivered', PrintName='Not fully delivered',Updated=TO_TIMESTAMP('2023-08-02 13:21:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582619 AND AD_Language='nl_NL'
+;
+
+-- 2023-08-02T10:21:15.946Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582619,'nl_NL')
+;
+
+-- Element: NotCompletelyInvoiced
+-- 2023-08-02T10:21:56.388Z
+UPDATE AD_Element_Trl SET Name='Not completely invoiced', PrintName='Not completely invoiced',Updated=TO_TIMESTAMP('2023-08-02 13:21:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620 AND AD_Language='en_US'
+;
+
+-- 2023-08-02T10:21:56.389Z
+UPDATE AD_Element SET Name='Not completely invoiced', PrintName='Not completely invoiced', Updated=TO_TIMESTAMP('2023-08-02 13:21:56','YYYY-MM-DD HH24:MI:SS') WHERE AD_Element_ID=582620
+;
+
+-- 2023-08-02T10:21:56.882Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582620,'en_US')
+;
+
+-- 2023-08-02T10:21:56.887Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'en_US')
+;
+
+-- Element: NotCompletelyInvoiced
+-- 2023-08-02T10:22:02.883Z
+UPDATE AD_Element_Trl SET Name='Not completely invoiced', PrintName='Not completely invoiced',Updated=TO_TIMESTAMP('2023-08-02 13:22:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620 AND AD_Language='fr_CH'
+;
+
+-- 2023-08-02T10:22:02.884Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'fr_CH')
+;
+
+-- Element: NotCompletelyInvoiced
+-- 2023-08-02T10:22:06.990Z
+UPDATE AD_Element_Trl SET Name='Not completely invoiced', PrintName='Not completely invoiced',Updated=TO_TIMESTAMP('2023-08-02 13:22:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582620 AND AD_Language='nl_NL'
+;
+
+-- 2023-08-02T10:22:06.992Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582620,'nl_NL')
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
+-- 2023-08-02T10:23:42.034Z
+UPDATE AD_Message SET MsgText='Purchase order is fully delivered.', Value='de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered',Updated=TO_TIMESTAMP('2023-08-02 13:23:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545314
+;
+
+-- 2023-08-02T10:23:42.035Z
+UPDATE AD_Message_Trl trl SET MsgText='Purchase order is fully delivered.' WHERE AD_Message_ID=545314 AND AD_Language='en_US'
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
+-- 2023-08-02T10:24:08.592Z
+UPDATE AD_Message_Trl SET MsgText='Bestellung wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545314
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
+-- 2023-08-02T10:24:11.362Z
+UPDATE AD_Message_Trl SET MsgText='Bestellung wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545314
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
+-- 2023-08-02T10:24:24.838Z
+UPDATE AD_Message_Trl SET MsgText='Bestellung wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:24:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545314
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.PurchaseOrderFullyDelivered
+-- 2023-08-02T10:24:33.445Z
+UPDATE AD_Message_Trl SET MsgText='Purchase order is fully delivered.',Updated=TO_TIMESTAMP('2023-08-02 13:24:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545314
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered
+-- 2023-08-02T10:25:00.270Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545315,0,TO_TIMESTAMP('2023-08-02 13:25:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Sales order is fully delivered.','I',TO_TIMESTAMP('2023-08-02 13:25:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered')
+;
+
+-- 2023-08-02T10:25:00.272Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545315 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered
+-- 2023-08-02T10:25:24.584Z
+UPDATE AD_Message_Trl SET MsgText='Auftrag wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:25:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545315
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered
+-- 2023-08-02T10:25:38.722Z
+UPDATE AD_Message_Trl SET MsgText='Auftrag wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:25:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545315
+;
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.SalesOrderFullyDelivered
+-- 2023-08-02T10:26:06.561Z
+UPDATE AD_Message_Trl SET MsgText='Auftrag wird vollständig ausgeliefert.',Updated=TO_TIMESTAMP('2023-08-02 13:26:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545315
+;
