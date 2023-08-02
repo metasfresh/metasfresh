@@ -31,6 +31,7 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -73,8 +74,6 @@ import java.util.stream.Stream;
 @Component
 public class ShipmentLineModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
-	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.DocActionNotAllowed");
-	private static final AdMessageKey MSG_ERROR_DOC_ACTION_UNSUPPORTED = AdMessageKey.of("de.metas.contracts.DocActionUnsupported");
 	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
 	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
 
@@ -195,12 +194,12 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	{
 		switch (action)
 		{
-			case VOIDED, REACTIVATED -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+			case VOIDED, REACTIVATED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 			case COMPLETED,REVERSED ->
 			{
 				// allow the docAction
 			}
-			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 }

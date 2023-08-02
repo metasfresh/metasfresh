@@ -37,6 +37,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
@@ -62,10 +63,7 @@ import java.util.stream.Stream;
 @Component
 public class InventoryLineModularContractHandler implements IModularContractTypeHandler<I_M_InventoryLine>
 {
-	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.DocActionNotAllowed");
-	private static final AdMessageKey MSG_ERROR_DOC_ACTION_UNSUPPORTED = AdMessageKey.of("de.metas.contracts.DocActionUnsupported");
 	private static final AdMessageKey MSG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.Description");
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -184,8 +182,8 @@ public class InventoryLineModularContractHandler implements IModularContractType
 			case COMPLETED, REVERSED, VOIDED ->
 			{
 			}
-			case REACTIVATED -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
-			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			case REACTIVATED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 }
