@@ -28,7 +28,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Shipment reversed',Updated=
 
 -- Value: de.metas.contracts.DocActionUnsupported
 -- 2023-07-31T15:22:15.500397900Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545313,0,TO_TIMESTAMP('2023-07-31 16:22:15.142','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Nicht unterstützte Modellaktion!','E',TO_TIMESTAMP('2023-07-31 16:22:15.142','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.DocActionUnsupported')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545313,0,TO_TIMESTAMP('2023-07-31 16:22:15.142','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Die Belegaktion wird nicht unterstützt','E',TO_TIMESTAMP('2023-07-31 16:22:15.142','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.DocActionUnsupported')
 ;
 
 -- 2023-07-31T15:22:15.505163400Z
@@ -37,5 +37,5 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: de.metas.contracts.DocActionUnsupported
 -- 2023-07-31T15:22:32.247876Z
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Unsupported model action!',Updated=TO_TIMESTAMP('2023-07-31 16:22:32.247','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545313
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Unsupported document action',Updated=TO_TIMESTAMP('2023-07-31 16:22:32.247','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545313
 ;
