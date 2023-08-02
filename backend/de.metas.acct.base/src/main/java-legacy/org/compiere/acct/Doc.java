@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.accounts.AccountProvider;
@@ -12,10 +13,15 @@ import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocModel;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.factacct_userchanges.FactAcctChanges;
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
+import de.metas.acct.factacct_userchanges.FactLineMatchKey;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
@@ -341,7 +347,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Create Facts
-		final List<Fact> facts = postLogic();
+		final ArrayList<Fact> facts = postLogic();
+		applyUserChanges(facts);
 
 		//
 		// Fire event: BEFORE_POST
@@ -390,16 +397,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return skip;
 	}
 
+	public AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
+	{
+		return acctSchemas.stream()
+				.filter(acctSchema -> AcctSchemaId.equals(acctSchema.getId(), acctSchemaId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No accounting schema found for " + acctSchemaId + " in " + acctSchemas));
+	}
+
 	private void deleteAcct() {services.deleteFactAcctByDocumentModel(getDocModel());}
 
 	@NonNull
-	public List<Fact> postLogic()
+	public ArrayList<Fact> postLogic()
 	{
 		loadDocumentDetailsIfNeeded();
 
 		//
 		// Create Facts
-		final List<Fact> facts = new ArrayList<>();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final AcctSchema acctSchema : acctSchemas)
 		{
 			if (isSkipPosting(acctSchema))
@@ -458,24 +473,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Process facts: validate, GL distribution, balance etc
-		for (final Fact fact : facts)
-		{
-			processFacts(fact);
-		}
+		facts.forEach(this::processFacts);
 
 		return facts;
 	}   // postLogic
 
-	private void processFacts(final Fact fact)
+	private void processFacts(@NonNull final Fact fact)
 	{
-		if (fact == null)
-		{
-			throw newPostingException()
-					// .setAcctSchema(acctSchema)
-					.setPostingStatus(PostingStatus.Error)
-					.setDetailMessage("No fact");
-		}
-
 		final AcctSchema acctSchema = fact.getAcctSchema();
 
 		// check accounts
@@ -503,6 +507,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
 		}
 
+		//
 		// Balance source amounts
 		if (fact.isSingleCurrency() && !fact.isSourceBalanced())
 		{
@@ -517,7 +522,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 
-		// balanceSegments
+		//
+		// Balance Segments
 		if (!fact.isSegmentBalanced())
 		{
 			fact.balanceSegments();
@@ -531,7 +537,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 
-		// balanceAccounting
+		//
+		// Balance accounted amounts
 		if (!fact.isAcctBalanced())
 		{
 			fact.balanceAccounting();
@@ -544,6 +551,57 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setDetailMessage("Accountable amounts not balanced");
 			}
 		}
+	}
+
+	private void applyUserChanges(@NonNull final ArrayList<Fact> facts)
+	{
+		final FactAcctChangesList changesList = services.getFactAcctChanges(getRecordRef());
+
+		//
+		// Change and Remove lines
+		for (final Fact fact : facts)
+		{
+			fact.mapEachLine(factLine -> {
+				final FactLineMatchKey matchKey = FactLineMatchKey.ofFactLine(factLine);
+				if (changesList.isLineRemoved(matchKey))
+				{
+					return null;
+				}
+				else
+				{
+					changesList.getChangeByKey(matchKey).ifPresent(factLine::updateFrom);
+					return factLine;
+				}
+			});
+		}
+
+		//
+		// Lines to add
+		final ImmutableListMultimap<AcctSchemaId, FactAcctChanges> linesToAddGroupedByAcctSchemaId = changesList.getLinesToAddGroupedByAcctSchemaId();
+		for (final AcctSchemaId acctSchemaId : linesToAddGroupedByAcctSchemaId.keySet())
+		{
+			final AcctSchema acctSchema = getAcctSchemaById(acctSchemaId);
+			final Fact fact = new Fact(this, acctSchema, PostingType.Actual);
+			facts.add(fact);
+			
+			for (final FactAcctChanges changesToAdd : linesToAddGroupedByAcctSchemaId.get(acctSchemaId))
+			{
+				fact.createLine()
+						.setAccount(changesToAdd.getAccountIdNotNull())
+						.setAmtSource(changesToAdd.getAmtSourceDr(), changesToAdd.getAmtSourceCr())
+						.setAmtAcct(changesToAdd.getAmtAcctDr(), changesToAdd.getAmtAcctCr())
+						.setC_Tax_ID(changesToAdd.getTaxId())
+						.description(changesToAdd.getDescription())
+						.sectionCodeId(changesToAdd.getSectionCodeId())
+						.productId(changesToAdd.getProductId())
+						.userElementString1(changesToAdd.getUserElementString1())
+						.salesOrderId(changesToAdd.getSalesOrderId())
+						.activityId(changesToAdd.getActivityId())
+						.buildAndAdd();
+
+			}
+		}
+
 	}
 
 	/**
@@ -762,7 +820,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
+	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
 	{
 		return services.createCurrencyConversionContext(
 				getDateAcct(),
@@ -988,9 +1046,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getDocModel().toString();
 	}
 
-	protected final ClientId getClientId() {return getDocModel().getClientId();}
+	public final ClientId getClientId() {return getDocModel().getClientId();}
 
-	protected final OrgId getOrgId() {return getDocModel().getOrgId();}
+	public final OrgId getOrgId() {return getDocModel().getOrgId();}
 
 	protected String getDocumentNo()
 	{
@@ -1027,7 +1085,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final CurrencyId getCurrencyId() {return getCurrencyIdOptional().orElse(null);}
 
-	protected final Optional<CurrencyId> getCurrencyIdOptional()
+	public final Optional<CurrencyId> getCurrencyIdOptional()
 	{
 		if (_currencyId == null)
 		{

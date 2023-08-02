@@ -1,6 +1,8 @@
 package org.compiere.acct;
 
 import de.metas.acct.Account;
+import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
@@ -12,16 +14,20 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.MAccount;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -50,7 +56,7 @@ import java.util.Optional;
  * #L%
  */
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 @ToString(exclude = "fact", doNotUseGetters = true)
 public final class FactLineBuilder
 {
@@ -61,7 +67,9 @@ public final class FactLineBuilder
 	private DocLine<?> docLine = null;
 	private Integer subLineId = null;
 
-	private Account account = null;
+	@Nullable private ElementValueId elementValueId;
+	@Nullable private MAccount validCombination;
+	@Nullable private AccountConceptualName accountConceptualName;
 
 	private CurrencyId currencyId;
 	@Nullable private CurrencyConversionContext currencyConversionCtx;
@@ -70,7 +78,8 @@ public final class FactLineBuilder
 	@Nullable private BigDecimal amtAcctDr;
 	@Nullable private BigDecimal amtAcctCr;
 
-	private Quantity qty = null;
+	@Nullable private Optional<ProductId> productId;
+	@Nullable private Quantity qty = null;
 
 	private boolean alsoAddZeroLine = false;
 
@@ -80,14 +89,18 @@ public final class FactLineBuilder
 	@Nullable private BPartnerId bpartnerId;
 	@Nullable private BPartnerLocationId bPartnerLocationId;
 	@Nullable private TaxId C_Tax_ID;
-	private Integer locatorId;
-	private ActivityId activityId;
-	private ProjectId projectId;
+	@Nullable private Integer locatorId;
+	@Nullable private Optional<ActivityId> activityId;
+	@Nullable private ProjectId projectId;
 	private int campaignId;
-	private LocationId fromLocationId;
-	private LocationId toLocationId;
-	private CostElementId costElementId;
+	@Nullable private LocationId fromLocationId;
+	@Nullable private LocationId toLocationId;
+	@Nullable private CostElementId costElementId;
+	@Nullable private Optional<SectionCodeId> sectionCodeId;
+	@Nullable private Optional<OrderId> salesOrderId;
+	@Nullable private Optional<String> userElementString1;
 
+	private Optional<String> description = null;
 	private String additionalDescription = null;
 
 	private FAOpenItemTrxInfo openItemTrxInfo;
@@ -121,7 +134,7 @@ public final class FactLineBuilder
 		markAsBuilt();
 
 		// Data Check
-		if (account == null)
+		if (elementValueId == null)
 		{
 			throw new AdempiereException("No account for " + this);
 		}
@@ -138,12 +151,17 @@ public final class FactLineBuilder
 				.SubLine_ID(getSubLine_ID())
 				.postingType(fact.getPostingType())
 				.acctSchema(fact.getAcctSchema())
-				.account(services.getAccountById(this.account.getAccountId()))
-				.accountConceptualName(this.account.getAccountConceptualName())
+				.accountId(elementValueId)
+				.account(validCombination)
+				.accountConceptualName(accountConceptualName)
+				.productId(productId)
 				.qty(qty)
+				.orgTrxId(orgTrxId)
 				.M_Locator_ID(locatorId)
 				.projectId(projectId)
 				.activityId(activityId)
+				.sectionCodeId(sectionCodeId)
+				.description(description)
 				.additionalDescription(additionalDescription)
 				.build();
 
@@ -184,10 +202,6 @@ public final class FactLineBuilder
 		if (orgId != null)
 		{
 			line.setAD_Org_ID(orgId);
-		}
-		if (orgTrxId != null)
-		{
-			line.setAD_OrgTrx_ID(orgTrxId);
 		}
 		//
 		if (bPartnerLocationId != null)
@@ -240,7 +254,18 @@ public final class FactLineBuilder
 	public FactLineBuilder setAccount(@NonNull final Account account)
 	{
 		assertNotBuild();
-		this.account = account;
+		this.validCombination = getServices().getAccountById(account.getAccountId());
+		this.elementValueId = validCombination.getElementValueId();
+		this.accountConceptualName = account.getAccountConceptualName();
+		return this;
+	}
+
+	@NonNull
+	public FactLineBuilder setAccount(@NonNull final ElementValueId elementValueId)
+	{
+		assertNotBuild();
+		this.elementValueId = elementValueId;
+		this.validCombination = null;
 		return this;
 	}
 
@@ -299,6 +324,18 @@ public final class FactLineBuilder
 		assertNotBuild();
 		this.amtAcctDr = amtAcctDr;
 		this.amtAcctCr = amtAcctCr;
+		return this;
+	}
+
+	public FactLineBuilder setAmtAcct(@Nullable final Money amtAcctDr, @Nullable final Money amtAcctCr)
+	{
+		assertNotBuild();
+
+		final CurrencyId acctCurrencyId = fact.getAcctSchema().getCurrencyId();
+		setAmtAcct(
+				amtAcctDr != null ? amtAcctDr.assertCurrencyId(acctCurrencyId).toBigDecimal() : null,
+				amtAcctCr != null ? amtAcctCr.assertCurrencyId(acctCurrencyId).toBigDecimal() : null);
+
 		return this;
 	}
 
@@ -540,7 +577,7 @@ public final class FactLineBuilder
 	public FactLineBuilder activityId(@Nullable final ActivityId activityId)
 	{
 		assertNotBuild();
-		this.activityId = activityId;
+		this.activityId = Optional.ofNullable(activityId);
 		return this;
 	}
 
@@ -592,6 +629,7 @@ public final class FactLineBuilder
 
 	public FactLineBuilder costElement(@Nullable final CostElementId costElementId)
 	{
+		assertNotBuild();
 		this.costElementId = costElementId;
 		return this;
 	}
@@ -601,15 +639,52 @@ public final class FactLineBuilder
 		return costElement(costElement != null ? costElement.getId() : null);
 	}
 
+	public FactLineBuilder description(@Nullable final String description)
+	{
+		assertNotBuild();
+		this.description = StringUtils.trimBlankToOptional(description);
+		return this;
+	}
+
 	public FactLineBuilder additionalDescription(@Nullable final String additionalDescription)
 	{
+		assertNotBuild();
 		this.additionalDescription = StringUtils.trimBlankToNull(additionalDescription);
 		return this;
 	}
 
 	public FactLineBuilder openItemKey(@Nullable FAOpenItemTrxInfo openItemTrxInfo)
 	{
+		assertNotBuild();
 		this.openItemTrxInfo = openItemTrxInfo;
+		return this;
+	}
+
+	public FactLineBuilder sectionCodeId(@Nullable SectionCodeId sectionCodeId)
+	{
+		assertNotBuild();
+		this.sectionCodeId = Optional.ofNullable(sectionCodeId);
+		return this;
+	}
+
+	public FactLineBuilder productId(@Nullable ProductId productId)
+	{
+		assertNotBuild();
+		this.productId = Optional.ofNullable(productId);
+		return this;
+	}
+
+	public FactLineBuilder userElementString1(@Nullable final String userElementString1)
+	{
+		assertNotBuild();
+		this.userElementString1 = StringUtils.trimBlankToOptional(userElementString1);
+		return this;
+	}
+
+	public FactLineBuilder salesOrderId(@Nullable final OrderId salesOrderId)
+	{
+		assertNotBuild();
+		this.salesOrderId = Optional.ofNullable(salesOrderId);
 		return this;
 	}
 }

@@ -213,6 +213,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public Optional<org.compiere.model.I_C_Invoice> getByIdIfExists(@NonNull final InvoiceId invoiceId)
+	{
+		return Optional.ofNullable(invoiceDAO.getByIdInTrxIfExists(invoiceId));
+	}
+
+	@Override
 	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
@@ -1607,6 +1613,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final DocStatus docStatus = DocStatus.ofCode(invoice.getDocStatus());
 		return docStatus.isCompletedOrClosedOrReversed();
+	}
+
+	@Override
+	public DocStatus getDocStatus(@NonNull final InvoiceId invoiceId)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrxIfExists(invoiceId);
+		return invoice != null
+				? DocStatus.ofCode(invoice.getDocStatus())
+				: DocStatus.Unknown;
 	}
 
 	@Override

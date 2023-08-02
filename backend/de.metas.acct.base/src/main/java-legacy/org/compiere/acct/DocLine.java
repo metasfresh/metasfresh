@@ -41,6 +41,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.sales_region.SalesRegionId;
 import de.metas.sectionCode.SectionCodeId;
@@ -769,10 +770,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return salesRegionId;
 	}
 
-	public final int getC_Project_ID()
-	{
-		return getValue("C_Project_ID");
-	}
+	public final ProjectId getC_Project_ID() {return ProjectId.ofRepoIdOrNull(getValue("C_Project_ID"));}
 
 	public final int getC_Campaign_ID()
 	{

@@ -486,7 +486,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		return costs.round(services::getCurrencyStandardPrecision);
 	}
 
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
+	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
 	{
 		final I_M_InOut inout = getModel(I_M_InOut.class);
 		return inOutBL.getCurrencyConversionContext(inout);

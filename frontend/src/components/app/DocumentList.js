@@ -27,8 +27,12 @@ import { getSettingFromStateAsPositiveInt } from '../../utils/settings';
 import {
   OIViewHeader,
   OIViewHeader_WINDOW_ID,
-} from '../deliveryPlanning/OIViewHeader';
+} from '../acctOpenItems/OIViewHeader';
 import { DocumentListHeaderProperties } from './DocumentListHeaderProperties';
+import {
+  AcctSimulationViewHeader,
+  AcctSimulationViewHeader_WINDOW_ID,
+} from '../acctSimulation/AcctSimulationViewHeader';
 
 /**
  * @file Class based component.
@@ -200,6 +204,9 @@ class DocumentList extends Component {
 
         {String(windowId) === OIViewHeader_WINDOW_ID && viewId && (
           <OIViewHeader headerProperties={headerProperties} />
+        )}
+        {String(windowId) === AcctSimulationViewHeader_WINDOW_ID && viewId && (
+          <AcctSimulationViewHeader headerProperties={headerProperties} />
         )}
 
         {showModalResizeBtn && (

@@ -24,8 +24,6 @@ import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -95,18 +93,6 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	}
 
 	@Override
-	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public ViewHeaderProperties getHeaderProperties()
 	{
 		return rowsData.getHeaderProperties();
@@ -146,7 +132,7 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 
 	public CurrencyId getCurrencyId()
 	{
-		
+
 		return rowsData.getCurrencyId();
 	}
 

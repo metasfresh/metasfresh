@@ -16,6 +16,8 @@ public class MutableAmount implements IMutable<Amount>
 
 	public static MutableAmount zero(@NonNull final CurrencyCode currencyCode) {return new MutableAmount(Amount.zero(currencyCode));}
 
+	public static MutableAmount nullValue() {return new MutableAmount(null);}
+
 	@Override
 	public String toString() {return String.valueOf(value);}
 

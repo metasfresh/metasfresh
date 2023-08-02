@@ -76,7 +76,7 @@ public class FAOpenItemsService
 	{
 		return computeTrxInfo(FAOpenItemTrxInfoComputeRequest.builder()
 				.accountConceptualName(factLine.getAccountConceptualName())
-				.elementValueId(factLine.getAccount_ID())
+				.elementValueId(factLine.getAccountId())
 				.tableName(factLine.getDocRecordRef().getTableName())
 				.recordId(factLine.getDocRecordRef().getRecord_ID())
 				.lineId(factLine.getLine_ID())
