@@ -4,23 +4,19 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api';
-import { processNewRecord } from '../../actions/GenericActions';
+import { openFile, processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
-  closeModal,
-  createProcess,
-  createWindow,
-  handleProcessResponse,
-  fetchChangeLog,
   callAPI,
+  closeModal,
+  createWindow,
+  fetchChangeLog,
+  fireUpdateData,
   patch,
   resetPrintingOptions,
-  fireUpdateData,
 } from '../../actions/WindowActions';
-import { openFile } from '../../actions/GenericActions';
 
-import { getTableId, getSelection } from '../../reducers/tables';
+import { getSelection, getTableId } from '../../reducers/tables';
 import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
@@ -36,6 +32,11 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
+import {
+  createProcess,
+  handleProcessResponse,
+} from '../../actions/ProcessActions';
+import { startProcess } from '../../api/process';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
