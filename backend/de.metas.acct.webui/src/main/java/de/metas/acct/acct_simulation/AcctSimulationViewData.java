@@ -28,7 +28,7 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import java.util.List;
 import java.util.Map;
 
-public class AcctSimulationViewData implements IEditableRowsData<AcctRow>
+class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 {
 	public static AcctSimulationViewData cast(final IRowsData<AcctRow> data) {return (AcctSimulationViewData)data;}
 

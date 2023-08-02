@@ -26,7 +26,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import java.util.function.Supplier;
 
 @ViewFactory(windowId = AcctSimulationViewFactory.WINDOWID_String)
-public class AcctSimulationViewFactory implements IViewFactory
+class AcctSimulationViewFactory implements IViewFactory
 {
 	public static final String WINDOWID_String = "acctSimulation";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOWID_String);

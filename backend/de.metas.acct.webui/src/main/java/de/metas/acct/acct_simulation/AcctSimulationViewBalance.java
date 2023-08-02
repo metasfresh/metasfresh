@@ -6,7 +6,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class AcctSimulationViewBalance
+class AcctSimulationViewBalance
 {
 	@NonNull AmountBalance inDocumentCurrency;
 	@NonNull AmountBalance inLocalCurrency;

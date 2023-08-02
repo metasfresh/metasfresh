@@ -2,7 +2,7 @@ package de.metas.acct.acct_simulation;
 
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
-public abstract class AcctSimulationViewBasedAction extends ViewBasedProcessTemplate
+abstract class AcctSimulationViewBasedAction extends ViewBasedProcessTemplate
 {
 
 	@Override

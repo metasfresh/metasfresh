@@ -34,7 +34,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
-public class AcctRow implements IViewRow
+class AcctRow implements IViewRow
 {
 	static final String FIELDNAME_PostingSign = "PostingSign";
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.List, listReferenceId = PostingSign.AD_REFERENCE_ID, fieldName = FIELDNAME_PostingSign, editor = ViewEditorRenderMode.ALWAYS)

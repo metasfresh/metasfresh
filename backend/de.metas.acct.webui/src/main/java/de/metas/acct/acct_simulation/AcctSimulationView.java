@@ -6,7 +6,6 @@ import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsPro
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewHeaderProperties;
-import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -20,7 +19,7 @@ import lombok.Singular;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class AcctSimulationView extends AbstractCustomView<AcctRow> implements IEditableView
+class AcctSimulationView extends AbstractCustomView<AcctRow> implements IEditableView
 {
 	private final ImmutableList<RelatedProcessDescriptor> relatedProcesses;
 

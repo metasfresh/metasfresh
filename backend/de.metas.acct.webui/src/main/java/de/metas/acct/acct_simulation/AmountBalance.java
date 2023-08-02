@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class AmountBalance
+class AmountBalance
 {
 	@NonNull Amount debit;
 	@NonNull Amount credit;

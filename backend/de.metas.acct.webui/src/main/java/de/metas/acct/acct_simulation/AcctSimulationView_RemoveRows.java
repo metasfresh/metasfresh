@@ -3,7 +3,7 @@ package de.metas.acct.acct_simulation;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
-public class AcctSimulationView_RemoveRows extends AcctSimulationViewBasedAction
+class AcctSimulationView_RemoveRows extends AcctSimulationViewBasedAction
 {
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()

@@ -14,7 +14,7 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 
-public class C_Invoice_AcctSimulation_Launcher extends JavaProcess implements IProcessPrecondition
+class C_Invoice_AcctSimulation_Launcher extends JavaProcess implements IProcessPrecondition
 {
 	private final AcctSimulationViewFactory viewsFactory = SpringContextHolder.instance.getBean(AcctSimulationViewFactory.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
