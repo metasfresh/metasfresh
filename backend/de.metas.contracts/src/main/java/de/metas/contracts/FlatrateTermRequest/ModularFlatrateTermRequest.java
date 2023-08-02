@@ -30,7 +30,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.validation.constraints.Null;
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -38,6 +38,6 @@ public class ModularFlatrateTermRequest
 {
 	@NonNull BPartnerId bPartnerId;
 	@NonNull ProductId productId;
-	@Null YearId yearId;
+	@Nullable YearId yearId;
 	@NonNull SOTrx soTrx;
 }

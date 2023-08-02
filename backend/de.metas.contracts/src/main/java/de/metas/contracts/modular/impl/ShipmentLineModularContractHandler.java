@@ -24,7 +24,6 @@ package de.metas.contracts.modular.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
-import de.metas.common.util.Check;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
@@ -74,6 +73,11 @@ import java.util.stream.Stream;
 @Component
 public class ShipmentLineModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
+	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.DocActionNotAllowed");
+	private static final AdMessageKey MSG_ERROR_DOC_ACTION_UNSUPPORTED = AdMessageKey.of("de.metas.contracts.DocActionUnsupported");
+	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
+	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
+
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
@@ -83,10 +87,6 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.DocActionNotAllowed");
-	private static final AdMessageKey MSG_ERROR_DOC_ACTION_UNSUPPORTED = AdMessageKey.of("de.metas.contracts.DocActionUnsupported");
-	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
-	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public ShipmentLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
@@ -168,7 +168,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(inOutLineRecord.getC_Order_ID()));
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID()); // C_Order.M_Warehouse_ID is mandatory and (warehouseBL.getBPartnerId demands NonNull
 
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
 
@@ -176,7 +176,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
 				.yearId(harvestingYearId)
-				.soTrx(SOTrx.PURCHASE)
+				.soTrx(SOTrx.PURCHASE) // in this handler we want the *purchase* flatrate-terms that led to this (sales-)shipment
 				.build();
 
 		return streamModularContracts(request)
@@ -195,12 +195,10 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	{
 		switch (action)
 		{
-			case VOIDED, REACTIVATED ->
-			{
-				throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
-			}
+			case VOIDED, REACTIVATED -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 			case COMPLETED,REVERSED ->
 			{
+				// allow the docAction
 			}
 			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
