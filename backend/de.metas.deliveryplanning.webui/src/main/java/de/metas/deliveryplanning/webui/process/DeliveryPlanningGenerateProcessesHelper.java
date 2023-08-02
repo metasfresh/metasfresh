@@ -258,6 +258,10 @@ final class DeliveryPlanningGenerateProcessesHelper
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
 		}
 
+		if (shipmentScheduleBL.getById(shipmentInfo.getShipmentScheduleId()).isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_SalesOrderFullyDelivered));
+		}
 		if (shipmentInfo.isShipped())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Already shipped");
@@ -265,10 +269,6 @@ final class DeliveryPlanningGenerateProcessesHelper
 		if (shipmentInfo.getSalesOrderId() == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
-		}
-		if (shipmentScheduleBL.getById(shipmentInfo.getShipmentScheduleId()).isProcessed())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_SalesOrderFullyDelivered));
 		}
 
 		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(shipmentInfo.getDeliveryPlanningId()))
@@ -298,7 +298,11 @@ final class DeliveryPlanningGenerateProcessesHelper
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
 		}
-		
+
+		if (huReceiptScheduleBL.getById(receiptInfo.getReceiptScheduleId()).isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered));
+		}
 		if (receiptInfo.isReceived())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Already received");
@@ -306,10 +310,6 @@ final class DeliveryPlanningGenerateProcessesHelper
 		if (receiptInfo.getPurchaseOrderId() == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
-		}
-		if (huReceiptScheduleBL.getById(receiptInfo.getReceiptScheduleId()).isProcessed())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered));
 		}
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), receiptInfo.getOrgId());
