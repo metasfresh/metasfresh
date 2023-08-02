@@ -56,7 +56,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner;
-import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_OrderFullyDelivered;
+import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered;
+import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_SalesOrderFullyDelivered;
 
 final class DeliveryPlanningGenerateProcessesHelper
 {
@@ -267,7 +268,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		}
 		if (shipmentScheduleBL.getById(shipmentInfo.getShipmentScheduleId()).isProcessed())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_OrderFullyDelivered));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_SalesOrderFullyDelivered));
 		}
 
 		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(shipmentInfo.getDeliveryPlanningId()))
@@ -308,7 +309,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		}
 		if (huReceiptScheduleBL.getById(receiptInfo.getReceiptScheduleId()).isProcessed())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_OrderFullyDelivered));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered));
 		}
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), receiptInfo.getOrgId());
