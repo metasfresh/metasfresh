@@ -100,7 +100,11 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
-		throw new UnsupportedOperationException();
+		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
+
+		currentCosts.addToCurrentQtyAndCumulate(request.getQty().negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
+
+		utils.saveCurrentCost(currentCosts);
 	}
 
 	@Override
