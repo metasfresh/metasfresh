@@ -3,9 +3,15 @@ import {
   setProcessPending,
   setProcessSaved,
 } from './AppActions';
-import { buildURL, getQueryString, openInNewTab } from '../utils';
+import { parseToDisplay } from '../utils/documentListHelper';
+import { findViewByViewId } from '../reducers/viewHandler';
+import { openInNewTab } from '../utils';
 import history from '../services/History';
-import { setIncludedView, unsetIncludedView } from './ViewActions';
+import {
+  closeViewModal,
+  setIncludedView,
+  unsetIncludedView,
+} from './ViewActions';
 import { getTableId } from '../reducers/tables';
 import { updateTableSelection } from './TableActions';
 import {
@@ -16,22 +22,22 @@ import {
   openRawModal,
   toggleOverlay,
 } from './WindowActions';
+import { CLOSE_PROCESS_MODAL } from '../constants/ActionTypes';
 import {
   getProcessData,
   getProcessFileUrl,
   getProcessLayout,
   startProcess,
 } from '../api/process';
-import { parseToDisplay } from '../utils/documentListHelper';
-import { findViewByViewId } from '../reducers/viewHandler';
-import { CLOSE_PROCESS_MODAL } from '../constants/ActionTypes';
 
-export const handleProcessResponse = (
+export const handleProcessResponse = ({
   response,
   processId,
   pinstanceId,
-  parentId
-) => {
+  parentId,
+  contextWindowId,
+  contextViewId,
+}) => {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
 
@@ -46,15 +52,6 @@ export const handleProcessResponse = (
 
       if (action) {
         switch (action.type) {
-          case 'openCalendar': {
-            await dispatch(closeModal());
-            // eslint-disable-next-line no-unused-vars
-            const { type, ...params } = action;
-            const urlPath = buildURL('/calendar', params);
-            openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
-            return;
-            //break;
-          }
           case 'displayQRCode': {
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
@@ -77,6 +74,17 @@ export const handleProcessResponse = (
                 openRawModal({ windowId, viewId, profileId: action.profileId })
               );
             }
+            break;
+          }
+          case 'closeView': {
+            await dispatch(
+              closeViewModal({
+                windowId: contextWindowId,
+                viewId: contextViewId,
+                modalVisible: true,
+                closeAction: 'DONE',
+              })
+            );
             break;
           }
           case 'openReport': {
@@ -162,13 +170,6 @@ export const handleProcessResponse = (
 
             break;
           }
-          case 'newRecord': {
-            const { stopHere } = handleProcessResponse_newRecord(action);
-            if (stopHere) {
-              return;
-            }
-            break;
-          }
           default: {
             console.warn('Unhandled action', action);
             break;
@@ -187,30 +188,6 @@ export const handleProcessResponse = (
       }
     }
   };
-};
-
-const handleProcessResponse_newRecord = (action) => {
-  //console.log('handleProcessResponse_newRecord', { action });
-
-  const { windowId, fieldValues, targetTab } = action;
-  let urlPath = `/window/${windowId}/NEW`;
-  const urlQueryString = getQueryString(fieldValues ?? {});
-  if (urlQueryString) {
-    urlPath += '?' + urlQueryString;
-  }
-
-  if (targetTab === 'NEW_TAB') {
-    const newBrowserTab = window.open(urlPath, '_blank');
-    newBrowserTab.focus();
-    return { stopHere: false };
-  } else if (targetTab === 'SAME_TAB' || !targetTab) {
-    window.open(urlPath, '_self');
-    return { stopHere: true };
-  } else {
-    console.warn(`Unknown targetTab '${targetTab}'. Opening in same tab.`);
-    window.open(urlPath, '_self');
-    return { stopHere: true };
-  }
 };
 
 export const createProcess = ({
@@ -277,7 +254,14 @@ export const createProcess = ({
           const parentId = parentView ? parentView.windowId : documentType;
 
           await dispatch(
-            handleProcessResponse(response, processId, pinstanceId, parentId)
+            handleProcessResponse({
+              response,
+              processId,
+              pinstanceId,
+              parentId,
+              contextWindowId: parentId,
+              contextViewId: viewId,
+            })
           );
         } catch (error) {
           await dispatch(closeModal());

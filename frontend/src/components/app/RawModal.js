@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { advSearchRequest, deleteViewRequest, patchRequest } from '../../api';
+import { advSearchRequest, patchRequest } from '../../api';
 import { PATCH_RESET } from '../../constants/ActionTypes';
 
-import { unsetIncludedView } from '../../actions/ViewActions';
+import { closeViewModal } from '../../actions/ViewActions';
 import { addNotification } from '../../actions/AppActions';
-import { closeModal, closeRawModal, openRawModal, } from '../../actions/WindowActions';
+import {  openRawModal } from '../../actions/WindowActions';
 
 import keymap from '../../shortcuts/keymap';
 import { renderHeaderPropertiesGroups } from '../../utils/documentListHelper';
@@ -104,8 +104,7 @@ class RawModal extends Component {
   };
 
   handleClose = async (type) => {
-    const { dispatch, viewId, windowId, requests, rawModal, featureType } =
-      this.props;
+    const { dispatch, requests, rawModal, featureType } = this.props;
 
     featureType === 'SEARCH' &&
       type === 'DONE' &&
@@ -141,28 +140,21 @@ class RawModal extends Component {
       );
     } else {
       await this.removeModal();
-      await deleteViewRequest(windowId, viewId, type);
+      // await deleteViewRequest(windowId, viewId, type);
     }
   };
 
-  removeModal = async () => {
+  removeModal = async (closeAction) => {
     const { dispatch, modalVisible, windowId, viewId } = this.props;
 
-    await Promise.all(
-      [
-        closeRawModal(),
-        closeModal(),
-        unsetIncludedView({
-          windowId: windowId,
-          viewId,
-          forceClose: true,
-        }),
-      ].map((action) => dispatch(action))
+    await dispatch(
+      closeViewModal({
+        windowId,
+        viewId,
+        modalVisible,
+        closeAction: closeAction ?? 'DONE',
+      })
     );
-
-    if (!modalVisible) {
-      document.body.style.overflow = 'auto';
-    }
   };
 
   renderButtons = () => {
@@ -267,7 +259,7 @@ class RawModal extends Component {
         }
         renderButtons={this.renderButtons}
         shortcutActions={this.generateShortcutActions()}
-        onClickOutside={this.removeModal}
+        onClickOutside={() => this.removeModal('CANCEL')}
       >
         {children}
       </ModalComponent>
