@@ -60,17 +60,6 @@ export function discardNewRequest({ windowId, documentId, tabId, rowId } = {}) {
   );
 }
 
-export function discardNewDocument({ windowType, documentId } = {}) {
-  return post(
-    config.API_URL +
-      '/window/' +
-      windowType +
-      '/' +
-      documentId +
-      '/discardChanges'
-  );
-}
-
 export function getTabRequest(tabId, windowType, docId, orderBy) {
   return getData({
     entity: 'window',
@@ -134,64 +123,6 @@ export function formatParentUrl({ windowId, docId, rowId, target }) {
       break;
   }
   return parentUrl;
-}
-
-export function startProcess(processType, pinstanceId) {
-  return get(`${config.API_URL}/process/${processType}/${pinstanceId}/start`);
-}
-
-export function getProcessData({
-  processId,
-  viewId,
-  documentType,
-  ids,
-  tabId,
-  rowId,
-  selectedTab,
-  childViewId,
-  childViewSelectedIds,
-  parentViewId,
-  parentViewSelectedIds,
-}) {
-  const payload = {
-    processId: processId,
-  };
-
-  if (viewId) {
-    payload.viewId = viewId;
-    payload.viewDocumentIds = ids;
-
-    if (childViewId) {
-      payload.childViewId = childViewId;
-      payload.childViewSelectedIds = childViewSelectedIds;
-    }
-
-    if (parentViewId) {
-      payload.parentViewId = parentViewId;
-      payload.parentViewSelectedIds =
-        parentViewSelectedIds instanceof Array
-          ? parentViewSelectedIds
-          : [parentViewSelectedIds];
-    }
-  } else {
-    payload.documentId = Array.isArray(ids) ? ids[0] : ids;
-    payload.documentType = documentType;
-    payload.tabId = tabId;
-    payload.rowId = rowId;
-  }
-
-  if (selectedTab) {
-    const { tabId, rowIds } = selectedTab;
-
-    if (tabId && rowIds) {
-      payload.selectedTab = {
-        tabId,
-        rowIds,
-      };
-    }
-  }
-
-  return post(`${config.API_URL}/process/${processId}`, payload);
 }
 
 /**
