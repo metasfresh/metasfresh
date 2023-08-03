@@ -8,7 +8,7 @@ import { PATCH_RESET } from '../../constants/ActionTypes';
 
 import { closeViewModal } from '../../actions/ViewActions';
 import { addNotification } from '../../actions/AppActions';
-import {  openRawModal } from '../../actions/WindowActions';
+import { openRawModal } from '../../actions/WindowActions';
 
 import keymap from '../../shortcuts/keymap';
 import { renderHeaderPropertiesGroups } from '../../utils/documentListHelper';

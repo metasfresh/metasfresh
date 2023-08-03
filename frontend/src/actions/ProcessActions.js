@@ -5,7 +5,7 @@ import {
 } from './AppActions';
 import { parseToDisplay } from '../utils/documentListHelper';
 import { findViewByViewId } from '../reducers/viewHandler';
-import { openInNewTab } from '../utils';
+import { buildURL, getQueryString, openInNewTab } from '../utils';
 import history from '../services/History';
 import {
   closeViewModal,
