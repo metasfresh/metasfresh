@@ -135,7 +135,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
 				.bPartnerId(warehousePartnerId)
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.harvestingYearId(harvestingYearId)
+				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
@@ -225,7 +225,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.harvestingYearId(harvestingYearId)
+				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();

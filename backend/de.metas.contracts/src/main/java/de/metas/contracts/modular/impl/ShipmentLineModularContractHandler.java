@@ -175,7 +175,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
-				.harvestingYearId(harvestingYearId)
+				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE) // in this handler we want the *purchase* flatrate-terms that led to this (sales-)shipment
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();

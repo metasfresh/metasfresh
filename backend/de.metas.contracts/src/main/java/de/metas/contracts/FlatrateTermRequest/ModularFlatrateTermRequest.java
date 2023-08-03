@@ -41,7 +41,7 @@ public class ModularFlatrateTermRequest
 	@NonNull BPartnerId bPartnerId;
 	@Nullable ProductId productId;
 	@NonNull SOTrx soTrx;
-	@Nullable YearId harvestingYearId;
+	@Nullable YearId yearId;
 	@NonNull TypeConditions typeConditions;
-	@Nullable CalendarId harvestingCalendarId;
+	@Nullable CalendarId calendarId;
 }

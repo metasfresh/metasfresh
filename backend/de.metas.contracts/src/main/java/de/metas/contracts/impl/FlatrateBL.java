@@ -2478,9 +2478,9 @@ public class FlatrateBL implements IFlatrateBL
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, request.getSoTrx().toBoolean());
 
-		if (request.getHarvestingYearId() != null)
+		if (request.getYearId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getHarvestingYearId());
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId());
 		}
 
 		if (request.getProductId() != null)

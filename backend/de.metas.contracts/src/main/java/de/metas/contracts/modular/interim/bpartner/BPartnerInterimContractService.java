@@ -64,8 +64,8 @@ public class BPartnerInterimContractService
 		{
 			final ModularFlatrateTermRequest modularContractsLookup = ModularFlatrateTermRequest.builder()
 					.bPartnerId(request.getBPartnerId())
-					.harvestingCalendarId(request.getYearAndCalendarId().calendarId())
-					.harvestingYearId(request.getYearAndCalendarId().yearId())
+					.calendarId(request.getYearAndCalendarId().calendarId())
+					.yearId(request.getYearAndCalendarId().yearId())
 					.typeConditions(TypeConditions.MODULAR_CONTRACT)
 					.build();
 
@@ -90,8 +90,8 @@ public class BPartnerInterimContractService
 
 		final ModularFlatrateTermRequest interimContractsLookup = ModularFlatrateTermRequest.builder()
 				.bPartnerId(request.getBPartnerId())
-				.harvestingCalendarId(request.getYearAndCalendarId().calendarId())
-				.harvestingYearId(request.getYearAndCalendarId().yearId())
+				.calendarId(request.getYearAndCalendarId().calendarId())
+				.yearId(request.getYearAndCalendarId().yearId())
 				.typeConditions(TypeConditions.INTERIM_INVOICE)
 				.build();
 
