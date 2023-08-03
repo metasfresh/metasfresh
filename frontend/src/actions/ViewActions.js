@@ -1,30 +1,31 @@
 import {
   browseViewRequest,
   createViewRequest,
+  deleteViewRequest,
   filterViewRequest,
   getViewLayout,
-  locationConfigRequest,
   headerPropertiesRequest,
+  locationConfigRequest,
 } from '../api';
 
 import { formatFilters, populateFiltersCaptions } from '../utils/filterHelpers';
 import {
   ADD_VIEW_LOCATION_DATA,
   CREATE_VIEW,
-  CREATE_VIEW_SUCCESS,
   CREATE_VIEW_ERROR,
+  CREATE_VIEW_SUCCESS,
   DELETE_VIEW,
+  FETCH_DOCUMENT_ERROR,
   FETCH_DOCUMENT_PENDING,
   FETCH_DOCUMENT_SUCCESS,
-  FETCH_DOCUMENT_ERROR,
+  FETCH_LAYOUT_ERROR,
   FETCH_LAYOUT_PENDING,
   FETCH_LAYOUT_SUCCESS,
-  FETCH_LAYOUT_ERROR,
+  FETCH_LOCATION_CONFIG_ERROR,
+  FETCH_LOCATION_CONFIG_SUCCESS,
+  FILTER_VIEW_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
-  FILTER_VIEW_ERROR,
-  FETCH_LOCATION_CONFIG_SUCCESS,
-  FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
   SET_INCLUDED_VIEW,
   TOGGLE_INCLUDED_VIEW,
@@ -36,10 +37,16 @@ import {
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
-import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import {
+  createGridTable,
+  deleteTable,
+  partialUpdateGridTableRows,
+  updateGridTable,
+} from './TableActions';
 import { createFilter, deleteFilter } from './FiltersActions';
-import { fetchQuickActions, deleteQuickActions } from './Actions';
-import { setRawModalTitle } from './WindowActions';
+import { deleteQuickActions, fetchQuickActions } from './Actions';
+import { closeModal, closeRawModal, setRawModalTitle } from './WindowActions';
+import { patchModalView } from '../api/view';
 
 /**
  * @method resetView
@@ -274,6 +281,9 @@ export function setIncludedView({
 /**
  * @method unsetIncludedView
  * @summary reset included view's id in the store
+ * @param windowId
+ * @param viewId
+ * @param forceClose if true then it clears the includedView state even if the windowId and viewId not matching
  */
 export function unsetIncludedView({
   windowId,
@@ -297,10 +307,11 @@ export function unsetIncludedView({
  * @param {number} page
  * @param {number} pageLength
  * @param {*} orderBy
- * @param {bool} isModal - flag defining if the view is in modal or not.
+ * @param {boolean} isModal - flag defining if the view is in modal or not.
  * Set to `true` for modals because otherwise if using `windowId` we would have a collision
  * with the underlaying window (as they both have the same `windowId`) so we store modal
  * views in `modals` instead of regular `views`
+ * @param {boolean} websocketRefresh
  */
 export function fetchDocument({
   windowId,
@@ -629,3 +640,41 @@ export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
       });
   };
 }
+
+export function patchViewAction({ windowId, viewId, rowId, fieldName, value }) {
+  return (dispatch) => {
+    patchModalView({ windowId, viewId, rowId, fieldName, value }).then(
+      (row) => {
+        dispatch(
+          partialUpdateGridTableRows({
+            tableId: getTableId({ windowId, viewId }),
+            rowsToUpdate: [row],
+          })
+        );
+      }
+    );
+  };
+}
+
+export const closeViewModal = async ({
+  windowId,
+  viewId,
+  modalVisible,
+  closeAction,
+}) => {
+  return async (dispatch) => {
+    await Promise.all(
+      [
+        closeRawModal(),
+        closeModal(),
+        unsetIncludedView({ windowId, viewId, forceClose: true }),
+      ].map((action) => dispatch(action))
+    );
+
+    if (!modalVisible) {
+      document.body.style.overflow = 'auto';
+    }
+
+    await deleteViewRequest(windowId, viewId, closeAction ?? 'DONE');
+  };
+};

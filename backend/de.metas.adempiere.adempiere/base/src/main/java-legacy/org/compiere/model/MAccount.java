@@ -21,13 +21,18 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -62,7 +67,7 @@ public class MAccount extends X_C_ValidCombination
 							   int AD_OrgTrx_ID,
 							   int C_LocFrom_ID,
 							   int C_LocTo_ID,
-							   int C_SalesRegion_ID,
+							   @Nullable SalesRegionId C_SalesRegion_ID,
 							   int C_Project_ID,
 							   int C_Campaign_ID,
 							   int C_Activity_ID,
@@ -252,25 +257,18 @@ public class MAccount extends X_C_ValidCombination
 		return elementValue.getAccountType();
 	}
 
-	public boolean isBalanceSheet()
-	{
-		String accountType = getAccountType();
-		return (X_C_ElementValue.ACCOUNTTYPE_Asset.equals(accountType)
-				|| X_C_ElementValue.ACCOUNTTYPE_Liability.equals(accountType)
-				|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
-	}
-
-	public boolean isActiva()
-	{
-		return X_C_ElementValue.ACCOUNTTYPE_Asset.equals(getAccountType());
-	}
-
-	public boolean isPassiva()
-	{
-		String accountType = getAccountType();
-		return (X_C_ElementValue.ACCOUNTTYPE_Liability.equals(accountType)
-				|| X_C_ElementValue.ACCOUNTTYPE_OwnerSEquity.equals(accountType));
-	}
-
+	@NonNull
 	public ElementValueId getElementValueId() {return ElementValueId.ofRepoId(getAccount_ID());}
+
+	@Nullable
+	public SalesRegionId getSalesRegionId() {return SalesRegionId.ofRepoIdOrNull(getC_SalesRegion_ID());}
+
+	@Nullable
+	public LocationId getLocFromId() {return LocationId.ofRepoIdOrNull(getC_LocFrom_ID());}
+
+	@Nullable
+	public LocationId getLocToId() {return LocationId.ofRepoIdOrNull(getC_LocTo_ID());}
+
+	@Nullable
+	public OrgId getOrgTrxId() {return OrgId.ofRepoIdOrNull(getAD_OrgTrx_ID());}
 }

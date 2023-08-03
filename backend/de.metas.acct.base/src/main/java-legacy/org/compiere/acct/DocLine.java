@@ -41,7 +41,9 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
@@ -49,14 +51,12 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -129,7 +129,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private LocalDateAndOrgId m_DateAcct = null;
 	private LocalDateAndOrgId m_DateDoc = null;
-	private int m_C_SalesRegion_ID = -1;
+	@Nullable private Optional<SalesRegionId> m_C_SalesRegion_ID = null; // lazy
 	private Optional<BPartnerId> _bpartnerId;
 	private final LocationId locationFromId = null;
 	private final LocationId locationToId = null;
@@ -624,18 +624,15 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return services.getProductStockingUOMId(getProductId());
 	}
 
-	/**
-	 * @return C_RevenueRecognition_ID or 0
-	 */
-	public final int getC_RevenueRecognition_ID()
-	{
-		final I_M_Product product = getProduct();
-		if (product != null)
-		{
-			return product.getC_RevenueRecognition_ID();
-		}
-		return 0;
-	}   // getC_RevenueRecognition_ID
+	// public final int getC_RevenueRecognition_ID()
+	// {
+	// 	final I_M_Product product = getProduct();
+	// 	if (product != null)
+	// 	{
+	// 		return product.getC_RevenueRecognition_ID();
+	// 	}
+	// 	return 0;
+	// }   // getC_RevenueRecognition_ID
 
 	/**
 	 * Quantity UOM
@@ -759,34 +756,21 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 *
 	 * @return C_SalesRegion_ID
 	 */
-	public final int getC_SalesRegion_ID()
+	public final Optional<SalesRegionId> getC_SalesRegion_ID()
 	{
-		if (m_C_SalesRegion_ID == -1)    // never tried
+		Optional<SalesRegionId> salesRegionId = this.m_C_SalesRegion_ID;
+		if (salesRegionId == null)
 		{
-			final int bpartnerLocationId = getC_BPartner_Location_ID();
-			if (bpartnerLocationId > 0)
-			// && m_acctSchema.isAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_SalesRegion))
-			{
-				final String sql = "SELECT COALESCE(C_SalesRegion_ID,0) FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
-				m_C_SalesRegion_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, bpartnerLocationId);
-				if (m_C_SalesRegion_ID == 0)
-				{
-					m_C_SalesRegion_ID = -2;    // don't try again
-				}
-			}
-			else
-			{
-				m_C_SalesRegion_ID = -2;        // don't try again
-			}
+			final BPartnerLocationId bpartnerLocationId = getBPartnerLocationId();
+			salesRegionId = this.m_C_SalesRegion_ID = bpartnerLocationId != null
+					? services.getSalesRegionIdByBPartnerLocationId(bpartnerLocationId)
+					: Optional.empty();
 		}
 
-		return Math.max(m_C_SalesRegion_ID, 0);
-	}   // getC_SalesRegion_ID
-
-	public final int getC_Project_ID()
-	{
-		return getValue("C_Project_ID");
+		return salesRegionId;
 	}
+
+	public final ProjectId getC_Project_ID() {return ProjectId.ofRepoIdOrNull(getValue("C_Project_ID"));}
 
 	public final int getC_Campaign_ID()
 	{
@@ -826,6 +810,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("User2_ID");
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
 	{
 		final PO po = getPO();

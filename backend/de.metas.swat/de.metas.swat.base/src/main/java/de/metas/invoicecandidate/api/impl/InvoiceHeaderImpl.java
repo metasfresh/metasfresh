@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -132,6 +133,8 @@ import java.util.Optional;
 
 	private int C_PaymentInstruction_ID;
 	private CountryId C_Tax_Departure_Country_ID;
+
+	@Nullable @Getter private BankAccountId bankAccountId;
 
 	@Setter @Getter @Nullable ForexContractRef forexContractRef;
 
@@ -527,4 +530,10 @@ import java.util.Optional;
 	{
 		C_Tax_Departure_Country_ID = c_Tax_Departure_Country_ID;
 	}
+
+	public void setBankAccountId(@Nullable final BankAccountId bankAccountId)
+	{
+		this.bankAccountId = bankAccountId;
+	}
+
 }

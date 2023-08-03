@@ -20,45 +20,43 @@ import de.metas.acct.Account;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AcctSchema;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-/**
- * Document Tax Line
- *
- * @author Jorg Janke
- * @version $Id: DocTax.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- */
-public final class DocTax
+final class DocTax
 {
 	// services
 	private final AccountProvider accountProvider;
 
-	@Getter private final TaxId taxId;
-	@Getter private final BigDecimal taxAmt;
-	private final String taxName;
-	private final BigDecimal taxBaseAmt;
-	private BigDecimal includedTaxAmt = BigDecimal.ZERO;
+	@NonNull @Getter private final TaxId taxId;
+	@NonNull private final String taxName;
+
+	@NonNull @Setter private BigDecimal taxBaseAmt;
+	@NonNull @Getter @Setter private BigDecimal taxAmt;
+	@NonNull @Getter @Setter private BigDecimal reverseChargeTaxAmt;
+	@NonNull private BigDecimal includedTaxAmt = BigDecimal.ZERO;
+
 	private final boolean salesTax;
 	@Getter private final boolean taxIncluded;
 	@Getter private final boolean isReverseCharge;
-	@Getter private final BigDecimal reverseChargeTaxAmt;
 
 	@Builder
 	private DocTax(
 			@NonNull final AccountProvider accountProvider,
 			@NonNull final TaxId taxId,
-			final String taxName,
+			@NonNull final String taxName,
 			@NonNull final BigDecimal taxBaseAmt,
 			@NonNull final BigDecimal taxAmt,
+			@NonNull final BigDecimal reverseChargeTaxAmt,
 			final boolean salesTax,
 			final boolean taxIncluded,
-			final boolean isReverseCharge,
-			@NonNull final BigDecimal reverseChargeTaxAmt)
+			final boolean isReverseCharge)
 	{
 		this.accountProvider = accountProvider;
 		this.taxId = taxId;
@@ -69,6 +67,15 @@ public final class DocTax
 		this.taxIncluded = taxIncluded;
 		this.isReverseCharge = isReverseCharge;
 		this.reverseChargeTaxAmt = reverseChargeTaxAmt;
+	}
+
+	public static DocTaxBuilder builderFrom(@NonNull final Tax tax)
+	{
+		return DocTax.builder()
+				.taxId(tax.getTaxId())
+				.taxName(tax.getName())
+				.salesTax(tax.isSalesTax())
+				.isReverseCharge(tax.isReverseCharge());
 	}
 
 	@Override

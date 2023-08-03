@@ -36,10 +36,12 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -56,10 +58,12 @@ import de.metas.report.StandardDocumentReportType;
 import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.misc.service.IPOService;
@@ -177,7 +181,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	private static final CCache<Integer, MInvoice> s_cache = new CCache<>("C_Invoice", 20, 2);    // 2 minutes
 
 	private MInvoiceLine[] m_lines;
-	private MInvoiceTax[] m_taxes;
 	private boolean m_justPrepared = false;
 	private boolean m_reversal = false;
 
@@ -540,19 +543,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		return m_reversal;
 	}
 
-	public MInvoiceTax[] getTaxes(final boolean requery)
+	@Deprecated
+	public List<InvoiceTax> getTaxes()
 	{
-		if (m_taxes != null && !requery)
-		{
-			return m_taxes;
-		}
-
-		final String whereClause = MInvoiceTax.COLUMNNAME_C_Invoice_ID + "=?";
-		final List<MInvoiceTax> list = new Query(getCtx(), MInvoiceTax.Table_Name, whereClause, get_TrxName())
-				.setParameters(new Object[] { get_ID() })
-				.list(MInvoiceTax.class);
-		m_taxes = list.toArray(new MInvoiceTax[list.size()]);
-		return m_taxes;
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		return invoiceDAO.retrieveTaxes(InvoiceId.ofRepoId(getC_Invoice_ID()));
 	}    // getTaxes
 
 	private void addDescription(final String description)
@@ -597,7 +592,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final int noLine = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceLine " + set, get_TrxName());
 		final int noTax = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceTax " + set, get_TrxName());
 		m_lines = null;
-		m_taxes = null;
 		log.debug(processed + " - Lines=" + noLine + ", Tax=" + noTax);
 	}    // setProcessed
 
@@ -919,13 +913,15 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 */
 	public boolean calculateTaxTotal()
 	{
-		final String trxName = get_TrxName();
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final ITaxBL taxBL = Services.get(ITaxBL.class);
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(getC_Invoice_ID());
 
 		// Delete Taxes
-		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
-		m_taxes = null;
+		invoiceDAO.deleteTaxes(invoiceId);
 
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(this);
 
 		// Lines
@@ -942,7 +938,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				continue;
 			}
 
-			final MInvoiceTax iTax = MInvoiceTax.get(line, taxPrecision.toInt(), false, trxName); // current Tax
+			final MInvoiceTax iTax = MInvoiceTax.get(line, taxPrecision.toInt(), false, ITrx.TRXNAME_ThreadInherited); // current Tax
 			if (iTax == null)
 			{
 				continue;
@@ -960,21 +956,20 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		// Taxes
 		BigDecimal grandTotal = totalLines;
-		final MInvoiceTax[] taxes = getTaxes(true);
-		for (final MInvoiceTax iTax : taxes)
+		for (final I_C_InvoiceTax iTax : invoiceDAO.retrieveTaxRecords(invoiceId))
 		{
-			final MTax tax = iTax.getTax();
+			final TaxId taxId = TaxId.ofRepoId(iTax.getC_Tax_ID());
+			final Tax tax = taxBL.getTaxById(taxId);
 			if (tax.isSummary())
 			{
 				// Multiple taxes
-				for (final I_C_Tax childTaxRecord : tax.getChildTaxes(false))
+				for (final Tax childTax : taxBL.getChildTaxes(taxId))
 				{
-					final Tax childTax = TaxUtils.from(childTaxRecord);
-					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, childTax);
+					final boolean taxIncluded = invoiceBL.isTaxIncluded(this, childTax);
 					final BigDecimal taxBaseAmt = iTax.getTaxBaseAmt();
 					final CalculateTaxResult calculateTaxResult = childTax.calculateTax(taxBaseAmt, taxIncluded, taxPrecision.toInt());
 					//
-					final MInvoiceTax newITax = new MInvoiceTax(getCtx(), 0, trxName);
+					final MInvoiceTax newITax = new MInvoiceTax(getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
 					newITax.setClientOrg(this);
 					newITax.setC_Invoice(this);
 					newITax.setC_Tax_ID(childTax.getTaxId().getRepoId());
@@ -984,7 +979,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					newITax.setTaxBaseAmt(taxBaseAmt);
 					newITax.setTaxAmt(calculateTaxResult.getTaxAmount());
 					newITax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
-					newITax.saveEx(trxName);
+					newITax.saveEx();
 					//
 					if (!taxIncluded)
 					{

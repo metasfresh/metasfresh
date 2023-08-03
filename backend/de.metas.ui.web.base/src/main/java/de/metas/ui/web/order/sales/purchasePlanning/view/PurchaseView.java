@@ -252,18 +252,6 @@ public class PurchaseView implements IEditableView
 	}
 
 	@Override
-	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
 		return additionalRelatedProcessDescriptors;

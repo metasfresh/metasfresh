@@ -57,6 +57,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -335,7 +336,7 @@ public final class ProcessInfo implements Serializable
 		try
 		{
 			final Class<?> processClass = classLoader.loadClass(classname);
-			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = Util.newInstance(JavaProcess.class, processClass);
 			processClassInstance.init(this);
 
 			return processClassInstance;

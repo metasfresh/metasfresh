@@ -61,6 +61,11 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 		return getRowsIndex().getDocumentId2TopLevelRows();
 	}
 
+	public ImmutableMap<DocumentId, T> getDocumentId2TopLevelRows(@NonNull final Predicate<T> filter)
+	{
+		return getRowsIndex().getDocumentId2TopLevelRows(filter);
+	}
+
 	public <ID extends RepoIdAware> ImmutableSet<ID> getRecordIdsToRefresh(
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final Function<DocumentId, ID> idMapper)
@@ -76,9 +81,33 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 
 	public boolean anyMatch(final Predicate<T> predicate) {return getRowsIndex().anyMatch(predicate);}
 
+	public List<T> list() {return getRowsIndex().list();}
+
 	public void compute(@NonNull final UnaryOperator<ImmutableRowsIndex<T>> remappingFunction)
 	{
 		holder.compute(remappingFunction);
+	}
+
+	public void addRow(@NonNull final T row)
+	{
+		compute(rows -> rows.addingRow(row));
+	}
+
+	@SuppressWarnings("unused")
+	public void removeRowsById(@NonNull final DocumentIdsSelection rowIds)
+	{
+		if (rowIds.isEmpty())
+		{
+			return;
+		}
+
+		compute(rows -> rows.removingRowIds(rowIds));
+	}
+
+	@SuppressWarnings("unused")
+	public void removingIf(@NonNull final Predicate<T> predicate)
+	{
+		compute(rows -> rows.removingIf(predicate));
 	}
 
 	public void changeRowById(@NonNull DocumentId rowId, @NonNull final UnaryOperator<T> rowMapper)

@@ -6,6 +6,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -111,11 +112,11 @@ public class ProcessPreconditionChecker
 		return resolution != null ? resolution : ProcessPreconditionsResolution.accept();
 	}
 
-	private static final IProcessPrecondition createProcessPreconditions(
+	private static IProcessPrecondition createProcessPreconditions(
 			final Class<? extends IProcessPrecondition> preconditionsClass,
-			final IProcessPreconditionsContext context) throws Exception
+			final IProcessPreconditionsContext context)
 	{
-		final IProcessPrecondition processPreconditions = preconditionsClass.asSubclass(IProcessPrecondition.class).newInstance();
+		final IProcessPrecondition processPreconditions = Util.newInstance(IProcessPrecondition.class, preconditionsClass);
 		if (processPreconditions instanceof JavaProcess)
 		{
 			((JavaProcess)processPreconditions).init(context);

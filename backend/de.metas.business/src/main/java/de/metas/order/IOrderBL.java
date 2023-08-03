@@ -22,6 +22,7 @@
 
 package de.metas.order;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -124,6 +125,11 @@ public interface IOrderBL extends ISingletonService
 	boolean setBill_User_ID(I_C_Order order);
 
 	List<I_C_Order> getByIds(@NonNull Collection<OrderId> orderIds);
+
+	default List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderId(@NonNull final OrderId orderId)
+	{
+		return getLinesByOrderIds(ImmutableSet.of(orderId));
+	}
 
 	List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderIds(@NonNull Set<OrderId> orderIds);
 

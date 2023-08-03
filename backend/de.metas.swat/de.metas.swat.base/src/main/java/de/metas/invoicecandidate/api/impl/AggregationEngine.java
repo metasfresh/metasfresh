@@ -12,6 +12,7 @@ import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -148,6 +149,8 @@ public final class AggregationEngine
 	@Nullable
 	private final ForexContractRef forexContractRef;
 	private final AdTableId inoutLineTableId;
+	@Nullable
+	private final BankAccountId bankAccountId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
@@ -164,7 +167,8 @@ public final class AggregationEngine
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@Nullable final ForexContractRef forexContractRef,
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
-			@Nullable final DimensionService dimensionService)
+			@Nullable final DimensionService dimensionService,
+			@Nullable final BankAccountId bankAccountId)
 	{
 		this.bpartnerBL = coalesceNotNull(bpartnerBL, () -> Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, () -> SpringContextHolder.instance.getBean(MatchInvoiceService.class));
@@ -184,6 +188,7 @@ public final class AggregationEngine
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
+		this.bankAccountId = bankAccountId;
 	}
 
 	@Override
@@ -553,6 +558,8 @@ public final class AggregationEngine
 
 			getActivityId(icRecord, headerAggregationId)
 					.ifPresent(activityId -> invoiceHeader.setC_Activity_ID(ActivityId.toRepoId(activityId)));
+
+			invoiceHeader.setBankAccountId(BankAccountId.toRepoId(bankAccountId));
 		}
 		catch (final RuntimeException rte)
 		{

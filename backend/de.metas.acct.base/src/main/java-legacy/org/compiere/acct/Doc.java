@@ -13,8 +13,11 @@ import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.AcctDocModel;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.factacct_userchanges.FactAcctChangesApplier;
+import de.metas.acct.factacct_userchanges.FactAcctChangesList;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
@@ -45,10 +48,10 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
@@ -56,7 +59,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
@@ -66,10 +68,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
-import org.compiere.model.PO;
-import org.compiere.model.POInfo;
 import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
@@ -145,90 +144,26 @@ import java.util.function.IntFunction;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public abstract class Doc<DocLineType extends DocLine<?>>
 {
-	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
-
-	@Getter(AccessLevel.PROTECTED)
-	@NonNull protected final AcctDocRequiredServicesFacade services;
-
+	//
+	// services
 	private static final Logger log = LogManager.getLogger(Doc.class);
+	@Getter(AccessLevel.PROTECTED) @NonNull protected final AcctDocRequiredServicesFacade services;
+	private AccountProvider _accountProvider; // lazy
 
-	protected Doc(final AcctDocContext ctx)
-	{
-		this(ctx, null); // defaultDocBaseType=null
-	}
-
-	/**
-	 * @param ctx                construction parameters
-	 * @param defaultDocBaseType suggested DocBaseType to be used
-	 */
-	protected Doc(@NonNull final AcctDocContext ctx, @Nullable final DocBaseType defaultDocBaseType)
-	{
-		services = ctx.getServices();
-		acctSchemas = ctx.getAcctSchemas();
-
-		//
-		// Document model
-		final Object documentModel = ctx.getDocumentModel();
-		p_po = InterfaceWrapperHelper.getPO(documentModel);
-		Check.assumeNotNull(p_po, "p_po not null");
-
-		// IMPORTANT: to make sure events like FactAcctListenersService.fireAfterUnpost will use the thread inherited trx
-		p_po.set_TrxName(ITrx.TRXNAME_ThreadInherited);
-
-		_docStatus = extractDocStatus(p_po);
-
-		// Document Type
-		setDocBaseType(defaultDocBaseType);
-	}   // Doc
-
-	private static DocStatus extractDocStatus(@NonNull final PO po)
-	{
-		final int index = po.get_ColumnIndex("DocStatus");
-		if (index >= 0)
-		{
-			return DocStatus.ofNullableCodeOrUnknown((String)po.get_Value(index));
-		}
-		else
-		{
-			return null; // no DocStatus (e.g. M_MatchInv etc)
-		}
-	}
-
-	/**
-	 * Accounting Schemas
-	 */
+	//
+	// Params
 	private final ImmutableList<AcctSchema> acctSchemas;
-	/**
-	 * The Document
-	 */
-	private final PO p_po;
-	/**
-	 * Document Type
-	 */
+	private final AcctDocModel docModel;
+
+	//
+	// State
+	private boolean documentDetailsLoaded = false;
 	private DocBaseType _docBaseType = null;
-	/**
-	 * Document Status
-	 */
 	private final DocStatus _docStatus;
-	/**
-	 * Document No
-	 */
 	private String m_DocumentNo = null;
-	/**
-	 * Description
-	 */
 	private String m_Description = null;
-	/**
-	 * GL Category
-	 */
 	private GLCategoryId m_GL_Category_ID;
-	/**
-	 * GL Period
-	 */
 	private MPeriod m_period = null;
-	/**
-	 * Period ID
-	 */
 	private int m_C_Period_ID = 0;
 	@Nullable private final LocationId locationFromId = null;
 	@Nullable private final LocationId locationToId = null;
@@ -238,10 +173,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced)
 	 */
 	private boolean m_MultiCurrency = false;
-	/**
-	 * BP Sales Region
-	 */
-	private int m_BP_C_SalesRegion_ID = -1;
+	@Nullable private Optional<SalesRegionId> m_BP_C_SalesRegion_ID = null; // lazy
 	@Nullable private Optional<BPartnerId> _bpartnerId; // lazy
 
 	/**
@@ -252,8 +184,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Cach Book
 	 */
-	private int m_C_CashBook_ID = -1;
-
 	@Nullable private Optional<CurrencyId> _currencyId; // lazy
 	@Nullable private CurrencyPrecision _currencyPrecision; // lazy
 
@@ -262,39 +192,38 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	private List<DocLineType> docLines;
 
-	private AccountProvider _accountProvider; // lazy
+	private FactAcctChangesApplier _factAcctChangesApplier; // lazy
+
+	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
+
+	protected Doc(final AcctDocContext ctx)
+	{
+		this(ctx, null); // defaultDocBaseType=null
+	}
+
+	protected Doc(@NonNull final AcctDocContext ctx, @Nullable final DocBaseType defaultDocBaseType)
+	{
+		this.services = ctx.getServices();
+		this.acctSchemas = ctx.getAcctSchemas();
+		this.docModel = ctx.getDocumentModel();
+		this._docStatus = docModel.getDocStatus();
+		setDocBaseType(defaultDocBaseType);
+	}
 
 	public final String get_TableName()
 	{
-		return getPO().get_TableName();
+		return getDocModel().getTableName();
 	}
 
-	protected final int get_Table_ID()
-	{
-		return getPO().get_Table_ID();
-	}
+	public final int get_ID() {return getDocModel().getId();}
 
-	/**
-	 * @return record id
-	 */
-	public final int get_ID()
-	{
-		return getPO().get_ID();
-	}
+	public TableRecordReference getRecordRef() {return getDocModel().getRecordRef();}
 
-	/**
-	 * Get Persistent Object
-	 *
-	 * @return po
-	 */
-	private PO getPO()
-	{
-		return p_po;
-	}    // getPO
+	private AcctDocModel getDocModel() {return docModel;}
 
 	protected final <T> T getModel(final Class<T> modelClass)
 	{
-		return InterfaceWrapperHelper.create(getPO(), modelClass);
+		return getDocModel().unboxAs(modelClass);
 	}
 
 	protected final void setDocLines(final List<DocLineType> docLines)
@@ -394,20 +323,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 							+ ", AcctSchema=" + acctSchemas.get(0).getClientId());
 		}
 
-		//
-		// Load document details
-		try
-		{
-			loadDocumentDetails();
-		}
-		catch (final Exception ex)
-		{
-			throw newPostingException(ex)
-					.setPreserveDocumentPostedStatus();
-		}
+		loadDocumentDetailsIfNeeded();
 
 		//
-		// Delete existing Accounting
+		// Check posting allowed
 		if (repost)
 		{
 			if (isPosted() && !isPeriodOpen())    // already posted - don't delete if period closed
@@ -416,9 +335,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setPreserveDocumentPostedStatus()
 						.setDetailMessage("@PeriodClosed@");
 			}
-
-			// delete existing accounting records
-			deleteAcct();
 		}
 		else if (isPosted())
 		{
@@ -428,50 +344,29 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		//
-		// Create Fact per AcctSchema
-		final List<Fact> facts = new ArrayList<>();
-		for (final AcctSchema acctSchema : acctSchemas)
-		{
-			if (isSkipPosting(acctSchema))
-			{
-				continue;
-			}
-
-			// post
-			final List<Fact> factsForAcctSchema = postLogic(acctSchema);
-			facts.addAll(factsForAcctSchema);
-		}
+		// Create Facts
+		final ArrayList<Fact> facts = postLogic();
 
 		//
 		// Fire event: BEFORE_POST
-		services.fireBeforePostEvent(getPO());
+		services.fireBeforePostEvent(getDocModel());
 
 		//
-		// Update Open Items Matching
-		for (final Fact fact : facts)
+		// Save facts to database
 		{
-			fact.forEach(FactLine::updateFAOpenItemTrxInfo);
-		}
+			if (repost)
+			{
+				deleteAcct();
+			}
 
-		//
-		// Save facts
-		for (final Fact fact : facts)
-		{
-			fact.save();
+			facts.forEach(Fact::save);
 		}
 
 		//
 		// Fire event: AFTER_POST
-		services.fireAfterPostEvent(getPO());
+		services.fireAfterPostEvent(getDocModel());
 		// Execute after document posted code
 		afterPost();
-
-		//
-		// Dispose facts
-		for (final Fact fact : facts)
-		{
-			fact.dispose();
-		}
 	}
 
 	private boolean isSkipPosting(final AcctSchema acctSchema)
@@ -499,10 +394,41 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return skip;
 	}
 
-	private void deleteAcct()
+	private void deleteAcct() {services.deleteFactAcctByDocumentModel(getDocModel());}
+
+	@NonNull
+	public ArrayList<Fact> postLogic()
 	{
-		final Object documentPO = getPO();
-		services.deleteFactAcctByDocumentModel(documentPO);
+		loadDocumentDetailsIfNeeded();
+
+		//
+		// Create Facts
+		final ArrayList<Fact> facts = new ArrayList<>();
+		for (final AcctSchema acctSchema : acctSchemas)
+		{
+			if (isSkipPosting(acctSchema))
+			{
+				continue;
+			}
+
+			// post
+			final List<Fact> factsForAcctSchema = postLogic(acctSchema);
+			facts.addAll(factsForAcctSchema);
+		}
+
+		//
+		// Apply the changes which were not yet applied
+		getFactAcctChangesApplier().applyTo(facts);
+
+		//
+		// Update Open Items Matching
+		for (final Fact fact : facts)
+		{
+			fact.forEach(FactLine::updateFAOpenItemTrxInfo);
+		}
+
+		//
+		return facts;
 	}
 
 	private List<Fact> postLogic(final AcctSchema acctSchema)
@@ -540,24 +466,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Process facts: validate, GL distribution, balance etc
-		for (final Fact fact : facts)
-		{
-			processFacts(fact);
-		}
+		facts.forEach(this::processFacts);
 
 		return facts;
 	}   // postLogic
 
-	private void processFacts(final Fact fact)
+	private void processFacts(@NonNull final Fact fact)
 	{
-		if (fact == null)
-		{
-			throw newPostingException()
-					// .setAcctSchema(acctSchema)
-					.setPostingStatus(PostingStatus.Error)
-					.setDetailMessage("No fact");
-		}
-
 		final AcctSchema acctSchema = fact.getAcctSchema();
 
 		// check accounts
@@ -570,6 +485,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setDetailMessage(checkAccountsResult.getReason())
 					.setFact(fact);
 		}
+
+		getFactAcctChangesApplier().applyTo(fact);
 
 		// distribute
 		try
@@ -585,6 +502,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
 		}
 
+		//
 		// Balance source amounts
 		if (fact.isSingleCurrency() && !fact.isSourceBalanced())
 		{
@@ -599,7 +517,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 
-		// balanceSegments
+		//
+		// Balance Segments
 		if (!fact.isSegmentBalanced())
 		{
 			fact.balanceSegments();
@@ -613,7 +532,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 		}
 
-		// balanceAccounting
+		//
+		// Balance accounted amounts
 		if (!fact.isAcctBalanced())
 		{
 			fact.balanceAccounting();
@@ -628,6 +548,26 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
+	protected final FactAcctChangesApplier getFactAcctChangesApplier()
+	{
+		FactAcctChangesApplier factAcctChangesApplier = this._factAcctChangesApplier;
+		if (factAcctChangesApplier == null)
+		{
+			final FactAcctChangesList factAcctChanges = services.getFactAcctChanges(getRecordRef());
+			factAcctChangesApplier = this._factAcctChangesApplier = new FactAcctChangesApplier(factAcctChanges);
+		}
+		return factAcctChangesApplier;
+	}
+
+	public void setFactAcctChangesList(@NonNull final FactAcctChangesList factAcctChangesList)
+	{
+		if (_factAcctChangesApplier != null)
+		{
+			throw new AdempiereException("Changing changes applier after it was loaded is not allowed");
+		}
+		this._factAcctChangesApplier = new FactAcctChangesApplier(factAcctChangesList);
+	}
+
 	/**
 	 * Lock document
 	 *
@@ -636,35 +576,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	private void lock(final boolean force, final boolean repost)
 	{
-		final String tableName = get_TableName();
-		final int recordId = get_ID();
-
-		final StringBuilder sql = new StringBuilder("UPDATE ");
-		sql.append(tableName).append(" SET Processing='Y' WHERE ")
-				.append(tableName).append("_ID=").append(recordId)
-				.append(" AND Processed='Y' AND IsActive='Y'");
-		if (!force)
+		final AcctDocModel docModel = getDocModel();
+		final boolean locked = services.lock(docModel, force, repost);
+		if (!locked)
 		{
-			sql.append(" AND (Processing='N' OR Processing IS NULL)");
-		}
-		if (!repost)
-		{
-			sql.append(" AND Posted='N'");
-		}
-
-		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		if (updatedCount != 1)
-		{
-			final PO po = getPO();
 			final String errmsg = force ? "Cannot Lock - ReSubmit" : "Cannot Lock - ReSubmit or RePost with Force";
 			throw newPostingException()
 					.setDetailMessage(errmsg)
 					.addDetailMessage("Hint: it could be that for some reason, the document remained locked (i.e. Processing=Y), so you could unlock it to fix the issue.")
-					.setParameter("Processing", po.get_Value("Processing"))
-					.setParameter("Processed", po.get_Value("Processed"))
-					.setParameter("IsActive", po.get_Value("IsActive"))
-					.setParameter("Posted", po.get_Value("Posted"))
-					.setParameter("SQL", sql.toString())
+					.setParameter("Processing", docModel.isProcessing())
+					.setParameter("Processed", docModel.isProcessed())
+					.setParameter("IsActive", docModel.isActive())
+					.setParameter("Posted", docModel.getPostingStatus())
+					//.setParameter("SQL", sql.toString())
 					.setPostingStatus(PostingStatus.NotPosted)
 					.setPreserveDocumentPostedStatus();
 		}
@@ -672,66 +596,50 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	private void unlock(final PostingException exception)
 	{
-		final String tableName = get_TableName();
-		final POInfo poInfo = POInfo.getPOInfoNotNull(tableName);
-		final String keyColumnName = poInfo.getKeyColumnName();
-		final int recordId = get_ID();
-
-		final StringBuilder sql = new StringBuilder("UPDATE ")
-				.append(tableName).append(" SET ");
-
 		//
-		// Processing (i.e. unlock it)
-		sql.append("Processing='N'");
-
-		//
-		// Posted
-		final boolean updatePostedStatus = exception != null && !exception.isPreserveDocumentPostedStatus();
+		// Posting Status
+		final PostingStatus newPostingStatus;
 		if (exception == null)
 		{
-			sql.append(", Posted=").append(DB.TO_STRING(PostingStatus.Posted.getStatusCode()));
+			newPostingStatus = PostingStatus.Posted;
 		}
-		else if (updatePostedStatus)
+		else if (exception.isPreserveDocumentPostedStatus())
 		{
-			final PostingStatus postingStatus = exception.getPostingStatus(PostingStatus.Error);
-			sql.append(", Posted=").append(DB.TO_STRING(postingStatus.getStatusCode()));
+			newPostingStatus = null; // preserve current status
+		}
+		else
+		{
+			newPostingStatus = exception.getPostingStatus().orElse(PostingStatus.Error);
 		}
 
 		//
 		// PostingError_Issue_ID
+		final AcctDocModel docModel = getDocModel();
+		final AdIssueId postingErrorIssueId;
 		final String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
-		final boolean hasPostingIssueColumn = poInfo.hasColumnName(COLUMNNAME_PostingError_Issue_ID);
+		final boolean hasPostingIssueColumn = docModel.hasColumnName(COLUMNNAME_PostingError_Issue_ID);
 		if (hasPostingIssueColumn)
 		{
-			final AdIssueId postingErrorIssueId = exception != null
+			postingErrorIssueId = exception != null
 					? services.createIssue(exception)
 					: null;
 
-			final AdIssueId previousPostingErrorIssueId = AdIssueId.ofRepoIdOrNull(getPO().get_ValueAsInt(COLUMNNAME_PostingError_Issue_ID));
-			if (previousPostingErrorIssueId != null
-					&& !previousPostingErrorIssueId.equals(postingErrorIssueId))
+			final AdIssueId previousPostingErrorIssueId = docModel.getValueAsIdOrNull(COLUMNNAME_PostingError_Issue_ID, AdIssueId::ofRepoIdOrNull);
+			if (previousPostingErrorIssueId != null && !AdIssueId.equals(previousPostingErrorIssueId, postingErrorIssueId))
 			{
 				services.markIssueDeprecated(previousPostingErrorIssueId);
 			}
-
-			if (postingErrorIssueId != null)
-			{
-
-				sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append("=").append(postingErrorIssueId.getRepoId());
-			}
-			else
-			{
-				sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append(" = NULL ");
-			}
+		}
+		else
+		{
+			postingErrorIssueId = null;
 		}
 
-		sql.append("\n WHERE ").append(keyColumnName).append("=").append(recordId);
-
-		final int updateCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final boolean unlocked = services.unlock(docModel, newPostingStatus, postingErrorIssueId);
 
 		fireDocumentChanged();
 
-		if (updateCount != 1)
+		if (!unlocked)
 		{
 			throw newPostingException()
 					.setDetailMessage("Unable to unlock");
@@ -748,6 +656,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return document type (i.e. DocBaseType)
 	 */
+	@NonNull
 	protected final DocBaseType getDocBaseType()
 	{
 		if (_docBaseType == null)
@@ -796,14 +705,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		if (_docBaseType == null)
 		{
-			throw new IllegalStateException("Document Type not found");
+			throw new AdempiereException("DocBaseType not found");
 		}
 	}
 
-	/**************************************************************************
-	 * Is the Source Document Balanced
-	 *
-	 * @return true if (source) balanced
+	/**
+	 * @return true if (source) balanced or if multi currency document
 	 */
 	private boolean isBalanced()
 	{
@@ -877,7 +784,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
+	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
 	{
 		return services.createCurrencyConversionContext(
 				getDateAcct(),
@@ -1100,18 +1007,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	@Override
 	public String toString()
 	{
-		return getPO().toString();
+		return getDocModel().toString();
 	}
 
-	protected final ClientId getClientId()
-	{
-		return ClientId.ofRepoId(getPO().getAD_Client_ID());
-	}
+	public final ClientId getClientId() {return getDocModel().getClientId();}
 
-	protected final OrgId getOrgId()
-	{
-		return OrgId.ofRepoId(getPO().getAD_Org_ID());
-	}
+	public final OrgId getOrgId() {return getDocModel().getOrgId();}
 
 	protected String getDocumentNo()
 	{
@@ -1146,14 +1047,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_Description;
 	}
 
-	protected final CurrencyId getCurrencyId()
+	protected final CurrencyId getCurrencyId() {return getCurrencyIdOptional().orElse(null);}
+
+	public final Optional<CurrencyId> getCurrencyIdOptional()
 	{
 		if (_currencyId == null)
 		{
 			_currencyId = getValueAsOptionalId("C_Currency_ID", CurrencyId::ofRepoIdOrNull);
 		}
-
-		return _currencyId.orElse(null);
+		return _currencyId;
 	}
 
 	protected final void setC_Currency_ID(final CurrencyId currencyId)
@@ -1164,8 +1066,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final void setNoCurrency()
 	{
-		final CurrencyId currencyId = null;
-		setC_Currency_ID(currencyId);
+		setC_Currency_ID(null);
 	}
 
 	protected final boolean isMultiCurrency()
@@ -1185,19 +1086,18 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public final CurrencyPrecision getStdPrecision()
 	{
-		if (_currencyPrecision != null)
+		if (_currencyPrecision == null)
 		{
-			return _currencyPrecision;
+			_currencyPrecision = computeStdPrecision();
 		}
-
-		final CurrencyId currencyId = getCurrencyId();
-		if (currencyId == null)
-		{
-			return ICurrencyDAO.DEFAULT_PRECISION;
-		}
-
-		_currencyPrecision = services.getCurrencyStandardPrecision(currencyId);
 		return _currencyPrecision;
+	}
+
+	private CurrencyPrecision computeStdPrecision()
+	{
+		return getCurrencyIdOptional()
+				.map(services::getCurrencyStandardPrecision)
+				.orElse(ICurrencyDAO.DEFAULT_PRECISION);
 	}
 
 	protected final GLCategoryId getGL_Category_ID()
@@ -1251,9 +1151,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				() -> _dateDoc,
 				() -> getValueAsLocalDateOrNull("DateDoc"),
 				() -> getValueAsLocalDateOrNull("MovementDate"),
-				() -> {
-					throw new AdempiereException("No DateDoc");
-				});
+				() -> {throw new AdempiereException("No DateDoc");});
 	}
 
 	@NonNull
@@ -1279,12 +1177,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	private boolean isPosted()
 	{
-		final Boolean posted = getValueAsBooleanOrNull("Posted");
-		if (posted == null)
+		final PostingStatus postingStatus = getDocModel().getPostingStatus();
+		if (postingStatus == null)
 		{
 			throw new AdempiereException("Posted column is missing or it's null");
 		}
-		return posted;
+		return postingStatus.isPosted();
 	}
 
 	public final boolean isSOTrx()
@@ -1355,34 +1253,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return bankAccount;
 	}
 
-	protected final int getC_CashBook_ID()
-	{
-		if (m_C_CashBook_ID == -1)
-		{
-			m_C_CashBook_ID = getValueAsIntOrZero("C_CashBook_ID");
-			if (m_C_CashBook_ID <= 0)
-			{
-				m_C_CashBook_ID = 0;
-			}
-		}
-		return m_C_CashBook_ID;
-	}
-
-	protected final void setC_CashBook_ID(final int C_CashBook_ID)
-	{
-		m_C_CashBook_ID = C_CashBook_ID;
-	}
-
 	protected final WarehouseId getWarehouseId()
 	{
 		return getValueAsIdOrNull("M_Warehouse_ID", WarehouseId::ofRepoIdOrNull);
 	}
 
-	/**
-	 * Get C_BPartner_ID
-	 *
-	 * @return BPartner
-	 */
 	protected final BPartnerId getBPartnerId()
 	{
 		if (_bpartnerId == null)
@@ -1413,30 +1288,33 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsOptionalId("C_Project_ID", ProjectId::ofRepoIdOrNull).orElse(null);
 	}
 
-	protected final int getC_SalesRegion_ID()
+	protected final Optional<SalesRegionId> getC_SalesRegion_ID()
 	{
-		return getValueAsIntOrZero("C_SalesRegion_ID");
-	}
-
-	protected final int getBP_C_SalesRegion_ID()
-	{
-		if (m_BP_C_SalesRegion_ID == -1)
+		Optional<SalesRegionId> salesRegionId = this.m_BP_C_SalesRegion_ID;
+		if (salesRegionId == null)
 		{
-			m_BP_C_SalesRegion_ID = getC_SalesRegion_ID();
-			if (m_BP_C_SalesRegion_ID <= 0)
-			{
-				m_BP_C_SalesRegion_ID = 0;
-			}
+			salesRegionId = this.m_BP_C_SalesRegion_ID = computeSalesRegionId();
 		}
-		return m_BP_C_SalesRegion_ID;
+		return salesRegionId;
 	}
 
-	/**
-	 * Set BPartner's C_SalesRegion_ID
-	 */
-	protected final void setBP_C_SalesRegion_ID(final int C_SalesRegion_ID)
+	private Optional<SalesRegionId> computeSalesRegionId()
 	{
-		m_BP_C_SalesRegion_ID = C_SalesRegion_ID;
+		SalesRegionId salesRegionId = getValueAsIdOrNull("C_SalesRegion_ID", SalesRegionId::ofRepoIdOrNull);
+
+		final BPartnerLocationId bpartnerLocationId;
+		if (salesRegionId == null && (bpartnerLocationId = getBPartnerLocationId()) != null)
+		{
+			salesRegionId = services.getSalesRegionIdByBPartnerLocationId(bpartnerLocationId).orElse(null);
+		}
+
+		final UserId salesRepId;
+		if (salesRegionId == null && (salesRepId = getSalesRepId()) != null)
+		{
+			salesRegionId = services.getSalesRegionIdBySalesRepId(salesRepId).orElse(null);
+		}
+
+		return Optional.ofNullable(salesRegionId);
 	}
 
 	@Nullable
@@ -1498,39 +1376,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public BPartnerId getBPartnerId2() {return getValueAsIdOrNull("C_BPartner2_ID", BPartnerId::ofRepoIdOrNull);}
 
-	protected final int getValueAsIntOrZero(final String ColumnName)
-	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(ColumnName);
-		if (index != -1)
-		{
-			final Integer ii = (Integer)po.get_Value(index);
-			if (ii != null)
-			{
-				return ii;
-			}
-		}
-		return 0;
-	}
+	protected final int getValueAsIntOrZero(final String columnName) {return getDocModel().getValueAsIntOrZero(columnName);}
 
 	@Nullable
 	private <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
 	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index < 0)
-		{
-			return null;
-		}
-
-		final Object valueObj = po.get_Value(index);
-		final Integer valueInt = NumberUtils.asInteger(valueObj, null);
-		if (valueInt == null)
-		{
-			return null;
-		}
-
-		return idOrNullMapper.apply(valueInt);
+		return getDocModel().getValueAsIdOrNull(columnName, idOrNullMapper);
 	}
 
 	private <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
@@ -1542,47 +1393,37 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	@Nullable
 	public LocalDateAndOrgId getValueAsLocalDateOrNull(final String columnName)
 	{
-		@NonNull final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
-		{
-			final Timestamp ts = po.get_ValueAsTimestamp(index);
-			if (ts != null)
-			{
-				final OrgId orgId = OrgId.ofRepoId(po.getAD_Org_ID());
-				return LocalDateAndOrgId.ofTimestamp(ts, orgId, getServices()::getTimeZone);
-			}
-		}
-
-		return null;
+		return getDocModel().getValueAsLocalDateOrNull(columnName, services::getTimeZone);
 	}
 
 	@Nullable
 	private Boolean getValueAsBooleanOrNull(final String columnName)
 	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
-		{
-			final Object valueObj = po.get_Value(index);
-			return DisplayType.toBoolean(valueObj, null);
-		}
-
-		return null;
+		return getDocModel().getValueAsBooleanOrNull(columnName);
 	}
 
 	@Nullable
 	protected String getValueAsString(final String columnName)
 	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
+		return getDocModel().getValueAsString(columnName);
+	}
+
+	private void loadDocumentDetailsIfNeeded()
+	{
+		if (documentDetailsLoaded)
 		{
-			final Object valueObj = po.get_Value(index);
-			return valueObj != null ? valueObj.toString() : null;
+			return;
 		}
 
-		return null;
+		try
+		{
+			loadDocumentDetails();
+			documentDetailsLoaded = true;
+		}
+		catch (final Exception ex)
+		{
+			throw newPostingException(ex).setPreserveDocumentPostedStatus();
+		}
 	}
 
 	/**
@@ -1651,24 +1492,25 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		{
 			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false).incMaxTrx(1);
 
-			final PostingStatus postingStatus = ex.getPostingStatus(PostingStatus.Error);
-			final AdMessageKey AD_MessageValue = postingStatus.getAD_Message();
-			final PO po = getPO();
-			final int AD_User_ID = po.getUpdatedBy();
+			final PostingStatus postingStatus = ex.getPostingStatus().orElse(PostingStatus.Error);
+			final AdMessageKey adMessage = postingStatus.getAdMessage();
+			final AcctDocModel docModel = getDocModel();
+			final TableRecordReference recordRef = docModel.getRecordRef();
+			final UserId AD_User_ID = docModel.getUpdatedBy();
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 			final MNote note = new MNote(
 					Env.getCtx(),
-					AD_MessageValue.toAD_Message(),
-					AD_User_ID,
+					adMessage.toAD_Message(),
+					AD_User_ID.getRepoId(),
 					getClientId().getRepoId(),
 					getOrgId().getRepoId(),
 					ITrx.TRXNAME_None);
-			note.setRecord(po.get_Table_ID(), po.get_ID());
+			note.setRecord(recordRef);
 			note.setReference(toString());    // Document
 
 			final StringBuilder text = new StringBuilder();
-			text.append(services.translate(AD_MessageValue).translate(adLanguage));
+			text.append(services.translate(adMessage).translate(adLanguage));
 			final String p_Error = ex.getDetailMessage().translate(adLanguage);
 			if (!Check.isEmpty(p_Error, true))
 			{
@@ -1707,6 +1549,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * <p>
 	 * IMPORTANT: This method won't fail if any of the documents's posting is failing, because we don't want to prevent the main document posting because of this.
 	 */
+	@SuppressWarnings("SameParameterValue")
 	protected final <ID extends RepoIdAware> void postDependingDocuments(
 			final String tableName,
 			final Collection<ID> documentIds)

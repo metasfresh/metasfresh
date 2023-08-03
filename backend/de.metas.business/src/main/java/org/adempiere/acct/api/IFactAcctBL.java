@@ -33,6 +33,7 @@ import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -65,7 +66,7 @@ public interface IFactAcctBL extends ISingletonService
 				.setAD_OrgTrx_ID(fa.getAD_OrgTrx_ID())
 				.setC_LocFrom_ID(fa.getC_LocFrom_ID())
 				.setC_LocTo_ID(fa.getC_LocTo_ID())
-				.setC_SalesRegion_ID(fa.getC_SalesRegion_ID())
+				.setC_SalesRegion_ID(SalesRegionId.ofRepoIdOrNull(fa.getC_SalesRegion_ID()))
 				.setC_Project_ID(fa.getC_Project_ID())
 				.setC_Campaign_ID(fa.getC_Campaign_ID())
 				.setC_Activity_ID(fa.getC_Activity_ID())

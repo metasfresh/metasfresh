@@ -719,7 +719,7 @@ public interface I_C_Order
 	/**
 	 * Set Incoterms.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -728,7 +728,7 @@ public interface I_C_Order
 	/**
 	 * Get Incoterms.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -815,7 +815,7 @@ public interface I_C_Order
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -825,7 +825,7 @@ public interface I_C_Order
 	 * Get Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1294,7 +1294,6 @@ public interface I_C_Order
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1304,7 +1303,6 @@ public interface I_C_Order
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1518,7 +1516,7 @@ public interface I_C_Order
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set External ID.
+	 * Set SAP PayT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1527,7 +1525,7 @@ public interface I_C_Order
 	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
-	 * Get External ID.
+	 * Get SAP PayT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1787,8 +1785,8 @@ public interface I_C_Order
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
-	 * Set IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Set Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1797,8 +1795,8 @@ public interface I_C_Order
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Get Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2304,7 +2302,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsUseDeliveryToAddress = "IsUseDeliveryToAddress";
 
 	/**
-	 * Set Übergabe.
+	 * Set Handover Location.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2313,7 +2311,7 @@ public interface I_C_Order
 	void setIsUseHandOver_Location (boolean IsUseHandOver_Location);
 
 	/**
-	 * Get Übergabe.
+	 * Get Handover Location.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2519,7 +2517,7 @@ public interface I_C_Order
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -2529,7 +2527,7 @@ public interface I_C_Order
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -2557,6 +2555,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_Orderline_includedTab = new ModelColumn<>(I_C_Order.class, "Orderline_includedTab", null);
 	String COLUMNNAME_Orderline_includedTab = "Orderline_includedTab";
+
+	/**
+	 * Set Order Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOrderStatus (java.lang.String OrderStatus);
+
+	/**
+	 * Get Order Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getOrderStatus();
+
+	ModelColumn<I_C_Order, Object> COLUMN_OrderStatus = new ModelColumn<>(I_C_Order.class, "OrderStatus", null);
+	String COLUMNNAME_OrderStatus = "OrderStatus";
 
 	/**
 	 * Set Order Type.

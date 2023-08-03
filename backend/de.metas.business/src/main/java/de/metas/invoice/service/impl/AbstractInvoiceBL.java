@@ -39,7 +39,6 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
-import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -58,6 +57,7 @@ import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
@@ -140,7 +140,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -216,6 +215,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public Optional<org.compiere.model.I_C_Invoice> getByIdIfExists(@NonNull final InvoiceId invoiceId)
+	{
+		return Optional.ofNullable(invoiceDAO.getByIdInTrxIfExists(invoiceId));
+	}
+
+	@Override
 	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
@@ -238,6 +243,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return invoiceDAO.retrieveLineById(invoiceLineId);
 	}
+
+	@Override
+	public List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId) {return invoiceDAO.retrieveTaxes(invoiceId);}
 
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
@@ -265,13 +273,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-
-		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
+		final DocTypeId targetDocTypeId = getTarget_DocType_ID(invoice, creditCtx.getDocTypeId());
 		//
 		// create the credit memo as a copy of the original invoice
-		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
-				copyFrom(invoice, de.metas.common.util.time.SystemTime.asTimestamp(),
+		return InterfaceWrapperHelper.create(
+				copyFrom(invoice, SystemTime.asTimestamp(),
 						targetDocTypeId.getRepoId(),
 						invoice.isSOTrx(),
 						false, // counter == false
@@ -281,10 +287,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						new CreditMemoInvoiceCopyHandler(creditCtx),
 						creditCtx.isFixedInvoice()),
 				I_C_Invoice.class);
-		return creditMemo;
 	}
 
-	private DocTypeId getTarget_DocType_ID(final Properties ctx, final I_C_Invoice invoice, final DocTypeId docTypeId)
+	private DocTypeId getTarget_DocType_ID(final I_C_Invoice invoice, final DocTypeId docTypeId)
 	{
 		if (docTypeId != null)
 		{
@@ -846,10 +851,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean setDocTypeTargetId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final InvoiceDocBaseType docBaseType)
+	public final void setDocTypeTargetId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final InvoiceDocBaseType docBaseType)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(docBaseType.getDocBaseType())
@@ -861,14 +865,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if (docTypeId == null)
 		{
 			log.error("Not found for {}", docTypeQuery);
-			return false;
 		}
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
 			final boolean isSOTrx = docBaseType.getDocBaseType().isSOTrx();
 			invoice.setIsSOTrx(isSOTrx);
-			return true;
 		}
 	}
 
@@ -971,13 +973,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final void renumberLines(final I_C_Invoice invoice, final int step)
-	{
-		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice, InterfaceWrapperHelper.getTrxName(invoice));
-		renumberLines(lines, step);
-	}
-
-	@Override
 	public final void renumberLines(final List<I_C_InvoiceLine> lines, final int step)
 	{
 		// collect those line numbers that are already "taken"
@@ -1069,8 +1064,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	/* package */ final void sortLines(final List<I_C_InvoiceLine> lines)
 	{
 		final Comparator<I_C_InvoiceLine> cmp = getInvoiceLineComparator(lines);
-
-		Collections.sort(lines, cmp);
+		lines.sort(cmp);
 	}
 
 	private Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
@@ -1084,7 +1078,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean sortILsByShipmentLineOrders = sysConfigBL.getBooleanValue(SYSCONFIG_SortILsByShipmentLineOrders, false); // fallback false (if not configured)
 		if (sortILsByShipmentLineOrders)
 		{
-			final Comparator<I_C_InvoiceLine> orderLineComparator = getShipmentLineOrderComparator(lines);
+			final Comparator<I_C_InvoiceLine> orderLineComparator = getShipmentLineOrderComparator();
 			ilComparator.addComparator(orderLineComparator);
 		}
 
@@ -1152,7 +1146,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.assume(invoiceLineId2inOutId.size() == lines.size(), "Every line's id has been added to map '" + invoiceLineId2inOutId + "'");
 
 		// create Comparator
-		final Comparator<I_C_InvoiceLine> cmp = (line1, line2) -> {
+		return (line1, line2) -> {
 			// InOut_ID
 			final int InOut_ID1 = invoiceLineId2inOutId.get(line1.getC_InvoiceLine_ID());
 			final int InOut_ID2 = invoiceLineId2inOutId.get(line2.getC_InvoiceLine_ID());
@@ -1194,13 +1188,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			return 0;
 		};
-		return cmp;
 	}
 
-	private Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator()
 	{
-		final Comparator<I_C_InvoiceLine> comparator = (line1, line2) -> {
-
+		return (line1, line2) -> {
 			final I_M_InOutLine iol1 = line1.getM_InOutLine();
 			final I_M_InOutLine iol2 = line2.getM_InOutLine();
 			if (Util.same(line1.getM_InOutLine_ID(), line2.getM_InOutLine_ID()))
@@ -1240,7 +1232,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			return ol1.getLine() - ol2.getLine(); // keep OL order
 		};
-		return comparator;
 	}
 
 	@Override
@@ -1336,7 +1327,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// http://sourceforge.net/tracker/index.php?func=detail&aid=1733602&group_id=176962&atid=879332
 		if (isTaxIncluded && !documentLevel)
 		{
-			BigDecimal taxStdAmt = BigDecimal.ZERO, taxThisAmt = BigDecimal.ZERO;
+			BigDecimal taxStdAmt, taxThisAmt = BigDecimal.ZERO;
 
 			I_C_Tax stdTax = null;
 
@@ -1585,12 +1576,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean isARCreditMemo(final org.compiere.model.I_C_Invoice invoice)
-	{
-		return getInvoiceDocBaseType(invoice).isCustomerCreditMemo();
-	}
-
-	@Override
 	public final boolean isAdjustmentCharge(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
@@ -1647,6 +1632,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final DocStatus docStatus = DocStatus.ofCode(invoice.getDocStatus());
 		return docStatus.isCompletedOrClosedOrReversed();
+	}
+
+	@Override
+	public DocStatus getDocStatus(@NonNull final InvoiceId invoiceId)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrxIfExists(invoiceId);
+		return invoice != null
+				? DocStatus.ofCode(invoice.getDocStatus())
+				: DocStatus.Unknown;
 	}
 
 	@Override

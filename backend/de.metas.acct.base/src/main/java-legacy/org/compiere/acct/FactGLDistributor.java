@@ -2,6 +2,7 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.gldistribution.GLDistributionBuilder;
 import de.metas.acct.gldistribution.GLDistributionResult;
@@ -13,9 +14,9 @@ import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
+import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.MAccount;
@@ -26,7 +27,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /*
  * #%L
@@ -67,10 +67,7 @@ import java.util.Properties;
 	private static final Logger logger = LogManager.getLogger(FactGLDistributor.class);
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 
-	private FactGLDistributor()
-	{
-		super();
-	}
+	private FactGLDistributor() {}
 
 	public List<FactLine> distribute(final List<FactLine> lines)
 	{
@@ -86,7 +83,7 @@ import java.util.Properties;
 		// For all fact lines
 		for (final FactLine line : lines)
 		{
-			final AccountDimension lineDimension = IFactAcctBL.extractAccountDimension(line);
+			final AccountDimension lineDimension = line.toAccountDimension();
 			final I_GL_Distribution distribution = findGL_Distribution(line, lineDimension);
 			if (distribution == null)
 			{
@@ -104,7 +101,7 @@ import java.util.Properties;
 					.setAmountSign(amountToDistribute.getLeft())
 					.setAmountToDistribute(amountToDistribute.getRight())
 					.setCurrencyId(line.getCurrencyId())
-					.setQtyToDistribute(line.getQty())
+					.setQtyToDistribute(line.getQty() != null ? line.getQty().toBigDecimal() : null)
 					.distribute();
 			final List<FactLine> lines_Distributed = createFactLines(line, distributionResult);
 
@@ -156,17 +153,15 @@ import java.util.Properties;
 	@Nullable
 	private I_GL_Distribution findGL_Distribution(final FactLine baseLine, final AccountDimension baseLineDimension)
 	{
-		final Properties ctx = baseLine.getCtx();
-		final String postingType = baseLine.getPostingType();
-		final Doc<?> doc = baseLine.getDoc();
-		final DocTypeId docTypeId = doc.getC_DocType_ID();
+		final PostingType postingType = baseLine.getPostingType();
+		final DocTypeId docTypeId = baseLine.getC_DocType_ID();
 
-		final List<I_GL_Distribution> distributions = glDistributionDAO.retrieve(ctx, baseLineDimension, postingType, docTypeId);
+		final List<I_GL_Distribution> distributions = glDistributionDAO.retrieve(Env.getCtx(), baseLineDimension, postingType, docTypeId);
 		if (distributions.isEmpty())
 		{
 			return null;
 		}
-		if (distributions.size() > 1)
+		else if (distributions.size() > 1)
 		{
 			final AdempiereException ex = new AdempiereException("More then one GL_Distribution found for " + baseLine
 					+ "\nDimension: " + baseLineDimension
@@ -212,24 +207,26 @@ import java.util.Properties;
 			return null;
 		}
 
-		final Doc<?> doc = baseLine.getDoc();
-		final DocLine<?> docLine = baseLine.getDocLine();
-
 		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
 		final MAccount account = MAccount.get(Env.getCtx(), accountDimension);
 
-		final FactLine factLine = new FactLine(baseLine.getServices(), baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
-
-		//
-		// Set Info & Account
-		factLine.setDocumentInfo(doc, docLine);
-		factLine.setSubLine_ID(baseLine.getSubLine_ID());
-		factLine.setAccount(baseLine.getAcctSchema(), account);
-		factLine.setPostingType(baseLine.getPostingType());
+		final FactLine factLine = FactLine.builder()
+				.services(baseLine.getServices())
+				.doc(baseLine.getDoc())
+				.docLine(baseLine.getDocLine())
+				.docRecordRef(baseLine.getDocRecordRef())
+				.Line_ID(baseLine.getLine_ID())
+				.SubLine_ID(baseLine.getSubLine_ID())
+				.postingType(baseLine.getPostingType())
+				.acctSchema(baseLine.getAcctSchema())
+				.account(account)
+				.accountConceptualName(null)
+				.additionalDescription(glDistributionLine.getDescription())
+				.qty(baseLine.getQty() != null ? Quantitys.create(glDistributionLine.getQty(), baseLine.getQty().getUomId()) : null)
+				.build();
 
 		//
 		// Update accounting dimensions
-
 		factLine.updateFromDimension(AccountDimension.builder()
 				.applyOverrides(accountDimension)
 				.clearC_AcctSchema_ID()
@@ -239,14 +236,7 @@ import java.util.Properties;
 		// Amount
 		setAmountToFactLine(glDistributionLine, factLine);
 
-		factLine.setQty(glDistributionLine.getQty());
-		// Convert
-		factLine.convert();
-
-		// Description
-		factLine.addDescription(glDistributionLine.getDescription());
-
-		logger.info("{}", factLine);
+		logger.debug("{}", factLine);
 		return factLine;
 	}
 
@@ -277,5 +267,7 @@ import java.util.Properties;
 				}
 				break;
 		}
+
+		factLine.convert();
 	}
 }

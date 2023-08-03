@@ -26,11 +26,16 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
 import org.compiere.util.TimeUtil;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -231,13 +236,13 @@ public final class AccountDimension
 	{
 		return TimeUtil.asInstant(getSegmentValue(AcctSegmentType.UserElementDate2));
 	}
-	
+
 	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private String alias = null;
 		private AcctSchemaId acctSchemaId;
-		private final Map<AcctSegmentType, Object> segmentValues = new HashMap<>();
+		private final HashMap<AcctSegmentType, Object> segmentValues = new HashMap<>();
 
 		private Builder()
 		{
@@ -255,9 +260,18 @@ public final class AccountDimension
 			return this;
 		}
 
-		private Builder setSegmentValue(final AcctSegmentType segmentType, final Object value)
+		private Builder setSegmentValue(@NonNull final AcctSegmentType segmentType, @Nullable final Object value)
 		{
-			if (value instanceof Integer)
+			if (value == null)
+			{
+				segmentValues.put(segmentType, "");
+			}
+			else if (value instanceof RepoIdAware)
+			{
+				final int intValue = ((RepoIdAware)value).getRepoId();
+				segmentValues.put(segmentType, intValue);
+			}
+			else if (value instanceof Integer)
 			{
 				final int intValue = NumberUtils.asInt(value, 0);
 				segmentValues.put(segmentType, intValue);
@@ -335,6 +349,12 @@ public final class AccountDimension
 			return this;
 		}
 
+		public Builder setC_ElementValue_ID(final ElementValueId C_ElementValue_ID)
+		{
+			setSegmentValue(AcctSegmentType.Account, ElementValueId.toRepoId(C_ElementValue_ID));
+			return this;
+		}
+
 		public Builder setC_SubAcct_ID(final int C_SubAcct_ID)
 		{
 			setSegmentValue(AcctSegmentType.SubAccount, C_SubAcct_ID);
@@ -371,9 +391,9 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setC_SalesRegion_ID(final int C_SalesRegion_ID)
+		public Builder setC_SalesRegion_ID(final SalesRegionId C_SalesRegion_ID)
 		{
-			setSegmentValue(AcctSegmentType.SalesRegion, C_SalesRegion_ID);
+			setSegmentValue(AcctSegmentType.SalesRegion, SalesRegionId.toRepoId(C_SalesRegion_ID));
 			return this;
 		}
 
