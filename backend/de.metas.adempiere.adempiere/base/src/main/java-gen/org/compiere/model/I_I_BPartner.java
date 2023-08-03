@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for I_BPartner
  *  @author metasfresh (generated) 
@@ -1193,6 +1194,28 @@ public interface I_I_BPartner
 	String COLUMNNAME_DebtorId = "DebtorId";
 
 	/**
+	 * Set Delivery Information.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDelivery_Info(@Nullable java.lang.String Delivery_Info);
+
+	/**
+	 * Get Delivery Information.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getDelivery_Info();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_Delivery_Info = new ModelColumn<>(I_I_BPartner.class, "Delivery_Info", null);
+	String COLUMNNAME_Delivery_Info = "Delivery_Info";
+
+	/**
 	 * Set Delivery Via.
 	 * How the order will be delivered
 	 *
@@ -1200,7 +1223,7 @@ public interface I_I_BPartner
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
+	void setDeliveryViaRule(@Nullable java.lang.String DeliveryViaRule);
 
 	/**
 	 * Get Delivery Via.

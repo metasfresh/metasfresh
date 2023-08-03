@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for I_BPartner
  *  @author metasfresh (generated) 
@@ -775,23 +775,39 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	@Override
 	public void setDebtorId (final int DebtorId)
 	{
-		set_Value (COLUMNNAME_DebtorId, DebtorId);
+		set_Value(COLUMNNAME_DebtorId, DebtorId);
 	}
 
 	@Override
-	public int getDebtorId() 
+	public int getDebtorId()
 	{
 		return get_ValueAsInt(COLUMNNAME_DebtorId);
 	}
 
-	/** 
+	@Override
+	public void setDelivery_Info(final @Nullable java.lang.String Delivery_Info)
+	{
+		set_Value(COLUMNNAME_Delivery_Info, Delivery_Info);
+	}
+
+	@Override
+	public java.lang.String getDelivery_Info()
+	{
+		return get_ValueAsString(COLUMNNAME_Delivery_Info);
+	}
+
+	/**
 	 * DeliveryViaRule AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
 	 */
-	public static final int DELIVERYVIARULE_AD_Reference_ID=152;
-	/** Pickup = P */
+	public static final int DELIVERYVIARULE_AD_Reference_ID = 152;
+	/**
+	 * Pickup = P
+	 */
 	public static final String DELIVERYVIARULE_Pickup = "P";
-	/** Delivery = D */
+	/**
+	 * Delivery = D
+	 */
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
