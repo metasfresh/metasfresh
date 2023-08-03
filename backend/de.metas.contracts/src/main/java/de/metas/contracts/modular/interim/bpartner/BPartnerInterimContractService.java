@@ -29,8 +29,10 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,37 +69,30 @@ public class BPartnerInterimContractService
 					.calendarId(request.getYearAndCalendarId().calendarId())
 					.yearId(request.getYearAndCalendarId().yearId())
 					.typeConditions(TypeConditions.MODULAR_CONTRACT)
+					.soTrx(SOTrx.PURCHASE)
 					.build();
 
-			flatrateBL.streamModularFlatrateTermsByQuery(modularContractsQuery)
-					.map(modularContract -> {
-						final BPartnerId contractBPartnerId = BPartnerId.ofRepoId(modularContract.getBill_BPartner_ID());
+			final ImmutableSet<BPartnerInterimContractUpsertRequest> bPartnerInterimContractUpsertRequests = flatrateBL.streamModularFlatrateTermsByQuery(modularContractsQuery)
+					.map(modularContract -> getbPartnerInterimContractUpsertRequest(request, modularContract))
+					.collect(ImmutableSet.toImmutableSet());
 
-						final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(FlatrateTermId.ofRepoId(modularContract.getC_Flatrate_Term_ID()));
-						Check.assumeNotNull(modularContractSettings != null, "Modular contract settings should not be null at this stage");
-
-						return BPartnerInterimContractUpsertRequest.builder()
-								.yearAndCalendarId(modularContractSettings.getYearAndCalendarId())
-								.isInterimContract(request.getIsInterimContract())
-								.bPartnerId(contractBPartnerId)
-								.build();
-					})
-					.collect(ImmutableSet.toImmutableSet())
+			bPartnerInterimContractUpsertRequests
 					.forEach(bPartnerInterimContractRepo::create);
 
 			return;
 		}
 
-		final ModularFlatrateTermQuery interimContractsLookup = ModularFlatrateTermQuery.builder()
+		final ModularFlatrateTermQuery interimContractsQuery = ModularFlatrateTermQuery.builder()
 				.bPartnerId(request.getBPartnerId())
 				.calendarId(request.getYearAndCalendarId().calendarId())
 				.yearId(request.getYearAndCalendarId().yearId())
 				.typeConditions(TypeConditions.INTERIM_INVOICE)
 				.build();
 
-		final boolean hasOnGoingInterimContracts = flatrateBL.streamModularFlatrateTermsByQuery(interimContractsLookup)
-				.collect(ImmutableList.toImmutableList())
-				.size() > 0;
+		final boolean hasOnGoingInterimContracts = flatrateBL.streamModularFlatrateTermsByQuery(interimContractsQuery)
+				.findAny()
+				.isPresent();
+
 
 		if (hasOnGoingInterimContracts)
 		{
@@ -108,5 +103,19 @@ public class BPartnerInterimContractService
 				.map(BPartnerInterimContract::toBuilder)
 				.map(builder -> builder.isInterimContract(request.getIsInterimContract()).build())
 				.forEach(bPartnerInterimContractRepo::update);
+	}
+
+	private BPartnerInterimContractUpsertRequest getbPartnerInterimContractUpsertRequest(final @NonNull BPartnerInterimContractUpsertRequest request, final I_C_Flatrate_Term modularContract)
+	{
+		final BPartnerId contractBPartnerId = BPartnerId.ofRepoId(modularContract.getBill_BPartner_ID());
+
+		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(FlatrateTermId.ofRepoId(modularContract.getC_Flatrate_Term_ID()));
+		Check.assumeNotNull(modularContractSettings != null, "Modular contract settings should not be null at this stage");
+
+		return BPartnerInterimContractUpsertRequest.builder()
+				.yearAndCalendarId(modularContractSettings.getYearAndCalendarId())
+				.isInterimContract(request.getIsInterimContract())
+				.bPartnerId(contractBPartnerId)
+				.build();
 	}
 }

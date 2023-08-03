@@ -35,6 +35,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.stream.Stream;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 @Repository
 public class BPartnerInterimContractRepo
 {
@@ -64,7 +66,7 @@ public class BPartnerInterimContractRepo
 		record.setHarvesting_Year_ID(YearId.toRepoId(request.getYearAndCalendarId().yearId()));
 		record.setIsInterimContract(request.getIsInterimContract());
 
-		InterfaceWrapperHelper.saveRecord(record);
+		saveRecord(record);
 		return of(record);
 	}
 
@@ -75,7 +77,7 @@ public class BPartnerInterimContractRepo
 
 		existingRecord.setIsInterimContract(bPartnerInterimContract.getIsInterimContract());
 
-		InterfaceWrapperHelper.saveRecord(existingRecord);
+		saveRecord(existingRecord);
 		return of(existingRecord);
 	}
 
