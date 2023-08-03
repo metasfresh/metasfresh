@@ -28,7 +28,7 @@ import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.common.util.Check;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -132,7 +132,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 			return false;
 		}
 
-		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
+		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehousePartnerId)
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.yearId(harvestingYearId)
@@ -140,7 +140,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
-		return isModularContractInProgress(request);
+		return isModularContractInProgress(modularFlatrateTermQuery);
 	}
 
 	@Override
@@ -222,7 +222,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
 		Check.assume(harvestingYearId != null, "Harvesting year ID should not be null at this stage!");
 
-		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
+		final ModularFlatrateTermQuery request = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.yearId(harvestingYearId)
@@ -245,7 +245,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		}
 	}
 
-	private boolean isModularContractInProgress(@NonNull final ModularFlatrateTermRequest request)
+	private boolean isModularContractInProgress(@NonNull final ModularFlatrateTermQuery request)
 	{
 		final List<I_C_Flatrate_Term> modularContracts = streamModularContracts(request)
 				.collect(ImmutableList.toImmutableList());
@@ -254,7 +254,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@NonNull
-	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermRequest request)
+	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermQuery request)
 	{
 		return flatrateBL.streamModularFlatrateTermsByQuery(request);
 	}

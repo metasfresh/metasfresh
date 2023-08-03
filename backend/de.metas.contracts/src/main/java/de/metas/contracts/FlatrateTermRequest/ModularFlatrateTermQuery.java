@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ModularFlatrateTermRequest
+public class ModularFlatrateTermQuery
 {
 	@NonNull BPartnerId bPartnerId;
 	@Nullable ProductId productId;

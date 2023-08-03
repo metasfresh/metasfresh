@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -62,14 +62,14 @@ public class BPartnerInterimContractService
 
 		if (existingBPartnerInterimContract.isEmpty())
 		{
-			final ModularFlatrateTermRequest modularContractsLookup = ModularFlatrateTermRequest.builder()
+			final ModularFlatrateTermQuery modularContractsQuery = ModularFlatrateTermQuery.builder()
 					.bPartnerId(request.getBPartnerId())
 					.calendarId(request.getYearAndCalendarId().calendarId())
 					.yearId(request.getYearAndCalendarId().yearId())
 					.typeConditions(TypeConditions.MODULAR_CONTRACT)
 					.build();
 
-			flatrateBL.streamModularFlatrateTermsByQuery(modularContractsLookup)
+			flatrateBL.streamModularFlatrateTermsByQuery(modularContractsQuery)
 					.map(modularContract -> {
 						final BPartnerId contractBPartnerId = BPartnerId.ofRepoId(modularContract.getBill_BPartner_ID());
 
@@ -88,7 +88,7 @@ public class BPartnerInterimContractService
 			return;
 		}
 
-		final ModularFlatrateTermRequest interimContractsLookup = ModularFlatrateTermRequest.builder()
+		final ModularFlatrateTermQuery interimContractsLookup = ModularFlatrateTermQuery.builder()
 				.bPartnerId(request.getBPartnerId())
 				.calendarId(request.getYearAndCalendarId().calendarId())
 				.yearId(request.getYearAndCalendarId().yearId())
