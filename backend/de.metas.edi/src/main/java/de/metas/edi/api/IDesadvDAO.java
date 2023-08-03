@@ -46,7 +46,7 @@ public interface IDesadvDAO extends ISingletonService
 	 * @return the desadv for the given <code>poReference</code>, or <code>null</code> if none exists.
 	 */
 	@Nullable
-	I_EDI_Desadv retrieveMatchingDesadvOrNull(String poReference, IContextAware ctxAware);
+	I_EDI_Desadv retrieveMatchingDesadvOrNull(String poReference, BPartnerId bPartnerId, IContextAware ctxAware);
 
 	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
 
@@ -54,7 +54,7 @@ public interface IDesadvDAO extends ISingletonService
 	 * Retrieves the desadv line that has the given <code>desadv</code> and <code>line</code> number.
 	 */
 	@Nullable
-	I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(I_EDI_Desadv desadv, int line);
+	I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(I_EDI_Desadv desadv, int line, BPartnerId bPartnerId);
 
 	/**
 	 * @return all desadv lines (incl inactive ones) that reference the given <code>desadv</code>.
