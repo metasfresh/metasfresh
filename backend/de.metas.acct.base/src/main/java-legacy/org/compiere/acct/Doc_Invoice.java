@@ -656,16 +656,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			}
 		}
 
-		final DocTaxesList taxes = getTaxes();
-
-		final FactAcctChangesApplier changesApplier = getFactAcctChangesApplier();
-		if (changesApplier.hasChangesToApply())
-		{
-			changesApplier.applyUpdatesTo(fact);
-			final DocTaxUpdater docTaxUpdater = new DocTaxUpdater(services, getAccountProvider(), InvoiceDocBaseType.ofDocBaseType(getDocBaseType()));
-			docTaxUpdater.collect(fact);
-			docTaxUpdater.updateDocTaxes(taxes);
-		}
+		final DocTaxesList taxes = applyUserChangesAndRecomputeTaxes(fact);
 
 		//
 		// TaxCredit DR
@@ -768,33 +759,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 
 		//
-		// TaxCredit CR
-		for (final DocTax docTax : getTaxes())
-		{
-			if (docTax.isReverseCharge())
-			{
-				fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
-						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-				fact.createLine()
-						.setAccount(docTax.getTaxDueAcct(as))
-						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt().negate())
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-			}
-			else
-			{
-				fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
-						.setAmtSource(currencyId, null, docTax.getTaxAmt())
-						.setC_Tax_ID(docTax.getTaxId())
-						.buildAndAdd();
-			}
-		}
-
-		// Expense CR
+		// Expense/InventoryClearing CR
 		for (final DocLine_Invoice line : getDocLines())
 		{
 			Money amt = Money.of(line.getAmtSource(), currencyId);
@@ -847,6 +812,36 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				serviceAmt = serviceAmt.add(amt);
 			}
 		}
+
+		final DocTaxesList taxes = applyUserChangesAndRecomputeTaxes(fact);
+
+		//
+		// TaxCredit CR
+		for (final DocTax docTax : taxes)
+		{
+			if (docTax.isReverseCharge())
+			{
+				fact.createLine()
+						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+				fact.createLine()
+						.setAccount(docTax.getTaxDueAcct(as))
+						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt().negate())
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+			}
+			else
+			{
+				fact.createLine()
+						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAmtSource(currencyId, null, docTax.getTaxAmt())
+						.setC_Tax_ID(docTax.getTaxId())
+						.buildAndAdd();
+			}
+		}
+
 		// Set Locations
 		fact.forEach(fl -> {
 			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
@@ -886,6 +881,26 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 
 		return ImmutableList.of(fact);
+	}
+
+	private DocTaxesList applyUserChangesAndRecomputeTaxes(@NonNull final Fact fact)
+	{
+		final DocTaxesList taxes = getTaxes();
+
+		final FactAcctChangesApplier changesApplier = getFactAcctChangesApplier();
+		
+		// If there are no user changes, we don't have to recompute the taxes,
+		// accept them as they come from C_InvoiceTax
+		if (!changesApplier.hasChangesToApply())
+		{
+			return taxes;
+		}
+
+		changesApplier.applyUpdatesTo(fact);
+		final DocTaxUpdater docTaxUpdater = new DocTaxUpdater(services, getAccountProvider(), InvoiceDocBaseType.ofDocBaseType(getDocBaseType()));
+		docTaxUpdater.collect(fact);
+		docTaxUpdater.updateDocTaxes(taxes);
+		return taxes;
 	}
 
 	@Override
