@@ -41,7 +41,7 @@ Feature: Interim contract settings for bpartner
       | module_log_product_PO | module_log_product_PO_test_08022023 |
     And metasfresh contains M_ProductPrices
       | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | moduleLogPP | moduleLogPLV                      | module_log_product_PO   | 2.00     | PCE               | Normal                        |
+      | moduleLogPP | interimPLV_PO                      | module_log_product_PO   | 2.00     | PCE               | Normal                        |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                  | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
