@@ -82,6 +82,7 @@ import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleC
 @Component
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
+	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
 	private static final AdMessageKey MSG_VOID_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.VoidNotAllowed");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -193,7 +194,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		switch (action)
 		{
 			case COMPLETED, VOIDED -> {}
-			case REACTIVATED, REVERSED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+			case REACTIVATED, REVERSED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
