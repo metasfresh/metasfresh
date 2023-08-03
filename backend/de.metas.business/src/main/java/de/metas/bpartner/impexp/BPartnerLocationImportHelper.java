@@ -1,16 +1,10 @@
 package de.metas.bpartner.impexp;
 
-import de.metas.common.util.CoalesceUtil;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_I_BPartner;
-import org.compiere.model.ModelValidationEngine;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.impexp.BPartnersCache.BPartner;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
@@ -19,6 +13,10 @@ import de.metas.location.LocationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_I_BPartner;
+import org.compiere.model.ModelValidationEngine;
 
 /*
  * #%L
@@ -186,7 +184,8 @@ import lombok.NonNull;
 
 		bpartnerLocation.setC_Location_ID(locationId.getRepoId());
 		bpartnerLocation.setBPartnerName(importRecord.getlocation_bpartner_name());
-		bpartnerLocation.setName(CoalesceUtil.firstNotBlank(importRecord.getlocation_name(),bpartnerLocation.getName(),"."));
+		bpartnerLocation.setName(CoalesceUtil.firstNotBlank(importRecord.getlocation_name(), bpartnerLocation.getName(), "."));
+		bpartnerLocation.setDelivery_Info(importRecord.getDelivery_Info());
 	}
 
 	private static void updateBillToAndShipToFlags(
