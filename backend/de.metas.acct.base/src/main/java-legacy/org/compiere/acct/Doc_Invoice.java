@@ -672,11 +672,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
 						.setC_Tax_ID(docTax.getTaxId())
+						.alsoAddZeroLine()
 						.buildAndAdd();
 				fact.createLine()
 						.setAccount(docTax.getTaxDueAcct(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt().negate(), null)
 						.setC_Tax_ID(docTax.getTaxId())
+						.alsoAddZeroLine()
 						.buildAndAdd();
 			}
 			else
@@ -685,6 +687,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						.setAccount(docTax.getTaxCreditOrExpense(as))
 						.setAmtSource(currencyId, docTax.getTaxAmt(), null)
 						.setC_Tax_ID(docTax.getTaxId())
+						.alsoAddZeroLine()
 						.buildAndAdd();
 			}
 		}
