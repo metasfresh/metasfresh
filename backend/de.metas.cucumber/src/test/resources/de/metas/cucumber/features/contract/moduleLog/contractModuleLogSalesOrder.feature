@@ -46,7 +46,7 @@ Feature: Modular contract log from sales order
       | modCntr_type_PO            | modCntr_type_PO | modCntr_type_PO | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
       | modCntr_type_SO            | modCntr_type_SO | modCntr_type_SO | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler    |
 
-
+  @dev:runThisOne
   @Id:S0298_100
   @from:cucumber
   Scenario: When a sales order is completed, create a modular contract log for each of the lines that require it
@@ -105,6 +105,29 @@ Feature: Modular contract log from sales order
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | soLine_1             | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
+
+    And after not more than 30s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | soLine_1                  | N             |
+      | s_s_2      | soLine_2                  | N             |
+    And 'generate shipments' process is invoked
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_1                            | D            | true                | false       |
+      | s_s_2                            | D            | true                | false       |
+    And after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_1                            | s_1                   |
+      | s_s_2                            | s_1                   |
+    And validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | line1                     | s_1                   | modularContract_prod    | 8           | true      |
+    And metasfresh contains ModCntr_Types:
+      | ModCntr_Type_ID.Identifier | Name                               | Value                                | Classname                                                          |
+      | modCntr_type_1             | ShipmentLineModularContractHandler |  ShipmentLineModularContractHandler  | de.metas.contracts.modular.impl.ShipmentLineModularContractHandler |
+    Then ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier     | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
+      | shipmentLog_1             | line1                | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract             | ShipmentLineModularContractHandler | false         | Shipment                     | year_2023                         | true        |
+
 
   @Id:S0298_200
   @from:cucumber
