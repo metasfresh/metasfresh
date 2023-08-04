@@ -98,11 +98,6 @@ public class DesadvDAO implements IDesadvDAO
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
 				.addEqualsFilter(I_EDI_DesadvLine.COLUMN_Line, line);
 
-		if(isMatchUsingBPartnerId())
-		{
-			query.addEqualsFilter(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, bPartnerId.getRepoId());
-		}
-
 		return query.create().firstOnly(I_EDI_DesadvLine.class);
 	}
 
