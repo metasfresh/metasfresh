@@ -51,4 +51,4 @@ UPDATE AD_Field SET DisplayLogic='@Type_Conditions/''''@=''ModularContract'' | @
 
 create unique index c_flatrate_conditions_modcntr_settings_id_uindex
     on public.c_flatrate_conditions (modcntr_settings_id)
-    where isactive = 'Y' and type_conditions = 'InterimInvoice';
+    where isactive = 'Y' and docstatus = 'CO' and type_conditions = 'InterimInvoice';
