@@ -4,7 +4,9 @@ import de.metas.acct.factacct_userchanges.FactAcctChangesList;
 import de.metas.acct.factacct_userchanges.FactAcctChangesType;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.MutableAmount;
+import de.metas.currency.MutableMultiCurrencyAmount;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewHeaderProperties;
@@ -110,17 +112,17 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 						.entry(ViewHeaderProperty.builder()
 								.fieldName("totalDebit_DC")
 								.caption(TranslatableStrings.adElementOrMessage("TotalDr_DC"))
-								.value(TranslatableStrings.amount(balance.getInDocumentCurrency().getDebit()))
+								.value(balance.getInDocumentCurrency().getDebitAsTrlString())
 								.build())
 						.entry(ViewHeaderProperty.builder()
 								.fieldName("totalCredit_DC")
 								.caption(TranslatableStrings.adElementOrMessage("TotalCr_DC"))
-								.value(TranslatableStrings.amount(balance.getInDocumentCurrency().getCredit()))
+								.value(balance.getInDocumentCurrency().getCreditAsTrlString())
 								.build())
 						.entry(ViewHeaderProperty.builder()
 								.fieldName("balance_DC")
 								.caption(TranslatableStrings.adElementOrMessage("Balance_DC"))
-								.value(TranslatableStrings.amount(balance.getInDocumentCurrency().getBalance()))
+								.value(balance.getInDocumentCurrency().getBalanceAsTrlString())
 								.build())
 						.build())
 				.group(ViewHeaderPropertiesGroup.builder()
@@ -146,8 +148,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	private AcctSimulationViewBalance computeBalance()
 	{
-		final MutableAmount totalDebit_DC = MutableAmount.zero(docInfo.getDocumentCurrencyCode());
-		final MutableAmount totalCredit_DC = MutableAmount.zero(docInfo.getDocumentCurrencyCode());
+		final MutableMultiCurrencyAmount totalDebit_DC = MutableMultiCurrencyAmount.zero(docInfo.getDocumentCurrencyCode());
+		final MutableMultiCurrencyAmount totalCredit_DC = MutableMultiCurrencyAmount.zero(docInfo.getDocumentCurrencyCode());
 		final MutableAmount totalDebit_LC = MutableAmount.zero(docInfo.getLocalCurrencyCode());
 		final MutableAmount totalCredit_LC = MutableAmount.zero(docInfo.getLocalCurrencyCode());
 
@@ -166,8 +168,14 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 					}
 				});
 
+		AmountMultiBalance inDocumentCurrency = AmountMultiBalance.builder().debit(totalDebit_DC.toSet()).credit(totalCredit_DC.toSet()).build();
+		if (!CurrencyCode.equals(docInfo.getDocumentCurrencyCode(), docInfo.getLocalCurrencyCode()))
+		{
+			inDocumentCurrency = inDocumentCurrency.removing(docInfo.getLocalCurrencyCode());
+		}
+
 		return AcctSimulationViewBalance.builder()
-				.inDocumentCurrency(AmountBalance.builder().debit(totalDebit_DC.toAmount()).credit(totalCredit_DC.toAmount()).build())
+				.inDocumentCurrency(inDocumentCurrency)
 				.inLocalCurrency(AmountBalance.builder().debit(totalDebit_LC.toAmount()).credit(totalCredit_LC.toAmount()).build())
 				.build();
 	}
@@ -197,7 +205,7 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 		final PostingSign postingSign;
 		final Amount amount_DC;
-		final Amount balance = computeBalance().getInDocumentCurrency().getBalance();
+		final Amount balance = computeBalance().getInDocumentCurrency().getBalance(docInfo.getDocumentCurrencyCode());
 		if (balance.signum() > 0)
 		{
 			postingSign = PostingSign.CREDIT;

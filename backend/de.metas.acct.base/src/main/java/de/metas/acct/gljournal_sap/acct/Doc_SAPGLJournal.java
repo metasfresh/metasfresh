@@ -1,6 +1,7 @@
 package de.metas.acct.gljournal_sap.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocContext;
@@ -91,6 +92,8 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 				createFactsForLine_Standard(fact, line);
 			}
 		}
+
+		createCurrencyExchangeGainLoss(fact);
 
 		return ImmutableList.of(fact);
 	}
@@ -194,5 +197,49 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 					.buildAndAddNotNull();
 			updateFactLineFrom(taxFactLine2, grossLine);
 		}
+	}
+
+	private void createCurrencyExchangeGainLoss(@NonNull final Fact fact)
+	{
+		//
+		// Make sure source amounts are balanced
+		fact.balanceSource();
+		if (!fact.isSourceBalanced())
+		{
+			throw newPostingException()
+					.setDetailMessage("Source amounts shall be balanced in order to calculate currency conversion gain/loss")
+					.setFact(fact);
+		}
+
+		final Money acctBalance = fact.getAcctBalance().toMoney();
+		if (acctBalance.isZero())
+		{
+			return;
+		}
+
+		final PostingSign postingSign;
+		final Account account;
+		final Money amt;
+		if (acctBalance.signum() > 0)
+		{
+			postingSign = PostingSign.CREDIT;
+			account = fact.getAcctSchema().getDefaultAccounts().getRealizedGainAcct();
+			amt = acctBalance;
+		}
+		else // acctBalance < 0
+		{
+			postingSign = PostingSign.DEBIT;
+			account = fact.getAcctSchema().getDefaultAccounts().getRealizedLossAcct();
+			amt = acctBalance.negate();
+		}
+
+		final FactLine factLine = fact.createLine()
+				.setAccount(account)
+				.setAmtSource(postingSign, amt)
+				.setAmtAcct(postingSign, amt)
+				.alsoAddZeroLine()
+				.buildAndAddNotNull();
+
+		factLine.setFromDimension(glJournal.getDimension());
 	}
 }

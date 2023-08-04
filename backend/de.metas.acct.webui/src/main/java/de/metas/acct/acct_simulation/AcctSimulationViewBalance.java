@@ -8,6 +8,6 @@ import lombok.Value;
 @Builder
 class AcctSimulationViewBalance
 {
-	@NonNull AmountBalance inDocumentCurrency;
+	@NonNull AmountMultiBalance inDocumentCurrency;
 	@NonNull AmountBalance inLocalCurrency;
 }
