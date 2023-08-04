@@ -32,6 +32,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -48,6 +49,9 @@ public class BPartnerInterimContractService
 
 	private final BPartnerInterimContractRepo bPartnerInterimContractRepo;
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
+
+	private static final AdMessageKey MSG_InterimContractExists = AdMessageKey.of("de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService.InterimContractExists");
+
 
 	public BPartnerInterimContractService(
 			@NonNull final BPartnerInterimContractRepo bPartnerInterimContractRepo,
@@ -96,7 +100,7 @@ public class BPartnerInterimContractService
 
 		if (hasOnGoingInterimContracts)
 		{
-			throw new AdempiereException("The partner already has an interim contract created for this harvesting year!");
+			throw new AdempiereException(MSG_InterimContractExists);
 		}
 
 		existingBPartnerInterimContract.stream()
