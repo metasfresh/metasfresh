@@ -28,6 +28,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.i18n.AdMessageKey;
+import de.metas.lang.SOTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -67,6 +68,7 @@ public class BPartnerInterimContractService
 				.bPartnerId(request.getBPartnerId())
 				.calendarId(request.getYearAndCalendarId().calendarId())
 				.yearId(request.getYearAndCalendarId().yearId())
+				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(TypeConditions.INTERIM_INVOICE)
 				.build();
 
