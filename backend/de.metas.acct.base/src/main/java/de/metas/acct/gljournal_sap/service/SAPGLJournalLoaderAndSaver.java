@@ -229,6 +229,7 @@ public class SAPGLJournalLoaderAndSaver
 				.dimension(extractDimension(record))
 				//
 				.determineTaxBaseSAP(record.isSAP_DetermineTaxBase())
+				.automaticallyGenerateTaxLine(record.isSAP_CalculateTax())
 				//
 				.openItemTrxInfo(extractFAOpenItemTrxInfoOrNull(record))
 				//
@@ -365,6 +366,7 @@ public class SAPGLJournalLoaderAndSaver
 		updateLineRecordFromDimension(lineRecord, line.getDimension());
 
 		lineRecord.setSAP_DetermineTaxBase(line.isDetermineTaxBaseSAP());
+		lineRecord.setSAP_CalculateTax(line.isAutomaticallyGenerateTaxLine());
 
 		updateRecordFromOpenItemTrxInfo(lineRecord, line.getOpenItemTrxInfo());
 

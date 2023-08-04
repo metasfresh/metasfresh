@@ -46,6 +46,7 @@ public class SAPGLJournalLine
 	@Nullable @Getter private final BPartnerId bpartnerId;
 	@NonNull @Getter private final Dimension dimension;
 	@Getter private final boolean determineTaxBaseSAP;
+	@Getter private final boolean automaticallyGenerateTaxLine;
 
 	@Nullable @Getter private final FAOpenItemTrxInfo openItemTrxInfo;
 
