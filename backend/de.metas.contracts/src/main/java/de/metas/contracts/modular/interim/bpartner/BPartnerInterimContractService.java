@@ -23,18 +23,11 @@
 package de.metas.contracts.modular.interim.bpartner;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.i18n.AdMessageKey;
-import de.metas.lang.SOTrx;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,13 +38,10 @@ import java.util.List;
 @Service
 public class BPartnerInterimContractService
 {
+	private static final AdMessageKey MSG_InterimContractExists = AdMessageKey.of("de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService.InterimContractExists");
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-
 	private final BPartnerInterimContractRepo bPartnerInterimContractRepo;
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
-
-	private static final AdMessageKey MSG_InterimContractExists = AdMessageKey.of("de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService.InterimContractExists");
-
 
 	public BPartnerInterimContractService(
 			@NonNull final BPartnerInterimContractRepo bPartnerInterimContractRepo,
@@ -68,21 +58,8 @@ public class BPartnerInterimContractService
 
 		if (existingBPartnerInterimContract.isEmpty())
 		{
-			final ModularFlatrateTermQuery modularContractsQuery = ModularFlatrateTermQuery.builder()
-					.bPartnerId(request.getBPartnerId())
-					.calendarId(request.getYearAndCalendarId().calendarId())
-					.yearId(request.getYearAndCalendarId().yearId())
-					.typeConditions(TypeConditions.MODULAR_CONTRACT)
-					.soTrx(SOTrx.PURCHASE)
-					.build();
-
-			final ImmutableSet<BPartnerInterimContractUpsertRequest> bPartnerInterimContractUpsertRequests = flatrateBL.streamModularFlatrateTermsByQuery(modularContractsQuery)
-					.map(modularContract -> getbPartnerInterimContractUpsertRequest(request, modularContract))
-					.collect(ImmutableSet.toImmutableSet());
-
-			bPartnerInterimContractUpsertRequests
-					.forEach(bPartnerInterimContractRepo::create);
-
+			final BPartnerInterimContractUpsertRequest bPartnerInterimContractUpsertRequest = getbPartnerInterimContractUpsertRequest(request);
+			bPartnerInterimContractRepo.create(bPartnerInterimContractUpsertRequest);
 			return;
 		}
 
@@ -97,7 +74,6 @@ public class BPartnerInterimContractService
 				.findAny()
 				.isPresent();
 
-
 		if (hasOnGoingInterimContracts)
 		{
 			throw new AdempiereException(MSG_InterimContractExists);
@@ -109,17 +85,12 @@ public class BPartnerInterimContractService
 				.forEach(bPartnerInterimContractRepo::update);
 	}
 
-	private BPartnerInterimContractUpsertRequest getbPartnerInterimContractUpsertRequest(final @NonNull BPartnerInterimContractUpsertRequest request, final I_C_Flatrate_Term modularContract)
+	private BPartnerInterimContractUpsertRequest getbPartnerInterimContractUpsertRequest(final @NonNull BPartnerInterimContractUpsertRequest request)
 	{
-		final BPartnerId contractBPartnerId = BPartnerId.ofRepoId(modularContract.getBill_BPartner_ID());
-
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(FlatrateTermId.ofRepoId(modularContract.getC_Flatrate_Term_ID()));
-		Check.assumeNotNull(modularContractSettings != null, "Modular contract settings should not be null at this stage");
-
 		return BPartnerInterimContractUpsertRequest.builder()
-				.yearAndCalendarId(modularContractSettings.getYearAndCalendarId())
+				.yearAndCalendarId(request.getYearAndCalendarId())
 				.isInterimContract(request.getIsInterimContract())
-				.bPartnerId(contractBPartnerId)
+				.bPartnerId(request.getBPartnerId())
 				.build();
 	}
 }
