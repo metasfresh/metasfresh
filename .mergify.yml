@@ -38,7 +38,7 @@ pull_request_rules:
               - base=nerdy_frog_uat
               - base=pot_hole_uat
               - base=release
-              - base=scary_plum_uat
+              - base=soft_panda_uat
               - base=science_vessel_uat
               - base=secondary_opinion_uat
               - base=tasty_ham_uat
@@ -54,7 +54,7 @@ pull_request_rules:
               - base=intensive_care_hotfix
               - base=mad_orange_hotfix
               - base=secondary_opinion_hotfix
-              - base=scary_plum_hotfix
+              - base=soft_panda_hotfix
               - base=science_vessel_hotfix
               - base=tenacious_d_hotfix
               - base=tasty_ham_hotfix
@@ -232,15 +232,15 @@ pull_request_rules:
 #        labels:
 #          - "ops:merge_towards_master"
 #        body: *MERGIFY_PR_BODY
-#  - name: When a scary_plum_hotfix-Branch PR is integrated, create a PR towards the scary_plum_uat-branch
+#  - name: When a soft_panda_hotfix-Branch PR is integrated, create a PR towards the soft_panda_uat-branch
 #    conditions:
 #      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
-#      - base=scary_plum_hotfix
+#      - base=soft_panda_hotfix
 #      - not: label="ops:dont_auto_create_PR"
 #    actions:
 #      copy:
 #        branches:
-#          - scary_plum_uat
+#          - soft_panda_uat
 #        assignees:
 #          - "{{ author }}"
 #        labels:
