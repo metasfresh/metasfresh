@@ -48,7 +48,6 @@ public class BPartnerInterimContractRepo
 		return queryBL.createQueryBuilder(I_C_BPartner_InterimContract.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_InterimContract.COLUMNNAME_C_BPartner_ID, request.getBPartnerId())
-				.addEqualsFilter(I_C_BPartner_InterimContract.COLUMNNAME_IsInterimContract, request.getIsInterimContract())
 				.addEqualsFilter(I_C_BPartner_InterimContract.COLUMNNAME_C_Harvesting_Calendar_ID, request.getYearAndCalendarId().calendarId())
 				.addEqualsFilter(I_C_BPartner_InterimContract.COLUMNNAME_Harvesting_Year_ID, request.getYearAndCalendarId().yearId())
 				.create()
