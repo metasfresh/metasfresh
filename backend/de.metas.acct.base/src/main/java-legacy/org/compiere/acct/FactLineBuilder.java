@@ -4,6 +4,7 @@ import de.metas.acct.Account;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -126,6 +127,17 @@ public final class FactLineBuilder
 		}
 
 		return fl;
+	}
+
+	@NonNull
+	public FactLine buildAndAddNotNull()
+	{
+		final FactLine factLine = buildAndAdd();
+		if (factLine == null)
+		{
+			throw new AdempiereException("Expected fact line to be added but it wasn't: " + this);
+		}
+		return factLine;
 	}
 
 	@Nullable
@@ -339,6 +351,21 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder setAmtAcct(@NonNull final PostingSign postingSign, @NonNull Money amount)
+	{
+		if (postingSign.isDebit())
+		{
+			setAmtAcct(amount, null);
+		}
+		else
+		{
+			Check.assume(postingSign.isCredit(), "PostingType shall be Debit or Credit");
+			setAmtAcct((Money)null, amount);
+		}
+
+		return this;
+	}
+
 	public FactLineBuilder setAmtSource(@Nullable final CostAmount amtSourceDr, @Nullable final CostAmount amtSourceCr)
 	{
 		assertNotBuild();
@@ -366,6 +393,21 @@ public final class FactLineBuilder
 		assertNotBuild();
 		setCurrencyId(balance.getCurrencyId());
 		setAmtSource(balance.getDebit().toBigDecimal(), balance.getCredit().toBigDecimal());
+		return this;
+	}
+
+	public FactLineBuilder setAmtSource(@NonNull final PostingSign postingSign, @NonNull Money amount)
+	{
+		if (postingSign.isDebit())
+		{
+			setAmtSource(amount, null);
+		}
+		else
+		{
+			Check.assume(postingSign.isCredit(), "PostingType shall be Debit or Credit");
+			setAmtSource((Money)null, amount);
+		}
+
 		return this;
 	}
 

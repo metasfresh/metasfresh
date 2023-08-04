@@ -358,7 +358,7 @@ public final class Fact
 						if (orgBalance.isReversal())
 						{
 							line.setAccount(acctSchemaGL.getDueToAcct(elementType));
-							line.setAmtSource(null, orgBalance.getPostBalance());
+							line.setAmtSource((Money)null, orgBalance.getPostBalance());
 						}
 						else
 						{
@@ -376,7 +376,7 @@ public final class Fact
 						else
 						{
 							line.setAccount(acctSchemaGL.getDueToAcct(elementType));
-							line.setAmtSource(null, orgBalance.getPostBalance());
+							line.setAmtSource((Money)null, orgBalance.getPostBalance());
 						}
 					}
 					//
