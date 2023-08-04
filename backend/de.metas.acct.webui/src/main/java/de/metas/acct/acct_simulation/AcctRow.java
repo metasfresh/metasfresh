@@ -87,6 +87,7 @@ class AcctRow implements IViewRow
 	@SuppressWarnings({ "FieldCanBeLocal", "unused" }) // needs to be here for toBuilder()
 	@NonNull private final CurrencyIdToCurrencyCodeConverter currencyIdToCurrencyCodeConverter;
 	@NonNull private final DocumentId rowId;
+	private final boolean readonly;
 	@NonNull private final AcctRowCurrencyRate currencyRate;
 	@Getter @NonNull final FactAcctChanges userChanges;
 
@@ -96,12 +97,14 @@ class AcctRow implements IViewRow
 			@NonNull final CurrencyIdToCurrencyCodeConverter currencyIdToCurrencyCodeConverter,
 			@NonNull final FactAcctChanges userChanges,
 			@NonNull final DocumentId rowId,
+			final boolean readonly,
 			@NonNull final AcctRowCurrencyRate currencyRate)
 	{
 		this.lookups = lookups;
 		this.currencyIdToCurrencyCodeConverter = currencyIdToCurrencyCodeConverter;
 		this.userChanges = userChanges;
 		this.rowId = rowId;
+		this.readonly = readonly;
 		this.currencyRate = currencyRate;
 
 		this.postingSign = userChanges.getPostingSign();
@@ -123,7 +126,7 @@ class AcctRow implements IViewRow
 	public DocumentId getId() {return rowId;}
 
 	@Override
-	public boolean isProcessed() {return false;}
+	public boolean isProcessed() {return readonly;}
 
 	@Nullable
 	@Override
@@ -145,6 +148,16 @@ class AcctRow implements IViewRow
 
 	public AcctRow withPatch(final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
+		if (fieldChangeRequests.isEmpty())
+		{
+			return this;
+		}
+
+		if (readonly)
+		{
+			throw new AdempiereException("Row is readonly");
+		}
+
 		final FactAcctChanges.FactAcctChangesBuilder newChanges = userChanges.toBuilder();
 		for (final JSONDocumentChangedEvent event : fieldChangeRequests)
 		{

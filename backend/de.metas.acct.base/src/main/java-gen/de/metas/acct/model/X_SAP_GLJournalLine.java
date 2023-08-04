@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -122460229L;
+	private static final long serialVersionUID = 2135033865L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -440,6 +440,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setSAP_CalculateTax (final boolean SAP_CalculateTax)
+	{
+		set_Value (COLUMNNAME_SAP_CalculateTax, SAP_CalculateTax);
+	}
+
+	@Override
+	public boolean isSAP_CalculateTax() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_SAP_CalculateTax);
 	}
 
 	@Override

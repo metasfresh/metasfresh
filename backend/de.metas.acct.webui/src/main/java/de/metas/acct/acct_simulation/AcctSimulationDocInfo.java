@@ -8,6 +8,7 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -24,4 +25,6 @@ class AcctSimulationDocInfo
 	@NonNull CurrencyCode localCurrencyCode;
 	@NonNull CurrencyId localCurrencyId;
 	@NonNull CurrencyConversionContext currencyConversionContext;
+
+	@With boolean isFactsReadOnly;
 }

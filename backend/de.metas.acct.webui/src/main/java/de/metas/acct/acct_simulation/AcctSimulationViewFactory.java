@@ -59,9 +59,11 @@ class AcctSimulationViewFactory implements IViewFactory
 				.build();
 	}
 
-	public AcctSimulationView createView(@NonNull final TableRecordReference docRecordRef)
+	public AcctSimulationView createView(@NonNull final TableRecordReference docRecordRef, final boolean readonly)
 	{
-		final AcctSimulationDocInfo docInfo = dataService.getDocInfo(docRecordRef, ClientId.METASFRESH);
+		final AcctSimulationDocInfo docInfo = dataService.getDocInfo(docRecordRef, ClientId.METASFRESH)
+				.withFactsReadOnly(readonly);
+
 		return AcctSimulationView.cast(
 				viewsRepository.createView(CreateViewRequest.builder(WINDOW_ID)
 						.setParameter(VIEW_PARAM_DocInfo, docInfo)
@@ -90,24 +92,36 @@ class AcctSimulationViewFactory implements IViewFactory
 		final ViewId viewId = request.getViewId();
 		viewId.assertWindowId(WINDOW_ID);
 
-		return AcctSimulationView.builder()
-				.rowsData(getViewData(request))
-				.relatedProcess(createProcessDescriptor(10, AcctSimulationView_AddRow.class))
-				.relatedProcess(createProcessDescriptor(20, AcctSimulationView_RemoveRows.class))
-				.relatedProcess(createProcessDescriptor(30, AcctSimulationView_UpdateSimulation.class))
-				.relatedProcess(createProcessDescriptor(40, AcctSimulationView_Save.class))
-				.build();
+		final AcctSimulationViewData viewData = getViewData(request);
+		final AcctSimulationView.AcctSimulationViewBuilder viewBuilder = AcctSimulationView.builder()
+				.rowsData(viewData);
+
+		if (!viewData.isReadonly())
+		{
+			viewBuilder.relatedProcess(createProcessDescriptor(10, AcctSimulationView_AddRow.class));
+			viewBuilder.relatedProcess(createProcessDescriptor(20, AcctSimulationView_RemoveRows.class));
+			viewBuilder.relatedProcess(createProcessDescriptor(30, AcctSimulationView_UpdateSimulation.class));
+			viewBuilder.relatedProcess(createProcessDescriptor(40, AcctSimulationView_Save.class));
+		}
+
+		return viewBuilder.build();
 	}
 
 	private AcctSimulationViewData getViewData(final @NonNull CreateViewRequest request)
+	{
+		final AcctSimulationDocInfo docInfo = extractDocInfo(request);
+		return dataService.getViewData(docInfo, request.getViewId());
+	}
+
+	@NonNull
+	private static AcctSimulationDocInfo extractDocInfo(final @NonNull CreateViewRequest request)
 	{
 		final AcctSimulationDocInfo docInfo = request.getParameterAs(VIEW_PARAM_DocInfo, AcctSimulationDocInfo.class);
 		if (docInfo == null)
 		{
 			throw new AdempiereException("Parameter " + VIEW_PARAM_DocInfo + " is missing from " + request);
 		}
-
-		return dataService.getViewData(docInfo, request.getViewId());
+		return docInfo;
 	}
 
 	private RelatedProcessDescriptor createProcessDescriptor(final int sortNo, @NonNull final Class<?> processClass)

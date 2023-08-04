@@ -633,6 +633,27 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Calculate tax.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_CalculateTax (boolean SAP_CalculateTax);
+
+	/**
+	 * Get Calculate tax.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSAP_CalculateTax();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_SAP_CalculateTax = new ModelColumn<>(I_SAP_GLJournalLine.class, "SAP_CalculateTax", null);
+	String COLUMNNAME_SAP_CalculateTax = "SAP_CalculateTax";
+
+	/**
 	 * Set Determine tax base.
 	 *
 	 * <br>Type: YesNo

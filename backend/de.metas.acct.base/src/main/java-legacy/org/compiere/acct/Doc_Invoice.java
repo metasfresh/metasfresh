@@ -605,7 +605,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					fact.createLine()
 							.setDocLine(line)
 							.setAccount(line.getAccount(ProductAcctType.P_TradeDiscountRec_Acct, as))
-							.setAmtSource(null, discount)
+							.setAmtSource((Money)null, discount)
 							.buildAndAdd();
 				}
 			}
@@ -712,14 +712,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// we need this line later, even if it is zero
 		fact.createLine()
 				.setAccount(payablesId)
-				.setAmtSource(null, grossAmt)
+				.setAmtSource((Money)null, grossAmt)
 				.alsoAddZeroLine()
 				.buildAndAdd();
 		if (serviceAmt.signum() != 0)
 		{
 			fact.createLine()
 					.setAccount(payablesServicesId)
-					.setAmtSource(null, serviceAmt)
+					.setAmtSource((Money)null, serviceAmt)
 					.alsoAddZeroLine()
 					.buildAndAdd();
 		}
@@ -785,7 +785,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
-						.setAmtSource(null, amtReceived)
+						.setAmtSource((Money)null, amtReceived)
 						.setQty(line.getQtyReceivedAbs())
 						.buildAndAdd();
 
@@ -793,7 +793,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
-						.setAmtSource(null, amtNotReceived)
+						.setAmtSource((Money)null, amtNotReceived)
 						.setQty(line.getQtyNotReceivedAbs())
 						.buildAndAdd();
 			}
@@ -802,7 +802,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				fact.createLine()
 						.setDocLine(line)
 						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
-						.setAmtSource(null, amt)
+						.setAmtSource((Money)null, amt)
 						.buildAndAdd();
 			}
 

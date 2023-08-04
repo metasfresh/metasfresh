@@ -41,7 +41,7 @@ public class FactAcctUserChangesRepository
 		}
 		else
 		{
-			throw new AdempiereException("Searching by " + docRecordRef.getTableName() + " is not supported");
+			throw new AdempiereException("Saving fact acct user changes for " + docRecordRef.getTableName() + " is not supported");
 		}
 
 		deleteByDocRecordRef(docRecordRef);
