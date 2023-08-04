@@ -259,7 +259,7 @@ public final class Fact
 		// AZ Goodwill
 		// Multi-Currency documents are source balanced by definition
 		// No lines -> balanced
-		if (m_lines.size() == 0 || m_doc.isMultiCurrency())
+		if (m_lines.isEmpty() || m_doc.isMultiCurrency())
 		{
 			return true;
 		}
@@ -380,7 +380,7 @@ public final class Fact
 						}
 					}
 					//
-					add(line.buildAndAdd());
+					add(line.buildAndAddNotNull());
 				}
 			}
 		}
@@ -465,7 +465,8 @@ public final class Fact
 			line = createLine()
 					.setAccount(acctSchemaGL.getCurrencyBalancingAcct())
 					.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO)
-					.buildAndAdd();
+					.alsoAddZeroLine()
+					.buildAndAddNotNull();
 			// line = new FactLine2(services, m_doc.get_Table_ID(), m_doc.get_ID());
 			// line.setDocumentInfo(m_doc, null);
 			// line.setPostingType(getPostingType());
