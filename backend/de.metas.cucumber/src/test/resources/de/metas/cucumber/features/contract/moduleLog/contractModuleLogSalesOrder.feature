@@ -42,9 +42,10 @@ Feature: Modular contract log from sales order
       | year_2023            | 2023       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name            | Value           | Classname                                                               |
-      | modCntr_type_PO            | modCntr_type_PO | modCntr_type_PO | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-      | modCntr_type_SO            | modCntr_type_SO | modCntr_type_SO | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler    |
+      | ModCntr_Type_ID.Identifier | Name              | Value             | Classname                                                               |
+      | modCntr_type_PO            | modCntr_type_PO   | modCntr_type_PO   | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
+      | modCntr_type_SO            | modCntr_type_SO   | modCntr_type_SO   | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler    |
+      | modCntr_type_SHIP          | modCntr_type_SHIP | modCntr_type_SHIP | de.metas.contracts.modular.impl.ShipmentLineModularContractHandler      |
 
   @dev:runThisOne
   @Id:S0298_100
@@ -63,7 +64,6 @@ Feature: Modular contract log from sales order
       | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | modularPP_PO | moduleLogPLV_PO                   | modularContract_prod    | 5.00     | PCE               | Normal                        |
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod    | 10.00    | PCE               | Normal                        |
-
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                  | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_2023          | testSettings_07262023 | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
@@ -71,6 +71,7 @@ Feature: Modular contract log from sales order
       | ModCntr_Module_ID.Identifier | SeqNo | Name    | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_PO            | 10    | name_10 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_PO            |
       | modCntr_module_SO            | 20    | name_20 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_SO            |
+      | modCntr_type_SHIP            | 30    | name_30 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_SHIP          |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                      | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
       | modularContractTerms_2023           | modularContractTerms_2023 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_2023              |
@@ -109,25 +110,21 @@ Feature: Modular contract log from sales order
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | soLine_1                  | N             |
-      | s_s_2      | soLine_2                  | N             |
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
-      | s_s_1                            | D            | true                | false       |
-      | s_s_2                            | D            | true                | false       |
-    And after not more than 30s, M_InOut is found:
+      | s_s_1                            | D            | false               | false       |
+    And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
-      | s_s_2                            | s_1                   |
     And validate the created shipment lines
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | line1                     | s_1                   | modularContract_prod    | 8           | true      |
-    And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                               | Value                                | Classname                                                          |
-      | modCntr_type_1             | ShipmentLineModularContractHandler |  ShipmentLineModularContractHandler  | de.metas.contracts.modular.impl.ShipmentLineModularContractHandler |
-    Then ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier     | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | shipmentLog_1             | line1                | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract             | ShipmentLineModularContractHandler | false         | Shipment                     | year_2023                         | true        |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
+      | s_l_1                     | s_1                   | modularContract_prod    | 8           | false     | soLine_1                      |
 
+    When the shipment identified by s_1 is completed
+
+    Then ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
+      | shipLog_1                 | s_l_1                | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogSO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract             | modCntr_type_SHIP              | false         | Shipment                     | year_2023                         | true        |
 
   @Id:S0298_200
   @from:cucumber
