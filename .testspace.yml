@@ -2,7 +2,7 @@
 # List of branches that are not "sandbox"
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
-release: 
+release:
   - adorable_badger_uat
   - adorable_badger_hotfix
   - ant_pharm_uat
@@ -28,11 +28,11 @@ release:
   - magic_oak_uat
   - modified_carbon_uat
   - neon_underwear_uat
-  - nerdy_frog_uat 
-  - pot_hole_uat 
+  - nerdy_frog_uat
+  - pot_hole_uat
   - release
-  - scary_plum_uat
-  - scary_plum_hotfix
+  - soft_panda_uat
+  - soft_panda_hotfix
   - science_vessel_uat
   - science_vessel_hotfix
   - secondary_opinion_uat
