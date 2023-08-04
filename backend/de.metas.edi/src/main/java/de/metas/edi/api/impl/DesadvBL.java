@@ -149,7 +149,10 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final I_EDI_Desadv desadvRecord,
 			@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadvRecord, orderLineRecord.getLine());
+		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(
+				desadvRecord,
+				orderLineRecord.getLine(),
+				BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()));
 		if (existingDesadvLine != null)
 		{
 			return existingDesadvLine; // done
@@ -243,6 +246,7 @@ public class DesadvBL implements IDesadvBL
 	{
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
 				order.getPOReference(),
+				BPartnerId.ofRepoId(order.getC_BPartner_ID()),
 				InterfaceWrapperHelper.getContextAware(order));
 		if (desadv == null)
 		{
@@ -293,7 +297,7 @@ public class DesadvBL implements IDesadvBL
 		}
 		else if (!Check.isEmpty(inOut.getPOReference(), true))
 		{
-			desadv = desadvDAO.retrieveMatchingDesadvOrNull(inOut.getPOReference(), InterfaceWrapperHelper.getContextAware(inOut));
+			desadv = desadvDAO.retrieveMatchingDesadvOrNull(inOut.getPOReference(), BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), InterfaceWrapperHelper.getContextAware(inOut));
 		}
 		else
 		{
