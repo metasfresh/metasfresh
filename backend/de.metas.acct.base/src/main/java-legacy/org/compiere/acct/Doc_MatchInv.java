@@ -299,7 +299,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final FactLine cr_InventoryClearing = fact.createLine()
 				.setAccount(docLine.getInventoryClearingAccount(as))
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-				.setAmtSource(null, invoiceLineMatchedAmt)
+				.setAmtSource((Money)null, invoiceLineMatchedAmt)
 				.setQty(getQty())
 				.costElement(costElementId)
 				.bpartnerId(getInvoiceBPartnerId())

@@ -4,7 +4,9 @@ import de.metas.acct.factacct_userchanges.FactAcctChangesList;
 import de.metas.acct.factacct_userchanges.FactAcctChangesType;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.MutableAmount;
+import de.metas.currency.MutableMultiCurrencyAmount;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewHeaderProperties;
@@ -59,6 +61,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 		rowsHolder.setRows(this.dataService.retrieveRows(this.docInfo));
 	}
 
+	public boolean isReadonly() {return docInfo.isFactsReadOnly();}
+
 	@Override
 	public Map<DocumentId, AcctRow> getDocumentId2TopLevelRows() {return rowsHolder.getDocumentId2TopLevelRows(AcctRow::isNotRemoved);}
 
@@ -80,6 +84,16 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 	@Override
 	public void patchRow(final IEditableView.RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
+		if (fieldChangeRequests.isEmpty())
+		{
+			return;
+		}
+
+		if (isReadonly())
+		{
+			throw new AdempiereException("Editing a readonly simulation is not allowed");
+		}
+
 		rowsHolder.changeRowById(ctx.getRowId(), row -> row.withPatch(fieldChangeRequests));
 		invalidateHeaderPropertiesAndNotify();
 	}
@@ -98,17 +112,17 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 						.entry(ViewHeaderProperty.builder()
 								.fieldName("totalDebit_DC")
 								.caption(TranslatableStrings.adElementOrMessage("TotalDr_DC"))
-								.value(TranslatableStrings.amount(balance.getInDocumentCurrency().getDebit()))
+								.value(balance.getInDocumentCurrency().getDebitAsTrlString())
 								.build())
 						.entry(ViewHeaderProperty.builder()
 								.fieldName("totalCredit_DC")
 								.caption(TranslatableStrings.adElementOrMessage("TotalCr_DC"))
-								.value(TranslatableStrings.amount(balance.getInDocumentCurrency().getCredit()))
+								.value(balance.getInDocumentCurrency().getCreditAsTrlString())
 								.build())
 						.entry(ViewHeaderProperty.builder()
 								.fieldName("balance_DC")
 								.caption(TranslatableStrings.adElementOrMessage("Balance_DC"))
-								.value(TranslatableStrings.amount(balance.getInDocumentCurrency().getBalance()))
+								.value(balance.getInDocumentCurrency().getBalanceAsTrlString())
 								.build())
 						.build())
 				.group(ViewHeaderPropertiesGroup.builder()
@@ -134,8 +148,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	private AcctSimulationViewBalance computeBalance()
 	{
-		final MutableAmount totalDebit_DC = MutableAmount.zero(docInfo.getDocumentCurrencyCode());
-		final MutableAmount totalCredit_DC = MutableAmount.zero(docInfo.getDocumentCurrencyCode());
+		final MutableMultiCurrencyAmount totalDebit_DC = MutableMultiCurrencyAmount.zero(docInfo.getDocumentCurrencyCode());
+		final MutableMultiCurrencyAmount totalCredit_DC = MutableMultiCurrencyAmount.zero(docInfo.getDocumentCurrencyCode());
 		final MutableAmount totalDebit_LC = MutableAmount.zero(docInfo.getLocalCurrencyCode());
 		final MutableAmount totalCredit_LC = MutableAmount.zero(docInfo.getLocalCurrencyCode());
 
@@ -154,8 +168,14 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 					}
 				});
 
+		AmountMultiBalance inDocumentCurrency = AmountMultiBalance.builder().debit(totalDebit_DC.toSet()).credit(totalCredit_DC.toSet()).build();
+		if (!CurrencyCode.equals(docInfo.getDocumentCurrencyCode(), docInfo.getLocalCurrencyCode()))
+		{
+			inDocumentCurrency = inDocumentCurrency.removing(docInfo.getLocalCurrencyCode());
+		}
+
 		return AcctSimulationViewBalance.builder()
-				.inDocumentCurrency(AmountBalance.builder().debit(totalDebit_DC.toAmount()).credit(totalCredit_DC.toAmount()).build())
+				.inDocumentCurrency(inDocumentCurrency)
 				.inLocalCurrency(AmountBalance.builder().debit(totalDebit_LC.toAmount()).credit(totalCredit_LC.toAmount()).build())
 				.build();
 	}
@@ -169,6 +189,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void save()
 	{
+		assertEditable();
+
 		if (!computeBalance().getInDocumentCurrency().isBalanced())
 		{
 			throw new AdempiereException("@NotBalanced@");
@@ -179,9 +201,11 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void addNewRow()
 	{
+		assertEditable();
+
 		final PostingSign postingSign;
 		final Amount amount_DC;
-		final Amount balance = computeBalance().getInDocumentCurrency().getBalance();
+		final Amount balance = computeBalance().getInDocumentCurrency().getBalance(docInfo.getDocumentCurrencyCode());
 		if (balance.signum() > 0)
 		{
 			postingSign = PostingSign.CREDIT;
@@ -198,6 +222,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void removeRowsById(@NonNull final DocumentIdsSelection rowIds)
 	{
+		assertEditable();
+
 		rowsHolder.changeRowsByIds(rowIds, row -> {
 			final FactAcctChangesType changeType = row.getChangeType();
 			if (changeType.isAdd())
@@ -219,6 +245,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void updateSimulation()
 	{
+		assertEditable();
+
 		// Discard delete lines changes
 		final FactAcctChangesList factAcctChangesList = getFactAcctChangesList()
 				.removingIf(line -> line.getType().isDelete());
@@ -226,5 +254,13 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 		// Ask the accounting engine to regenerate lines and then apply our changes (excluding removed lines)
 		rowsHolder.setRows(this.dataService.retrieveRows(this.docInfo, factAcctChangesList));
 		invalidateHeaderPropertiesAndNotify();
+	}
+
+	private void assertEditable()
+	{
+		if (docInfo.isFactsReadOnly())
+		{
+			throw new AdempiereException("Editing a readonly simulation is not allowed");
+		}
 	}
 }

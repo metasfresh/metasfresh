@@ -17,6 +17,8 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.OptionalBoolean;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -248,8 +250,7 @@ public class CreateViewRequest
 	@SuppressWarnings("unused")
 	public <T> T getParameterAs(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)getParameters().get(parameterName);
+		@SuppressWarnings("unchecked") final T value = (T)getParameters().get(parameterName);
 		return value;
 	}
 
@@ -257,9 +258,15 @@ public class CreateViewRequest
 	@SuppressWarnings("unused")
 	public <T> Set<T> getParameterAsSet(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
-		@SuppressWarnings("unchecked")
-		final Set<T> value = (Set<T>)getParameters().get(parameterName);
+		@SuppressWarnings("unchecked") final Set<T> value = (Set<T>)getParameters().get(parameterName);
 		return value;
+	}
+
+	public OptionalBoolean getParameterAsBoolean(@NonNull final String parameterName)
+	{
+		final Object valueObj = getParameters().get(parameterName);
+		final Boolean valueBoolean = StringUtils.toBoolean(valueObj, null);
+		return OptionalBoolean.ofNullableBoolean(valueBoolean);
 	}
 
 	//
