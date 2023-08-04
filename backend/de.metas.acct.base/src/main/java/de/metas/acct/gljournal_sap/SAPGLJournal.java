@@ -125,11 +125,16 @@ public class SAPGLJournal
 
 	public void assertTotalsBalanced()
 	{
-		final Money totalsBalance = totalAcctDR.subtract(totalAcctCR);
-		if (totalsBalance.signum() != 0)
+		if (!isBalanced())
 		{
 			throw new AdempiereException("Debit and Credit totals are not balanced"); // TODO trl
 		}
+	}
+
+	public boolean isBalanced()
+	{
+		final Money totalsBalance = totalAcctDR.subtract(totalAcctCR);
+		return totalsBalance.signum() == 0;
 	}
 
 	public ImmutableList<SAPGLJournalLine> getLines() {return ImmutableList.copyOf(lines);}
@@ -229,6 +234,11 @@ public class SAPGLJournal
 	public void setProcessed(final boolean processed)
 	{
 		lines.forEach(line -> line.setProcessed(processed));
+	}
+
+	public boolean isTaxLineGeneratedForBaseLine(@NonNull final SAPGLJournalLine taxBaseLine)
+	{
+		return lines.stream().anyMatch(line -> line.isTaxLineGeneratedForBaseLine(taxBaseLine));
 	}
 
 	public void regenerateTaxLines(

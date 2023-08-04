@@ -120,13 +120,15 @@ class AcctSimulationViewDataService
 		acctDoc.setFactAcctChangesList(userChangesList);
 		final List<Fact> facts = acctDoc.postLogic();
 
+		final boolean readonly = docInfo.isFactsReadOnly();
+
 		final ArrayList<AcctRow> result = new ArrayList<>();
 
 		//
 		// First, add removals as "hidden" rows
 		// We have to do this because they are not present in Fact/FactLine(s)
 		final AcctRowCurrencyRate docCurrencyRate = getCurrencyRate(docInfo);
-		userChangesList.forEachRemove(remove -> result.add(toRow(remove, docCurrencyRate)));
+		userChangesList.forEachRemove(remove -> result.add(toRow(remove, docCurrencyRate, readonly)));
 
 		//
 		// Convert fact lines -> user changes -> rows
@@ -134,21 +136,24 @@ class AcctSimulationViewDataService
 		{
 			for (final FactLine factLine : fact.getLines())
 			{
-				result.add(toRow(factLine));
+				result.add(toRow(factLine, readonly));
 			}
 		}
 
 		return result;
 	}
 
-	private AcctRow toRow(@NonNull final FactLine factLine)
+	private AcctRow toRow(@NonNull final FactLine factLine, final boolean readonly)
 	{
 		final FactAcctChanges userChanges = extractUserChanges(factLine);
 		final AcctRowCurrencyRate currencyRate = AcctRowCurrencyRate.ofCurrencyRate(factLine.getCurrencyRateFromDocumentToAcctCurrency());
-		return toRow(userChanges, currencyRate);
+		return toRow(userChanges, currencyRate, readonly);
 	}
 
-	private AcctRow toRow(@NonNull final FactAcctChanges userChanges, @NonNull final AcctRowCurrencyRate currencyRate)
+	private AcctRow toRow(
+			@NonNull final FactAcctChanges userChanges,
+			@NonNull final AcctRowCurrencyRate currencyRate,
+			final boolean readonly)
 	{
 		final DocumentId rowId;
 		if (userChanges.getType().isAdd())
@@ -166,6 +171,7 @@ class AcctSimulationViewDataService
 				.currencyIdToCurrencyCodeConverter(moneyService)
 				.userChanges(userChanges)
 				.rowId(rowId)
+				.readonly(readonly)
 				.currencyRate(currencyRate)
 				.build();
 	}
@@ -236,6 +242,11 @@ class AcctSimulationViewDataService
 			@NonNull final PostingSign postingSign,
 			@NonNull final Amount amount)
 	{
+		if (docInfo.isFactsReadOnly())
+		{
+			throw new AdempiereException("Adding a new row to readonly simulation is not allowed");
+		}
+
 		final AcctRowCurrencyRate currencyRate = getCurrencyRate(docInfo);
 		final Money amount_DC = amount.toMoney(moneyService::getCurrencyIdByCurrencyCode).assertCurrencyId(docInfo.getDocumentCurrencyId());
 		final Money amount_LC = currencyRate.convertToLocalCurrency(amount_DC).assertCurrencyId(docInfo.getLocalCurrencyId());
@@ -253,6 +264,7 @@ class AcctSimulationViewDataService
 						.amount_LC(amount_LC)
 						.build())
 				.rowId(DocumentId.ofString(UUID.randomUUID().toString()))
+				.readonly(false)
 				.currencyRate(currencyRate)
 				.build();
 	}

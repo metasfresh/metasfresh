@@ -59,6 +59,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 		rowsHolder.setRows(this.dataService.retrieveRows(this.docInfo));
 	}
 
+	public boolean isReadonly() {return docInfo.isFactsReadOnly();}
+
 	@Override
 	public Map<DocumentId, AcctRow> getDocumentId2TopLevelRows() {return rowsHolder.getDocumentId2TopLevelRows(AcctRow::isNotRemoved);}
 
@@ -80,6 +82,16 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 	@Override
 	public void patchRow(final IEditableView.RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
+		if (fieldChangeRequests.isEmpty())
+		{
+			return;
+		}
+
+		if (isReadonly())
+		{
+			throw new AdempiereException("Editing a readonly simulation is not allowed");
+		}
+
 		rowsHolder.changeRowById(ctx.getRowId(), row -> row.withPatch(fieldChangeRequests));
 		invalidateHeaderPropertiesAndNotify();
 	}
@@ -169,6 +181,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void save()
 	{
+		assertEditable();
+
 		if (!computeBalance().getInDocumentCurrency().isBalanced())
 		{
 			throw new AdempiereException("@NotBalanced@");
@@ -179,6 +193,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void addNewRow()
 	{
+		assertEditable();
+
 		final PostingSign postingSign;
 		final Amount amount_DC;
 		final Amount balance = computeBalance().getInDocumentCurrency().getBalance();
@@ -198,6 +214,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void removeRowsById(@NonNull final DocumentIdsSelection rowIds)
 	{
+		assertEditable();
+
 		rowsHolder.changeRowsByIds(rowIds, row -> {
 			final FactAcctChangesType changeType = row.getChangeType();
 			if (changeType.isAdd())
@@ -219,6 +237,8 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 
 	public void updateSimulation()
 	{
+		assertEditable();
+
 		// Discard delete lines changes
 		final FactAcctChangesList factAcctChangesList = getFactAcctChangesList()
 				.removingIf(line -> line.getType().isDelete());
@@ -226,5 +246,13 @@ class AcctSimulationViewData implements IEditableRowsData<AcctRow>
 		// Ask the accounting engine to regenerate lines and then apply our changes (excluding removed lines)
 		rowsHolder.setRows(this.dataService.retrieveRows(this.docInfo, factAcctChangesList));
 		invalidateHeaderPropertiesAndNotify();
+	}
+
+	private void assertEditable()
+	{
+		if (docInfo.isFactsReadOnly())
+		{
+			throw new AdempiereException("Editing a readonly simulation is not allowed");
+		}
 	}
 }

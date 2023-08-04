@@ -59,13 +59,23 @@ public class SAPGLJournalTaxProvider
 			@NonNull final Money baseAmt,
 			@NonNull final TaxId taxId)
 	{
+		return calculateTaxAmt(baseAmt, false, taxId);
+	}
+
+	@NonNull
+	public Money calculateTaxAmt(
+			@NonNull final Money baseAmt,
+			final boolean isTaxIncluded,
+			@NonNull final TaxId taxId)
+	{
 		final CurrencyId currencyId = baseAmt.getCurrencyId();
 		final CurrencyPrecision precision = moneyService.getStdPrecision(currencyId);
 		final Tax tax = taxBL.getTaxById(taxId);
-		final CalculateTaxResult taxResult = tax.calculateTax(baseAmt.toBigDecimal(), false, precision.toInt());
+		final CalculateTaxResult taxResult = tax.calculateTax(baseAmt.toBigDecimal(), isTaxIncluded, precision.toInt());
 
 		return tax.isReverseCharge()
 				? Money.of(taxResult.getReverseChargeAmt(), currencyId)
 				: Money.of(taxResult.getTaxAmount(), currencyId);
 	}
+
 }

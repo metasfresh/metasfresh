@@ -46,7 +46,7 @@ public class SAPGLJournalLine
 	@Nullable @Getter private final BPartnerId bpartnerId;
 	@NonNull @Getter private final Dimension dimension;
 	@Getter private final boolean determineTaxBaseSAP;
-	@Getter private final boolean automaticallyGenerateTaxLine;
+	@Getter private final boolean isExplodeToNetAndTaxLines;
 
 	@Nullable @Getter private final FAOpenItemTrxInfo openItemTrxInfo;
 
@@ -85,6 +85,13 @@ public class SAPGLJournalLine
 	public boolean isTaxLine()
 	{
 		return taxId != null && (determineTaxBaseSAP || parentId != null);
+	}
+
+	public boolean isTaxLineGeneratedForBaseLine(@NonNull final SAPGLJournalLine taxBaseLine)
+	{
+		return isTaxLine()
+				&& parentId != null
+				&& SAPGLJournalLineId.equals(parentId, taxBaseLine.getIdOrNull());
 	}
 
 	public boolean isBaseTaxLine()
