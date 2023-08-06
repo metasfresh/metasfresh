@@ -1,4 +1,4 @@
-Feature: Modular contract log from sales order
+Feature: Modular contract log from shipment
 
   Background:
     Given infrastructure and metasfresh are running
@@ -67,15 +67,15 @@ Feature: Modular contract log from sales order
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod    | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                  | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_ship_settings_2023      | testSettings_07262023 | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
+      | modCntr_settings_2023          | testSettings_07262023 | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name    | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_PO            | 10    | name_10 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_PO            |
-      | modCntr_module_SO            | 20    | name_20 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_SO            |
-      | modCntr_type_SHIP            | 30    | name_30 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_SHIP          |
+      | modCntr_module_PO            | 10    | name_10 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_PO            |
+      | modCntr_module_SO            | 20    | name_20 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_SO            |
+      | modCntr_module_SHIP          | 30    | name_30 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_SHIP          |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                      | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_2023           | modularContractTerms_2023 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_2023         |
+      | modularContractTerms_2023           | modularContractTerms_2023 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_2023              |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference            | OPT.M_Warehouse_ID.Identifier |
@@ -160,15 +160,15 @@ Feature: Modular contract log from sales order
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod    | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                  | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_ship_settings_2023     | testSettings_07262023 | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
+      | modCntr_settings_2023          | testSettings_07262023 | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name    | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_PO            | 10    | name_10 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_PO            |
-      | modCntr_module_SO            | 20    | name_20 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_SO            |
-      | modCntr_type_SHIP            | 30    | name_30 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_SHIP          |
+      | modCntr_module_PO            | 10    | name_10 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_PO            |
+      | modCntr_module_SO            | 20    | name_20 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_SO            |
+      | modCntr_module_SHIP          | 30    | name_30 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_SHIP          |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                      | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_2023           | modularContractTerms_2023 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_2023         |
+      | modularContractTerms_2023           | modularContractTerms_2023 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_2023              |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference            | OPT.M_Warehouse_ID.Identifier |
@@ -256,15 +256,15 @@ Feature: Modular contract log from sales order
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod    | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                  | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_ship_settings_2023     | testSettings_07262023 | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
+      | modCntr_settings_2023          | testSettings_07262023 | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name    | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_PO            | 10    | name_10 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_PO            |
-      | modCntr_module_SO            | 20    | name_20 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_SO            |
-      | modCntr_type_SHIP            | 30    | name_30 | modularContract_prod    | Kosten         | modCntr_ship_settings_2023     | modCntr_type_SHIP          |
+      | modCntr_module_PO            | 10    | name_10 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_PO            |
+      | modCntr_module_SO            | 20    | name_20 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_SO            |
+      | modCntr_module_SHIP          | 30    | name_30 | modularContract_prod    | Kosten         | modCntr_settings_2023          | modCntr_type_SHIP          |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                      | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_2023           | modularContractTerms_2023 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_2023         |
+      | modularContractTerms_2023           | modularContractTerms_2023 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_2023              |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference            | OPT.M_Warehouse_ID.Identifier |
