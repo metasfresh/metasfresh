@@ -246,7 +246,6 @@ Feature: Modular contract log from sales order
   - reverse the shipment
   - validate that for each shipment line a modular contract log is created with negated qty
 
-
     Given metasfresh contains M_Products:
       | Identifier           | Name                          |
       | modularContract_prod | modularContract_prod_07262023 |
