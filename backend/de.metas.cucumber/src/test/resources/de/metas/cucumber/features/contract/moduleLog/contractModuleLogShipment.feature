@@ -78,7 +78,7 @@ Feature: Modular contract log from shipment
       | modularContractTerms_S0303_100      | modularContractTerms_S0303_100 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_100    |
 
     And metasfresh contains C_Orders:
-      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference            | OPT.M_Warehouse_ID.Identifier |
+      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference             | OPT.M_Warehouse_ID.Identifier |
       | po_order_S0303_100 | false   | bp_moduleLogPO           | 2022-03-03  | POO             | poModularContract_S0303_100 | warehouseModularContract      |
     And metasfresh contains C_OrderLines:
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier        | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
@@ -88,10 +88,10 @@ Feature: Modular contract log from shipment
 
     Then retrieve C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier        | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
-      | moduleLogContract_S0303_100             | modularContractTerms_S0303_100      | modularContract_prod_S0303_100 | po_order_S0303_100             | poLine_S0303_100                   |
+      | moduleLogContract_S0303_100   | modularContractTerms_S0303_100      | modularContract_prod_S0303_100 | po_order_S0303_100             | poLine_S0303_100                   |
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier        | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_S0303_100             | modularContractTerms_S0303_100      | bp_moduleLogPO              | modularContract_prod_S0303_100 | _S0303_100                         | po_order_S0303_100             | PCE                   | 10                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
+      | moduleLogContract_S0303_100   | modularContractTerms_S0303_100      | bp_moduleLogPO              | modularContract_prod_S0303_100 | poLine_S0303_100                   | po_order_S0303_100             | PCE                   | 10                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
     And metasfresh contains C_Orders:
       | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
@@ -105,8 +105,8 @@ Feature: Modular contract log from shipment
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | soLog_1_S0303_100         | soLine_1_S0303_100   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_100             | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
-      | soLog_2_S0303_100         | soLine_2_S0303_100   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_100             | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
+      | soLog_1_S0303_100         | soLine_1_S0303_100   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_100   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
+      | soLog_2_S0303_100         | soLine_2_S0303_100   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_100   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
 
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -135,8 +135,8 @@ Feature: Modular contract log from shipment
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | shipLog_1_S0303_100       | s_l_1_S0303_100      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogSO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract_S0303_100             | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
-      | shipLog_2_S0303_100       | s_l_2_S0303_100      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogSO                      | bp_moduleLogPO                  | 3   | M_InOutLine | moduleLogContract_S0303_100             | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
+      | shipLog_1_S0303_100       | s_l_1_S0303_100      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogSO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract_S0303_100   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
+      | shipLog_2_S0303_100       | s_l_2_S0303_100      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogSO                      | bp_moduleLogPO                  | 3   | M_InOutLine | moduleLogContract_S0303_100   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
 
   @Id:S0303_200
   @from:cucumber
@@ -171,7 +171,7 @@ Feature: Modular contract log from shipment
       | modularContractTerms_S0303_200      | modularContractTerms_S0303_200 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_200    |
 
     And metasfresh contains C_Orders:
-      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference            | OPT.M_Warehouse_ID.Identifier |
+      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference             | OPT.M_Warehouse_ID.Identifier |
       | po_order_S0303_200 | false   | bp_moduleLogPO           | 2022-03-03  | POO             | poModularContract_S0303_200 | warehouseModularContract      |
     And metasfresh contains C_OrderLines:
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier        | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
@@ -181,10 +181,10 @@ Feature: Modular contract log from shipment
 
     Then retrieve C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier        | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
-      | moduleLogContract_S0303_200             | modularContractTerms_S0303_200      | modularContract_prod_S0303_200 | po_order_S0303_200             | poLine_S0303_200                   |
+      | moduleLogContract_S0303_200   | modularContractTerms_S0303_200      | modularContract_prod_S0303_200 | po_order_S0303_200             | poLine_S0303_200                   |
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier        | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_S0303_200             | modularContractTerms_S0303_200      | bp_moduleLogPO              | modularContract_prod_S0303_200 | poLine_S0303_200                   | po_order_S0303_200             | PCE                   | 10                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
+      | moduleLogContract_S0303_200   | modularContractTerms_S0303_200      | bp_moduleLogPO              | modularContract_prod_S0303_200 | poLine_S0303_200                   | po_order_S0303_200             | PCE                   | 10                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
     And metasfresh contains C_Orders:
       | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
@@ -198,8 +198,8 @@ Feature: Modular contract log from shipment
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | soLog_1_S0303_200         | soLine_1_S0303_200   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_200             | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
-      | soLog_2_S0303_200         | soLine_2_S0303_200   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_200             | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
+      | soLog_1_S0303_200         | soLine_1_S0303_200   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_200   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
+      | soLog_2_S0303_200         | soLine_2_S0303_200   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_200   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
 
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -222,7 +222,7 @@ Feature: Modular contract log from shipment
       | s_s_2_S0303_200                  | s_2_S0303_200         |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier        | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
-      | s_l_2_S0303_200           | s_2_S0303_200         | modularContract_prod_S0303_200 | 3           | false     | soLine_2                      |
+      | s_l_2_S0303_200           | s_2_S0303_200         | modularContract_prod_S0303_200 | 3           | false     | soLine_2_S0303_200            |
 
     When the shipment identified by s_1_S0303_200 is completed
 
@@ -266,7 +266,7 @@ Feature: Modular contract log from shipment
       | modularContractTerms_S0303_300      | modularContractTerms_S0303_300 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_ship_settings_S0303_300    |
 
     And metasfresh contains C_Orders:
-      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference            | OPT.M_Warehouse_ID.Identifier |
+      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference             | OPT.M_Warehouse_ID.Identifier |
       | po_order_S0303_300 | false   | bp_moduleLogPO           | 2022-03-03  | POO             | poModularContract_S0303_300 | warehouseModularContract      |
     And metasfresh contains C_OrderLines:
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier        | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
@@ -276,10 +276,10 @@ Feature: Modular contract log from shipment
 
     Then retrieve C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier        | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
-      | moduleLogContract_S0303_300             | modularContractTerms_S0303_300      | modularContract_prod_S0303_300 | po_order_S0303_300             | poLine_S0303_300                   |
+      | moduleLogContract_S0303_300   | modularContractTerms_S0303_300      | modularContract_prod_S0303_300 | po_order_S0303_300             | poLine_S0303_300                   |
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier        | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_S0303_300             | modularContractTerms_S0303_300      | bp_moduleLogPO              | modularContract_prod_S0303_300 | poLine_S0303_300                   | po_order_S0303_300             | PCE                   | 10                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
+      | moduleLogContract_S0303_300   | modularContractTerms_S0303_300      | bp_moduleLogPO              | modularContract_prod_S0303_300 | poLine_S0303_300                   | po_order_S0303_300             | PCE                   | 10                    | 5.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
     And metasfresh contains C_Orders:
       | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
@@ -293,8 +293,8 @@ Feature: Modular contract log from shipment
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | soLog_1_S0303_300         | soLine_1_S0303_300   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_300             | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
-      | soLog_2_S0303_300         | soLine_2_S0303_300   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_300             | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
+      | soLog_1_S0303_300         | soLine_1_S0303_300   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_300   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
+      | soLog_2_S0303_300         | soLine_2_S0303_300   | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_300   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
 
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -323,12 +323,12 @@ Feature: Modular contract log from shipment
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | shipLog_1_S0303_300       | s_l_1_S0303_300      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogSO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract_S0303_300             | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
-      | shipLog_2_S0303_300       | s_l_2_S0303_300      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogSO                      | bp_moduleLogPO                  | 3   | M_InOutLine | moduleLogContract_S0303_300             | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
+      | shipLog_1_S0303_300       | s_l_1_S0303_300      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogSO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract_S0303_300   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
+      | shipLog_2_S0303_300       | s_l_2_S0303_300      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogSO                      | bp_moduleLogPO                  | 3   | M_InOutLine | moduleLogContract_S0303_300   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
 
     When the shipment identified by s_1_S0303_300 is reversed
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | shipLog_1_S0303_300       | s_l_1_S0303_300      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogSO                      | bp_moduleLogPO                  | -8  | M_InOutLine | moduleLogContract_S0303_300             | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
-      | shipLog_2_S0303_300       | s_l_2_S0303_300      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogSO                      | bp_moduleLogPO                  | -3  | M_InOutLine | moduleLogContract_S0303_300             | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
+      | shipLog_1_S0303_300       | s_l_1_S0303_300      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogSO                      | bp_moduleLogPO                  | -8  | M_InOutLine | moduleLogContract_S0303_300   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
+      | shipLog_2_S0303_300       | s_l_2_S0303_300      | bp_moduleLogSO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogSO                      | bp_moduleLogPO                  | -3  | M_InOutLine | moduleLogContract_S0303_300   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | true        |
