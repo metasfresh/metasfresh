@@ -2369,10 +2369,9 @@ public class FlatrateBL implements IFlatrateBL
 				.computeOrThrowEx();
 	}
 
-	@Override
-	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
+	private I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
 	{
-		// don't make it a field; the SpringApplicationContext might not be configured yet at the time
+		// don't make it a field; the SpringApplicationContext might not be configured yet
 		final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
@@ -2397,7 +2396,7 @@ public class FlatrateBL implements IFlatrateBL
 		InterfaceWrapperHelper.save(newModCntrSettings);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name);
-		childCRS.copyChildren(from, to);
+		childCRS.copyChildren(to, from); // note that the method expects the copy-*target* as first parameter
 
 		return newModCntrSettings;
 	}
