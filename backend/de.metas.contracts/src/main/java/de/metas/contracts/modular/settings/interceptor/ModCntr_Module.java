@@ -25,6 +25,7 @@ package de.metas.contracts.modular.settings.interceptor;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.i18n.AdMessageKey;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -39,7 +40,7 @@ import org.springframework.stereotype.Component;
 public class ModCntr_Module
 {
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
-	public static final String MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED = "@ModCntr_Settings_cannot_be_changed@";
+	public static final AdMessageKey MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED = AdMessageKey.of("ModCntr_Settings_cannot_be_changed");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_NEW })
 	public void validateSettingsNotUsedAlready(@NonNull final I_ModCntr_Module type)

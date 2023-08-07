@@ -69,7 +69,7 @@ public class ModularContractSettingsDAO
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
 				.andCollect(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
 				.create()
-				.firstOptional()
+				.firstOnlyOptional()
 				.map(this::getBySettings)
 				.orElse(null);
 	}
@@ -132,7 +132,7 @@ public class ModularContractSettingsDAO
 				.anyMatch();
 	}
 
-	public boolean isSettingsExists(final @NonNull ModularContractSettingsQuery query)
+	public boolean isSettingsExist(final @NonNull ModularContractSettingsQuery query)
 	{
 		final YearAndCalendarId yearAndCalendarId = query.yearAndCalendarId();
 		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)

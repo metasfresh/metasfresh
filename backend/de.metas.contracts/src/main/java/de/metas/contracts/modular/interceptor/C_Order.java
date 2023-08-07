@@ -23,12 +23,20 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -47,13 +55,19 @@ import static de.metas.contracts.modular.ModularContractService.ModelAction.VOID
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
+	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed");
+
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final ModularContractService contractService;
+	private final ModularContractLogDAO contractLogDAO;
 
-	public C_Order(@NonNull final ModularContractService contractService)
+	public C_Order(
+			@NonNull final ModularContractService contractService,
+			@NonNull final ModularContractLogDAO contractLogDAO)
 	{
 		this.contractService = contractService;
+		this.contractLogDAO = contractLogDAO;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -78,6 +92,31 @@ public class C_Order
 	public void afterReactivate(@NonNull final I_C_Order orderRecord)
 	{
 		invokeHandlerForEachLine(orderRecord, REACTIVATED);
+	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_Harvesting_Year_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_Harvesting_Year_ID })
+	public void validateHarvestingDatesForSalesOrder(@NonNull final I_C_Order orderRecord)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
+		if (soTrx.isPurchase())
+		{
+			return;
+		}
+
+		final boolean hasAnyModularLogs = orderDAO.retrieveOrderLines(orderRecord)
+				.stream()
+				.map(record -> TableRecordReference.of(I_C_OrderLine.Table_Name, record.getC_OrderLine_ID()))
+				.anyMatch(contractLogDAO::hasAnyModularLogs);
+
+		if (!hasAnyModularLogs)
+		{
+			return;
+		}
+
+		throw new AdempiereException(MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED)
+				.markAsUserValidationError();
 	}
 
 	private void invokeHandlerForEachLine(

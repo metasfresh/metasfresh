@@ -15,12 +15,12 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | coProduct            | coProduct_07212023_1            | coProduct_07212023_1            |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year                 | 2022       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains M_PricingSystems
       | Identifier             | Name                              | Value                             |

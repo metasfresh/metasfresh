@@ -37,6 +37,8 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
@@ -45,7 +47,7 @@ import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -67,6 +69,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.copy_with_details.CopyRecordSupport;
 import de.metas.document.DocBaseType;
@@ -118,6 +122,7 @@ import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -126,6 +131,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -166,7 +172,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class FlatrateBL implements IFlatrateBL
 {
-
 	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
 
 	private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
@@ -194,6 +199,8 @@ public class FlatrateBL implements IFlatrateBL
 
 	public final static AdMessageKey MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = AdMessageKey.of("MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED");
 
+	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
+
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -209,6 +216,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -2364,9 +2372,18 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	@NonNull
 	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
 	{
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
+		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
+		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
+															   .yearAndCalendarId(yearAndCalendarId)
+															   .productId(productId)
+															   .build()))
+		{
+			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
+		}
+
 		final I_ModCntr_Settings newModCntrSettings = InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class, settings);
 
 		final PO from = InterfaceWrapperHelper.getPO(settings);
@@ -2385,33 +2402,37 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public I_C_Flatrate_Conditions cloneConditionsToNewYear(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Year newYear)
+	public ConditionsId cloneConditionsToNewYear(@NonNull final ConditionsId conditionsId, @NonNull final YearId newYearId)
 	{
 		//
 		// make sure it's Modular Contracts first
-		if (!isModularContract(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID())))
+		if (!isModularContract(conditionsId))
 		{
 			throw new AdempiereException("Not Modular Contract Term");
 		}
 
-		final I_C_Flatrate_Conditions newFlatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
+		final I_C_Flatrate_Conditions newConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
 
 		final PO from = InterfaceWrapperHelper.getPO(conditions);
-		final PO to = InterfaceWrapperHelper.getPO(newFlatrateConditions);
+		final PO to = InterfaceWrapperHelper.getPO(newConditions);
 
 		PO.copyValues(from, to, true);
 
-		newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
-		final I_ModCntr_Settings modCntrSettings = cloneModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
-		newFlatrateConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
-		newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
+		final I_C_Year newYear = InterfaceWrapperHelper.load(newYearId, I_C_Year.class);
+		newConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
 
-		InterfaceWrapperHelper.save(newFlatrateConditions);
+		final I_ModCntr_Settings modCntrSettings = cloneModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
+
+		newConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
+		newConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
+
+		InterfaceWrapperHelper.save(newConditions);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
 		childCRS.copyChildren(from, to);
 
-		return newFlatrateConditions;
+		return ConditionsId.ofRepoId(newConditions.getC_Flatrate_Conditions_ID());
 
 	}
 
@@ -2424,28 +2445,47 @@ public class FlatrateBL implements IFlatrateBL
 
 	@NonNull
 	@Override
-	public Stream<I_C_Flatrate_Term> streamModularFlatrateTerms(@NonNull final ModularFlatrateTermRequest request)
+	public Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(@NonNull final ModularFlatrateTermQuery modularFlatrateTermQuery)
 	{
-		final IQuery<I_ModCntr_Settings> queryFilterSettings = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, request.getProductId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, request.getSoTrx().toBoolean())
-				.create();
-
-		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, modularFlatrateTermQuery.getTypeConditions())
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DOCSTATUS_Completed)
-				.addInSubQueryFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID, queryFilterSettings)
+				.addInSubQueryFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID,
+									 buildModularContractSettingsQueryFilter(modularFlatrateTermQuery))
 				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, request.getProductId())
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, request.getBPartnerId())
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, modularFlatrateTermQuery.getBPartnerId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, modularFlatrateTermQuery.getTypeConditions())
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Voided)
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Quit)
-				.create()
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+
+		if (modularFlatrateTermQuery.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductId());
+		}
+
+		return queryBuilder.create()
 				.iterateAndStream();
+	}
+
+	@NonNull
+	private IQuery<I_ModCntr_Settings> buildModularContractSettingsQueryFilter(@NonNull final ModularFlatrateTermQuery request)
+	{
+		final IQueryBuilder<I_ModCntr_Settings> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, request.getSoTrx().toBoolean());
+
+		if (request.getYearId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId());
+		}
+
+		if (request.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, request.getProductId());
+		}
+
+		return queryBuilder.create();
 	}
 }

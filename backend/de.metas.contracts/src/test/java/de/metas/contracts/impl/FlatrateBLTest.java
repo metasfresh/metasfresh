@@ -17,6 +17,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
@@ -58,7 +59,8 @@ import java.sql.Timestamp;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
@@ -107,6 +109,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		taxBL = Mockito.mock(ITaxBL.class);
 
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 	}
 
 	@BeforeEach

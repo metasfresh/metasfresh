@@ -20,22 +20,12 @@
  * #L%
  */
 
-package de.metas.contracts.FlatrateTermRequest;
+package de.metas.contracts.modular;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.YearId;
-import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.i18n.AdMessageKey;
 
-@Value
-@Builder
-public class ModularFlatrateTermRequest
+public class ModularContract_Constants
 {
-	@NonNull BPartnerId bPartnerId;
-	@NonNull ProductId productId;
-	@NonNull YearId yearId;
-	@NonNull SOTrx soTrx;
+	public static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.DocActionNotAllowed");
+	public static final AdMessageKey MSG_ERROR_DOC_ACTION_UNSUPPORTED = AdMessageKey.of("de.metas.contracts.DocActionUnsupported");
 }

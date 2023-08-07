@@ -28,14 +28,17 @@ import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.common.util.Check;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
@@ -64,6 +67,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -82,10 +86,14 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractLogDAO contractLogDAO;
 
-	public SalesOrderLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
+	public SalesOrderLineModularContractHandler(
+			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO,
+			@NonNull final ModularContractLogDAO contractLogDAO)
 	{
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
+		this.contractLogDAO = contractLogDAO;
 	}
 
 	@Override
@@ -124,14 +132,15 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 			return false;
 		}
 
-		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
+		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehousePartnerId)
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
+				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
-		return isModularContractInProgress(request);
+		return isModularContractInProgress(modularFlatrateTermQuery);
 	}
 
 	@Override
@@ -185,14 +194,19 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	@Override
 	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_C_OrderLine orderLine, final @NonNull FlatrateTermId flatrateTermId)
 	{
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(orderLine.getQtyEntered(), uomId);
+		final LogEntryReverseRequest request = LogEntryReverseRequest.builder()
+				.referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
+				.flatrateTermId(flatrateTermId)
+				.build();
+
+		final BigDecimal loggedQty = contractLogDAO.retrieveQuantityFromExistingLog(request);
+
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
+		final Quantity quantity = Quantity.of(loggedQty, uom);
 
 		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(orderLine.getM_Product_ID()), quantity.toString()));
 
-		return Optional.of(LogEntryReverseRequest.builder()
-								   .referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
-								   .flatrateTermId(flatrateTermId)
+		return Optional.of(request.toBuilder()
 								   .description(description)
 								   .build());
 	}
@@ -208,11 +222,12 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
 		Check.assume(harvestingYearId != null, "Harvesting year ID should not be null at this stage!");
 
-		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
+		final ModularFlatrateTermQuery request = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
+				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
 		return streamModularContracts(request)
@@ -226,11 +241,11 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		switch (action)
 		{
 			case COMPLETED, VOIDED, REACTIVATED -> {}
-			default -> throw new AdempiereException("Unsupported model action!");
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 
-	private boolean isModularContractInProgress(@NonNull final ModularFlatrateTermRequest request)
+	private boolean isModularContractInProgress(@NonNull final ModularFlatrateTermQuery request)
 	{
 		final List<I_C_Flatrate_Term> modularContracts = streamModularContracts(request)
 				.collect(ImmutableList.toImmutableList());
@@ -239,8 +254,8 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@NonNull
-	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermRequest request)
+	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermQuery request)
 	{
-		return flatrateBL.streamModularFlatrateTerms(request);
+		return flatrateBL.streamModularFlatrateTermsByQuery(request);
 	}
 }

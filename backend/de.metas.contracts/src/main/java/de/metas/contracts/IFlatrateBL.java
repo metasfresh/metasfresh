@@ -23,10 +23,11 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -53,6 +54,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Stream;
+
 
 public interface IFlatrateBL extends ISingletonService
 {
@@ -227,11 +229,11 @@ public interface IFlatrateBL extends ISingletonService
 
 	/**
 	 * Extend the C_Flatrate_Conditions to the new year
-	 * @param conditions
-	 * @param year
+	 * @param conditionsId
+	 * @param yearId
 	 * @return
 	 */
-	I_C_Flatrate_Conditions cloneConditionsToNewYear(I_C_Flatrate_Conditions conditions, I_C_Year year);
+	ConditionsId cloneConditionsToNewYear(ConditionsId conditionsId, YearId yearId);
 
 	/**
 	 * Check if the provided contract is extendable (Not a Modular Contract,...)
@@ -240,5 +242,5 @@ public interface IFlatrateBL extends ISingletonService
 	 */
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
 
-	Stream<I_C_Flatrate_Term> streamModularFlatrateTerms(ModularFlatrateTermRequest request);
+	Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(ModularFlatrateTermQuery modularFlatrateTermQuery);
 }
