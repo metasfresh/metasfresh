@@ -25,9 +25,10 @@ package de.metas.contracts.modular.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
@@ -171,22 +172,23 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
 
-		final ModularFlatrateTermRequest request = ModularFlatrateTermRequest.builder()
+		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE) // in this handler we want the *purchase* flatrate-terms that led to this (sales-)shipment
+				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
-		return streamModularContracts(request)
+		return streamModularContracts(modularFlatrateTermQuery)
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
 	}
 
 	@NonNull
-	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermRequest request)
+	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermQuery request)
 	{
-		return flatrateBL.streamModularFlatrateTerms(request);
+		return flatrateBL.streamModularFlatrateTermsByQuery(request);
 	}
 
 	@Override
