@@ -11,214 +11,214 @@ Feature: Modular contract log from inventory
   @from:cucumber
   Scenario: Happy flow for contract module log - inventory with two lines completed => validate the two created log entries
     Given metasfresh contains M_PricingSystems
-      | Identifier             | Name                              | Value                             |
-      | moduleLogPricingSystem | moduleLogPricingSystem_07042023_1 | moduleLogPricingSystem_07042023_1 |
+      | Identifier                       | Name                             | Value                            |
+      | moduleLogPricingSystem_S0282_500 | moduleLogPricingSystem_S0282_500 | moduleLogPricingSystem_S0282_500 |
     And metasfresh contains M_Products:
-      | Identifier         | Name                               |
-      | module_log_product | module_log_product_test_07042023_1 |
+      | Identifier           | Name                 |
+      | module_log_S0282_500 | module_log_S0282_500 |
     And metasfresh contains C_BPartners:
-      | Identifier     | Name                      | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
-      | bp_moduleLogPO | bp_moduleLogPO_07042023_1 | Y            | moduleLogPricingSystem        | 1000002                    |
+      | Identifier               | Name                     | OPT.IsVendor | M_PricingSystem_ID.Identifier    | OPT.C_PaymentTerm_ID.Value |
+      | bp_moduleLogPO_S0282_500 | bp_moduleLogPO_S0282_500 | Y            | moduleLogPricingSystem_S0282_500 | 1000002                    |
     And metasfresh contains C_BPartner_Locations:
       | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bp_moduleLogPO_Location | 5823198505483 | bp_moduleLogPO           | true                | true                |
+      | bp_moduleLogPO_Location | 5823198505483 | bp_moduleLogPO_S0282_500 | true                | true                |
 
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                | Name                 | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouse                 | warehouse_07042023_1 | warehouse_07042023_1 | bp_moduleLogPO               | bp_moduleLogPO_Location               |
+      | M_Warehouse_ID.Identifier | Value               | Name                | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouse_S0282_500       | warehouse_S0282_500 | warehouse_S0282_500 | bp_moduleLogPO_S0282_500     | bp_moduleLogPO_Location               |
 
     And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value              | M_Warehouse_ID.Identifier |
-      | locator                 | locator_12012023_1 | warehouse                 |
+      | locator                 | locator_12012023_1 | warehouse_S0282_500       |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year                 | 2022       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_07042023_1 | module_log_product      | harvesting_calendar      | year                 | moduleLogPricingSystem            |
+      | modCntr_settings_S0282_500     | testSettings_07042023_0 | module_log_S0282_500    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_500  |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name               | Value              | Classname                                                           |
-      | modCntr_type_1             | invLine_07042023_1 | invLine_07042023_1 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+      | modCntr_type_S0282_500_1   | invLine_07042023_1 | invLine_07042023_1 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
 
     And metasfresh contains ModCntr_Modules:
-      | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_07042023_1 | module_log_product      | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                       | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_S0282_500_1   | 10    | modCntr_module_S0282_500_1 | module_log_S0282_500    | Kosten         | modCntr_settings_S0282_500     | modCntr_type_S0282_500_1   |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_07042023_1 | ModularContract | moduleLogPricingSystem            | Ca                       | modCntr_settings_1                 |
+      | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | moduleLogConditions_PO_S0282_500    | moduleLogConditions_PO_S0282_500 | ModularContract | moduleLogPricingSystem_S0282_500  | Ca                       | modCntr_settings_S0282_500         | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | moduleLogContract_1 | moduleLogConditions_PO              | bp_moduleLogPO              | 2021-10-31 | 2022-10-30 | module_log_product          |
+      | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
+      | moduleLogContract_S0282_500_1 | moduleLogConditions_PO_S0282_500    | bp_moduleLogPO_S0282_500    | 2021-10-31 | 2022-10-30 | module_log_S0282_500        |
 
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | warehouse      | 2021-04-16   |
+      | Identifier | M_Warehouse_ID      | MovementDate |
+      | i_1        | warehouse_S0282_500 | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook | OPT.Modular_Flatrate_Term_ID.Identifier |
-      | il_1       | i_1                       | module_log_product      | PCE          | 10       | 0       | moduleLogContract_1                     |
-      | il_2       | i_1                       | module_log_product      | PCE          | 10       | 0       | moduleLogContract_1                     |
+      | il_1       | i_1                       | module_log_S0282_500    | PCE          | 10       | 0       | moduleLogContract_S0282_500_1           |
+      | il_2       | i_1                       | module_log_S0282_500    | PCE          | 10       | 0       | moduleLogContract_S0282_500_1           |
 
     When the inventory identified by i_1 is completed
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
-      | log_1                     | il_1                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | 10  | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
-      | log_1                     | il_2                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | 10  | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_1                     | il_1                 | warehouse_S0282_500           | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_1                     | il_2                 | warehouse_S0282_500           | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
 
   @Id:S0284_200
   @Id:S0282_600
   @from:cucumber
   Scenario: Happy flow for contract module log - internal use with two lines completed => validate the two created log entries
     Given metasfresh contains M_PricingSystems
-      | Identifier             | Name                              | Value                             |
-      | moduleLogPricingSystem | moduleLogPricingSystem_07052023_1 | moduleLogPricingSystem_07052023_1 |
+      | Identifier                       | Name                             | Value                            |
+      | moduleLogPricingSystem_S0282_600 | moduleLogPricingSystem_S0282_600 | moduleLogPricingSystem_S0282_600 |
     And metasfresh contains M_Products:
-      | Identifier         | Name                               |
-      | module_log_product | module_log_product_test_07052023_1 |
+      | Identifier           | Name                 |
+      | module_log_S0282_600 | module_log_S0282_600 |
     And metasfresh contains C_BPartners:
-      | Identifier     | Name                      | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
-      | bp_moduleLogPO | bp_moduleLogPO_07052023_1 | Y            | moduleLogPricingSystem        | 1000002                    |
+      | Identifier               | Name                      | OPT.IsVendor | M_PricingSystem_ID.Identifier    | OPT.C_PaymentTerm_ID.Value |
+      | bp_moduleLogPO_S0282_600 | bp_moduleLogPO_07052023_1 | Y            | moduleLogPricingSystem_S0282_600 | 1000002                    |
     And metasfresh contains C_BPartner_Locations:
       | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bp_moduleLogPO_Location | 5823298505483 | bp_moduleLogPO           | true                | true                |
+      | bp_moduleLogPO_Location | 5823298505483 | bp_moduleLogPO_S0282_600 | true                | true                |
 
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                | Name                 | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouse                 | warehouse_07052023_1 | warehouse_07052023_1 | bp_moduleLogPO               | bp_moduleLogPO_Location               |
+      | M_Warehouse_ID.Identifier | Value               | Name                | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouse_S0282_600       | warehouse_S0282_600 | warehouse_S0282_600 | bp_moduleLogPO_S0282_600     | bp_moduleLogPO_Location               |
 
     And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value              | M_Warehouse_ID.Identifier |
-      | locator                 | locator_12012023_1 | warehouse                 |
+      | locator                 | locator_12012023_1 | warehouse_S0282_600       |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year                 | 2022       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_07052023_1 | module_log_product      | harvesting_calendar      | year                 | moduleLogPricingSystem            |
+      | ModCntr_Settings_ID.Identifier | Name                         | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_S0282_600_1   | modCntr_settings_S0282_600_1 | module_log_S0282_600    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_600  |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name              | Value             | Classname                                                           |
-      | modCntr_type_1             | poLine_07052023_1 | poLine_07052023_1 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name               | Value              | Classname                                                           |
+      | modCntr_type_S0282_600_1   | poLine_S0282_600_1 | poLine_S0282_600_1 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
 
     And metasfresh contains ModCntr_Modules:
-      | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_07052023_1 | module_log_product      | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                       | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_S0282_600_1   | 10    | modCntr_module_S0282_600_1 | module_log_S0282_600    | Kosten         | modCntr_settings_S0282_600_1   | modCntr_type_S0282_600_1   |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_07052023_1 | ModularContract | moduleLogPricingSystem            | Ca                       | modCntr_settings_1                 |
+      | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | moduleLogConditions_PO_S0282_600    | moduleLogConditions_PO_S0282_600 | ModularContract | moduleLogPricingSystem_S0282_600  | Ca                       | modCntr_settings_S0282_600_1       | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | moduleLogContract_1 | moduleLogConditions_PO              | bp_moduleLogPO              | 2021-10-31 | 2022-10-30 | module_log_product          |
+      | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
+      | moduleLogContract_S0282_600_1 | moduleLogConditions_PO_S0282_600    | bp_moduleLogPO_S0282_600    | 2021-10-31 | 2022-10-30 | module_log_S0282_600        |
 
     And load C_DocType:
       | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.DocSubType |
       | disposal                | MMI             | IUI            |
 
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate | OPT.C_DocType_ID.Identifier |
-      | i_1        | warehouse      | 2021-04-16   | disposal                    |
+      | Identifier | M_Warehouse_ID      | MovementDate | OPT.C_DocType_ID.Identifier |
+      | i_1        | warehouse_S0282_600 | 2021-04-16   | disposal                    |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook | OPT.Modular_Flatrate_Term_ID.Identifier | OPT.QtyInternalUse |
-      | il_1       | i_1                       | module_log_product      | PCE          | 0        | 0       | moduleLogContract_1                     | 10                 |
-      | il_2       | i_1                       | module_log_product      | PCE          | 0        | 0       | moduleLogContract_1                     | 10                 |
+      | il_1       | i_1                       | module_log_S0282_600    | PCE          | 0        | 0       | moduleLogContract_S0282_600_1           | 10                 |
+      | il_2       | i_1                       | module_log_S0282_600    | PCE          | 0        | 0       | moduleLogContract_S0282_600_1           | 10                 |
 
     When the inventory identified by i_1 is completed
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
-      | log_1                     | il_1                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | -10 | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
-      | log_1                     | il_2                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | -10 | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_S0282_600_1           | il_1                 | warehouse_S0282_600           | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_S0282_600_1           | il_2                 | warehouse_S0282_600           | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
 
   @Id:S0284_300
   @Id:S0282_700
   @from:cucumber
   Scenario: Happy flow for contract module log - inventory with two lines reversed
     Given metasfresh contains M_PricingSystems
-      | Identifier             | Name                              | Value                             |
-      | moduleLogPricingSystem | moduleLogPricingSystem_07052023_2 | moduleLogPricingSystem_07052023_2 |
+      | Identifier                       | Name                             | Value                            |
+      | moduleLogPricingSystem_S0282_700 | moduleLogPricingSystem_S0282_700 | moduleLogPricingSystem_S0282_700 |
     And metasfresh contains M_Products:
-      | Identifier         | Name                               |
-      | module_log_product | module_log_product_test_07052023_2 |
+      | Identifier           | Name                 |
+      | module_log_S0282_700 | module_log_S0282_700 |
     And metasfresh contains C_BPartners:
-      | Identifier     | Name                      | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
-      | bp_moduleLogPO | bp_moduleLogPO_07052023_2 | Y            | moduleLogPricingSystem        | 1000002                    |
+      | Identifier               | Name                     | OPT.IsVendor | M_PricingSystem_ID.Identifier    | OPT.C_PaymentTerm_ID.Value |
+      | bp_moduleLogPO_S0282_700 | bp_moduleLogPO_S0282_700 | Y            | moduleLogPricingSystem_S0282_700 | 1000002                    |
     And metasfresh contains C_BPartner_Locations:
       | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bp_moduleLogPO_Location | 5824298505483 | bp_moduleLogPO           | true                | true                |
+      | bp_moduleLogPO_Location | 5824298505483 | bp_moduleLogPO_S0282_700 | true                | true                |
 
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                | Name                 | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouse                 | warehouse_07052023_2 | warehouse_07052023_2 | bp_moduleLogPO               | bp_moduleLogPO_Location               |
+      | M_Warehouse_ID.Identifier | Value               | Name                | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouse_S0282_700       | warehouse_S0282_700 | warehouse_S0282_700 | bp_moduleLogPO_S0282_700     | bp_moduleLogPO_Location               |
 
     And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value              | M_Warehouse_ID.Identifier |
-      | locator                 | locator_12012023_1 | warehouse                 |
+      | locator                 | locator_12012023_1 | warehouse_S0282_700       |
 
     And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                   |
-      | harvesting_calendar      | Kalender - Verrechnung |
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
 
     And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear |
-      | year                 | 2022       |
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_07052023_2 | module_log_product      | harvesting_calendar      | year                 | moduleLogPricingSystem            |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_S0282_700_1   | testSettings_S0282_700_1 | module_log_S0282_700    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_700  |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name              | Value             | Classname                                                           |
-      | modCntr_type_1             | poLine_07052023_2 | poLine_07052023_2 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+      | modCntr_type_S0282_700_1   | poLine_07052023_2 | poLine_07052023_2 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_07052023_2 | module_log_product      | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | modCntr_module_S0282_700_1   | 10    | moduleTest_07052023_2 | module_log_S0282_700    | Kosten         | modCntr_settings_S0282_700_1   | modCntr_type_S0282_700_1   |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_07052023_2 | ModularContract | moduleLogPricingSystem            | Ca                       | modCntr_settings_1                 |
+      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | moduleLogConditions_PO              | moduleLogConditions_po_07052023_2 | ModularContract | moduleLogPricingSystem_S0282_700  | Ca                       | modCntr_settings_S0282_700_1       | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | moduleLogContract_1 | moduleLogConditions_PO              | bp_moduleLogPO              | 2021-10-31 | 2022-10-30 | module_log_product          |
+      | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
+      | moduleLogContract_S0282_700_1 | moduleLogConditions_PO              | bp_moduleLogPO_S0282_700    | 2021-10-31 | 2022-10-30 | module_log_S0282_700        |
 
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | warehouse      | 2021-04-16   |
+      | Identifier | M_Warehouse_ID      | MovementDate |
+      | i_1        | warehouse_S0282_700 | 2021-04-16   |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook | OPT.Modular_Flatrate_Term_ID.Identifier |
-      | il_1       | i_1                       | module_log_product      | PCE          | 10       | 0       | moduleLogContract_1                     |
-      | il_2       | i_1                       | module_log_product      | PCE          | 10       | 0       | moduleLogContract_1                     |
+      | il_1       | i_1                       | module_log_S0282_700    | PCE          | 10       | 0       | moduleLogContract_S0282_700_1           |
+      | il_2       | i_1                       | module_log_S0282_700    | PCE          | 10       | 0       | moduleLogContract_S0282_700_1           |
 
     When the inventory identified by i_1 is completed
 
     Then ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
-      | log_1                     | il_1                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | 10  | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
-      | log_2                     | il_2                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | 10  | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_1                     | il_1                 | warehouse_S0282_700           | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_2                     | il_2                 | warehouse_S0282_700           | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
 
     And the inventory identified by i_1 is reversed
 
     And ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
-      | log_1                     | il_1                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | 10  | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
-      | log_2                     | il_1                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | -10 | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
-      | log_3                     | il_2                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | 10  | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
-      | log_4                     | il_2                 | warehouse                     | module_log_product      | bp_moduleLogPO                  | -10 | M_InventoryLine | moduleLogContract_1           | modCntr_type_1                 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_1                     | il_1                 | warehouse_S0282_700           | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_2                     | il_1                 | warehouse_S0282_700           | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | -10 | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_3                     | il_2                 | warehouse_S0282_700           | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_4                     | il_2                 | warehouse_S0282_700           | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | -10 | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
