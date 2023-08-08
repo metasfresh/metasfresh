@@ -80,7 +80,7 @@ import java.util.Objects;
 
 import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
 import static de.metas.util.web.audit.ApiAuditService.API_RESPONSE_HEADER_REQUEST_AUDIT_ID;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @UtilityClass
 public class RESTUtil
@@ -163,7 +163,7 @@ public class RESTUtil
 
 				try
 				{
-					final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
+					final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8), JsonApiResponse.class);
 
 					final String content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
 
@@ -179,15 +179,15 @@ public class RESTUtil
 				}
 				catch (final JsonParseException jsonParseException)
 				{
-					apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+					apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8));
 				}
 			}
 			else
 			{
-				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8));
 			}
 
-		assertThat(response.getStatusLine().getStatusCode())
+			assertThat(response.getStatusLine().getStatusCode())
 				.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
 															CoalesceUtil.coalesce(statusCode, 200),
 															response.getStatusLine().getStatusCode(),

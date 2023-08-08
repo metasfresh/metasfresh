@@ -7,8 +7,8 @@ Feature: Clone Modular Contract Term
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains M_Products:
-      | Identifier              | Name                               |
-      | contract_module_product | contract_module_product_17072023_1 |
+      | Identifier                    | Name                          |
+      | contract_module_product_S0300 | contract_module_product_S0300 |
 
     And load C_Calendar from metasfresh:
       | C_Calendar_ID.Identifier | Name                  |
@@ -20,20 +20,20 @@ Feature: Clone Modular Contract Term
       | y2023                | 2023       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
+      | ModCntr_Settings_ID.Identifier | Name                           | M_Product_ID.Identifier       | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
+      | modCntr_settings_toclone_S0300 | modCntr_settings_toclone_S0300 | contract_module_product_S0300 | harvesting_calendar      | y2022                |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                     | Value                    | Classname                                                               |
-      | modCntr_Types_1            | modCntr_Types_17072023_1 | modCntr_Types_17072023_1 | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name                  | Value                 | Classname                                                               |
+      | modCntr_Types_1_S0300      | modCntr_Types_1_S0300 | modCntr_Types_1_S0300 | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
 
     And metasfresh contains ModCntr_Modules:
-      | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_17072023_1 | contract_module_product | Kosten         | modCntr_settings_toclone       | modCntr_Types_1            |
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier       | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_1_S0300       | 10    | modCntr_module_1_S0300 | contract_module_product_S0300 | Kosten         | modCntr_settings_toclone_S0300 | modCntr_Types_1_S0300      |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                     | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2022            | modularContractTerm_2022 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
+      | C_Flatrate_Conditions_ID.Identifier | Name                      | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_S0300           | modularContractTerm_S0300 | ModularContract | Ex                       | modCntr_settings_toclone_S0300     | CO            |
 
   @Id:S0300_100
   @from:cucumber
@@ -46,15 +46,15 @@ Feature: Clone Modular Contract Term
 
     When clone C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier |
-      | modularContractTerm_2022            | y2023                | clonedModularContractTerm_2022            |
+      | modularContractTerm_S0300           | y2023                | clonedModularContractTerm_S0300_100       |
 
     Then validate cloned C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                          | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.DocStatus | CLONE.ModCntr_Settings_ID.Identifier |
-      | clonedModularContractTerm_2022      | modularContractTerm_2022_2023 | ModularContract | Ex                       | DR            | clonedModCntr_settings_1             |
+      | C_Flatrate_Conditions_ID.Identifier | Name                                | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.DocStatus | CLONE.ModCntr_Settings_ID.Identifier |
+      | clonedModularContractTerm_S0300_100 | clonedModularContractTerm_S0300_100 | ModularContract | Ex                       | DR            | clonedModCntr_settings_S0300_100     |
 
     And validate cloned ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Year_ID.Identifier |
-      | clonedModCntr_settings_1       | modCntr_settings_toclone | contract_module_product | y2023                |
+      | ModCntr_Settings_ID.Identifier   | Name                           | M_Product_ID.Identifier       | C_Year_ID.Identifier |
+      | clonedModCntr_settings_S0300_100 | modCntr_settings_toclone_S0300 | contract_module_product_S0300 | y2023                |
 
   @Id:S0300_200
   @from:cucumber
@@ -69,4 +69,4 @@ Feature: Clone Modular Contract Term
 
     Then clone C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier | OPT.AD_Message_ID.Identifier |
-      | modularContractTerm_2022            | y2022                | clonedModularContractTerm_2022            | settings_already_exists      |
+      | modularContractTerm_S0300           | y2022                | clonedModularContractTerm_S0300           | settings_already_exists      |
