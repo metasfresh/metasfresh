@@ -20,27 +20,12 @@
  * #L%
  */
 
-package de.metas.contracts.modular.log;
+package de.metas.contracts.modular;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.Builder;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import de.metas.i18n.AdMessageKey;
 
-import javax.annotation.Nullable;
-
-@Builder(toBuilder = true)
-public record LogEntryReverseRequest(
-		@Nullable ModularContractLogEntryId id,
-		@Nullable TableRecordReference referencedModel,
-		@Nullable FlatrateTermId flatrateTermId,
-		@Nullable String description)
+public class ModularContract_Constants
 {
-	public LogEntryReverseRequest
-	{
-		if (id == null && referencedModel == null)
-		{
-			throw new AdempiereException("LogEntryReverseRequest - either an ID or a tableRecordReference must be present.");
-		}
-	}
+	public static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.DocActionNotAllowed");
+	public static final AdMessageKey MSG_ERROR_DOC_ACTION_UNSUPPORTED = AdMessageKey.of("de.metas.contracts.DocActionUnsupported");
 }

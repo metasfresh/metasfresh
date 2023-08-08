@@ -23,6 +23,7 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
@@ -33,7 +34,6 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
@@ -46,13 +46,13 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Stream;
+
 
 public interface IFlatrateBL extends ISingletonService
 {
@@ -218,25 +218,12 @@ public interface IFlatrateBL extends ISingletonService
 	boolean isModularContract(@NonNull FlatrateTermId flatrateTermId);
 
 	/**
-	 * Extend the ModCntr Settings to the new year
-	 * @param settings
-	 * @param year
-	 * @return
-	 */
-	I_ModCntr_Settings cloneModularContractSettingsToNewYear(I_ModCntr_Settings settings, I_C_Year year );
-
-	/**
 	 * Extend the C_Flatrate_Conditions to the new year
-	 * @param conditions
-	 * @param year
-	 * @return
 	 */
-	I_C_Flatrate_Conditions cloneConditionsToNewYear(I_C_Flatrate_Conditions conditions, I_C_Year year);
+	ConditionsId cloneConditionsToNewYear(ConditionsId conditionsId, YearId yearId);
 
 	/**
 	 * Check if the provided contract is extendable (Not a Modular Contract,...)
-	 * @param contract
-	 * @return
 	 */
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
 

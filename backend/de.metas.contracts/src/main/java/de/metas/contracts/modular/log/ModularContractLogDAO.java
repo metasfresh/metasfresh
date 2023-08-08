@@ -46,6 +46,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -173,6 +175,17 @@ public class ModularContractLogDAO
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, recordReference.getRecord_ID())
 				.create()
 				.anyMatch();
+	}
+
+	@NonNull
+	public BigDecimal retrieveQuantityFromExistingLog(final @NonNull LogEntryReverseRequest request)
+	{
+		return getQuery(request)
+				.firstOptional()
+				.map(I_ModCntr_Log::getQty)
+				.orElseThrow(() -> new AdempiereException("No record found for request!")
+						.appendParametersToMessage()
+						.setParameter("LogEntryReverseRequest", request));
 	}
 
 	@NonNull

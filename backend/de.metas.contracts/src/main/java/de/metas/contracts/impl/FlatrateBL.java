@@ -37,6 +37,8 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
@@ -67,6 +69,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.copy_with_details.CopyRecordSupport;
 import de.metas.document.DocBaseType;
@@ -126,6 +130,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -166,7 +171,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class FlatrateBL implements IFlatrateBL
 {
-
 	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
 
 	private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
@@ -193,6 +197,8 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
 
 	public final static AdMessageKey MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = AdMessageKey.of("MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED");
+
+	public final static String MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS = "@MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS@";
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -2363,10 +2369,21 @@ public class FlatrateBL implements IFlatrateBL
 				.computeOrThrowEx();
 	}
 
-	@Override
-	@NonNull
-	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
+	private I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
 	{
+		// don't make it a field; the SpringApplicationContext might not be configured yet
+		final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
+		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
+		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
+				.yearAndCalendarId(yearAndCalendarId)
+				.productId(productId)
+				.build()))
+		{
+			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
+		}
+
 		final I_ModCntr_Settings newModCntrSettings = InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class, settings);
 
 		final PO from = InterfaceWrapperHelper.getPO(settings);
@@ -2379,39 +2396,43 @@ public class FlatrateBL implements IFlatrateBL
 		InterfaceWrapperHelper.save(newModCntrSettings);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name);
-		childCRS.copyChildren(from, to);
+		childCRS.copyChildren(to, from); // note that the method expects the copy-*target* as first parameter
 
 		return newModCntrSettings;
 	}
 
 	@Override
-	public I_C_Flatrate_Conditions cloneConditionsToNewYear(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Year newYear)
+	public ConditionsId cloneConditionsToNewYear(@NonNull final ConditionsId conditionsId, @NonNull final YearId newYearId)
 	{
 		//
 		// make sure it's Modular Contracts first
-		if (!isModularContract(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID())))
+		if (!isModularContract(conditionsId))
 		{
 			throw new AdempiereException("Not Modular Contract Term");
 		}
 
-		final I_C_Flatrate_Conditions newFlatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
+		final I_C_Flatrate_Conditions newConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class, conditions);
 
 		final PO from = InterfaceWrapperHelper.getPO(conditions);
-		final PO to = InterfaceWrapperHelper.getPO(newFlatrateConditions);
+		final PO to = InterfaceWrapperHelper.getPO(newConditions);
 
 		PO.copyValues(from, to, true);
 
-		newFlatrateConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
-		final I_ModCntr_Settings modCntrSettings = cloneModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
-		newFlatrateConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
-		newFlatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
+		final I_C_Year newYear = InterfaceWrapperHelper.load(newYearId, I_C_Year.class);
+		newConditions.setName(conditions.getName().concat("-" + newYear.getFiscalYear()));
 
-		InterfaceWrapperHelper.save(newFlatrateConditions);
+		final I_ModCntr_Settings modCntrSettings = cloneModularContractSettingsToNewYear(conditions.getModCntr_Settings(), newYear);
+
+		newConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
+		newConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
+
+		InterfaceWrapperHelper.save(newConditions);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
 		childCRS.copyChildren(from, to);
 
-		return newFlatrateConditions;
+		return ConditionsId.ofRepoId(newConditions.getC_Flatrate_Conditions_ID());
 
 	}
 

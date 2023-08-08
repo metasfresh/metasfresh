@@ -17,6 +17,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
@@ -151,6 +152,7 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 
 		contractChangeBL = Services.get(IContractChangeBL.class);
 

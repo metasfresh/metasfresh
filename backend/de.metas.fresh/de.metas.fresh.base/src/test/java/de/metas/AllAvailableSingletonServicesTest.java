@@ -1,6 +1,7 @@
 package de.metas;
 
 import com.google.common.base.Stopwatch;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
@@ -97,6 +98,7 @@ public class AllAvailableSingletonServicesTest
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 	}
 
 	@ParameterizedTest
