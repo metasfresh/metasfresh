@@ -774,10 +774,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 		catch (final Throwable runException)
 		{
 			final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
-			loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}",
-					runException.getClass(), runException.getMessage(),
-					runException /* note that some ILoggable implementations can handle this additional parameter; the others can be expected to ignore it */);
-
+			if(AdempiereException.isThrowableLoggedInTrxManager(runException))
+			{
+				loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}",
+								runException.getClass(), runException.getMessage(),
+								runException /* note that some ILoggable implementations can handle this additional parameter; the others can be expected to ignore it */);
+			}
+			
 			// Call custom exception handler to advice us what to do
 			exceptionToThrow = runException;
 			boolean rollback = true;

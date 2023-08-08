@@ -86,9 +86,6 @@ public class WebRestApiApplication
 			System.setProperty("PropertyFile", "./metasfresh.properties");
 		}
 
-		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
-		//ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
-
 		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
 		final ConnectionUtil.ConfigureConnectionsResult configureConnectionsResult = ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);

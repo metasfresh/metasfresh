@@ -22,18 +22,23 @@
 
 package de.metas.camel.externalsystems.shopware6.order;
 
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.shopware6.CamelRouteUtil;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.camel.externalsystems.shopware6.order.processor.BuildOrdersContextProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.CreateBPartnerUpsertReqProcessor;
-import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
+import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersPageProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.OLCandRequestProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.OrderFilter;
 import de.metas.camel.externalsystems.shopware6.order.processor.PaymentRequestProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.ProcessOLCandProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.RuntimeParametersProcessor;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
+import lombok.NonNull;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.Predicate;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -41,17 +46,20 @@ import java.time.Instant;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class GetOrdersRouteBuilder extends RouteBuilder
 {
+	public static final String PROCESS_ORDERS_PAGE_ROUTE_ID = "Shopware6-processOrdersPage";
 	public static final String GET_ORDERS_ROUTE_ID = "Shopware6-getOrders";
 	public static final String PROCESS_ORDER_ROUTE_ID = "Shopware6-processOrder";
 	public static final String PROCESS_OLCAND_ROUTE_ID = "Shopware6-processOLCand";
 	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Shopware6-upsertRuntimeParams";
 
-	public static final String GET_ORDERS_PROCESSOR_ID = "SW6Orders-GetOrdersProcessorId";
+	public static final String BUILD_ORDERS_CONTEXT_PROCESSOR_ID = "SW6Orders-BuildContextProcessorId";
+	public static final String GET_ORDERS_PAGE_PROCESSOR_ID = "SW6Orders-GetOrdersPageProcessorId";
 	public static final String CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID = "SW6Orders-CreateBPartnerUpsertReqProcessorId";
 	public static final String OLCAND_REQ_PROCESSOR_ID = "SW6Orders-OLCandRequestProcessorId";
 	public static final String PROCESS_OLCAND_PROCESSOR_ID = "SW6Orders-ProcessOLCandProcessorId";
@@ -60,10 +68,12 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "SW6Orders-RuntimeParamsProcessorId";
 
 	private final ProcessLogger processLogger;
+	private final ProducerTemplate producerTemplate;
 
-	public GetOrdersRouteBuilder(final ProcessLogger processLogger)
+	public GetOrdersRouteBuilder(@NonNull final ProcessLogger processLogger, @NonNull final ProducerTemplate producerTemplate)
 	{
 		this.processLogger = processLogger;
+		this.producerTemplate = producerTemplate;
 	}
 
 	@Override
@@ -78,25 +88,39 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.routeId(GET_ORDERS_ROUTE_ID)
 				.log("Route invoked")
 				.streamCaching()
-				.process(new GetOrdersProcessor(processLogger)).id(GET_ORDERS_PROCESSOR_ID)
-				.split(body())
-					.to(direct(PROCESS_ORDER_ROUTE_ID))
-				.end()
+				.process(new BuildOrdersContextProcessor(processLogger, producerTemplate)).id(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
+				.to(direct(PROCESS_ORDERS_PAGE_ROUTE_ID))
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.to(direct(PROCESS_OLCAND_ROUTE_ID))
 				.process((exchange) -> processLogger.logMessage("Shopware6:GetOrders process ended!" + Instant.now(),
 						exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
 
+		from(direct(PROCESS_ORDERS_PAGE_ROUTE_ID))
+				.routeId(PROCESS_ORDERS_PAGE_ROUTE_ID)
+				.log("Route invoked")
+				.end()
+				.process(new GetOrdersPageProcessor()).id(GET_ORDERS_PAGE_PROCESSOR_ID)
+				.split(body())
+					.to(direct(PROCESS_ORDER_ROUTE_ID))
+				.end()
+				.choice()
+					.when(areMoreOrdersLeftToBeRetrieved())
+						.to(direct(PROCESS_ORDERS_PAGE_ROUTE_ID))
+					.otherwise()
+						.log(LoggingLevel.INFO, "Nothing to do! No additional orders to retrieve!")
+				.end();
+
 		from(direct(PROCESS_ORDER_ROUTE_ID))
 				.routeId(PROCESS_ORDER_ROUTE_ID)
 				.log("Route invoked")
 				.doTry()
-					.process(new OrderFilter()).id(FILTER_ORDER_PROCESSOR_ID)
+					.process(new OrderFilter(processLogger)).id(FILTER_ORDER_PROCESSOR_ID)
 					.choice()
 						.when(body().isNull())
 							.log(LoggingLevel.INFO, "Nothing to do! The order was filtered out!")
 						.otherwise()
 							.process(new CreateBPartnerUpsertReqProcessor()).id(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+				// TODO: don't upsert the bpartner if the sync-advise sais "read-only"
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
 							.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 
@@ -104,7 +128,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 							.process(new OLCandRequestProcessor()).id(OLCAND_REQ_PROCESSOR_ID)
 							.to(direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID))
 
-							.process(new PaymentRequestProcessor()).id(PAYMENT_REQUEST_PROCESSOR_ID)
+							.process(new PaymentRequestProcessor(processLogger)).id(PAYMENT_REQUEST_PROCESSOR_ID)
 							.choice()
 								.when(body().isNull())
 									.log(LoggingLevel.INFO, "Nothing to do! No payment was found!")
@@ -147,4 +171,11 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 		//@formatter:on
 	}
 
+	private Predicate areMoreOrdersLeftToBeRetrieved()
+	{
+		return (exchange) -> {
+			final ImportOrdersRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
+			return routeContext.isMoreOrdersAvailable();
+		};
+	}
 }

@@ -1,8 +1,9 @@
 package de.metas.inoutcandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -347,8 +348,8 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_DeliveryDate = "DeliveryDate";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -357,8 +358,8 @@ public interface I_M_Packageable_V
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -670,6 +671,27 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_OrderDocumentNo = "OrderDocumentNo";
 
 	/**
+	 * Set Pick To Packing Instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackTo_HU_PI_Item_Product_ID (int PackTo_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Pick To Packing Instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPackTo_HU_PI_Item_Product_ID();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_PackTo_HU_PI_Item_Product_ID = new ModelColumn<>(I_M_Packageable_V.class, "PackTo_HU_PI_Item_Product_ID", null);
+	String COLUMNNAME_PackTo_HU_PI_Item_Product_ID = "PackTo_HU_PI_Item_Product_ID";
+
+	/**
 	 * Set Pick From Order.
 	 *
 	 * <br>Type: Search
@@ -718,7 +740,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set Bereitstellungsdatum.
+	 * Set Date ready.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -727,7 +749,7 @@ public interface I_M_Packageable_V
 	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
 
 	/**
-	 * Get Bereitstellungsdatum.
+	 * Get Date ready.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false

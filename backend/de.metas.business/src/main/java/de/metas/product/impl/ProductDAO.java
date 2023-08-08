@@ -56,6 +56,9 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_SupplierApproval_Norm;
@@ -642,4 +645,41 @@ public class ProductDAO implements IProductDAO
 				.map(I_M_Product_SupplierApproval_Norm::getSupplierApproval_Norm)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	@Override
+	public ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull final GroupTemplateId groupTemplateId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product_Category.class)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+				.create()
+				.firstId(ProductCategoryId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public boolean isProductUsed(@NonNull final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_M_InOutLine.class)
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch();
+	}
+
 }

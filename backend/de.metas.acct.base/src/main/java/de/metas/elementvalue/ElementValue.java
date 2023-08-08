@@ -22,43 +22,33 @@
 
 package de.metas.elementvalue;
 
+import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.organization.OrgId;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
+import lombok.Value;
 
-/**
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Data
-@Builder(toBuilder = true)
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+import javax.annotation.Nullable;
+
+@Value
+@Builder
 public class ElementValue
 {
+	@NonNull ElementValueId id;
 
-	@NonFinal
-	ElementValueId id;
-	
-	@NonFinal
-	ElementId elementId;
-	
-	@NonNull
-	String value;
-	
-	@NonNull
-	String name;
-
-	@NonNull
-	OrgId orgId;
-	
-	@NonFinal
-	ElementValueId parentId;
-	
-	@NonFinal
+	@NonNull OrgId orgId;
+	@NonNull ChartOfAccountsId chartOfAccountsId;
+	@NonNull String value;
+	@NonNull String name;
+	@NonNull String accountSign;
+	@NonNull String accountType;
+	boolean isSummary;
+	boolean isDocControlled;
+	boolean isPostActual;
+	boolean isPostBudget;
+	boolean isPostStatistical;
+	@Nullable ElementValueId parentId;
 	int seqNo;
+	@Nullable String defaultAccountName;
 }

@@ -1,20 +1,31 @@
 package de.metas.handlingunits.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -48,6 +59,8 @@ public class HUPackageBL implements IHUPackageBL
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 	private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@Override
 	public void destroyHUPackage(final org.compiere.model.I_M_Package mpackage)
@@ -83,6 +96,9 @@ public class HUPackageBL implements IHUPackageBL
 		mpackage.setShipDate(null);
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());
+
+		getShipmentForHU(hu).ifPresent(inOutId -> mpackage.setM_InOut_ID(inOutId.getRepoId()));
+
 		save(mpackage);
 
 		final I_M_Package_HU mpackageHU = newInstance(I_M_Package_HU.class, mpackage);
@@ -176,5 +192,40 @@ public class HUPackageBL implements IHUPackageBL
 			mpackage.setProcessed(false);
 			save(mpackage);
 		}
+	}
+
+	private Optional<InOutId> getShipmentForHU(@NonNull final I_M_HU hu)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
+
+		if (qtyPickedList == null || qtyPickedList.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final Set<InOutLineId> shipmentLineIds = qtyPickedList.stream()
+				.map(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
+				.map(InOutLineId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (shipmentLineIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final Map<InOutLineId, I_M_InOut> shipmentByLineId = inOutDAO.retrieveInOutByLineIds(shipmentLineIds);
+
+		final Set<InOutId> inOutIds = shipmentByLineId.values().stream()
+				.map(I_M_InOut::getM_InOut_ID)
+				.map(InOutId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (inOutIds.size() != 1)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(inOutIds.iterator().next());
 	}
 }

@@ -28,28 +28,21 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
-import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.ItemProvider;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.cucumber.stepdefs.edi.impprocessor.IMP_Processor_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
-import de.metas.cucumber.stepdefs.issue.AD_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
-import de.metas.edi.model.I_AD_InputDataSource;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
@@ -57,34 +50,31 @@ import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ErrorMsg;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_IsError;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
 {
+	public static final JsonCreateShipmentResponse EMPTY_SHIPMENT_RESPONSE = JsonCreateShipmentResponse.builder().createdShipmentIds(ImmutableList.of()).build();
+
+	private static final Logger logger = LogManager.getLogger(C_OLCand_StepDef.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Order_StepDefData orderTable;
@@ -97,7 +87,6 @@ public class C_OLCand_StepDef
 	private final AD_Issue_StepDefData issueTable;
 	private final M_HU_PI_Item_Product_StepDefData huItemProductTable;
 	private final IMP_Processor_StepDefData impProcessorTable;
-
 	private final TestContext testContext;
 
 	final ObjectMapper mapper = new ObjectMapper()
@@ -135,39 +124,21 @@ public class C_OLCand_StepDef
 	@Then("process metasfresh response")
 	public void process_metasfresh_response(@NonNull final DataTable table) throws JsonProcessingException
 	{
-		final JsonProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonProcessCompositeResponse.class);
-		assertThat(compositeResponse).isNotNull();
+		try
+		{
+			processResponse(table);
+		}
+		catch (final Exception e)
+		{
+			final StringBuilder message = new StringBuilder();
+			message.append("C_OLCand records could not be processed. See:\n");
 
-		final Map<String, String> row = table.asMaps().get(0);
-		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Order.Identifier");
-		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Shipment.Identifier");
-		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Invoice.Identifier");
+			final JsonOLCandProcessRequest request = mapper.readValue(testContext.getRequestPayload(), JsonOLCandProcessRequest.class);
+			assertThat(request).isNotNull();
 
-		if (orderIdentifier == null)
-		{
-			assertThat(compositeResponse.getOrderResponse()).isEqualTo(null);
-		}
-		else
-		{
-			processOrderResponse(compositeResponse.getOrderResponse(), orderIdentifier);
-		}
+			logOLCandidateRecords(message, request);
 
-		if (shipmentIdentifier == null)
-		{
-			assertThat(compositeResponse.getShipmentResponse()).isEqualTo(null);
-		}
-		else
-		{
-			processShipmentResponse(compositeResponse.getShipmentResponse(), shipmentIdentifier);
-		}
-
-		if (invoiceIdentifier == null)
-		{
-			assertThat(compositeResponse.getInvoiceInfoResponse()).isEqualTo(null);
-		}
-		else
-		{
-			processInvoiceResponse(compositeResponse.getInvoiceInfoResponse(), invoiceIdentifier);
+			throw e;
 		}
 	}
 
@@ -388,18 +359,22 @@ public class C_OLCand_StepDef
 
 		final List<I_M_InOut> shipments = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, generatedShipmentIds)
+				.orderBy(I_M_InOut.COLUMNNAME_M_InOut_ID) // important to avoid mixing up shipments
 				.create()
 				.list();
 
 		assertThat(shipments).isNotEmpty();
 
+		final List<String> identifiers = StepDefUtil.splitIdentifiers(shipmentIdentifier);
+		assertThat(identifiers).hasSameSizeAs(shipments);
+
 		if (shipments.size() > 1)
 		{
-			final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
-
 			for (int index = 0; index < shipments.size(); index++)
 			{
-				shipmentTable.putOrReplace(identifiers.get(index), shipments.get(index));
+				final String identifier = identifiers.get(index);
+				final I_M_InOut record = shipments.get(index);
+				shipmentTable.putOrReplace(identifier, record);
 			}
 		}
 		else
@@ -431,10 +406,67 @@ public class C_OLCand_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
-	@NonNull
-	private List<String> splitIdentifiers(@NonNull final String identifiers)
+	private void processResponse(@NonNull final DataTable table) throws JsonProcessingException
 	{
-		return Arrays.asList(identifiers.split(","));
+		final JsonProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonProcessCompositeResponse.class);
+		assertThat(compositeResponse).isNotNull();
+
+		final Map<String, String> row = table.asMaps().get(0);
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Order_ID.Identifier");
+		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "M_InOut_ID.Identifier");
+		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Invoice_ID.Identifier");
+
+		if (orderIdentifier == null)
+		{
+			assertThat(compositeResponse.getOlCandProcessResponse()).isEqualTo(null);
+		}
+		else
+		{
+			processOrderResponse(compositeResponse.getOlCandProcessResponse(), orderIdentifier);
+		}
+
+		if (shipmentIdentifier == null)
+		{
+			// we expect that there are no infos about any generated shipments
+			if (compositeResponse.getShipmentResponse() != null)
+			{
+				assertThat(compositeResponse.getShipmentResponse()).isEqualTo(EMPTY_SHIPMENT_RESPONSE);
+			}
+		}
+		else
+		{
+			processShipmentResponse(compositeResponse.getShipmentResponse(), shipmentIdentifier);
+		}
+
+		if (invoiceIdentifier == null)
+		{
+			// we expect that there are no infos about any generated invoice
+			if (compositeResponse.getInvoiceInfoResponse() != null)
+			{
+				assertThat(compositeResponse.getInvoiceInfoResponse()).isEmpty();
+			}
+		}
+		else
+		{
+			processInvoiceResponse(compositeResponse.getInvoiceInfoResponse(), invoiceIdentifier);
+		}
+	}
+
+	private void logOLCandidateRecords(@NonNull final StringBuilder message, @NonNull final JsonOLCandProcessRequest request)
+	{
+		message.append("C_OLCand infos:").append("\n");
+
+		queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalHeaderId, request.getExternalHeaderId())
+				.create()
+				.stream(I_C_OLCand.class)
+				.forEach(olCandRecord -> message
+						.append(COLUMNNAME_C_OLCand_ID).append(" : ").append(olCandRecord.getC_OLCand_ID()).append(" ; ")
+						.append(COLUMNNAME_IsError).append(" : ").append(olCandRecord.isError()).append(" ; ")
+						.append(COLUMNNAME_ErrorMsg).append(" : ").append(olCandRecord.getErrorMsg()).append(" ; ")
+						.append("\n"));
+
+		logger.error("*** Error while processing C_OLCand records, see current context: \n" + message);
 	}
 
 	@NonNull

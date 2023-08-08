@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-{{ .Release.Name }}-search
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-search
+spec:
+  selector:
+    app: metasfresh-{{ .Release.Name }}-search
+  ports:
+  - name: elasticsearch
+    port: {{ .Values.search.port.search }}
+    protocol: TCP
+    targetPort: {{ .Values.search.port.search }}
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: metasfresh-{{ .Release.Name }}-search
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-search
+spec:
+  selector:
+    matchLabels:
+      app: metasfresh-{{ .Release.Name }}-search
+  serviceName: metasfresh-{{ .Release.Name }}-search
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: metasfresh-{{ .Release.Name }}-search
+    spec:
+      containers:       
+      - name: metasfresh-{{ .Release.Name }}-search
+        image: {{ .Values.search.image }}
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: {{ .Values.search.resources.limits.memory }}
+        ports:
+          - containerPort: {{ .Values.search.port.search }}
+        securityContext:
+          capabilities:
+            add:
+            - IPC_LOCK
+        env:
+        - name: cluster.name
+          value: {{ .Release.Name }}-{{ .Values.search.clusterName }}
+        - name: ES_PORT
+          value: '{{ .Values.search.port.search }}'
+        # - name: MEM_LIMIT
+        #   value: '{{ .Values.search.resources.memLimit }}'
+        - name: discovery.type
+          value: single-node
+        - name: path.data
+          value: /es/data
+        - name: path.logs
+          value: /es/log
+        volumeMounts:
+        - name: data
+          mountPath: es  
+        - name: host-localtime
+          mountPath: /etc/localtime
+          readOnly: true
+        - name: host-timezone
+          mountPath: /etc/timezone
+          readOnly: true
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /es"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data
+          mountPath: es
+      - name: increase-vm-max-map
+        image: busybox
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      volumes:
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      namespace: {{ .Release.Namespace }}
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.search.dataStorageSize }}
+      storageClassName: {{ .Values.storageClassName }}
+      

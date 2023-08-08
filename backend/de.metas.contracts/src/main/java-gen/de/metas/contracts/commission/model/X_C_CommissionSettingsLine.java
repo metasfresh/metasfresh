@@ -9,10 +9,11 @@ import javax.annotation.Nullable;
 /** Generated Model for C_CommissionSettingsLine
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_C_CommissionSettingsLine extends org.compiere.model.PO implements I_C_CommissionSettingsLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -718126124L;
+	private static final long serialVersionUID = -251674515L;
 
     /** Standard Constructor */
     public X_C_CommissionSettingsLine (final Properties ctx, final int C_CommissionSettingsLine_ID, @Nullable final String trxName)

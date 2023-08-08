@@ -49,4 +49,6 @@ public interface IRoleDAO extends ISingletonService
 	RoleId retrieveFirstRoleIdForUserId(UserId adUserId);
 
 	void createUserRoleAssignmentIfMissing(UserId adUserId, RoleId adRoleId);
+
+	void deleteUserRolesByUserId(final UserId userId);
 }

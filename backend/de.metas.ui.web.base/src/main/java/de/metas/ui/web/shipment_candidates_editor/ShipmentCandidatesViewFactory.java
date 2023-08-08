@@ -3,6 +3,7 @@ package de.metas.ui.web.shipment_candidates_editor;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewCloseAction;

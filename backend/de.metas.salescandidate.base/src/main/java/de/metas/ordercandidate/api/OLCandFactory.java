@@ -73,6 +73,11 @@ final class OLCandFactory
 				.orderLineGroup(orderLineGroup)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(record.getC_Async_Batch_ID()))
 				.qtyItemCapacityEff(qtyItemCapacity)
+				.salesRepInternalId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_Internal_ID()))
+				.assignSalesRepRule(AssignSalesRepRule.ofCode(record.getApplySalesRepFrom()))
+				.bpartnerName(record.getBPartnerName())
+				.email(record.getEMail())
+				.phone(record.getPhone())
 				.adIssueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
 				.build();
 	}

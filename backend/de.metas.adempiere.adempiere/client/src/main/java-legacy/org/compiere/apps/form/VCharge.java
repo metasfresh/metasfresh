@@ -179,7 +179,7 @@ public class VCharge extends Charge
 	{
 		log.info(e.getActionCommand());
 		//
-		if (e.getActionCommand().equals(ConfirmPanel.A_OK) || chartOfAccountsId == null)
+		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
 			dispose();
 		}

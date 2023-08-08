@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest.ShipmentScheduleUserChangeRequestBuilder;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;

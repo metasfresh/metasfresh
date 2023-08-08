@@ -1,38 +1,47 @@
-drop view if exists RV_DATEV_Export_Fact_Acct_Invoice;
-create or replace view RV_DATEV_Export_Fact_Acct_Invoice as
-select
-(case when fa.AmtAcctDr<>0 then ev.Value else ev2.Value end) as DR_Account
-,(case when fa.AmtAcctDr<>0 then ev2.Value else ev.Value end) as CR_Account
-,(case when fa.AmtAcctDr<>0 then fa.AmtAcctDr else fa.AmtAcctCr end) as Amt
-, a.Name as ActivityName
-, a.C_Activity_ID
-, fa.DocumentNo
-, fa.DateAcct
-, bp.Value as BPValue
-, bp.Name as BPName
-, paymentTermDueDate(i.C_PaymentTerm_ID,i.DateInvoiced) as DueDate
-, fa.Description
---
-, bp.C_BPartner_ID
-, fa.Record_ID as C_Invoice_ID
-, fa.DocBaseType
-, fa.Fact_Acct_ID
-, fa.Fact_Acct_ID as RV_DATEV_Export_Fact_Acct_Invoice_ID
-, fa.AD_Client_ID
-, fa.AD_Org_ID
---
-from Fact_Acct fa
-inner join Fact_Acct fa2 on (fa2.Fact_Acct_ID=fa.Counterpart_Fact_Acct_ID)
-inner join C_ElementValue ev on (ev.C_ElementValue_ID=fa.Account_ID)
-inner join C_ElementValue ev2 on (ev2.C_ElementValue_ID=fa2.Account_ID)
-inner join C_BPartner bp on (bp.C_BPartner_ID=fa.C_BPartner_ID)
-left outer join C_Activity a on (a.C_Activity_ID=coalesce(fa.C_Activity_ID, fa2.C_Activity_ID))
-inner join C_Invoice i on (i.C_Invoice_ID=fa.Record_ID)
-where fa.AD_Table_ID=get_Table_ID('C_Invoice')
+CREATE VIEW RV_DATEV_Export_Fact_Acct_Invoice (DebitOrCreditIndicator, Currency, dr_account, cr_account, amt, activityname, c_activity_id, documentno, dateacct, bpvalue, bpname, duedate, description, c_bpartner_id, c_invoice_id, docbasetype, fact_acct_id, rv_datev_export_fact_acct_invoice_id, ad_client_id, ad_org_id) AS
+SELECT CASE
+           WHEN fa.amtacctdr <> 0::numeric THEN 'S'
+                                           ELSE 'H'
+       END                                                                              AS DebitOrCreditIndicator,
+       (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id)
+                                                                                        AS Currency,
+       CASE
+           WHEN fa.amtacctdr <> 0::numeric THEN ev.value
+                                           ELSE ev2.value
+       END                                                                              AS dr_account,
+       CASE
+           WHEN fa.amtacctdr <> 0::numeric THEN ev2.value
+                                           ELSE ev.value
+       END                                                                              AS cr_account,
+       CASE
+           WHEN fa.amtacctdr <> 0::numeric THEN fa.amtacctdr
+                                           ELSE fa.amtacctcr
+       END                                                                              AS amt,
+       a.name                                                                           AS activityname,
+       a.c_activity_id,
+       fa.documentno,
+       fa.dateacct,
+       bp.value                                                                         AS bpvalue,
+       bp.name                                                                          AS bpname,
+       paymenttermduedate(i.c_paymentterm_id, i.dateinvoiced::timestamp WITH TIME ZONE) AS duedate,
+       fa.description,
+       bp.c_bpartner_id,
+       fa.record_id                                                                     AS c_invoice_id,
+       fa.docbasetype,
+       fa.fact_acct_id,
+       fa.fact_acct_id                                                                  AS rv_datev_export_fact_acct_invoice_id,
+       fa.ad_client_id,
+       fa.ad_org_id
+FROM fact_acct fa
+         JOIN fact_acct fa2 ON fa2.fact_acct_id = fa.counterpart_fact_acct_id
+         JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id
+         JOIN c_elementvalue ev2 ON ev2.c_elementvalue_id = fa2.account_id
+         JOIN c_bpartner bp ON bp.c_bpartner_id = fa.c_bpartner_id
+         LEFT JOIN c_activity a ON a.c_activity_id = COALESCE(fa.c_activity_id, fa2.c_activity_id)
+         JOIN c_invoice i ON i.c_invoice_id = fa.record_id
+WHERE fa.ad_table_id = get_table_id('C_Invoice'::character varying)
 ;
 
-/*
-select * from RV_DATEV_Export_Fact_Acct_Invoice order by C_Invoice_ID;
-*/
-
-
+ALTER TABLE RV_DATEV_Export_Fact_Acct_Invoice
+    OWNER TO metasfresh
+;

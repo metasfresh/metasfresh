@@ -132,7 +132,7 @@ public interface IQueryBuilder<T>
 
 	IQueryBuilder<T> addNotEqualsFilter(String columnName, @Nullable Object value);
 
-	IQueryBuilder<T> addNotEqualsFilter(ModelColumn<T, ?> column, Object value);
+	IQueryBuilder<T> addNotEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
 
 	IQueryBuilder<T> addNotNull(ModelColumn<T, ?> column);
 

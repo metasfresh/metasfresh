@@ -1,16 +1,13 @@
 package org.adempiere.inout.util;
 
-import lombok.NonNull;
-
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockRepository;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /*
  * #%L
@@ -56,6 +53,11 @@ public class ShipmentScheduleQtyOnHandStorageFactory
 				.map(OlAndSched::getSched)
 				.collect(ImmutableList.toImmutableList());
 
+		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules, stockRepository);
+	}
+
+	public final ShipmentScheduleQtyOnHandStorage ofShipmentSchedules(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
+	{
 		return new ShipmentScheduleQtyOnHandStorage(shipmentSchedules, stockRepository);
 	}
 }

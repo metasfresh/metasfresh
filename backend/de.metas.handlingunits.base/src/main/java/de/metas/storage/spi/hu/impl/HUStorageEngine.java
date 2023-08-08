@@ -22,26 +22,7 @@ package de.metas.storage.spi.hu.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -55,6 +36,22 @@ import de.metas.storage.IStorageRecord;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class HUStorageEngine implements IStorageEngine
 {
@@ -90,9 +87,9 @@ public class HUStorageEngine implements IStorageEngine
 	}
 
 	@Override
-	public Set<IStorageRecord> retrieveStorageRecords(
+	public List<IStorageRecord> retrieveStorageRecords(
 			@NonNull final IContextAware context,
-			@NonNull final Set<IStorageQuery> storageQueries)
+			@NonNull final List<IStorageQuery> storageQueries)
 	{
 		Check.assumeNotEmpty(storageQueries, "storageQueries not empty");
 
@@ -103,7 +100,7 @@ public class HUStorageEngine implements IStorageEngine
 
 		IQuery<I_M_HU_Storage> queryAgg = null;
 		int queriesCount = 0;
-		final Set<IStorageRecord> storageRecords = new HashSet<>();
+		final ArrayList<IStorageRecord> storageRecords = new ArrayList<>();
 
 		for (final IStorageQuery storageQuery : storageQueries)
 		{

@@ -35,8 +35,8 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -56,6 +56,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
+import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.time.SystemTime;
@@ -67,10 +68,13 @@ import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.test.SnapshotFunctionFactory;
+import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
@@ -91,6 +95,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
@@ -143,7 +148,7 @@ class BpartnerRestControllerTest
 	@BeforeAll
 	static void beforeAll()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll
@@ -171,7 +176,7 @@ class BpartnerRestControllerTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		currencyRepository = new CurrencyRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
@@ -180,7 +185,9 @@ class BpartnerRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
+				new TitleRepository(),
 				currencyRepository,
+				new JobRepository(),
 				externalReferenceRestControllerService,
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
@@ -851,5 +858,25 @@ class BpartnerRestControllerTest
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
 
 		expect(page1Body, page2Body, page3Body).toMatchSnapshot();
+	}
+
+	@Test
+	void retrieveBPartnersProducts()
+	{
+		createBPartnerData(1);
+
+		final I_C_BPartner_Product bPartnerProductRecord = newInstance(I_C_BPartner_Product.class);
+		bPartnerProductRecord.setC_BPartner_ID(21);
+		bPartnerProductRecord.setM_Product_ID(10);
+		saveRecord(bPartnerProductRecord);
+
+		final ResponseEntity<JsonResponseProductBPartner> page1 = bpartnerRestController.retrieveBPartnerProducts(String.valueOf(bPartnerProductRecord.getC_BPartner_ID()));
+		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+
+		final JsonResponseProductBPartner responseProductBPartner = page1.getBody();
+		assertThat(responseProductBPartner).isNotNull();
+		assertThat(responseProductBPartner.getBPartnerProducts()).hasSize(1);
+
+		expect(responseProductBPartner).toMatchSnapshot();
 	}
 }

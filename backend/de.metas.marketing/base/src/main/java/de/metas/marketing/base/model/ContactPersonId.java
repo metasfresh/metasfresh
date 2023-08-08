@@ -1,7 +1,13 @@
 package de.metas.marketing.base.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -25,19 +31,39 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * MKTG_ContactPerson_ID
+ */
 @Value
-public class ContactPersonId
+public class ContactPersonId implements RepoIdAware
 {
-	/** the internal metasfresh-ID (PK) of the underlying record */
 	int repoId;
 
+	@JsonCreator
 	public static ContactPersonId ofRepoId(final int repoId)
 	{
 		return new ContactPersonId(repoId);
 	}
 
+	@Nullable
+	public static ContactPersonId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	private ContactPersonId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_ContactPerson_ID");
+	}
+
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static boolean equals(@Nullable final ContactPersonId id1, @Nullable final ContactPersonId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

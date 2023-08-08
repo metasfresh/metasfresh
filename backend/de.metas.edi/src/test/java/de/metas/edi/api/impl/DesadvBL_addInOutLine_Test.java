@@ -1,39 +1,7 @@
 package de.metas.edi.api.impl;
 
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_BestBeforeDate;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_C_UOM_ID;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_IPA_SSCC18;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCU;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCUsPerLU;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyTU;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
@@ -58,6 +26,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -65,6 +36,37 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_BestBeforeDate;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_C_UOM_ID;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_IPA_SSCC18;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCU;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCUsPerLU;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyTU;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -110,6 +112,9 @@ class DesadvBL_addInOutLine_Test
 	@BeforeEach
 	void beforeEach()
 	{
+		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
+		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+		
 		// AdempiereTestHelper.get().init(); // this is done by huTestHelper
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 

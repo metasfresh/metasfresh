@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 966411405L;
+	private static final long serialVersionUID = 1217883274L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -294,6 +294,33 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_C_Title getC_Title()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
+	}
+
+	@Override
+	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
+	}
+
+	@Override
+	public void setC_Title_ID (final int C_Title_ID)
+	{
+		if (C_Title_ID < 1) 
+			set_Value (COLUMNNAME_C_Title_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
+	}
+
+	@Override
+	public int getC_Title_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
+	}
+
+	@Override
 	public void setComments (final @Nullable java.lang.String Comments)
 	{
 		set_Value (COLUMNNAME_Comments, Comments);
@@ -379,33 +406,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Title getC_Title()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
-	}
-
-	@Override
-	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
-	}
-
-	@Override
-	public void setC_Title_ID (final int C_Title_ID)
-	{
-		if (C_Title_ID < 1) 
-			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
-	}
-
-	@Override
-	public int getC_Title_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
-	}
-
-	@Override
 	public void setDelDate (final @Nullable java.sql.Timestamp DelDate)
 	{
 		set_Value (COLUMNNAME_DelDate, DelDate);
@@ -439,6 +439,30 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
+	public void setEMail2 (final @Nullable java.lang.String EMail2)
+	{
+		set_Value (COLUMNNAME_EMail2, EMail2);
+	}
+
+	@Override
+	public java.lang.String getEMail2() 
+	{
+		return get_ValueAsString(COLUMNNAME_EMail2);
+	}
+
+	@Override
+	public void setEMail3 (final @Nullable java.lang.String EMail3)
+	{
+		set_Value (COLUMNNAME_EMail3, EMail3);
+	}
+
+	@Override
+	public java.lang.String getEMail3() 
+	{
+		return get_ValueAsString(COLUMNNAME_EMail3);
 	}
 
 	@Override

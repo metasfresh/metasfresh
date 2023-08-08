@@ -59,7 +59,9 @@ public class HUPricingTestHelper extends PricingTestHelper
 		AdempiereTestHelper.get().onCleanup("Reset PriceListVersionConfiguration", PriceListVersionConfiguration::reset);
 
 		return ImmutableList.of(
-				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
+				HUPricing.class.getName(),
+				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
+				de.metas.pricing.rules.PriceListVersion.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName(),
 				ContractDiscount.class.getName());
 	}

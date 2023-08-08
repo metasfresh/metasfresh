@@ -38,6 +38,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.I_M_ProductScalePrice;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -142,6 +143,8 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	I_M_PriceList_Version retrieveNewestPriceListVersion(PriceListId priceListId);
 
+	Optional<PriceListVersionId> retrieveNewestPriceListVersionId(PriceListId priceListId);
+
 	String getPricingSystemName(@Nullable final PricingSystemId pricingSystemId);
 
 	String getPriceListName(final PriceListId priceListId);
@@ -206,4 +209,6 @@ public interface IPriceListDAO extends ISingletonService
 	void updateProductPricesIsActive(@NonNull final IQueryFilter<I_M_Product> productFilter, @NonNull final LocalDate date, final boolean newIsActiveValue);
 
 	CurrencyId getCurrencyId(final PriceListId priceListId);
+
+	I_M_ProductScalePrice retrieveScalePriceForExactBreak(ProductPriceId productPriceId, BigDecimal scalePriceBreak);
 }

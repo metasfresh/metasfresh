@@ -86,6 +86,16 @@ class DocumentListContainer extends Component {
     );
   }
 
+  handlePopState = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page');
+
+    if (this.lastViewedPage !== page) {
+      this.lastViewedPage = page;
+      this.handleChangePage(page);
+    }
+  };
+
   UNSAFE_componentWillMount() {
     const { isModal, windowId, fetchLocationConfig } = this.props;
 
@@ -94,6 +104,7 @@ class DocumentListContainer extends Component {
 
   componentDidMount = () => {
     this.mounted = true;
+    window.addEventListener('popstate', this.handlePopState);
   };
 
   componentWillUnmount() {
@@ -104,6 +115,7 @@ class DocumentListContainer extends Component {
 
     deleteTable(getTableId({ windowId, viewId }));
     deleteView(windowId, isModal);
+    window.removeEventListener('popstate', this.handlePopState);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -635,6 +647,7 @@ class DocumentListContainer extends Component {
         currentPage = index;
     }
 
+    this.lastViewedPage = currentPage;
     viewData.viewId && this.getData(viewData.viewId, currentPage, sort);
   };
 

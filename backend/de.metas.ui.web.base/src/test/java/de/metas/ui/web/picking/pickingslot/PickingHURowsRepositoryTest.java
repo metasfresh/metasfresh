@@ -60,7 +60,7 @@ public class PickingHURowsRepositoryTest
 				.shipmentScheduleId(shipmentScheduleId2)
 				.build());
 
-		assertThat(query.getWarehouseId()).isEqualTo(warehouseId);
+		assertThat(query.getWarehouseIds()).containsExactly(warehouseId);
 		assertThat(query.getProductIds()).containsExactly(productId);
 	}
 

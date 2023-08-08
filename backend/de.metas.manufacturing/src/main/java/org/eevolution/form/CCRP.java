@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
- * Contributor(s): Victor Perez www.e-evolution.com *
- *****************************************************************************/
-
 package org.eevolution.form;
 
 /*
@@ -38,30 +22,12 @@ package org.eevolution.form;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTree;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-
+import de.metas.i18n.Msg;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.product.ResourceId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import org.adempiere.images.Images;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
@@ -79,7 +45,6 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.form.action.PopupAction;
 import org.eevolution.form.action.ZoomMenuAction;
 import org.eevolution.form.crp.CRPDatasetFactory;
@@ -101,12 +66,20 @@ import org.jfree.chart.renderer.category.BarRenderer3D;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.TextAnchor;
 
-import de.metas.i18n.Msg;
-import de.metas.material.planning.IResourceDAO;
-import de.metas.product.ResourceId;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
+import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Properties;
 
 /**
  * Capacity Requirement Planning Form
@@ -346,8 +319,8 @@ public class CCRP extends CAbstractForm
 	private void handleActionEvent(ActionEvent e)
 	{
 
-		LocalDateTime df = TimeUtil.asLocalDateTime(getDateFrom());
-		LocalDateTime dt = TimeUtil.asLocalDateTime(getDateTo());
+		Instant df = getDateFrom();
+		Instant dt = getDateTo();
 		ResourceId resourceId = getResourceId();
 
 		if (df != null && dt != null && resourceId != null)
@@ -384,29 +357,29 @@ public class CCRP extends CAbstractForm
 		return title;
 	}
 
-	public Timestamp getDateFrom()
+	public Instant getDateFrom()
 	{
 
-		Timestamp t = null;
+		Instant t = null;
 
 		if (dateFrom.getValue() != null)
 		{
 
-			t = dateFrom.getValue();
+			t = dateFrom.getValue().toInstant();
 		}
 
 		return t;
 	}
 
-	public Timestamp getDateTo()
+	public Instant getDateTo()
 	{
 
-		Timestamp t = null;
+		Instant t = null;
 
 		if (dateTo.getValue() != null)
 		{
 
-			t = dateTo.getValue();
+			t = dateTo.getValue().toInstant();
 		}
 
 		return t;

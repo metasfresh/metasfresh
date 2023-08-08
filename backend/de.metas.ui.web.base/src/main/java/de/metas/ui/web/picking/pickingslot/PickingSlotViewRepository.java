@@ -1,7 +1,6 @@
 package de.metas.ui.web.picking.pickingslot;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -32,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /*
@@ -135,22 +135,19 @@ public class PickingSlotViewRepository
 	/**
 	 * Returns "top level" source HU and picking slot rows, according to the given {@code query}.<br>
 	 * If there are HUs assigned, they are included and can be accessed via {@link PickingSlotRow#getIncludedRows()}.
-	 *
-	 * @param query
-	 * @return
 	 */
 	// when https://github.com/metasfresh/metasfresh-webui-api/issues/509 is done,
 	// we shall re-implement this method to use the view's streamByIds(DocumentIdsSelection.ALL) to avoid the DB access
-	// ..at least for checkPreconditionsApplicable()
+	// ...at least for checkPreconditionsApplicable()
 	public List<PickingSlotRow> retrieveRows(@NonNull final PickingSlotRepoQuery query)
 	{
 		// get M_HU_Source records that reference active HUs with their locator in this WH and not on the picking location
 		final List<HUEditorRow> sourceHUEditorRows = pickingHUsRepo.retrieveSourceHUs(query);
 		final List<PickingSlotRow> sourceHUPickingSlotRows = sourceHUEditorRows.stream()
-				.map(sourceHuEditorRow -> createSourceHURow(sourceHuEditorRow))
+				.map(PickingSlotViewRepository::createSourceHURow)
 				.collect(Collectors.toList());
 
-		// get the picking slot rows, including the rows the represent picked HUs
+		// get the picking slot rows, including the rows that represent picked HUs
 		final ImmutableList<PickingSlotRow> pickingSlotRows = retrievePickingSlotRows(query);
 
 		return ImmutableList.copyOf(Iterables.concat(
@@ -171,7 +168,7 @@ public class PickingSlotViewRepository
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
 		final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(toPickingCandidatesQuery(query, pickingSlotIds));
 
-		return pickingSlots.stream() // get stream of I_M_PickingSlot
+		return pickingSlots.stream()
 				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -191,6 +188,7 @@ public class PickingSlotViewRepository
 				.shipmentScheduleIds(query.getShipmentScheduleIds())
 				.onlyNotClosedOrNotRackSystem(query.isOnlyNotClosedOrNotRackSystem())
 				.onlyPickingSlotIds(pickingSlotIds)
+				.pickingSlotQRCode(query.getPickingSlotQRCode())
 				.includeShippedHUs(false)
 				.build();
 	}
@@ -209,7 +207,7 @@ public class PickingSlotViewRepository
 				.availableForBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
-				.barcode(repoQuery.getPickingSlotBarcode())
+				.qrCode(repoQuery.getPickingSlotQRCode())
 				.build();
 
 		final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
@@ -245,11 +243,10 @@ public class PickingSlotViewRepository
 		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
 
 		// create picking slot rows for included/picked HUs
-		final List<PickingSlotRow> pickedHuRows = huEditorRowsByPickingSlotId.get(pickingSlotId)
+		return huEditorRowsByPickingSlotId.get(pickingSlotId)
 				.stream()
 				.map(pickingSlotHuEditorRow -> createPickedHURow(pickingSlotHuEditorRow, pickingSlotId))
 				.collect(ImmutableList.toImmutableList());
-		return pickedHuRows;
 	}
 
 	/**
@@ -275,7 +272,7 @@ public class PickingSlotViewRepository
 
 				.huEditorRowType(huEditorRow.getType())
 
-				// do *not* take the HUEditorRow's processed flag, because we don't care about that; we do care about PickingSlotHUEditorRow.isProcessed() because that's the value coming from the M_Picking_Candiate
+				// do *not* take the HUEditorRow's processed flag, because we don't care about that; we do care about PickingSlotHUEditorRow.isProcessed() because that's the value coming from the M_Picking_Candidate
 				.processed(from.isProcessed())
 
 				.huCode(huEditorRow.getValue())

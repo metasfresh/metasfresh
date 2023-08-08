@@ -459,7 +459,12 @@ public class HUTraceEventsService
 		else
 		{
 			oldTopLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(parentHUItemOld.getM_HU()));
-			Check.errorIf(oldTopLevelHuId == null, "oldTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; parentHUItemOld={}", oldTopLevelHuId, parentHUItemOld);
+			if (oldTopLevelHuId == null)
+			{
+				// this might happen if the HU is in the process of being destructed
+				logger.info("parentHUItemOld={} has M_HU_ID={} whichout a top-levelHU; -> nothing to do", parentHUItemOld, parentHUItemOld.getM_HU_ID());
+				return;
+			}
 		}
 
 		for (final I_M_HU vhu : vhus)

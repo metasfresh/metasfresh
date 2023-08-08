@@ -10,6 +10,7 @@ import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventConfiguration;
+import de.metas.material.event.MaterialEventObserver;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
@@ -47,12 +48,15 @@ public final class MetasfreshEventBusService
 
 	private final IEventBusFactory eventBusFactory;
 
+	private final MaterialEventObserver materialEventObserver;
+
 	public static MetasfreshEventBusService createLocalServiceThatIsReadyToUse(
 			@NonNull final MaterialEventConverter materialEventConverter,
-			@NonNull final IEventBusFactory eventBusFactory)
+			@NonNull final IEventBusFactory eventBusFactory,
+			@NonNull final MaterialEventObserver materialEventObserver)
 	{
 		logger.info("Creating MaterialEventBusService for local-only event dispatching");
-		return new MetasfreshEventBusService(Type.LOCAL, materialEventConverter, eventBusFactory);
+		return new MetasfreshEventBusService(Type.LOCAL, materialEventConverter, eventBusFactory, materialEventObserver);
 	}
 
 	/**
@@ -62,10 +66,11 @@ public final class MetasfreshEventBusService
 	 */
 	public static MetasfreshEventBusService createDistributedServiceThatNeedsToSubscribe(
 			@NonNull final MaterialEventConverter materialEventConverter,
-			@NonNull final IEventBusFactory eventBusFactory)
+			@NonNull final IEventBusFactory eventBusFactory,
+			@NonNull final MaterialEventObserver materialEventObserver)
 	{
 		logger.info("Creating MaterialEventBusService for distributed event dispatching");
-		return new MetasfreshEventBusService(Type.REMOTE, materialEventConverter, eventBusFactory);
+		return new MetasfreshEventBusService(Type.REMOTE, materialEventConverter, eventBusFactory, materialEventObserver);
 	}
 
 	/**
@@ -76,7 +81,8 @@ public final class MetasfreshEventBusService
 	private MetasfreshEventBusService(
 			@NonNull final Type eventType,
 			@NonNull final MaterialEventConverter materialEventConverter,
-			@NonNull final IEventBusFactory eventBusFactory)
+			@NonNull final IEventBusFactory eventBusFactory,
+			@NonNull final MaterialEventObserver materialEventObserver)
 	{
 		this.eventBusTopic = Topic.builder()
 				.name("de.metas.material")
@@ -85,6 +91,7 @@ public final class MetasfreshEventBusService
 
 		this.materialEventConverter = materialEventConverter;
 		this.eventBusFactory = eventBusFactory;
+		this.materialEventObserver = materialEventObserver;
 	}
 
 	private IEventBus getEventBus()
@@ -94,6 +101,8 @@ public final class MetasfreshEventBusService
 
 	public void postEvent(@NonNull final MaterialEvent event, @Nullable final QueueWorkPackageId workPackageId)
 	{
+		materialEventObserver.reportEventEnqueued(event);
+
 		final Event realEvent = materialEventConverter.fromMaterialEvent(event, workPackageId);
 		getEventBus().postEvent(realEvent);
 	}

@@ -1,25 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ #%L
-  ~ de-metas-camel-externalsystems
-  ~ %%
-  ~ Copyright (C) 2021 metas GmbH
-  ~ %%
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as
-  ~ published by the Free Software Foundation, either version 2 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public
-  ~ License along with this program. If not, see
-  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
-  ~ #L%
-  -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -39,7 +18,6 @@
         <java.version>14</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <camel.version>3.7.3</camel.version>
-        <guava.version>30.1.1-jre</guava.version>
         <smooks.version>1.7.1</smooks.version>
         <jackson.version>2.12.1</jackson.version>
         <!--
@@ -115,6 +93,11 @@
             <version>10.0.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-grssignum</artifactId>
+            <version>10.0.0</version>
+        </dependency>
         <dependency>
             <groupId>de.metas.common.externalreference</groupId>
             <artifactId>de-metas-common-externalreference</artifactId>
@@ -258,6 +241,20 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <executions>
+					<execution>
+						<id>spring-boot-webui-api-repackage</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<executable>true</executable>
+
+							<!-- this also provides the super-jar to the successive docker build 
+								Note that the ${docker.build.directory} property is set by the prepare-docker 
+								profile that is activated by the presence of the scr/main/docker folder -->
+							<outputDirectory>target/uber</outputDirectory>
+						</configuration>
+					</execution>
                     <execution>
                         <id>spring-boot-externalsystems-build-info</id>
                         <goals>
@@ -292,6 +289,20 @@
                 </configuration>
             </plugin>
 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>de.metas.camel.externalsystems.core.ESBCamelApplication</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+	
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>

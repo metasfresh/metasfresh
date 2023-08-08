@@ -35,6 +35,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -65,6 +69,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -86,7 +94,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
     "flatrateConditionsId" : 0,
     "productId" : 100029,
     "qty" : 66,
-    "uomId" : 100004,
+    "uomId" : 100009,
     "qtyItemCapacity" : 0,
     "huPIItemProductId" : -1,
     "pricingSystemId" : 100020,
@@ -134,6 +142,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -164,6 +176,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -185,7 +201,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
     "flatrateConditionsId" : 0,
     "productId" : 100029,
     "qty" : 66,
-    "uomId" : 100004,
+    "uomId" : 100009,
     "qtyItemCapacity" : 0,
     "huPIItemProductId" : -1,
     "pricingSystemId" : 100020,
@@ -238,6 +254,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584400046193
@@ -296,6 +316,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584400046193
@@ -350,6 +374,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584400046193
@@ -392,9 +420,9 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "leapYear" : false
     },
     "flatrateConditionsId" : 0,
-    "productId" : 100005,
+    "productId" : 100010,
     "qty" : 1,
-    "uomId" : 100004,
+    "uomId" : 100009,
     "qtyItemCapacity" : 0,
     "huPIItemProductId" : -1,
     "pricingSystemId" : 100022,
@@ -446,6 +474,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -503,6 +535,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : true,
         "billToDefault" : true,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -561,6 +597,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -603,9 +643,9 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "leapYear" : false
     },
     "flatrateConditionsId" : 0,
-    "productId" : 100005,
+    "productId" : 100010,
     "qty" : 1,
-    "uomId" : 100004,
+    "uomId" : 100009,
     "qtyItemCapacity" : 0,
     "huPIItemProductId" : -1,
     "pricingSystemId" : 100022,
@@ -652,6 +692,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -681,6 +725,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -711,6 +759,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -732,7 +784,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
     "flatrateConditionsId" : 0,
     "productId" : 100038,
     "qty" : 66,
-    "uomId" : 100004,
+    "uomId" : 100009,
     "qtyItemCapacity" : 0,
     "huPIItemProductId" : -1,
     "pricingSystemId" : 100020,
@@ -779,6 +831,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -808,6 +864,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -838,6 +898,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -859,7 +923,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
     "flatrateConditionsId" : 0,
     "productId" : 100038,
     "qty" : 66,
-    "uomId" : 100004,
+    "uomId" : 100009,
     "qtyItemCapacity" : 0,
     "huPIItemProductId" : -1,
     "pricingSystemId" : 100020,
@@ -908,6 +972,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -939,6 +1007,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -970,6 +1042,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -1001,6 +1077,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
         "shipToDefault" : false,
         "billTo" : false,
         "billToDefault" : false,
+        "handoverLocation" : false,
+        "remitTo" : false,
+        "visitorsAddress" : false,
+        "replicationLookupDefault" : false,
         "changeInfo" : {
           "createdMillis" : 1584396436193,
           "lastUpdatedMillis" : 1584396436193
@@ -1022,7 +1102,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
     "flatrateConditionsId" : 0,
     "productId" : 100019,
     "qty" : 66,
-    "uomId" : 100004,
+    "uomId" : 100009,
     "qtyItemCapacity" : 0,
     "huPIItemProductId" : -1,
     "pricingSystemId" : -1,
@@ -1076,6 +1156,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1110,6 +1194,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1125,7 +1213,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100030,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1174,6 +1262,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1208,6 +1300,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1223,7 +1319,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100031,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1272,6 +1368,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1306,6 +1406,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1321,7 +1425,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100032,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1370,6 +1474,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1404,6 +1512,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1419,7 +1531,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100033,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1468,6 +1580,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1502,6 +1618,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1517,7 +1637,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100034,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1566,6 +1686,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1600,6 +1724,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1615,7 +1743,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100035,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1664,6 +1792,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1698,6 +1830,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1713,7 +1849,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100030,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1762,6 +1898,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1796,6 +1936,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1811,7 +1955,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100031,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1860,6 +2004,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1894,6 +2042,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1909,7 +2061,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100032,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -1958,6 +2110,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -1992,6 +2148,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2007,7 +2167,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100030,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2056,6 +2216,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2090,6 +2254,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2105,7 +2273,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100031,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2154,6 +2322,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2188,6 +2360,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2203,7 +2379,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100032,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2252,6 +2428,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2286,6 +2466,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2301,7 +2485,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100036,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2350,6 +2534,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2384,6 +2572,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2399,7 +2591,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100037,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2448,6 +2640,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2482,6 +2678,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2497,7 +2697,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100038,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2546,6 +2746,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2580,6 +2784,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2595,7 +2803,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100039,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2644,6 +2852,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2678,6 +2890,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2693,7 +2909,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100040,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2742,6 +2958,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2776,6 +2996,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2791,7 +3015,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100041,
       "qty" : 2,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2840,6 +3064,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2874,6 +3102,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2889,7 +3121,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100042,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -2938,6 +3170,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2972,6 +3208,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -2987,7 +3227,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100043,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,
@@ -3036,6 +3276,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -3070,6 +3314,10 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
           "shipToDefault" : false,
           "billTo" : false,
           "billToDefault" : false,
+          "handoverLocation" : false,
+          "remitTo" : false,
+          "visitorsAddress" : false,
+          "replicationLookupDefault" : false,
           "changeInfo" : {
             "createdMillis" : 1584396436193,
             "lastUpdatedMillis" : 1584396436193
@@ -3085,7 +3333,7 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "flatrateConditionsId" : 0,
       "productId" : 100044,
       "qty" : 1,
-      "uomId" : 100004,
+      "uomId" : 100009,
       "qtyItemCapacity" : 0,
       "huPIItemProductId" : 0,
       "pricingSystemId" : -1,

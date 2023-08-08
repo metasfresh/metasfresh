@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -70,15 +71,14 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_Invoice_Candidate> getByIds(Collection<InvoiceCandidateId> invoiceCandidateIds);
 
 	/**
-	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
-	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
+	 * @return invoice candidate iterator - with no particular promises with respect to ordering.
 	 */
-	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(Properties ctx, PInstanceId pinstanceId, String trxName);
+	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(@NonNull final PInstanceId pinstanceId, @NonNull final IContextAware contextAware);
 
 	/**
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 */
-	<T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(IQueryBuilder<T> queryBuilder);
+	Iterator<I_C_Invoice_Candidate> retrieveIcForSelectionStableOrdering(@NonNull final PInstanceId pinstanceId);
 
 	List<I_C_Invoice_Candidate> getByQuery(InvoiceCandidateMultiQuery multiQuery);
 
@@ -90,7 +90,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Returns those invoice candidates that have been tagged to be recomputed/updated by the given <code>recomputeTag</code>.
-	 *
+	 * <p>
 	 * This method ALWAYS return non-manual candidates first in the list.
 	 */
 	Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(Properties ctx, InvoiceCandRecomputeTag recomputeTag, String trxName);
@@ -105,7 +105,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
-	boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag);
+	boolean hasInvalidInvoiceCandidatesForTag(InvoiceCandRecomputeTag tag);
+
+	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull PInstanceId selectionId);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 
@@ -136,31 +138,44 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
+	 *
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
+	int invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
 
 	/**
 	 * Invalidates the invoice candidates identified by given invoice candidate ids.
 	 *
 	 * @param invoiceCandidateIds ids to invalidate
 	 */
-	void invalidateCandsFor(@NonNull final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds);
+	void invalidateCandsFor(@NonNull ImmutableSet<InvoiceCandidateId> invoiceCandidateIds);
+
+	default void invalidateCandFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		invalidateCandsFor(ImmutableSet.of(invoiceCandidateId));
+	}
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
+	 *
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
+	int invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
 	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
+	 *
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCand(I_C_Invoice_Candidate ic);
+	int invalidateCand(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Invalidates the given collection of invoice candidates.<br>
 	 * Note that for more than one candidate, this method is more efficient than repeated calls of {@link #invalidateCand(I_C_Invoice_Candidate)}
+	 *
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCands(List<I_C_Invoice_Candidate> ics);
+	int invalidateCands(List<I_C_Invoice_Candidate> ics);
 
 	void invalidateAllCands(Properties ctx, String trxName);
 
@@ -190,6 +205,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	List<I_C_Invoice_Candidate> retrieveReferencing(TableRecordReference tableRecordReference);
 
+	@NonNull
+	ImmutableSet<InvoiceCandidateId> retrieveReferencingIds(@NonNull TableRecordReference reference);
+
 	/**
 	 * Delete all invoice candidates (active or not) that reference the given {@code model} via their {@code AD_Table_ID} and {@code Record_ID}.
 	 *
@@ -207,7 +225,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId)}, but updates the <code>DateAcct</code> column.
-	 *
+	 * <p>
 	 * task 08437
 	 */
 	void updateDateAcct(LocalDate dateAcct, PInstanceId selectionId);
@@ -232,7 +250,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Gets the sum of all {@link I_C_Invoice_Candidate#COLUMNNAME_NetAmtToInvoice} values of the invoice candidates that have the given bPartner and are invoiceable before or at the given date. The
 	 * amounts are converted to the currency which is set in the accounting schema of the bPartner's clients AD_ClientInfo.
-	 *
 	 */
 	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, LocalDate date);
 
@@ -271,6 +288,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
 
 	/**
+	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
+	 *
+	 * task https://github.com/metasfresh/metasfresh/issues/13376
+	 */
+	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
+
+	/**
 	 * @return also returns inactive records (intended use is for deletion)
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(I_M_InOutLine inOutLine);
@@ -291,12 +315,14 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>referencing it directly via inout line's order line (if any)
 	 * <li>or by referencing the inOutLine's order line record.
 	 * </ul>
-	 *
+	 * <p>
 	 * Note: only active records are returned, as ususal.
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine inoutLine);
 
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(OrderLineId orderLineId);
+
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderId(OrderId orderId);
 
 	/**
 	 * Return the active <code>M_InOutLine</code>s for the given invoice candidate.
@@ -310,6 +336,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Return the unique allocation between the given invoice candidate and receipt/shipment line.
 	 * We know it's unique as there is a Unique Index on the 2 columns named C_IC_IOL_Unique_Active.
+	 *
 	 * @see I_C_InvoiceCandidate_InOutLine
 	 */
 	@Nullable
@@ -323,7 +350,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Save given invoice candidate.
-	 *
+	 * <p>
 	 * If there were any errors encountered while saving, this method will save the errors fields directly in database.
 	 */
 	void save(I_C_Invoice_Candidate invoiceCandidate);
@@ -356,10 +383,10 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Add default filter for retrieving invoice candidates.
-	 *
+	 * <p>
 	 * Default filters until now:
 	 * <li>Only retrieve invoice candidates the user and role have access to
-	 *
+	 * <p>
 	 * To be kept in sync with {@link #getSQLDefaultFilter(Properties)}
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(IQueryBuilder<I_C_Invoice_Candidate> queryBuilder);
@@ -368,10 +395,10 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Return the default filter to be applied for retrieving invoice candidates, in String format.<br>
 	 * This string is to be used in the hard-coded sql queries, in where clauses.<br>
 	 * Note that this string does not start with "AND", but directly with the condition.<br>
-	 *
+	 * <p>
 	 * Default filters until now:
 	 * <li>Only retrieve invoice candidates the user and role have access to.
-	 *
+	 * <p>
 	 * To be kept in sync with {{@link #applyDefaultFilter(IQueryBuilder)}
 	 */
 	String getSQLDefaultFilter(Properties ctx);
@@ -389,4 +416,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
 }

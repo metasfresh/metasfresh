@@ -60,21 +60,29 @@ public class JSONLookupValuesList
 			@Nullable final LookupValuesList lookupValues,
 			@NonNull final String adLanguage)
 	{
+		return ofLookupValuesList(lookupValues, adLanguage, false);
+	}
+
+	public static JSONLookupValuesList ofLookupValuesList(
+			@Nullable final LookupValuesList lookupValues,
+			@NonNull final String adLanguage,
+			final boolean appendDescriptionToName)
+	{
 		if (lookupValues == null || lookupValues.isEmpty())
 		{
 			return EMPTY;
 		}
 
-		final ImmutableList<JSONLookupValue> jsonValuesList = toListOfJSONLookupValues(lookupValues, adLanguage);
+		final ImmutableList<JSONLookupValue> jsonValuesList = toListOfJSONLookupValues(lookupValues, adLanguage, appendDescriptionToName);
 		final DebugProperties otherProperties = lookupValues.getDebugProperties();
 		return new JSONLookupValuesList(jsonValuesList, otherProperties);
 	}
 
-	static ImmutableList<JSONLookupValue> toListOfJSONLookupValues(@NonNull final LookupValuesList lookupValues, @NonNull final String adLanguage)
+	static ImmutableList<JSONLookupValue> toListOfJSONLookupValues(@NonNull final LookupValuesList lookupValues, @NonNull final String adLanguage, final boolean appendDescriptionToName)
 	{
 		Stream<JSONLookupValue> jsonValues = lookupValues.getValues()
 				.stream()
-				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage));
+				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage, appendDescriptionToName));
 
 		if (!lookupValues.isOrdered())
 		{
@@ -109,8 +117,7 @@ public class JSONLookupValuesList
 
 	public static LookupValuesList lookupValuesListFromJsonMap(final Map<String, Object> map)
 	{
-		@SuppressWarnings("unchecked")
-		final List<Object> values = (List<Object>)map.get("values");
+		@SuppressWarnings("unchecked") final List<Object> values = (List<Object>)map.get("values");
 
 		//
 		// Corner case: the `map` it's just a single lookup value
@@ -128,8 +135,7 @@ public class JSONLookupValuesList
 
 		return values.stream()
 				.map(valueObj -> {
-					@SuppressWarnings("unchecked")
-					final Map<String, Object> valueAsMap = (Map<String, Object>)valueObj;
+					@SuppressWarnings("unchecked") final Map<String, Object> valueAsMap = (Map<String, Object>)valueObj;
 					return JSONLookupValue.stringLookupValueFromJsonMap(valueAsMap);
 				})
 				.collect(LookupValuesList.collect());

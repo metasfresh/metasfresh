@@ -22,14 +22,10 @@
 
 package de.metas.ordercandidate.api.async;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.api.IWorkPackageBlockBuilder;
-import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -82,7 +78,6 @@ public class C_OLCandToOrderEnqueuer
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
 	private final OLCandProcessorRepository olCandProcessorRepo;
 	private final OLCandProcessingHelper olCandProcessingHelper;
@@ -280,7 +275,7 @@ public class C_OLCandToOrderEnqueuer
 		final OLCandProcessorDescriptor olCandProcessorDescriptor = request.getOlCandProcessorDescriptor();
 
 		while (olCandIterator.hasNext())
-		{
+	{
 			final OLCand candidate = olCandIterator.next();
 
 			final String headerAggregationKey = olCandProcessorDescriptor.getAggregationInfo().computeHeaderAggregationKey(candidate);

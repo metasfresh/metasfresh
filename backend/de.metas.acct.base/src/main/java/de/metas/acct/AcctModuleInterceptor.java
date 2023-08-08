@@ -11,6 +11,9 @@ import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.impexp.AccountImportProcess;
 import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.model.I_Fact_Acct_EndingBalance;
+import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.acct.posting.server.accouting_docs_to_repost_db_table.AccoutingDocsToRepostDBTableWatcher;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
@@ -21,6 +24,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.elementvalue.MElementValueTreeSupport;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -31,14 +35,18 @@ import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_I_ElementValue;
@@ -102,6 +110,9 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 		importProcessFactory.registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
 
+		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
+		treeSupportFactory.register(I_C_ElementValue.Table_Name, MElementValueTreeSupport.class);
+
 		//
 		// Accounting service
 		if (Profiles.isProfileActive(Profiles.PROFILE_AccountingService))
@@ -112,6 +123,13 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		{
 			logger.info("Skip setting up accounting service because profile {} is not active", Profiles.PROFILE_AccountingService);
 		}
+
+		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Log.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Summary.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_EndingBalance.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_I_ElementValue.Table_Name);
 	}
 
 	@Override

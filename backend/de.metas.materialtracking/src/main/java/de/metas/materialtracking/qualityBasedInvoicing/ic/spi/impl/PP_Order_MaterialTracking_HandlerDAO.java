@@ -3,10 +3,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
 import java.util.Iterator;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.model.IQuery;
 import org.eevolution.model.I_PP_Order;
@@ -100,11 +102,9 @@ public class PP_Order_MaterialTracking_HandlerDAO
 	/**
 	 * Uses a <b>DB</b> query to validate if the given <code>ppOrder</code> is still invoiceable.
 	 *
-	 * @param ppOrder
-	 *
 	 * @return true if given manufacturing order is invoiceable
 	 *
-	 * @see #getPP_OrderInvoiceableFilter()
+	 * @see #getPP_OrderInvoiceableFilter(Object)
 	 */
 	/* package */boolean isInvoiceable(final I_PP_Order ppOrder)
 	{
@@ -128,23 +128,18 @@ public class PP_Order_MaterialTracking_HandlerDAO
 	 * <li>don't have an invoice candidate linked to them
 	 * <li>reference an unprocessed M_Material_tracking
 	 * </ul>
-	 *
-	 * @param ctx
-	 * @param limit
-	 * @param trxName
-	 * @return
 	 */
-	/* package */Iterator<de.metas.materialtracking.model.I_PP_Order> retrievePPOrdersWithMissingICs(final Properties ctx, final int limit, final String trxName)
+	/* package */Iterator<de.metas.materialtracking.model.I_PP_Order> retrievePPOrdersWithMissingICs(@NonNull final QueryLimit limit)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_PP_Order> ppOrderQueryBuilder = queryBL.createQueryBuilder(I_PP_Order.class, ctx, trxName)
+		final IQueryBuilder<I_PP_Order> ppOrderQueryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter();
 
 		//
 		// Only those manufacturing orders which are invoiceable
-		ppOrderQueryBuilder.filter(getPP_OrderInvoiceableFilter(PlainContextAware.newWithTrxName(ctx, trxName)));
+		ppOrderQueryBuilder.filter(getPP_OrderInvoiceableFilter(PlainContextAware.newWithThreadInheritedTrx()));
 
 		//
 		// Order by

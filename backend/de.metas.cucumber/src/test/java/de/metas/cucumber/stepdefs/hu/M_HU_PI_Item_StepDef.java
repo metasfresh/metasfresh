@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -46,6 +47,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_IsActive;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_ItemType;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID;
+import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_Qty;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -57,15 +59,18 @@ public class M_HU_PI_Item_StepDef
 	private final M_HU_PI_StepDefData huPiTable;
 	private final M_HU_PI_Version_StepDefData huPiVersionTable;
 	private final M_HU_PI_Item_StepDefData huPiItemTable;
+	private final M_HU_PackingMaterial_StepDefData huPackingMaterialTable;
 
 	public M_HU_PI_Item_StepDef(
 			@NonNull final M_HU_PI_StepDefData huPiTable,
 			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
-			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable)
+			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
+			@NonNull final M_HU_PackingMaterial_StepDefData huPackingMaterialTable)
 	{
 		this.huPiTable = huPiTable;
 		this.huPiVersionTable = huPiVersionTable;
 		this.huPiItemTable = huPiItemTable;
+		this.huPackingMaterialTable = huPackingMaterialTable;
 	}
 
 	@And("metasfresh contains M_HU_PI_Item:")
@@ -111,6 +116,15 @@ public class M_HU_PI_Item_StepDef
 			{
 				final I_M_HU_PI huPi = huPiTable.get(includedHuPiIdentifier);
 				huPiItemRecord.setIncluded_HU_PI_ID(huPi.getM_HU_PI_ID());
+			}
+
+			final String huPackingMaterialIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(huPackingMaterialIdentifier))
+			{
+				final I_M_HU_PackingMaterial huPackingMaterial = huPackingMaterialTable.get(huPackingMaterialIdentifier);
+				assertThat(huPackingMaterial).isNotNull();
+
+				huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterial.getM_HU_PackingMaterial_ID());
 			}
 
 			saveRecord(huPiItemRecord);

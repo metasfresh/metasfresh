@@ -303,6 +303,12 @@ class OLCandOrderFactory
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
 
+		setBPSalesRepIdToOrder(order, candidateOfGroup);
+
+		order.setBPartnerName(candidateOfGroup.getBpartnerName());
+		order.setEMail(candidateOfGroup.getEmail());
+		order.setPhone(candidateOfGroup.getPhone());
+
 		save(order);
 		return order;
 	}
@@ -486,6 +492,7 @@ class OLCandOrderFactory
 		currentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
 		currentOrderLine.setProductDescription(candidate.getProductDescription()); // 08626: Propagate ProductDescription to C_OrderLine
 		currentOrderLine.setLine(candidate.getLine());
+		currentOrderLine.setExternalId(candidate.getExternalLineId());
 
 		//
 		// Quantity
@@ -668,6 +675,30 @@ class OLCandOrderFactory
 	I_C_Order getOrder()
 	{
 		return order;
+	}
+
+	private void setBPSalesRepIdToOrder(@NonNull final I_C_Order order, @NonNull final OLCand olCand)
+	{
+		switch (olCand.getAssignSalesRepRule())
+		{
+			case Candidate:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepId()));
+				break;
+			case BPartner:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+				break;
+			case CandidateFirst:
+				final int salesRepInt = Optional.ofNullable(olCand.getSalesRepId())
+						.map(BPartnerId::getRepoId)
+						.orElseGet(() -> BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+
+				order.setC_BPartner_SalesRep_ID(salesRepInt);
+				break;
+			default:
+				throw new AdempiereException("Unsupported SalesRepFrom type")
+						.appendParametersToMessage()
+						.setParameter("salesRepFrom", olCand.getAssignSalesRepRule());
+		}
 	}
 
 	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)

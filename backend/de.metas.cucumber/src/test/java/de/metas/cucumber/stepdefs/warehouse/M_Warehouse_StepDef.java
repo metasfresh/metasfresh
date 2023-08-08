@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 package de.metas.cucumber.stepdefs.warehouse;
 
 import de.metas.common.util.CoalesceUtil;
@@ -98,12 +99,15 @@ public class M_Warehouse_StepDef
 							.create()
 							.firstOnlyOrNull(I_M_Warehouse.class),
 					() -> InterfaceWrapperHelper.newInstance(I_M_Warehouse.class));
-			
+
 			assertThat(warehouseRecord).isNotNull();
 
 			final String name = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_Name);
 
-			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsIssueWarehouse, false);
+			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, false);
+			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
+			final boolean isQuarantineWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, false);
+			final boolean isQualityReturnWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, false);
 
 			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 					.map(bPartnerTable::get)
@@ -114,10 +118,6 @@ public class M_Warehouse_StepDef
 					.map(bPartnerLocationTable::get)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
-
-			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
-			final boolean isQuarantineWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, false);
-			final boolean isQualityReturnWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, false);
 
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);

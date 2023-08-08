@@ -56,7 +56,7 @@ public class ShipmentScheduleSegmentFromHUStorage implements IShipmentScheduleSe
 		this.huStorage = huStorage;
 	}
 
-	private final void loadIfNeeded()
+	private void loadIfNeeded()
 	{
 		if (loaded)
 		{
@@ -68,7 +68,7 @@ public class ShipmentScheduleSegmentFromHUStorage implements IShipmentScheduleSe
 		loaded = true;
 	}
 
-	private final void load()
+	private void load()
 	{
 		//
 		// Load the HU

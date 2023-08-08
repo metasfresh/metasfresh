@@ -22,19 +22,7 @@ package de.metas.handlingunits.allocation.transfer.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_UOM;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -62,6 +50,15 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class LUTUProducerDestination
 		extends AbstractProducerDestination
@@ -678,6 +675,7 @@ public class LUTUProducerDestination
 
 		// 06902: Make sure we inherit the status and locator.
 		producer.setHUStatus(getHUStatus());
+		producer.setHUClearanceStatusInfo(getHUClearanceStatusInfo());
 		producer.setLocatorId(getLocatorId());
 		producer.setBPartnerId(getBPartnerId());
 		producer.setC_BPartner_Location_ID(getC_BPartner_Location_ID());

@@ -174,6 +174,12 @@ final class EventBus implements IEventBus
 			return;
 		}
 
+		if (subscribedEventListener2GuavaListener.get(listener) != null)
+		{
+			logger.warn("Attempt to register a listener that was already registered. Ignored. \n Bus: {} \n Listener: {}", this, listener);
+			return;
+		}
+
 		final GuavaEventListenerAdapter listenerAdapter = new GuavaEventListenerAdapter(listener);
 
 		subscribedEventListener2GuavaListener.put(listener, listenerAdapter);

@@ -1,17 +1,17 @@
 package de.metas.util.lang;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.util.Check;
 import lombok.Value;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -23,12 +23,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,22 +38,22 @@ import lombok.Value;
 public class RepoIdAwaresTest
 {
 	@Value
-	public static class DummyRepoIdAware implements RepoIdAware
+	public static class DummyId implements RepoIdAware
 	{
 		@JsonCreator
-		public static DummyRepoIdAware ofRepoId(final int repoId)
+		public static DummyId ofRepoId(final int repoId)
 		{
-			return new DummyRepoIdAware(repoId);
+			return new DummyId(repoId);
 		}
 
-		public static DummyRepoIdAware ofRepoIdOrNull(final int repoId)
+		public static DummyId ofRepoIdOrNull(final int repoId)
 		{
-			return repoId > 0 ? new DummyRepoIdAware(repoId) : null;
+			return repoId > 0 ? new DummyId(repoId) : null;
 		}
 
-		private int repoId;
+		int repoId;
 
-		private DummyRepoIdAware(final int repoId)
+		private DummyId(final int repoId)
 		{
 			Check.assumeGreaterThanZero(repoId, "repoId");
 			this.repoId = repoId;
@@ -68,45 +68,74 @@ public class RepoIdAwaresTest
 	}
 
 	@Nested
-	public class ofCommaSeparatedList
+	class ofObject
 	{
 		@Test
-		public void nullString()
+		void ofDummyId()
 		{
-			final ImmutableList<DummyRepoIdAware> list = RepoIdAwares.ofCommaSeparatedList(null, DummyRepoIdAware.class);
+			final DummyId id = DummyId.ofRepoId(1234);
+			assertThat(RepoIdAwares.ofObject(id, DummyId.class)).isSameAs(id);
+		}
+
+		@Test
+		void ofInt()
+		{
+			assertThat(RepoIdAwares.ofObject(1234, DummyId.class)).isEqualTo(DummyId.ofRepoId(1234));
+		}
+
+		@Test
+		void ofBigDecimal()
+		{
+			assertThat(RepoIdAwares.ofObject(new BigDecimal("1234.00"), DummyId.class)).isEqualTo(DummyId.ofRepoId(1234));
+		}
+
+		@Test
+		void ofString()
+		{
+			assertThat(RepoIdAwares.ofObject("1234", DummyId.class)).isEqualTo(DummyId.ofRepoId(1234));
+		}
+	}
+
+	@Nested
+	class ofCommaSeparatedList
+	{
+		@Test
+		void nullString()
+		{
+			final ImmutableList<DummyId> list = RepoIdAwares.ofCommaSeparatedList(null, DummyId.class);
 			assertThat(list).isEmpty();
 		}
 
 		@Test
-		public void emptyString()
+		void emptyString()
 		{
-			final ImmutableList<DummyRepoIdAware> list = RepoIdAwares.ofCommaSeparatedList("", DummyRepoIdAware.class);
+			final ImmutableList<DummyId> list = RepoIdAwares.ofCommaSeparatedList("", DummyId.class);
 			assertThat(list).isEmpty();
 		}
 
 		@Test
-		public void validValues()
+		void validValues()
 		{
-			final ImmutableList<DummyRepoIdAware> list = RepoIdAwares.ofCommaSeparatedList("1,2,3", DummyRepoIdAware.class);
+			final ImmutableList<DummyId> list = RepoIdAwares.ofCommaSeparatedList("1,2,3", DummyId.class);
 			assertThat(list).containsExactly(
-					DummyRepoIdAware.ofRepoId(1),
-					DummyRepoIdAware.ofRepoId(2),
-					DummyRepoIdAware.ofRepoId(3));
+					DummyId.ofRepoId(1),
+					DummyId.ofRepoId(2),
+					DummyId.ofRepoId(3));
 		}
 
 		@Test
-		public void someEmptyValues()
+		void someEmptyValues()
 		{
-			final ImmutableList<DummyRepoIdAware> list = RepoIdAwares.ofCommaSeparatedList(",1,,3,", DummyRepoIdAware.class);
+			final ImmutableList<DummyId> list = RepoIdAwares.ofCommaSeparatedList(",1,,3,", DummyId.class);
 			assertThat(list).containsExactly(
-					DummyRepoIdAware.ofRepoId(1),
-					DummyRepoIdAware.ofRepoId(3));
+					DummyId.ofRepoId(1),
+					DummyId.ofRepoId(3));
 		}
 
 		@Test
-		public void oneInvalidValue()
+		void oneInvalidValue()
 		{
-			assertThatThrownBy(() -> RepoIdAwares.ofCommaSeparatedList("1,2,-1", DummyRepoIdAware.class))
+			assertThatThrownBy(() -> RepoIdAwares.ofCommaSeparatedList("1,2,-1", DummyId.class))
 					.hasMessageStartingWith("Failed invoking ");
 		}
 	}

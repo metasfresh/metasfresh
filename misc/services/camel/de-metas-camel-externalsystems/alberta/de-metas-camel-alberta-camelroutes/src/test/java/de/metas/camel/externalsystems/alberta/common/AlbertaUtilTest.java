@@ -53,4 +53,13 @@ class AlbertaUtilTest
 		final Instant instant3 = AlbertaUtil.asInstant(OffsetDateTime.parse("2021-07-15T10:20:37Z"));
 		assertThat(instant3).isEqualTo(Instant.parse("2021-07-15T10:20:37.000Z"));
 	}
+
+	@Test
+	void asInstantNotNull()
+	{
+		final Instant instant3 = AlbertaUtil.asInstantNotNull("2021-11-11T15:55:07.478Z");
+		assertThat(instant3).isEqualTo(Instant.parse("2021-11-11T15:55:07.478Z"));
+	}
+
+	
 }

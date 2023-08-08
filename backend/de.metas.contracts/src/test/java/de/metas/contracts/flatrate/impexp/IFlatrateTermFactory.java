@@ -74,7 +74,6 @@ import lombok.Value;
 			iFlatrateTerm.setEndDate(endDate);
 			iFlatrateTerm.setMasterStartDate(masterStartDate);
 			iFlatrateTerm.setMasterEndDate(masterEndDate);
-
 			InterfaceWrapperHelper.save(iFlatrateTerm);
 			return iFlatrateTerm;
 		}

@@ -22,6 +22,17 @@ package de.metas.process;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IReference;
+import org.adempiere.util.lang.ImmutableReference;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -70,6 +81,11 @@ public class ProcessParams implements IRangeAwareParams
 	{
 		final ProcessInfoParameter parameter = ProcessInfoParameter.ofValueObject(parameterName, parameterValue);
 		return new ProcessParams(ImmutableList.of(parameter));
+	}
+
+	public static ProcessParams of(final List<ProcessInfoParameter> parameters)
+	{
+		return new ProcessParams(parameters);
 	}
 
 	private final IReference<List<ProcessInfoParameter>> _parametersLoader;
@@ -166,7 +182,7 @@ public class ProcessParams implements IRangeAwareParams
 		}
 		return processInfoParameter.getParameterAsInt(defaultValue);
 	}
-	
+		
 	@Override
 	public <T extends RepoIdAware> T getParameterAsId(final String parameterName, final Class<T> type)
 	{
@@ -259,6 +275,13 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		return processInfoParameter != null ? processInfoParameter.getParameterAsInstant() : null;
+	}
+	
+	@Override
 	public Timestamp getParameter_ToAsTimestamp(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
@@ -277,14 +300,6 @@ public class ProcessParams implements IRangeAwareParams
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		return processInfoParameter != null ? processInfoParameter.getParameter_ToAsZonedDateTime() : null;
-	}
-
-	@Nullable
-	@Override
-	public Instant getParameterAsInstant(final String parameterName)
-	{
-		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
-		return processInfoParameter != null ? processInfoParameter.getParameterAsInstant() : null;
 	}
 
 	/**

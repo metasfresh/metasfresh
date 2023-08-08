@@ -60,7 +60,7 @@ public class EnqueueForInvoicingService
 				.enqueueForInvoicing()
 				.setInvoicingParams(InvoiceJsonConverters.createInvoicingParams(request))
 				.setFailIfNothingEnqueued(true)
-				.enqueueSelection(pInstanceId);
+				.prepareAndEnqueueSelection(pInstanceId);
 
 		return InvoiceJsonConverters.toJson(enqueueResult);
 	}

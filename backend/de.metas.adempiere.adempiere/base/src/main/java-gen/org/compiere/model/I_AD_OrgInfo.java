@@ -121,6 +121,56 @@ public interface I_AD_OrgInfo
 	String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
 
 	/**
+	 * Set Notification group for externally recorded partners.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID (int C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID);
+
+	/**
+	 * Get Notification group for externally recorded partners.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID();
+
+	@Nullable org.compiere.model.I_AD_UserGroup getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup();
+
+	void setC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup(@Nullable org.compiere.model.I_AD_UserGroup C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup);
+
+	ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_UserGroup> COLUMN_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID = new ModelColumn<>(I_AD_OrgInfo.class, "C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID", org.compiere.model.I_AD_UserGroup.class);
+	String COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID = "C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID";
+
+	/**
+	 * Set Notification group for expiring supplier approvals.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID (int C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID);
+
+	/**
+	 * Get Notification group for expiring supplier approvals.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID();
+
+	@Nullable org.compiere.model.I_AD_UserGroup getC_BP_SupplierApproval_Expiration_Notify_UserGroup();
+
+	void setC_BP_SupplierApproval_Expiration_Notify_UserGroup(@Nullable org.compiere.model.I_AD_UserGroup C_BP_SupplierApproval_Expiration_Notify_UserGroup);
+
+	ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_UserGroup> COLUMN_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID = new ModelColumn<>(I_AD_OrgInfo.class, "C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID", org.compiere.model.I_AD_UserGroup.class);
+	String COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID = "C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID";
+
+	/**
 	 * Set Calendar.
 	 * Accounting Calendar Name
 	 *
@@ -216,6 +266,27 @@ public interface I_AD_OrgInfo
 
 	ModelColumn<I_AD_OrgInfo, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_OrgInfo.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Automatische Abrechnung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoiceFlatrateTerm (boolean IsAutoInvoiceFlatrateTerm);
+
+	/**
+	 * Get Automatische Abrechnung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoInvoiceFlatrateTerm();
+
+	ModelColumn<I_AD_OrgInfo, Object> COLUMN_IsAutoInvoiceFlatrateTerm = new ModelColumn<>(I_AD_OrgInfo.class, "IsAutoInvoiceFlatrateTerm", null);
+	String COLUMNNAME_IsAutoInvoiceFlatrateTerm = "IsAutoInvoiceFlatrateTerm";
 
 	/**
 	 * Set Logo.

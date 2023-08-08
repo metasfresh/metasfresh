@@ -1,22 +1,22 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
-import java.time.Instant;
-import java.time.LocalDate;
-
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument.CommissionTriggerDocumentBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.compiere.util.TimeUtil;
+
+import java.time.Instant;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -65,6 +65,9 @@ public class SalesInvoice
 	@NonNull
 	CommissionTriggerType triggerType;
 
+	@NonNull
+	CurrencyId currencyId;
+
 	@Singular
 	ImmutableList<SalesInvoiceLine> invoiceLines;
 
@@ -75,19 +78,21 @@ public class SalesInvoice
 				.orgId(orgId)
 				.salesRepBPartnerId(salesRepBPartnerId)
 				.customerBPartnerId(customerBPartnerId)
-				.commissionDate(commissionDate);
+				.commissionDate(commissionDate)
+				.documentCurrencyId(currencyId);
 
 		final ImmutableList.Builder<CommissionTriggerDocument> result = ImmutableList.builder();
 		for (final SalesInvoiceLine invoiceLine : invoiceLines)
 		{
 			document
 					.id(new SalesInvoiceLineDocumentId(invoiceLine.getId()))
-					.forecastCommissionPoints(invoiceLine.getForecastCommissionPoints())
-					.commissionPointsToInvoice(invoiceLine.getCommissionPointsToInvoice())
+					.forecastCommissionPoints(CommissionPoints.ZERO)
+					.commissionPointsToInvoice(CommissionPoints.ZERO)
 					.invoicedCommissionPoints(invoiceLine.getInvoicedCommissionPoints())
-					.tradedCommissionPercent(invoiceLine.getTradedCommissionPercent())
 					.productId(invoiceLine.getProductId())
-					.updated(TimeUtil.max(updated, invoiceLine.getUpdated()));
+					.updated(TimeUtil.max(updated, invoiceLine.getUpdated()))
+					.totalQtyInvolved(invoiceLine.getInvoicedQty())
+					.documentCurrencyId(invoiceLine.getCurrencyId());
 			result.add(document.build());
 		}
 

@@ -631,6 +631,27 @@ public interface I_AD_Process
 	String COLUMNNAME_IsTranslateExcelHeaders = "IsTranslateExcelHeaders";
 
 	/**
+	 * Set Update Export Date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateExportDate (boolean IsUpdateExportDate);
+
+	/**
+	 * Get Update Export Date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateExportDate();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsUpdateExportDate = new ModelColumn<>(I_AD_Process.class, "IsUpdateExportDate", null);
+	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
+
+	/**
 	 * Set IsUseBPartnerLanguage.
 	 *
 	 * <br>Type: YesNo

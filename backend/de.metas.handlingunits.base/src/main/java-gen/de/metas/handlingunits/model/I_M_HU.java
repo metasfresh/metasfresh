@@ -1,7 +1,8 @@
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_HU
  *  @author metasfresh (generated) 
@@ -89,6 +90,48 @@ public interface I_M_HU
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Clearance Note.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClearanceNote (@Nullable java.lang.String ClearanceNote);
+
+	/**
+	 * Get Clearance Note.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getClearanceNote();
+
+	ModelColumn<I_M_HU, Object> COLUMN_ClearanceNote = new ModelColumn<>(I_M_HU.class, "ClearanceNote", null);
+	String COLUMNNAME_ClearanceNote = "ClearanceNote";
+
+	/**
+	 * Set Clearance.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClearanceStatus (@Nullable java.lang.String ClearanceStatus);
+
+	/**
+	 * Get Clearance.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getClearanceStatus();
+
+	ModelColumn<I_M_HU, Object> COLUMN_ClearanceStatus = new ModelColumn<>(I_M_HU.class, "ClearanceStatus", null);
+	String COLUMNNAME_ClearanceStatus = "ClearanceStatus";
 
 	/**
 	 * Get Created.

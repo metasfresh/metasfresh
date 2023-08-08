@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -613,12 +614,10 @@ public class OrderGroupRepository implements GroupRepository
 			@NonNull final List<I_C_OrderLine> orderLines,
 			@Nullable final GroupId groupId)
 	{
-		//dev-note: needed to make sure `de.metas.activity.model.validator.C_OrderLine.updateActivity` doesn't fail
-		final List<I_C_OrderLine> compensationLinesLast = orderLines.stream()
-				.sorted((ol, ol1) -> Boolean.compare(ol.isGroupCompensationLine(), ol1.isGroupCompensationLine()))
-				.collect(ImmutableList.toImmutableList());
-
-		for (final I_C_OrderLine regularLinePO : compensationLinesLast)
+		final List<I_C_OrderLine> sortedOrderLines = orderLines.stream()
+				.sorted(Comparator.comparing(I_C_OrderLine::isGroupCompensationLine))
+				.collect(Collectors.toList());
+		for (final I_C_OrderLine regularLinePO : sortedOrderLines)
 		{
 			if (groupId != null)
 			{
@@ -628,7 +627,7 @@ public class OrderGroupRepository implements GroupRepository
 			{
 				regularLinePO.setC_Order_CompensationGroup_ID(-1);
 			}
-			saveRecord(regularLinePO);
+			save(regularLinePO);
 		}
 	}
 

@@ -140,32 +140,18 @@ public class AdempiereTestHelper
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		Adempiere.enableUnitTestMode();
-
-		Check.setDefaultExClass(AdempiereException.class);
-
-		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
-
-		//
-		// Configure services; note the this is not the place to register individual services, see init() for that.
-		Services.setAutodetectServices(true);
-		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
-		Services.setExternalServiceImplProvider(new IServiceImplProvider()
-		{
-			@Override
-			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
-			{
-				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
-			}
-		});
-
-		//
-		// Make sure cache is empty
-		CacheMgt.get().reset();
-
-		staticInitialized = true;
+		staticInit0();
 
 		log("staticInit", "done in " + stopwatch);
+	}
+
+	public void forceStaticInit()
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		staticInit0();
+
+		log("forceStaticInitialize", "done in " + stopwatch);
 	}
 
 	public void init()
@@ -370,33 +356,33 @@ public class AdempiereTestHelper
 		};
 	}
 
-	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
+	private void staticInit0()
 	{
-		final CleanupTask task = new CleanupTask(name, runnable);
-		cleanupTasks.add(task);
-		log("onCleanup", "Scheduled task: " + task.getName());
-	}
+		Adempiere.enableUnitTestMode();
+		Language.setUseJUnitFixedFormats(false);
+		POJOLookupMap.resetToDefaultNextIdSupplier();
 
-	private void runCleanupTasks()
-	{
-		for (final Iterator<CleanupTask> it = cleanupTasks.iterator(); it.hasNext(); )
+		Check.setDefaultExClass(AdempiereException.class);
+
+		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
+
+		//
+		// Configure services; note the this is not the place to register individual services, see init() for that.
+		Services.setAutodetectServices(true);
+		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
+		Services.setExternalServiceImplProvider(new IServiceImplProvider()
 		{
-			final CleanupTask task = it.next();
+			@Override
+			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
+			{
+				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
+			}
+		});
 
-			task.run();
-			log("runCleanupTasks", "Executed task: " + task.getName());
+		//
+		// Make sure cache is empty
+		CacheMgt.get().reset();
 
-			it.remove();
-		}
-	}
-
-	@AllArgsConstructor
-	@ToString(of = "name")
-	private static class CleanupTask
-	{
-		@Getter @NonNull private final String name;
-		@NonNull private final Runnable runnable;
-
-		public void run() {runnable.run();}
+		staticInitialized = true;
 	}
 }

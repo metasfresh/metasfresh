@@ -23,9 +23,9 @@
 package de.metas.cucumber;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.StringUtils;
 import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;

@@ -2,8 +2,9 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
@@ -11,6 +12,7 @@ import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessHUsAndPickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesResult;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingCommand;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingResult;
@@ -18,17 +20,29 @@ import de.metas.handlingunits.picking.candidate.commands.RemoveHUFromPickingSlot
 import de.metas.handlingunits.picking.candidate.commands.RemoveQtyFromHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ReviewQtyPickedCommand;
 import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstructionIdCommand;
-import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidateCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesAndRestoreSourceHUsCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesResult;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
+import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -65,27 +79,29 @@ public class PickingCandidateService
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IShipmentSchedulePA ShipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
+	private final HUReservationService huReservationService;
+	private final IBPartnerBL bpartnersService;
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final HuId2SourceHUsService sourceHUsRepository)
+			@NonNull final HuId2SourceHUsService sourceHUsRepository,
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final IBPartnerBL bpartnersService)
 	{
 		this.pickingConfigRepository = pickingConfigRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.sourceHUsRepository = sourceHUsRepository;
+		this.huReservationService = huReservationService;
+		this.bpartnersService = bpartnersService;
 	}
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
 	{
 		return pickingCandidateRepository.getByIds(pickingCandidateIds);
-	}
-
-	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final PickingCandidateStatus status)
-	{
-		return pickingCandidateRepository.getByShipmentScheduleIdAndStatus(shipmentScheduleId, status);
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdsAndStatus(
@@ -163,12 +179,30 @@ public class PickingCandidateService
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
+		final OnOverDelivery onOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery()
+				? OnOverDelivery.TAKE_WHOLE_HU
+				: OnOverDelivery.FAIL;
+
+		processForHUIds(pickFromHuIds, shipmentScheduleId, onOverDelivery, null);
+	}
+
+	public void processForHUIds(
+			@NonNull final Set<HuId> pickFromHuIds,
+			@Nullable final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final OnOverDelivery onOverDelivery,
+			@Nullable final PPOrderId orderId)
+	{
+
 		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
 				.stream()
 				.filter(PickingCandidate::isDraft)
 				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
 				.collect(ImmutableList.toImmutableList());
 
+		for(final PickingCandidate pickingCandidate : pickingCandidatesToProcess)
+		{
+			validateAttributes(pickingCandidate);
+		}
 		//
 		// Process those picking candidates
 		final ImmutableList<PickingCandidate> processedPickingCandidates = ProcessHUsAndPickingCandidateCommand.builder()
@@ -176,7 +210,8 @@ public class PickingCandidateService
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(pickingCandidatesToProcess)
 				.additionalPickFromHuIds(pickFromHuIds)
-				.allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
+				.onOverDelivery(onOverDelivery)
+				.ppOrderId(orderId)
 				.build()
 				.perform();
 
@@ -190,18 +225,56 @@ public class PickingCandidateService
 				.perform();
 	}
 
+	private void validateAttributes(@NonNull final PickingCandidate pickingCandidate)
+	{
+		final HuId huId = pickingCandidate.getPickFrom().getHuId();
+
+		if (huId == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
+		final I_M_ShipmentSchedule shipmentScheduleRecord = ShipmentScheduleRepo.getById(shipmentScheduleId);
+		final ProductId productId = ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID());
+
+		huAttributesBL.validateMandatoryPickingAttributes(huId, productId);
+	}
+
 	public ProcessPickingCandidatesResult process(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
+	{
+		return process(ProcessPickingCandidatesRequest.builder()
+				.pickingCandidateIds(pickingCandidateIds)
+				.build());
+	}
+
+	public ProcessPickingCandidatesResult process(@NonNull final ProcessPickingCandidatesRequest request)
 	{
 		return ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidateIds(pickingCandidateIds)
+				.request(request)
 				.build()
-				.perform();
+				.execute();
 	}
 
-	public void unprocessForHUId(final HuId huId)
+	public UnProcessPickingCandidatesResult unprocess(@NonNull final PickingCandidateId pickingCandidateId)
 	{
-		UnProcessPickingCandidateCommand.builder()
+		return unprocess(ImmutableSet.of(pickingCandidateId));
+	}
+
+	public UnProcessPickingCandidatesResult unprocess(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
+	{
+		return UnProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateIds(pickingCandidateIds)
+				.build()
+				.execute();
+	}
+
+	public void unprocessAndRestoreSourceHUsByHUId(final HuId huId)
+	{
+		UnProcessPickingCandidatesAndRestoreSourceHUsCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.huId(huId)
@@ -255,12 +328,12 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public List<PickingCandidate> setHuPackingInstructionId(final Set<PickingCandidateId> pickingCandidateIds, final HuPackingInstructionsId huPackingInstructionsId)
+	public List<PickingCandidate> setHuPackingInstructionId(final Set<PickingCandidateId> pickingCandidateIds, final PackToSpec packToSpec)
 	{
 		return SetHuPackingInstructionIdCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidateIds(pickingCandidateIds)
-				.huPackingInstructionsId(huPackingInstructionsId)
+				.packToSpec(packToSpec)
 				.build()
 				.perform();
 
@@ -273,5 +346,35 @@ public class PickingCandidateService
 				.request(request)
 				.build()
 				.perform();
+	}
+
+	public PickingPlan createPlan(@NonNull final CreatePickingPlanRequest request)
+	{
+		return CreatePickingPlanCommand.builder()
+				.bpartnersService(bpartnersService)
+				.huReservationService(huReservationService)
+				.pickingCandidateRepository(pickingCandidateRepository)
+				//
+				.request(request)
+				//
+				.build()
+				.execute();
+	}
+
+	public void deleteDraftPickingCandidatesByShipmentScheduleId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final List<PickingCandidate> draftCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(shipmentScheduleIds, PickingCandidateStatus.Draft);
+		deleteDraftPickingCandidates(draftCandidates);
+	}
+
+	public void deleteDraftPickingCandidates(final List<PickingCandidate> draftCandidates)
+	{
+		draftCandidates.forEach(PickingCandidate::assertDraft);
+		pickingCandidateRepository.deletePickingCandidates(draftCandidates);
+	}
+
+	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	{
+		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}
 }
