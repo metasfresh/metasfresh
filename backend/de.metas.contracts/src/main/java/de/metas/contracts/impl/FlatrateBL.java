@@ -2376,9 +2376,8 @@ public class FlatrateBL implements IFlatrateBL
 				.computeOrThrowEx();
 	}
 
-	@Override
 	@NonNull
-	public I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
+	private I_ModCntr_Settings cloneModularContractSettingsToNewYear(@NonNull final I_ModCntr_Settings settings, @NonNull final I_C_Year year)
 	{
 		// don't make it a field; the SpringApplicationContext might not be configured yet
 		final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
