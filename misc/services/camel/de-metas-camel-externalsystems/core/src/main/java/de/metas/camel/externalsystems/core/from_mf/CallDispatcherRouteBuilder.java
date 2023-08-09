@@ -89,7 +89,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemRequest.class))
 				.process(this::processExternalSystemRequest)
-				.log("routing request to route ${header." + HEADER_TARGET_ROUTE + "}; MessageId=${in.messageId}")
+				.log("routing request to route ${header." + HEADER_TARGET_ROUTE + "}; MessageId=${id}")
 				.process(this::logRequestRouted)
 				.toD("direct:${header." + HEADER_TARGET_ROUTE + "}", false)
 				.process(this::logInvocationDone);
