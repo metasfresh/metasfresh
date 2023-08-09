@@ -23,34 +23,31 @@
 package de.metas.workflow.service.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.PO;
+import org.eevolution.model.I_PP_WF_Node_Product;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class AD_Workflow_POCopyRecordSupport extends GeneralCopyRecordSupport
+public class AD_WF_Node_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
-	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd:HH:mm:ss");
-
 	@Override
 	public Object getValueToCopy(final PO to, final PO from, final String columnName)
 	{
-		return I_AD_Workflow.COLUMNNAME_Name.equals(columnName)
-				? String.valueOf(from.get_Value(columnName)).concat("_").concat(DATE_FORMATTER.format(SystemTime.asLocalDateTime()))
+		return I_AD_WF_Node.COLUMNNAME_Value.equals(columnName)
+				? String.valueOf(from.get_Value(columnName))
 				: super.getValueToCopy(to, from, columnName);
 	}
 
 	@Override
 	public Object getValueToCopy(final GridField gridField)
 	{
-		return I_AD_Workflow.COLUMNNAME_Name.equals(gridField.getColumnName())
-				? String.valueOf(gridField.getValue()).concat("_").concat(DATE_FORMATTER.format(SystemTime.asLocalDateTime()))
+		return I_AD_Workflow.COLUMNNAME_Value.equals(gridField.getColumnName())
+				? String.valueOf(gridField.getValue())
 				: super.getValueToCopy(gridField);
 	}
 
@@ -59,7 +56,7 @@ public class AD_Workflow_POCopyRecordSupport extends GeneralCopyRecordSupport
 	{
 		return super.getSuggestedChildren(po, suggestedChildren)
 				.stream()
-				.filter(childTableInfo -> I_AD_WF_Node.Table_Name.equals(childTableInfo.getTableName()))
+				.filter(childTableInfo -> I_PP_WF_Node_Product.Table_Name.equals(childTableInfo.getTableName()))
 				.collect(ImmutableList.toImmutableList());
 	}
 }
