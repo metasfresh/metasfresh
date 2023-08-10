@@ -6,7 +6,7 @@ services:
     container_name: ${BRANCH_NAME}_db
     #restart: always #avoid restart on docker restart, because we use 1 instance per customer now
     volumes:
-      - ${BRANCH_NAME}_metasfresh_postgres:/var/lib/postgresql/data
+      - metasfresh_postgres:/var/lib/postgresql/data
     environment:
       - METASFRESH_USERNAME=metasfresh
       - METASFRESH_PASSWORD=metasfresh
