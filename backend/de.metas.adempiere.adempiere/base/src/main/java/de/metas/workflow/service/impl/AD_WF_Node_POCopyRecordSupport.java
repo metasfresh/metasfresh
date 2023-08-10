@@ -22,41 +22,32 @@
 
 package de.metas.workflow.service.impl;
 
-import com.google.common.collect.ImmutableList;
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
-import org.compiere.model.GridField;
+import de.metas.copy_with_details.template.CopyTemplateCustomizer;
+import de.metas.util.InSetPredicate;
+import lombok.NonNull;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.PO;
+import org.compiere.model.POInfo;
+import org.compiere.model.copy.ValueToCopy;
 import org.eevolution.model.I_PP_WF_Node_Product;
 
-import java.util.List;
-
-public class AD_WF_Node_POCopyRecordSupport extends GeneralCopyRecordSupport
+public class AD_WF_Node_POCopyRecordSupport implements CopyTemplateCustomizer
 {
 	@Override
-	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	public String getTableName()
 	{
-		return I_AD_WF_Node.COLUMNNAME_Value.equals(columnName)
-				? String.valueOf(from.get_Value(columnName))
-				: super.getValueToCopy(to, from, columnName);
+		return I_AD_WF_Node.Table_Name;
 	}
 
 	@Override
-	public Object getValueToCopy(final GridField gridField)
+	public ValueToCopy extractValueToCopy(final POInfo poInfo, final String columnName)
 	{
-		return I_AD_Workflow.COLUMNNAME_Value.equals(gridField.getColumnName())
-				? String.valueOf(gridField.getValue())
-				: super.getValueToCopy(gridField);
+		return I_AD_Workflow.COLUMNNAME_Value.equals(columnName) ? ValueToCopy.DIRECT_COPY : ValueToCopy.NOT_SPECIFIED;
 	}
 
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public @NonNull InSetPredicate<String> getChildTableNames()
 	{
-		return super.getSuggestedChildren(po, suggestedChildren)
-				.stream()
-				.filter(childTableInfo -> I_PP_WF_Node_Product.Table_Name.equals(childTableInfo.getTableName()))
-				.collect(ImmutableList.toImmutableList());
+		return InSetPredicate.only(I_PP_WF_Node_Product.Table_Name);
 	}
 }

@@ -22,44 +22,44 @@
 
 package de.metas.workflow.service.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.model.CopyRecordSupportTableInfo;
-import org.adempiere.model.GeneralCopyRecordSupport;
-import org.compiere.model.GridField;
+import de.metas.copy_with_details.template.CopyTemplateCustomizer;
+import de.metas.util.InSetPredicate;
+import lombok.NonNull;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.PO;
+import org.compiere.model.POInfo;
+import org.compiere.model.copy.ValueToCopy;
+import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
-public class AD_Workflow_POCopyRecordSupport extends GeneralCopyRecordSupport
+@Component
+public class AD_Workflow_POCopyRecordSupport implements CopyTemplateCustomizer
 {
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd:HH:mm:ss");
 
 	@Override
-	public Object getValueToCopy(final PO to, final PO from, final String columnName)
+	public String getTableName()
 	{
-		return I_AD_Workflow.COLUMNNAME_Name.equals(columnName)
-				? String.valueOf(from.get_Value(columnName)).concat("_").concat(DATE_FORMATTER.format(SystemTime.asLocalDateTime()))
-				: super.getValueToCopy(to, from, columnName);
+		return I_AD_Workflow.Table_Name;
 	}
 
 	@Override
-	public Object getValueToCopy(final GridField gridField)
+	public ValueToCopy extractValueToCopy(final POInfo poInfo, final String columnName)
 	{
-		return I_AD_Workflow.COLUMNNAME_Name.equals(gridField.getColumnName())
-				? String.valueOf(gridField.getValue()).concat("_").concat(DATE_FORMATTER.format(SystemTime.asLocalDateTime()))
-				: super.getValueToCopy(gridField);
+		return I_AD_Workflow.COLUMNNAME_Name.equals(columnName) ? ValueToCopy.explicitValueToSet(makeUniqueName()) : ValueToCopy.NOT_SPECIFIED;
 	}
 
 	@Override
-	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	public @NonNull InSetPredicate<String> getChildTableNames()
 	{
-		return super.getSuggestedChildren(po, suggestedChildren)
-				.stream()
-				.filter(childTableInfo -> I_AD_WF_Node.Table_Name.equals(childTableInfo.getTableName()))
-				.collect(ImmutableList.toImmutableList());
+		return InSetPredicate.only(I_AD_WF_Node.Table_Name);
+	}
+
+	@NonNull
+	private String makeUniqueName()
+	{
+		return I_AD_Workflow.COLUMNNAME_Name.concat("_").concat(DATE_FORMATTER.format(SystemTime.asLocalDateTime()));
 	}
 }
