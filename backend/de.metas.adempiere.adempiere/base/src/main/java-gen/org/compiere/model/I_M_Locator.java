@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_Locator
  *  @author Adempiere (generated) 
@@ -427,4 +428,46 @@ public interface I_M_Locator
     public static final org.adempiere.model.ModelColumn<I_M_Locator, Object> COLUMN_Z = new org.adempiere.model.ModelColumn<I_M_Locator, Object>(I_M_Locator.class, "Z", null);
     /** Column name Z */
     public static final String COLUMNNAME_Z = "Z";
+
+	/**
+	 * Set Location.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID(int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setName(@Nullable java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getName();
+
+	org.adempiere.model.ModelColumn<I_M_Locator, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<>(I_M_Locator.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 }
