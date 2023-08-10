@@ -36,6 +36,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -74,6 +75,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -363,19 +365,6 @@ public class C_Invoice_StepDef
 	{
 		InterfaceWrapperHelper.refresh(invoice);
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
-		assertThat(invoice.getC_BPartner_ID()).isEqualTo(bPartnerId);
-
-		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer bPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
-				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
-
-		assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(bPartnerLocationId);
-
 		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_POReference);
 		if (Check.isNotBlank(poReference))
 		{
@@ -392,9 +381,8 @@ public class C_Invoice_StepDef
 		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedBPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
+				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));		
 
-		final String poReference = DataTableUtil.extractStringForColumnName(row, "poReference");
 		final String paymentTerm = DataTableUtil.extractStringForColumnName(row, "paymentTerm");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
@@ -402,12 +390,10 @@ public class C_Invoice_StepDef
 		final SoftAssertions softly = new SoftAssertions();
 
 		softly.assertThat(invoice.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
-		softly.assertThat(invoice.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId);
+		softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocationId);
 		softly.assertThat(invoice.getPOReference()).isEqualTo(poReference);
 		softly.assertThat(invoice.isProcessed()).isEqualTo(processed);
 		softly.assertThat(invoice.getDocStatus()).isEqualTo(docStatus);
-		assertThat(invoice.isProcessed()).isEqualTo(processed);
-		assertThat(invoice.getDocStatus()).isEqualTo(docStatus);
 
 		final PaymentTermQuery query = PaymentTermQuery.builder()
 				.orgId(StepDefConstants.ORG_ID)

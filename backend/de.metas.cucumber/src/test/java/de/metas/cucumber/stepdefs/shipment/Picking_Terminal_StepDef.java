@@ -34,6 +34,7 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.uom.UomId;
@@ -101,12 +102,15 @@ public class Picking_Terminal_StepDef
 
 		saveRecord(pickingCandidate);
 
-		final ProcessPickingCandidatesCommand processPickingCandidatesCommand = ProcessPickingCandidatesCommand.builder()
-				.pickingCandidateRepository(pickingCandidateRepository)
+		final ProcessPickingCandidatesRequest request = ProcessPickingCandidatesRequest.builder()
 				.pickingCandidateId(PickingCandidateId.ofRepoId(pickingCandidate.getM_Picking_Candidate_ID()))
 				.build();
+		final ProcessPickingCandidatesCommand processPickingCandidatesCommand = ProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.request(request)
+				.build();
 
-		processPickingCandidatesCommand.perform();
+		processPickingCandidatesCommand.execute();
 	}
 
 	@And("create M_PickingCandidate for M_HU")

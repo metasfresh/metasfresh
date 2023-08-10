@@ -29,15 +29,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
-import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
+import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -47,6 +48,7 @@ import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.issue.AD_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.model.I_AD_InputDataSource;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
@@ -61,8 +63,10 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
@@ -72,6 +76,8 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -323,10 +329,11 @@ public class C_OLCand_StepDef
 	}
 
 	private void processOrderResponse(
-			@NonNull final JsonGenerateOrdersResponse response,
+			@NonNull final JsonOLCandProcessResponse response,
 			@NonNull final String orderIdentifier)
 	{
 		final List<OrderId> generatedOrderIds = response
+				.getJsonGenerateOrdersResponse()
 				.getOrderIds()
 				.stream()
 				.map(JsonMetasfreshId::getValue)
@@ -420,6 +427,12 @@ public class C_OLCand_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
+	@NonNull
+	private List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
+	}
+	
 	private void processResponse(@NonNull final DataTable table) throws JsonProcessingException
 	{
 		final JsonProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonProcessCompositeResponse.class);

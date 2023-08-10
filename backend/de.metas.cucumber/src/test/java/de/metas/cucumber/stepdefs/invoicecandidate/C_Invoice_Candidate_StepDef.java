@@ -36,8 +36,10 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -80,6 +82,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
@@ -646,6 +649,12 @@ public class C_Invoice_Candidate_StepDef
 			{
 				invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
 			}
+			catch (final AdempiereException adempiereException)
+			{
+				assertThat(adempiereException.getMessage()).contains("Es wurden keine fakturierbaren Datensätze ausgewählt.");
+			}
+
+			assertThat(invoiceIds.size()).isEqualTo(0);
 		}
 	}
 
@@ -689,30 +698,6 @@ public class C_Invoice_Candidate_StepDef
 														   tableRow, Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
 			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateUpdated(tableRow), logContext);
 		}
-	}
-
-	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
-	{
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-
-		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
-
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice)
-				.create()
-				.firstOnlyOptional(I_C_Invoice_Candidate.class);
-
-		if (!invoiceCandidate.isPresent())
-		{
-			return false;
-		}
-
-		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
-
-		return true;
 	}
 
 	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)
@@ -921,6 +906,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+		
 	@NonNull
 	private Boolean loadInvoiceCandidatesByExternalHeaderId(@NonNull final Map<String, String> row)
 	{

@@ -48,6 +48,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
@@ -59,6 +60,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
@@ -117,8 +119,10 @@ public class M_HU_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
-
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
+	
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
@@ -161,7 +165,7 @@ public class M_HU_StepDef
 	@And("all the hu data is reset")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("validate M_HUs:")

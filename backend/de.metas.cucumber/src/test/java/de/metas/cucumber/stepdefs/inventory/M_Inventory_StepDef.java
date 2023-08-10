@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class M_Inventory_StepDef

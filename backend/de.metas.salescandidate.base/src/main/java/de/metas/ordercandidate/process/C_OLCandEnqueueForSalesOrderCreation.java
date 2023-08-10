@@ -2,16 +2,12 @@ package de.metas.ordercandidate.process;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
-import de.metas.ordercandidate.api.async.OlCandEnqueueResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.process.JavaProcess;
-import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 
 /**
@@ -23,8 +19,6 @@ import org.compiere.SpringContextHolder;
  */
 public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	public static final String PARAM_C_OLCandProcessor_ID = I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID;
 	@Param(mandatory = true, parameterName = PARAM_C_OLCandProcessor_ID)
 	private int olCandProcessorId;

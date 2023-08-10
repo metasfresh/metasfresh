@@ -29,11 +29,12 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
-import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -97,7 +98,6 @@ public class M_InOut_StepDef
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_Warehouse_StepDefData warehouseTable;
 	private final C_DocType_StepDefData docTypeTable;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -117,7 +117,6 @@ public class M_InOut_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final C_DocType_StepDefData docTypeTable)
 	{
 		this.shipmentTable = shipmentTable;
@@ -127,7 +126,6 @@ public class M_InOut_StepDef
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
-		this.warehouseTable = warehouseTable;
 		this.docTypeTable = docTypeTable;
 	}
 
@@ -453,109 +451,7 @@ public class M_InOut_StepDef
 		shipmentTable.put(shipmentIdentifier, shipmentRecord);
 	}
 
-	@And("'generate shipments' process is invoked")
-	public void invokeGenerateShipmentsProcess(@NonNull final DataTable table)
-	{
-		final Map<String, String> tableRow = table.asMaps().get(0);
-
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-		final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-		final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override);
-
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
-
-		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
-				.adPInstanceId(pinstanceDAO.createSelectionId())
-				.queryFilters(queryFilter)
-				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
-				.completeShipments(isCompleteShipments)
-				.isShipmentDateToday(isShipToday);
-
-		if (qtyToDeliverOverride != null)
-		{
-			final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = ImmutableMap.of(
-					ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()), qtyToDeliverOverride);
-			workPackageParametersBuilder.qtysToDeliverOverride(qtysToDeliverOverride);
-		}
-
-		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
-				.setContext(Env.getCtx(), Trx.TRXNAME_None)
-				.createWorkpackages(workPackageParametersBuilder.build());
-
-		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
-	}
-
-	@And("^after not more than (.*)s, M_InOut is found:$")
-	public void shipmentIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
-	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
-
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Optional<String> docStatus = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_InOut.COLUMNNAME_DocStatus));
-
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-		final Supplier<Boolean> isShipmentCreated = () -> {
-
-			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = queryBL
-					.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
-					.create()
-					.firstOnly(I_M_ShipmentSchedule_QtyPicked.class);
-
-			if (qtyPickedRecord == null)
-			{
-				return false;
-			}
-
-			if (qtyPickedRecord.getM_InOutLine_ID() <= 0)
-			{
-				return false;
-			}
-
-			final I_M_InOutLine shipmentLine = queryBL
-					.createQueryBuilder(I_M_InOutLine.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, qtyPickedRecord.getM_InOutLine_ID())
-					.create()
-					.firstOnly(I_M_InOutLine.class);
-
-			if (shipmentLine == null)
-			{
-				return false;
-			}
-
-			final IQueryBuilder<I_M_InOut> shipmentQueryBuilder = queryBL
-					.createQueryBuilder(I_M_InOut.class)
-					.addOnlyActiveRecordsFilter();
-
-			docStatus.map(status -> shipmentQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, status));
-
-			final I_M_InOut shipment = shipmentQueryBuilder
-					.addEqualsFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, shipmentLine.getM_InOut_ID())
-					.create()
-					.firstOnly(I_M_InOut.class);
-
-			if (shipment != null)
-			{
-				shipmentTable.put(shipmentIdentifier, shipment);
-				return true;
-			}
-
-			return false;
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
-	}
+	
 
 	@And("^after not more than (.*)s, Customer Return is found:$")
 	public void customerReturnIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException

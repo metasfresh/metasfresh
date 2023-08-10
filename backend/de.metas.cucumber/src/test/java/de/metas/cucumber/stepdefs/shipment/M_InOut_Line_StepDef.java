@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -55,12 +56,11 @@ import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
-import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Product_ID;
 
 public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final M_InOut_StepDefData shipmentTable;
 	private final M_InOutLine_StepDefData shipmentLineTable;
@@ -202,7 +202,7 @@ public class M_InOut_Line_StepDef
 			inOutLine.setMovementQty(movementQty);
 
 			final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
-			final I_C_UOM uom = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
+			final I_C_UOM uom = uomDAO.getByX12DE355(X12DE355.ofCode(uomCode));
 			assertThat(uom).isNotNull();
 
 			inOutLine.setC_UOM_ID(uom.getC_UOM_ID());

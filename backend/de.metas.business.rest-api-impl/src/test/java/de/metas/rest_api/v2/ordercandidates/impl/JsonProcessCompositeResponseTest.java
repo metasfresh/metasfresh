@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
+import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import org.assertj.core.api.Assertions;
@@ -60,8 +61,12 @@ public class JsonProcessCompositeResponseTest
 	public void test() throws Exception
 	{
 
+		final JsonOLCandProcessResponse processResponse = JsonOLCandProcessResponse.builder()
+				.jsonGenerateOrdersResponse(getJsonGenerateOrderResponse())
+				.build();
+		
 		final JsonProcessCompositeResponse request = JsonProcessCompositeResponse.builder()
-				.orderResponse(getJsonGenerateOrderResponse())
+				.olCandProcessResponse(processResponse)
 				.shipmentResponse(getJsonCreateShipmentResponse())
 				.build();
 
