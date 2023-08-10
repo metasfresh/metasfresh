@@ -878,7 +878,7 @@ Feature: WorkOrder Project API Test
 
     And validate the following exception message was thrown by the work order project upsert endpoint
       | ExceptionMessage                                                        |
-      | WOProjectUnderTest.ExternalId already stored under a different project! |
+      | WOProjectObjectUnderTest.ExternalId already stored under a different project! |
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '422' status code
     """
