@@ -156,6 +156,8 @@ public abstract class AbstractFlatrateTermTest
 
 		contractChangeBL = Services.get(IContractChangeBL.class);
 
+		contractChangeBL = Services.get(IContractChangeBL.class);
+
 		afterInit();
 	}
 
