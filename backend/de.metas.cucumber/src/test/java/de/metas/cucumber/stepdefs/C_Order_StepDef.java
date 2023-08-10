@@ -41,7 +41,6 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
@@ -58,6 +57,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.copy.CopyRecordRequest;
 import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -562,75 +562,77 @@ public class C_Order_StepDef
 		final I_C_Order order = orderTable.get(identifier);
 		InterfaceWrapperHelper.refresh(order);
 
+		final SoftAssertions softly = new SoftAssertions();
+
 		if (Check.isNotBlank(externalId))
 		{
-			assertThat(order.getExternalId()).isEqualTo(externalId);
+			softly.assertThat(order.getExternalId()).as("ExternalId").isEqualTo(externalId);
 		}
-		assertThat(order.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
-		assertThat(order.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocation);
-		assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
-		assertThat(order.getDeliveryRule()).isEqualTo(deliveryRule);
-		assertThat(order.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
-		assertThat(order.isProcessed()).isEqualTo(processed);
-		assertThat(order.getDocStatus()).isEqualTo(docStatus);
+		softly.assertThat(order.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
+		softly.assertThat(order.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocation);
+		softly.assertThat(order.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
+		softly.assertThat(order.getDeliveryRule()).as("DeliveryRule").isEqualTo(deliveryRule);
+		softly.assertThat(order.getDeliveryViaRule()).as("DeliveryViaRule").isEqualTo(deliveryViaRule);
+		softly.assertThat(order.isProcessed()).as("Processed").isEqualTo(processed);
+		softly.assertThat(order.getDocStatus()).as("DocStatus").isEqualTo(docStatus);
 
 		if (Check.isNotBlank(bpartnerName))
 		{
-			assertThat(order.getBPartnerName()).isEqualTo(bpartnerName);
+			softly.assertThat(order.getBPartnerName()).as("BPartnerName").isEqualTo(bpartnerName);
 		}
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
-		assertThat(order.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+		softly.assertThat(order.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
 
 		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
-		assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
+		softly.assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
 
 		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(userIdentifier))
 		{
 			final I_AD_User user = userTable.get(userIdentifier);
-			assertThat(user).isNotNull();
+			softly.assertThat(user).isNotNull();
 
-			assertThat(order.getAD_User_ID()).isEqualTo(user.getAD_User_ID());
+			softly.assertThat(order.getAD_User_ID()).isEqualTo(user.getAD_User_ID());
 		}
 
 		final String bpBillIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bpBillIdentifier))
 		{
 			final I_C_BPartner billBPRecord = bpartnerTable.get(bpBillIdentifier);
-			assertThat(billBPRecord).isNotNull();
+			softly.assertThat(billBPRecord).isNotNull();
 
-			assertThat(order.getBill_BPartner_ID()).isEqualTo(billBPRecord.getC_BPartner_ID());
+			softly.assertThat(order.getBill_BPartner_ID()).isEqualTo(billBPRecord.getC_BPartner_ID());
 		}
 
 		final String bpBillLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bpBillLocationIdentifier))
 		{
 			final I_C_BPartner_Location billBPLocationRecord = bpartnerLocationTable.get(bpBillLocationIdentifier);
-			assertThat(billBPLocationRecord).isNotNull();
+			softly.assertThat(billBPLocationRecord).isNotNull();
 
-			assertThat(order.getBill_Location_ID()).isEqualTo(billBPLocationRecord.getC_BPartner_Location_ID());
+			softly.assertThat(order.getBill_Location_ID()).isEqualTo(billBPLocationRecord.getC_BPartner_Location_ID());
 		}
 
 		final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(billUserIdentifier))
 		{
 			final I_AD_User billUser = userTable.get(billUserIdentifier);
-			assertThat(billUser).isNotNull();
+			softly.assertThat(billUser).isNotNull();
 
-			assertThat(order.getBill_User_ID()).isEqualTo(billUser.getAD_User_ID());
+			softly.assertThat(order.getBill_User_ID()).isEqualTo(billUser.getAD_User_ID());
 		}
 
 		final String email = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_EMail);
 		if (Check.isNotBlank(email))
 		{
-			assertThat(order.getEMail()).isEqualTo(email);
+			softly.assertThat(order.getEMail()).isEqualTo(email);
 		}
 
 		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_InvoiceRule);
 		if (Check.isNotBlank(invoiceRule))
 		{
-			assertThat(order.getInvoiceRule()).isEqualTo(invoiceRule);
+			softly.assertThat(order.getInvoiceRule()).isEqualTo(invoiceRule);
 		}
 
 		final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
@@ -641,27 +643,91 @@ public class C_Order_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_PaymentTerm.class);
 
-			assertThat(order.getC_PaymentTerm_ID()).isEqualTo(paymentTerm.getC_PaymentTerm_ID());
+			softly.assertThat(order.getC_PaymentTerm_ID()).isEqualTo(paymentTerm.getC_PaymentTerm_ID());
 		}
 
 		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_PaymentRule);
 		if (Check.isNotBlank(paymentRule))
 		{
-			assertThat(order.getPaymentRule()).isEqualTo(paymentRule);
+			softly.assertThat(order.getPaymentRule()).isEqualTo(paymentRule);
 		}
 
 		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_POReference);
 		if(Check.isNotBlank(poReference))
 		{
-			assertThat(order.getPOReference()).isEqualTo(poReference);
+			softly.assertThat(order.getPOReference()).isEqualTo(poReference);
 		}
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
 		if(Check.isNotBlank(internalName))
 		{
 			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-			assertThat(order.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+			softly.assertThat(order.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
+
+		final Boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_Order.COLUMNNAME_IsDropShip);
+		if (isDropShip != null)
+		{
+			softly.assertThat(order.isDropShip()).isEqualTo(isDropShip);
+		}
+
+		final String dropShipBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(dropShipBPartnerIdentifier))
+		{
+			final I_C_BPartner dropShipBPartner = bpartnerTable.get(dropShipBPartnerIdentifier);
+
+			softly.assertThat(order.getDropShip_BPartner_ID()).isEqualTo(dropShipBPartner.getC_BPartner_ID());
+		}
+
+		final String dropShipBPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(dropShipBPartnerLocationIdentifier))
+		{
+			final I_C_BPartner_Location dropShipBPLocation = bpartnerLocationTable.get(dropShipBPartnerLocationIdentifier);
+
+			softly.assertThat(order.getDropShip_Location_ID()).isEqualTo(dropShipBPLocation.getC_BPartner_Location_ID());
+		}
+
+		final String dropShipUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_DropShip_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(dropShipUserIdentifier))
+		{
+			final I_AD_User expectedDropShipUser = userTable.get(dropShipUserIdentifier);
+
+			softly.assertThat(order.getDropShip_User_ID()).isEqualTo(expectedDropShipUser.getAD_User_ID());
+		}
+
+		final Boolean isHandover = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_Order.COLUMNNAME_IsUseHandOver_Location);
+		if (isHandover != null)
+		{
+			softly.assertThat(order.isUseHandOver_Location()).isEqualTo(isHandover);
+		}
+
+		final String handOverBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_HandOver_Partner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(handOverBPartnerIdentifier))
+		{
+			final I_C_BPartner handOverBPartner = bpartnerTable.get(handOverBPartnerIdentifier);
+
+			softly.assertThat(order.getHandOver_Partner_ID()).isEqualTo(handOverBPartner.getC_BPartner_ID());
+		}
+
+		final String handOverBPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_HandOver_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(handOverBPartnerLocationIdentifier))
+		{
+			final I_C_BPartner_Location handOverBPLocation = bpartnerLocationTable.get(handOverBPartnerLocationIdentifier);
+
+			softly.assertThat(order.getHandOver_Location_ID()).isEqualTo(handOverBPLocation.getC_BPartner_Location_ID());
+		}
+
+		final String handOverUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_HandOver_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(handOverUserIdentifier))
+		{
+			final I_AD_User expectedHandOverUser = userTable.get(handOverUserIdentifier);
+
+			softly.assertThat(order.getHandOver_User_ID()).isEqualTo(expectedHandOverUser.getAD_User_ID());
+		}
+
+		softly.assertAll();
 	}
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")

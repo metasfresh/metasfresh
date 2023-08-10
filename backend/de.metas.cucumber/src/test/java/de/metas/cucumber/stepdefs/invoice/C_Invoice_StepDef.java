@@ -48,7 +48,6 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -130,7 +129,6 @@ public class C_Invoice_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 
@@ -365,13 +363,7 @@ public class C_Invoice_StepDef
 	{
 		InterfaceWrapperHelper.refresh(invoice);
 
-		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_POReference);
-		if (Check.isNotBlank(poReference))
-		{
-			assertThat(invoice.getPOReference()).isEqualTo(poReference);
-		}
-
-		InterfaceWrapperHelper.refresh(invoice);
+		final SoftAssertions softly = new SoftAssertions();
 
 		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedBPartnerId = bpartnerTable.getOptional(bPartnerIdentifier)
@@ -381,13 +373,17 @@ public class C_Invoice_StepDef
 		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedBPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));		
+				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
 
+		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_POReference);
+		if (Check.isNotBlank(poReference))
+		{
+			softly.assertThat(invoice.getPOReference()).as("POReference").isEqualTo(poReference);
+		}
+		
 		final String paymentTerm = DataTableUtil.extractStringForColumnName(row, "paymentTerm");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
-
-		final SoftAssertions softly = new SoftAssertions();
 
 		softly.assertThat(invoice.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
 		softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocationId);

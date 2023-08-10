@@ -3,7 +3,6 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -40,7 +39,6 @@ import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
@@ -136,7 +134,7 @@ public class DeliveredDataLoader
 		}
 		else
 		{
-			validICIOLRecords = invoiceCandDAO.retrieveICIOLAssociationsExclRE(invoiceCandidateId);
+			validICIOLRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
 		}
 		if (soTrx.isPurchase())
 		{

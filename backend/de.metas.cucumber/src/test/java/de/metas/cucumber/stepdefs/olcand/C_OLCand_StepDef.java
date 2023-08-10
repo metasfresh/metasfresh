@@ -29,9 +29,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
+import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
@@ -76,6 +76,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -329,11 +330,16 @@ public class C_OLCand_StepDef
 	}
 
 	private void processOrderResponse(
-			@NonNull final JsonOLCandProcessResponse response,
+			@Nullable final JsonGenerateOrdersResponse response,
 			@NonNull final String orderIdentifier)
 	{
+		if(response == null)
+		{
+			fail("Missing jsonGenerateOrdersResponse");
+			return;
+		}
+		
 		final List<OrderId> generatedOrderIds = response
-				.getJsonGenerateOrdersResponse()
 				.getOrderIds()
 				.stream()
 				.map(JsonMetasfreshId::getValue)
@@ -341,7 +347,7 @@ public class C_OLCand_StepDef
 				.map(OrderId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(generatedOrderIds).isNotEmpty();
+		assertThat(generatedOrderIds).as("missing generatedOrderIds for orderIdentifier=%s",orderIdentifier).isNotEmpty();
 
 		final List<I_C_Order> orders = queryBL.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, generatedOrderIds)
@@ -449,7 +455,7 @@ public class C_OLCand_StepDef
 		}
 		else
 		{
-			processOrderResponse(compositeResponse.getOlCandProcessResponse(), orderIdentifier);
+			processOrderResponse(compositeResponse.getOlCandProcessResponse().getJsonGenerateOrdersResponse(), orderIdentifier);
 		}
 
 		if (shipmentIdentifier == null)

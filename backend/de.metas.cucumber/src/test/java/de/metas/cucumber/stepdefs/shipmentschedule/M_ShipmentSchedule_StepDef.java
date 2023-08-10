@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -102,6 +102,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -607,18 +608,26 @@ public class M_ShipmentSchedule_StepDef
 			shipmentScheduleRecord.setQtyToDeliverCatch_Override(qtyToDeliverCatchOverride);
 		}
 
+		final Timestamp preparationDateOverride = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override);
+		if (preparationDateOverride != null)
+		{
+			shipmentScheduleRecord.setPreparationDate_Override(preparationDateOverride);
+		}
+
 		saveRecord(shipmentScheduleRecord);
 	}
 
 	private void validateShipmentSchedule(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
 	{
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
+		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyReserved);
 		final BigDecimal qtyToDeliver = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver);
 		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyPickList);
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered);
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand);
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Processed, null);
+		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_IsClosed, null);
 
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
@@ -674,7 +683,15 @@ public class M_ShipmentSchedule_StepDef
 		{
 			softly.assertThat(shipmentSchedule.getQtyDelivered().stripTrailingZeros()).as("QtyDelivered for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyDelivered.stripTrailingZeros());
 		}
+		if (qtyReserved != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyReserved().stripTrailingZeros()).as("QtyReserved for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyReserved.stripTrailingZeros());
+		}
 
+		if (isClosed != null)
+		{
+			assertThat(shipmentSchedule.isClosed()).as("IsClosed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isClosed);
+		}
 		if (isProcessed != null)
 		{
 			softly.assertThat(shipmentSchedule.isProcessed()).as("Processed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isProcessed);
