@@ -12,6 +12,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.location.ILocationDAO;
 import de.metas.money.CurrencyId;
@@ -19,6 +20,41 @@ import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SEPAExportContext;
 import de.metas.payment.sepa.api.SepaMarshallerException;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.AccountIdentification4ChoiceCH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ActiveOrHistoricCurrencyAndAmount;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.AmountType3Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.BranchAndFinancialInstitutionIdentification4CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.BranchAndFinancialInstitutionIdentification4CHBicOrClrId;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CashAccount16CHId;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CashAccount16CHIdTpCcy;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ChargeBearerType1Code;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemIdentification2Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemMemberIdentification2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ContactDetails2CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceInformation2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CustomerCreditTransferInitiationV03CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.FinancialInstitutionIdentification7CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.FinancialInstitutionIdentification7CHBicOrClrId;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.GenericAccountIdentification1CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.GenericFinancialIdentification1CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.GroupHeader32CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.LocalInstrument2Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ObjectFactory;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PartyIdentification32CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PartyIdentification32CHName;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PartyIdentification32CHNameAndId;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentIdentification1;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentInstructionInformation3CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentMethod3Code;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentTypeInformation19CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PostalAddress6CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.RemittanceInformation5CH;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ServiceLevel8Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.StructuredRemittanceInformation7;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
@@ -85,7 +121,9 @@ import static java.math.BigDecimal.ZERO;
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
 	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
-	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
+	private static final String NOTPROVIDED_BIC = "NOTPROVIDED_BIC";
+	@VisibleForTesting
+	static final String NOTPROVIDED_GENERAL = "NOTPROVIDED";
 
 	/**
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
@@ -513,7 +551,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			else
 			{
 				// // let the bank see what it can do
-				finInstnId.setBIC(NOTPROVIDED_VALUE);
+				finInstnId.setBIC(NOTPROVIDED_BIC);
 			}
 
 			//
@@ -522,7 +560,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					|| Objects.equals(paymentType, PAYMENT_TYPE_4)
 					|| Objects.equals(paymentType, PAYMENT_TYPE_6))
 			{
-				final boolean hasNoBIC = Check.isBlank(finInstnId.getBIC()) || NOTPROVIDED_VALUE.equals(finInstnId.getBIC());
+				final boolean hasNoBIC = Check.isBlank(finInstnId.getBIC()) || NOTPROVIDED_BIC.equals(finInstnId.getBIC());
 				if (hasNoBIC)
 				{
 					final String bankName = getBankNameIfAny(line);
@@ -627,9 +665,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 		// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
 		// because it's much less complicated
-		final String reference = Check.isBlank(line.getStructuredRemittanceInfo())
-				? line.getDescription()
-				: line.getStructuredRemittanceInfo();
+		final String reference = StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription);
+
 		// Remittance Info
 		{
 			final RemittanceInformation5CH rmtInf = objectFactory.createRemittanceInformation5CH();
@@ -664,10 +701,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				}
 				else
 				{
-					// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
-					// because it's much less complicated
-					final String reference = StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription);
-
 					// provide the line-description (if set) as unstructured remittance info
 					if (Check.isBlank(reference))
 					{
@@ -703,7 +736,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final String endToEndId;
 			if (exportContext.isReferenceAsEndToEndId())
 			{
-				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_VALUE);
+				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_GENERAL);
 			}
 			else
 			{

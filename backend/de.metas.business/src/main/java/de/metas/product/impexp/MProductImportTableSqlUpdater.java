@@ -48,7 +48,7 @@ import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImport
  */
 public class MProductImportTableSqlUpdater
 {
-	private static final transient Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
+	private static final Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
 
 	private final ImportRecordsSelection selection;
 	private final Properties ctx;
@@ -599,7 +599,7 @@ public class MProductImportTableSqlUpdater
 						+ ")"
 				)
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		//
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")

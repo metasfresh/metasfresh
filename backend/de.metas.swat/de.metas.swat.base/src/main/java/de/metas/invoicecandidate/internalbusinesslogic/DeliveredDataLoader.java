@@ -3,6 +3,11 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -21,9 +26,11 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_M_InOut;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -32,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
@@ -63,7 +71,9 @@ public class DeliveredDataLoader
 	private static final Logger logger = LogManager.getLogger(DeliveredDataLoader.class);
 
 	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+	@NonNull
+	IInvoiceCandDAO invoiceCandDAO;
 
 	UomId stockUomId;
 
@@ -79,9 +89,6 @@ public class DeliveredDataLoader
 
 	/** always empty, if soTrx; sometimes set if poTrx */
 	Optional<Percent> deliveryQualityDiscount;
-
-	@NonNull
-	IInvoiceCandDAO invoiceCandDAO;
 
 	/**
 	 * This can be set from the {@code C_Invoice_Candidate}'s current qtyDelivered and

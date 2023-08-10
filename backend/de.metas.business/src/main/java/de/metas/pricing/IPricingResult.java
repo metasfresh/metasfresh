@@ -198,8 +198,4 @@ public interface IPricingResult
 	void setPackingMaterialId(HUPIItemProductId packingMaterialId);
 
 	HUPIItemProductId getPackingMaterialId();
-
-	void setPackingMaterialId(HUPIItemProductId packingMaterialId);
-
-	HUPIItemProductId getPackingMaterialId();
 }

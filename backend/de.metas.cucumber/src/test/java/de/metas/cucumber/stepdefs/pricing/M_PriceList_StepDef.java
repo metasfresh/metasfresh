@@ -32,11 +32,11 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -505,48 +505,5 @@ public class M_PriceList_StepDef
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.orElse(AttributesKey.NONE);
-	}
-
-	private I_M_ProductPrice lookupForProductPrice(@NonNull final Map<String, String> tableRow)
-	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final int productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final int plvId = priceListVersionTable.getOptional(plvIdentifier)
-				.map(I_M_PriceList_Version::getM_PriceList_Version_ID)
-				.orElseGet(() -> {
-					final I_M_PriceList_Version plvRecord = InterfaceWrapperHelper.load(Integer.parseInt(plvIdentifier), I_M_PriceList_Version.class);
-					return plvRecord.getM_PriceList_Version_ID();
-				});
-
-		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
-
-		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final Boolean isAttributeDependant = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_IsAttributeDependant, false);
-
-		final IQueryBuilder<I_M_ProductPrice> queryBuilder = queryBL.createQueryBuilder(I_M_ProductPrice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, plvId)
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_PriceStd, priceStd);
-
-		Optional.ofNullable(huPiItemProductIdentifier)
-				.map(huPiItemProductTable::get)
-				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
-				.map(huPiItemProductId -> queryBuilder.addEqualsFilter(de.metas.handlingunits.model.I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, huPiItemProductId));
-
-		Optional.ofNullable(isAttributeDependant)
-				.map(attrDependant -> queryBuilder.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_IsAttributeDependant, attrDependant));
-
-		return queryBuilder
-				.create()
-				.list()
-				.stream()
-				//.filter(record -> filterProductPriceByASI(tableRow, record))
-				.findFirst()
-				.orElse(null);
 	}
 }

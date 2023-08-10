@@ -341,7 +341,6 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsEdiDesadvRecipient(isEdiDesadvRecipient);
 		bPartnerRecord.setIsEdiInvoicRecipient(isEdiInvoicRecipient);
 
-		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
 
 		if (alsoCreateLocation)

@@ -115,43 +115,8 @@ public abstract class StepDefData<T>
 			InterfaceWrapperHelper.refresh(record);
 		}
 
-			// just store ID and table name, to avoid any leaks
-			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(productRecord), InterfaceWrapperHelper.getId(productRecord));
-
-			return new RecordDataItem<>((T)null,
-										tableRecordReference,
-										clazz,
-										Instant.now(),
-										updated);
-
-		}
-		return new RecordDataItem<T>(productRecord, null, null, Instant.now(), Instant.MIN);
+		return record;
 	}
-
-	@Value
-	public static class RecordDataItem<T>
-	{
-		@Nullable
-		T record;
-
-		@Nullable
-		TableRecordReference tableRecordReference;
-
-		@Nullable
-		Class<T> tableRecordReferenceClazz;
-
-		@NonNull
-		Instant recordAdded;
-		@NonNull
-
-		Instant recordUpdated;
-
-		public T getRecord()
-		{
-			if (record != null)
-			{
-				return record;
-			}
 
 	@NonNull
 	public RecordDataItem<T> getRecordDataItem(@NonNull final String identifier)
@@ -164,7 +129,7 @@ public abstract class StepDefData<T>
 
 	@NonNull
 	public Optional<T> getOptional(@NonNull final String identifier)
-			{
+	{
 		return Optional.ofNullable(records.get(identifier)).map(RecordDataItem::getRecord);
 	}
 
@@ -233,9 +198,6 @@ public abstract class StepDefData<T>
 			{
 				throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
 						.setParameter("recordDataItem", this);
-			}
-		}
-
 			}
 		}
 

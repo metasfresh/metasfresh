@@ -1,24 +1,3 @@
-package de.metas.ui.web.pickingV2.productsToPick.rows.factory;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.shipping.ShipperId;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.handlingunits.base

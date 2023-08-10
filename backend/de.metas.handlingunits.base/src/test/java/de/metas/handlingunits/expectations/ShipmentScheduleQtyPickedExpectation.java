@@ -51,6 +51,8 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 
+import java.math.BigDecimal;
+
 public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
 	private ShipmentScheduleId shipmentScheduleId;

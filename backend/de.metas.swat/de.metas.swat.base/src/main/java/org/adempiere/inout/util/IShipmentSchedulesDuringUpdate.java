@@ -8,6 +8,9 @@ import org.adempiere.warehouse.WarehouseId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.shipping.ShipperId;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface IShipmentSchedulesDuringUpdate
 {
 

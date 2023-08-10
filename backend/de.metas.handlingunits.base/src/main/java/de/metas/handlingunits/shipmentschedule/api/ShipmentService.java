@@ -214,7 +214,7 @@ public class ShipmentService implements IShipmentService
 	{
 		return retrieveInOuLineIdByShipScheduleId(shipmentScheduleIds)
 				.stream()
-				.map(inOutDAO::getLineById)
+				.map(inOutDAO::getLineByIdInTrx) // better getting it within trx because if not sure if this method is called as part of a comprehensive processing.
 				.collect(ImmutableList.toImmutableList());
 	}
 

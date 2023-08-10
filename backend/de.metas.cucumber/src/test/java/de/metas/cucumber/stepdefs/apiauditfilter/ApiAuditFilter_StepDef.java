@@ -45,13 +45,12 @@ public class ApiAuditFilter_StepDef
 	private final TestContext testContext;
 	private final API_Audit_Config_StepDefData apiAuditConfigTable;
 
-	public ApiAuditFilter_StepDef(@NonNull final TestContext testContext)
-
 	public ApiAuditFilter_StepDef(
 			@NonNull final TestContext testContext,
 			@NonNull final API_Audit_Config_StepDefData apiAuditConfigTable)
 	{
 		this.testContext = testContext;
+		this.apiAuditConfigTable = apiAuditConfigTable;
 	}
 
 	@And("all the API audit data is reset")

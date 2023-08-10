@@ -43,6 +43,8 @@ public class C_OLCandEnqueueForSalesOrderCreation extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
+		final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer = SpringContextHolder.instance.getBean(C_OLCandToOrderEnqueuer.class);
+
 		Check.assume(olCandProcessorId > 0, "olCandProcessorId > 0");
 
 		olCandToOrderEnqueuer.enqueue(olCandProcessorId, null);

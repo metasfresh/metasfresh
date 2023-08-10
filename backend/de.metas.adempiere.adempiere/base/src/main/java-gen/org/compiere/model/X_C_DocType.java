@@ -134,21 +134,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public void setC_DocType_ID (final int C_DocType_ID)
-	{
-		if (C_DocType_ID < 0)
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
-	}
-
-	@Override
-	public int getC_DocType_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
-	}
-
-	@Override
 	public void setC_DocTypeInvoice_ID (final int C_DocTypeInvoice_ID)
 	{
 		if (C_DocTypeInvoice_ID < 1) 

@@ -14,6 +14,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;

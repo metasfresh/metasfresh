@@ -23,16 +23,29 @@
 package de.metas.cucumber.stepdefs.workpackage;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.olcand.C_OLCand_StepDefData;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Table;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -51,10 +64,12 @@ public class C_Queue_WorkPackage_StepDef
 	private final C_OLCand_StepDefData candidateTable;
 
 	public C_Queue_WorkPackage_StepDef(
+			@NonNull final C_Queue_Processor_StepDefData processorTable,
 			@NonNull final C_Queue_WorkPackage_StepDefData workPackageTable,
 			@NonNull final C_Queue_Element_StepDefData queueElementTable,
 			@NonNull final C_OLCand_StepDefData candidateTable)
 	{
+		this.processorTable = processorTable;
 		this.workPackageTable = workPackageTable;
 		this.queueElementTable = queueElementTable;
 		this.candidateTable = candidateTable;
@@ -162,15 +177,11 @@ public class C_Queue_WorkPackage_StepDef
 				.create()
 				.firstOnlyNotNull(I_C_Queue_PackageProcessor.class);
 
-		final IQuery<I_C_Queue_Block> queueBlockWithGivenPackageProcessorQuery = queryBL.createQueryBuilder(I_C_Queue_Block.class)
-				.addEqualsFilter(I_C_Queue_Block.COLUMN_C_Queue_PackageProcessor_ID, packageProcessor.getC_Queue_PackageProcessor_ID())
-				.create();
 
 		final I_C_Queue_WorkPackage workPackage = queryBL.createQueryBuilder(I_C_Queue_Element.class)
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, reference.getAD_Table_ID())
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, reference.getRecord_ID())
 				.andCollect(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, I_C_Queue_WorkPackage.class)
-				.addInSubQueryFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_Block_ID, I_C_Queue_Block.COLUMNNAME_C_Queue_Block_ID, queueBlockWithGivenPackageProcessorQuery)
 				.orderByDescending(I_C_Queue_WorkPackage.COLUMNNAME_Created)
 				.create()
 				.firstOptional(I_C_Queue_WorkPackage.class)
