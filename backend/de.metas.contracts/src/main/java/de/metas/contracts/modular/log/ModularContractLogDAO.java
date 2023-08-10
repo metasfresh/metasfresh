@@ -84,6 +84,7 @@ public class ModularContractLogDAO
 		log.setBill_BPartner_ID(BPartnerId.toRepoId(request.getInvoicingBPartnerId()));
 		log.setM_Warehouse_ID(WarehouseId.toRepoId(request.getWarehouseId()));
 		log.setModCntr_Log_DocumentType(request.getDocumentType().getCode());
+		log.setContractType(request.getContractType().getCode());
 		log.setIsSOTrx(request.getSoTrx().isSales());
 		log.setProcessed(request.isProcessed());
 		log.setDateTrx(request.getTransactionDate().toTimestamp(orgDAO::getTimeZone));
