@@ -68,6 +68,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
@@ -586,6 +587,17 @@ public class C_Order
 		if (orderBL.isUseDefaultBillToLocationForBPartner(order))
 		{
 			setDefaultBillToBPartnerLocation(order);
+		}
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_Warehouse_ID)
+	public void handleDefaultLocator(@NonNull final I_C_Order order)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+		if (warehouseId != null)
+		{
+			final LocatorId defaultLocatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+			order.setM_Locator_ID(defaultLocatorId.getRepoId());
 		}
 	}
 
