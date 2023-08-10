@@ -78,4 +78,10 @@ public interface IInvoiceAggregationFactory extends ISingletonService
 	 * Gets the aggregation to be used when aggregating invoice candidates which have as source an issue
 	 */
 	IAggregationKeyBuilder<I_C_Invoice_Candidate> getIssueAggregationKeyBuilder(Properties ctx, String aggregationUsageLevel);
+
+
+	/**
+	 * Gets the header aggregation to be used when aggregating invoice candidates which have harvesting details
+	 */
+	IAggregationKeyBuilder<I_C_Invoice_Candidate> getHarvestingAggregationKeyBuilder(Properties ctx);
 }

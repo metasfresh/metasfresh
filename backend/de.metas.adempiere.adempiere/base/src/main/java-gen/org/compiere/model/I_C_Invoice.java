@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice
  *  @author metasfresh (generated) 
@@ -513,6 +514,32 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ForeignExchangeContract> COLUMN_C_ForeignExchangeContract_ID = new ModelColumn<>(I_C_Invoice.class, "C_ForeignExchangeContract_ID", org.compiere.model.I_C_ForeignExchangeContract.class);
 	String COLUMNNAME_C_ForeignExchangeContract_ID = "C_ForeignExchangeContract_ID";
+
+	/**
+	 * Set Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
+
+	/**
+	 * Get Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Harvesting_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+
+	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_Invoice.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
+
 
 	/**
 	 * Set Charge amount.
@@ -1294,6 +1321,31 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_Invoice.class, "GrandTotal", null);
 	String COLUMNNAME_GrandTotal = "GrandTotal";
+
+	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_C_Invoice.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
 	 * Set Incoterm Location.
