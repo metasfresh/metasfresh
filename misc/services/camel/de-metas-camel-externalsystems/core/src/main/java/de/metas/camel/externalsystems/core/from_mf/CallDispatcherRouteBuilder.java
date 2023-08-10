@@ -36,6 +36,9 @@ import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.apache.camel.spi.PropertiesComponent;
 import org.springframework.stereotype.Component;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_AUDIT_TRAIL;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNAL_SYSTEM_VALUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
@@ -46,9 +49,6 @@ import static de.metas.camel.externalsystems.core.CoreConstants.CONCURRENT_CONSU
 import static de.metas.camel.externalsystems.core.CoreConstants.FROM_MF_ROUTE;
 import static de.metas.camel.externalsystems.core.CoreConstants.THREAD_POOL_SIZE_PROPERTY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Component
 public class CallDispatcherRouteBuilder extends RouteBuilder
