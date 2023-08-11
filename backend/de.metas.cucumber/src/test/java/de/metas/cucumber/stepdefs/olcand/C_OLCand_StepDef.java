@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -449,9 +449,10 @@ public class C_OLCand_StepDef
 		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "M_InOut_ID.Identifier");
 		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Invoice_ID.Identifier");
 
+		assertThat(compositeResponse.getOlCandProcessResponse()).isNotNull();
 		if (orderIdentifier == null)
 		{
-			assertThat(compositeResponse.getOlCandProcessResponse()).isEqualTo(null);
+			assertThat(compositeResponse.getOlCandProcessResponse().getJsonGenerateOrdersResponse()).isEqualTo(null);
 		}
 		else
 		{

@@ -131,7 +131,7 @@ Feature: Trade margin commission contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.DocSubType |
       | invoiceSettled_1        | margin_salesRep          | margin_salesRep_location          | 10 Tage 1 % | true      | CO        | CA             |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLineSettled_1        | invoiceSettled_1        | commission_product      | 5.00        | true      |
     And validate commission deed for commission instance commissionInstance_1
       | C_Commission_Share_ID.Identifier | C_BPartner_SalesRep_ID.Identifier | C_BPartner_Payer_ID.Identifier | C_Flatrate_Term_ID.Identifier | Commission_Product_ID.Identifier | LevelHierarchy | OPT.C_Customer_Trade_Margin_Line_ID.Identifier | IsSOTrx | IsSimulation | PointsSum_Forecasted | PointsSum_Invoiceable | PointsSum_Invoiced | PointsSum_ToSettle | PointsSum_Settled |
