@@ -450,7 +450,7 @@ public class C_OLCand_StepDef
 		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "M_InOut_ID.Identifier");
 		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Invoice_ID.Identifier");
 
-		if (orderIdentifier == null)
+		if (Check.isBlank(orderIdentifier))
 		{
 			final JsonOLCandProcessResponse olCandProcessResponse = compositeResponse.getOlCandProcessResponse();
 			if (olCandProcessResponse != null)
@@ -464,7 +464,7 @@ public class C_OLCand_StepDef
 			processOrderResponse(compositeResponse.getOlCandProcessResponse().getJsonGenerateOrdersResponse(), orderIdentifier);
 		}
 
-		if (shipmentIdentifier == null)
+		if (Check.isBlank(shipmentIdentifier))
 		{
 			// we expect that there are no infos about any generated shipments
 			if (compositeResponse.getShipmentResponse() != null)
@@ -477,7 +477,7 @@ public class C_OLCand_StepDef
 			processShipmentResponse(compositeResponse.getShipmentResponse(), shipmentIdentifier);
 		}
 
-		if (invoiceIdentifier == null)
+		if (Check.isBlank(invoiceIdentifier))
 		{
 			// we expect that there are no infos about any generated invoice
 			if (compositeResponse.getInvoiceInfoResponse() != null)

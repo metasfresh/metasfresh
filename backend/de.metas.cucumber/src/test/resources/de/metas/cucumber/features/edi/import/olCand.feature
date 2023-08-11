@@ -1,4 +1,4 @@
-x@from:cucumber
+@from:cucumber
 Feature: import order candidate to metasfresh
 
   Background:
