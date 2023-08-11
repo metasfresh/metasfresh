@@ -158,8 +158,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 }
 """
     Then process metasfresh response
-      | Order.Identifier |
-      | order_1,order_2  |
+      | C_Order_ID.Identifier |
+      | order_1,order_2       |
 
     And validate the created orders
       | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
