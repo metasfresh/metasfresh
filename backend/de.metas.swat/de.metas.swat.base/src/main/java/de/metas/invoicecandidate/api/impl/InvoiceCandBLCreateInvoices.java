@@ -465,6 +465,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
 
+			if (invoiceHeader.getWarehouseId() != null)
+			{
+				invoice.setM_Warehouse_ID(WarehouseId.toRepoId(invoiceHeader.getWarehouseId()));
+			}
+
 			setHarvestingDetails(invoice, invoiceHeader);
 
 			// Save and return the invoice
@@ -1258,19 +1263,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final IInvoiceHeader invoiceHeader)
 	{
-		if(invoiceHeader.getCalendarId() != null)
+		if (invoiceHeader.getCalendarId() != null)
 		{
 			invoice.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(invoiceHeader.getCalendarId()));
 		}
 
-		if(invoiceHeader.getYearId() != null)
+		if (invoiceHeader.getYearId() != null)
 		{
 			invoice.setHarvesting_Year_ID(YearId.toRepoId(invoiceHeader.getYearId()));
-		}
-
-		if(invoiceHeader.getWarehouseId() != null)
-		{
-			invoice.setM_Warehouse_ID(WarehouseId.toRepoId(invoiceHeader.getWarehouseId()));
 		}
 	}
 }
