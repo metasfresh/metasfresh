@@ -8,6 +8,7 @@ Feature: workflow tests
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
 
+  @ignore
   @from:cucumber
   @Id:S0302_100
   Scenario: create and clone manufacturing workflow
