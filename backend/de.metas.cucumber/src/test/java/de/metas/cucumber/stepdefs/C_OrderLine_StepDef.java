@@ -367,7 +367,7 @@ public class C_OrderLine_StepDef
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
-
+		
 		final Integer expectedProductId = productTable.getOptional(productIdentifier)
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
@@ -428,19 +428,15 @@ public class C_OrderLine_StepDef
 		{
 			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
 		}
-		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered);
+		
+		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
+		assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualTo(qtyDelivered);
 		assertThat(orderLine.getPriceEntered()).as("PriceEntered").isEqualTo(price);
 		assertThat(orderLine.getDiscount()).as("Discount").isEqualTo(discount);
 		assertThat(orderLine.isProcessed()).as("Processed").isEqualTo(processed);
 		assertThat(orderLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
 		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualByComparingTo(qtyordered);
 		assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualByComparingTo(qtyinvoiced);
-
-		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
-		if (qtyReserved != null)
-		{
-			assertThat(orderLine.getQtyReserved()).isEqualByComparingTo(qtyReserved);
-		}
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
@@ -466,6 +462,12 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getPrice_UOM_ID()).isEqualTo(productPriceUomId.getRepoId());
 		}
 
+		final String productDescription = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_ProductDescription);
+		if (de.metas.util.Check.isNotBlank(productDescription))
+		{
+			assertThat(orderLine.getProductDescription()).isEqualTo(productDescription);
+		}
+
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		if (de.metas.util.Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
@@ -484,7 +486,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (de.metas.util.Check.isNotBlank(huPiItemProductIdentifier))
+		if (Check.isNotBlank(huPiItemProductIdentifier))
 		{
 			final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
 			final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
@@ -492,10 +494,16 @@ public class C_OrderLine_StepDef
 		}
 
 		final String asiValues = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID + ":" + I_M_AttributeInstance.Table_Name + "." + I_M_AttributeInstance.COLUMNNAME_Value);
-		if (de.metas.util.Check.isNotBlank(asiValues))
+		if (Check.isNotBlank(asiValues))
 		{
 			StepDefUtil.splitIdentifiers(asiValues)
 					.forEach(value -> validateAttributeValue(orderLine, value));
+		}
+
+		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
+		if (qtyReserved != null)
+		{
+			assertThat(orderLine.getQtyReserved()).isEqualByComparingTo(qtyReserved);
 		}
 
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);

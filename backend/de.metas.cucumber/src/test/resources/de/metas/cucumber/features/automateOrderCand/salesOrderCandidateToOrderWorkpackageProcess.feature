@@ -12,7 +12,10 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 
   @from:cucumber
   @topic:orderCandidate
-  Scenario: Process C_OLCand in batches
+  Scenario: Process C_OLCand in batches:
+    - create 4 olcands - they would end of in 3 C_Orders
+    - deactivate the productprice of one of the C_OLcand's products
+    - verify that three C_Orders are still created
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | OPT.IsActive |
       | ps_scenario_14042022 | pricing_system_scenario_14042022 | pricing_system_scenario_14042022 | true         |

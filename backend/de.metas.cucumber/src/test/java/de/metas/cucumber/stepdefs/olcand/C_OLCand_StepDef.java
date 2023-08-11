@@ -32,7 +32,6 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
@@ -41,6 +40,7 @@ import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.edi.impprocessor.IMP_Processor_StepDefData;
@@ -55,6 +55,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Check;
@@ -72,23 +73,42 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_AD_InputDataSource_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_AD_Issue_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DeliveryRule;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DeliveryViaRule;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ErrorMsg;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalHeaderId;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalLineId;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_HandOver_Location_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_HandOver_Partner_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_IsError;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Line;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_M_Product_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_POReference;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_PriceActual;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Processed;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_QtyEntered;
+import static de.metas.ordercandidate.model.I_C_OLCand.Table_Name;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
@@ -164,6 +184,16 @@ public class C_OLCand_StepDef
 		}
 	}
 
+	@Then("validate order line allocated 'line'")
+	public void validate_OrderLine_Allocated_Line(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> tableRows = table.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			validateOrderLineAllocatedLine(tableRow);
+		}
+	}
+
 	@And("process metasfresh response JsonOLCandCreateBulkResponse")
 	public void process_JsonOLCandCreateBulkResponse(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
@@ -174,9 +204,9 @@ public class C_OLCand_StepDef
 		assertThat(jsonOLCands).isNotEmpty();
 
 		final Map<String, String> row = dataTable.asMaps().get(0);
-		final String olCandIdentifiers = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String olCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		final List<String> identifiers = splitIdentifiers(olCandIdentifiers);
+		final List<String> identifiers = StepDefUtil.splitIdentifiers(olCandIdentifiers);
 		assertThat(jsonOLCands.size()).isEqualTo(identifiers.size());
 
 		for (int index = 0; index < identifiers.size(); index++)
@@ -191,6 +221,29 @@ public class C_OLCand_StepDef
 		}
 	}
 
+	@And("validate C_OLCand is with error")
+	public void validate_C_OLCand_has_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : rows)
+		{
+			validateOLCandError(row);
+		}
+	}
+
+	private void validateOLCandError(@NonNull final Map<String, String> row)
+	{
+		final String olCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OLCand_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_OLCand olCand = olCandTable.get(olCandIdentifier);
+		InterfaceWrapperHelper.refresh(olCand);
+		assertThat(olCand).isNotNull();
+
+		assertThat(olCand.isError()).isTrue();
+
+		final String errorMsg = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ErrorMsg);
+		assertThat(olCand.getErrorMsg()).contains(errorMsg);
+	}
+
 	@And("validate C_OLCand:")
 	public void validate_C_OLCand(@NonNull final DataTable dataTable)
 	{
@@ -199,70 +252,70 @@ public class C_OLCand_StepDef
 		{
 			final SoftAssertions softly = new SoftAssertions();
 
-			final String olCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String olCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_OLCand olCand = olCandTable.get(olCandIdentifier);
 			InterfaceWrapperHelper.refresh(olCand);
 			softly.assertThat(olCand).isNotNull();
 
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
 			softly.assertThat(olCand.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
 
-			final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpLocationIdentifier);
 			softly.assertThat(olCand.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_Product product = productTable.get(productIdentifier);
 			softly.assertThat(olCand.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 
-			final String deliveryRule = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_DeliveryRule);
+			final String deliveryRule = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_DeliveryRule);
 			softly.assertThat(olCand.getDeliveryRule()).isEqualTo(deliveryRule);
 
-			final String deliveryViaRule = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_DeliveryViaRule);
+			final String deliveryViaRule = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_DeliveryViaRule);
 			softly.assertThat(olCand.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
 
-			final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_POReference);
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_POReference);
 			if (Check.isNotBlank(poReference))
 			{
 				softly.assertThat(olCand.getPOReference()).isEqualTo(poReference);
 			}
 
-			final String adInputDataSourceName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_Name);
+			final String adInputDataSourceName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_Name);
 			if (Check.isNotBlank(adInputDataSourceName))
 			{
 				final I_AD_InputDataSource inputDataSource = InterfaceWrapperHelper.load(olCand.getAD_InputDataSource_ID(), I_AD_InputDataSource.class);
 				softly.assertThat(inputDataSource.getName()).isEqualTo(adInputDataSourceName);
 			}
 
-			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OLCand.COLUMNNAME_QtyEntered);
+			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyEntered);
 			softly.assertThat(olCand.getQtyEntered()).isEqualTo(qtyEntered);
 
-			final Boolean isError = DataTableUtil.extractBooleanForColumnName(row, I_C_OLCand.COLUMNNAME_IsError);
+			final Boolean isError = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsError);
 			softly.assertThat(olCand.isError()).isEqualTo(isError);
 
-			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_OLCand.COLUMNNAME_Processed, false);
+			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_Processed, false);
 			softly.assertThat(olCand.isProcessed()).isEqualTo(processed);
 
-			final String externalHeaderId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_ExternalHeaderId);
+			final String externalHeaderId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalHeaderId);
 			if (Check.isNotBlank(externalHeaderId))
 			{
 				softly.assertThat(olCand.getExternalHeaderId()).isEqualTo(externalHeaderId);
 			}
 
-			final String externalLineId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_ExternalLineId);
+			final String externalLineId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalLineId);
 			if (Check.isNotBlank(externalLineId))
 			{
 				softly.assertThat(olCand.getExternalLineId()).isEqualTo(externalLineId);
 			}
 
-			final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_PriceActual);
+			final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_PriceActual);
 			if (priceActual != null)
 			{
 				softly.assertThat(olCand.getPriceActual()).isEqualTo(priceActual);
 			}
 
-			final String issueIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_AD_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String issueIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(issueIdentifier))
 			{
 				final I_AD_Issue issue = InterfaceWrapperHelper.load(olCand.getAD_Issue_ID(), I_AD_Issue.class);
@@ -281,7 +334,7 @@ public class C_OLCand_StepDef
 				softly.assertThat(olCand.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductId);
 			}
 
-			final String dropShipBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String dropShipBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(dropShipBPartnerIdentifier))
 			{
 				final I_C_BPartner dropShipBPartner = bpartnerTable.get(dropShipBPartnerIdentifier);
@@ -290,7 +343,7 @@ public class C_OLCand_StepDef
 				softly.assertThat(olCand.getDropShip_BPartner_ID()).isEqualTo(dropShipBPartner.getC_BPartner_ID());
 			}
 
-			final String dropShipLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String dropShipLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(dropShipLocationIdentifier))
 			{
 				final I_C_BPartner_Location dropShipLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
@@ -299,7 +352,7 @@ public class C_OLCand_StepDef
 				softly.assertThat(olCand.getDropShip_Location_ID()).isEqualTo(dropShipLocation.getC_BPartner_Location_ID());
 			}
 
-			final String handOverBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_HandOver_Partner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String handOverBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_HandOver_Partner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(handOverBPartnerIdentifier))
 			{
 				final I_C_BPartner handOverBPartner = bpartnerTable.get(handOverBPartnerIdentifier);
@@ -308,7 +361,7 @@ public class C_OLCand_StepDef
 				softly.assertThat(olCand.getHandOver_Partner_ID()).isEqualTo(handOverBPartner.getC_BPartner_ID());
 			}
 
-			final String handOverLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_HandOver_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String handOverLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_HandOver_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(handOverLocationIdentifier))
 			{
 				final I_C_BPartner_Location handOverLocation = bpartnerLocationTable.get(handOverLocationIdentifier);
@@ -330,16 +383,34 @@ public class C_OLCand_StepDef
 		}
 	}
 
+	private void validateOrderLineAllocatedLine(@NonNull final Map<String, String> row)
+	{
+		final String externalLineId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalLineId);
+		final int olCandLine = DataTableUtil.extractIntForColumnName(row, Table_Name + "." + COLUMNNAME_Line);
+		final int olLine = DataTableUtil.extractIntForColumnName(row, I_C_OrderLine.Table_Name + "." + I_C_OrderLine.COLUMNNAME_Line);
+
+		final I_C_OLCand olCand = queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_ExternalLineId, externalLineId)
+				.create()
+				.firstOnlyNotNull(I_C_OLCand.class);
+
+		final I_C_Order_Line_Alloc orderLineAlloc = queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_C_OLCand_ID, olCand.getC_OLCand_ID())
+				.create()
+				.firstOnlyNotNull(I_C_Order_Line_Alloc.class);
+
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.load(orderLineAlloc.getC_OrderLine_ID(), I_C_OrderLine.class);
+
+		assertThat(olCand.getLine()).isEqualTo(olCandLine);
+		assertThat(orderLine.getLine()).isEqualTo(olLine);
+	}
+
 	private void processOrderResponse(
-			@Nullable final JsonGenerateOrdersResponse response,
+			@NonNull final JsonGenerateOrdersResponse response,
 			@NonNull final String orderIdentifier)
 	{
-		if (response == null)
-		{
-			fail("Missing jsonGenerateOrdersResponse");
-			return;
-		}
-
 		final List<OrderId> generatedOrderIds = response
 				.getOrderIds()
 				.stream()
@@ -360,7 +431,7 @@ public class C_OLCand_StepDef
 
 		if (orders.size() > 1)
 		{
-			final List<String> identifiers = splitIdentifiers(orderIdentifier);
+			final List<String> identifiers = StepDefUtil.splitIdentifiers(orderIdentifier);
 
 			for (int index = 0; index < identifiers.size(); index++)
 			{
@@ -434,12 +505,6 @@ public class C_OLCand_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
-	@NonNull
-	private List<String> splitIdentifiers(@NonNull final String identifiers)
-	{
-		return Arrays.asList(identifiers.split(","));
-	}
-
 	private void processResponse(@NonNull final DataTable table) throws JsonProcessingException
 	{
 		final JsonProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonProcessCompositeResponse.class);
@@ -452,16 +517,11 @@ public class C_OLCand_StepDef
 
 		if (Check.isBlank(orderIdentifier))
 		{
-			final JsonOLCandProcessResponse olCandProcessResponse = compositeResponse.getOlCandProcessResponse();
-			if (olCandProcessResponse != null)
-			{
-				assertThat(olCandProcessResponse.getJsonGenerateOrdersResponse()).isNull();
-			}
+			assertThat(compositeResponse.getOrderResponse()).isEqualTo(null);
 		}
 		else
 		{
-			assertThat(compositeResponse.getOlCandProcessResponse()).isNotNull();
-			processOrderResponse(compositeResponse.getOlCandProcessResponse().getJsonGenerateOrdersResponse(), orderIdentifier);
+			processOrderResponse(compositeResponse.getOrderResponse(), orderIdentifier);
 		}
 
 		if (Check.isBlank(shipmentIdentifier))
@@ -496,7 +556,7 @@ public class C_OLCand_StepDef
 		message.append("C_OLCand infos:").append("\n");
 
 		queryBL.createQueryBuilder(I_C_OLCand.class)
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalHeaderId, request.getExternalHeaderId())
+				.addEqualsFilter(COLUMNNAME_ExternalHeaderId, request.getExternalHeaderId())
 				.create()
 				.stream(I_C_OLCand.class)
 				.forEach(olCandRecord -> message
@@ -511,34 +571,34 @@ public class C_OLCand_StepDef
 	@NonNull
 	private ItemProvider.ProviderResult<I_C_OLCand> isOLCandFound(@NonNull final Map<String, String> row)
 	{
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OLCand.COLUMNNAME_QtyEntered);
+		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyEntered);
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
 		assertThat(product).isNotNull();
 
 		final IQueryBuilder<I_C_OLCand> queryBuilder = queryBL.createQueryBuilder(I_C_OLCand.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_QtyEntered, qtyEntered)
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_M_Product_ID, product.getM_Product_ID());
+				.addEqualsFilter(COLUMNNAME_QtyEntered, qtyEntered)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID());
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bpartnerIdentifier))
 		{
 			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
 			assertThat(bPartner).isNotNull();
 
-			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID());
+			queryBuilder.addEqualsFilter(COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID());
 		}
 
-		final String huItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String huItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(huItemProductIdentifier))
 		{
 			final int huPiItemProductId = huItemProductTable.getOptional(huItemProductIdentifier)
 					.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
 					.orElseGet(() -> Integer.parseInt(huItemProductIdentifier));
 
-			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID, huPiItemProductId);
+			queryBuilder.addEqualsFilter(COLUMNNAME_M_HU_PI_Item_Product_ID, huPiItemProductId);
 		}
 
 		final Optional<I_C_OLCand> olCand = queryBuilder
@@ -547,7 +607,7 @@ public class C_OLCand_StepDef
 
 		if (olCand.isPresent())
 		{
-			final String olCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String olCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
 			olCandTable.putOrReplace(olCandIdentifier, olCand.get());
 
 			return ItemProvider.ProviderResult.resultWasFound(olCand.get());
@@ -561,32 +621,32 @@ public class C_OLCand_StepDef
 	{
 		final StringBuilder message = new StringBuilder();
 
-		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_C_OLCand.COLUMNNAME_QtyEntered);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyEntered);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
 		assertThat(product).isNotNull();
 
 		message.append("Looking for instance with:").append("\n")
-				.append(I_C_OLCand.COLUMNNAME_M_Product_ID).append(" : ").append(product.getM_Product_ID()).append("\n")
-				.append(I_C_OLCand.COLUMNNAME_QtyEntered).append(" : ").append(qtyEntered).append("\n");
+				.append(COLUMNNAME_M_Product_ID).append(" : ").append(product.getM_Product_ID()).append("\n")
+				.append(COLUMNNAME_QtyEntered).append(" : ").append(qtyEntered).append("\n");
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bpartnerIdentifier))
 		{
 			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
 			assertThat(bPartner).isNotNull();
 
-			message.append(I_C_OLCand.COLUMNNAME_C_BPartner_ID).append(" : ").append(bPartner.getC_BPartner_ID()).append("\n");
+			message.append(COLUMNNAME_C_BPartner_ID).append(" : ").append(bPartner.getC_BPartner_ID()).append("\n");
 		}
 
-		final String huItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String huItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(huItemProductIdentifier))
 		{
 			final int huPiItemProductId = huItemProductTable.getOptional(huItemProductIdentifier)
 					.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
 					.orElseGet(() -> Integer.parseInt(huItemProductIdentifier));
 
-			message.append(I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID).append(" : ").append(huPiItemProductId).append("\n");
+			message.append(COLUMNNAME_M_HU_PI_Item_Product_ID).append(" : ").append(huPiItemProductId).append("\n");
 		}
 
 		final String impProcessorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_IMP_Processor.COLUMNNAME_IMP_Processor_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -603,13 +663,13 @@ public class C_OLCand_StepDef
 
 		queryBL.createQueryBuilder(I_C_OLCand.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OLCand.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.create()
 				.stream()
 				.forEach(olCand -> message
-						.append("-->").append(I_C_OLCand.COLUMNNAME_QtyEntered).append(" : ").append(olCand.getQtyEntered()).append(" ; ")
-						.append("-->").append(I_C_OLCand.COLUMNNAME_C_BPartner_ID).append(" : ").append(olCand.getC_BPartner_ID()).append(" ; ")
-						.append("-->").append(I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID).append(" : ").append(olCand.getM_HU_PI_Item_Product_ID()).append(" ; "));
+						.append("-->").append(COLUMNNAME_QtyEntered).append(" : ").append(olCand.getQtyEntered()).append(" ; ")
+						.append("-->").append(COLUMNNAME_C_BPartner_ID).append(" : ").append(olCand.getC_BPartner_ID()).append(" ; ")
+						.append("-->").append(COLUMNNAME_M_HU_PI_Item_Product_ID).append(" : ").append(olCand.getM_HU_PI_Item_Product_ID()).append(" ; "));
 
 		return message.toString();
 	}
