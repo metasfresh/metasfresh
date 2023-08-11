@@ -174,13 +174,13 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | creditMemo                        |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_1 | 30 Tage netto | true      | CO        | 4.76           | dt_cm                       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_1 | 30 Tage netto | true      | CO        | 4.76           | dt_cm                       |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 8           | true      | 8              |
-      | invoice_1          | product_SO              | -10         | true      | -10            |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLine_1_1             | invoice_1               | product_SO              | 8           | true      | 8              |
+      | invoiceLine_1_2             | invoice_1               | product_SO              | -10         | true      | -10            |
 
   @from:cucumber
   @Id:S0242_200
@@ -349,13 +349,13 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | creditMemo                        |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_2 | 30 Tage netto | true      | CO        | 4.76           | dt_si                       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_2 | 30 Tage netto | true      | CO        | 4.76           | dt_si                       |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 12          | true      | 12             |
-      | invoice_1          | product_SO              | -10         | true      | -10            |
+      | C_InvoiceLine_ID.Identifier | C_Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLine_1_1             | invoice_1            | product_SO              | 12          | true      | 12             |
+      | invoiceLine_1_2             | invoice_1            | product_SO              | -10         | true      | -10            |
 
 
   @from:cucumber
@@ -520,14 +520,14 @@ Feature: Group invoices and credit memos into a single document
       | invoice_2               | creditMemo                        |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 28.56          | dt_si                       |
-      | invoice_2          | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 23.8           | dt_cm                       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 28.56          | dt_si                       |
+      | invoice_2               | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 23.8           | dt_cm                       |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 12          | true      | 12             |
-      | invoice_2          | product_SO              | -10         | true      | -10            |
+      | C_InvoiceLine_ID.Identifier | C_Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLine_1_1             | invoice_1            | product_SO              | 12          | true      | 12             |
+      | invoiceLine_2_1             | invoice_2            | product_SO              | -10         | true      | -10            |
 
   @from:cucumber
   @Id:S0242_400
@@ -638,13 +638,13 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | dt_si                       |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | dt_si                       |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 12          | true      | 12             |
-      | invoice_1          | product_SO              | 10          | true      | 10             |
+      | C_InvoiceLine_ID.Identifier | C_Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLine_1_2             | invoice_1            | product_SO              | 12          | true      | 12             |
+      | invoiceLine_1_2             | invoice_1            | product_SO              | 10          | true      | 10             |
 
   @from:cucumber
   @Id:S0242_510
@@ -726,12 +726,12 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | A                           |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | A                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 10          | true      | 10             |
+      | C_InvoiceLine_ID.Identifier | C_Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLinie_1_1            | invoice_1            | product_SO              | 10          | true      | 10             |
 
 
   @from:cucumber
@@ -817,12 +817,12 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | A                           |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | A                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 10          | true      | 10             |
+      | C_InvoiceLine_ID.Identifier | C_Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLine_1_1             | invoice_1            | product_SO              | 10          | true      | 10             |
 
 
   @from:cucumber
@@ -909,12 +909,12 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | C                           |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | C                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 10          | true      | 10             |
+      | C_InvoiceLine_ID.Identifier | C_Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLine_1_1             | invoice_1            | product_SO              | 10          | true      | 10             |
 
 
   @from:cucumber
@@ -1041,13 +1041,13 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | A                           |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | A                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 12          | true      | 12             |
-      | invoice_1          | product_SO              | 10          | true      | 10             |
+      | C_InvoiceLine_ID.Identifier | C_Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLine_1_1             | invoice_1            | product_SO              | 12          | true      | 12             |
+      | invoiceLine_1_2             | invoice_1            | product_SO              | 10          | true      | 10             |
 
 
   @from:cucumber
@@ -1174,11 +1174,11 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | B                           |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | B                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoice_1          | product_SO              | 12          | true      | 12             |
-      | invoice_1          | product_SO              | 10          | true      | 10             |
+      | C_InvoiceLine_ID.Identifier | C_Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
+      | invoiceLine_1_1             | invoice_1            | product_SO              | 12          | true      | 12             |
+      | invoiceLine_1_2             | invoice_1            | product_SO              | 10          | true      | 10             |
 
