@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1192039455L;
+	private static final long serialVersionUID = -814715183L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -2292,5 +2292,59 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_C_Auction getC_Auction()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class);
+	}
+
+	@Override
+	public void setC_Auction(final org.compiere.model.I_C_Auction C_Auction)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class, C_Auction);
+	}
+
+	@Override
+	public void setC_Auction_ID (final int C_Auction_ID)
+	{
+		if (C_Auction_ID < 1)
+			set_Value (COLUMNNAME_C_Auction_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Auction_ID, C_Auction_ID);
+	}
+
+	@Override
+	public int getC_Auction_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Auction_ID);
+	}
+
+	@Override
+	public void setInternalDescription (final @Nullable java.lang.String InternalDescription)
+	{
+		set_Value (COLUMNNAME_InternalDescription, InternalDescription);
+	}
+
+	@Override
+	public java.lang.String getInternalDescription()
+	{
+		return get_ValueAsString(COLUMNNAME_InternalDescription);
+	}
+	
+	@Override
+	public void setM_Locator_ID (final int M_Locator_ID)
+	{
+		if (M_Locator_ID < 1)
+			set_Value (COLUMNNAME_M_Locator_ID, null);
+		else
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
+	}
+
+	@Override
+	public int getM_Locator_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 }

@@ -3199,4 +3199,72 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_Weight = new ModelColumn<>(I_C_Order.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set Auction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Auction_ID (int C_Auction_ID);
+
+	/**
+	 * Get Auction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Auction_ID();
+
+	@Nullable org.compiere.model.I_C_Auction getC_Auction();
+
+	void setC_Auction(@Nullable org.compiere.model.I_C_Auction C_Auction);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Auction> COLUMN_C_Auction_ID = new ModelColumn<>(I_C_Order.class, "C_Auction_ID", org.compiere.model.I_C_Auction.class);
+	String COLUMNNAME_C_Auction_ID = "C_Auction_ID";
+
+	/**
+	 * Set Internal Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalDescription (@Nullable java.lang.String InternalDescription);
+
+	/**
+	 * Get Internal Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalDescription();
+
+	ModelColumn<I_C_Order, Object> COLUMN_InternalDescription = new ModelColumn<>(I_C_Order.class, "InternalDescription", null);
+	String COLUMNNAME_InternalDescription = "InternalDescription";
+
+	/**
+	 * Set Locator.
+	 * Warehouse Locator
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Locator_ID (int M_Locator_ID);
+
+	/**
+	 * Get Locator.
+	 * Warehouse Locator
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Locator_ID();
+
+	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 }
