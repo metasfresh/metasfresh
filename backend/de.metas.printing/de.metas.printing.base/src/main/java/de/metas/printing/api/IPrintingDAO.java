@@ -126,7 +126,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Delete all existing recipients of given item.
-	 *
+	 * <p>
 	 * NOTE: this method will prevent updating the item's aggregation key.
 	 */
 	void deletePrintingQueueRecipients(I_C_Printing_Queue item);
@@ -225,5 +225,4 @@ public interface IPrintingDAO extends ISingletonService
 	 * <ul> virtual printer because is not a real hardware printer
 	 */
 	I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, String hostkey, final String trxName);
-
 }
