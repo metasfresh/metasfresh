@@ -26,6 +26,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.copy_with_details.template.CopyTemplateCustomizer;
 import de.metas.util.InSetPredicate;
 import lombok.NonNull;
+import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.POInfo;
 import org.compiere.model.copy.ValueToCopy;
@@ -53,7 +54,7 @@ public class AD_Workflow_CopyTemplateCustomizer implements CopyTemplateCustomize
 	@Override
 	public @NonNull InSetPredicate<String> getChildTableNames()
 	{
-		return InSetPredicate.none();
+		return InSetPredicate.only(I_AD_WF_Node.Table_Name);
 	}
 
 	@NonNull
