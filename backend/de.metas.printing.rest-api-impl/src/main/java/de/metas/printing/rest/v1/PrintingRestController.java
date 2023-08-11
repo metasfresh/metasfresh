@@ -1,54 +1,8 @@
-package de.metas.printing.rest;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.i18n.BooleanWithReason;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import de.metas.organization.OrgId;
-import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.esb.api.LoginRequest;
-import de.metas.printing.esb.api.LoginResponse;
-import de.metas.printing.esb.api.PrintJobInstructionsConfirm;
-import de.metas.printing.esb.api.PrintPackage;
-import de.metas.printing.esb.api.PrintPackageInfo;
-import de.metas.printing.esb.api.PrinterHWList;
-import de.metas.printing.model.I_AD_PrinterHW;
-import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
-import de.metas.printing.model.I_C_PrintPackageData;
-import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.model.I_C_Print_Package;
-import de.metas.printing.model.I_C_Print_PackageInfo;
-import de.metas.printing.model.X_C_Print_Job_Instructions;
-import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
-import de.metas.security.IUserRolePermissions;
-import de.metas.util.Services;
-import io.swagger.annotations.ApiParam;
-import lombok.NonNull;
-
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.printing.rest-api-impl
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -66,12 +20,59 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.printing.rest.v1;
+
+import de.metas.i18n.BooleanWithReason;
+import de.metas.organization.OrgId;
+import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.esb.api.LoginRequest;
+import de.metas.printing.esb.api.LoginResponse;
+import de.metas.printing.esb.api.PrintJobInstructionsConfirm;
+import de.metas.printing.esb.api.PrintPackage;
+import de.metas.printing.esb.api.PrintPackageInfo;
+import de.metas.printing.esb.api.PrinterHWList;
+import de.metas.printing.model.I_AD_PrinterHW;
+import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.printing.model.I_C_PrintPackageData;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.printing.rest.PrinterHWRepo;
+import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import de.metas.security.IUserRolePermissions;
+import de.metas.util.Services;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 @RestController
-@RequestMapping(PrintingRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/printing",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/printing"})
 public class PrintingRestController
 {
-	public static final String ENDPOINT = "/api/printing";
-
 	@Autowired
 	private PrinterHWRepo printerHwRepo;
 

@@ -1,47 +1,27 @@
 package de.metas.fresh.ordercheckup;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.archive.api.ArchiveFileNameService;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.fresh.ordercheckup.printing.spi.impl.OrderCheckupPrintingQueueHandler;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.PrintOutputFacade;
+import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.model.I_AD_Archive;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
+import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
@@ -56,17 +36,16 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 import org.junit.Assert;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
-import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
-import de.metas.fresh.ordercheckup.printing.spi.impl.OrderCheckupPrintingQueueHandler;
-import de.metas.printing.api.IPrintingQueueBL;
-import de.metas.printing.model.I_AD_Archive;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.model.I_C_Printing_Queue_Recipient;
-import de.metas.printing.model.validator.AD_Archive;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class OrderCheckupTestHelper
 {
@@ -80,6 +59,8 @@ public class OrderCheckupTestHelper
 		ctx = Env.getCtx();
 
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance);
+
+		SpringContextHolder.registerJUnitBean(new ExternalSystemsPrintingNotifier(new ArrayList<>()));
 
 		printOutputFacade = new PrintOutputFacade(
 				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
