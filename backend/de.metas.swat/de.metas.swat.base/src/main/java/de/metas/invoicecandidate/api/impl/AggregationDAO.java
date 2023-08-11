@@ -24,7 +24,9 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Query;
 
@@ -129,7 +131,33 @@ public class AggregationDAO implements IAggregationDAO
 		headerAggregationKeyRecord.setC_BPartner_ID(bpartnerId);
 		headerAggregationKeyRecord.setIsSOTrx(ic.isSOTrx());
 		headerAggregationKeyRecord.setIsActive(true);
-		InterfaceWrapperHelper.save(headerAggregationKeyRecord);
+		saveHeaderAggregationKeyWithRetryOnFail(headerAggregationKeyRecord);
 		return headerAggregationKeyRecord.getC_Invoice_Candidate_HeaderAggregation_ID();
+	}
+
+	private void saveHeaderAggregationKeyWithRetryOnFail(@NonNull final I_C_Invoice_Candidate_HeaderAggregation headerAggregationKeyRecord)
+	{
+		boolean retried = false;
+
+		while (true)
+		{
+			try
+			{
+				InterfaceWrapperHelper.save(headerAggregationKeyRecord);
+			}
+			catch (final DBUniqueConstraintException e)
+			{
+				if (retried)
+				{
+					throw e;
+				}
+				else
+				{
+					retried = true;
+					continue;
+				}
+			}
+			break;
+		}
 	}
 }
