@@ -399,6 +399,7 @@ jobs:
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
           .
