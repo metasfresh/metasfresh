@@ -178,7 +178,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_1 | 30 Tage netto | true      | CO        | 4.76           | dt_cm                       |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 8           | true      | 8              |
       | invoice_1          | product_SO              | -10         | true      | -10            |
 
@@ -353,7 +353,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_2 | 30 Tage netto | true      | CO        | 4.76           | dt_si                       |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 12          | true      | 12             |
       | invoice_1          | product_SO              | -10         | true      | -10            |
 
@@ -525,7 +525,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_2          | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 23.8           | dt_cm                       |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 12          | true      | 12             |
       | invoice_2          | product_SO              | -10         | true      | -10            |
 
@@ -642,7 +642,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | dt_si                       |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 12          | true      | 12             |
       | invoice_1          | product_SO              | 10          | true      | 10             |
 
@@ -730,7 +730,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | A                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 10          | true      | 10             |
 
 
@@ -821,7 +821,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | A                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 10          | true      | 10             |
 
 
@@ -913,7 +913,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80          | C                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 10          | true      | 10             |
 
 
@@ -1045,7 +1045,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | A                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 12          | true      | 12             |
       | invoice_1          | product_SO              | 10          | true      | 10             |
 
@@ -1178,7 +1178,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | B                           |
 
     And validate created invoice lines
-      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
+      | Invoice.Identifier | M_Product_ID.Identifier | QtyInvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 12          | true      | 12             |
       | invoice_1          | product_SO              | 10          | true      | 10             |
 
