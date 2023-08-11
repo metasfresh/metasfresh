@@ -127,11 +127,10 @@ public class AggregationDAO implements IAggregationDAO
 		headerAggregationKeyRecord.setC_BPartner_ID(bpartnerId);
 		headerAggregationKeyRecord.setIsSOTrx(ic.isSOTrx());
 		headerAggregationKeyRecord.setIsActive(true);
-		saveHeaderAggregationKeyWithRetryOnFail(headerAggregationKeyRecord, ic, headerAggregationKeyCalc);
-		return headerAggregationKeyRecord.getC_Invoice_Candidate_HeaderAggregation_ID();
+		return saveHeaderAggregationKeyWithLookupOnFail(headerAggregationKeyRecord, ic, headerAggregationKeyCalc);
 	}
 
-	private void saveHeaderAggregationKeyWithRetryOnFail(
+	private int saveHeaderAggregationKeyWithLookupOnFail(
 			@NonNull final I_C_Invoice_Candidate_HeaderAggregation headerAggregationKeyRecord,
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final String headerAggregationKeyCalc)
@@ -139,17 +138,17 @@ public class AggregationDAO implements IAggregationDAO
 		try
 		{
 			InterfaceWrapperHelper.save(headerAggregationKeyRecord);
+			return headerAggregationKeyRecord.getC_Invoice_Candidate_HeaderAggregation_ID();
 		}
 		catch (final DBUniqueConstraintException e)
 		{
-			if (lookupHeaderAggregationKeyId(ic, headerAggregationKeyCalc) > 0)
-			{
-				InterfaceWrapperHelper.save(headerAggregationKeyRecord);
-			}
-			else
+			final int lookupHeaderAggregationKeyId = lookupHeaderAggregationKeyId(ic, headerAggregationKeyCalc);
+
+			if (lookupHeaderAggregationKeyId <= 0)
 			{
 				throw e;
 			}
+			return lookupHeaderAggregationKeyId;
 		}
 	}
 
