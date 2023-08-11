@@ -113,11 +113,7 @@ public class AggregationDAO implements IAggregationDAO
 
 		//
 		// Find existing header aggregation key ID
-		final int headerAggregationKeyId = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate_HeaderAggregation.class, ic)
-				.addEqualsFilter(I_C_Invoice_Candidate_HeaderAggregation.COLUMN_HeaderAggregationKey, headerAggregationKeyCalc)
-				.create()
-				.firstIdOnly();
+		final int headerAggregationKeyId = lookupHeaderAggregationKeyId(ic, headerAggregationKeyCalc);
 		if (headerAggregationKeyId > 0)
 		{
 			return headerAggregationKeyId;
@@ -131,33 +127,40 @@ public class AggregationDAO implements IAggregationDAO
 		headerAggregationKeyRecord.setC_BPartner_ID(bpartnerId);
 		headerAggregationKeyRecord.setIsSOTrx(ic.isSOTrx());
 		headerAggregationKeyRecord.setIsActive(true);
-		saveHeaderAggregationKeyWithRetryOnFail(headerAggregationKeyRecord);
+		saveHeaderAggregationKeyWithRetryOnFail(headerAggregationKeyRecord, ic, headerAggregationKeyCalc);
 		return headerAggregationKeyRecord.getC_Invoice_Candidate_HeaderAggregation_ID();
 	}
 
-	private void saveHeaderAggregationKeyWithRetryOnFail(@NonNull final I_C_Invoice_Candidate_HeaderAggregation headerAggregationKeyRecord)
+	private void saveHeaderAggregationKeyWithRetryOnFail(
+			@NonNull final I_C_Invoice_Candidate_HeaderAggregation headerAggregationKeyRecord,
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final String headerAggregationKeyCalc)
 	{
-		boolean retried = false;
-
-		while (true)
+		try
 		{
-			try
+			InterfaceWrapperHelper.save(headerAggregationKeyRecord);
+		}
+		catch (final DBUniqueConstraintException e)
+		{
+			if (lookupHeaderAggregationKeyId(ic, headerAggregationKeyCalc) > 0)
 			{
 				InterfaceWrapperHelper.save(headerAggregationKeyRecord);
 			}
-			catch (final DBUniqueConstraintException e)
+			else
 			{
-				if (retried)
-				{
-					throw e;
-				}
-				else
-				{
-					retried = true;
-					continue;
-				}
+				throw e;
 			}
-			break;
 		}
+	}
+
+	private int lookupHeaderAggregationKeyId(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final String headerAggregationKeyCalc)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate_HeaderAggregation.class, ic)
+				.addEqualsFilter(I_C_Invoice_Candidate_HeaderAggregation.COLUMN_HeaderAggregationKey, headerAggregationKeyCalc)
+				.create()
+				.firstIdOnly();
 	}
 }
