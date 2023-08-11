@@ -550,8 +550,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | CatchWeight              |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
       | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
@@ -608,8 +608,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | N                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | Nominal                  |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
   @Id:S0156.2_170
@@ -636,8 +636,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | CatchWeight              |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
       | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
@@ -693,8 +693,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | N                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | Nominal                  |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
   @Id:S0156.2_200
@@ -721,8 +721,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | CatchWeight              |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
       | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
@@ -779,8 +779,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | N                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | Nominal                  |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
   @Id:S0156.2_210
@@ -807,8 +807,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | CatchWeight              |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
       | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
@@ -866,8 +866,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | N                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | Nominal                  |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
   @Id:S0156.2_180

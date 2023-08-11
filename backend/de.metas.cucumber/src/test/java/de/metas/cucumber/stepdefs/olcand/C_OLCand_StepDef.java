@@ -32,6 +32,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
+import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
@@ -333,12 +334,12 @@ public class C_OLCand_StepDef
 			@Nullable final JsonGenerateOrdersResponse response,
 			@NonNull final String orderIdentifier)
 	{
-		if(response == null)
+		if (response == null)
 		{
 			fail("Missing jsonGenerateOrdersResponse");
 			return;
 		}
-		
+
 		final List<OrderId> generatedOrderIds = response
 				.getOrderIds()
 				.stream()
@@ -347,7 +348,7 @@ public class C_OLCand_StepDef
 				.map(OrderId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 
-		assertThat(generatedOrderIds).as("missing generatedOrderIds for orderIdentifier=%s",orderIdentifier).isNotEmpty();
+		assertThat(generatedOrderIds).as("missing generatedOrderIds for orderIdentifier=%s", orderIdentifier).isNotEmpty();
 
 		final List<I_C_Order> orders = queryBL.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, generatedOrderIds)
@@ -438,7 +439,7 @@ public class C_OLCand_StepDef
 	{
 		return Arrays.asList(identifiers.split(","));
 	}
-	
+
 	private void processResponse(@NonNull final DataTable table) throws JsonProcessingException
 	{
 		final JsonProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonProcessCompositeResponse.class);
@@ -449,13 +450,17 @@ public class C_OLCand_StepDef
 		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "M_InOut_ID.Identifier");
 		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "C_Invoice_ID.Identifier");
 
-		assertThat(compositeResponse.getOlCandProcessResponse()).isNotNull();
 		if (orderIdentifier == null)
 		{
-			assertThat(compositeResponse.getOlCandProcessResponse().getJsonGenerateOrdersResponse()).isEqualTo(null);
+			final JsonOLCandProcessResponse olCandProcessResponse = compositeResponse.getOlCandProcessResponse();
+			if (olCandProcessResponse != null)
+			{
+				assertThat(olCandProcessResponse.getJsonGenerateOrdersResponse()).isNull();
+			}
 		}
 		else
 		{
+			assertThat(compositeResponse.getOlCandProcessResponse()).isNotNull();
 			processOrderResponse(compositeResponse.getOlCandProcessResponse().getJsonGenerateOrdersResponse(), orderIdentifier);
 		}
 
