@@ -20,8 +20,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
-import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
@@ -78,7 +76,6 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -546,7 +543,9 @@ public final class AggregationEngine
 			getActivityId(icRecord, headerAggregationId)
 					.ifPresent(activityId -> invoiceHeader.setC_Activity_ID(ActivityId.toRepoId(activityId)));
 
-			setHarvestingDetailsAggregation(icRecord, invoiceHeader, headerAggregationId);
+			invoiceHeader.setC_Harvesting_Calendar_ID(icRecord.getC_Harvesting_Calendar_ID());
+			invoiceHeader.setHarvesting_Year_ID(icRecord.getHarvesting_Year_ID());
+			invoiceHeader.setM_Warehouse_ID(icRecord.getM_Warehouse_ID());
 		}
 		catch (final RuntimeException rte)
 		{
@@ -988,48 +987,5 @@ public final class AggregationEngine
 
 		return Optional.ofNullable(DocTypeInvoicingPoolId.ofRepoIdOrNull(docTypeInvoice.getC_DocType_Invoicing_Pool_ID()))
 				.map(docTypeInvoicingPoolService::getById);
-	}
-
-	@NonNull
-	private Optional<CalendarId> getCalendarId(
-			@NonNull final I_C_Invoice_Candidate icRecord,
-			@Nullable final AggregationId headerAggregationId)
-	{
-		return retrieveAggregation(icRecord, headerAggregationId)
-				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Harvesting_Calendar_ID))
-				.map(hasColumnName -> hasColumnName ? CalendarId.ofRepoIdOrNull(icRecord.getC_Harvesting_Calendar_ID()) : null);
-	}
-
-	@NonNull
-	private Optional<YearId> getYearId(
-			@NonNull final I_C_Invoice_Candidate icRecord,
-			@Nullable final AggregationId headerAggregationId)
-	{
-		return retrieveAggregation(icRecord, headerAggregationId)
-				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_Harvesting_Year_ID))
-				.map(hasColumnName -> hasColumnName ? YearId.ofRepoIdOrNull(icRecord.getHarvesting_Year_ID()) : null);
-	}
-
-	@NonNull
-	private Optional<WarehouseId> getWarehouseId(
-			@NonNull final I_C_Invoice_Candidate icRecord,
-			@Nullable final AggregationId headerAggregationId)
-	{
-		return retrieveAggregation(icRecord, headerAggregationId)
-				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_Warehouse_ID))
-				.map(hasColumnName -> hasColumnName ? WarehouseId.ofRepoIdOrNull(icRecord.getM_Warehouse_ID()) : null);
-	}
-
-	private void setHarvestingDetailsAggregation(
-			@NonNull final I_C_Invoice_Candidate icRecord,
-			@NonNull final InvoiceHeaderImplBuilder invoiceHeader,
-			@Nullable final AggregationId headerAggregationId)
-	{
-		getCalendarId(icRecord, headerAggregationId)
-				.ifPresent(calendarId -> invoiceHeader.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(calendarId)));
-		getYearId(icRecord, headerAggregationId)
-				.ifPresent(yearId -> invoiceHeader.setHarvesting_Year_ID(YearId.toRepoId(yearId)));
-		getWarehouseId(icRecord, headerAggregationId)
-				.ifPresent(warehouseId -> invoiceHeader.setM_Warehouse_ID(WarehouseId.toRepoId(warehouseId)));
 	}
 }

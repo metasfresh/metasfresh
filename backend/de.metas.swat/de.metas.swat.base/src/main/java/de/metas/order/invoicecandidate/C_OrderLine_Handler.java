@@ -265,6 +265,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setC_PaymentInstruction_ID(order.getC_PaymentInstruction_ID());
 
 		setHarvestingDetails(icRecord, order);
+		setWarehouseId(icRecord, order);
 
 		// Don't save.
 		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from being called on every single IC that is created here.
@@ -588,6 +589,20 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		candidate.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
 		candidate.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
-		candidate.setM_Warehouse_ID(order.getM_Warehouse_ID());
+	}
+
+	@Override
+	public void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+
+		// dev-note: we take the order warehouse and propagate to IC
+		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
+		setWarehouseId(ic, order);
+	}
+
+	private static void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_Order order)
+	{
+		ic.setM_Warehouse_ID(order.getM_Warehouse_ID());
 	}
 }

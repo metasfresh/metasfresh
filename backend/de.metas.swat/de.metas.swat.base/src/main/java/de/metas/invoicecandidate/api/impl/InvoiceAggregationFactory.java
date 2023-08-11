@@ -23,7 +23,6 @@ package de.metas.invoicecandidate.api.impl;
  */
 
 import de.metas.aggregation.api.Aggregation;
-import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -36,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
-import javax.annotation.Nullable;
 import java.util.Properties;
 
 public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
@@ -44,7 +42,6 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 	private final static String INVOICE_AGGREGATION_ID_FOR_PREPAYORDER = "InvoiceAggregationFactory_PrepayOrderAggregationId";
 	private final static String INVOICE_AGGREGATION_ID_FOR_ISSUE = "InvoiceAggregationFactory_IssueAggregationId";
 	private final static String INVOICE_LINE_AGGREGATION_ID_FOR_ISSUE = "InvoiceLineAggregationFactory_IssueAggregationId";
-	private final static String INVOICE_AGGREGATION_ID_FOR_HARVESTING_DETAILS = "InvoiceAggregationFactory_HarvestingAggregationId";
 
 	private final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -141,20 +138,6 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 		return effortControlAggregationId > 0
 				? aggregationFactory.getAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, effortControlAggregationId)
 				: aggregationFactory.getDefaultAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, true, aggregationUsageLevel);
-	}
-
-	@Nullable
-	@Override
-	public IAggregationKeyBuilder<I_C_Invoice_Candidate> getHarvestingAggregationKeyBuilder(@NonNull final Properties ctx)
-	{
-		final AggregationId aggregationId = AggregationId.ofRepoIdOrNull(getCustom_InvoiceCandidate_Aggregation_ID(INVOICE_AGGREGATION_ID_FOR_HARVESTING_DETAILS));
-
-		if (aggregationId != null)
-		{
-			return aggregationFactory.getAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, aggregationId.getRepoId());
-		}
-
-		return null;
 	}
 
 	private int getCustom_InvoiceCandidate_Aggregation_ID(@NonNull final String customAggregationConfig)

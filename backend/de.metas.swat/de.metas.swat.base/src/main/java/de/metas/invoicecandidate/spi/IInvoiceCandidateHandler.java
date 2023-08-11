@@ -304,6 +304,8 @@ public interface IInvoiceCandidateHandler
 		//do nothing
 	}
 
+	default void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic) {}
+
 	/**
 	 * Price and tax info calculation result.
 	 * <p>

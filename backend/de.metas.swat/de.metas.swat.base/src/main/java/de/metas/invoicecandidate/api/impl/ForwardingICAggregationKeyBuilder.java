@@ -28,8 +28,6 @@ import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -41,7 +39,6 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
 
 import java.util.List;
 import java.util.Objects;
@@ -165,15 +162,6 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 		if (icReferencedRecord.getTableName().equals("S_Issue"))
 		{
 			return Optional.of(invoiceAggregationFactory.getIssueAggregationKeyBuilder(ctx, aggregationUsageLevel));
-		}
-
-		// dev-note: custom aggregation for harvesting details
-		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(ic.getC_Harvesting_Calendar_ID());
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(ic.getHarvesting_Year_ID());
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(ic.getM_Warehouse_ID());
-		if (harvestingCalendarId != null && harvestingYearId != null && warehouseId != null)
-		{
-			return Optional.ofNullable(invoiceAggregationFactory.getHarvestingAggregationKeyBuilder(ctx));
 		}
 
 		return Optional.empty();
