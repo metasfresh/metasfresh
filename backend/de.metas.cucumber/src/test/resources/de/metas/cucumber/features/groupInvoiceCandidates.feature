@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor2
 Feature: Group invoices and credit memos into a single document
 
   Background:
@@ -71,8 +72,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 8              | 0                | 8               | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 8              | 0                | 8               | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -117,8 +118,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_CM | orderLine_CM              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_CM                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_CM                  | orderLine_CM                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_CM                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_CM                  | orderLine_CM                  | 10             | 0                | 10              | false        | false         |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_CM                    | orderLine_CM              | 0            |
@@ -179,8 +180,8 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1_1             | invoice_1               | product_SO              | 8           | true      | 8              |
-      | invoiceLine_1_2             | invoice_1               | product_SO              | -10         | true      | -10            |
+      | invoiceLine_1               | invoice_1               | product_SO              | 8           | true      | 8              |
+      | invoiceLine_2               | invoice_1               | product_SO              | -10         | true      | -10            |
 
   @from:cucumber
   @Id:S0242_200
@@ -246,8 +247,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 12             | 0                | 12              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 12             | 0                | 12              | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -292,8 +293,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_CM | orderLine_CM              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_CM                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_CM                  | orderLine_CM                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_CM                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_CM                  | orderLine_CM                  | 10             | 0                | 10              | false        | false         |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_CM                    | orderLine_CM              | 0            |
@@ -354,8 +355,8 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1_1             | invoice_1               | product_SO              | 12          | true      | 12             |
-      | invoiceLine_1_2             | invoice_1               | product_SO              | -10         | true      | -10            |
+      | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
+      | invoiceLine_2               | invoice_1               | product_SO              | -10         | true      | -10            |
 
 
   @from:cucumber
@@ -416,8 +417,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 12             | 0                | 12              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 12             | 0                | 12              | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -462,8 +463,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_CM | orderLine_CM              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_CM                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_CM                  | orderLine_CM                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_CM                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_CM                  | orderLine_CM                  | 10             | 0                | 10              | false        | false         |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_CM                    | orderLine_CM              | 0            |
@@ -526,8 +527,8 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1_1             | invoice_1               | product_SO              | 12          | true      | 12             |
-      | invoiceLine_2_1             | invoice_2               | product_SO              | -10         | true      | -10            |
+      | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
+      | invoiceLine_2               | invoice_2               | product_SO              | -10         | true      | -10            |
 
   @from:cucumber
   @Id:S0242_400
@@ -572,8 +573,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -605,8 +606,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO_2 | orderLine_SO_2            | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO_2                    | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO_2                | orderLine_SO_2                | 12             | 0                | 12              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO_2                    | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO_2                | orderLine_SO_2                | 12             | 0                | 12              | false        | false         |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO_2                  | orderLine_SO_2            | 0            |
@@ -643,8 +644,8 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1_2             | invoice_1               | product_SO              | 12          | true      | 12             |
-      | invoiceLine_1_2             | invoice_1               | product_SO              | 10          | true      | 10             |
+      | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
+      | invoiceLine_2               | invoice_1               | product_SO              | 10          | true      | 10             |
 
   @from:cucumber
   @Id:S0242_510
@@ -697,8 +698,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -717,6 +718,10 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 10               |
 
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.NetAmtToInvoice |
+      | invoiceCand_SO                    | 20                  |
+
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_SO                    |
@@ -731,7 +736,7 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLinie_1_1            | invoice_1               | product_SO              | 10          | true      | 10             |
+      | invoiceLine_1               | invoice_1               | product_SO              | 10          | true      | 10             |
 
 
   @from:cucumber
@@ -789,8 +794,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -808,6 +813,11 @@ Feature: Group invoices and credit memos into a single document
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 10               |
+
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.NetAmtToInvoice |
+      | invoiceCand_SO                    | 20                  |
+
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_SO                    |
@@ -822,7 +832,7 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1_1             | invoice_1               | product_SO              | 10          | true      | 10             |
+      | invoiceLine_1               | invoice_1               | product_SO              | 10          | true      | 10             |
 
 
   @from:cucumber
@@ -881,8 +891,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -900,6 +910,11 @@ Feature: Group invoices and credit memos into a single document
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 10               |
+
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.NetAmtToInvoice |
+      | invoiceCand_SO                    | 20                  |
+
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_SO                    |
@@ -914,7 +929,7 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1_1             | invoice_1               | product_SO              | 10          | true      | 10             |
+      | invoiceLine_1               | invoice_1               | product_SO              | 10          | true      | 10             |
 
 
   @from:cucumber
@@ -975,8 +990,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -1008,8 +1023,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO_2 | orderLine_SO_2            | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO_2                    | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO_2                | orderLine_SO_2                | 12             | 0                | 12              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO_2                    | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO_2                | orderLine_SO_2                | 12             | 0                | 12              | false        | false         |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO_2                  | orderLine_SO_2            | 0            |
@@ -1046,8 +1061,8 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1_1             | invoice_1               | product_SO              | 12          | true      | 12             |
-      | invoiceLine_1_2             | invoice_1               | product_SO              | 10          | true      | 10             |
+      | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
+      | invoiceLine_2               | invoice_1               | product_SO              | 10          | true      | 10             |
 
 
   @from:cucumber
@@ -1108,8 +1123,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO | orderLine_SO              | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO                      | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO                      | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO                  | orderLine_SO                  | 10             | 0                | 10              | false        | false         |
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO                    | orderLine_SO              | 0            |
@@ -1141,8 +1156,8 @@ Feature: Group invoices and credit memos into a single document
       | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_SO_2 | orderLine_SO_2            | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
-      | schedule_SO_2                    | customer_SO              | customerLocation_SO               | customer_SO                 | customerLocation_SO         | product_SO              | PENDING      | order_SO_2                | orderLine_SO_2                | 12             | 0                | 12              | false        | false         |
+      | M_ShipmentSchedule_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsClosed | OPT.Processed |
+      | schedule_SO_2                    | customer_SO                  | customerLocation_SO                   | customer_SO                     | customerLocation_SO             | product_SO                  | PENDING          | order_SO_2                | orderLine_SO_2                | 12             | 0                | 12              | false        | false         |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_SO_2                  | orderLine_SO_2            | 0            |
@@ -1179,6 +1194,7 @@ Feature: Group invoices and credit memos into a single document
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1_1             | invoice_1               | product_SO              | 12          | true      | 12             |
-      | invoiceLine_1_2             | invoice_1               | product_SO              | 10          | true      | 10             |
+      | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
+      | invoiceLine_2               | invoice_1               | product_SO              | 10          | true      | 10             |
+
 
