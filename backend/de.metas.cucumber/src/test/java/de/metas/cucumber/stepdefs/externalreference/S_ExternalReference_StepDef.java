@@ -251,7 +251,6 @@ public class S_ExternalReference_StepDef
 		}
 	}
 
-
 	@And("metasfresh contains S_ExternalReferences:")
 	public void metasfresh_contains_s_external_reference(@NonNull final DataTable dataTable)
 	{
@@ -272,26 +271,6 @@ public class S_ExternalReference_StepDef
 		}
 	}
 
-	@And("no product external reference with value {string} exists")
-	public void noProductExternalReferenceWithValueExists(final String externalReferenceValue)
-	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReferenceValue)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, ProductExternalReferenceType.PRODUCT.getCode())
-				.create()
-				.delete();
-	}
-
-	@And("no bpartner external reference with value {string} exists")
-	public void noBpartnerExternalReferenceWithValueExists(final String externalReferenceValue)
-	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReferenceValue)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, BPartnerExternalReferenceType.BPARTNER.getCode())
-				.create()
-				.delete();
-	}
-	
 	@Given("metasfresh contains S_ExternalReferences")
 	public void theUserAddsBpartnerExternalReference(@NonNull final DataTable dataTable)
 	{
@@ -312,7 +291,7 @@ public class S_ExternalReference_StepDef
 
 		for (final Map<String, String> dataTableEntry : dataTableEntries)
 		{
-			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_ExternalSystem+".Code");
+			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_ExternalSystem + ".Code");
 			final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, I_S_ExternalReference.COLUMNNAME_Type));
 
