@@ -1,6 +1,8 @@
 @from:cucumber
 Feature:product get/create/update using metasfresh api
-
+  As a REST-API invoker
+  I want want to be able to upsert products
+  
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'

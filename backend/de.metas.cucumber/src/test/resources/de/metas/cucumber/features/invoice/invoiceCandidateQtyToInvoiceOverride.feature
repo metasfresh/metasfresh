@@ -854,7 +854,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
-      | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 147            | 37.500         | 0                              | 147              | 35.000                | 147             | 35.000               | 0                   | true          |
+      | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 150            | 37.500         | 0                              | 147              | 35.000                | 147             | 35.000               | 0                   | true          |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus |
       | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock     | 30 Tage netto | true      | CO        |

@@ -39,7 +39,6 @@ import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.organization.OrgId;
@@ -99,27 +98,7 @@ public class UpsertProduct_StepDef
 		productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 		externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 	}
-
-	@And("no product external reference with value {string} exists")
-	public void noProductExternalReferenceWithValueExists(final String externalReferenceValue)
-	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReferenceValue)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, ProductExternalReferenceType.PRODUCT.getCode())
-				.create()
-				.delete();
-	}
-
-	@And("no bpartner external reference with value {string} exists")
-	public void noBpartnerExternalReferenceWithValueExists(final String externalReferenceValue)
-	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReferenceValue)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, BPartnerExternalReferenceType.BPARTNER.getCode())
-				.create()
-				.delete();
-	}
-
+		
 	@Then("verify if data is persisted correctly for each product")
 	public void verifyIfDataIsPersistedCorrectlyForProductCodeCode()
 	{
