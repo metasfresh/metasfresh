@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -236,7 +236,18 @@ public class M_InOut_StepDef
 		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Optional<String> docStatus = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_InOut.COLUMNNAME_DocStatus));
 
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final String alreadyCreatedShipmentIdentifiers = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.IgnoreCreated" + "." + I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Set<InOutLineId> alreadyCreatedShipmentLines = Optional.ofNullable(alreadyCreatedShipmentIdentifiers)
+				.map(StepDefUtil::extractIdentifiers)
+				.map(this::getShipmentLinesForShipmentIdentifiers)
+				.orElseGet(ImmutableSet::of);
+
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
+
+		final Set<Integer> linesToIgnore = alreadyCreatedShipmentLines.isEmpty()
+				? ImmutableSet.of(-1)
+				: alreadyCreatedShipmentLines.stream().map(InOutLineId::getRepoId).collect(ImmutableSet.toImmutableSet());
 
 		final Supplier<Boolean> isShipmentCreated = () -> {
 
@@ -245,6 +256,7 @@ public class M_InOut_StepDef
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
 					.addNotNull(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID)
+					.addNotInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, linesToIgnore)
 					.create()
 					.list(I_M_ShipmentSchedule_QtyPicked.class);
 
@@ -463,6 +475,24 @@ public class M_InOut_StepDef
 		}
 	}
 
+	@NonNull
+	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<String> shipmentIdentifiers)
+	{
+		final Set<Integer> shipmentIds = shipmentIdentifiers.stream()
+				.map(shipmentTable::get)
+				.map(I_M_InOut::getM_InOut_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentIds)
+				.create()
+				.stream()
+				.map(I_M_InOutLine::getM_InOutLine_ID)
+				.map(InOutLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+	
 	private void findCustomerReturn(
 			final int timeoutSec,
 			@NonNull final Map<String, String> row) throws InterruptedException
