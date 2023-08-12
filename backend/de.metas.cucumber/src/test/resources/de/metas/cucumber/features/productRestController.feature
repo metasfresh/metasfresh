@@ -16,9 +16,9 @@ Feature:product get/create/update using metasfresh api
   I want to be able to upsert products
 
     Given metasfresh contains S_ExternalReferences
-      | ExternalSystem | ExternalReference | Type     |
-      | ALBERTA        | 345               | BPartner |
-      | ALBERTA        | 456               | BPartner |
+      | ExternalSystem.Code | ExternalReference | Type     |
+      | ALBERTA             | 345               | BPartner |
+      | ALBERTA             | 456               | BPartner |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -158,9 +158,9 @@ Feature:product get/create/update using metasfresh api
   I want to be able to retrieve products
 
     And metasfresh contains S_ExternalReferences
-      | ExternalSystem | ExternalReference | Type     |
-      | ALBERTA        | 345               | BPartner |
-      | ALBERTA        | 456               | BPartner |
+      | ExternalSystem.Code | ExternalReference | Type     |
+      | ALBERTA             | 345               | BPartner |
+      | ALBERTA             | 456               | BPartner |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
