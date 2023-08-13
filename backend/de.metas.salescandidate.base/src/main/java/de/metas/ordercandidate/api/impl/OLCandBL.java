@@ -228,7 +228,7 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
-			@Nullable I_C_OLCand orderCandidateRecord)
+			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentRule orderCandidatePaymentRule = orderCandidateRecord == null ? null
 				: PaymentRule.ofNullableCode(orderCandidateRecord.getPaymentRule());
@@ -245,7 +245,7 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
-			@Nullable I_C_OLCand orderCandidateRecord)
+			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentTermId orderCandidatePaymenTermId = orderCandidateRecord == null ? null
 				: PaymentTermId.ofRepoIdOrNull(orderCandidateRecord.getC_PaymentTerm_ID());
@@ -570,7 +570,7 @@ public class OLCandBL implements IOLCandBL
 
 			return note;
 		}
-		catch (RuntimeException ex2)
+		catch (final RuntimeException ex2)
 		{
 			ex2.addSuppressed(ex);
 			throw ex2;

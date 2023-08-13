@@ -48,7 +48,7 @@ import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImport
  */
 public class MProductImportTableSqlUpdater
 {
-	private static final transient Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
+	private static final Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
 
 	private final ImportRecordsSelection selection;
 	private final Properties ctx;

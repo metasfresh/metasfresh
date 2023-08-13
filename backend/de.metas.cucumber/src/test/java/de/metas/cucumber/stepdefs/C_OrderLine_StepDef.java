@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -575,6 +575,7 @@ public class C_OrderLine_StepDef
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
+		
 		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final Integer expectedProductId = productTable.getOptional(productIdentifier)
@@ -635,7 +636,7 @@ public class C_OrderLine_StepDef
 		{
 			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
 		}
-
+		
 		if (Check.isNotBlank(taxCategoryIdentifier))
 		{
 			final Integer taxCategoryId = taxCategoryTable.getOptional(taxCategoryIdentifier)

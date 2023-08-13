@@ -18,6 +18,7 @@ package org.compiere.apps;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
@@ -28,7 +29,6 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;

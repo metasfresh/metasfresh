@@ -42,7 +42,7 @@ BEGIN
         FROM C_AllocationHdr ah
         WHERE ah.C_AllocationHdr_ID = p_Record_ID;
     ELSIF (p_TableName = 'C_BankStatement') THEN
-        SELECT bs.statementdate, 'CMB', bs.ad_client_id, bs.ad_org_id
+        SELECT bs.statementdate, 'CMB' AS docbasetype, bs.ad_client_id, bs.ad_org_id
         INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
         FROM c_bankstatement bs
         WHERE bs.c_bankstatement_id = p_Record_ID;

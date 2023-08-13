@@ -27,9 +27,9 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
-import de.metas.cucumber.stepdefs.country.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
+import de.metas.cucumber.stepdefs.country.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -82,7 +82,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Year;
-import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_SectionCode;
@@ -105,7 +104,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -746,19 +745,19 @@ public class C_Order_StepDef
 
 		if (Check.isNotBlank(externalId))
 		{
-			softly.assertThat(order.getExternalId()).isEqualTo(externalId);
+			softly.assertThat(order.getExternalId()).as("ExternalId").isEqualTo(externalId);
 		}
-		softly.assertThat(order.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
-		softly.assertThat(order.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocation);
-		softly.assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
-		softly.assertThat(order.getDeliveryRule()).isEqualTo(deliveryRule);
-		softly.assertThat(order.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
-		softly.assertThat(order.isProcessed()).isEqualTo(processed);
-		softly.assertThat(order.getDocStatus()).isEqualTo(docStatus);
+		softly.assertThat(order.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
+		softly.assertThat(order.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocation);
+		softly.assertThat(order.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
+		softly.assertThat(order.getDeliveryRule()).as("DeliveryRule").isEqualTo(deliveryRule);
+		softly.assertThat(order.getDeliveryViaRule()).as("DeliveryViaRule").isEqualTo(deliveryViaRule);
+		softly.assertThat(order.isProcessed()).as("Processed").isEqualTo(processed);
+		softly.assertThat(order.getDocStatus()).as("DocStatus").isEqualTo(docStatus);
 
 		if (Check.isNotBlank(bpartnerName))
 		{
-			softly.assertThat(order.getBPartnerName()).isEqualTo(bpartnerName);
+			softly.assertThat(order.getBPartnerName()).as("BPartnerName").isEqualTo(bpartnerName);
 		}
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));

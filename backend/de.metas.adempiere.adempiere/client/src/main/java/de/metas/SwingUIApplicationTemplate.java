@@ -126,7 +126,8 @@ public abstract class SwingUIApplicationTemplate
 			final I_AD_User user = userBL.getById(UserId.METASFRESH);
 			final String username = userBL.extractUserLogin(user);
 			final HashableString password = userBL.extractUserPassword(user);
-			final Role systemRole = login.authenticate(username, password).getAvailableRoles()
+			final Role systemRole = login.authenticate(username, password)
+					.getAvailableRoles()
 					.stream()
 					.filter(role -> role.getId().isSystem())
 					.findFirst()

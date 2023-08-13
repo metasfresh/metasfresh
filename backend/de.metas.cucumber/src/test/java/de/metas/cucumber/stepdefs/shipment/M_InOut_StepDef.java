@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -89,7 +89,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
@@ -633,7 +633,7 @@ public class M_InOut_StepDef
 				.map(InOutLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
+	
 	private void findCustomerReturn(
 			final int timeoutSec,
 			@NonNull final Map<String, String> row) throws InterruptedException

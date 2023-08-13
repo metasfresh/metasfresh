@@ -46,7 +46,6 @@ public class C_CommissionSettingsLine_StepDef
 {
 	private final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable;
 	private final C_CommissionSettingsLine_StepDefData commissionSettingsLineTable;
-
 	public C_CommissionSettingsLine_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable,
 			@NonNull final C_CommissionSettingsLine_StepDefData commissionSettingsLineTable)

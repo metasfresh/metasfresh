@@ -196,7 +196,7 @@ public class JsonShipmentService
 			}
 
 			final AsyncBatchId currentBatchId = generateShipmentRequest.getAsyncBatchId();
-			
+
 			loggable.addLog("processShipmentSchedules - start creating shipments with currentBatchId={}", AsyncBatchId.toRepoId(currentBatchId));
 			shipmentService.generateShipments(generateShipmentRequest);
 			final Set<InOutId> createdInoutIds = shipmentService.retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
