@@ -109,7 +109,6 @@ public class C_BPartner_StepDef
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 	private final C_Dunning_StepDefData dunningTable;
 	private final AD_Org_StepDefData orgTable;
-
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);

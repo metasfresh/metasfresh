@@ -104,7 +104,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
 			//
-			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
+			// manufacture-to-order - look at scheds for whose order lines actual HUs were created
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM PP_Order ppo"
 			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID"

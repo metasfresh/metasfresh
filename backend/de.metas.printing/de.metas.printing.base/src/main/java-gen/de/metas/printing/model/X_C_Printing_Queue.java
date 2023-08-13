@@ -9,22 +9,22 @@ import java.util.Properties;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Printing_Queue, org.compiere.model.I_Persistent 
+public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Printing_Queue, org.compiere.model.I_Persistent
 {
 
 	private static final long serialVersionUID = 658998957L;
 
-    /** Standard Constructor */
+	/** Standard Constructor */
     public X_C_Printing_Queue (final Properties ctx, final int C_Printing_Queue_ID, @Nullable final String trxName)
-    {
-      super (ctx, C_Printing_Queue_ID, trxName);
-    }
+	{
+		super (ctx, C_Printing_Queue_ID, trxName);
+	}
 
-    /** Load Constructor */
+	/** Load Constructor */
     public X_C_Printing_Queue (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -249,14 +249,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setBill_User_ID (final int Bill_User_ID)
 	{
-		if (Bill_User_ID < 1) 
+		if (Bill_User_ID < 1)
 			set_Value (COLUMNNAME_Bill_User_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_User_ID, Bill_User_ID);
 	}
 
 	@Override
-	public int getBill_User_ID() 
+	public int getBill_User_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
 	}

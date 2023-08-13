@@ -1,6 +1,8 @@
 @from:cucumber
 Feature:product get/create/update using metasfresh api
-
+  As a REST-API invoker
+  I want want to be able to upsert products
+  
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -17,9 +19,9 @@ Feature:product get/create/update using metasfresh api
   I want to be able to upsert products
 
     Given metasfresh contains S_ExternalReferences
-      | ExternalSystem | ExternalReference | Type     |
-      | ALBERTA        | 345               | BPartner |
-      | ALBERTA        | 456               | BPartner |
+      | ExternalSystem.Code | ExternalReference | Type     |
+      | ALBERTA             | 345               | BPartner |
+      | ALBERTA             | 456               | BPartner |
 
     And metasfresh contains M_SectionCode:
       | M_SectionCode_ID.Identifier | Value                   |
@@ -240,9 +242,9 @@ Feature:product get/create/update using metasfresh api
   I want to be able to retrieve products
 
     And metasfresh contains S_ExternalReferences
-      | ExternalSystem | ExternalReference | Type     |
-      | ALBERTA        | 345               | BPartner |
-      | ALBERTA        | 456               | BPartner |
+      | ExternalSystem.Code | ExternalReference | Type     |
+      | ALBERTA             | 345               | BPartner |
+      | ALBERTA             | 456               | BPartner |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """

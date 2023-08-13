@@ -75,7 +75,7 @@ import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
 public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final M_InOut_StepDefData shipmentTable;
@@ -228,7 +228,7 @@ public class M_InOut_Line_StepDef
 			inOutLine.setMovementQty(movementQty);
 
 			final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
-			final I_C_UOM uom = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
+			final I_C_UOM uom = uomDAO.getByX12DE355(X12DE355.ofCode(uomCode));
 			assertThat(uom).isNotNull();
 
 			inOutLine.setC_UOM_ID(uom.getC_UOM_ID());
@@ -287,7 +287,7 @@ public class M_InOut_Line_StepDef
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
 		final SoftAssertions softly = new SoftAssertions();
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedProductId = productTable.getOptional(productIdentifier)
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
@@ -299,7 +299,7 @@ public class M_InOut_Line_StepDef
 
 		if (Check.isNotBlank(x12de355Code))
 		{
-			final UomId uomId = uomDao.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 			assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
 		}
 

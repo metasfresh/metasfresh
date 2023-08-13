@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de-metas-common-ordercandidates
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,24 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.ordercandidates.impl;
+package de.metas.common.ordercandidates.v2.response;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.List;
 
-public class JsonProcessCompositeResponseTest
+public class JsonOLCandProcessResponseTest
 {
+
 	private ObjectMapper objectMapper;
 
 	@BeforeEach
@@ -59,31 +58,17 @@ public class JsonProcessCompositeResponseTest
 	@Test
 	public void test() throws Exception
 	{
-
-		final JsonProcessCompositeResponse request = JsonProcessCompositeResponse.builder()
-				.orderResponse(getJsonGenerateOrderResponse())
-				.shipmentResponse(getJsonCreateShipmentResponse())
+		final JsonOLCandProcessResponse request = JsonOLCandProcessResponse.builder()
+				.jsonOLCandClearingResponse(JsonOLCandClearingResponse.builder()
+													.successfullyCleared(true)
+													.olCandIdToValidationStatus(ImmutableMap.of(1, true))
+													.build())
+				.jsonGenerateOrdersResponse(JsonGenerateOrdersResponse.builder()
+													.orderIds(ImmutableList.of(JsonMetasfreshId.of(1)))
+													.build())
 				.build();
 
 		testSerializeDeserialize(request);
-	}
-
-	private JsonGenerateOrdersResponse getJsonGenerateOrderResponse()
-	{
-		return JsonGenerateOrdersResponse.builder()
-				.orderIds(ImmutableList.of(JsonMetasfreshId.of(2)))
-				.build();
-	}
-
-	private JsonCreateShipmentResponse getJsonCreateShipmentResponse()
-	{
-		final List<JsonMetasfreshId> asyncWorkpackageIds = ImmutableList.of(JsonMetasfreshId.of(1));
-		final List<JsonMetasfreshId> shipmentIds = ImmutableList.of(JsonMetasfreshId.of(1));
-
-		return JsonCreateShipmentResponse.builder()
-				.createdAsyncWorkpackageIdList(asyncWorkpackageIds)
-				.createdShipmentIds(shipmentIds)
-				.build();
 	}
 
 	private void testSerializeDeserialize(final Object obj) throws IOException

@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -67,7 +68,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.IPair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -124,7 +124,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 {
 	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
 
-	protected static final String BIC_NOTPROVIDED = "NOTPROVIDED";
+	protected static final String NOTPROVIDED_BIC = "NOTPROVIDED_BIC";
+	@VisibleForTesting
+	static final String NOTPROVIDED_GENERAL = "NOTPROVIDED";
 
 	/**
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
@@ -554,7 +556,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			else
 			{
 				// // let the bank see what it can do
-				finInstnId.setBIC(BIC_NOTPROVIDED);
+				finInstnId.setBIC(NOTPROVIDED_BIC);
 			}
 
 			//
@@ -563,7 +565,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					|| Objects.equals(paymentType, PAYMENT_TYPE_4)
 					|| Objects.equals(paymentType, PAYMENT_TYPE_6))
 			{
-				final boolean hasNoBIC = Check.isBlank(finInstnId.getBIC()) || BIC_NOTPROVIDED.equals(finInstnId.getBIC());
+				final boolean hasNoBIC = Check.isBlank(finInstnId.getBIC()) || NOTPROVIDED_BIC.equals(finInstnId.getBIC());
 				if (hasNoBIC)
 				{
 					final String bankName = getBankNameIfAny(line);
@@ -643,7 +645,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			cdtrAcct.setId(id);
 
 			final String iban = line.getIBAN();
-			if (Check.isNotBlank(iban) && paymentType != PAYMENT_TYPE_1)
+			if (Check.isNotBlank(iban) && !Objects.equals(paymentType, PAYMENT_TYPE_1))
 			{
 				// prefer IBAN, unless we have paypent type 1 (because then we use the ISR participant number)
 				id.setIBAN(iban.replaceAll(" ", "")); // this is ofc the more frequent case (..on a global scale)
@@ -675,8 +677,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		{
 			final RemittanceInformation5CH rmtInf = objectFactory.createRemittanceInformation5CH();
 			if (Check.isBlank(line.getStructuredRemittanceInfo())
-					|| paymentType == PAYMENT_TYPE_3
-					|| paymentType == PAYMENT_TYPE_5)
+					|| Objects.equals(paymentType, PAYMENT_TYPE_3)
+					|| Objects.equals(paymentType, PAYMENT_TYPE_5))
 			{
 				Check.errorIf(Objects.equals(paymentType, PAYMENT_TYPE_1), SepaMarshallerException.class,
 							  "SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
@@ -703,6 +705,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					cdtrRefInf.setRef(QRReference);
 				}
 				else
+				{
 					// provide the line-description (if set) as unstructured remittance info
 					if (Check.isBlank(reference))
 					{
@@ -714,6 +717,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 						final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
 						rmtInf.setUstrd(validReference);
 					}
+				}
 			}
 			else
 			{
@@ -736,7 +740,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final String endToEndId;
 			if (exportContext.isReferenceAsEndToEndId())
 			{
-				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), BIC_NOTPROVIDED);
+				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_GENERAL);
 			}
 			else
 			{
