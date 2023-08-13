@@ -128,7 +128,7 @@ public class M_Warehouse_StepDef
 
 			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsIssueWarehouse, false);
 			if(isIssueWarehouse)
-			{ // we can have just one issue-warehouse, so make sur that all other WH are not issue-warehouses
+			{ // we can have just one issue-warehouse, so make sure that all other WHs are not issue-warehouses
 				final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(COLUMNNAME_IsIssueWarehouse, false);
 				queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse,true).create().updateDirectly(updater);
 			}

@@ -46,7 +46,6 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
-import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.IdentifierString;
