@@ -22,16 +22,8 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.util.IdentityHashMap;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import de.metas.async.api.IAsyncBatchBL;
-import org.compiere.util.Env;
-
 import de.metas.aggregation.api.IAggregationKeyBuilder;
-import de.metas.async.api.IWorkPackageBlockBuilder;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageParamsBuilder;
 import de.metas.async.api.IWorkPackageQueue;
@@ -51,6 +43,11 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.IdentityHashMap;
+import java.util.Properties;
 
 /**
  * Takes {@link I_C_Invoice_Candidate}s, group them by "IC's header aggregation key" and add them {@link InvoiceCandWorkpackageProcessor} workpackages.
@@ -67,10 +64,9 @@ import lombok.NonNull;
 
 	//
 	// Parameters
-	private final Properties _ctx;
 	private final String _trxName;
 	private final IWorkPackageQueue _workpackageQueue;
-	private final IWorkPackageBlockBuilder _queueBlockBuilder;
+	private PInstanceId pInstanceId;
 	private IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
 	private ILock invoiceCandidatesLock = ILock.NULL;
 	private IInvoicingParams invoicingParams;
@@ -81,12 +77,9 @@ import lombok.NonNull;
 
 	public InvoiceCandidate2WorkpackageAggregator(@NonNull final Properties ctx, @Nullable final String trxName)
 	{
-		_ctx = ctx;
 		_trxName = trxName; // null/none is accepted
 
 		_workpackageQueue = workPackageQueueFactory.getQueueForEnqueuing(ctx, InvoiceCandWorkpackageProcessor.class);
-		_queueBlockBuilder = _workpackageQueue.newBlock()
-				.setContext(getCtx());
 
 		//
 		// Configure: aggregation key builder, i.e. use invoice candidate's header aggregation key builder
@@ -105,17 +98,12 @@ import lombok.NonNull;
 		return _workpackageQueue;
 	}
 
-	private final Properties getCtx()
-	{
-		return _ctx;
-	}
-
-	private final String getTrxName()
+	private String getTrxName()
 	{
 		return _trxName;
 	}
 
-	private final ILock getInvoiceCandidatesLock()
+	private ILock getInvoiceCandidatesLock()
 	{
 		Check.assumeNotNull(invoiceCandidatesLock, "invoiceCandidatesLock not null");
 		return invoiceCandidatesLock;
@@ -137,7 +125,9 @@ import lombok.NonNull;
 				.map(asyncBatchBL::getAsyncBatchById)
 				.orElse(null);
 
-		final IWorkPackageBuilder workpackageBuilder = _queueBlockBuilder.newWorkpackage()
+		final IWorkPackageBuilder workpackageBuilder = _workpackageQueue
+				.newWorkPackage()
+				.setAD_PInstance_ID(pInstanceId)
 				.setPriority(workpackagePriority)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null)) // we want the enqueuing user to be notified on problems
 				.setC_Async_Batch(asyncBatch)
@@ -175,7 +165,7 @@ import lombok.NonNull;
 		netAmtToInvoiceChecker.add(item);
 	}
 
-	private final ICNetAmtToInvoiceChecker getICNetAmtToInvoiceChecker(final IWorkPackageBuilder group)
+	private ICNetAmtToInvoiceChecker getICNetAmtToInvoiceChecker(final IWorkPackageBuilder group)
 	{
 		final ICNetAmtToInvoiceChecker netAmtToInvoiceChecker = group2netAmtToInvoiceChecker.get(group);
 		Check.assumeNotNull(netAmtToInvoiceChecker, "netAmtToInvoiceChecker not null for {}", group);
@@ -205,12 +195,12 @@ import lombok.NonNull;
 
 		//
 		// Mark the workpackage as ready for processing (when trxName will be commited)
-		group.build();
+		group.buildAndEnqueue();
 	}
 
 	public InvoiceCandidate2WorkpackageAggregator setAD_PInstance_Creator_ID(@NonNull final PInstanceId adPInstanceId)
 	{
-		_queueBlockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
+		this.pInstanceId = adPInstanceId;
 		return this;
 	}
 

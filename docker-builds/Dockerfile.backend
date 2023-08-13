@@ -1,0 +1,22 @@
+ARG REFNAME=local
+FROM metasfresh/metas-mvn-common:$REFNAME as common
+
+FROM alpine as poms
+
+WORKDIR /backend
+COPY backend . 
+RUN find . -type f ! -name "pom.xml" -exec rm -r {} \;
+
+
+FROM maven:3.8.4-jdk-8 as build
+
+WORKDIR /backend
+
+COPY --from=common /root/.m2 /root/.m2/
+COPY --from=poms /backend .
+
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
+
+COPY backend .
+RUN sed -i 's/<executable>true<\/executable>/<executable>false<\/executable>/' metasfresh-dist/serverRoot/pom.xml && sed -i 's/<executable>true<\/executable>/<executable>false<\/executable>/' metasfresh-webui-api/pom.xml
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn clean install --offline -Dmaven.gitcommitid.skip=true -DskipTests

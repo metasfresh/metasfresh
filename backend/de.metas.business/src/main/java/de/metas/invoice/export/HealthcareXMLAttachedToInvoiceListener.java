@@ -2,6 +2,7 @@ package de.metas.invoice.export;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.util.MimeType.TYPE_XML;
 
 import java.io.ByteArrayInputStream;
 
@@ -10,6 +11,7 @@ import de.metas.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.MimeType;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -92,11 +94,16 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 				logger.debug("tableRecord reference has tableName={}; -> doing nothing", tableRecordReference.getTableName());
 				return ListenerWorkStatus.NOT_APPLIED;
 			}
-
+			if (!MimeType.TYPE_XML.equals(attachmentEntry.getMimeType()))
+			{
+				logger.debug("given attachmentEntry with id={} (filename={}, contentType={}) is not an {}; -> doing nothing",
+							 attachmentEntry.getId(), attachmentEntry.getFilename(), attachmentEntry.getMimeType(), MimeType.TYPE_XML);
+				return ListenerWorkStatus.NOT_APPLIED;
+			}
 			final AttachmentTags tags = attachmentEntry.getTags();
 			if (tags.hasTagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT))
 			{
-				logger.debug("given attachmentEntry with id={} (filename={}) is tagged as document (exported from original-xml + invoice). We need the orgiginal XML; -> doing nothing",
+				logger.debug("given attachmentEntry with id={} (filename={}) is tagged as document (exported from original-xml + invoice). We need the original XML; -> doing nothing",
 						attachmentEntry.getId(), attachmentEntry.getFilename());
 				return ListenerWorkStatus.NOT_APPLIED;
 			}

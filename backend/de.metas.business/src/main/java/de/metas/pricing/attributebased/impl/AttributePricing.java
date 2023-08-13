@@ -2,6 +2,7 @@ package de.metas.pricing.attributebased.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;

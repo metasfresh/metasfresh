@@ -63,6 +63,8 @@ public class CostDetailCreateRequest
 	LocalDate date;
 	String description;
 
+	CostAmount explicitCostPrice;
+
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
 			@Nullable final AcctSchemaId acctSchemaId,
@@ -77,7 +79,8 @@ public class CostDetailCreateRequest
 			@NonNull final Quantity qty,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
 			@NonNull final LocalDate date,
-			@Nullable final String description)
+			@Nullable final String description,
+			@Nullable final CostAmount explicitCostPrice)
 	{
 		this.acctSchemaId = acctSchemaId;
 		this.clientId = clientId;
@@ -92,6 +95,7 @@ public class CostDetailCreateRequest
 		this.currencyConversionTypeId = currencyConversionTypeId;
 		this.date = date;
 		this.description = description;
+		this.explicitCostPrice = explicitCostPrice;
 	}
 
 	public AcctSchemaId getAcctSchemaId()

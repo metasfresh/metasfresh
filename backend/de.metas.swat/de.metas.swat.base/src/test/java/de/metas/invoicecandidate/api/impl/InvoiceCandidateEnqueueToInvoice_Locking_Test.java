@@ -38,6 +38,7 @@ import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordSer
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
+import de.metas.user.UserGroupRepository;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
@@ -56,7 +57,8 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 	{
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(new ChargeRepository());
-		
+		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
+
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));

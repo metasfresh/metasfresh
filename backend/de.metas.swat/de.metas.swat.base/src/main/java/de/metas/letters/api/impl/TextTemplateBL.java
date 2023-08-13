@@ -26,8 +26,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.letter.BoilerPlateId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -178,7 +181,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 		final Properties ctx = Env.getCtx();
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(ctx)
-				.setAD_Process_ID(getJasperProcess_ID(request))
+				.setAD_Process_ID(getJasperProcessId(request).orElse(AD_Process_ID_T_Letter_Spool_Print))
 				// .setRecord(recordRef) // no record
 				.setReportLanguage(request.getAdLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
@@ -193,26 +196,34 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return report.getReportContent();
 	}
 
-	private static AdProcessId getJasperProcess_ID(final Letter request)
+	@NonNull
+	public static Optional<AdProcessId> getJasperProcessId(@NonNull final Letter request)
 	{
-		if (request.getBoilerPlateId() == null)
+		final BoilerPlateId boilerPlateId = request.getBoilerPlateId();
+		if (boilerPlateId == null)
 		{
-			return AD_Process_ID_T_Letter_Spool_Print;
+			return Optional.empty();
 		}
 
-		final I_AD_BoilerPlate textTemplate = loadOutOfTrx(request.getBoilerPlateId().getRepoId(), I_AD_BoilerPlate.class);
+		return getJasperProcessId(boilerPlateId);
+	}
+
+	@NonNull
+	public static Optional<AdProcessId> getJasperProcessId(@NonNull final BoilerPlateId boilerPlateId)
+	{
+		final I_AD_BoilerPlate textTemplate = loadOutOfTrx(boilerPlateId.getRepoId(), I_AD_BoilerPlate.class);
 		if (textTemplate == null)
 		{
-			return AD_Process_ID_T_Letter_Spool_Print;
+			return Optional.empty();
 		}
 
 		AdProcessId jasperProcessId = AdProcessId.ofRepoIdOrNull(textTemplate.getJasperProcess_ID());
 		if (jasperProcessId == null)
 		{
-			jasperProcessId = AD_Process_ID_T_Letter_Spool_Print;
+			return Optional.empty();
 		}
 
-		return jasperProcessId;
+		return Optional.of(jasperProcessId);
 	}
 
 	private static void createLetterSpoolRecord(final PInstanceId pinstanceId, final Letter request, final int adClientId)

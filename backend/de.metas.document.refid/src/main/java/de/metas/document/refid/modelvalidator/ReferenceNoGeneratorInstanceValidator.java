@@ -25,13 +25,13 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 	private int m_AD_Client_ID = -1;
 	private ModelValidationEngine engine;
 
-	ReferenceNoGeneratorInstanceValidator(@NonNull IReferenceNoGeneratorInstance instance)
+	ReferenceNoGeneratorInstanceValidator(@NonNull final IReferenceNoGeneratorInstance instance)
 	{
 		this.instance = instance;
 	}
 
 	@Override
-	public void initialize(ModelValidationEngine engine, MClient client)
+	public void initialize(final ModelValidationEngine engine, MClient client)
 	{
 		if (this.engine != null)
 		{

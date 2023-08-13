@@ -4,10 +4,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
@@ -55,6 +58,7 @@ public class ContractInvoiceService
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public boolean isContractSalesInvoice(@NonNull final InvoiceId invoiceId)
 	{
@@ -72,7 +76,7 @@ public class ContractInvoiceService
 		{
 			final boolean isContractSalesInvoiceLine = invoiceCandDAO.retrieveIcForIl(invoiceLine)
 					.stream()
-					.anyMatch(invoiceCandidate -> isSubscriptionInvoiceCandidate(invoiceCandidate));
+					.anyMatch(this::isSubscriptionInvoiceCandidate);
 
 			if (isContractSalesInvoiceLine)
 			{
@@ -95,10 +99,10 @@ public class ContractInvoiceService
 				.create()
 				.listIds(InvoiceId::ofRepoId)
 				.stream()
-				.filter(olderInvoiceId -> isContractSalesInvoice(olderInvoiceId))
+				.filter(this::isContractSalesInvoice)
 				.findFirst();
 
-		return predecessorInvoice.isPresent() ? predecessorInvoice.get() : null;
+		return predecessorInvoice.orElse(null);
 	}
 
 	public InvoiceId retrieveLastSalesContractInvoiceId(final BPartnerId bPartnerId)
@@ -110,10 +114,10 @@ public class ContractInvoiceService
 				.create()
 				.listIds(InvoiceId::ofRepoId)
 				.stream()
-				.filter(olderInvoiceId -> isContractSalesInvoice(olderInvoiceId))
+				.filter(this::isContractSalesInvoice)
 				.findFirst();
 
-		return predecessorInvoice.isPresent() ? predecessorInvoice.get() : null;
+		return predecessorInvoice.orElse(null);
 	}
 
 	private boolean isSubscriptionInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidate)
@@ -125,10 +129,8 @@ public class ContractInvoiceService
 
 	public LocalDate retrieveContractEndDateForInvoiceIdOrNull(@NonNull final InvoiceId invoiceId)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		final List<I_C_InvoiceLine> invoiceLines = invoiceDAO.retrieveLines(invoice);
 
 		final List<I_C_Invoice_Candidate> allInvoiceCands = new ArrayList<>();
@@ -140,10 +142,10 @@ public class ContractInvoiceService
 		}
 
 		final Optional<I_C_Flatrate_Term> latestTerm = allInvoiceCands.stream()
-				.filter(cand -> isSubscriptionInvoiceCandidate(cand))
-				.map(cand -> cand.getRecord_ID())
+				.filter(this::isSubscriptionInvoiceCandidate)
+				.map(I_C_Invoice_Candidate::getRecord_ID)
 
-				.map(recordId -> flatrateDAO.getById(recordId))
+				.map(flatrateDAO::getById)
 				.sorted((contract1, contract2) -> {
 					final Timestamp contractEndDate1 = CoalesceUtil.coalesce(contract1.getMasterEndDate(), contract1.getEndDate());
 
@@ -163,6 +165,8 @@ public class ContractInvoiceService
 			return null;
 		}
 
-		return TimeUtil.asLocalDate(CoalesceUtil.coalesce(latestTerm.get().getMasterEndDate(), latestTerm.get().getEndDate()));
+		return TimeUtil.asLocalDate(
+				CoalesceUtil.coalesce(latestTerm.get().getMasterEndDate(), latestTerm.get().getEndDate()), 
+				timeZone);
 	}
 }

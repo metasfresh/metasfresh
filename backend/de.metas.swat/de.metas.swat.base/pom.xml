@@ -107,6 +107,13 @@
 			<version>10.0.0</version>
 		</dependency>
 
+		<!-- required for PickingSlotQRCode printing -->
+		<dependency>
+			<groupId>de.metas.global_qrcode</groupId>
+			<artifactId>de.metas.global_qrcode.services</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>

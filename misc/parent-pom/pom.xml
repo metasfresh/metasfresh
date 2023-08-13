@@ -46,11 +46,11 @@
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
-        <springfox-swagger.version>2.9.2</springfox-swagger.version>
+        <springfox-swagger.version>3.0.0</springfox-swagger.version>
         <!--        Compatibility with Springfox-->
         <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
         <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>1.3.0</springfox-enum-plugin.version>
+        <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
         
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
         <slf4j-api.version>1.7.25</slf4j-api.version>
@@ -65,8 +65,13 @@
 
         <mockito.version>2.7.22</mockito.version>
 
-        <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
-        <junit-jupiter.version>5.7.0</junit-jupiter.version>
+        <!-- please keep junit jupiter and platform versions synched up -->
+        <junit-jupiter.version>5.9.3</junit-jupiter.version>
+        <junit-platform.version>1.9.3</junit-platform.version>
+
+        <commons-io.version>2.11.0</commons-io.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <guava.version>30.1.1-jre</guava.version>
     </properties>
 
     <modules>
@@ -166,16 +171,6 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit-jupiter.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-params</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apiguardian</groupId>
-                    <artifactId>apiguardian-api</artifactId>
-                </exclusion>
-            </exclusions>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -183,25 +178,11 @@
             <artifactId>junit-vintage-engine</artifactId>
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apiguardian</groupId>
-                    <artifactId>apiguardian-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849 -->
         <dependency>
             <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.6.2</version>
+            <artifactId>junit-platform-runner</artifactId>
+            <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
         
@@ -264,7 +245,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>30.1.1-jre</version>
+                <version>${guava.version}</version>
             </dependency>
 
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
@@ -417,9 +398,13 @@
                                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                             </manifest>
                             <manifestEntries>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildTag>${BUILD_TAG}</ciBuildTag>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciJobName>${JOB_NAME}</ciJobName>
+                                <!--suppress UnresolvedMavenProperty -->
                                 <ciBuildUrl>${BUILD_URL}</ciBuildUrl>
                             </manifestEntries>
                         </archive>
@@ -429,7 +414,15 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.1.0</version>
+                    <dependencies>
+                        <!-- Declaring this explicitly to allow go-offline-maven-plugin to pick it up -->
+                        <dependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit-platform</artifactId>
+                            <version>3.1.0</version>
+                        </dependency>
+                    </dependencies>
                     <configuration>
                         <!-- Jacoco prepare-agent builds some command-line params without which jacoco will not instrument.
                              Hence it is important to add those command-line params where @{argLine} holds those params.
@@ -453,6 +446,7 @@
                         <trimStackTrace>false</trimStackTrace>
 
                         <systemPropertyVariables>
+                            <!--suppress UnresolvedMavenProperty -->
                             <concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
                         </systemPropertyVariables>
                         <includes>
@@ -506,7 +500,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.6</version>
+                    <version>0.8.7</version>
                 </plugin>
 
                 <!--This plugin's configuration is used to store Eclipse m2e settings
@@ -566,6 +560,15 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+				<!-- https://github.com/qaware/go-offline-maven-plugin
+					enables our docker builds to resolve dependencies in a separate layer
+					and therefore cache it. -->
+				<plugin>
+					<groupId>de.qaware.maven</groupId>
+					<artifactId>go-offline-maven-plugin</artifactId>
+					<version>1.2.8</version>
+				</plugin>
+
             </plugins>
         </pluginManagement>
     </build>

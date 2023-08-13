@@ -87,14 +87,11 @@ import lombok.experimental.UtilityClass;
 	}
 
 
-	public void assertIFAProductImported(@NonNull final I_I_Pharma_Product ifaProduct)
-	{
+	public void assertIFAProductImported(@NonNull final I_I_Pharma_Product ifaProduct) {
 		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
 		assertThat(product).isNotNull();
-		assertThat(product.getValue()).isNotNull();
-		assertThat(product.getValue()).isEqualTo(ifaProduct.getA00PZN());
-		assertThat(product.getName()).isNotNull();
-		assertThat(product.getName()).isEqualTo(ifaProduct.getA00PNAM());
+		assertThat(product.getValue()).isNotNull().isEqualTo(ifaProduct.getA00PZN());
+		assertThat(product.getName()).isNotNull().isEqualTo(ifaProduct.getA00PNAM());
 		assertThat(product.getDescription()).isEqualTo(ifaProduct.getA00PBEZ());
 		assertThat(product.getUPC()).isEqualTo(ifaProduct.getA00GTIN());
 		assertThat(product.getPackageSize()).isEqualTo(ifaProduct.getA00PGMENG());
@@ -108,12 +105,12 @@ import lombok.experimental.UtilityClass;
 
 	@Builder
 	@Value
-	public class IFAFlags
+	public static class IFAFlags
 	{
-		final boolean isColdChain;
-		final boolean isPrescription;
-		final boolean isNarcotic;
-		final boolean isTFG;
+		boolean isColdChain;
+		boolean isPrescription;
+		boolean isNarcotic;
+		boolean isTFG;
 	}
 
 	public void assertIFAProductFlags(@NonNull final I_I_Pharma_Product ifaProduct, final @NonNull IFAFlags flags)

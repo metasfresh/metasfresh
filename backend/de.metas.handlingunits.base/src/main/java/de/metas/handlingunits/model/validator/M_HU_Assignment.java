@@ -22,23 +22,8 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IReference;
-import org.adempiere.util.lang.LazyInitializer;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -46,6 +31,21 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.IReference;
+import org.adempiere.util.lang.LazyInitializer;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Validator(I_M_HU_Assignment.class)
 public class M_HU_Assignment
@@ -126,18 +126,15 @@ public class M_HU_Assignment
 		final Map<ArrayKey, Map<Integer, I_M_InOut>> uniqueSegment2inouts = new HashMap<>();
 		for (final I_M_InOut inout : inouts.values())
 		{
+			final I_C_DocType docTypeRecord = Services.get(IDocTypeDAO.class).getById(inout.getC_DocType_ID());
 			// Create the unique segment where current inout shall be placed
 			final ArrayKey uniqueSegment = Util.mkKey(
-					inout.isSOTrx() // Validation shall only take place if both InOuts are shipments or receipts
+					inout.isSOTrx(), // Validation shall only take place if both InOuts are shipments or receipts
+					docTypeRecord.getDocBaseType() // ..and when both inouts have the same base type (e.g. an HU may be received with BaseType MMR and send again with MMS)
 					);
 
 			// Add current inout to its unique segment's list
-			Map<Integer, I_M_InOut> inoutsForSegment = uniqueSegment2inouts.get(uniqueSegment);
-			if (inoutsForSegment == null)
-			{
-				inoutsForSegment = new HashMap<>();
-				uniqueSegment2inouts.put(uniqueSegment, inoutsForSegment);
-			}
+			final Map<Integer, I_M_InOut> inoutsForSegment = uniqueSegment2inouts.computeIfAbsent(uniqueSegment, k -> new HashMap<>());
 			inoutsForSegment.put(inout.getM_InOut_ID(), inout);
 
 			// Make sure we have only one inout per segment

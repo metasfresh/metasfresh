@@ -22,23 +22,23 @@ package de.metas.quantity;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Optional;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Optional;
 
 /**
  * Uom-based capacity definition for all sorts of containers.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "uom")
 public final class Capacity
 {
 
@@ -66,10 +66,17 @@ public final class Capacity
 		return new Capacity(qty, productId, uom, allowNegativeCapacity);
 	}
 
+	public static Capacity createCapacity(
+			@NonNull final Quantity qty,
+			@NonNull final ProductId productId)
+	{
+		return new Capacity(qty.toBigDecimal(), productId, qty.getUOM(), false);
+	}
+
 	private final ProductId productId;
+	private final UomId uomId;
 	private final I_C_UOM uom;
 	private final BigDecimal capacity;
-
 	private final boolean infiniteCapacity;
 	private final boolean allowNegativeCapacity;
 
@@ -83,6 +90,7 @@ public final class Capacity
 			final boolean allowNegativeCapacity)
 	{
 		this.productId = productId;
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 		this.uom = uom;
 
 		this.capacity = capacity;
@@ -97,6 +105,7 @@ public final class Capacity
 	private Capacity(@NonNull final ProductId productId, @NonNull final I_C_UOM uom)
 	{
 		this.productId = productId;
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 		this.uom = uom;
 
 		capacity = null;
@@ -204,9 +213,7 @@ public final class Capacity
 	 * <p>
 	 * e.g. if Qty=13 and Capacity=10 then QtyPacks=2 (13/10 rounded up).
 	 *
-	 * @param qty
 	 * @param targetUom quantity's unit of measure
-	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
 	public Optional<QuantityTU> calculateQtyTU(
@@ -271,7 +278,7 @@ public final class Capacity
 	@Override
 	public String toString()
 	{
-		return "CapacityImpl ["
+		return "Capacity ["
 				+ "infiniteCapacity=" + infiniteCapacity
 				+ ", capacity(qty)=" + capacity
 				+ ", product=" + productId

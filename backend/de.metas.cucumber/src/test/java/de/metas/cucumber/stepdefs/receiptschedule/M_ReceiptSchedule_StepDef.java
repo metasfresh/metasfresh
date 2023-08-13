@@ -31,9 +31,15 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.order.OrderLineId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -41,14 +47,19 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_InOut;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -61,11 +72,19 @@ import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_Pro
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_QtyOrdered;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
+import static org.compiere.util.Env.getCtx;
 
 public class M_ReceiptSchedule_StepDef
 {
+	private static final String EMPTIES_RECEIVE = "EMPTIES RECEIVE";
+	private static final String EMPTIES_RETURN = "EMPTIES RETURN";
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
+	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
@@ -75,6 +94,7 @@ public class M_ReceiptSchedule_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_Product_StepDefData productTable;
+	private final M_InOut_StepDefData inOutTable;
 
 	public M_ReceiptSchedule_StepDef(
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
@@ -83,7 +103,8 @@ public class M_ReceiptSchedule_StepDef
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_Product_StepDefData productTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_InOut_StepDefData inOutTable)
 	{
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.orderTable = orderTable;
@@ -92,6 +113,7 @@ public class M_ReceiptSchedule_StepDef
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.warehouseTable = warehouseTable;
 		this.productTable = productTable;
+		this.inOutTable = inOutTable;
 	}
 
 	@And("^after not more than (.*)s, M_ReceiptSchedule are found:$")
@@ -112,13 +134,19 @@ public class M_ReceiptSchedule_StepDef
 			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
 			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bPartnerIdentifier);
 
 			final String bpPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bpPartnerLocationIdentifier);
+			final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
+					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+					.orElseGet(() -> Integer.parseInt(bpPartnerLocationIdentifier));
+			Assertions.assertThat(bPartnerLocationID).isNotNull();
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
+			final Integer productID = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+			Assertions.assertThat(productID).isNotNull();
 
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyOrdered);
 
@@ -127,11 +155,18 @@ public class M_ReceiptSchedule_StepDef
 
 			assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
 			assertThat(receiptSchedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
-			assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
-			assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
-			assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+			assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
+			assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocationID);
+			assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(productID);
 			assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
 			assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
+
+			final BigDecimal qtyOrderedTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedTU);
+			if (qtyOrderedTU != null)
+			{
+				final de.metas.handlingunits.model.I_C_OrderLine orderLine1 = InterfaceWrapperHelper.load(receiptSchedule.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
+				assertThat(orderLine1.getQtyEnteredTU()).isEqualTo(qtyOrderedTU);
+			}
 
 			final BigDecimal qtyMoved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyMoved);
 			if (qtyMoved != null)
@@ -143,6 +178,41 @@ public class M_ReceiptSchedule_StepDef
 			assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
 			receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule);
+		}
+	}
+
+	@And("^there is no M_ReceiptSchedule for C_OrderLine (.*)$")
+	public void validate_no_M_ReceiptSchedule_created(@NonNull final String purchaseOrderLineIdentifier)
+	{
+		final I_C_OrderLine purchaseOrderLine = orderLineTable.get(purchaseOrderLineIdentifier);
+		final OrderLineId purchaseOrderLineId = OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID());
+
+		validateNoReceiptScheduleCreatedForPurchaseOrderLine(purchaseOrderLineId);
+
+		final IReceiptScheduleProducer producer = receiptScheduleProducerFactory.createProducer(I_C_OrderLine.Table_Name, false);
+
+		final List<I_M_ReceiptSchedule> purchaseOrderReceiptSchedules = producer.createOrUpdateReceiptSchedules(purchaseOrderLine, Collections.emptyList());
+		assertThat(purchaseOrderReceiptSchedules).isNull();
+	}
+
+	@And("^trigger (EMPTIES RECEIVE|EMPTIES RETURN) process:$")
+	public void trigger_empties_process(@NonNull final String type, @NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> table = dataTable.asMaps();
+		for (final Map<String, String> row : table)
+		{
+			if (type.equals(EMPTIES_RECEIVE))
+			{
+				createInOutEmpties(X_M_InOut.MOVEMENTTYPE_CustomerReturns, row);
+			}
+			else if (type.equals(EMPTIES_RETURN))
+			{
+				createInOutEmpties(X_M_InOut.MOVEMENTTYPE_VendorReturns, row);
+			}
+			else
+			{
+				throw new RuntimeException("ReturnMovementType " + type + " not supported!");
+			}
 		}
 	}
 
@@ -187,5 +257,73 @@ public class M_ReceiptSchedule_StepDef
 		receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule.get());
 
 		return true;
+	}
+
+	private void validateNoReceiptScheduleCreatedForPurchaseOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		final I_M_ReceiptSchedule schedule = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(COLUMNNAME_C_OrderLine_ID, orderLineId.getRepoId())
+				.create()
+				.firstOnlyOrNull(I_M_ReceiptSchedule.class);
+
+		Assertions.assertThat(schedule).isNull();
+	}
+
+	private void createInOutEmpties(@NonNull final String movementType, @NonNull final Map<String, String> row)
+	{
+		final String receiptScheduleIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if(Check.isNotBlank(receiptScheduleIdentifier))
+		{
+			createDraftEmptiesForReceiptSchedule(movementType, row);
+			return;
+		}
+
+		createDraftEmpties(movementType, row);
+	}
+
+	private void createDraftEmptiesForReceiptSchedule(@NonNull final String movementType, @NonNull final Map<String, String> row)
+	{
+		final String receiptScheduleIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		assertThat(receiptScheduleIdentifier).isNotNull();
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+		assertThat(receiptSchedule).isNotNull();
+
+		final I_M_InOut emptiesInOut = huEmptiesService.createDraftEmptiesInOutFromReceiptSchedule(receiptSchedule, movementType);
+
+		final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		inOutTable.putOrReplace(inOutIdentifier, emptiesInOut);
+	}
+
+	private void createDraftEmpties(@NonNull final String movementType, @NonNull final Map<String, String> row)
+	{
+		final I_M_InOut inOut = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+
+		huEmptiesService.newReturnsInOutProducer(getCtx())
+				.setMovementType(movementType)
+				.setMovementDate(de.metas.common.util.time.SystemTime.asDayTimestamp())
+				.fillReturnsInOutHeader(inOut);
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
+		Assertions.assertThat(bPartner).isNotNull();
+
+		inOut.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+
+		final String bpartnerLocIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner_Location bPartnerLoc = bPartnerLocationTable.get(bpartnerLocIdentifier);
+		Assertions.assertThat(bPartnerLoc).isNotNull();
+
+		inOut.setC_BPartner_Location_ID(bPartnerLoc.getC_BPartner_Location_ID());
+
+		final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+		Assertions.assertThat(warehouse).isNotNull();
+
+		inOut.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+
+		saveRecord(inOut);
+
+		final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		inOutTable.putOrReplace(inOutIdentifier, inOut);
 	}
 }

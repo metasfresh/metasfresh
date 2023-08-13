@@ -122,9 +122,8 @@ final class DocumentAttachments
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void addEntry(final MultipartFile file) throws IOException
+	public void addEntry(@NonNull final MultipartFile file) throws IOException
 	{
-		Check.assumeNotNull(file, "Parameter file is not null");
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 

@@ -1,10 +1,6 @@
 package de.metas.purchasecandidate.material.event;
 
-import java.util.Optional;
-
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
@@ -14,6 +10,10 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -74,7 +74,7 @@ public class PurchaseCandidateAdvisedEventCreator
 
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent
 				.builder()
-				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
+				.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())

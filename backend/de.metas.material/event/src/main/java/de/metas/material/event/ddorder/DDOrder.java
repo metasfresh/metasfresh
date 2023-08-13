@@ -72,6 +72,8 @@ public class DDOrder
 	 */
 	MaterialDispoGroupId materialDispoGroupId;
 
+	boolean simulated;
+
 	@JsonCreator
 	@Builder
 	private DDOrder(
@@ -83,7 +85,8 @@ public class DDOrder
 			@JsonProperty("lines") @Singular final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus,
-			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
+			@JsonProperty("simulated") final boolean simulated)
 	{
 		this.orgId = orgId;
 
@@ -97,5 +100,6 @@ public class DDOrder
 		this.ddOrderId = ddOrderId;
 		this.docStatus = docStatus;
 		this.materialDispoGroupId = materialDispoGroupId;
+		this.simulated = simulated;
 	}
 }

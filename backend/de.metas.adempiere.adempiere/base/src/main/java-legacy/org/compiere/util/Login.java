@@ -31,6 +31,7 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
 import org.compiere.model.I_AD_User;
@@ -40,10 +41,9 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Login Manager
@@ -82,6 +82,7 @@ public class Login
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 	private final transient IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient ISessionBL sessionBL = Services.get(ISessionBL.class);
@@ -124,7 +125,7 @@ public class Login
 	 * @return available roles; never null or empty
 	 * @throws AdempiereException in case of any error (including no roles found)
 	 */
-	public Set<KeyNamePair> authenticate(@Nullable final String username, @Nullable final HashableString password)
+	public LoginAuthenticateResponse authenticate(@Nullable final String username, @Nullable final HashableString password)
 	{
 		if (username == null || Check.isBlank(username))
 		{
@@ -135,8 +136,6 @@ public class Login
 			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
 		}
 
-		//
-		// Try auth via LDAP
 		final LoginContext ctx = getCtx();
 
 		//
@@ -235,7 +234,7 @@ public class Login
 
 		//
 		// Get user's roles
-		final Set<KeyNamePair> roles = new LinkedHashSet<>();
+		final ArrayList<Role> roles = new ArrayList<>();
 		for (final Role role : roleDAO.getUserRoles(userId))
 		{
 			// if webui then skip non-webui roles
@@ -249,8 +248,7 @@ public class Login
 				ctx.setSysAdmin(true);
 			}
 
-			final KeyNamePair roleKNP = KeyNamePair.of(role.getId(), role.getName(), role.getDescription());
-			roles.add(roleKNP);
+			roles.add(role);
 		}
 		//
 		if (roles.isEmpty())
@@ -259,7 +257,10 @@ public class Login
 		}
 
 		log.debug("User={}, roles={}", username, roles);
-		return roles;
+		return LoginAuthenticateResponse.builder()
+				.userId(userId)
+				.availableRoles(roles)
+				.build();
 	}
 
 	private MFSession startSession()
@@ -288,30 +289,23 @@ public class Login
 	/**
 	 * Sets current role and retrieves clients on which given role can login
 	 *
-	 * @param role role information
 	 * @return list of valid client {@link KeyNamePair}s or null if in error
 	 */
-	public Set<KeyNamePair> setRoleAndGetClients(final KeyNamePair role)
+	public Set<ClientId> setRoleAndGetClients(@NonNull final RoleId roleId)
 	{
-		if (role == null || role.getKey() < 0)
-		{
-			throw new IllegalArgumentException("Role missing");
-		}
-
 		//
 		// Get user role
 		final LoginContext ctx = getCtx();
-		final RoleId roleId = RoleId.ofRepoId(role.getKey());
 		final UserId userId = ctx.getUserId();
 		final IUserRolePermissions rolePermissions = getUserRolePermissions(roleId, userId);
 
 		//
 		// Get login AD_Clients
-		final Set<KeyNamePair> clientsList = rolePermissions.getLoginClients();
-		if (clientsList.isEmpty())
+		final Set<ClientId> clientIds = rolePermissions.getLoginClientIds();
+		if (clientIds.isEmpty())
 		{
 			// shall not happen because in this case rolePermissions retrieving should fail
-			throw new AdempiereException("No Clients for Role: " + role.toStringX()).markAsUserValidationError();
+			throw new AdempiereException("No Clients for Role: " + roleId).markAsUserValidationError();
 		}
 
 		//
@@ -320,7 +314,7 @@ public class Login
 		ctx.setRoleUserLevel(rolePermissions.getUserLevel());
 		ctx.setAllowLoginDateOverride(rolePermissions.hasPermission(IUserRolePermissions.PERMISSION_AllowLoginDateOverride));
 
-		return clientsList;
+		return clientIds;
 	}
 
 	private IUserRolePermissions getUserRolePermissions(final RoleId roleId, final UserId userId)
@@ -332,21 +326,25 @@ public class Login
 		return userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 	}
 
-	public Set<KeyNamePair> getAvailableClients(final RoleId roleId, final UserId userId)
+	public Set<ClientId> getAvailableClients(final RoleId roleId, final UserId userId)
 	{
-		return getUserRolePermissions(roleId, userId)
-				.getLoginClients();
+		return getUserRolePermissions(roleId, userId).getLoginClientIds();
 	}
 
 	/**
 	 * Sets current client in context and retrieves organizations on which we can login
 	 *
-	 * @param client client information
 	 * @return list of valid organizations; never returns null
 	 */
-	public Set<KeyNamePair> setClientAndGetOrgs(final KeyNamePair client)
+	public ImmutableSet<OrgId> setClientAndGetOrgs(@NonNull final ClientId clientId)
 	{
-		if (client == null || client.getKey() < 0)
+		final String clientName = clientDAO.getClientNameById(clientId);
+		return setClientAndGetOrgs(clientId, clientName);
+	}
+
+	public ImmutableSet<OrgId> setClientAndGetOrgs(final ClientId clientId, final String clientName)
+	{
+		if (clientId == null)
 		{
 			throw new IllegalArgumentException("Client missing");
 		}
@@ -354,19 +352,18 @@ public class Login
 		//
 		// Get login organizations
 		final LoginContext ctx = getCtx();
-		final ClientId clientId = ClientId.ofRepoId(client.getKey());
 		final RoleId roleId = ctx.getRoleId();
 		final UserId userId = ctx.getUserId();
-		final Set<KeyNamePair> orgsList = getAvailableOrgs(roleId, userId, clientId);
+		final ImmutableSet<OrgId> orgIds = getAvailableOrgs(roleId, userId, clientId);
 
 		//
 		// Update login context
-		ctx.setClient(clientId, client.getName());
+		ctx.setClient(clientId, clientName);
 
-		return orgsList;
+		return orgIds;
 	}
 
-	public Set<KeyNamePair> getAvailableOrgs(
+	public ImmutableSet<OrgId> getAvailableOrgs(
 			@NonNull final RoleId roleId,
 			@NonNull final UserId userId,
 			@NonNull final ClientId clientId)
@@ -378,40 +375,37 @@ public class Login
 
 		//
 		// Get login organizations
-		final Set<KeyNamePair> orgsList = new TreeSet<>();
-		for (final OrgResource orgResource : role.getLoginOrgs())
-		{
-			orgsList.add(orgResource.asOrgKeyNamePair());
-		}
+		final ImmutableSet<OrgId> orgIds = role.getLoginOrgs()
+				.stream()
+				.map(OrgResource::getOrgIdOrAny)
+				.collect(ImmutableSet.toImmutableSet());
 		// No Orgs
-		if (orgsList.isEmpty())
+		if (orgIds.isEmpty())
 		{
 			log.warn("No Org for AD_Client_ID={}, AD_Role_ID={}, AD_User_ID={} \nPermissions: {}", clientId, roleId, userId, role);
 			return ImmutableSet.of();
 		}
 
-		return orgsList;
+		return orgIds;
 	}
 
 	/**
 	 * Validate Login
 	 *
-	 * @param org log-in org
 	 * @return error message
 	 */
 	@Nullable
-	public String validateLogin(final KeyNamePair org)
+	public String validateLogin(@NonNull final OrgId orgId)
 	{
 		final boolean fireLoginComplete = true;
-		return validateLogin(org, fireLoginComplete);
+		return validateLogin(orgId, fireLoginComplete);
 	}
 
 	@Nullable
-	public String validateLogin(final KeyNamePair org, final boolean fireLoginComplete)
+	public String validateLogin(@NonNull final OrgId orgId, final boolean fireLoginComplete)
 	{
 		final LoginContext ctx = getCtx();
 		final ClientId clientId = ctx.getClientId();
-		final OrgId orgId = OrgId.ofRepoId(org.getKey());
 		final RoleId roleId = ctx.getRoleId();
 		final UserId userId = ctx.getUserId();
 
@@ -455,12 +449,10 @@ public class Login
 	 * <p>
 	 * Assumes that the context is set for #AD_Client_ID, #AD_User_ID, #AD_Role_ID
 	 *
-	 * @param org       org information
-	 * @param timestamp optional date
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
 	public String loadPreferences(
-			@NonNull final KeyNamePair org,
+			@NonNull final OrgId orgId,
 			@Nullable final java.sql.Timestamp timestamp)
 	{
 		final LoginContext ctx = getCtx();
@@ -471,8 +463,9 @@ public class Login
 		//
 		// Org Info - assumes that it is valid
 		{
-			final OrgId orgId = OrgId.ofRepoId(org.getKey());
-			ctx.setOrg(orgId, org.getName());
+			final String orgName = orgsRepo.getOrgName(orgId);
+			ctx.setOrg(orgId, orgName);
+
 			final OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
 			ctx.setProperty(Env.CTXNAME_StoreCreditCardData, orgInfo.getStoreCreditCardNumberMode().getCode());
 			ctx.setProperty(Env.CTXNAME_TimeZone, orgInfo.getTimeZone() != null ? orgInfo.getTimeZone().getId() : null);

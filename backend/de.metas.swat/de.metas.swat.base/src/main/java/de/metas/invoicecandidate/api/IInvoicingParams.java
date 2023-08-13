@@ -22,21 +22,19 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import de.metas.invoicecandidate.api.impl.InvoicingParams;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * Invoicing Enqueueing & generating parameters.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IInvoicingParams
 {
@@ -50,30 +48,44 @@ public interface IInvoicingParams
 	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 
-	/** @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued. */
+	/**
+	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
+	 */
 	boolean isOnlyApprovedForInvoicing();
 
-	/** @return {@code true} if the invoice generator shall do the best effort to consolidate the invoice candidates in a few number of invoices (ideally 1.) */
+	/**
+	 * @return {@code true} if the invoice generator shall do the best effort to consolidate the invoice candidates in a few number of invoices (ideally 1.)
+	 */
 	boolean isConsolidateApprovedICs();
 
-	/** @return {@code true} if the enqueuer shall ignore the scheduled DateToInvoice- */
+	/**
+	 * @return {@code true} if the enqueuer shall ignore the scheduled DateToInvoice-
+	 */
 	boolean isIgnoreInvoiceSchedule();
 
-	/** @return date invoiced to be set to all invoice candidates, right before enqueueing them. */
+	/**
+	 * @return date invoiced to be set to all invoice candidates, right before enqueueing them.
+	 */
 	LocalDate getDateInvoiced();
 
-	/** @return DateAcct to be set to all invoice candidates, right before enqueueing them. */
+	/**
+	 * @return DateAcct to be set to all invoice candidates, right before enqueueing them.
+	 */
 	LocalDate getDateAcct();
 
-	/** @return POReference to be set to all invoice candidates, right before enqueueing them. */
+	/**
+	 * @return POReference to be set to all invoice candidates, right before enqueueing them.
+	 */
 	String getPOReference();
 
-	/** @return {@code true} if invoice candidates with {@code C_Payment_Term_ID=null} shall get the payment term ID or some other ICs, right before enqueueing them. */
+	/**
+	 * @return {@code true} if invoice candidates with {@code C_Payment_Term_ID=null} shall get the payment term ID or some other ICs, right before enqueueing them.
+	 */
 	boolean isSupplementMissingPaymentTermIds();
 
 	/**
 	 * Gets total net amount to invoice checksum (i.e. sum of all IC's let net amount to invoice, without considering the currency).
-	 *
+	 * <p>
 	 * This parameter is created and when invoice candidates to invoice workpackage is enqueued.
 	 *
 	 * @return total net amount to invoice checksum
@@ -81,7 +93,9 @@ public interface IInvoicingParams
 	 */
 	BigDecimal getCheck_NetAmtToInvoice();
 
-	/** @return true if the invoice generator is advised to throw an exception if there is more than one invoice generated. */
+	/**
+	 * @return true if the invoice generator is advised to throw an exception if there is more than one invoice generated.
+	 */
 	boolean isAssumeOneInvoice();
 
 	/**
@@ -102,7 +116,7 @@ public interface IInvoicingParams
 
 	default Map<String, ? extends Object> asMap()
 	{
-		final Builder<String, Object> result = ImmutableMap.<String, Object> builder();
+		final Builder<String, Object> result = ImmutableMap.<String, Object>builder();
 
 		if (getCheck_NetAmtToInvoice() != null)
 		{

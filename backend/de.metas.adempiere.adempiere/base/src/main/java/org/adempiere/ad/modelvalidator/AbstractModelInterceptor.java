@@ -24,9 +24,6 @@ public abstract class AbstractModelInterceptor implements IModelInterceptor, IUs
 
 	/**
 	 * Called when interceptor is registered and needs to be initialized
-	 *
-	 * @param engine
-	 * @param client
 	 */
 	protected abstract void onInit(final IModelValidationEngine engine, final I_AD_Client client);
 

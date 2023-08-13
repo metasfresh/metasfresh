@@ -52,6 +52,8 @@ public class JsonResponseLocation
 	public static final String REGION = "region";
 	public static final String CITY = "city";
 	public static final String COUNTRY_CODE = "countryCode";
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
 	public static final String GLN = "gln";
 	public static final String ACTIVE = "active";
 
@@ -59,11 +61,19 @@ public class JsonResponseLocation
 	public static final String BILL_TO_DEFAULT = "billToDefault";
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
+	public static final String VISITORS_ADDRESS = "visitorsAddress";
+
+	public static final String SETUP_PLACE_NO = "setupPlaceNo";
+	public static final String HANDOVER_LOCATION = "handoverLocation";
+	public static final String REMIT_TO = "remitTo";
+	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
+
+	public static final String EPHEMERAL = "ephemeral";
 
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean active;
 
 	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
@@ -99,20 +109,43 @@ public class JsonResponseLocation
 
 	String countryCode;
 
+	@JsonInclude(Include.NON_EMPTY)
+	String phone;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email;
+
 	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean shipTo;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean shipToDefault;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean billTo;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean billToDefault;
+
+	boolean ephemeral;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String setupPlaceNo;
+
+	@ApiModelProperty
+	boolean remitTo;
+
+	@ApiModelProperty
+	boolean visitorsAddress;
+
+	@ApiModelProperty
+	boolean handoverLocation;
+
+	@ApiModelProperty
+	boolean replicationLookupDefault;
 
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
@@ -136,12 +169,21 @@ public class JsonResponseLocation
 			@JsonProperty(CITY) final String city,
 			@JsonProperty(GLN) final String gln,
 			@JsonProperty(COUNTRY_CODE) @Nullable final String countryCode,
+			@JsonProperty(PHONE) @Nullable final String phone,
+			@JsonProperty(EMAIL) @Nullable final String email,
 			@JsonProperty(SHIP_TO) final boolean shipTo,
 			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
 			@JsonProperty(BILL_TO) final boolean billTo,
 			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
+			@JsonProperty(EPHEMERAL)  final boolean ephemeral,
+			@JsonProperty(VISITORS_ADDRESS) final boolean visitorsAddress,
 
-			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
+			@JsonProperty(SETUP_PLACE_NO) @Nullable final String setupPlaceNo,
+			@JsonProperty(HANDOVER_LOCATION)  final boolean handoverLocation,
+			@JsonProperty(REMIT_TO)  final boolean remitTo,
+			@JsonProperty(REPLICATION_LOOKUP_DEFAULT)  final boolean replicationLookupDefault,
+
+			@JsonProperty("changeInfo") @Nullable final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.gln = gln;
@@ -163,12 +205,22 @@ public class JsonResponseLocation
 		this.region = region;
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
+		this.phone = phone;
+		this.email = email;
 
 		this.billToDefault = billToDefault;
 		this.billTo = billTo;
 		this.shipToDefault = shipToDefault;
 		this.shipTo = shipTo;
+		this.visitorsAddress = visitorsAddress;
 
+		this.setupPlaceNo = setupPlaceNo;
+		this.remitTo = remitTo;
+		this.handoverLocation = handoverLocation;
+		this.replicationLookupDefault = replicationLookupDefault;
+
+		this.ephemeral = ephemeral;
+		
 		this.changeInfo = changeInfo;
 	}
 }

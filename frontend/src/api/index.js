@@ -1,5 +1,4 @@
 import {
-  getAttributesInstance,
   topActionsRequest,
   getZoomIntoWindow,
   discardNewRequest,
@@ -37,7 +36,7 @@ import {
 } from './view';
 import {
   loginRequest,
-  localLoginRequest,
+  checkLoginRequest,
   loginWithToken,
   loginCompletionRequest,
   logoutRequest,
@@ -75,7 +74,6 @@ export {
   elementPathRequest,
   filterViewRequest,
   formatParentUrl,
-  getAttributesInstance,
   getAvailableLang,
   getAvatar,
   getData,
@@ -98,7 +96,7 @@ export {
   getZoomIntoWindow,
   headerPropertiesRequest,
   initQuickInput,
-  localLoginRequest,
+  checkLoginRequest,
   locationConfigRequest,
   locationSearchRequest,
   loginCompletionRequest,

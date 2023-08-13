@@ -1,8 +1,10 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.contracts.commission.model.I_C_LicenseFeeSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.logging.LogManager;
@@ -59,6 +61,12 @@ public class CommissionProductService
 			case MEDIATED_COMMISSION:
 				final I_C_MediatedCommissionSettings mediatedCommissionSettings = InterfaceWrapperHelper.loadOutOfTrx(conditionsRecord.getC_MediatedCommissionSettings_ID(), I_C_MediatedCommissionSettings.class);
 				return ProductId.ofRepoId(mediatedCommissionSettings.getCommission_Product_ID());
+			case MARGIN_COMMISSION:
+				final I_C_Customer_Trade_Margin customerTradeMargin = InterfaceWrapperHelper.loadOutOfTrx(conditionsRecord.getC_Customer_Trade_Margin_ID(), I_C_Customer_Trade_Margin.class);
+				return ProductId.ofRepoId(customerTradeMargin.getCommission_Product_ID());
+			case LICENSE_FEE:
+				final I_C_LicenseFeeSettings licenseFeeSettings = InterfaceWrapperHelper.loadOutOfTrx(conditionsRecord.getC_LicenseFeeSettings_ID(), I_C_LicenseFeeSettings.class);
+				return ProductId.ofRepoId(licenseFeeSettings.getCommission_Product_ID());
 			default:
 				throw new AdempiereException("Unexpected typeConditions for C_Flatrate_Conditions_ID:" + conditionsId)
 						.appendParametersToMessage()
@@ -77,7 +85,7 @@ public class CommissionProductService
 		final I_M_Product productRecord = productDAO.getById(productId);
 		if (!productRecord.isCommissioned())
 		{
-			logger.debug("M_Product_ID={} of invoice candidate has Commissioned=false; -> not going to invoke commission system");
+			logger.debug("M_Product_ID={} of invoice candidate has Commissioned=false; -> not going to invoke commission system", productRecord.getM_Product_ID());
 		}
 		return !productRecord.isCommissioned();
 	}

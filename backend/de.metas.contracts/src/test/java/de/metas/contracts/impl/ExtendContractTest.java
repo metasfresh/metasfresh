@@ -9,7 +9,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,7 +42,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
 	}
 
 	@Test

@@ -30,6 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -141,8 +142,8 @@ public abstract class StepDefData<T>
 	 * @param productRecord the item to store.
 	 *                      In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
 	 */
-	@NonNull
-	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NonNull T productRecord)
+	@NotNull
+	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T productRecord)
 	{
 		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()) && clazz != null)
 		{

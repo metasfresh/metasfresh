@@ -34,6 +34,8 @@
       "shipToDefault": true,
       "billTo": true,
       "billToDefault": true,
+      "visitorsAddress": true,
+      "ephemeral":false,
       "changeInfo": {
         "createdMillis": 1436877663000,
         "createdBy": 100,

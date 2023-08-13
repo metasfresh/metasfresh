@@ -9,7 +9,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserId;
 import lombok.NonNull;
+import de.metas.impex.InputDataSourceId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -21,6 +23,8 @@ public interface IInvoiceHeader
 	InvoiceDocBaseType getDocBaseType();
 
 	String getPOReference();
+
+	String getEMail();
 
 	LocalDate getDateInvoiced();
 
@@ -41,6 +45,8 @@ public interface IInvoiceHeader
 	BPartnerInfo getBillTo();
 
 	BPartnerId getSalesPartnerId();
+
+	UserId getSalesRepId();
 
 	// 03805 : add getter for C_Currency_ID
 	CurrencyId getCurrencyId();
@@ -80,4 +86,13 @@ public interface IInvoiceHeader
 	String getExternalId();
 
 	int getC_Async_Batch_ID();
+
+	int getC_Incoterms_ID();
+
+	String getIncotermLocation();
+
+	String getPaymentRule();
+
+	@Nullable
+	InputDataSourceId getAD_InputDataSource_ID();
 }

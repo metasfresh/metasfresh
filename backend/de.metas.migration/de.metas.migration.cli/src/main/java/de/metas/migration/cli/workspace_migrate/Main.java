@@ -1,21 +1,8 @@
-package de.metas.migration.cli.workspace_migrate;
-
-import java.io.File;
-import java.time.ZonedDateTime;
-
-import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
-import lombok.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableSet;
-
 /*
  * #%L
  * de.metas.migration.cli
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,9 +20,21 @@ import com.google.common.collect.ImmutableSet;
  * #L%
  */
 
+package de.metas.migration.cli.workspace_migrate;
+
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableSet;
+import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.time.ZonedDateTime;
+
 public class Main
 {
-	private static final transient Logger logger = LoggerFactory.getLogger(Main.class);
+	private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
 	private static final String PROP_WORKSPACE = "workspace";
 

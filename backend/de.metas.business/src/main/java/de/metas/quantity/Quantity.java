@@ -1,50 +1,11 @@
 package de.metas.quantity;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.compiere.model.I_C_UOM;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -52,6 +13,20 @@ import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 
 /**
  * Immutable Quantity.
@@ -136,7 +111,7 @@ public final class Quantity implements Comparable<Quantity>
 		return quantity.toBigDecimal();
 	}
 
-	public static UomId getCommonUomIdOfAll(@NonNull final Quantity... quantities)
+	public static UomId getCommonUomIdOfAll(final Quantity... quantities)
 	{
 		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
 
@@ -154,6 +129,32 @@ public final class Quantity implements Comparable<Quantity>
 				"at least two quantity instances have different uoms: {}", uomIds2qties);
 
 		return CollectionUtils.singleElement(uomIds.asList());
+	}
+
+	public static void assertSameUOM(@Nullable final Quantity... quantities)
+	{
+		if (quantities == null || quantities.length <= 0)
+		{
+			return;
+		}
+
+		final ImmutableListMultimap<UomId, Quantity> qtysByUOM = Stream.of(quantities)
+				.filter(Objects::nonNull)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						Quantity::getUomId,
+						qty -> qty));
+
+		// no quantities it's OK
+		if (qtysByUOM.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<UomId> uomIds = qtysByUOM.keySet();
+		if (uomIds.size() > 1)
+		{
+			throw new AdempiereException("at least two quantity instances have different UOMs: " + qtysByUOM);
+		}
 	}
 
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
@@ -215,6 +216,7 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	@Override
+	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 	public boolean equals(Object obj)
 	{
 		if (this == obj)
@@ -239,7 +241,6 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * Checks if <code>this</code> quantity equals with <code>other</code>, not considering the source (i.e. {@link #getSourceQty()}, {@link #getSourceUOM()}).
 	 *
-	 * @param other
 	 * @return true if they are equal
 	 */
 	public boolean equalsIgnoreSource(final Quantity other)
@@ -263,10 +264,9 @@ public final class Quantity implements Comparable<Quantity>
 	 * <p>
 	 * NOTE: quantities will be compared by using {@link BigDecimal#compareTo(BigDecimal)} instead of {@link BigDecimal#equals(Object)}.
 	 *
-	 * @param quantity
 	 * @return true if current Qty/UOM are comparable equal.
 	 */
-	public boolean qtyAndUomCompareToEquals(final Quantity quantity)
+	public boolean qtyAndUomCompareToEquals(@Nullable final Quantity quantity)
 	{
 		if (this == quantity)
 		{
@@ -282,12 +282,7 @@ public final class Quantity implements Comparable<Quantity>
 			return false;
 		}
 
-		if (this.getUOMId() != quantity.getUOMId())
-		{
-			return false;
-		}
-
-		return true;
+		return this.getUOMId() == quantity.getUOMId();
 	}
 
 	/**
@@ -414,7 +409,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 * @param uom
 	 * @return infinite quantity (using given UOM)
 	 */
 	public static Quantity infinite(final I_C_UOM uom)
@@ -552,6 +546,11 @@ public final class Quantity implements Comparable<Quantity>
 		return ONE.compareTo(qty) == 0;
 	}
 
+	public boolean isPositive()
+	{
+		return signum() > 0;
+	}
+
 	/**
 	 * Adds given quantity and returns the result.
 	 * Assumes that the UOMs are equal.
@@ -649,6 +648,20 @@ public final class Quantity implements Comparable<Quantity>
 				this.sourceUom);
 	}
 
+	public Quantity subtract(@NonNull final Percent percent)
+	{
+		if (percent.isZero())
+		{
+			return this;
+		}
+
+		return new Quantity(
+				percent.subtractFromBase(this.qty, this.uom.getStdPrecision()),
+				this.uom,
+				percent.subtractFromBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				this.sourceUom);
+	}
+
 	public Quantity subtract(@NonNull final Quantity qtyToSubtract)
 	{
 		if (qtyToSubtract.isZero())
@@ -703,6 +716,11 @@ public final class Quantity implements Comparable<Quantity>
 	{
 		final Quantity diff = this.subtract(quantity);
 		return diff.signum();
+	}
+
+	public boolean isGreaterThan(@NonNull final Quantity other)
+	{
+		return this.compareTo(other) > 0;
 	}
 
 	public Quantity divide(@NonNull final BigDecimal divisor)
@@ -760,11 +778,11 @@ public final class Quantity implements Comparable<Quantity>
 
 	private Quantity multiply(
 			@NonNull final Percent percent,
-			@NonNull final int precision,
+			final int precision,
 			@NonNull RoundingMode roundingMode)
 	{
 		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision, roundingMode);
-		
+
 		return this.qty.compareTo(newQty) != 0
 				? new Quantity(newQty, uom)
 				: this;
@@ -781,8 +799,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	private UOMPrecision getUOMPrecision()
 	{
-		final UOMPrecision precision = UOMPrecision.ofInt(uom.getStdPrecision());
-		return precision;
+		return UOMPrecision.ofInt(uom.getStdPrecision());
 	}
 
 	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)

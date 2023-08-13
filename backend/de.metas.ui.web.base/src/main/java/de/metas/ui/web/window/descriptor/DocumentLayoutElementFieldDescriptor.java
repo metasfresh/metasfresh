@@ -5,7 +5,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.devices.DeviceDescriptorsList;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.util.Check;
@@ -41,7 +41,7 @@ import java.util.Optional;
  * #L%
  */
 
-@SuppressWarnings("serial")
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class DocumentLayoutElementFieldDescriptor implements Serializable
 {
 	public static Builder builder(final String fieldName)
@@ -178,6 +178,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		return emptyFieldText.translate(adLanguage);
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutElementFieldDescriptor.Builder.class);

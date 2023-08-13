@@ -24,14 +24,14 @@ package de.metas.ui.web.quickinput.ddorderline;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.ddorder.api.DDOrderLineCreateRequest;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.distribution.ddorder.DDOrderLineCreateRequest;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.util.Services;
-import org.eevolution.api.DDOrderLineId;
+import org.compiere.SpringContextHolder;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_Order;
 
 import java.math.BigDecimal;
@@ -39,7 +39,7 @@ import java.util.Set;
 
 public class DDOrderLineQuickInputProcessor implements IQuickInputProcessor
 {
-	private final IHUDDOrderBL huddOrderBL = Services.get(IHUDDOrderBL.class);
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 
 	@Override
 	public Set<DocumentId> process(final QuickInput quickInput)
@@ -59,7 +59,7 @@ public class DDOrderLineQuickInputProcessor implements IQuickInputProcessor
 				.qtyEntered(qty)
 				.build();
 
-		final DDOrderLineId ddOrderLineId = huddOrderBL.addDDOrderLine(ddOrderLineCreateRequest);
+		final DDOrderLineId ddOrderLineId = ddOrderService.addDDOrderLine(ddOrderLineCreateRequest);
 
 		final DocumentId documentId = DocumentId.of(ddOrderLineId.getRepoId());
 		return ImmutableSet.of(documentId);

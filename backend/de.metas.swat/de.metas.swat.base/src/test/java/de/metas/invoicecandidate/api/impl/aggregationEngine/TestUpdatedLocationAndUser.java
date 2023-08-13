@@ -14,8 +14,10 @@ import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -62,6 +64,9 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 	}
 
 	private C_Invoice_Candidate_Builder prepareInvoiceCandidate()

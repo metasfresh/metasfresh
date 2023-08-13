@@ -39,7 +39,6 @@
         <java.version>14</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <camel.version>3.7.3</camel.version>
-        <guava.version>30.1.1-jre</guava.version>
         <smooks.version>1.7.1</smooks.version>
         <jackson.version>2.12.1</jackson.version>
         <!--
@@ -79,15 +78,29 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-api</artifactId>
             <version>${camel.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
             <version>${camel.version}</version>
-            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.manufacturing</groupId>
+            <artifactId>de-metas-common-manufacturing</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-http-common</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-http-starter</artifactId>
+            <version>${camel.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-
 
 </project>

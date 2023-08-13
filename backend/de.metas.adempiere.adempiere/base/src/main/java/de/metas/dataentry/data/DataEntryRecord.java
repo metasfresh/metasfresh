@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.CreatedUpdatedInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -53,12 +54,12 @@ import lombok.experimental.NonFinal;
 @Value
 public class DataEntryRecord
 {
-	final DataEntrySubTabId dataEntrySubTabId;
-	final TableRecordReference mainRecord;
+	DataEntrySubTabId dataEntrySubTabId;
+	TableRecordReference mainRecord;
 
 	@Getter(AccessLevel.NONE)
-	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
-	final boolean readOnly;
+	Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
+	boolean readOnly;
 
 	/** May be empty if not yet persisted */
 	@Setter(AccessLevel.NONE)
@@ -171,10 +172,10 @@ public class DataEntryRecord
 		}
 
 		final ZonedDateTime updated = ZonedDateTime.now();
-		final DataEntryCreatedUpdatedInfo createdUpdatedInfo;
+		final CreatedUpdatedInfo createdUpdatedInfo;
 		if (previousFieldVersion == null)
 		{
-			createdUpdatedInfo = DataEntryCreatedUpdatedInfo.createNew(updatedBy, updated);
+			createdUpdatedInfo = CreatedUpdatedInfo.createNew(updatedBy, updated);
 		}
 		else
 		{
@@ -202,28 +203,28 @@ public class DataEntryRecord
 	public Optional<ZonedDateTime> getCreatedValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(DataEntryCreatedUpdatedInfo::getCreated);
+				.map(CreatedUpdatedInfo::getCreated);
 	}
 
 	public Optional<UserId> getCreatedByValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(DataEntryCreatedUpdatedInfo::getCreatedBy);
+				.map(CreatedUpdatedInfo::getCreatedBy);
 	}
 
 	public Optional<ZonedDateTime> getUpdatedValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(DataEntryCreatedUpdatedInfo::getUpdated);
+				.map(CreatedUpdatedInfo::getUpdated);
 	}
 
 	public Optional<UserId> getUpdatedByValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(DataEntryCreatedUpdatedInfo::getUpdatedBy);
+				.map(CreatedUpdatedInfo::getUpdatedBy);
 	}
 
-	public Optional<DataEntryCreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId fieldId)
+	public Optional<CreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getOptional(fieldId)
 				.map(DataEntryRecordField::getCreatedUpdatedInfo);

@@ -31,9 +31,9 @@ import de.metas.ui.web.dashboard.UserDashboardItemChangeResult;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardChangedEventsList;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardItemChangedEvent;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardOrderChangedEvent;
-import de.metas.ui.web.websocket.WebSocketProducersRegistry;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.websocket.producers.WebSocketProducersRegistry;
+import de.metas.websocket.sender.WebsocketSender;
+import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import org.slf4j.Logger;
 

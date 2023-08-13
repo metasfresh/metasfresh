@@ -5,6 +5,7 @@ Feature: Allow order discount via API (compensation group)
     Given infrastructure and metasfresh are running
 	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
@@ -28,8 +29,8 @@ Feature: Allow order discount via API (compensation group)
       | Identifier     | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_60 | Endcustomer_60 | N            | Y              | ps_60                         |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN          | C_BPartner_ID.Identifier |
-      | l_60       | bPLocation60 | endcustomer_60           |
+      | Identifier | GLN          | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
+      | l_60       | bPLocation60 | endcustomer_60           | true                | true         |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
 {
@@ -116,9 +117,10 @@ Feature: Allow order discount via API (compensation group)
   "externalHeaderId": "externalHeaderId60",
   "inputDataSourceName": "int-Shopware",
   "ship": false,
-  "invoice": false
+  "invoice": false,
+  "closeOrder": false
 }
 """
     Then the following group compensation order lines were created for externalHeaderId: 'externalHeaderId60'
       | Line | IsGroupCompensationLine | GroupCompensationPercentage | GroupCompensationType | GroupCompensationAmtType |
-      | 1    | true                    | 2                           | D                     | P                        |
+      | 20   | true                    | 2                           | D                     | P                        |

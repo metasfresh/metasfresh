@@ -54,9 +54,26 @@ Feature: external references for metasfresh resources
     """
 {
     "items": [
-        { "lookupItem": { "id": "noIssueWithThisId", "type": "IssueID" } },
-        { "lookupItem": { "id": "existingId", "type": "IssueID" }, "metasfreshId": 43 },
-        { "lookupItem": { "id": "againNoIssueWithThisId", "type": "IssueID" } }
+        {
+            "lookupItem": {
+                "id": "noIssueWithThisId",
+                "type": "IssueID"
+            }
+        },
+        {
+            "lookupItem": {
+                "id": "existingId",
+                "type": "IssueID"
+            },
+            "metasfreshId": 43,
+            "systemName": "Github"
+        },
+        {
+            "lookupItem": {
+                "id": "againNoIssueWithThisId",
+                "type": "IssueID"
+            }
+        }
     ]
 }
     """

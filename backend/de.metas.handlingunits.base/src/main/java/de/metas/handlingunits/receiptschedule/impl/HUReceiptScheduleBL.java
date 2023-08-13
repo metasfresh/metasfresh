@@ -16,6 +16,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -261,6 +262,35 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			final String trxName = InterfaceWrapperHelper.getTrxName(rsa);
 			final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule = rsa.getM_ReceiptSchedule();
 			huAssignmentBL.unassignHUs(receiptSchedule, husToUnassign, trxName);
+		}
+	}
+
+	@Override
+	public void adjustLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_ReceiptSchedule fromReceiptSchedule)
+	{
+		// TU
+		final BigDecimal qtyToReceiveTU = Services.get(IHUReceiptScheduleBL.class).getQtyToMoveTU(fromReceiptSchedule);
+		{
+			if (qtyToReceiveTU.signum() > 0 && qtyToReceiveTU.compareTo(lutuConfig.getQtyTU()) < 0)
+			{
+				lutuConfig.setQtyTU(qtyToReceiveTU);
+			}
+		}
+
+		// LU
+		{
+			final int qtyLU;
+			if (qtyToReceiveTU.signum() <= 0)
+			{
+				qtyLU = 0;
+			}
+			else
+			{
+				final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+				qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfig, qtyToReceiveTU);
+			}
+
+			lutuConfig.setQtyLU(BigDecimal.valueOf(qtyLU));
 		}
 	}
 

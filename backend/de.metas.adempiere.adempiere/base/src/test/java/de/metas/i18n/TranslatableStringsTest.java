@@ -1,15 +1,14 @@
 package de.metas.i18n;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.google.common.collect.ImmutableList;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -21,12 +20,12 @@ import de.metas.currency.CurrencyCode;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,5 +65,37 @@ public class TranslatableStringsTest
 		assertThat(amountTrl.translate("en_US")).isEqualTo("12,345.67 EUR");
 		assertThat(amountTrl.translate("de_DE")).isEqualTo("12.345,67 EUR");
 		assertThat(amountTrl.translate("de_CH")).isEqualTo("12'345.67 EUR");
+	}
+
+	@Nested
+	public class constant
+	{
+		@Test
+		void emptyIsEmpty()
+		{
+			assertThat(ConstantTranslatableString.EMPTY.isEmpty()).isTrue();
+		}
+	}
+
+	@Nested
+	public class parse
+	{
+		@Test
+		void test()
+		{
+			final ITranslatableString result = TranslatableStrings.parse("we use @var1@ and @var2@ bla bla.");
+			assertThat(result)
+					.usingRecursiveComparison()
+					.isEqualTo(new CompositeTranslatableString(
+							ImmutableList.of(
+									ConstantTranslatableString.of("we use "),
+									TranslatableStrings.adElementOrMessage("var1"),
+									ConstantTranslatableString.of(" and "),
+									TranslatableStrings.adElementOrMessage("var2"),
+									ConstantTranslatableString.of(" bla bla.")
+							),
+							""));
+
+		}
 	}
 }

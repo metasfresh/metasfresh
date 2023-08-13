@@ -18,12 +18,12 @@ import java.util.Objects;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,6 @@ import java.util.Objects;
  * Target table: rows original table
  */
 @Value
-@Builder(toBuilder = true)
 public class SqlViewRowsWhereClause
 {
 	public static SqlViewRowsWhereClause noRecords()
@@ -46,13 +45,26 @@ public class SqlViewRowsWhereClause
 	private static final SqlAndParams SQL_ALWAYS_FALSE = SqlAndParams.of("1=2");
 
 	boolean noRecords;
-	SqlAndParams rowsPresentInViewSelection;
-	SqlAndParams rowsPresentInTable;
-	SqlAndParams rowsMatchingFilter;
+	@Nullable SqlAndParams rowsPresentInViewSelection;
+	@Nullable SqlAndParams rowsPresentInTable;
+	@Nullable SqlAndParams rowsMatchingFilter;
+
+	@Builder(toBuilder = true)
+	private SqlViewRowsWhereClause(
+			final boolean noRecords,
+			@Nullable final SqlAndParams rowsPresentInViewSelection,
+			@Nullable final SqlAndParams rowsPresentInTable,
+			@Nullable final SqlAndParams rowsMatchingFilter)
+	{
+		this.noRecords = noRecords;
+		this.rowsPresentInViewSelection = SqlAndParams.emptyToNull(rowsPresentInViewSelection);
+		this.rowsPresentInTable = SqlAndParams.emptyToNull(rowsPresentInTable);
+		this.rowsMatchingFilter = SqlAndParams.emptyToNull(rowsMatchingFilter);
+	}
 
 	public boolean isNoRecords()
 	{
-		return toSqlAndParams() == SQL_ALWAYS_FALSE;
+		return noRecords || toSqlAndParams() == SQL_ALWAYS_FALSE;
 	}
 
 	public SqlAndParams toSqlAndParams()
@@ -61,12 +73,11 @@ public class SqlViewRowsWhereClause
 		{
 			return SQL_ALWAYS_FALSE;
 		}
-
-		return SqlAndParams.andNullables(
-				rowsPresentInViewSelection,
-				rowsPresentInTable,
-				rowsMatchingFilter)
-				.orElse(SQL_ALWAYS_FALSE);
+		else
+		{
+			return SqlAndParams.andNullables(rowsPresentInViewSelection, rowsPresentInTable, rowsMatchingFilter)
+					.orElse(SQL_ALWAYS_FALSE);
+		}
 	}
 
 	public String toSqlString()
@@ -83,11 +94,8 @@ public class SqlViewRowsWhereClause
 
 	public SqlViewRowsWhereClause withRowsMatchingFilter(@Nullable final SqlAndParams rowsMatchingFilter)
 	{
-		if (Objects.equals(this.rowsMatchingFilter, rowsMatchingFilter))
-		{
-			return this;
-		}
-
-		return toBuilder().rowsMatchingFilter(rowsMatchingFilter).build();
+		return !Objects.equals(this.rowsMatchingFilter, rowsMatchingFilter)
+				? toBuilder().rowsMatchingFilter(rowsMatchingFilter).build()
+				: this;
 	}
 }

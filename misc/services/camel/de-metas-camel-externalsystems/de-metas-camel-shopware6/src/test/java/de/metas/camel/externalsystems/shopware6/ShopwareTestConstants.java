@@ -28,13 +28,34 @@ public interface ShopwareTestConstants
 	String MOCK_TRACE_ID = "traceId";
 
 	String MOCK_EUR_CODE = "EUR";
+	String MOCK_UNIT_CODE = "kg";
 	String MOCK_CURRENCY_ID = "currencyId";
+	String MOCK_UNIT_ID = "unitId";
+
+	String MOCK_SALUTATION_ID = "salutationId";
+	String MOCK_BILLING_SALUTATION_ID = "billingSalutationId";
+	String MOCK_SALUTATION_DISPLAY_NAME = "salutationDisplayName";
+	String MOCK_BILLING_SALUTATION_DISPLAY_NAME = "billingSalutationDisplayName";
 
 	int MOCK_NORMAL_VAT_PRODUCT_ID = 1001;
 	int MOCK_REDUCED_VAT_PRODUCT_ID = 1002;
+	String MOCK_ORDER_ID = "1111";
+	String MOCK_ORDER_NO = "2222";
 
 	String MOCK_NORMAL_VAT_RATES = "7.7,19,0";
 	String MOCK_REDUCED_VAT_RATES = "5.5,12";
+	String MOCK_JSON_EMAIL_PATH = "/customFields/deliveryNotificationEmailAddress";
+
+	String MOCK_JSON_METASFRESH_ID_PATH = "/customFields/externalReference";
+	String MOCK_JSON_SHOPWARE_ID_PATH = "/customFields/userId";
+	String MOCK_TARGET_PRICE_LIST_ID = "121";
+	String MOCK_IS_TAX_INCLUDED = "true";
+	String MOCK_BILLING_ADDRESS_HTTP_URL = "https://www.matter.com/api/order-address/billingAddressId";
+	String MOCK_JSON_PATH_SALES_REP_ID = "/orderCustomer/customFields/customSalesRepId";
+
+	String MOCK_GET_CUSTOMERS_HTTP_URL = "https://www.matter.com/api/search/customer";
+	String MOCK_CUSTOMER_ADDRESS_HTTP_URL = "https://www.matter.com/api/customer-address/customerAddressId";
+	String MOCK_CUSTOMER_GROUP_HTTP_URL = "https://www.matter.com/api/customer-group/customerGroupId";
 
 	String MOCK_BPARTNER_UPSERT = "mock:bPartnerUpsert";
 	String MOCK_OL_CAND_CREATE = "mock:olCandCreate";

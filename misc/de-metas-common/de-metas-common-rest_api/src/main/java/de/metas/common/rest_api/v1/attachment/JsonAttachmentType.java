@@ -24,5 +24,5 @@ package de.metas.common.rest_api.v1.attachment;
 
 public enum JsonAttachmentType
 {
-	Data, URL;
+	LocalFileURL, Data, URL;
 }
