@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor2
 Feature: invoice generation and invoice candidates aggregation
 
   Background:
