@@ -734,7 +734,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setC_Harvesting_Calendar_ID(final int calendarId)
 	{
-		C_Harvesting_Calendar_ID = checkOverrideID("C_Harvesting_Calendar_ID", C_Harvesting_Calendar_ID, calendarId);
+		C_Harvesting_Calendar_ID = calendarId;
 	}
 
 	public int getHarvesting_Year_ID()
@@ -744,7 +744,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setHarvesting_Year_ID(final int yearId)
 	{
-		Harvesting_Year_ID = checkOverrideID("Harvesting_Year_ID", Harvesting_Year_ID, yearId);
+		Harvesting_Year_ID = yearId;
 	}
 
 	public int getM_Warehouse_ID()
@@ -754,6 +754,6 @@ public class InvoiceHeaderImplBuilder
 
 	public void setM_Warehouse_ID(final int warehouseId)
 	{
-		M_Warehouse_ID = checkOverrideID("M_Warehouse_ID", M_Warehouse_ID, warehouseId);
+		M_Warehouse_ID = warehouseId;
 	}
 }
