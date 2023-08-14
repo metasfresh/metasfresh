@@ -45,6 +45,8 @@ import de.metas.util.Services;
 
 public class AggregationDAO implements IAggregationDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_C_Invoice_Candidate_Agg retrieveAggregate(final I_C_Invoice_Candidate ic)
 	{
@@ -156,7 +158,7 @@ public class AggregationDAO implements IAggregationDAO
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final String headerAggregationKeyCalc)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_HeaderAggregation.class, ic)
 				.addEqualsFilter(I_C_Invoice_Candidate_HeaderAggregation.COLUMN_HeaderAggregationKey, headerAggregationKeyCalc)
 				.create()
