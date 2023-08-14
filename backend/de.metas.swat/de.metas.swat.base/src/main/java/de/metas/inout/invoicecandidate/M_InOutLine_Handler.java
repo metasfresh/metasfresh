@@ -44,6 +44,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -1065,13 +1066,21 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+		final I_M_InOutLine inOutLine = getM_InOutLineOrNull(ic);
+
+		if(inOutLine == null)
+		{
+			return;
+		}
+
 		setWarehouseId(ic, inOutLine);
 	}
 
 	private static void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_M_InOutLine inOutLine)
 	{
-		if (inOutLine.getC_OrderLine_ID() < 0)
+		final OrderLineId referencedOrderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
+
+		if (referencedOrderLineId == null)
 		{
 			return;
 		}
