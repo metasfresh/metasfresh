@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
@@ -23,6 +25,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -41,7 +44,7 @@ import java.util.Set;
 @ToString
 public class InvoiceHeaderImplBuilder
 {
-	private static int SalesRep_User_ID_UNSET_VALUE = Integer.MIN_VALUE;
+	private static final int REPO_ID_UNSET_VALUE = Integer.MIN_VALUE;
 
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
@@ -74,7 +77,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int Sales_BPartner_ID;
 
-	private int SalesRep_User_ID = SalesRep_User_ID_UNSET_VALUE;
+	private int SalesRep_User_ID = REPO_ID_UNSET_VALUE;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -110,6 +113,10 @@ public class InvoiceHeaderImplBuilder
 	private boolean notShowOriginCountry;
 
 	private int C_PaymentInstruction_ID;
+
+	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
+	private int Harvesting_Year_ID = REPO_ID_UNSET_VALUE;
+	private int M_Warehouse_ID = REPO_ID_UNSET_VALUE;
 
 	InvoiceHeaderImplBuilder()
 	{
@@ -173,6 +180,10 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
+
+		invoiceHeader.setCalendarId(CalendarId.ofRepoIdOrNull(getC_Harvesting_Calendar_ID()));
+		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
+		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
 
 		return invoiceHeader;
 	}
@@ -409,7 +420,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		if (SalesRep_User_ID == SalesRep_User_ID_UNSET_VALUE)
+		if (SalesRep_User_ID == REPO_ID_UNSET_VALUE)
 		{
 			SalesRep_User_ID = salesRep_ID;
 		}
@@ -715,4 +726,55 @@ public class InvoiceHeaderImplBuilder
 		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
 	}
 
+
+	public int getC_Harvesting_Calendar_ID()
+	{
+		return C_Harvesting_Calendar_ID;
+	}
+
+	public void setC_Harvesting_Calendar_ID(final int calendarId)
+	{
+		if (C_Harvesting_Calendar_ID == REPO_ID_UNSET_VALUE)
+		{
+			C_Harvesting_Calendar_ID = calendarId;
+		}
+		else if (calendarId != C_Harvesting_Calendar_ID)
+		{
+			C_Harvesting_Calendar_ID = -1;
+		}
+	}
+
+	public int getHarvesting_Year_ID()
+	{
+		return Harvesting_Year_ID;
+	}
+
+	public void setHarvesting_Year_ID(final int yearId)
+	{
+		if (Harvesting_Year_ID == REPO_ID_UNSET_VALUE)
+		{
+			Harvesting_Year_ID = yearId;
+		}
+		else if (yearId != Harvesting_Year_ID)
+		{
+			Harvesting_Year_ID = -1;
+		}
+	}
+
+	public int getM_Warehouse_ID()
+	{
+		return M_Warehouse_ID;
+	}
+
+	public void setM_Warehouse_ID(final int warehouseId)
+	{
+		if (M_Warehouse_ID == REPO_ID_UNSET_VALUE)
+		{
+			M_Warehouse_ID = warehouseId;
+		}
+		else if (warehouseId != M_Warehouse_ID)
+		{
+			M_Warehouse_ID = -1;
+		}
+	}
 }
