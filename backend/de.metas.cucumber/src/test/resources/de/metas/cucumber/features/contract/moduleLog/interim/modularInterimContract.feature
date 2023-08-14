@@ -57,14 +57,6 @@ Feature: Interim contract settings for bpartner
       | moduleLogConditions_PO              | moduleLogConditions_po_08022023      | ModularContract | interimPS                         | Ca                       | modCntr_settings_1                 |
       | moduleLogConditions_interim         | moduleLogConditions_interim_08022023 | InterimInvoice  | interimPS                         | Ca                       | modCntr_settings_1                 |
 
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                  |
-      | po_order   | false   | bp_interimPO             | 2022-03-03  | POO             | poModuleLogContract_ref_08022023 |
-    And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
-      | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
-      | po_orderLine_2 | po_order              | module_log_product_PO   | 500        | moduleLogConditions_PO                  |
-
     When invoke "C_BPartner_InterimContract_Upsert" process:
       | C_BPartner_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | IsInterimContract |
       | bp_interimPO             | harvesting_calendar                 | year_2023                     | true              |
@@ -72,6 +64,14 @@ Feature: Interim contract settings for bpartner
     Then metasfresh contains C_BPartner_InterimContract:
       | C_BPartner_InterimContract_ID.Identifier | C_BPartner_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | IsInterimContract |
       | bp_interimContractSettings               | bp_interimPO             | harvesting_calendar                 | year_2023                     | true              |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                  |
+      | po_order   | false   | bp_interimPO             | 2022-03-03  | POO             | poModuleLogContract_ref_08022023 |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
+      | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
+      | po_orderLine_2 | po_order              | module_log_product_PO   | 500        | moduleLogConditions_PO                  |
 
     When the order identified by po_order is completed
 
@@ -87,7 +87,7 @@ Feature: Interim contract settings for bpartner
       | moduleLogContract_1           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
       | moduleLogContract_2           | moduleLogConditions_interim         | bp_interimPO                | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | interimPS                         | InterimContract     | Wa                 | CO            |
       | moduleLogContract_3           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
-      | moduleLogContract_3           | moduleLogConditions_interim         | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | interimPS                         | InterimContract     | Wa                 | CO            |
+      | moduleLogContract_4           | moduleLogConditions_interim         | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | interimPS                         | InterimContract     | Wa                 | CO            |
 
 
     
