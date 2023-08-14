@@ -44,7 +44,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
-import de.metas.order.OrderLineId;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -437,7 +437,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setC_Shipping_Location_ID(inOut.getC_BPartner_Location_Value_ID());
 
-		setWarehouseId(icRecord, inOutLineRecord);
+		setWarehouseId(icRecord);
+		setHarvestingDetails(icRecord);
 		//
 		// Save the Invoice Candidate, so that we can use its ID further down
 		invoiceCandBL.setPaymentTermIfMissing(icRecord);
@@ -1066,26 +1067,27 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_M_InOutLine inOutLine = getM_InOutLineOrNull(ic);
-
-		if(inOutLine == null)
+		final OrderId referencedOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (referencedOrderId == null)
 		{
 			return;
 		}
 
-		setWarehouseId(ic, inOutLine);
+		final I_C_Order order = ic.getC_Order();
+		ic.setM_Warehouse_ID(order.getM_Warehouse_ID());
 	}
 
-	private static void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_M_InOutLine inOutLine)
+	@Override
+	public void setHarvestingDetails(final @NonNull I_C_Invoice_Candidate ic)
 	{
-		final OrderLineId referencedOrderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
-
-		if (referencedOrderLineId == null)
+		final OrderId referencedOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (referencedOrderId == null)
 		{
 			return;
 		}
 
-		final I_C_Order order = inOutLine.getC_OrderLine().getC_Order();
-		ic.setM_Warehouse_ID(order.getM_Warehouse_ID());
+		final I_C_Order order = ic.getC_Order();
+		ic.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
+		ic.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
 	}
 }

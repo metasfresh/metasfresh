@@ -585,12 +585,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		candidate.setC_Flatrate_Term_ID(orderLine.getC_Flatrate_Term_ID());
 	}
 
-	private static void setHarvestingDetails(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final I_C_Order order)
-	{
-		candidate.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
-		candidate.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
-	}
-
 	@Override
 	public void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic)
 	{
@@ -601,8 +595,27 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setWarehouseId(ic, order);
 	}
 
+	@Override
+	public void setHarvestingDetails(final @NonNull I_C_Invoice_Candidate ic)
+	{
+		final OrderId referencedOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (referencedOrderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = InterfaceWrapperHelper.create(ic.getC_Order(), I_C_Order.class);
+		setHarvestingDetails(ic, order);
+	}
+
 	private static void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_Order order)
 	{
 		ic.setM_Warehouse_ID(order.getM_Warehouse_ID());
+	}
+
+	private static void setHarvestingDetails(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final I_C_Order order)
+	{
+		candidate.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
+		candidate.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
 	}
 }

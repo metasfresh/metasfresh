@@ -464,11 +464,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setInvoiceAdditionalText(invoiceHeader.getInvoiceAdditionalText());
 			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			invoice.setC_PaymentInstruction_ID(invoiceHeader.getC_PaymentInstruction_ID());
-
-			if (invoiceHeader.getWarehouseId() != null)
-			{
-				invoice.setM_Warehouse_ID(WarehouseId.toRepoId(invoiceHeader.getWarehouseId()));
-			}
+			invoice.setM_Warehouse_ID(WarehouseId.toRepoId(invoiceHeader.getWarehouseId()));
 
 			setHarvestingDetails(invoice, invoiceHeader);
 

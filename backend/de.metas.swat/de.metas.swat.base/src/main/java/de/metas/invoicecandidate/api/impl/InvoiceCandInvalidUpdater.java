@@ -395,6 +395,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, icRecord);
 
 		invoiceCandidateHandlerBL.setWarehouseId(icRecord);
+		invoiceCandidateHandlerBL.setHarvestingDetails(icRecord);
 
 		//
 		// Save it

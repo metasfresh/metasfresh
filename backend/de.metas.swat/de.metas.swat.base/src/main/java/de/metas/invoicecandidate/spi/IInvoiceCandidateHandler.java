@@ -306,6 +306,8 @@ public interface IInvoiceCandidateHandler
 
 	default void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic) {}
 
+	default void setHarvestingDetails(@NonNull final I_C_Invoice_Candidate ic) {}
+
 	/**
 	 * Price and tax info calculation result.
 	 * <p>
