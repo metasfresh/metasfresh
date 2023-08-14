@@ -44,7 +44,7 @@ import java.util.Set;
 @ToString
 public class InvoiceHeaderImplBuilder
 {
-	private static int SalesRep_User_ID_UNSET_VALUE = Integer.MIN_VALUE;
+	private static final int REPO_ID_UNSET_VALUE = Integer.MIN_VALUE;
 
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
@@ -77,7 +77,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int Sales_BPartner_ID;
 
-	private int SalesRep_User_ID = SalesRep_User_ID_UNSET_VALUE;
+	private int SalesRep_User_ID = REPO_ID_UNSET_VALUE;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -114,9 +114,9 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_PaymentInstruction_ID;
 
-	private int C_Harvesting_Calendar_ID;
-	private int Harvesting_Year_ID;
-	private int M_Warehouse_ID;
+	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
+	private int Harvesting_Year_ID = REPO_ID_UNSET_VALUE;
+	private int M_Warehouse_ID = REPO_ID_UNSET_VALUE;
 
 	InvoiceHeaderImplBuilder()
 	{
@@ -420,7 +420,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		if (SalesRep_User_ID == SalesRep_User_ID_UNSET_VALUE)
+		if (SalesRep_User_ID == REPO_ID_UNSET_VALUE)
 		{
 			SalesRep_User_ID = salesRep_ID;
 		}
@@ -734,7 +734,14 @@ public class InvoiceHeaderImplBuilder
 
 	public void setC_Harvesting_Calendar_ID(final int calendarId)
 	{
-		C_Harvesting_Calendar_ID = calendarId;
+		if (C_Harvesting_Calendar_ID == REPO_ID_UNSET_VALUE)
+		{
+			C_Harvesting_Calendar_ID = calendarId;
+		}
+		else if (calendarId != C_Harvesting_Calendar_ID)
+		{
+			C_Harvesting_Calendar_ID = -1;
+		}
 	}
 
 	public int getHarvesting_Year_ID()
@@ -744,7 +751,14 @@ public class InvoiceHeaderImplBuilder
 
 	public void setHarvesting_Year_ID(final int yearId)
 	{
-		Harvesting_Year_ID = yearId;
+		if (Harvesting_Year_ID == REPO_ID_UNSET_VALUE)
+		{
+			Harvesting_Year_ID = yearId;
+		}
+		else if (yearId != Harvesting_Year_ID)
+		{
+			Harvesting_Year_ID = -1;
+		}
 	}
 
 	public int getM_Warehouse_ID()
@@ -754,6 +768,13 @@ public class InvoiceHeaderImplBuilder
 
 	public void setM_Warehouse_ID(final int warehouseId)
 	{
-		M_Warehouse_ID = warehouseId;
+		if (M_Warehouse_ID == REPO_ID_UNSET_VALUE)
+		{
+			M_Warehouse_ID = warehouseId;
+		}
+		else if (warehouseId != M_Warehouse_ID)
+		{
+			M_Warehouse_ID = -1;
+		}
 	}
 }
