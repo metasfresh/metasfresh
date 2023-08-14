@@ -22,7 +22,7 @@
 
 package de.metas.contracts.interceptor;
 
-import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermBL;
+import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

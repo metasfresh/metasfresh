@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CacheMgt;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.contracts.ConditionsId;
@@ -1018,9 +1019,10 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public void save(@NonNull I_C_Flatrate_Term flatrateTerm)
+	public void save(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		InterfaceWrapperHelper.save(flatrateTerm);
+		CacheMgt.get().reset(I_C_Flatrate_Term.Table_Name, flatrateTerm.getC_Flatrate_Term_ID());
 	}
 
 	@Override

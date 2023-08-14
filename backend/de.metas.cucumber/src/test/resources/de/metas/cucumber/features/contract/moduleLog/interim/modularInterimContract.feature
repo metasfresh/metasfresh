@@ -53,8 +53,9 @@ Feature: Interim contract settings for bpartner
       | ModCntr_Module_ID.Identifier | SeqNo | Name                | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_08022023 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                            | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_08022023 | ModularContract | interimPS            | Ca                       | modCntr_settings_1                 |
+      | C_Flatrate_Conditions_ID.Identifier | Name                                 | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO              | moduleLogConditions_po_08022023      | ModularContract | interimPS                         | Ca                       | modCntr_settings_1                 |
+      | moduleLogConditions_interim         | moduleLogConditions_interim_08022023 | InterimInvoice  | interimPS                         | Ca                       | modCntr_settings_1                 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                  |
@@ -64,16 +65,29 @@ Feature: Interim contract settings for bpartner
       | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
       | po_orderLine_2 | po_order              | module_log_product_PO   | 500        | moduleLogConditions_PO                  |
 
-    When the order identified by po_order is completed
+    When invoke "C_BPartner_InterimContract_Upsert" process:
+      | C_BPartner_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | IsInterimContract |
+      | bp_interimPO             | harvesting_calendar                 | year_2023                     | true              |
 
-    And retrieve C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
-      | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
-      | moduleLogContract_2           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
-    And validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_1           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | interimPS            | ModularContract     | Wa                 | CO            |
-      | moduleLogContract_2           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | interimPS            | ModularContract     | Wa                 | CO            |
+    Then metasfresh contains C_BPartner_InterimContract:
+      | C_BPartner_InterimContract_ID.Identifier | C_BPartner_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | IsInterimContract |
+      | bp_interimContractSettings               | bp_interimPO             | harvesting_calendar                 | year_2023                     | true              |
+#
+#    When the order identified by po_order is completed
+#
+#    And retrieve C_Flatrate_Term:
+#      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
+#      | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
+#      | moduleLogContract_2           | moduleLogConditions_interim         | module_log_product_PO   | po_order                       | po_orderLine                       |
+#      | moduleLogContract_3           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
+#      | moduleLogContract_4           | moduleLogConditions_interim         | module_log_product_PO   | po_order                       | po_orderLine_2                     |
+#    And validate created C_Flatrate_Term:
+#      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
+#      | moduleLogContract_1           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
+#      | moduleLogContract_2           | moduleLogConditions_interim         | bp_interimPO                | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | interimPS                         | InterimContract     | Wa                 | CO            |
+#      | moduleLogContract_3           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
+#      | moduleLogContract_3           | moduleLogConditions_interim         | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | interimPS                         | InterimContract     | Wa                 | CO            |
+
 
     When invoke "C_BPartner_InterimContract_Upsert" process:
       | C_BPartner_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | IsInterimContract |

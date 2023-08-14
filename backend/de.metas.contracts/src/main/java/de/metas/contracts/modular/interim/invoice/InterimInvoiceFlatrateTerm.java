@@ -20,36 +20,49 @@
  * #L%
  */
 
-package de.metas.contracts.FlatrateTermRequest;
+package de.metas.contracts.modular.interim.invoice;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.lang.SOTrx;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 
 @Value
-@Builder
-public class ModularFlatrateTermQuery
+@Builder(toBuilder = true)
+public class InterimInvoiceFlatrateTerm
 {
-	@NonNull BPartnerId bPartnerId;
 	@Nullable
+	InterimInvoiceFlatrateTermId id;
+	@NonNull FlatrateTermId flatrateTermId;
+	@NonNull OrderLineId orderLineId;
+	@Nullable
+	InvoiceCandidateId withholdingInvoiceCandidateId;
+	@Nullable
+	InvoiceCandidateId interimInvoiceCandidateId;
+	@NonNull
+	UomId uomId;
+	@NonNull
 	ProductId productId;
-	@NonNull SOTrx soTrx;
 	@Nullable
-	YearId yearId;
-	@NonNull TypeConditions typeConditions;
+	CurrencyId currencyId;
 	@Nullable
 	CalendarId calendarId;
 	@Nullable
-	Timestamp dateFrom;
+	Quantity qtyOrdered;
 	@Nullable
-	Timestamp dateTo;
+	Quantity qtyDelivered;
+	@Nullable
+	Quantity qtyInvoiced;
+	@Nullable
+	Money priceActual;
 }

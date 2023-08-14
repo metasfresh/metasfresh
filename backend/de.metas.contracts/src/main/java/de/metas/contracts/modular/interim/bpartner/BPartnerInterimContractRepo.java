@@ -26,11 +26,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.model.I_C_BPartner_InterimContract;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_InterimContract;
 import org.springframework.stereotype.Repository;
 
 import java.util.stream.Stream;
@@ -41,6 +41,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class BPartnerInterimContractRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull
+	public BPartnerInterimContract getById(@NonNull final BPartnerInterimContractId bPartnerInterimContractId)
+	{
+		final I_C_BPartner_InterimContract record = InterfaceWrapperHelper.load(bPartnerInterimContractId.getRepoId(), I_C_BPartner_InterimContract.class);
+		return of(record);
+	}
 
 	@NonNull
 	public Stream<BPartnerInterimContract> getByRequest(@NonNull final BPartnerInterimContractUpsertRequest request)

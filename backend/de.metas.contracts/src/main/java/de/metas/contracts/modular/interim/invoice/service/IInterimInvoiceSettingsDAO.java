@@ -20,36 +20,20 @@
  * #L%
  */
 
-package de.metas.contracts.FlatrateTermRequest;
+package de.metas.contracts.modular.interim.invoice.service;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
-import lombok.Builder;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.interim.invoice.InterimInvoiceSettings;
+import de.metas.contracts.modular.interim.invoice.InterimInvoiceSettingsId;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 
-@Value
-@Builder
-public class ModularFlatrateTermQuery
+public interface IInterimInvoiceSettingsDAO extends ISingletonService
 {
-	@NonNull BPartnerId bPartnerId;
+	InterimInvoiceSettings getById(@NonNull final InterimInvoiceSettingsId id);
+
 	@Nullable
-	ProductId productId;
-	@NonNull SOTrx soTrx;
-	@Nullable
-	YearId yearId;
-	@NonNull TypeConditions typeConditions;
-	@Nullable
-	CalendarId calendarId;
-	@Nullable
-	Timestamp dateFrom;
-	@Nullable
-	Timestamp dateTo;
+	InterimInvoiceSettings getForTerm(@NonNull FlatrateTermId id);
 }

@@ -20,37 +20,53 @@
  * #L%
  */
 
-package de.metas.contracts.modular.interim.bpartner;
+package de.metas.contracts.modular.interim.invoice;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.contracts.model.I_C_BPartner_InterimContract;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 @Value
-public class BPartnerInterimContractId implements RepoIdAware
+public class InterimInvoiceSettingsId implements RepoIdAware
 {
-	int repoId;
-
 	@JsonCreator
-	public static BPartnerInterimContractId ofRepoId(final int repoId)
+	public static InterimInvoiceSettingsId ofRepoId(final int repoId)
 	{
-		return new BPartnerInterimContractId(repoId);
+		return new InterimInvoiceSettingsId(repoId);
 	}
 
 	@Nullable
-	public static BPartnerInterimContractId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static InterimInvoiceSettingsId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId != null && repoId > 0 ? new BPartnerInterimContractId(repoId) : null;
+		return repoId > 0 ? new InterimInvoiceSettingsId(repoId) : null;
 	}
 
-	private BPartnerInterimContractId(final int repoId)
+	public static Optional<InterimInvoiceSettingsId> optionalOfRepoId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, I_C_BPartner_InterimContract.COLUMNNAME_C_BPartner_InterimContract_ID);
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	public static int toRepoId(@Nullable final InterimInvoiceSettingsId interimInvoiceSettingsId)
+	{
+		return interimInvoiceSettingsId != null ? interimInvoiceSettingsId.getRepoId() : -1;
+	}
+
+	public static boolean equals(@Nullable final InterimInvoiceSettingsId o1, @Nullable final InterimInvoiceSettingsId o2)
+	{
+		return Objects.equals(o1, o2);
+	}
+
+	int repoId;
+
+	private InterimInvoiceSettingsId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Interim_Invoice_Settings_ID");
 	}
 
 	@Override

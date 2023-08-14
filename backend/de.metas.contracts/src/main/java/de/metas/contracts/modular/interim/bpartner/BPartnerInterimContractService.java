@@ -23,12 +23,17 @@
 package de.metas.contracts.modular.interim.bpartner;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -50,6 +55,12 @@ public class BPartnerInterimContractService
 	{
 		this.bPartnerInterimContractRepo = bPartnerInterimContractRepo;
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
+	}
+
+	@NonNull
+	public BPartnerInterimContract getById(@NonNull final BPartnerInterimContractId bPartnerInterimContractId)
+	{
+		return bPartnerInterimContractRepo.getById(bPartnerInterimContractId);
 	}
 
 	public void upsert(@NonNull final BPartnerInterimContractUpsertRequest request)
@@ -94,5 +105,18 @@ public class BPartnerInterimContractService
 				.isInterimContract(request.getIsInterimContract())
 				.bPartnerId(request.getBPartnerId())
 				.build();
+	}
+
+	public boolean isBpartnerInterimInvoice(final I_C_Flatrate_Term modularFlatrateTermRecord)
+	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(modularFlatrateTermRecord.getC_Flatrate_Conditions_ID());
+		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
+		Check.assumeNotNull(modularContractSettings, "Modular Contract Settings shouldn't be null at this point");
+
+		return bPartnerInterimContractRepo.getByRequest(BPartnerInterimContractUpsertRequest.builder()
+																.bPartnerId(BPartnerId.ofRepoId(modularFlatrateTermRecord.getBill_BPartner_ID()))
+																.yearAndCalendarId(modularContractSettings.getYearAndCalendarId())
+																.isInterimContract(true)
+																.build()).findAny().isPresent();
 	}
 }

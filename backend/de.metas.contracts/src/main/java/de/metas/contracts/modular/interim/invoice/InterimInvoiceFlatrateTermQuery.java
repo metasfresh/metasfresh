@@ -20,36 +20,30 @@
  * #L%
  */
 
-package de.metas.contracts.FlatrateTermRequest;
+package de.metas.contracts.modular.interim.invoice;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.CalendarId;
-import de.metas.calendar.standard.YearId;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.lang.SOTrx;
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Value
 @Builder
-public class ModularFlatrateTermQuery
+public class InterimInvoiceFlatrateTermQuery
 {
-	@NonNull BPartnerId bPartnerId;
-	@Nullable
-	ProductId productId;
-	@NonNull SOTrx soTrx;
-	@Nullable
-	YearId yearId;
-	@NonNull TypeConditions typeConditions;
-	@Nullable
-	CalendarId calendarId;
-	@Nullable
-	Timestamp dateFrom;
-	@Nullable
-	Timestamp dateTo;
+	@NonNull ProductId productId;
+	@Nullable BPartnerId bpartnerId;
+	@Nullable OrderLineId orderLineId;
+	@Nullable ConditionsId conditionsId;
+	@Nullable FlatrateTermId flatrateTermId;
+	@Nullable Instant startDate;
+	@Nullable Instant endDate;
+	@Nullable Instant dateOn;
 }
