@@ -51,6 +51,6 @@ public enum LogEntryContractType implements ReferenceListAwareEnum
 	@Nullable
 	public static LogEntryContractType ofNullableCode(@Nullable final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		return index.ofNullableCode(code);
 	}
 }

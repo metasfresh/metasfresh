@@ -132,11 +132,6 @@ INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582641 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
--- Column: ModCntr_Log.ContractType
--- 2023-08-10T16:54:25.267097Z
-UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-08-10 19:54:25.266','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587273
-;
-
 -- Window: Log für modulare Verträge, InternalName=ModCntr_Log
 -- 2023-08-10T17:20:12.343350500Z
 UPDATE AD_Window SET WindowType='T',Updated=TO_TIMESTAMP('2023-08-10 20:20:12.342','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Window_ID=541711
@@ -146,5 +141,166 @@ UPDATE AD_Window SET WindowType='T',Updated=TO_TIMESTAMP('2023-08-10 20:20:12.34
 -- Table: ModCntr_Log
 -- 2023-08-10T17:53:33.606476500Z
 UPDATE AD_Tab SET IsInsertRecord='N', IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-08-10 20:53:33.605','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547012
+;
+
+-- Column: ModCntr_Log.ContractType
+-- 2023-08-14T16:02:23.762714Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-08-14 19:02:23.762','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587273
+;
+
+-- 2023-08-14T16:04:17.865964200Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582646,0,TO_TIMESTAMP('2023-08-14 19:04:17.721','YYYY-MM-DD HH24:MI:SS.US'),100,'The type of the contract this log entry is related to from a billing perspective.','de.metas.contracts','Y','Vertragsart','Vertragsart',TO_TIMESTAMP('2023-08-14 19:04:17.721','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-08-14T16:04:17.871445700Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582646 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2023-08-14T16:04:34.498248700Z
+UPDATE AD_Element_Trl SET Description='Die Art des Vertrags, auf den sich dieser Protokolleintrag aus Sicht der Rechnungsstellung bezieht.',Updated=TO_TIMESTAMP('2023-08-14 19:04:34.498','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582646 AND AD_Language='de_CH'
+;
+
+-- 2023-08-14T16:04:34.524465300Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582646,'de_CH')
+;
+
+-- Element: null
+-- 2023-08-14T16:04:38.993231100Z
+UPDATE AD_Element_Trl SET Description='Die Art des Vertrags, auf den sich dieser Protokolleintrag aus Sicht der Rechnungsstellung bezieht.',Updated=TO_TIMESTAMP('2023-08-14 19:04:38.993','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582646 AND AD_Language='de_DE'
+;
+
+-- 2023-08-14T16:04:38.995231800Z
+UPDATE AD_Element SET Description='Die Art des Vertrags, auf den sich dieser Protokolleintrag aus Sicht der Rechnungsstellung bezieht.' WHERE AD_Element_ID=582646
+;
+
+-- 2023-08-14T16:04:39.293994800Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582646,'de_DE')
+;
+
+-- 2023-08-14T16:04:39.298249Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582646,'de_DE')
+;
+
+-- Element: null
+-- 2023-08-14T16:05:16.859312900Z
+UPDATE AD_Element_Trl SET Name='Contract Type', PrintName='Contract Type',Updated=TO_TIMESTAMP('2023-08-14 19:05:16.859','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582646 AND AD_Language='en_US'
+;
+
+-- 2023-08-14T16:05:16.860820500Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582646,'en_US')
+;
+
+
+-- Field: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> Vertragsart
+-- Column: ModCntr_Log.ContractType
+-- 2023-08-14T16:08:32.433558200Z
+UPDATE AD_Field SET AD_Name_ID=582646, Description='Die Art des Vertrags, auf den sich dieser Protokolleintrag aus Sicht der Rechnungsstellung bezieht.', Help=NULL, Name='Vertragsart',Updated=TO_TIMESTAMP('2023-08-14 19:08:32.433','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=720148
+;
+
+-- 2023-08-14T16:08:32.440191700Z
+UPDATE AD_Field_Trl trl SET Description='Die Art des Vertrags, auf den sich dieser Protokolleintrag aus Sicht der Rechnungsstellung bezieht.' WHERE AD_Field_ID=720148 AND AD_Language='de_DE'
+;
+
+-- 2023-08-14T16:08:32.443702400Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(582646)
+;
+
+-- 2023-08-14T16:08:32.454278900Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=720148
+;
+
+-- 2023-08-14T16:08:32.459036Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(720148)
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 10 -> details.Vertragsart
+-- Column: ModCntr_Log.ContractType
+-- 2023-08-14T16:10:03.548321200Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.548','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620334
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 10 -> details.Rechnungskandidat
+-- Column: ModCntr_Log.C_Invoice_Candidate_ID
+-- 2023-08-14T16:10:03.552295100Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.552','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617980
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> flags.Aktiv
+-- Column: ModCntr_Log.IsActive
+-- 2023-08-14T16:10:03.555797300Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.555','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617970
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> flags.Verkaufstransaktion
+-- Column: ModCntr_Log.IsSOTrx
+-- 2023-08-14T16:10:03.559385200Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.559','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617981
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> flags.Verarbeitet
+-- Column: ModCntr_Log.Processed
+-- 2023-08-14T16:10:03.563394300Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.563','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617971
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 10 -> details.Document Type
+-- Column: ModCntr_Log.ModCntr_Log_DocumentType
+-- 2023-08-14T16:10:03.566396600Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.566','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=618088
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 10 -> details.Erntejahr
+-- Column: ModCntr_Log.Harvesting_Year_ID
+-- 2023-08-14T16:10:03.570395200Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.57','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=618089
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 10 -> details.Rechnungspartner
+-- Column: ModCntr_Log.Bill_BPartner_ID
+-- 2023-08-14T16:10:03.573400200Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.573','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=618090
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> numbers.Menge
+-- Column: ModCntr_Log.Qty
+-- 2023-08-14T16:10:03.577248100Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.577','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=618091
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> numbers.Maßeinheit
+-- Column: ModCntr_Log.C_UOM_ID
+-- 2023-08-14T16:10:03.580760100Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=180,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.58','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=618092
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> numbers.Betrag
+-- Column: ModCntr_Log.Amount
+-- 2023-08-14T16:10:03.583289300Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=190,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.583','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=618093
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> numbers.Währung
+-- Column: ModCntr_Log.C_Currency_ID
+-- 2023-08-14T16:10:03.585297300Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=200,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.585','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=618094
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> records.DB-Tabelle
+-- Column: ModCntr_Log.AD_Table_ID
+-- 2023-08-14T16:10:03.588477800Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=210,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.588','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617977
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> records.Datensatz-ID
+-- Column: ModCntr_Log.Record_ID
+-- 2023-08-14T16:10:03.590991500Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=220,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.59','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617978
+;
+
+-- UI Element: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> main -> 20 -> org.Organisation
+-- Column: ModCntr_Log.AD_Org_ID
+-- 2023-08-14T16:10:03.592995600Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=230,Updated=TO_TIMESTAMP('2023-08-14 19:10:03.592','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617973
 ;
 

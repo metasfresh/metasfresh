@@ -122,6 +122,7 @@ public class ModularContractLogDAO
 				.contractId(FlatrateTermId.ofRepoIdOrNull(log.getC_Flatrate_Term_ID()))
 				.productId(ProductId.ofRepoIdOrNull(log.getM_Product_ID()))
 				.referencedRecord(TableRecordReference.of(log.getAD_Table_ID(), log.getRecord_ID()))
+				.contractType(LogEntryContractType.ofCode(log.getContractType()))
 				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(log.getCollectionPoint_BPartner_ID()))
 				.producerBPartnerId(BPartnerId.ofRepoIdOrNull(log.getProducer_BPartner_ID()))
 				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(log.getBill_BPartner_ID()))
