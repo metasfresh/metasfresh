@@ -2,6 +2,8 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
@@ -16,6 +18,7 @@ import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -123,4 +126,13 @@ public interface IInvoiceHeader
 	void setC_PaymentInstruction_ID(int C_PaymentInstruction_ID);
 
 	int getC_PaymentInstruction_ID();
+
+	@Nullable
+	CalendarId getCalendarId();
+
+	@Nullable
+	YearId getYearId();
+
+	@Nullable
+	WarehouseId getWarehouseId();
 }
