@@ -115,7 +115,7 @@ public class C_BPartner_InterimContract_StepDef
 					.addEqualsFilter(I_C_BPartner_InterimContract.COLUMNNAME_C_Harvesting_Calendar_ID, calendar.getC_Calendar_ID())
 					.addEqualsFilter(I_C_BPartner_InterimContract.COLUMNNAME_IsInterimContract, isInterimContract)
 					.create()
-					.firstNotNull(I_C_BPartner_InterimContract.class);
+					.firstOnlyNotNull(I_C_BPartner_InterimContract.class);
 
 			final String bpartnerInterimContractIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_InterimContract.COLUMNNAME_C_BPartner_InterimContract_ID + "." + TABLECOLUMN_IDENTIFIER);
 			partnerInterimTable.putOrReplace(bpartnerInterimContractIdentifier, record);
