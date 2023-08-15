@@ -1,4 +1,4 @@
-@Ignore #because of feature change, parts may be usable for later implementation steps, so keeping it for now
+@ignore #because of feature change, parts may be usable for later implementation steps, so keeping it for now
 @from:cucumber
 Feature: Partial Payment Invoicing
 
