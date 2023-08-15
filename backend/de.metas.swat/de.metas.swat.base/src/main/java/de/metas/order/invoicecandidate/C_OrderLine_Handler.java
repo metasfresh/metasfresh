@@ -264,6 +264,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setIsNotShowOriginCountry(order.isNotShowOriginCountry());
 		icRecord.setC_PaymentInstruction_ID(order.getC_PaymentInstruction_ID());
 
+		setHarvestingDetails(icRecord, order);
+		setWarehouseId(icRecord, order);
+
 		// Don't save.
 		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from being called on every single IC that is created here.
 		// Because it's a performance nightmare for orders with a lot of lines
@@ -580,5 +583,39 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private static void setC_Flatrate_Term_ID(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		candidate.setC_Flatrate_Term_ID(orderLine.getC_Flatrate_Term_ID());
+	}
+
+	@Override
+	public void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+
+		// dev-note: we take the order warehouse and propagate to IC
+		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
+		setWarehouseId(ic, order);
+	}
+
+	@Override
+	public void setHarvestingDetails(final @NonNull I_C_Invoice_Candidate ic)
+	{
+		final OrderId referencedOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (referencedOrderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = InterfaceWrapperHelper.create(ic.getC_Order(), I_C_Order.class);
+		setHarvestingDetails(ic, order);
+	}
+
+	private static void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_Order order)
+	{
+		ic.setM_Warehouse_ID(order.getM_Warehouse_ID());
+	}
+
+	private static void setHarvestingDetails(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final I_C_Order order)
+	{
+		candidate.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
+		candidate.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
 	}
 }
