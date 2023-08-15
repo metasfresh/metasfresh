@@ -38,6 +38,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.PMM_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.i18n.AdMessageKey;
@@ -74,6 +75,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
@@ -291,8 +293,8 @@ public class C_Flatrate_Term_StepDef
 		}
 	}
 
-	@And("retrieve C_Flatrate_Term:")
-	public void retrieve_C_Flatrate_Term(@NonNull final DataTable dataTable)
+	@And("^retrieve C_Flatrate_Term within (.*)s:$")
+	public void retrieve_C_Flatrate_Term(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -323,11 +325,19 @@ public class C_Flatrate_Term_StepDef
 				queryBuilder.addEqualsFilter(COLUMNNAME_C_OrderLine_Term_ID, orderLine.getC_OrderLine_ID());
 			}
 
+			final Supplier<Boolean> isProcessorStarted = () ->
+			{
+				final I_C_Flatrate_Term flatrateTerm = queryBuilder.orderByDescending(COLUMNNAME_C_Flatrate_Term_ID)
+						.create()
+						.first(I_C_Flatrate_Term.class);
+				return flatrateTerm != null;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSec, 500, isProcessorStarted);
+
 			final I_C_Flatrate_Term flatrateTerm = queryBuilder.orderByDescending(COLUMNNAME_C_Flatrate_Term_ID)
 					.create()
 					.first(I_C_Flatrate_Term.class);
-
-			assertThat(flatrateTerm).isNotNull();
 
 			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Term_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			contractTable.putOrReplace(flatrateTermIdentifier, flatrateTerm);

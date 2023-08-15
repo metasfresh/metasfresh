@@ -29,8 +29,8 @@ import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrat
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +46,7 @@ public class C_Flatrate_Term
 		this.bPartnerInterimContractService = bPartnerInterimContractService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createInterimInvoiceIfNeeded(final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType()

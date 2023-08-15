@@ -86,7 +86,7 @@ Feature: Modular contract log from shipment
 
     When the order identified by po_order_S0303_100 is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier        | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_S0303_100   | modularContractTerms_S0303_100      | modularContract_prod_S0303_100 | po_order_S0303_100             | poLine_S0303_100                   |
     And validate created C_Flatrate_Term:
@@ -179,7 +179,7 @@ Feature: Modular contract log from shipment
 
     When the order identified by po_order_S0303_200 is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier        | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_S0303_200   | modularContractTerms_S0303_200      | modularContract_prod_S0303_200 | po_order_S0303_200             | poLine_S0303_200                   |
     And validate created C_Flatrate_Term:
@@ -274,7 +274,7 @@ Feature: Modular contract log from shipment
 
     When the order identified by po_order_S0303_300 is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier        | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_S0303_300   | modularContractTerms_S0303_300      | modularContract_prod_S0303_300 | po_order_S0303_300             | poLine_S0303_300                   |
     And validate created C_Flatrate_Term:

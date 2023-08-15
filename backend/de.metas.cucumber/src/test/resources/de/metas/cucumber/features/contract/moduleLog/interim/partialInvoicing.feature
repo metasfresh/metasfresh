@@ -113,7 +113,7 @@ Feature: Partial Payment Invoicing
       | C_Flatrate_Conditions_ID.Identifier | C_OrderLine_ID.Identifier | DateFrom   | DateTo     |
       | interim_invoice_payment             | ol_PO_29082022            | 2022-08-01 | 2022-09-28 |
 
-    And retrieve C_Flatrate_Term:
+    And retrieve C_Flatrate_Term within 120s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier   |
       | contract_interim_PO_29082022  | interim_invoice_payment             | product_PO_happy_29082022 |
 
@@ -272,7 +272,7 @@ Feature: Partial Payment Invoicing
       | C_Flatrate_Conditions_ID.Identifier | C_OrderLine_ID.Identifier | DateFrom   | DateTo     |
       | interim_invoice_payment             | ol_PO_29082022            | 2022-08-02 | 2022-09-29 |
 
-    And retrieve C_Flatrate_Term:
+    And retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier |
       | contract_interim_PO_29082022  | interim_invoice_payment             | product_PO_1_29082022   |
 
@@ -370,7 +370,7 @@ Feature: Partial Payment Invoicing
       | C_Flatrate_Conditions_ID.Identifier | C_OrderLine_ID.Identifier | DateFrom   | DateTo     |
       | interim_invoice_payment             | ol_PO_29082022            | 2022-08-03 | 2022-09-30 |
 
-    And retrieve C_Flatrate_Term:
+    And retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier |
       | contract_interim_PO_29082022  | interim_invoice_payment             | product_PO_2_29082022   |
 
