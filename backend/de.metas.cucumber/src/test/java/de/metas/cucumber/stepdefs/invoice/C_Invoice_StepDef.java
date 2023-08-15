@@ -672,8 +672,16 @@ public class C_Invoice_StepDef
 		final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (de.metas.common.util.Check.isNotBlank(harvestingYearIdentifier))
 		{
-			final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
-			softly.assertThat(invoice.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
+			final String harvestingYearIdentifierValue = DataTableUtil.nullToken2Null(harvestingYearIdentifier);
+			if (harvestingYearIdentifierValue == null)
+			{
+				softly.assertThat(invoice.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isNull();
+			}
+			else
+			{
+				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
+				softly.assertThat(invoice.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
+			}
 		}
 
 		softly.assertAll();
