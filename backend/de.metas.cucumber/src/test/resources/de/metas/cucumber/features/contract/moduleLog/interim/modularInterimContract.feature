@@ -122,7 +122,3 @@ Feature: Interim contract settings for bpartner
       | C_InterimInvoice_FlatrateTerm_16082023_1    | moduleLogContract_2           | po_orderLine              | 1000       | 50                | 0           |
       | C_InterimInvoice_FlatrateTerm_16082023_2    | moduleLogContract_4           | po_orderLine_2            | 500        | 30                | 0           |
 
-
-    
-
-
