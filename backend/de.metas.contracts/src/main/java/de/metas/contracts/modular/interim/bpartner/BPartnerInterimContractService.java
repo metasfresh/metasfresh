@@ -116,7 +116,7 @@ public class BPartnerInterimContractService
 		return bPartnerInterimContractRepo.getByRequest(BPartnerInterimContractUpsertRequest.builder()
 																.bPartnerId(BPartnerId.ofRepoId(modularFlatrateTermRecord.getBill_BPartner_ID()))
 																.yearAndCalendarId(modularContractSettings.getYearAndCalendarId())
-																.isInterimContract(true)
-																.build()).findAny().isPresent();
+																.isInterimContract(true) //isn't used as EqualsFilter
+																.build()).anyMatch(BPartnerInterimContract::getIsInterimContract);
 	}
 }
