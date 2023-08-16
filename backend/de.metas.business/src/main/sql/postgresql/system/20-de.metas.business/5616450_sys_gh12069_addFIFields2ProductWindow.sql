@@ -1,3 +1,6 @@
+--
+-- note: there are existing legacy instances where the content of this file is completely applied, but it's not in AD_Migrationscript..
+--
 -- 2021-11-30T17:38:24.108Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,578721,673363,0,180,0,TO_TIMESTAMP('2021-11-30 18:38:23','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','PZN',0,510,0,1,1,TO_TIMESTAMP('2021-11-30 18:38:23','YYYY-MM-DD HH24:MI:SS'),100)
