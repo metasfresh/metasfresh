@@ -1,10 +1,9 @@
-@dev:runThisOne
 Feature: Invoice candidate aggregation with harvesting details rule
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-03-10T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     Given metasfresh contains M_PricingSystems
@@ -41,11 +40,12 @@ Feature: Invoice candidate aggregation with harvesting details rule
       | year_2023            | 2023       | harvesting_calendar      |
       | year_2022            | 2022       | harvesting_calendar      |
 
+  @Id:S0304_100
   @from:cucumber
-  Scenario: Validate IC aggregation with harvesting-details set as default
+  Scenario: IC aggregation with harvesting-details set as default, validate one invoice with two lines is created
   - set `invoicing-agg-per-hervesting-details` as default aggregation
   - create 2 SO with harvesting details and same warehouse and complete them
-  - harvesting details propagated to IC
+  - harvesting details propagated to ICs
   - generate invoice for ICs -> validate one invoice is created for both SO
 
     Given load C_Aggregation:
@@ -112,12 +112,12 @@ Feature: Invoice candidate aggregation with harvesting details rule
       | harvestingAgg               | N             |
       | stdAgg                      | Y             |
 
-
+  @Id:S0304_200
   @from:cucumber
-  Scenario: Validate IC aggregation with harvesting-details set as default
+  Scenario: IC aggregation with harvesting-details set as default, validate two invoices with one line each is created
   - set `invoicing-agg-per-hervesting-details` as default aggregation
-  - create 2 SO with different harvesting details complete them
-  - harvesting details propagated to IC
+  - create 2 SO with different harvesting details complete them (different `Harvesting_Year_ID`)
+  - harvesting details propagated to ICs
   - generate invoice for ICs -> validate that two invoices are created, one for each SO
 
     Given load C_Aggregation:
@@ -186,12 +186,12 @@ Feature: Invoice candidate aggregation with harvesting details rule
       | harvestingAgg               | N             |
       | stdAgg                      | Y             |
 
-
+  @Id:S0304_300
   @from:cucumber
-  Scenario: Validate IC aggregation with standard settings
+  Scenario: IC aggregation with standard settings, validate harvesting details are propagated to invoice
   - set `invoicing-agg-per-std` as default aggregation
   - create 2 SO with harvesting details and same warehouse and complete them
-  - harvesting details propagated to IC
+  - harvesting details propagated to ICs
   - generate invoice for ICs -> validate one invoice is created for both SO
 
     Given load C_Aggregation:
@@ -257,13 +257,13 @@ Feature: Invoice candidate aggregation with harvesting details rule
       | harvestingAgg               | N             |
       | stdAgg                      | Y             |
 
-
+  @Id:S0304_400
   @from:cucumber
-  Scenario: Validate IC aggregation with standard settings
+  Scenario: IC aggregation with standard settings, validate harvesting details are not propagated to invoice
   - set `invoicing-agg-per-std` as default aggregation
-  - create 2 SO with different harvesting details and complete them
-  - harvesting details propagated to IC
-  - generate invoice for ICs -> validate one invoice is created for both SO without harvesting details
+  - create 2 SO with different harvesting details and complete them (different `Harvesting_Year_ID`)
+  - harvesting details propagated to ICs
+  - generate invoice for ICs -> validate one invoice is created for both SO and `Harvesting_Year_ID` is not propagated to invoice
 
     Given load C_Aggregation:
       | C_Aggregation_ID.Identifier | OPT.C_Aggregation_ID |
