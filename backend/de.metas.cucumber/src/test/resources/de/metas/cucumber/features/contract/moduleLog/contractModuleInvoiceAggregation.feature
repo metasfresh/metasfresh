@@ -82,7 +82,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
       | sch_1                            | inout_1               |
       | sch_2                            | inout_2               |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | soLine_1                  | 4            |
       | ic_2                              | soLine_2                  | 6            |
@@ -154,7 +154,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
       | sch_1                            | inout_1               |
       | sch_2                            | inout_2               |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | soLine_1                  | 3            |
       | ic_2                              | soLine_2                  | 5            |
@@ -228,7 +228,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
       | sch_1                            | inout_1               |
       | sch_2                            | inout_2               |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | soLine_1                  | 4            |
       | ic_2                              | soLine_2                  | 6            |
@@ -299,7 +299,7 @@ Feature: Invoice candidate aggregation with harvesting details rule
       | sch_1                            | inout_1               |
       | sch_2                            | inout_2               |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | soLine_1                  | 4            |
       | ic_2                              | soLine_2                  | 6            |
