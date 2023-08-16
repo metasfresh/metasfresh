@@ -1,8 +1,9 @@
 package de.metas.invoicecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -624,6 +625,31 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Flatrate_Term_ID", null);
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
+
+	/**
+	 * Get Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Harvesting_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+
+	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
 	 * Set Invoicecandidate Controller.
@@ -1747,6 +1773,31 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
 
 	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
+
+	/**
 	 * Set Header  merge characteristic.
 	 *
 	 * <br>Type: String
@@ -2742,6 +2793,28 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_ShipmentSchedule_ID", null);
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Invoiced Amount.

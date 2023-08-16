@@ -67,6 +67,9 @@ public class LogEntryCreateRequest
 
 	@NonNull
 	LogEntryDocumentType documentType;
+	
+	@NonNull
+	LogEntryContractType contractType;
 
 	@NonNull
 	SOTrx soTrx;

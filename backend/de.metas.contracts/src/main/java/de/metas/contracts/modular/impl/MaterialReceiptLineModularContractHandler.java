@@ -29,6 +29,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -119,6 +120,7 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 				.invoicingBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
 				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
 				.documentType(LogEntryDocumentType.MATERIAL_RECEIPT)
+				.contractType(LogEntryContractType.MODULAR_CONTRACT)
 				.soTrx(SOTrx.PURCHASE)
 				.processed(false)
 				.quantity(quantity)

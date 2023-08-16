@@ -228,6 +228,27 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_CollectionPoint_BPartner_ID = "CollectionPoint_BPartner_ID";
 
 	/**
+	 * Set Contract Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setContractType (@Nullable String ContractType);
+
+	/**
+	 * Get Contract Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getContractType();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_ContractType = new ModelColumn<>(I_ModCntr_Log.class, "ContractType", null);
+	String COLUMNNAME_ContractType = "ContractType";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

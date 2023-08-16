@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -27,6 +29,7 @@ import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -140,7 +143,16 @@ import java.util.Optional;
 
 	@Setter @Getter @NonNull Dimension dimension;
 
-		/* package */ InvoiceHeaderImpl()
+	@Setter @Getter @Nullable
+	CalendarId calendarId;
+
+	@Setter @Getter @Nullable
+	YearId yearId;
+
+	@Setter @Getter @Nullable
+	WarehouseId warehouseId;
+
+	/* package */ InvoiceHeaderImpl()
 	{
 	}
 
