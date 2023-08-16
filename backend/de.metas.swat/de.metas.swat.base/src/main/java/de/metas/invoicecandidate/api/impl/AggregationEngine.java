@@ -560,6 +560,10 @@ public final class AggregationEngine
 					.ifPresent(activityId -> invoiceHeader.setC_Activity_ID(ActivityId.toRepoId(activityId)));
 
 			invoiceHeader.setBankAccountId(BankAccountId.toRepoId(bankAccountId));
+
+			invoiceHeader.setC_Harvesting_Calendar_ID(icRecord.getC_Harvesting_Calendar_ID());
+			invoiceHeader.setHarvesting_Year_ID(icRecord.getHarvesting_Year_ID());
+			invoiceHeader.setM_Warehouse_ID(icRecord.getM_Warehouse_ID());
 		}
 		catch (final RuntimeException rte)
 		{
