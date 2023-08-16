@@ -101,8 +101,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -1085,7 +1085,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	/**
- 	 * Does not just find the IC, but also makes sure the IC is up2date.
+	 * Does not just find the IC, but also makes sure the IC is up2date.
 	 */
 	private void findInvoiceCandidateByOrderLine(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
 	{
@@ -1147,7 +1147,6 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-		
 	@NonNull
 	private Boolean loadInvoiceCandidatesByExternalHeaderId(@NonNull final Map<String, String> row)
 	{

@@ -671,7 +671,6 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.getSalesRep_ID()).as("SalesRep_ID").isEqualTo(expectedSalesRep_RepoId);
 		}
 
-
 		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
 		if (Check.isNotBlank(documentNo))
 		{
@@ -917,13 +916,13 @@ public class C_Invoice_StepDef
 		{
 			invoice.setExternalId(externalId);
 		}
-		
+
 		final int taxDepartureCountry = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Tax_Departure_Country_ID);
 		if (taxDepartureCountry > 0)
 		{
 			invoice.setC_Tax_Departure_Country_ID(taxDepartureCountry);
 		}
-		
+
 		invoiceDAO.save(invoice);
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
