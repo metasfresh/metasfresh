@@ -197,6 +197,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.stream()
 				.filter(term -> Objects.equals(dateFrom, TimeUtil.asInstant(term.getStartDate())))
 				.filter(term -> Objects.equals(dateTo, TimeUtil.asInstant(term.getEndDate())))
+				.filter(term -> Objects.equals(orderLineId.getRepoId(), term.getC_OrderLine_Term_ID()))
 				.findFirst();
 	}
 
@@ -226,6 +227,11 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setPriceActual(modularContract.getPriceActual());
 		flatrateTermRecord.setC_TaxCategory_ID(modularContract.getC_TaxCategory_ID());
 		flatrateTermRecord.setC_Order_Term(modularContract.getC_Order_Term());
+		flatrateTermRecord.setC_OrderLine_Term(modularContract.getC_OrderLine_Term());
+		flatrateTermRecord.setModular_Flatrate_Term_ID(modularContract.getC_Flatrate_Term_ID());
+		flatrateTermRecord.setC_UOM_ID(modularContract.getC_UOM_ID());
+		flatrateTermRecord.setDeliveryRule(modularContract.getDeliveryRule());
+		flatrateTermRecord.setDeliveryViaRule(modularContract.getDeliveryViaRule());
 
 		flatrateDAO.save(flatrateTermRecord);
 

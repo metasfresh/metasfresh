@@ -919,6 +919,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_Flatrate_DataEntry retrieveRefundableDataEntry(
 			final int bPartner_ID,
 			@NonNull final Timestamp movementDate,
@@ -977,6 +978,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_Flatrate_Term retrieveAncestorFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
@@ -1026,15 +1028,15 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_Invoice_Candidate retrieveInvoiceCandidate(final I_C_Flatrate_Term term)
 	{
-		final I_C_Invoice_Candidate ic = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
 				.create()
 				.firstOnly(I_C_Invoice_Candidate.class);
-		return ic;
 	}
 
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#bPartnerId#typeConditions")
@@ -1054,12 +1056,13 @@ public class FlatrateDAO implements IFlatrateDAO
 
 	@Override
 	@NonNull
-	public Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull final OrderLineId orderLineId)
+	public Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull final OrderLineId orderLineId, @NonNull final TypeConditions typeConditions)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID, orderLineId)
-				.create() 
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, typeConditions.getCode())
+				.create()
 				.firstOnlyOptional();
 	}
 
