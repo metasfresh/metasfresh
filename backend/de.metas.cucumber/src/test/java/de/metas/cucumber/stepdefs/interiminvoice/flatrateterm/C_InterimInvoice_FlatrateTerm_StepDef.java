@@ -22,12 +22,15 @@
 
 package de.metas.cucumber.stepdefs.interiminvoice.flatrateterm;
 
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
-import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -36,6 +39,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 
 import java.math.BigDecimal;
@@ -49,6 +53,7 @@ import static org.compiere.model.I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_In
 import static org.compiere.model.I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Invoice_Candidate_Withholding_ID;
 import static org.compiere.model.I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_QtyDeliveredInUOM;
 import static org.compiere.model.I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_QtyInvoiced;
+import static org.compiere.model.I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_QtyOrdered;
 
 public class C_InterimInvoice_FlatrateTerm_StepDef
 {
@@ -57,24 +62,27 @@ public class C_InterimInvoice_FlatrateTerm_StepDef
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_InterimInvoice_FlatrateTerm_StepDefData interimInvoiceTermTable;
 	private final M_InOut_StepDefData inoutTable;
-	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final C_InterimInvoice_FlatrateTerm_Line_StepDefData interimInvoiceTermLineTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_Flatrate_Term_StepDefData flatrateTermTable;
 
 	public C_InterimInvoice_FlatrateTerm_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
 			@NonNull final C_InterimInvoice_FlatrateTerm_StepDefData interimInvoiceTermTable,
 			@NonNull final M_InOut_StepDefData inoutTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
-			@NonNull final C_InterimInvoice_FlatrateTerm_Line_StepDefData interimInvoiceTermLineTable)
+			@NonNull final C_InterimInvoice_FlatrateTerm_Line_StepDefData interimInvoiceTermLineTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.interimInvoiceTermTable = interimInvoiceTermTable;
 		this.inoutTable = inoutTable;
-		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
 		this.interimInvoiceTermLineTable = interimInvoiceTermLineTable;
+		this.orderLineTable = orderLineTable;
+		this.flatrateTermTable = flatrateTermTable;
 	}
 
 	@And("validate C_InterimInvoice_FlatrateTerm:")
@@ -83,27 +91,44 @@ public class C_InterimInvoice_FlatrateTerm_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String interimInvoiceCandIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Interim_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice_Candidate interimInvoiceCand = invoiceCandTable.get(interimInvoiceCandIdentifier);
+			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_OrderLine orderLineRecord = orderLineTable.get(orderLineIdentifier);
 
-			final String withholdingInvoiceCandIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_Withholding_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice_Candidate withholdingInvoiceCand = invoiceCandTable.get(withholdingInvoiceCandIdentifier);
+			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Flatrate_Term flatrateTermRecord = flatrateTermTable.get(flatrateTermIdentifier);
 
-			final I_C_InterimInvoice_FlatrateTerm interimInvoiceFlatrateTerm = queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
-					.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Interim_Invoice_Candidate_ID, interimInvoiceCand.getC_Invoice_Candidate_ID())
-					.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Invoice_Candidate_Withholding_ID, withholdingInvoiceCand.getC_Invoice_Candidate_ID())
-					.create()
-					.firstOnly(I_C_InterimInvoice_FlatrateTerm.class);
+			final String interimInvoiceTermIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_InterimInvoice_FlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceTermTable.getOptional(interimInvoiceTermIdentifier)
+					.orElseGet(() -> queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
+							.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_OrderLine_ID, orderLineRecord.getC_OrderLine_ID())
+							.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getC_Flatrate_Term_ID())
+							.create()
+							.firstOnly(I_C_InterimInvoice_FlatrateTerm.class));
 
 			assertThat(interimInvoiceFlatrateTerm).isNotNull();
 
+			final String interimInvoiceCandIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Interim_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(interimInvoiceCandIdentifier))
+			{
+				final I_C_Invoice_Candidate interimInvoiceCand = invoiceCandTable.get(interimInvoiceCandIdentifier);
+				assertThat(interimInvoiceFlatrateTerm.getC_Interim_Invoice_Candidate_ID()).isEqualTo(interimInvoiceCand.getC_Invoice_Candidate_ID());
+			}
+
+			final String withholdingInvoiceCandIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Invoice_Candidate_Withholding_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(withholdingInvoiceCandIdentifier))
+			{
+				final I_C_Invoice_Candidate withholdingInvoiceCand = invoiceCandTable.get(withholdingInvoiceCandIdentifier);
+				assertThat(interimInvoiceFlatrateTerm.getC_Invoice_Candidate_Withholding_ID()).isEqualTo(withholdingInvoiceCand.getC_Invoice_Candidate_ID());
+			}
+
 			final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyDeliveredInUOM);
 			final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyInvoiced);
+			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyOrdered);
 
 			assertThat(interimInvoiceFlatrateTerm.getQtyDeliveredInUOM()).isEqualTo(qtyDelivered);
 			assertThat(interimInvoiceFlatrateTerm.getQtyInvoiced()).isEqualTo(qtyToInvoice);
+			assertThat(interimInvoiceFlatrateTerm.getQtyOrdered()).isEqualTo(qtyOrdered);
 
-			final String interimInvoiceTermIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID + "." + TABLECOLUMN_IDENTIFIER);
 			interimInvoiceTermTable.putOrReplace(interimInvoiceTermIdentifier, interimInvoiceFlatrateTerm);
 		}
 	}
