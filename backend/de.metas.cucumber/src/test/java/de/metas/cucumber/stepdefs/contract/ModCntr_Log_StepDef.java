@@ -169,6 +169,9 @@ public class ModCntr_Log_StepDef
 
 		final SoftAssertions softly = new SoftAssertions();
 
+		final String contractType = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ContractType);
+		softly.assertThat(modCntrLogRecord.getContractType()).as(I_ModCntr_Log.COLUMNNAME_ContractType).isEqualTo(contractType);
+
 		final String collectionPointBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_CollectionPoint_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(collectionPointBPartnerIdentifier))
 		{

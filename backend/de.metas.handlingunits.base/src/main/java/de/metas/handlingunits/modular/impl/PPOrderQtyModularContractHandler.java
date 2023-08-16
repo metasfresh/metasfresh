@@ -29,6 +29,7 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -134,6 +135,7 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
 				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
 				.documentType(LogEntryDocumentType.PRODUCTION)
+				.contractType(LogEntryContractType.MODULAR_CONTRACT)
 				.soTrx(SOTrx.PURCHASE)
 				.quantity(quantity)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(ppOrderQty.getMovementDate(),

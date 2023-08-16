@@ -35,6 +35,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -179,6 +180,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
 				.productId(productId)
 				.documentType(LogEntryDocumentType.SALES_ORDER)
+				.contractType(LogEntryContractType.MODULAR_CONTRACT)
 				.soTrx(SOTrx.PURCHASE)
 				.processed(false)
 				.quantity(quantity)

@@ -50,6 +50,9 @@ public class ModularContractLogEntry
 	@NonNull
 	ModularContractLogEntryId id;
 
+	@NonNull
+	LogEntryContractType contractType;
+
 	@Nullable
 	FlatrateTermId contractId;
 

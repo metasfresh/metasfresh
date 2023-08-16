@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1393447161L;
+	private static final long serialVersionUID = 239427743L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -163,6 +163,27 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getCollectionPoint_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_CollectionPoint_BPartner_ID);
+	}
+
+	/** 
+	 * ContractType AD_Reference_ID=541814
+	 * Reference name: ModCntr_Log_ContractType
+	 */
+	public static final int CONTRACTTYPE_AD_Reference_ID=541814;
+	/** Interim = Interim */
+	public static final String CONTRACTTYPE_Interim = "Interim";
+	/** Modular Contract = ModularContract */
+	public static final String CONTRACTTYPE_ModularContract = "ModularContract";
+	@Override
+	public void setContractType (final @Nullable String ContractType)
+	{
+		set_Value (COLUMNNAME_ContractType, ContractType);
+	}
+
+	@Override
+	public String getContractType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ContractType);
 	}
 
 	@Override
