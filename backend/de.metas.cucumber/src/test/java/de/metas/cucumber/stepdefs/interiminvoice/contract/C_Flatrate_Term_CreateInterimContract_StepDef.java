@@ -22,9 +22,9 @@
 
 package de.metas.cucumber.stepdefs.interiminvoice.contract;
 
-import de.metas.contacts.invoice.interim.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.modular.interim.invoice.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;

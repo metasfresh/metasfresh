@@ -84,7 +84,7 @@ Feature: Modular contract log from sales order
 
     When the order identified by po_order is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract             | modularContractTerms_2023           | modularContract_prod    | po_order                       | poLine                             |
     And validate created C_Flatrate_Term:
@@ -145,7 +145,7 @@ Feature: Modular contract log from sales order
 
     When the order identified by po_order is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier  | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract             | modularContractTerms_2023           | modularContract_prod_200 | po_order                       | poLine                             |
     And validate created C_Flatrate_Term:
@@ -220,7 +220,7 @@ Feature: Modular contract log from sales order
 
     When the order identified by po_order is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier  | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract             | modularContractTerms_2023           | modularContract_prod_300 | po_order                       | poLine                             |
     And validate created C_Flatrate_Term:

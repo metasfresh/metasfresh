@@ -1000,7 +1000,7 @@ public class TimeUtil
 	 *
 	 * @return true if date is between given dates (inclusively)
 	 */
-	public static boolean isBetween(final Date date, final Date dateFrom, final Date dateTo)
+	public static boolean isBetween(final Date date, @Nullable final Date dateFrom, @Nullable final Date dateTo)
 	{
 		Check.assumeNotNull(date, "date not null");
 

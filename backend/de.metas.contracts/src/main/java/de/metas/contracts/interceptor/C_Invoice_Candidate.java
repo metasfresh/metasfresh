@@ -22,12 +22,12 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

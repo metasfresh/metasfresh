@@ -58,7 +58,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_Interim_Invoice_Settings;
@@ -70,7 +69,6 @@ import org.compiere.util.Env;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Customer_Trade_Margin_ID;
@@ -196,7 +194,7 @@ public class C_Flatrate_Conditions_StepDef
 					.map(InvoiceRule::ofCode)
 					.orElse(InvoiceRule.AfterDelivery);
 
-			flatrateConditions.setName(name + UUID.randomUUID().toString()); //dev-note: random UUID for constraint "name_unique"
+			flatrateConditions.setName(name);
 			flatrateConditions.setType_Conditions(type);
 			flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			flatrateConditions.setC_Flatrate_Transition_ID(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());

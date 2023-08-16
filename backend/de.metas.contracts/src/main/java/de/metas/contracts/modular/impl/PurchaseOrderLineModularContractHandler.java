@@ -30,6 +30,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
@@ -184,7 +185,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 			return Stream.empty();
 		}
 
-		return flatrateDAO.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
+		return flatrateDAO.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()), TypeConditions.MODULAR_CONTRACT)
 				.map(flatrateTerm -> FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.stream();
 	}

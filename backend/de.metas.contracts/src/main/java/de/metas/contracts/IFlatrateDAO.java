@@ -258,5 +258,5 @@ public interface IFlatrateDAO extends ISingletonService
 	List<I_C_Flatrate_Term> retrieveTerms(BPartnerId bPartnerId, OrgId orgId, TypeConditions typeConditions);
 
 	@NonNull
-	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId);
+	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
 }
