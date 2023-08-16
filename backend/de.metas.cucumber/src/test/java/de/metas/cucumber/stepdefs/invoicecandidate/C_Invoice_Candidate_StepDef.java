@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -41,6 +42,9 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
@@ -50,6 +54,7 @@ import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.serviceIssue.S_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocTypeId;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -95,14 +100,17 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -195,6 +203,10 @@ public class C_Invoice_Candidate_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
 	private final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable;
+	private final M_Warehouse_StepDefData warehouseTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
+	private final C_Aggregation_StepDefData aggregationTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -216,7 +228,11 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final S_Issue_StepDefData issueTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Activity_StepDefData activityTable,
-			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable)
+			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable,
+			@NonNull final C_Aggregation_StepDefData aggregationTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -238,6 +254,10 @@ public class C_Invoice_Candidate_StepDef
 		this.activityTable = activityTable;
 		this.shipmentTable = shipmentTable;
 		this.invoiceCandidateListTable = invoiceCandidateListTable;
+		this.warehouseTable = warehouseTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
+		this.aggregationTable = aggregationTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -764,6 +784,34 @@ public class C_Invoice_Candidate_StepDef
 					{
 						softly.assertThat(updatedInvoiceCandidate.getC_DocTypeInvoice_ID()).as("C_DocTypeInvoice_ID").isEqualTo(docTypeRecord.getC_DocType_ID());
 					}
+				}
+
+				final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(warehouseIdentifier))
+				{
+					final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseRecord.getM_Warehouse_ID());
+				}
+
+				final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(harvestingCalendarIdentifier))
+				{
+					final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getC_Harvesting_Calendar_ID()).as("C_Harvesting_Calendar_ID").isEqualTo(harvestingCalendarRecord.getC_Calendar_ID());
+				}
+
+				final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(harvestingYearIdentifier))
+				{
+					final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
+				}
+
+				final String aggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKeyBuilder_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(aggregationIdentifier))
+				{
+					final I_C_Aggregation aggregationRecord = aggregationTable.get(aggregationIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getHeaderAggregationKeyBuilder_ID()).as("HeaderAggregationKeyBuilder_ID").isEqualTo(aggregationRecord.getC_Aggregation_ID());
 				}
 
 				softly.assertAll();
