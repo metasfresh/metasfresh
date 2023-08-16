@@ -1,8 +1,8 @@
 package de.metas.contracts.interceptor;
 
-import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
-import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermQuery;
-import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermDAO;
+import de.metas.contracts.modular.interim.invoice.InterimInvoiceFlatrateTerm;
+import de.metas.contracts.modular.interim.invoice.InterimInvoiceFlatrateTermQuery;
+import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermDAO;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.lang.SOTrx;

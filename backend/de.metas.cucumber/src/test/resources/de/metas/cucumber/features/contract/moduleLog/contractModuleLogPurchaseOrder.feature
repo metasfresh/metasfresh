@@ -76,7 +76,7 @@ Feature: Modular contract log from purchase order
 
     When the order identified by po_order is completed
 
-    And retrieve C_Flatrate_Term:
+    And retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
       | moduleLogContract_2           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
@@ -142,7 +142,7 @@ Feature: Modular contract log from purchase order
 
     When the order identified by po_order is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
       | moduleLogContract_2           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
@@ -222,7 +222,7 @@ Feature: Modular contract log from purchase order
 
     When the order identified by po_order is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
       | moduleLogContract_2           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
@@ -318,7 +318,7 @@ Feature: Modular contract log from purchase order
 
     When the order identified by po_order is completed
 
-    Then retrieve C_Flatrate_Term:
+    Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions_MR              | module_log_product_PO   | po_order                       | po_orderLine_1                     |
       | moduleLogContract_2           | moduleLogConditions_MR              | module_log_product_MR   | po_order                       | po_orderLine_2                     |

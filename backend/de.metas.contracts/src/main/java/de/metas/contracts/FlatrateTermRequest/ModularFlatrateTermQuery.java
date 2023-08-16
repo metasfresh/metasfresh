@@ -33,15 +33,23 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 @Value
 @Builder
 public class ModularFlatrateTermQuery
 {
 	@NonNull BPartnerId bPartnerId;
-	@Nullable ProductId productId;
+	@Nullable
+	ProductId productId;
 	@NonNull SOTrx soTrx;
-	@Nullable YearId yearId;
+	@Nullable
+	YearId yearId;
 	@NonNull TypeConditions typeConditions;
-	@Nullable CalendarId calendarId;
+	@Nullable
+	CalendarId calendarId;
+	@Nullable
+	Timestamp dateFrom;
+	@Nullable
+	Timestamp dateTo;
 }
