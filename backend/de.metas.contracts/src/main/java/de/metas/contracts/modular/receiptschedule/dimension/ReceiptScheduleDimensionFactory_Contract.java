@@ -24,6 +24,7 @@ package de.metas.contracts.modular.receiptschedule.dimension;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -69,7 +70,7 @@ public class ReceiptScheduleDimensionFactory_Contract extends ReceiptScheduleDim
 	private Optional<FlatrateTermId> extractContractId(@NonNull final I_C_OrderLine record)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(record.getC_OrderLine_ID());
-		return flatrateDAO.getByOrderLineId(orderLineId)
+		return flatrateDAO.getByOrderLineId(orderLineId, TypeConditions.MODULAR_CONTRACT)
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
 	}

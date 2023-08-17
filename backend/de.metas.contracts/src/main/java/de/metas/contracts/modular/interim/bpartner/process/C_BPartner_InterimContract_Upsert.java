@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.model.I_C_BPartner_InterimContract;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractUpsertRequest;
 import de.metas.process.IProcessPrecondition;
@@ -36,7 +37,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_InterimContract;
 
 public class C_BPartner_InterimContract_Upsert extends JavaProcess implements IProcessPrecondition
 {

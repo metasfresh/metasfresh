@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.contract.interim;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.model.I_C_BPartner_InterimContract;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractUpsertRequest;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -37,7 +38,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_InterimContract;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 
@@ -115,7 +115,7 @@ public class C_BPartner_InterimContract_StepDef
 					.addEqualsFilter(I_C_BPartner_InterimContract.COLUMNNAME_C_Harvesting_Calendar_ID, calendar.getC_Calendar_ID())
 					.addEqualsFilter(I_C_BPartner_InterimContract.COLUMNNAME_IsInterimContract, isInterimContract)
 					.create()
-					.firstNotNull(I_C_BPartner_InterimContract.class);
+					.firstOnlyNotNull(I_C_BPartner_InterimContract.class);
 
 			final String bpartnerInterimContractIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_InterimContract.COLUMNNAME_C_BPartner_InterimContract_ID + "." + TABLECOLUMN_IDENTIFIER);
 			partnerInterimTable.putOrReplace(bpartnerInterimContractIdentifier, record);

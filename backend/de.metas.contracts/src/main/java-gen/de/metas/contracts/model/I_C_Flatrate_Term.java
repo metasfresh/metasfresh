@@ -243,11 +243,11 @@ public interface I_C_Flatrate_Term
 	 */
 	int getC_Flatrate_Conditions_ID();
 
-	I_C_Flatrate_Conditions getC_Flatrate_Conditions();
+	de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions();
 
-	void setC_Flatrate_Conditions(I_C_Flatrate_Conditions C_Flatrate_Conditions);
+	void setC_Flatrate_Conditions(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions);
 
-	ModelColumn<I_C_Flatrate_Term, I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Conditions_ID", I_C_Flatrate_Conditions.class);
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Conditions> COLUMN_C_Flatrate_Conditions_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Conditions_ID", de.metas.contracts.model.I_C_Flatrate_Conditions.class);
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
@@ -268,11 +268,11 @@ public interface I_C_Flatrate_Term
 	 */
 	int getC_Flatrate_Data_ID();
 
-	I_C_Flatrate_Data getC_Flatrate_Data();
+	de.metas.contracts.model.I_C_Flatrate_Data getC_Flatrate_Data();
 
-	void setC_Flatrate_Data(I_C_Flatrate_Data C_Flatrate_Data);
+	void setC_Flatrate_Data(de.metas.contracts.model.I_C_Flatrate_Data C_Flatrate_Data);
 
-	ModelColumn<I_C_Flatrate_Term, I_C_Flatrate_Data> COLUMN_C_Flatrate_Data_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Data_ID", I_C_Flatrate_Data.class);
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Data> COLUMN_C_Flatrate_Data_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Data_ID", de.metas.contracts.model.I_C_Flatrate_Data.class);
 	String COLUMNNAME_C_Flatrate_Data_ID = "C_Flatrate_Data_ID";
 
 	/**
@@ -316,11 +316,12 @@ public interface I_C_Flatrate_Term
 	 */
 	int getC_Flatrate_Term_Master_ID();
 
-	@Nullable I_C_Flatrate_Term getC_Flatrate_Term_Master();
+	@Nullable
+	de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term_Master();
 
-	void setC_Flatrate_Term_Master(@Nullable I_C_Flatrate_Term C_Flatrate_Term_Master);
+	void setC_Flatrate_Term_Master(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term_Master);
 
-	ModelColumn<I_C_Flatrate_Term, I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_Master_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Term_Master_ID", I_C_Flatrate_Term.class);
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_Master_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Term_Master_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
 	String COLUMNNAME_C_Flatrate_Term_Master_ID = "C_Flatrate_Term_Master_ID";
 
 	/**
@@ -341,11 +342,12 @@ public interface I_C_Flatrate_Term
 	 */
 	int getC_FlatrateTerm_Next_ID();
 
-	@Nullable I_C_Flatrate_Term getC_FlatrateTerm_Next();
+	@Nullable
+	de.metas.contracts.model.I_C_Flatrate_Term getC_FlatrateTerm_Next();
 
-	void setC_FlatrateTerm_Next(@Nullable I_C_Flatrate_Term C_FlatrateTerm_Next);
+	void setC_FlatrateTerm_Next(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_FlatrateTerm_Next);
 
-	ModelColumn<I_C_Flatrate_Term, I_C_Flatrate_Term> COLUMN_C_FlatrateTerm_Next_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_FlatrateTerm_Next_ID", I_C_Flatrate_Term.class);
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_FlatrateTerm_Next_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_FlatrateTerm_Next_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
 	String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
 
 	/**
@@ -368,12 +370,13 @@ public interface I_C_Flatrate_Term
 	 */
 	int getC_Flatrate_Transition_ID();
 
-	@Nullable I_C_Flatrate_Transition getC_Flatrate_Transition();
+	@Nullable
+	de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
 
 	@Deprecated
-	void setC_Flatrate_Transition(@Nullable I_C_Flatrate_Transition C_Flatrate_Transition);
+	void setC_Flatrate_Transition(@Nullable de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition);
 
-	ModelColumn<I_C_Flatrate_Term, I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Transition_ID", I_C_Flatrate_Transition.class);
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Flatrate_Transition_ID", de.metas.contracts.model.I_C_Flatrate_Transition.class);
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
@@ -547,6 +550,29 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set RfQ Response Line.
+	 * Request for Quotation Response Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_RfQResponseLine_ID(int C_RfQResponseLine_ID);
+
+	/**
+	 * Get RfQ Response Line.
+	 * Request for Quotation Response Line
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_RfQResponseLine_ID();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_RfQResponseLine_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_RfQResponseLine_ID", null);
+	String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
+
+	/**
 	 * Set Tax Category.
 	 * Tax Category
 	 *
@@ -554,7 +580,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+	void setC_TaxCategory_ID(int C_TaxCategory_ID);
 
 	/**
 	 * Get Tax Category.
@@ -1095,12 +1121,41 @@ public interface I_C_Flatrate_Term
 	 */
 	int getM_AttributeSetInstance_ID();
 
-	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable
+	org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
 	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
 	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Modular Contract.
+	 * Document lines linked to a modular contract will generate contract module logs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModular_Flatrate_Term_ID(int Modular_Flatrate_Term_ID);
+
+	/**
+	 * Get Modular Contract.
+	 * Document lines linked to a modular contract will generate contract module logs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModular_Flatrate_Term_ID();
+
+	@Nullable
+	de.metas.contracts.model.I_C_Flatrate_Term getModular_Flatrate_Term();
+
+	void setModular_Flatrate_Term(@Nullable de.metas.contracts.model.I_C_Flatrate_Term Modular_Flatrate_Term);
+
+	ModelColumn<I_C_Flatrate_Term, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_Modular_Flatrate_Term_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "Modular_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
+	String COLUMNNAME_Modular_Flatrate_Term_ID = "Modular_Flatrate_Term_ID";
 
 	/**
 	 * Set Pricing System.
@@ -1195,7 +1250,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPlannedQtyPerUnit (BigDecimal PlannedQtyPerUnit);
+	void setPlannedQtyPerUnit(BigDecimal PlannedQtyPerUnit);
 
 	/**
 	 * Get Qty per UOM.
@@ -1208,6 +1263,27 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PlannedQtyPerUnit = new ModelColumn<>(I_C_Flatrate_Term.class, "PlannedQtyPerUnit", null);
 	String COLUMNNAME_PlannedQtyPerUnit = "PlannedQtyPerUnit";
+
+	/**
+	 * Set Supply Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPMM_Product_ID(int PMM_Product_ID);
+
+	/**
+	 * Get Supply Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPMM_Product_ID();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PMM_Product_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "PMM_Product_ID", null);
+	String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
 
 	/**
 	 * Set Prepare Closing.
@@ -1279,7 +1355,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProcessing (boolean Processing);
+	void setProcessing(boolean Processing);
 
 	/**
 	 * Get Process Now.
@@ -1292,6 +1368,27 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Processing = new ModelColumn<>(I_C_Flatrate_Term.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set Qty Next Year.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPlanned_NextYear(BigDecimal QtyPlanned_NextYear);
+
+	/**
+	 * Get Qty Next Year.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPlanned_NextYear();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_QtyPlanned_NextYear = new ModelColumn<>(I_C_Flatrate_Term.class, "QtyPlanned_NextYear", null);
+	String COLUMNNAME_QtyPlanned_NextYear = "QtyPlanned_NextYear";
 
 	/**
 	 * Set Start Date.

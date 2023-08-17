@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1456804309L;
+	private static final long serialVersionUID = -1675552836L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -462,23 +462,38 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		if (C_Order_Term_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, C_Order_Term_ID);
+		else
+			set_ValueNoCheck(COLUMNNAME_C_Order_Term_ID, C_Order_Term_ID);
 	}
 
 	@Override
-	public int getC_Order_Term_ID() 
+	public int getC_Order_Term_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_Term_ID);
 	}
 
 	@Override
-	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
+	public void setC_RfQResponseLine_ID(final int C_RfQResponseLine_ID)
 	{
-		if (C_TaxCategory_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+		if (C_RfQResponseLine_ID < 1)
+			set_Value(COLUMNNAME_C_RfQResponseLine_ID, null);
+		else
+			set_Value(COLUMNNAME_C_RfQResponseLine_ID, C_RfQResponseLine_ID);
+	}
+
+	@Override
+	public int getC_RfQResponseLine_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_RfQResponseLine_ID);
+	}
+
+	@Override
+	public void setC_TaxCategory_ID(final int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1)
+			set_Value(COLUMNNAME_C_TaxCategory_ID, null);
+		else
+			set_Value(COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
 	}
 
 	@Override
@@ -891,23 +906,50 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
+		else
+			set_Value(COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
-	public int getM_AttributeSetInstance_ID() 
+	public int getM_AttributeSetInstance_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
 	@Override
-	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
+	public de.metas.contracts.model.I_C_Flatrate_Term getModular_Flatrate_Term()
 	{
-		if (M_PricingSystem_ID < 1) 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
+		return get_ValueAsPO(COLUMNNAME_Modular_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public void setModular_Flatrate_Term(final de.metas.contracts.model.I_C_Flatrate_Term Modular_Flatrate_Term)
+	{
+		set_ValueFromPO(COLUMNNAME_Modular_Flatrate_Term_ID, de.metas.contracts.model.I_C_Flatrate_Term.class, Modular_Flatrate_Term);
+	}
+
+	@Override
+	public void setModular_Flatrate_Term_ID(final int Modular_Flatrate_Term_ID)
+	{
+		if (Modular_Flatrate_Term_ID < 1)
+			set_Value(COLUMNNAME_Modular_Flatrate_Term_ID, null);
+		else
+			set_Value(COLUMNNAME_Modular_Flatrate_Term_ID, Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getModular_Flatrate_Term_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public void setM_PricingSystem_ID(final int M_PricingSystem_ID)
+	{
+		if (M_PricingSystem_ID < 1)
+			set_Value(COLUMNNAME_M_PricingSystem_ID, null);
+		else
+			set_Value(COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
 	}
 
 	@Override
@@ -958,24 +1000,39 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setPlannedQtyPerUnit (final BigDecimal PlannedQtyPerUnit)
 	{
-		set_Value (COLUMNNAME_PlannedQtyPerUnit, PlannedQtyPerUnit);
+		set_Value(COLUMNNAME_PlannedQtyPerUnit, PlannedQtyPerUnit);
 	}
 
 	@Override
-	public BigDecimal getPlannedQtyPerUnit() 
+	public BigDecimal getPlannedQtyPerUnit()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedQtyPerUnit);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setPrepareClosing (final @Nullable java.lang.String PrepareClosing)
+	public void setPMM_Product_ID(final int PMM_Product_ID)
 	{
-		set_Value (COLUMNNAME_PrepareClosing, PrepareClosing);
+		if (PMM_Product_ID < 1)
+			set_Value(COLUMNNAME_PMM_Product_ID, null);
+		else
+			set_Value(COLUMNNAME_PMM_Product_ID, PMM_Product_ID);
 	}
 
 	@Override
-	public java.lang.String getPrepareClosing() 
+	public int getPMM_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_PMM_Product_ID);
+	}
+
+	@Override
+	public void setPrepareClosing(final @Nullable java.lang.String PrepareClosing)
+	{
+		set_Value(COLUMNNAME_PrepareClosing, PrepareClosing);
+	}
+
+	@Override
+	public java.lang.String getPrepareClosing()
 	{
 		return get_ValueAsString(COLUMNNAME_PrepareClosing);
 	}
@@ -1008,23 +1065,36 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Processing);
+		set_Value(COLUMNNAME_Processing, Processing);
 	}
 
 	@Override
-	public boolean isProcessing() 
+	public boolean isProcessing()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
 	@Override
-	public void setStartDate (final java.sql.Timestamp StartDate)
+	public void setQtyPlanned_NextYear(final BigDecimal QtyPlanned_NextYear)
 	{
-		set_Value (COLUMNNAME_StartDate, StartDate);
+		set_Value(COLUMNNAME_QtyPlanned_NextYear, QtyPlanned_NextYear);
 	}
 
 	@Override
-	public java.sql.Timestamp getStartDate() 
+	public BigDecimal getQtyPlanned_NextYear()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPlanned_NextYear);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setStartDate(final java.sql.Timestamp StartDate)
+	{
+		set_Value(COLUMNNAME_StartDate, StartDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getStartDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_StartDate);
 	}

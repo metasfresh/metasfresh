@@ -95,7 +95,7 @@ public class FlatrateTermCreator
 			try (MDCCloseable ignored = TableRecordMDC.putTableRecordReference(partner))
 			{
 				// create each term in its own transaction
-				trxManager.runInNewTrx(new TrxRunnableAdapter()
+				trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 				{
 					@Override
 					public void run(final String localTrxName)

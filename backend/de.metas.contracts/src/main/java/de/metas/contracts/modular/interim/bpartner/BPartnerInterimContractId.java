@@ -24,10 +24,10 @@ package de.metas.contracts.modular.interim.bpartner;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.contracts.model.I_C_BPartner_InterimContract;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
-import org.compiere.model.I_C_BPartner_InterimContract;
 
 import javax.annotation.Nullable;
 

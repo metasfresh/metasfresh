@@ -2473,6 +2473,16 @@ public class FlatrateBL implements IFlatrateBL
 			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductId());
 		}
 
+		if (modularFlatrateTermQuery.getDateFrom() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, modularFlatrateTermQuery.getDateFrom());
+		}
+
+		if (modularFlatrateTermQuery.getDateTo() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, modularFlatrateTermQuery.getDateTo());
+		}
+
 		return queryBuilder.create()
 				.iterateAndStream();
 	}

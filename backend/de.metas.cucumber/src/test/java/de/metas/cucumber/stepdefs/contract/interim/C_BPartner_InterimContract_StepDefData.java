@@ -22,8 +22,8 @@
 
 package de.metas.cucumber.stepdefs.contract.interim;
 
+import de.metas.contracts.model.I_C_BPartner_InterimContract;
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_BPartner_InterimContract;
 
 public class C_BPartner_InterimContract_StepDefData extends StepDefData<I_C_BPartner_InterimContract>
 {
