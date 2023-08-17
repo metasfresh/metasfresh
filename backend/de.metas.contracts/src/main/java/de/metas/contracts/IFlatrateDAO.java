@@ -24,6 +24,7 @@ package de.metas.contracts;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.impl.FlatrateTermOverlapCriteria;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -259,4 +260,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	@NonNull
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
+
+	@NonNull
+	ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
 }
