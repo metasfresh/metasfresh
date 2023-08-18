@@ -22,11 +22,20 @@
 
 package de.metas.contracts.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
+import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.inout.IInOutBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -37,6 +46,14 @@ import org.springframework.stereotype.Component;
 public class M_InOut
 {
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+
+	private final ModularContractLogService modularContractLogService;
+
+	public M_InOut(@NonNull final ModularContractLogService modularContractLogService)
+	{
+		this.modularContractLogService = modularContractLogService;
+	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT,
 			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
@@ -50,5 +67,32 @@ public class M_InOut
 			return;
 		}
 		interimInvoiceBL.updateInterimInvoiceFlatrateTermForInOut(inOut);
+	}
+
+	@ModelChange(
+			timings = ModelValidator.TYPE_AFTER_CHANGE,
+			ifColumnsChanged = I_M_InOut.COLUMNNAME_IsInterimInvoiceable)
+	public void updateLogBillableStatus(@NonNull final I_M_InOut inOut)
+	{
+		if (inOut.isSOTrx())
+		{
+			return;
+		}
+
+		modularContractLogService.changeBillableStatus(createModularContractLogQuery(inOut), inOut.isInterimInvoiceable());
+	}
+	
+	@NonNull
+	private ModularContractLogQuery createModularContractLogQuery(@NonNull final I_M_InOut inOut)
+	{
+		final ImmutableList<TableRecordReference> tableRecordReferences = inOutBL.getLines(inOut)
+				.stream()
+				.map(TableRecordReference::of)
+				.collect(ImmutableList.toImmutableList());
+
+		return ModularContractLogQuery.builder()
+				.referenceSet(TableRecordReferenceSet.of(tableRecordReferences))
+				.contractType(LogEntryContractType.INTERIM)
+				.build();
 	}
 }

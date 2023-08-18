@@ -43,6 +43,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Repository;
 
@@ -115,6 +116,7 @@ public class ModularContractLogDAO
 		return log;
 	}
 
+	@NonNull
 	private ModularContractLogEntry fromDB(@NonNull final I_ModCntr_Log log)
 	{
 		return ModularContractLogEntry.builder()
@@ -134,6 +136,7 @@ public class ModularContractLogDAO
 				.amount(Money.ofOrNull(log.getAmount(), CurrencyId.ofRepoIdOrNull(log.getC_Currency_ID())))
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(log.getDateTrx(), OrgId.ofRepoId(log.getAD_Org_ID()), orgDAO::getTimeZone))
 				.year(YearId.ofRepoId(log.getHarvesting_Year_ID()))
+				.isBillable(log.isBillable())
 				.build();
 	}
 
@@ -177,6 +180,29 @@ public class ModularContractLogDAO
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, recordReference.getRecord_ID())
 				.create()
 				.anyMatch();
+	}
+
+	public void changeBillableStatus(
+			@NonNull final ModularContractLogQuery query,
+			final boolean isBillable)
+	{
+		final TableRecordReferenceSet referenceSet = query.getReferenceSet();
+
+		final IQueryBuilder<I_ModCntr_Log> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, referenceSet.getSingleTableId())
+				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, referenceSet.toIntSet());
+
+		if (query.getContractType() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, query.getContractType().getCode());
+		}
+
+		queryBuilder
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_IsBillable, isBillable)
+				.setExecuteDirectly(true)
+				.execute();
 	}
 
 	@NonNull
