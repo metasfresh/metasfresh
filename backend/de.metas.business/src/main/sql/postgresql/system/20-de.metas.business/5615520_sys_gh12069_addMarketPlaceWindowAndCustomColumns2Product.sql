@@ -1375,7 +1375,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-11-26T09:25:12.985Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,580321,0,'Content',TO_TIMESTAMP('2021-11-26 10:25:12','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Content','Content',TO_TIMESTAMP('2021-11-26 10:25:12','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
+SELECT 0,580321,0,'Content',TO_TIMESTAMP('2021-11-26 10:25:12','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Content','Content',TO_TIMESTAMP('2021-11-26 10:25:12','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from AD_Element where AD_Element_ID=580321)
 ;
 
 -- 2021-11-26T09:25:12.990Z
