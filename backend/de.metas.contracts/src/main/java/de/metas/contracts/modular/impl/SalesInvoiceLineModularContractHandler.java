@@ -183,7 +183,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 				.invoicingBPartnerId(bPartnerId)
 				.warehouseId(WarehouseId.ofRepoId(invoice.getM_Warehouse_ID()))
 				.productId(productId)
-				.documentType(LogEntryDocumentType.SALES_ORDER)
+				.documentType(LogEntryDocumentType.SALES_INVOICE)
 				.contractType(LogEntryContractType.MODULAR_CONTRACT)
 				.soTrx(SOTrx.PURCHASE)
 				.processed(false)

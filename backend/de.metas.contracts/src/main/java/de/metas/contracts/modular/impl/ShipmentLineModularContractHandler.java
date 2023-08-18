@@ -141,7 +141,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
 				.documentType(LogEntryDocumentType.SHIPMENT)
 				.contractType(LogEntryContractType.MODULAR_CONTRACT)
-				.soTrx(SOTrx.SALES)
+				.soTrx(SOTrx.PURCHASE)
 				.processed(false)
 				.quantity(quantity)
 				.amount(null)
