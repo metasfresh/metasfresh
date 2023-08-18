@@ -1,13 +1,16 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -18,8 +21,10 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.costing.ChargeId;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
@@ -121,6 +126,13 @@ public class FlatrateDAO implements IFlatrateDAO
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private final CCache<ModularFlatrateTermQuery, ImmutableList<I_C_Flatrate_Term>> modularContractQuery2CachedResult = CCache.<ModularFlatrateTermQuery, ImmutableList<I_C_Flatrate_Term>>builder()
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(1000)
+			.tableName(I_C_Flatrate_Term.Table_Name)
+			.additionalTableNamesToResetFor(ImmutableSet.of(I_C_Flatrate_Conditions.Table_Name, I_ModCntr_Settings.Table_Name))
+			.build();
 
 
 	private final AdTableId tableId = tableDAO.retrieveAdTableId(I_C_Flatrate_Term.Table_Name);
@@ -1140,5 +1152,67 @@ public class FlatrateDAO implements IFlatrateDAO
 				.create()
 				.first(I_C_Flatrate_Term.class); // could be more than one, but all belong to the same contract and have same billing infos
 
+	}
+
+	@NonNull
+	@Override
+	public ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull final ModularFlatrateTermQuery modularFlatrateTermQuery)
+	{
+		return modularContractQuery2CachedResult.getOrLoad(modularFlatrateTermQuery, this::retrieveByModularContractQuery);
+	}
+
+	@NonNull
+	private ImmutableList<I_C_Flatrate_Term> retrieveByModularContractQuery(@NonNull final ModularFlatrateTermQuery modularFlatrateTermQuery)
+	{
+		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, modularFlatrateTermQuery.getTypeConditions())
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
+				.addInSubQueryFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID,
+									 buildModularContractSettingsQueryFilter(modularFlatrateTermQuery))
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, modularFlatrateTermQuery.getBPartnerId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, modularFlatrateTermQuery.getTypeConditions())
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Voided)
+				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+
+		if (modularFlatrateTermQuery.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductId());
+		}
+
+		if (modularFlatrateTermQuery.getDateFrom() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, modularFlatrateTermQuery.getDateFrom());
+		}
+
+		if (modularFlatrateTermQuery.getDateTo() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, modularFlatrateTermQuery.getDateTo());
+		}
+
+		return queryBuilder.create()
+				.listImmutable();
+	}
+
+	@NonNull
+	private IQuery<I_ModCntr_Settings> buildModularContractSettingsQueryFilter(@NonNull final ModularFlatrateTermQuery request)
+	{
+		final IQueryBuilder<I_ModCntr_Settings> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, request.getSoTrx().toBoolean());
+
+		if (request.getYearId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId());
+		}
+
+		if (request.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, request.getProductId());
+		}
+
+		return queryBuilder.create();
 	}
 }
