@@ -143,6 +143,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=582510
 DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=582510
 ;
 
+DELETE FROM ad_ui_element WHERE AD_Field_ID=582510;
+
 -- 2021-10-08T12:26:43.453Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Field WHERE AD_Field_ID=582510
@@ -303,6 +305,17 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-10-11 19:57:29','Y
 UPDATE AD_Ref_List SET Value='P',Updated=TO_TIMESTAMP('2021-10-15 12:16:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542903
 ;
 
+/**
+ * Adding the commit; to avoid
+  psql:/opt/metasfresh/dist/sql/20-de.metas.business/5609590_sys_gh11866_InvoiceRule_AfterPick.sql:310: ERROR:  deadlock detected
+  DETAIL:  Process 10819 waits for AccessExclusiveLock on relation 148195189 of database 148180680; blocked by process 10822.
+  Process 10822 waits for AccessShareLock on relation 148195906 of database 148180680; blocked by process 10819.
+  HINT:  See server log for query details.
+  CONTEXT:  SQL statement "alter table public.c_bpartner alter column invoicerule type char(1)"
+  PL/pgSQL function altercolumn(name,name,name,character varying,character varying) line 85 at EXECUTE
+ */
+COMMIT;
+
 -- 2021-10-18T13:11:05.665Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('c_bpartner','InvoiceRule','CHAR(1)',null,'D')
@@ -437,6 +450,28 @@ UPDATE AD_PrintFormatItem pi SET PrintName='Auf Packzettel', Name='Auf Packzette
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Tab SET Name='Auf Packzettel', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580033
 ;
+
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 -- 2021-10-19T07:46:51.099Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
