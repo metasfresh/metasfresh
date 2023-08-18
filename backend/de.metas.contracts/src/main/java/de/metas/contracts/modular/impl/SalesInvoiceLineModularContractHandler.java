@@ -47,9 +47,11 @@ import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -63,8 +65,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
@@ -73,22 +75,22 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public class SalesOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
+public class SalesInvoiceLineModularContractHandler implements IModularContractTypeHandler<I_C_InvoiceLine>
 {
-	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnComplete.Description");
-	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnReverse.Description");
+	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler.OnComplete.Description");
+	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler.OnReverse.Description");
 
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	private final ModularContractLogDAO contractLogDAO;
 
-	public SalesOrderLineModularContractHandler(
+	public SalesInvoiceLineModularContractHandler(
 			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO,
 			@NonNull final ModularContractLogDAO contractLogDAO)
 	{
@@ -97,21 +99,34 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public @NonNull Class<I_C_OrderLine> getType()
+	public @NonNull Class<I_C_InvoiceLine> getType()
 	{
-		return I_C_OrderLine.class;
+		return I_C_InvoiceLine.class;
 	}
 
 	@Override
-	public boolean applies(final @NonNull I_C_OrderLine orderLine)
+	public boolean applies(final @NonNull I_C_InvoiceLine invoiceLine)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		if (SOTrx.ofBoolean(order.isSOTrx()).isPurchase())
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
+		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
+		if (soTrx.isPurchase())
 		{
 			return false;
 		}
 
-		final BPartnerId warehousePartnerId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()))
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(invoice.getC_Harvesting_Calendar_ID());
+		if (harvestingCalendarId == null)
+		{
+			return false;
+		}
+
+		final YearId harvestingYearId = YearId.ofRepoIdOrNull(invoice.getHarvesting_Year_ID());
+		if (harvestingYearId == null)
+		{
+			return false;
+		}
+
+		final BPartnerId warehousePartnerId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID()))
 				.map(warehouseBL::getBPartnerId)
 				.orElse(null);
 
@@ -120,25 +135,13 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 			return false;
 		}
 
-		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
-		if (harvestingCalendarId == null)
-		{
-			return false;
-		}
-
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
-		if (harvestingYearId == null)
-		{
-			return false;
-		}
-
 		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
-				.bPartnerId(warehousePartnerId)
-				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.yearId(harvestingYearId)
 				.calendarId(harvestingCalendarId)
+				.yearId(harvestingYearId)
+				.bPartnerId(warehousePartnerId)
 				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
+				.productId(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
 				.build();
 
 		return isModularContractInProgress(modularFlatrateTermQuery);
@@ -146,7 +149,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 
 	@Override
 	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
-			final @NonNull I_C_OrderLine orderLine,
+			final @NonNull I_C_InvoiceLine invoiceLine,
 			final @NonNull FlatrateTermId modularContractId)
 	{
 		final I_C_Flatrate_Term contract = flatrateBL.getById(modularContractId);
@@ -157,35 +160,37 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 
 		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
 				.stream()
-				.filter(config -> config.isMatchingClassName(SalesOrderLineModularContractHandler.class.getName()))
+				.filter(config -> config.isMatchingClassName(SalesInvoiceLineModularContractHandler.class.getName()))
 				.map(ModuleConfig::getModularContractType)
 				.map(ModularContractType::getId)
 				.findFirst();
 
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(orderLine.getQtyEntered(), uomId);
+		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+		final Quantity quantity = Quantity.of(invoiceLine.getQtyInvoiced(), uomId);
 
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
+		final Money amount = Money.of(invoiceLine.getLineNetAmt(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 
 		final String description = msgBL.getMsg(MSG_ON_COMPLETE_DESCRIPTION, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
 
 		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
-				.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
+				.referencedRecord(TableRecordReference.of(I_C_InvoiceLine.Table_Name, invoiceLine.getC_InvoiceLine_ID()))
 				.contractId(modularContractId)
 				.collectionPointBPartnerId(bPartnerId)
 				.producerBPartnerId(bPartnerId)
 				.invoicingBPartnerId(bPartnerId)
-				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
+				.warehouseId(WarehouseId.ofRepoId(invoice.getM_Warehouse_ID()))
 				.productId(productId)
 				.documentType(LogEntryDocumentType.SALES_ORDER)
 				.contractType(LogEntryContractType.MODULAR_CONTRACT)
 				.soTrx(SOTrx.PURCHASE)
 				.processed(false)
 				.quantity(quantity)
-				.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
-															   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+				.amount(amount)
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(),
+															   OrgId.ofRepoId(invoiceLine.getAD_Org_ID()),
 															   orgDAO::getTimeZone))
 				.year(modularContractSettings.getYearAndCalendarId().yearId())
 				.description(description)
@@ -194,19 +199,21 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_C_OrderLine orderLine, final @NonNull FlatrateTermId flatrateTermId)
+	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(
+			final @NonNull I_C_InvoiceLine invoiceLine,
+			final @NonNull FlatrateTermId flatrateTermId)
 	{
 		final LogEntryReverseRequest request = LogEntryReverseRequest.builder()
-				.referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
+				.referencedModel(TableRecordReference.of(I_C_InvoiceLine.Table_Name, invoiceLine.getC_InvoiceLine_ID()))
 				.flatrateTermId(flatrateTermId)
 				.build();
 
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
 		final BigDecimal loggedQty = contractLogDAO.retrieveQuantityFromExistingLog(request);
 
-		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(loggedQty, uom);
 
-		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(orderLine.getM_Product_ID()), quantity.toString()));
+		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(invoiceLine.getM_Product_ID()), quantity.toString()));
 
 		return Optional.of(request.toBuilder()
 								   .description(description)
@@ -214,26 +221,24 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine orderLine)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(invoice.getC_Harvesting_Calendar_ID());
+
+		final YearId harvestingYearId = YearId.ofRepoIdOrNull(invoice.getHarvesting_Year_ID());
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
 		Check.assume(warehouseId != null, "WarehouseId should not be null at this stage!");
 
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
-		Check.assume(harvestingYearId != null, "Harvesting year ID should not be null at this stage!");
-
-		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
-		Check.assume(harvestingCalendarId != null, "Harvesting calendar ID should not be null at this stage!");
-
 		final ModularFlatrateTermQuery request = ModularFlatrateTermQuery.builder()
-				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
-				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.calendarId(harvestingCalendarId)
 				.yearId(harvestingYearId)
-				.soTrx(SOTrx.PURCHASE)
+				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
+				.productId(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
+				.soTrx(SOTrx.PURCHASE)
 				.build();
 
 		return streamModularContracts(request)
@@ -242,11 +247,11 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public void validateDocAction(final @NonNull I_C_OrderLine model, final ModularContractService.@NonNull ModelAction action)
+	public void validateDocAction(final @NonNull I_C_InvoiceLine model, final ModularContractService.@NonNull ModelAction action)
 	{
 		switch (action)
 		{
-			case COMPLETED, VOIDED, REACTIVATED -> {}
+			case COMPLETED, REVERSED -> {}
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}

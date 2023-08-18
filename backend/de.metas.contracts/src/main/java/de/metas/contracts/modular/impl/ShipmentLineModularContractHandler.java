@@ -23,10 +23,10 @@
 package de.metas.contracts.modular.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -87,7 +87,6 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public ShipmentLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
@@ -174,23 +173,20 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
 
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
+
 		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE) // in this handler we want the *purchase* flatrate-terms that led to this (sales-)shipment
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
+				.calendarId(harvestingCalendarId)
 				.build();
 
 		return streamModularContracts(modularFlatrateTermQuery)
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
-	}
-
-	@NonNull
-	private Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermQuery request)
-	{
-		return flatrateBL.streamModularFlatrateTermsByQuery(request);
 	}
 
 	@Override
@@ -199,7 +195,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 		switch (action)
 		{
 			case VOIDED, REACTIVATED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
-			case COMPLETED,REVERSED ->
+			case COMPLETED, REVERSED ->
 			{
 				// allow the docAction
 			}
