@@ -84,6 +84,7 @@ pull_request_rules:
       - or:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
+      - not: label=ops:dont_auto_merge
     actions:
       queue:
         name: default
