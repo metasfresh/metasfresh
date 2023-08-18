@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1294464455L;
+	private static final long serialVersionUID = 573553635L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -1505,5 +1505,17 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setIsInterimInvoiceable (final boolean IsInterimInvoiceable)
+	{
+		set_Value (COLUMNNAME_IsInterimInvoiceable, IsInterimInvoiceable);
+	}
+
+	@Override
+	public boolean isInterimInvoiceable()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInterimInvoiceable);
 	}
 }

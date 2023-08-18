@@ -22,6 +22,9 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
+import de.metas.cache.CachingKeysMapper;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
@@ -31,59 +34,71 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ModularContractSettingsDAO
 {
+	private final static Logger logger = LogManager.getLogger(ModularContractSettingsDAO.class);
+
+	private final CCache<SettingsLookupKey, CachedSettingsId> cacheKey2SettingsId = CCache.<SettingsLookupKey, CachedSettingsId>builder()
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(1000)
+			.tableName(I_C_Flatrate_Conditions.Table_Name)
+			.additionalTableNamesToResetFor(ImmutableSet.of(I_C_Flatrate_Term.Table_Name))
+			.invalidationKeysMapper(new SettingsIdCachingKeysMapper())
+			.build();
+
+	private final CCache<ModularContractSettingsId, ModularContractSettings> id2ModularContractSettings = CCache.<ModularContractSettingsId, ModularContractSettings>builder()
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(1000)
+			.tableName(I_ModCntr_Settings.Table_Name)
+			.additionalTableNamesToResetFor(ImmutableSet.of(I_ModCntr_Module.Table_Name))
+			.invalidationKeysMapper(new SettingsInfoCachingKeysMapper())
+			.build();
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Nullable
 	public ModularContractSettings getByFlatrateTermIdOrNull(@NonNull final FlatrateTermId contractId)
 	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, contractId)
-				.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID)
-				.andCollect(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
-				.orderByDescending(I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID)
-				.create()
-				.firstOptional()
-				.map(this::getBySettings)
-				.orElse(null);
+		return getOrLoadBy(contractId);
 	}
 
 	@Nullable
 	public ModularContractSettings getByFlatrateConditonsIdOrNull(@NonNull final ConditionsId conditionsId)
 	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID, conditionsId)
-				.andCollect(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID)
-				.create()
-				.firstOnlyOptional()
-				.map(this::getBySettings)
-				.orElse(null);
+		return getOrLoadBy(conditionsId);
 	}
 
 	@NonNull
-	private ModularContractSettings getBySettings(@NonNull final I_ModCntr_Settings settings)
+	private ModularContractSettings getById(@NonNull final ModularContractSettingsId contractSettingsId)
 	{
 		final List<I_ModCntr_Module> moduleRecords = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Module.COLUMN_ModCntr_Settings_ID, settings.getModCntr_Settings_ID())
+				.addEqualsFilter(I_ModCntr_Module.COLUMN_ModCntr_Settings_ID, contractSettingsId)
 				.create()
 				.list();
 
-		return fromPOs(settings, moduleRecords);
+		return fromPOs(InterfaceWrapperHelper.load(contractSettingsId, I_ModCntr_Settings.class), moduleRecords);
 	}
 
 	@NonNull
@@ -141,5 +156,213 @@ public class ModularContractSettingsDAO
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, query.productId())
 				.anyMatch();
+	}
+
+	@Nullable
+	private ModularContractSettings getOrLoadBy(@NonNull final FlatrateTermId termId)
+	{
+		final SettingsLookupKey key = SettingsLookupKey.of(termId);
+
+		final CachedSettingsId cachedSettingsId = cacheKey2SettingsId.get(key);
+		final ModularContractSettingsId settingsId = cachedSettingsId == null
+				? loadCacheFor(termId)
+				: cachedSettingsId.getSettingsId();
+
+		if (settingsId == null)
+		{
+			return null;
+		}
+
+		return id2ModularContractSettings.getOrLoad(settingsId, this::getById);
+	}
+
+	@Nullable
+	private ModularContractSettings getOrLoadBy(@NonNull final ConditionsId conditionsId)
+	{
+		final SettingsLookupKey key = SettingsLookupKey.of(conditionsId);
+
+		final CachedSettingsId cachedSettingsId = cacheKey2SettingsId.get(key);
+		final ModularContractSettingsId settingsId = cachedSettingsId == null
+				? loadCacheFor(conditionsId, null)
+				: cachedSettingsId.getSettingsId();
+
+		if (settingsId == null)
+		{
+			return null;
+		}
+
+		return id2ModularContractSettings.getOrLoad(settingsId, this::getById);
+	}
+
+	@Nullable
+	private ModularContractSettingsId loadCacheFor(@NonNull final FlatrateTermId termId)
+	{
+		final ConditionsId conditionsId = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, termId)
+				.andCollect(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID)
+				.create()
+				.firstIdOnlyOptional(ConditionsId::ofRepoId)
+				.orElseThrow(() -> new AdempiereException("No C_Flatrate_Conditions_ID set on C_Flatrate_Term, even though the column is marked as mandatory!")
+						.appendParametersToMessage()
+						.setParameter("termId", termId));
+
+		return loadCacheFor(conditionsId, termId);
+	}
+
+	@Nullable
+	private ModularContractSettingsId loadCacheFor(@NonNull final ConditionsId conditionsId, @Nullable final FlatrateTermId termId)
+	{
+		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.load(conditionsId, I_C_Flatrate_Conditions.class);
+
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId
+				.ofRepoIdOrNull(conditions.getModCntr_Settings_ID());
+
+		cacheKey2SettingsId.put(SettingsLookupKey.of(conditionsId), CachedSettingsId.ofNullable(modularContractSettingsId));
+		Optional.ofNullable(termId)
+				.map(SettingsLookupKey::of)
+				.ifPresent(termCacheKey -> cacheKey2SettingsId.put(termCacheKey, CachedSettingsId.ofNullable(modularContractSettingsId)));
+
+		return modularContractSettingsId;
+	}
+
+	private static class SettingsInfoCachingKeysMapper implements CachingKeysMapper<ModularContractSettingsId>
+	{
+		@Override
+		public Collection<ModularContractSettingsId> computeCachingKeys(final TableRecordReference recordRef)
+		{
+			if (I_ModCntr_Settings.Table_Name.equals(recordRef.getTableName()))
+			{
+				return ImmutableSet.of(ModularContractSettingsId.ofRepoId(recordRef.getRecord_ID()));
+			}
+			else if (I_ModCntr_Module.Table_Name.equals(recordRef.getTableName()))
+			{
+				final I_ModCntr_Module module = recordRef.getModel(I_ModCntr_Module.class);
+				if (module == null)
+				{
+					throw new AdempiereException("When a ModCntr_Module is deleted, isResetAll() should take care of resetting the cache!")
+							.appendParametersToMessage()
+							.setParameter("recordRef", recordRef);
+				}
+
+				return ImmutableSet.of(ModularContractSettingsId.ofRepoId(module.getModCntr_Settings_ID()));
+			}
+
+			throw new AdempiereException("Unexpected table name=" + recordRef.getTableName());
+		}
+
+		@Override
+		public boolean isResetAll(@NonNull final TableRecordReference recordRef)
+		{
+			if (I_ModCntr_Settings.Table_Name.equals(recordRef.getTableName()))
+			{
+				return false;
+			}
+
+			//reset all cache if the object was deleted, and we can't get to a ModularContractSettingsId
+			final Object recordRefModel = recordRef.getModel(Object.class);
+			return recordRefModel == null;
+		}
+	}
+
+	private class SettingsIdCachingKeysMapper implements CachingKeysMapper<SettingsLookupKey>
+	{
+		@Override
+		public Collection<SettingsLookupKey> computeCachingKeys(@NonNull final TableRecordReference recordRef)
+		{
+			if (I_C_Flatrate_Conditions.Table_Name.equals(recordRef.getTableName()))
+			{
+				logger.debug("ComputeCachingKeys called for a ({},{}) that wasn't cached so far!",
+							 recordRef.getRecord_ID(),
+							 recordRef.getTableName());
+
+				return ImmutableSet.of();
+			}
+			else if (I_C_Flatrate_Term.Table_Name.equals(recordRef.getTableName()))
+			{
+				final FlatrateTermId contractId = recordRef.getIdAssumingTableName(I_C_Flatrate_Term.Table_Name, FlatrateTermId::ofRepoId);
+
+				logger.debug("ComputeCachingKeys called for ({},{})!",
+							 recordRef.getRecord_ID(),
+							 recordRef.getTableName());
+
+				return ImmutableSet.of(SettingsLookupKey.of(contractId));
+			}
+
+			throw new AdempiereException("Unexpected table name=" + recordRef.getTableName());
+		}
+
+		@Override
+		public boolean isResetAll(@NonNull final TableRecordReference recordRef)
+		{
+			if (I_C_Flatrate_Term.Table_Name.equals(recordRef.getTableName()))
+			{
+				return false;
+			}
+			else if (I_C_Flatrate_Conditions.Table_Name.equals(recordRef.getTableName())
+					&& resetAllForFlatrateConditions(recordRef.getIdAssumingTableName(I_C_Flatrate_Conditions.Table_Name, ConditionsId::ofRepoId)))
+			{
+				return true;
+			}
+
+			//reset all the cache if the object was deleted, and we can't get to a SettingsLookupKey
+			final Object recordRefModel = recordRef.getModel(Object.class);
+			return recordRefModel == null;
+		}
+
+		private boolean resetAllForFlatrateConditions(@NonNull final ConditionsId conditionsId)
+		{
+			return cacheKey2SettingsId.containsKey(SettingsLookupKey.of(conditionsId));
+		}
+	}
+
+	@Value
+	private static class SettingsLookupKey
+	{
+		@Nullable
+		FlatrateTermId contractId;
+		@Nullable
+		ConditionsId conditionsId;
+
+		@NonNull
+		public static SettingsLookupKey of(@NonNull final ConditionsId conditionsId)
+		{
+			return new SettingsLookupKey(null, conditionsId);
+		}
+
+		@NonNull
+		public static SettingsLookupKey of(@NonNull final FlatrateTermId contractId)
+		{
+			return new SettingsLookupKey(contractId, null);
+		}
+
+		private SettingsLookupKey(
+				@Nullable final FlatrateTermId contractId,
+				@Nullable final ConditionsId conditionsId)
+		{
+			if (conditionsId == null && contractId == null)
+			{
+				throw new AdempiereException("conditionsId && contractId cannot be both null!");
+			}
+
+			if (conditionsId != null && contractId != null)
+			{
+				throw new AdempiereException("conditionsId && contractId cannot be both set!");
+			}
+
+			this.contractId = contractId;
+			this.conditionsId = conditionsId;
+		}
+	}
+
+	@Value
+	private static class CachedSettingsId
+	{
+		private static CachedSettingsId ofNullable(@Nullable final ModularContractSettingsId settingsId)
+		{
+			return new CachedSettingsId(settingsId);
+		}
+
+		@Nullable
+		ModularContractSettingsId settingsId;
 	}
 }

@@ -22,11 +22,8 @@
 
 package de.metas.contracts.modular.log;
 
-import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.i18n.AdMessageKey;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
@@ -34,23 +31,27 @@ import org.springframework.stereotype.Service;
 @Service
 public class ModularContractLogService
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
+
+	private final ModularContractLogDAO modularContractLogDAO;
+
+	public ModularContractLogService(@NonNull final ModularContractLogDAO modularContractLogDAO)
+	{
+		this.modularContractLogDAO = modularContractLogDAO;
+	}
 
 	public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	{
-		if (existsLogForRecord(tableRecordReference))
+		if (modularContractLogDAO.hasAnyModularLogs(tableRecordReference))
 		{
 			throw new AdempiereException(MSG_ERROR_DOCUMENT_LINE_DELETION);
 		}
 	}
 
-	private boolean existsLogForRecord(@NonNull final TableRecordReference tableRecordReference)
+	public void changeBillableStatus(
+			@NonNull final ModularContractLogQuery query,
+			final boolean isBillable)
 	{
-		return queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
-				.firstOptional().isPresent();
+		modularContractLogDAO.changeBillableStatus(query, isBillable);
 	}
 }
