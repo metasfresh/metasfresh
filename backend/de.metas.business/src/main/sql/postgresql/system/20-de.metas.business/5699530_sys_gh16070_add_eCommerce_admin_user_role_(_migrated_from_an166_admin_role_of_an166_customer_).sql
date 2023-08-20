@@ -56,15 +56,15 @@ VALUES (1000000, 1000000, 1000045, '2022-01-28 12:57:48.000000 +01:00', 100, 100
 ;
 
 INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id)
-VALUES (100, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:13:15.000000 +02:00', 100, '2021-07-07 21:13:15.000000 +02:00', 100, 1000022)
+VALUES (100, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:13:15.000000 +02:00', 100, '2021-07-07 21:13:15.000000 +02:00', 100, 9000022)
 ;
 
 INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id)
-VALUES (100, 1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:02.000000 +01:00', 100, '2021-11-30 16:10:02.000000 +01:00', 100, 1000027)
+VALUES (100, 1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:02.000000 +01:00', 100, '2021-11-30 16:10:02.000000 +01:00', 100, 9000027)
 ;
 
 INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id)
-VALUES (100, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:22.000000 +01:00', 100, '2022-01-28 12:54:22.000000 +01:00', 100, 1000030)
+VALUES (100, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:22.000000 +01:00', 100, '2022-01-28 12:54:22.000000 +01:00', 100, 9000030)
 ;
 
 INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
@@ -581,6 +581,7 @@ INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_
 VALUES (540321, 1000041, 1000000, 0, 'Y', '2021-07-09 10:01:22.000000 +02:00', 100, '2021-07-09 10:01:22.000000 +02:00', 100, 'Y', 1241568)
 ;
 
+UPDATE public.ad_window_access
 UPDATE public.ad_window_access
 SET ad_window_id = 146, ad_role_id = 1000041, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:39:13.000000 +01:00', createdby = 100, updated = '2015-11-05 20:39:13.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
 WHERE ad_window_access_id = 1000102
