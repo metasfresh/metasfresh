@@ -582,7 +582,6 @@ VALUES (540321, 1000041, 1000000, 0, 'Y', '2021-07-09 10:01:22.000000 +02:00', 1
 ;
 
 UPDATE public.ad_window_access
-UPDATE public.ad_window_access
 SET ad_window_id = 146, ad_role_id = 1000041, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:39:13.000000 +01:00', createdby = 100, updated = '2015-11-05 20:39:13.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
 WHERE ad_window_access_id = 1000102
 ;
