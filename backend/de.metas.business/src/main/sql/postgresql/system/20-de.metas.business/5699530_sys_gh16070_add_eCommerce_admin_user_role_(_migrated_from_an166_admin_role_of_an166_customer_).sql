@@ -1,128 +1,587 @@
-INSERT INTO public.ad_role (ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, name, updatedby, description, userlevel, c_currency_id, amtapproval, ad_tree_menu_id, ismanual, isshowacct, ispersonallock, ispersonalaccess, iscanexport, iscanreport, supervisor_id, iscanapproveowndoc, isaccessallorgs, ischangelog, preferencetype, overwritepricelimit, isuseuserorgaccess, ad_tree_org_id, confirmqueryrecords, maxqueryrecords, connectionprofile, allow_info_account, allow_info_asset, allow_info_bpartner, allow_info_cashjournal, allow_info_inout, allow_info_invoice, allow_info_order, allow_info_payment, allow_info_product, allow_info_resource, allow_info_schedule, userdiscount, allow_info_mrp, allow_info_crp, isdiscountuptolimitprice, isdiscountallowedontotal, isautorolelogin, ismenuavailable, isorgloginmandatory, login_org_id, ad_form_id, isallowlogindateoverride, isrolealwaysusebetafunctions, isshowallentitytypes, seqno, root_menu_id, webui_role, isallowedtrlbox, isallowedmigrationscripts, isallowedinvoicingpriority, isattachmentdeletionallowed) VALUES (1000044, 1000000, 1000000, 'Y', '2021-07-07 21:13:15.000000 +02:00', 100, '2021-07-07 21:15:38.000000 +02:00', 'eCommerce_produkte', 100, null, '_CO', 318, 0, null, 'Y', 'N', 'N', 'N', 'Y', 'Y', null, 'N', 'Y', 'Y', 'O', 'N', 'N', null, 0, 0, null, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', null, 'Y', 'Y', 'N', 'N', 'N', 'Y', 'N', null, null, 'N', 'N', 'N', 10, 1000007, 'Y', 'N', 'N', 'N', 'N');
-INSERT INTO public.ad_role (ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, name, updatedby, description, userlevel, c_currency_id, amtapproval, ad_tree_menu_id, ismanual, isshowacct, ispersonallock, ispersonalaccess, iscanexport, iscanreport, supervisor_id, iscanapproveowndoc, isaccessallorgs, ischangelog, preferencetype, overwritepricelimit, isuseuserorgaccess, ad_tree_org_id, confirmqueryrecords, maxqueryrecords, connectionprofile, allow_info_account, allow_info_asset, allow_info_bpartner, allow_info_cashjournal, allow_info_inout, allow_info_invoice, allow_info_order, allow_info_payment, allow_info_product, allow_info_resource, allow_info_schedule, userdiscount, allow_info_mrp, allow_info_crp, isdiscountuptolimitprice, isdiscountallowedontotal, isautorolelogin, ismenuavailable, isorgloginmandatory, login_org_id, ad_form_id, isallowlogindateoverride, isrolealwaysusebetafunctions, isshowallentitytypes, seqno, root_menu_id, webui_role, isallowedtrlbox, isallowedmigrationscripts, isallowedinvoicingpriority, isattachmentdeletionallowed) VALUES (1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:22.000000 +01:00', 100, '2022-01-28 12:54:22.000000 +01:00', 'x_Einkauf', 100, null, '_CO', 318, 0, null, 'Y', 'N', 'N', 'N', 'Y', 'Y', null, 'N', 'Y', 'Y', 'O', 'N', 'N', null, 0, 0, null, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', null, 'Y', 'Y', 'N', 'N', 'N', 'Y', 'N', null, null, 'N', 'N', 'N', 80, 1000007, 'Y', 'N', 'N', 'N', 'N');
-INSERT INTO public.ad_role (ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, name, updatedby, description, userlevel, c_currency_id, amtapproval, ad_tree_menu_id, ismanual, isshowacct, ispersonallock, ispersonalaccess, iscanexport, iscanreport, supervisor_id, iscanapproveowndoc, isaccessallorgs, ischangelog, preferencetype, overwritepricelimit, isuseuserorgaccess, ad_tree_org_id, confirmqueryrecords, maxqueryrecords, connectionprofile, allow_info_account, allow_info_asset, allow_info_bpartner, allow_info_cashjournal, allow_info_inout, allow_info_invoice, allow_info_order, allow_info_payment, allow_info_product, allow_info_resource, allow_info_schedule, userdiscount, allow_info_mrp, allow_info_crp, isdiscountuptolimitprice, isdiscountallowedontotal, isautorolelogin, ismenuavailable, isorgloginmandatory, login_org_id, ad_form_id, isallowlogindateoverride, isrolealwaysusebetafunctions, isshowallentitytypes, seqno, root_menu_id, webui_role, isallowedtrlbox, isallowedmigrationscripts, isallowedinvoicingpriority, isattachmentdeletionallowed) VALUES (1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:02.000000 +01:00', 100, '2022-05-05 16:24:32.000000 +02:00', 'eCommerce_admin', 100, null, '_CO', 318, 0, null, 'Y', 'N', 'N', 'N', 'Y', 'Y', null, 'N', 'Y', 'Y', 'O', 'N', 'N', null, 0, 0, null, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', null, 'Y', 'Y', 'N', 'N', 'N', 'Y', 'N', null, null, 'N', 'Y', 'N', 20, 1000007, 'Y', 'N', 'N', 'N', 'N');
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000044, '2021-07-09 10:01:13.000000 +02:00', 100, 1000041, 'Y', 10, '2021-07-09 10:01:13.000000 +02:00', 100, 1000014);
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000045, '2021-11-30 16:10:08.000000 +01:00', 100, 1000044, 'Y', 10, '2021-11-30 16:10:08.000000 +01:00', 100, 1000015);
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000045, '2021-12-23 11:17:56.000000 +01:00', 100, 1000034, 'Y', 20, '2021-12-23 11:17:56.000000 +01:00', 100, 1000017);
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000045, '2021-12-23 11:18:02.000000 +01:00', 100, 540018, 'Y', 30, '2021-12-23 11:18:02.000000 +01:00', 100, 1000018);
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000045, '2021-12-23 11:18:06.000000 +01:00', 100, 1000036, 'Y', 40, '2021-12-23 11:18:06.000000 +01:00', 100, 1000019);
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000045, '2021-12-23 11:18:12.000000 +01:00', 100, 1000038, 'Y', 50, '2021-12-23 11:18:12.000000 +01:00', 100, 1000020);
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000045, '2021-12-23 11:18:17.000000 +01:00', 100, 1000037, 'Y', 60, '2021-12-23 11:18:17.000000 +01:00', 100, 1000021);
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000045, '2021-12-29 22:27:27.000000 +01:00', 100, 1000040, 'Y', 70, '2021-12-29 22:27:27.000000 +01:00', 100, 1000023);
-INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id) VALUES (1000000, 1000000, 1000045, '2022-01-28 12:57:48.000000 +01:00', 100, 1000046, 'Y', 80, '2022-01-28 12:57:48.000000 +01:00', 100, 1000024);
-INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id) VALUES (100, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:13:15.000000 +02:00', 100, '2021-07-07 21:13:15.000000 +02:00', 100, 1000022);
-INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id) VALUES (100, 1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:02.000000 +01:00', 100, '2021-11-30 16:10:02.000000 +01:00', 100, 1000027);
-INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id) VALUES (100, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:22.000000 +01:00', 100, '2022-01-28 12:54:22.000000 +01:00', 100, 1000030);
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, null, 1000044, 1000000, null, 115, null, '2021-08-10 14:04:26.000000 +02:00', 2188224, null, 'Y', 'N', '2021-08-10 14:04:26.000000 +02:00', 2188224, null, null, null, 'N', 'NoAccess');
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, null, 1000044, 1000001, null, 540095, null, '2021-08-12 09:12:34.000000 +02:00', 2188224, null, 'Y', 'N', '2021-08-12 09:12:34.000000 +02:00', 2188224, null, null, null, 'N', 'NoAccess');
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, null, 1000045, 1000002, null, 158, null, '2021-12-29 19:04:26.000000 +01:00', 2188224, null, 'Y', 'N', '2021-12-29 19:04:26.000000 +01:00', 2188224, null, null, null, 'N', 'NoAccess');
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, null, 1000045, 1000003, null, 540327, null, '2021-12-29 19:17:07.000000 +01:00', 2188224, null, 'Y', 'N', '2021-12-29 19:17:07.000000 +01:00', 2188224, null, null, null, 'N', 'NoAccess');
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, 541030, 1000045, 1000004, null, null, null, '2021-12-30 13:18:35.000000 +01:00', 2188224, null, 'Y', 'N', '2021-12-30 13:18:35.000000 +01:00', 2188224, null, null, null, 'N', null);
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, null, 1000044, 1000005, null, 143, null, '2022-01-22 10:20:27.000000 +01:00', 2188224, null, 'Y', 'N', '2022-01-22 10:20:27.000000 +01:00', 2188224, null, null, null, 'N', 'NoAccess');
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, 500011, 1000046, 1000006, null, null, null, '2022-01-28 15:32:07.000000 +01:00', 100, null, 'Y', 'N', '2022-01-28 15:32:07.000000 +01:00', 100, null, null, null, 'N', null);
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, 500011, 1000045, 1000007, null, null, null, '2022-02-03 13:29:44.000000 +01:00', 2188224, null, 'Y', 'N', '2022-02-03 13:29:44.000000 +01:00', 2188224, null, null, null, 'N', null);
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, null, 1000045, 1000008, null, 541045, null, '2022-05-04 11:44:12.000000 +02:00', 2188224, null, 'Y', 'N', '2022-05-04 11:44:12.000000 +02:00', 2188224, null, null, null, 'N', 'NoAccess');
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, 540792, 1000045, 1000009, null, null, null, '2022-05-05 16:18:50.000000 +02:00', 2188224, null, 'Y', 'N', '2022-05-05 16:18:50.000000 +02:00', 2188224, null, null, null, 'N', null);
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, 107, 1000045, 1000010, null, null, null, '2022-05-05 16:26:59.000000 +02:00', 2188224, null, 'Y', 'N', '2022-05-05 16:26:59.000000 +02:00', 2188224, null, null, null, 'N', null);
-INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description) VALUES (1000000, null, 1000000, null, 1000045, 1000012, null, 541125, null, '2022-09-22 14:44:58.000000 +02:00', 2188224, null, 'Y', 'N', '2022-09-22 14:44:58.000000 +02:00', 2188224, null, null, null, 'N', 'NoAccess');
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (584842, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:15:31.000000 +02:00', 100, '2021-07-07 21:15:31.000000 +02:00', 100, 'Y', 1314760);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (107, 1000045, 1000000, 1000000, 'Y', '2022-05-05 16:27:29.000000 +02:00', 100, '2022-05-05 16:27:29.000000 +02:00', 100, 'Y', 1411359);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (504600, 1000045, 1000000, 1000000, 'Y', '2022-05-09 13:56:50.000000 +02:00', 100, '2022-05-09 13:56:50.000000 +02:00', 100, 'Y', 1411360);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540546, 1000045, 1000000, 1000000, 'Y', '2022-02-15 15:34:39.000000 +01:00', 100, '2022-02-15 15:34:39.000000 +01:00', 100, 'Y', 1370487);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540547, 1000045, 1000000, 1000000, 'Y', '2022-02-15 15:34:27.000000 +01:00', 100, '2022-02-15 15:34:27.000000 +01:00', 100, 'Y', 1370486);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540604, 1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:31.000000 +01:00', 100, '2021-11-30 16:10:31.000000 +01:00', 100, 'Y', 1321094);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540797, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:24:00.000000 +02:00', 100, '2022-05-03 17:24:00.000000 +02:00', 100, 'Y', 1411354);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540819, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:24:06.000000 +02:00', 100, '2022-05-03 17:24:06.000000 +02:00', 100, 'Y', 1411355);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540820, 1000045, 1000000, 1000000, 'Y', '2022-05-05 10:05:31.000000 +02:00', 100, '2022-05-05 10:05:31.000000 +02:00', 100, 'Y', 1411357);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (584700, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:24:12.000000 +02:00', 100, '2022-05-03 17:24:12.000000 +02:00', 100, 'Y', 1411356);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (110, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:46.000000 +01:00', 100, '2022-01-28 12:54:46.000000 +01:00', 100, 'Y', 1370477);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (500011, 1000046, 1000000, 1000000, 'Y', '2022-02-03 14:58:15.000000 +01:00', 100, '2022-02-03 14:58:15.000000 +01:00', 100, 'Y', 1370483);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540495, 1000046, 1000000, 1000000, 'Y', '2022-01-28 15:29:32.000000 +01:00', 100, '2022-01-28 15:29:32.000000 +01:00', 100, 'Y', 1370480);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540750, 1000046, 1000000, 1000000, 'Y', '2022-01-28 15:29:42.000000 +01:00', 100, '2022-01-28 15:29:42.000000 +01:00', 100, 'Y', 1370481);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540762, 1000046, 1000000, 1000000, 'Y', '2022-01-28 13:00:03.000000 +01:00', 100, '2022-01-28 13:00:03.000000 +01:00', 100, 'Y', 1370479);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (115, 1000044, 1000000, 1000000, 'Y', '2021-08-10 14:45:38.000000 +02:00', 100, '2021-08-10 14:45:38.000000 +02:00', 100, 'Y', 1241572);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (120, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:08.000000 +02:00', 100, '2021-07-07 21:14:08.000000 +02:00', 100, 'Y', 1241560);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (123, 1000044, 1000000, 1000000, 'Y', '2021-07-09 11:42:21.000000 +02:00', 100, '2021-07-09 11:42:21.000000 +02:00', 100, 'Y', 1241570);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (139, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:13:50.000000 +02:00', 100, '2021-07-07 21:13:50.000000 +02:00', 100, 'Y', 1241559);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (142, 1000044, 1000000, 1000000, 'Y', '2021-11-30 16:03:38.000000 +01:00', 100, '2021-11-30 16:03:38.000000 +01:00', 100, 'Y', 1246335);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (144, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:47.000000 +02:00', 100, '2021-07-07 21:14:47.000000 +02:00', 100, 'Y', 1241565);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (256, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:21.000000 +02:00', 100, '2021-07-07 21:14:21.000000 +02:00', 100, 'Y', 1241562);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (260, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:14.000000 +02:00', 100, '2021-07-07 21:14:14.000000 +02:00', 100, 'Y', 1241561);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (53100, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:17:31.000000 +02:00', 100, '2021-07-07 21:17:31.000000 +02:00', 100, 'Y', 1241567);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540095, 1000044, 1000000, 1000000, 'Y', '2021-08-13 09:14:41.000000 +02:00', 100, '2021-08-13 09:14:41.000000 +02:00', 100, 'Y', 1244747);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540749, 1000044, 1000000, 1000000, 'Y', '2021-07-26 17:34:23.000000 +02:00', 100, '2021-07-26 17:34:23.000000 +02:00', 100, 'Y', 1241571);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540825, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:30.000000 +02:00', 100, '2021-07-07 21:14:30.000000 +02:00', 100, 'Y', 1241563);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (541150, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:52.000000 +02:00', 100, '2021-07-07 21:14:52.000000 +02:00', 100, 'Y', 1241566);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (140, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:39.000000 +02:00', 100, '2021-07-07 21:14:39.000000 +02:00', 100, 'Y', 1241564);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (158, 1000045, 1000000, 1000000, 'Y', '2021-12-29 22:26:52.000000 +01:00', 100, '2021-12-29 22:26:52.000000 +01:00', 100, 'Y', 1267273);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (168, 1000045, 1000000, 1000000, 'Y', '2022-05-05 16:22:12.000000 +02:00', 100, '2022-05-05 16:22:12.000000 +02:00', 100, 'Y', 1314033);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (53097, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:23:29.000000 +02:00', 100, '2022-05-03 17:23:29.000000 +02:00', 100, 'Y', 1314030);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540095, 1000045, 1000000, 1000000, 'Y', '2022-02-08 15:44:41.000000 +01:00', 100, '2022-02-08 15:44:41.000000 +01:00', 100, 'Y', 1283399);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540127, 1000045, 1000000, 1000000, 'Y', '2022-02-08 15:44:48.000000 +01:00', 100, '2022-02-08 15:44:48.000000 +01:00', 100, 'Y', 1283400);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540189, 1000045, 1000000, 1000000, 'Y', '2022-02-15 15:41:05.000000 +01:00', 100, '2022-02-15 15:41:05.000000 +01:00', 100, 'Y', 1283401);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540320, 1000045, 1000000, 1000000, 'Y', '2021-12-29 10:09:13.000000 +01:00', 100, '2021-12-29 10:09:13.000000 +01:00', 100, 'Y', 1267271);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540321, 1000045, 1000000, 1000000, 'Y', '2021-12-29 10:09:25.000000 +01:00', 100, '2021-12-29 10:09:25.000000 +01:00', 100, 'Y', 1267272);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540325, 1000045, 1000000, 1000000, 'Y', '2021-12-29 10:08:57.000000 +01:00', 100, '2021-12-29 10:08:57.000000 +01:00', 100, 'Y', 1267270);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540376, 1000045, 1000000, 1000000, 'Y', '2021-12-20 23:24:28.000000 +01:00', 100, '2021-12-20 23:24:28.000000 +01:00', 100, 'Y', 1265656);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540395, 1000045, 1000000, 1000000, 'Y', '2021-12-20 23:24:34.000000 +01:00', 100, '2021-12-20 23:24:34.000000 +01:00', 100, 'Y', 1265657);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540676, 1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:15.000000 +01:00', 100, '2021-11-30 16:10:15.000000 +01:00', 100, 'Y', 1246336);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540743, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:35:21.000000 +02:00', 100, '2022-05-03 17:35:21.000000 +02:00', 100, 'Y', 1314032);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (181, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:26.000000 +01:00', 100, '2022-01-28 12:54:26.000000 +01:00', 100, 'Y', 1283396);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (184, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:57:36.000000 +01:00', 100, '2022-01-28 12:57:36.000000 +01:00', 100, 'Y', 1283398);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540196, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:34.000000 +01:00', 100, '2022-01-28 12:54:34.000000 +01:00', 100, 'Y', 1283397);
-INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id) VALUES (1000000, 1000000, 'Y', '2022-05-09 13:59:23.000000 +02:00', 100, '2022-05-09 13:59:25.000000 +02:00', 100, 540943, 1000045, 178, 1488382);
-INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id) VALUES (1000000, 1000000, 'Y', '2022-05-09 13:57:49.000000 +02:00', 100, '2022-05-09 13:57:49.000000 +02:00', 100, 1000004, 1000045, 178, 1488381);
-INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id) VALUES (1000000, 1000000, 'Y', '2022-05-05 16:22:51.000000 +02:00', 100, '2022-05-05 16:22:51.000000 +02:00', 100, 1000023, 1000045, 178, 1488380);
-INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id) VALUES (1000000, 1000000, 'Y', '2022-01-28 13:00:35.000000 +01:00', 100, '2022-01-28 13:00:35.000000 +01:00', 100, 1000014, 1000046, 178, 1439644);
-INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id) VALUES (1000000, 1000000, 'Y', '2022-01-28 13:00:21.000000 +01:00', 100, '2022-01-28 13:00:21.000000 +01:00', 100, 1000016, 1000046, 178, 1439643);
-UPDATE public.ad_role SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:45:10.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:47.000000 +01:00', name = 'x_Lieferdispo', updatedby = 100, description = null, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = null, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N', iscanexport = 'Y', iscanreport = 'Y', supervisor_id = null, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = null, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = null, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'Y', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'Y', allow_info_crp = 'Y', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'Y', isorgloginmandatory = 'N', login_org_id = null, ad_form_id = null, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = null, root_menu_id = null, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N' WHERE ad_role_id = 540018;
-UPDATE public.ad_role SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:38:37.000000 +01:00', createdby = 100, updated = '2021-12-29 22:27:16.000000 +01:00', name = 'x_Stammdaten_Partner', updatedby = 100, description = null, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = null, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = null, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = null, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = null, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'N', isorgloginmandatory = 'N', login_org_id = null, ad_form_id = null, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = null, root_menu_id = null, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N' WHERE ad_role_id = 1000040;
-UPDATE public.ad_role SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:09:17.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:05.000000 +01:00', name = 'x_Auftrag', updatedby = 100, description = null, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = null, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = null, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = null, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = null, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'N', isorgloginmandatory = 'N', login_org_id = null, ad_form_id = null, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = null, root_menu_id = null, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N' WHERE ad_role_id = 1000034;
-UPDATE public.ad_role SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:31:33.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:09.000000 +01:00', name = 'x_Lieferschein', updatedby = 100, description = null, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = null, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = null, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = null, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = null, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'N', isorgloginmandatory = 'N', login_org_id = null, ad_form_id = null, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = null, root_menu_id = null, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N' WHERE ad_role_id = 1000036;
-UPDATE public.ad_role SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:42:22.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:12.000000 +01:00', name = 'x_Rechnungsdispo', updatedby = 100, description = null, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = null, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = null, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = null, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = null, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'N', isorgloginmandatory = 'N', login_org_id = null, ad_form_id = null, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = null, root_menu_id = null, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N' WHERE ad_role_id = 1000037;
-UPDATE public.ad_role SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:55:29.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:15.000000 +01:00', name = 'x_Rechnung', updatedby = 100, description = null, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = null, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = null, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = null, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = null, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'N', isorgloginmandatory = 'N', login_org_id = null, ad_form_id = null, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = null, root_menu_id = null, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N' WHERE ad_role_id = 1000038;
-UPDATE public.ad_user_roles SET ad_user_id = 100, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 14:09:17.000000 +01:00', createdby = 100, updated = '2015-11-05 14:09:17.000000 +01:00', updatedby = 100 WHERE ad_user_roles_id = 1000008;
-UPDATE public.ad_user_roles SET ad_user_id = 100, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 14:31:33.000000 +01:00', createdby = 100, updated = '2015-11-05 14:31:33.000000 +01:00', updatedby = 100 WHERE ad_user_roles_id = 1000009;
-UPDATE public.ad_user_roles SET ad_user_id = 100, ad_role_id = 1000037, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 14:42:22.000000 +01:00', createdby = 100, updated = '2015-11-05 14:42:22.000000 +01:00', updatedby = 100 WHERE ad_user_roles_id = 1000010;
-UPDATE public.ad_user_roles SET ad_user_id = 100, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 14:55:29.000000 +01:00', createdby = 100, updated = '2015-11-05 14:55:29.000000 +01:00', updatedby = 100 WHERE ad_user_roles_id = 1000011;
-UPDATE public.ad_user_roles SET ad_user_id = 100, ad_role_id = 1000040, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 20:38:37.000000 +01:00', createdby = 100, updated = '2015-11-05 20:38:37.000000 +01:00', updatedby = 100 WHERE ad_user_roles_id = 1000013;
-UPDATE public.ad_user_roles SET ad_user_id = 100, ad_role_id = 540018, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-12 19:45:10.000000 +01:00', createdby = 100, updated = '2015-11-12 19:45:10.000000 +01:00', updatedby = 100 WHERE ad_user_roles_id = 1000016;
-UPDATE public.ad_process_access SET ad_process_id = 540304, ad_role_id = 1000037, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:44:00.000000 +01:00', createdby = 100, updated = '2015-11-05 14:44:00.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000009;
-UPDATE public.ad_process_access SET ad_process_id = 104, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:40:50.000000 +01:00', createdby = 100, updated = '2015-11-12 19:40:50.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000013;
-UPDATE public.ad_process_access SET ad_process_id = 110, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:40:56.000000 +01:00', createdby = 100, updated = '2015-11-12 19:40:56.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000014;
-UPDATE public.ad_process_access SET ad_process_id = 500007, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:41:06.000000 +01:00', createdby = 100, updated = '2015-11-12 19:41:06.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000015;
-UPDATE public.ad_process_access SET ad_process_id = 500014, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:41:14.000000 +01:00', createdby = 100, updated = '2015-11-12 19:41:14.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000016;
-UPDATE public.ad_process_access SET ad_process_id = 540458, ad_role_id = 540018, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:45:31.000000 +01:00', createdby = 100, updated = '2015-11-12 19:45:31.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000017;
-UPDATE public.ad_process_access SET ad_process_id = 109, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:36:53.000000 +01:00', createdby = 100, updated = '2015-11-05 14:36:53.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000006;
-UPDATE public.ad_process_access SET ad_process_id = 117, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:32:09.000000 +01:00', createdby = 100, updated = '2015-11-05 14:32:09.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000004;
-UPDATE public.ad_process_access SET ad_process_id = 500008, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:32:48.000000 +01:00', createdby = 100, updated = '2015-11-05 14:32:48.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000005;
-UPDATE public.ad_process_access SET ad_process_id = 111, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:56:30.000000 +01:00', createdby = 100, updated = '2015-11-05 14:56:30.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000012;
-UPDATE public.ad_process_access SET ad_process_id = 116, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:55:44.000000 +01:00', createdby = 100, updated = '2015-11-05 14:55:44.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000010;
-UPDATE public.ad_process_access SET ad_process_id = 500009, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:56:18.000000 +01:00', createdby = 100, updated = '2015-11-05 14:56:18.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1000011;
-UPDATE public.ad_process_access SET ad_process_id = 540661, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2016-02-25 19:01:02.000000 +01:00', createdby = 100, updated = '2016-02-25 19:01:02.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_process_access_id = 1001368;
-UPDATE public.ad_window_access SET ad_window_id = 540092, ad_role_id = 1000037, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:42:28.000000 +01:00', createdby = 100, updated = '2015-11-05 14:42:28.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1000020;
-UPDATE public.ad_window_access SET ad_window_id = 540983, ad_role_id = 1000037, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2020-09-30 15:54:38.862775 +02:00', createdby = 100, updated = '2020-09-30 15:54:38.862775 +02:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1170745;
-UPDATE public.ad_window_access SET ad_window_id = 123, ad_role_id = 1000040, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:38:44.000000 +01:00', createdby = 100, updated = '2015-11-05 20:38:44.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1000100;
-UPDATE public.ad_window_access SET ad_window_id = 192, ad_role_id = 1000040, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:38:49.000000 +01:00', createdby = 100, updated = '2015-11-05 20:38:49.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1000101;
-UPDATE public.ad_window_access SET ad_window_id = 143, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:09:27.000000 +01:00', createdby = 100, updated = '2015-11-05 14:09:27.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1000018;
-UPDATE public.ad_window_access SET ad_window_id = 500221, ad_role_id = 540018, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:45:16.000000 +01:00', createdby = 100, updated = '2015-11-12 19:45:16.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1000022;
-UPDATE public.ad_window_access SET ad_window_id = 169, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:31:44.000000 +01:00', createdby = 100, updated = '2015-11-05 14:31:44.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1000019;
-UPDATE public.ad_window_access SET ad_window_id = 167, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:55:34.000000 +01:00', createdby = 100, updated = '2015-11-05 14:55:34.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1000021;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:23:20.000000 +01:00', createdby = 100, updated = '2015-11-05 14:23:20.000000 +01:00', updatedby = 100, c_doctype_id = 1000027, ad_role_id = 1000034, ad_ref_list_id = 178 WHERE ad_document_action_access_id = 1000015;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:23:34.000000 +01:00', createdby = 100, updated = '2015-11-05 14:23:34.000000 +01:00', updatedby = 100, c_doctype_id = 1000027, ad_role_id = 1000034, ad_ref_list_id = 188 WHERE ad_document_action_access_id = 1000017;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:23:13.000000 +01:00', createdby = 100, updated = '2015-11-05 14:23:13.000000 +01:00', updatedby = 100, c_doctype_id = 1000030, ad_role_id = 1000034, ad_ref_list_id = 178 WHERE ad_document_action_access_id = 1000014;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:24:02.000000 +01:00', createdby = 100, updated = '2015-11-05 14:24:02.000000 +01:00', updatedby = 100, c_doctype_id = 1000030, ad_role_id = 1000034, ad_ref_list_id = 183 WHERE ad_document_action_access_id = 1000018;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:24:25.000000 +01:00', createdby = 100, updated = '2015-11-05 14:24:25.000000 +01:00', updatedby = 100, c_doctype_id = 1000030, ad_role_id = 1000034, ad_ref_list_id = 184 WHERE ad_document_action_access_id = 1000019;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:23:29.000000 +01:00', createdby = 100, updated = '2015-11-05 14:23:29.000000 +01:00', updatedby = 100, c_doctype_id = 1000030, ad_role_id = 1000034, ad_ref_list_id = 188 WHERE ad_document_action_access_id = 1000016;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:37:34.000000 +01:00', createdby = 100, updated = '2015-11-05 14:37:34.000000 +01:00', updatedby = 100, c_doctype_id = 1000011, ad_role_id = 1000036, ad_ref_list_id = 178 WHERE ad_document_action_access_id = 1000022;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:37:10.000000 +01:00', createdby = 100, updated = '2015-11-05 14:37:10.000000 +01:00', updatedby = 100, c_doctype_id = 1000011, ad_role_id = 1000036, ad_ref_list_id = 184 WHERE ad_document_action_access_id = 1000020;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:37:26.000000 +01:00', createdby = 100, updated = '2015-11-05 14:37:26.000000 +01:00', updatedby = 100, c_doctype_id = 1000011, ad_role_id = 1000036, ad_ref_list_id = 188 WHERE ad_document_action_access_id = 1000021;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:56:39.000000 +01:00', createdby = 100, updated = '2015-11-05 14:56:39.000000 +01:00', updatedby = 100, c_doctype_id = 1000002, ad_role_id = 1000038, ad_ref_list_id = 178 WHERE ad_document_action_access_id = 1000023;
-UPDATE public.ad_document_action_access SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:56:49.000000 +01:00', createdby = 100, updated = '2015-11-05 14:56:49.000000 +01:00', updatedby = 100, c_doctype_id = 1000002, ad_role_id = 1000038, ad_ref_list_id = 184 WHERE ad_document_action_access_id = 1000024;
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (540687, 1000038, 1000000, 0, 'Y', '2022-02-01 15:55:51.000000 +01:00', 100, '2022-02-01 15:55:51.000000 +01:00', 100, 'Y', 1370482);
-INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id) VALUES (541030, 1000038, 1000000, 0, 'Y', '2021-12-30 15:05:01.000000 +01:00', 100, '2021-12-30 15:05:01.000000 +01:00', 100, 'Y', 1348976);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540327, 1000040, 1000000, 0, 'Y', '2021-12-29 22:28:20.000000 +01:00', 100, '2021-12-29 22:28:20.000000 +01:00', 100, 'Y', 1267275);
-UPDATE public.ad_role SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:39:08.000000 +01:00', createdby = 100, updated = '2021-07-09 10:00:39.000000 +02:00', name = 'x_Stammdaten_Preise', updatedby = 100, description = null, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = null, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = null, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = null, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = null, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'N', isorgloginmandatory = 'N', login_org_id = null, ad_form_id = null, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = null, root_menu_id = null, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N' WHERE ad_role_id = 1000041;
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540320, 1000041, 1000000, 0, 'Y', '2021-07-09 10:01:37.000000 +02:00', 100, '2021-07-09 10:01:37.000000 +02:00', 100, 'Y', 1241569);
-INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id) VALUES (540321, 1000041, 1000000, 0, 'Y', '2021-07-09 10:01:22.000000 +02:00', 100, '2021-07-09 10:01:22.000000 +02:00', 100, 'Y', 1241568);
-UPDATE public.ad_window_access SET ad_window_id = 146, ad_role_id = 1000041, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:39:13.000000 +01:00', createdby = 100, updated = '2015-11-05 20:39:13.000000 +01:00', updatedby = 100, isreadwrite = 'Y' WHERE ad_window_access_id = 1000102;
+INSERT INTO public.ad_role (ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, name, updatedby, description, userlevel, c_currency_id, amtapproval, ad_tree_menu_id, ismanual, isshowacct, ispersonallock, ispersonalaccess, iscanexport, iscanreport, supervisor_id, iscanapproveowndoc, isaccessallorgs, ischangelog, preferencetype, overwritepricelimit, isuseuserorgaccess,
+                            ad_tree_org_id, confirmqueryrecords, maxqueryrecords, connectionprofile, allow_info_account, allow_info_asset, allow_info_bpartner, allow_info_cashjournal, allow_info_inout, allow_info_invoice, allow_info_order, allow_info_payment, allow_info_product, allow_info_resource, allow_info_schedule, userdiscount, allow_info_mrp, allow_info_crp, isdiscountuptolimitprice,
+                            isdiscountallowedontotal, isautorolelogin, ismenuavailable, isorgloginmandatory, login_org_id, ad_form_id, isallowlogindateoverride, isrolealwaysusebetafunctions, isshowallentitytypes, seqno, root_menu_id, webui_role, isallowedtrlbox, isallowedmigrationscripts, isallowedinvoicingpriority, isattachmentdeletionallowed)
+VALUES (1000044, 1000000, 1000000, 'Y', '2021-07-07 21:13:15.000000 +02:00', 100, '2021-07-07 21:15:38.000000 +02:00', 'eCommerce_produkte', 100, NULL, '_CO', 318, 0, NULL, 'Y', 'N', 'N', 'N', 'Y', 'Y', NULL, 'N', 'Y', 'Y', 'O', 'N', 'N', NULL, 0, 0, NULL, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', NULL, 'Y', 'Y', 'N', 'N', 'N', 'Y', 'N', NULL, NULL, 'N', 'N', 'N', 10, 1000007, 'Y',
+        'N', 'N', 'N', 'N')
+;
+
+INSERT INTO public.ad_role (ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, name, updatedby, description, userlevel, c_currency_id, amtapproval, ad_tree_menu_id, ismanual, isshowacct, ispersonallock, ispersonalaccess, iscanexport, iscanreport, supervisor_id, iscanapproveowndoc, isaccessallorgs, ischangelog, preferencetype, overwritepricelimit, isuseuserorgaccess,
+                            ad_tree_org_id, confirmqueryrecords, maxqueryrecords, connectionprofile, allow_info_account, allow_info_asset, allow_info_bpartner, allow_info_cashjournal, allow_info_inout, allow_info_invoice, allow_info_order, allow_info_payment, allow_info_product, allow_info_resource, allow_info_schedule, userdiscount, allow_info_mrp, allow_info_crp, isdiscountuptolimitprice,
+                            isdiscountallowedontotal, isautorolelogin, ismenuavailable, isorgloginmandatory, login_org_id, ad_form_id, isallowlogindateoverride, isrolealwaysusebetafunctions, isshowallentitytypes, seqno, root_menu_id, webui_role, isallowedtrlbox, isallowedmigrationscripts, isallowedinvoicingpriority, isattachmentdeletionallowed)
+VALUES (1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:22.000000 +01:00', 100, '2022-01-28 12:54:22.000000 +01:00', 'x_Einkauf', 100, NULL, '_CO', 318, 0, NULL, 'Y', 'N', 'N', 'N', 'Y', 'Y', NULL, 'N', 'Y', 'Y', 'O', 'N', 'N', NULL, 0, 0, NULL, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', NULL, 'Y', 'Y', 'N', 'N', 'N', 'Y', 'N', NULL, NULL, 'N', 'N', 'N', 80, 1000007, 'Y', 'N', 'N',
+        'N', 'N')
+;
+
+INSERT INTO public.ad_role (ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, name, updatedby, description, userlevel, c_currency_id, amtapproval, ad_tree_menu_id, ismanual, isshowacct, ispersonallock, ispersonalaccess, iscanexport, iscanreport, supervisor_id, iscanapproveowndoc, isaccessallorgs, ischangelog, preferencetype, overwritepricelimit, isuseuserorgaccess,
+                            ad_tree_org_id, confirmqueryrecords, maxqueryrecords, connectionprofile, allow_info_account, allow_info_asset, allow_info_bpartner, allow_info_cashjournal, allow_info_inout, allow_info_invoice, allow_info_order, allow_info_payment, allow_info_product, allow_info_resource, allow_info_schedule, userdiscount, allow_info_mrp, allow_info_crp, isdiscountuptolimitprice,
+                            isdiscountallowedontotal, isautorolelogin, ismenuavailable, isorgloginmandatory, login_org_id, ad_form_id, isallowlogindateoverride, isrolealwaysusebetafunctions, isshowallentitytypes, seqno, root_menu_id, webui_role, isallowedtrlbox, isallowedmigrationscripts, isallowedinvoicingpriority, isattachmentdeletionallowed)
+VALUES (1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:02.000000 +01:00', 100, '2022-05-05 16:24:32.000000 +02:00', 'eCommerce_admin', 100, NULL, '_CO', 318, 0, NULL, 'Y', 'N', 'N', 'N', 'Y', 'Y', NULL, 'N', 'Y', 'Y', 'O', 'N', 'N', NULL, 0, 0, NULL, 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', NULL, 'Y', 'Y', 'N', 'N', 'N', 'Y', 'N', NULL, NULL, 'N', 'Y', 'N', 20, 1000007, 'Y', 'N',
+        'N', 'N', 'N')
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000044, '2021-07-09 10:01:13.000000 +02:00', 100, 1000041, 'Y', 10, '2021-07-09 10:01:13.000000 +02:00', 100, 1000014)
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000045, '2021-11-30 16:10:08.000000 +01:00', 100, 1000044, 'Y', 10, '2021-11-30 16:10:08.000000 +01:00', 100, 1000015)
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000045, '2021-12-23 11:17:56.000000 +01:00', 100, 1000034, 'Y', 20, '2021-12-23 11:17:56.000000 +01:00', 100, 1000017)
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000045, '2021-12-23 11:18:02.000000 +01:00', 100, 540018, 'Y', 30, '2021-12-23 11:18:02.000000 +01:00', 100, 1000018)
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000045, '2021-12-23 11:18:06.000000 +01:00', 100, 1000036, 'Y', 40, '2021-12-23 11:18:06.000000 +01:00', 100, 1000019)
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000045, '2021-12-23 11:18:12.000000 +01:00', 100, 1000038, 'Y', 50, '2021-12-23 11:18:12.000000 +01:00', 100, 1000020)
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000045, '2021-12-23 11:18:17.000000 +01:00', 100, 1000037, 'Y', 60, '2021-12-23 11:18:17.000000 +01:00', 100, 1000021)
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000045, '2021-12-29 22:27:27.000000 +01:00', 100, 1000040, 'Y', 70, '2021-12-29 22:27:27.000000 +01:00', 100, 1000023)
+;
+
+INSERT INTO public.ad_role_included (ad_client_id, ad_org_id, ad_role_id, created, createdby, included_role_id, isactive, seqno, updated, updatedby, ad_role_included_id)
+VALUES (1000000, 1000000, 1000045, '2022-01-28 12:57:48.000000 +01:00', 100, 1000046, 'Y', 80, '2022-01-28 12:57:48.000000 +01:00', 100, 1000024)
+;
+
+INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id)
+VALUES (100, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:13:15.000000 +02:00', 100, '2021-07-07 21:13:15.000000 +02:00', 100, 1000022)
+;
+
+INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id)
+VALUES (100, 1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:02.000000 +01:00', 100, '2021-11-30 16:10:02.000000 +01:00', 100, 1000027)
+;
+
+INSERT INTO public.ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_user_roles_id)
+VALUES (100, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:22.000000 +01:00', 100, '2022-01-28 12:54:22.000000 +01:00', 100, 1000030)
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, NULL, 1000044, 1000000, NULL, 115, NULL, '2021-08-10 14:04:26.000000 +02:00', 2188224, NULL, 'Y', 'N', '2021-08-10 14:04:26.000000 +02:00', 2188224, NULL, NULL, NULL, 'N', 'NoAccess')
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, NULL, 1000044, 1000001, NULL, 540095, NULL, '2021-08-12 09:12:34.000000 +02:00', 2188224, NULL, 'Y', 'N', '2021-08-12 09:12:34.000000 +02:00', 2188224, NULL, NULL, NULL, 'N', 'NoAccess')
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, NULL, 1000045, 1000002, NULL, 158, NULL, '2021-12-29 19:04:26.000000 +01:00', 2188224, NULL, 'Y', 'N', '2021-12-29 19:04:26.000000 +01:00', 2188224, NULL, NULL, NULL, 'N', 'NoAccess')
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, NULL, 1000045, 1000003, NULL, 540327, NULL, '2021-12-29 19:17:07.000000 +01:00', 2188224, NULL, 'Y', 'N', '2021-12-29 19:17:07.000000 +01:00', 2188224, NULL, NULL, NULL, 'N', 'NoAccess')
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, 541030, 1000045, 1000004, NULL, NULL, NULL, '2021-12-30 13:18:35.000000 +01:00', 2188224, NULL, 'Y', 'N', '2021-12-30 13:18:35.000000 +01:00', 2188224, NULL, NULL, NULL, 'N', NULL)
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, NULL, 1000044, 1000005, NULL, 143, NULL, '2022-01-22 10:20:27.000000 +01:00', 2188224, NULL, 'Y', 'N', '2022-01-22 10:20:27.000000 +01:00', 2188224, NULL, NULL, NULL, 'N', 'NoAccess')
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, 500011, 1000046, 1000006, NULL, NULL, NULL, '2022-01-28 15:32:07.000000 +01:00', 100, NULL, 'Y', 'N', '2022-01-28 15:32:07.000000 +01:00', 100, NULL, NULL, NULL, 'N', NULL)
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, 500011, 1000045, 1000007, NULL, NULL, NULL, '2022-02-03 13:29:44.000000 +01:00', 2188224, NULL, 'Y', 'N', '2022-02-03 13:29:44.000000 +01:00', 2188224, NULL, NULL, NULL, 'N', NULL)
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, NULL, 1000045, 1000008, NULL, 541045, NULL, '2022-05-04 11:44:12.000000 +02:00', 2188224, NULL, 'Y', 'N', '2022-05-04 11:44:12.000000 +02:00', 2188224, NULL, NULL, NULL, 'N', 'NoAccess')
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, 540792, 1000045, 1000009, NULL, NULL, NULL, '2022-05-05 16:18:50.000000 +02:00', 2188224, NULL, 'Y', 'N', '2022-05-05 16:18:50.000000 +02:00', 2188224, NULL, NULL, NULL, 'N', NULL)
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, 107, 1000045, 1000010, NULL, NULL, NULL, '2022-05-05 16:26:59.000000 +02:00', 2188224, NULL, 'Y', 'N', '2022-05-05 16:26:59.000000 +02:00', 2188224, NULL, NULL, NULL, 'N', NULL)
+;
+
+INSERT INTO public.ad_role_permrequest (ad_client_id, ad_form_id, ad_org_id, ad_process_id, ad_role_id, ad_role_permrequest_id, ad_task_id, ad_window_id, ad_workflow_id, created, createdby, docaction, isactive, ispermissiongranted, updated, updatedby, c_doctype_id, grantpermission, revokepermission, isreadwrite, description)
+VALUES (1000000, NULL, 1000000, NULL, 1000045, 1000012, NULL, 541125, NULL, '2022-09-22 14:44:58.000000 +02:00', 2188224, NULL, 'Y', 'N', '2022-09-22 14:44:58.000000 +02:00', 2188224, NULL, NULL, NULL, 'N', 'NoAccess')
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (584842, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:15:31.000000 +02:00', 100, '2021-07-07 21:15:31.000000 +02:00', 100, 'Y', 1314760)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (107, 1000045, 1000000, 1000000, 'Y', '2022-05-05 16:27:29.000000 +02:00', 100, '2022-05-05 16:27:29.000000 +02:00', 100, 'Y', 1411359)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (504600, 1000045, 1000000, 1000000, 'Y', '2022-05-09 13:56:50.000000 +02:00', 100, '2022-05-09 13:56:50.000000 +02:00', 100, 'Y', 1411360)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540546, 1000045, 1000000, 1000000, 'Y', '2022-02-15 15:34:39.000000 +01:00', 100, '2022-02-15 15:34:39.000000 +01:00', 100, 'Y', 1370487)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540547, 1000045, 1000000, 1000000, 'Y', '2022-02-15 15:34:27.000000 +01:00', 100, '2022-02-15 15:34:27.000000 +01:00', 100, 'Y', 1370486)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540604, 1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:31.000000 +01:00', 100, '2021-11-30 16:10:31.000000 +01:00', 100, 'Y', 1321094)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540797, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:24:00.000000 +02:00', 100, '2022-05-03 17:24:00.000000 +02:00', 100, 'Y', 1411354)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540819, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:24:06.000000 +02:00', 100, '2022-05-03 17:24:06.000000 +02:00', 100, 'Y', 1411355)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540820, 1000045, 1000000, 1000000, 'Y', '2022-05-05 10:05:31.000000 +02:00', 100, '2022-05-05 10:05:31.000000 +02:00', 100, 'Y', 1411357)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (584700, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:24:12.000000 +02:00', 100, '2022-05-03 17:24:12.000000 +02:00', 100, 'Y', 1411356)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (110, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:46.000000 +01:00', 100, '2022-01-28 12:54:46.000000 +01:00', 100, 'Y', 1370477)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (500011, 1000046, 1000000, 1000000, 'Y', '2022-02-03 14:58:15.000000 +01:00', 100, '2022-02-03 14:58:15.000000 +01:00', 100, 'Y', 1370483)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540495, 1000046, 1000000, 1000000, 'Y', '2022-01-28 15:29:32.000000 +01:00', 100, '2022-01-28 15:29:32.000000 +01:00', 100, 'Y', 1370480)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540750, 1000046, 1000000, 1000000, 'Y', '2022-01-28 15:29:42.000000 +01:00', 100, '2022-01-28 15:29:42.000000 +01:00', 100, 'Y', 1370481)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540762, 1000046, 1000000, 1000000, 'Y', '2022-01-28 13:00:03.000000 +01:00', 100, '2022-01-28 13:00:03.000000 +01:00', 100, 'Y', 1370479)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (115, 1000044, 1000000, 1000000, 'Y', '2021-08-10 14:45:38.000000 +02:00', 100, '2021-08-10 14:45:38.000000 +02:00', 100, 'Y', 1241572)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (120, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:08.000000 +02:00', 100, '2021-07-07 21:14:08.000000 +02:00', 100, 'Y', 1241560)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (123, 1000044, 1000000, 1000000, 'Y', '2021-07-09 11:42:21.000000 +02:00', 100, '2021-07-09 11:42:21.000000 +02:00', 100, 'Y', 1241570)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (139, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:13:50.000000 +02:00', 100, '2021-07-07 21:13:50.000000 +02:00', 100, 'Y', 1241559)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (142, 1000044, 1000000, 1000000, 'Y', '2021-11-30 16:03:38.000000 +01:00', 100, '2021-11-30 16:03:38.000000 +01:00', 100, 'Y', 1246335)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (144, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:47.000000 +02:00', 100, '2021-07-07 21:14:47.000000 +02:00', 100, 'Y', 1241565)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (256, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:21.000000 +02:00', 100, '2021-07-07 21:14:21.000000 +02:00', 100, 'Y', 1241562)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (260, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:14.000000 +02:00', 100, '2021-07-07 21:14:14.000000 +02:00', 100, 'Y', 1241561)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (53100, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:17:31.000000 +02:00', 100, '2021-07-07 21:17:31.000000 +02:00', 100, 'Y', 1241567)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540095, 1000044, 1000000, 1000000, 'Y', '2021-08-13 09:14:41.000000 +02:00', 100, '2021-08-13 09:14:41.000000 +02:00', 100, 'Y', 1244747)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540749, 1000044, 1000000, 1000000, 'Y', '2021-07-26 17:34:23.000000 +02:00', 100, '2021-07-26 17:34:23.000000 +02:00', 100, 'Y', 1241571)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540825, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:30.000000 +02:00', 100, '2021-07-07 21:14:30.000000 +02:00', 100, 'Y', 1241563)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (541150, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:52.000000 +02:00', 100, '2021-07-07 21:14:52.000000 +02:00', 100, 'Y', 1241566)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (140, 1000044, 1000000, 1000000, 'Y', '2021-07-07 21:14:39.000000 +02:00', 100, '2021-07-07 21:14:39.000000 +02:00', 100, 'Y', 1241564)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (158, 1000045, 1000000, 1000000, 'Y', '2021-12-29 22:26:52.000000 +01:00', 100, '2021-12-29 22:26:52.000000 +01:00', 100, 'Y', 1267273)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (168, 1000045, 1000000, 1000000, 'Y', '2022-05-05 16:22:12.000000 +02:00', 100, '2022-05-05 16:22:12.000000 +02:00', 100, 'Y', 1314033)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (53097, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:23:29.000000 +02:00', 100, '2022-05-03 17:23:29.000000 +02:00', 100, 'Y', 1314030)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540095, 1000045, 1000000, 1000000, 'Y', '2022-02-08 15:44:41.000000 +01:00', 100, '2022-02-08 15:44:41.000000 +01:00', 100, 'Y', 1283399)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540127, 1000045, 1000000, 1000000, 'Y', '2022-02-08 15:44:48.000000 +01:00', 100, '2022-02-08 15:44:48.000000 +01:00', 100, 'Y', 1283400)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540189, 1000045, 1000000, 1000000, 'Y', '2022-02-15 15:41:05.000000 +01:00', 100, '2022-02-15 15:41:05.000000 +01:00', 100, 'Y', 1283401)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540320, 1000045, 1000000, 1000000, 'Y', '2021-12-29 10:09:13.000000 +01:00', 100, '2021-12-29 10:09:13.000000 +01:00', 100, 'Y', 1267271)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540321, 1000045, 1000000, 1000000, 'Y', '2021-12-29 10:09:25.000000 +01:00', 100, '2021-12-29 10:09:25.000000 +01:00', 100, 'Y', 1267272)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540325, 1000045, 1000000, 1000000, 'Y', '2021-12-29 10:08:57.000000 +01:00', 100, '2021-12-29 10:08:57.000000 +01:00', 100, 'Y', 1267270)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540376, 1000045, 1000000, 1000000, 'Y', '2021-12-20 23:24:28.000000 +01:00', 100, '2021-12-20 23:24:28.000000 +01:00', 100, 'Y', 1265656)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540395, 1000045, 1000000, 1000000, 'Y', '2021-12-20 23:24:34.000000 +01:00', 100, '2021-12-20 23:24:34.000000 +01:00', 100, 'Y', 1265657)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540676, 1000045, 1000000, 1000000, 'Y', '2021-11-30 16:10:15.000000 +01:00', 100, '2021-11-30 16:10:15.000000 +01:00', 100, 'Y', 1246336)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540743, 1000045, 1000000, 1000000, 'Y', '2022-05-03 17:35:21.000000 +02:00', 100, '2022-05-03 17:35:21.000000 +02:00', 100, 'Y', 1314032)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (181, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:26.000000 +01:00', 100, '2022-01-28 12:54:26.000000 +01:00', 100, 'Y', 1283396)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (184, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:57:36.000000 +01:00', 100, '2022-01-28 12:57:36.000000 +01:00', 100, 'Y', 1283398)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540196, 1000046, 1000000, 1000000, 'Y', '2022-01-28 12:54:34.000000 +01:00', 100, '2022-01-28 12:54:34.000000 +01:00', 100, 'Y', 1283397)
+;
+
+INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id)
+VALUES (1000000, 1000000, 'Y', '2022-05-09 13:59:23.000000 +02:00', 100, '2022-05-09 13:59:25.000000 +02:00', 100, 540943, 1000045, 178, 1488382)
+;
+
+INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id)
+VALUES (1000000, 1000000, 'Y', '2022-05-09 13:57:49.000000 +02:00', 100, '2022-05-09 13:57:49.000000 +02:00', 100, 1000004, 1000045, 178, 1488381)
+;
+
+INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id)
+VALUES (1000000, 1000000, 'Y', '2022-05-05 16:22:51.000000 +02:00', 100, '2022-05-05 16:22:51.000000 +02:00', 100, 1000023, 1000045, 178, 1488380)
+;
+
+INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id)
+VALUES (1000000, 1000000, 'Y', '2022-01-28 13:00:35.000000 +01:00', 100, '2022-01-28 13:00:35.000000 +01:00', 100, 1000014, 1000046, 178, 1439644)
+;
+
+INSERT INTO public.ad_document_action_access (ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, c_doctype_id, ad_role_id, ad_ref_list_id, ad_document_action_access_id)
+VALUES (1000000, 1000000, 'Y', '2022-01-28 13:00:21.000000 +01:00', 100, '2022-01-28 13:00:21.000000 +01:00', 100, 1000016, 1000046, 178, 1439643)
+;
+
+UPDATE public.ad_role
+SET ad_client_id           = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:45:10.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:47.000000 +01:00', name = 'x_Lieferdispo', updatedby = 100, description = NULL, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = NULL, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N',
+    ispersonalaccess       = 'N', iscanexport = 'Y', iscanreport = 'Y', supervisor_id = NULL, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = NULL, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = NULL, allow_info_account = 'N', allow_info_asset = 'N',
+    allow_info_bpartner    = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'Y', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'Y', allow_info_crp = 'Y', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N',
+    ismenuavailable        = 'Y', isorgloginmandatory = 'N', login_org_id = NULL, ad_form_id = NULL, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = NULL, root_menu_id = NULL, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N'
+WHERE ad_role_id = 540018
+;
+
+UPDATE public.ad_role
+SET ad_client_id           = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:38:37.000000 +01:00', createdby = 100, updated = '2021-12-29 22:27:16.000000 +01:00', name = 'x_Stammdaten_Partner', updatedby = 100, description = NULL, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = NULL, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N',
+    ispersonalaccess       = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = NULL, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = NULL, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = NULL, allow_info_account = 'N', allow_info_asset = 'N',
+    allow_info_bpartner    = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N',
+    ismenuavailable        = 'N', isorgloginmandatory = 'N', login_org_id = NULL, ad_form_id = NULL, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = NULL, root_menu_id = NULL, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N'
+WHERE ad_role_id = 1000040
+;
+
+UPDATE public.ad_role
+SET ad_client_id           = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:09:17.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:05.000000 +01:00', name = 'x_Auftrag', updatedby = 100, description = NULL, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = NULL, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N',
+    iscanexport            = 'N', iscanreport = 'N', supervisor_id = NULL, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = NULL, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = NULL, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N',
+    allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'N',
+    isorgloginmandatory    = 'N', login_org_id = NULL, ad_form_id = NULL, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = NULL, root_menu_id = NULL, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N'
+WHERE ad_role_id = 1000034
+;
+
+UPDATE public.ad_role
+SET ad_client_id           = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:31:33.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:09.000000 +01:00', name = 'x_Lieferschein', updatedby = 100, description = NULL, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = NULL, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N',
+    ispersonalaccess       = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = NULL, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = NULL, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = NULL, allow_info_account = 'N', allow_info_asset = 'N',
+    allow_info_bpartner    = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N',
+    ismenuavailable        = 'N', isorgloginmandatory = 'N', login_org_id = NULL, ad_form_id = NULL, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = NULL, root_menu_id = NULL, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N'
+WHERE ad_role_id = 1000036
+;
+
+UPDATE public.ad_role
+SET ad_client_id           = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:42:22.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:12.000000 +01:00', name = 'x_Rechnungsdispo', updatedby = 100, description = NULL, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = NULL, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N',
+    ispersonalaccess       = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = NULL, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = NULL, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = NULL, allow_info_account = 'N', allow_info_asset = 'N',
+    allow_info_bpartner    = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N',
+    ismenuavailable        = 'N', isorgloginmandatory = 'N', login_org_id = NULL, ad_form_id = NULL, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = NULL, root_menu_id = NULL, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N'
+WHERE ad_role_id = 1000037
+;
+
+UPDATE public.ad_role
+SET ad_client_id           = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:55:29.000000 +01:00', createdby = 100, updated = '2021-12-23 11:17:15.000000 +01:00', name = 'x_Rechnung', updatedby = 100, description = NULL, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = NULL, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N', ispersonalaccess = 'N',
+    iscanexport            = 'N', iscanreport = 'N', supervisor_id = NULL, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = NULL, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = NULL, allow_info_account = 'N', allow_info_asset = 'N', allow_info_bpartner = 'N',
+    allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N', ismenuavailable = 'N',
+    isorgloginmandatory    = 'N', login_org_id = NULL, ad_form_id = NULL, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = NULL, root_menu_id = NULL, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N'
+WHERE ad_role_id = 1000038
+;
+
+UPDATE public.ad_user_roles
+SET ad_user_id = 100, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 14:09:17.000000 +01:00', createdby = 100, updated = '2015-11-05 14:09:17.000000 +01:00', updatedby = 100
+WHERE ad_user_roles_id = 1000008
+;
+
+UPDATE public.ad_user_roles
+SET ad_user_id = 100, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 14:31:33.000000 +01:00', createdby = 100, updated = '2015-11-05 14:31:33.000000 +01:00', updatedby = 100
+WHERE ad_user_roles_id = 1000009
+;
+
+UPDATE public.ad_user_roles
+SET ad_user_id = 100, ad_role_id = 1000037, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 14:42:22.000000 +01:00', createdby = 100, updated = '2015-11-05 14:42:22.000000 +01:00', updatedby = 100
+WHERE ad_user_roles_id = 1000010
+;
+
+UPDATE public.ad_user_roles
+SET ad_user_id = 100, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 14:55:29.000000 +01:00', createdby = 100, updated = '2015-11-05 14:55:29.000000 +01:00', updatedby = 100
+WHERE ad_user_roles_id = 1000011
+;
+
+UPDATE public.ad_user_roles
+SET ad_user_id = 100, ad_role_id = 1000040, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-05 20:38:37.000000 +01:00', createdby = 100, updated = '2015-11-05 20:38:37.000000 +01:00', updatedby = 100
+WHERE ad_user_roles_id = 1000013
+;
+
+UPDATE public.ad_user_roles
+SET ad_user_id = 100, ad_role_id = 540018, ad_client_id = 1000000, ad_org_id = 1000000, isactive = 'Y', created = '2015-11-12 19:45:10.000000 +01:00', createdby = 100, updated = '2015-11-12 19:45:10.000000 +01:00', updatedby = 100
+WHERE ad_user_roles_id = 1000016
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 540304, ad_role_id = 1000037, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:44:00.000000 +01:00', createdby = 100, updated = '2015-11-05 14:44:00.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000009
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 104, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:40:50.000000 +01:00', createdby = 100, updated = '2015-11-12 19:40:50.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000013
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 110, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:40:56.000000 +01:00', createdby = 100, updated = '2015-11-12 19:40:56.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000014
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 500007, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:41:06.000000 +01:00', createdby = 100, updated = '2015-11-12 19:41:06.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000015
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 500014, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:41:14.000000 +01:00', createdby = 100, updated = '2015-11-12 19:41:14.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000016
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 540458, ad_role_id = 540018, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:45:31.000000 +01:00', createdby = 100, updated = '2015-11-12 19:45:31.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000017
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 109, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:36:53.000000 +01:00', createdby = 100, updated = '2015-11-05 14:36:53.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000006
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 117, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:32:09.000000 +01:00', createdby = 100, updated = '2015-11-05 14:32:09.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000004
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 500008, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:32:48.000000 +01:00', createdby = 100, updated = '2015-11-05 14:32:48.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000005
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 111, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:56:30.000000 +01:00', createdby = 100, updated = '2015-11-05 14:56:30.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000012
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 116, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:55:44.000000 +01:00', createdby = 100, updated = '2015-11-05 14:55:44.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000010
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 500009, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:56:18.000000 +01:00', createdby = 100, updated = '2015-11-05 14:56:18.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1000011
+;
+
+UPDATE public.ad_process_access
+SET ad_process_id = 540661, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2016-02-25 19:01:02.000000 +01:00', createdby = 100, updated = '2016-02-25 19:01:02.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_process_access_id = 1001368
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 540092, ad_role_id = 1000037, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:42:28.000000 +01:00', createdby = 100, updated = '2015-11-05 14:42:28.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1000020
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 540983, ad_role_id = 1000037, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2020-09-30 15:54:38.862775 +02:00', createdby = 100, updated = '2020-09-30 15:54:38.862775 +02:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1170745
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 123, ad_role_id = 1000040, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:38:44.000000 +01:00', createdby = 100, updated = '2015-11-05 20:38:44.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1000100
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 192, ad_role_id = 1000040, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:38:49.000000 +01:00', createdby = 100, updated = '2015-11-05 20:38:49.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1000101
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 143, ad_role_id = 1000034, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:09:27.000000 +01:00', createdby = 100, updated = '2015-11-05 14:09:27.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1000018
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 500221, ad_role_id = 540018, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-12 19:45:16.000000 +01:00', createdby = 100, updated = '2015-11-12 19:45:16.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1000022
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 169, ad_role_id = 1000036, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:31:44.000000 +01:00', createdby = 100, updated = '2015-11-05 14:31:44.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1000019
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 167, ad_role_id = 1000038, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:55:34.000000 +01:00', createdby = 100, updated = '2015-11-05 14:55:34.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1000021
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:23:20.000000 +01:00', createdby = 100, updated = '2015-11-05 14:23:20.000000 +01:00', updatedby = 100, c_doctype_id = 1000027, ad_role_id = 1000034, ad_ref_list_id = 178
+WHERE ad_document_action_access_id = 1000015
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:23:34.000000 +01:00', createdby = 100, updated = '2015-11-05 14:23:34.000000 +01:00', updatedby = 100, c_doctype_id = 1000027, ad_role_id = 1000034, ad_ref_list_id = 188
+WHERE ad_document_action_access_id = 1000017
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:23:13.000000 +01:00', createdby = 100, updated = '2015-11-05 14:23:13.000000 +01:00', updatedby = 100, c_doctype_id = 1000030, ad_role_id = 1000034, ad_ref_list_id = 178
+WHERE ad_document_action_access_id = 1000014
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:24:02.000000 +01:00', createdby = 100, updated = '2015-11-05 14:24:02.000000 +01:00', updatedby = 100, c_doctype_id = 1000030, ad_role_id = 1000034, ad_ref_list_id = 183
+WHERE ad_document_action_access_id = 1000018
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:24:25.000000 +01:00', createdby = 100, updated = '2015-11-05 14:24:25.000000 +01:00', updatedby = 100, c_doctype_id = 1000030, ad_role_id = 1000034, ad_ref_list_id = 184
+WHERE ad_document_action_access_id = 1000019
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:23:29.000000 +01:00', createdby = 100, updated = '2015-11-05 14:23:29.000000 +01:00', updatedby = 100, c_doctype_id = 1000030, ad_role_id = 1000034, ad_ref_list_id = 188
+WHERE ad_document_action_access_id = 1000016
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:37:34.000000 +01:00', createdby = 100, updated = '2015-11-05 14:37:34.000000 +01:00', updatedby = 100, c_doctype_id = 1000011, ad_role_id = 1000036, ad_ref_list_id = 178
+WHERE ad_document_action_access_id = 1000022
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:37:10.000000 +01:00', createdby = 100, updated = '2015-11-05 14:37:10.000000 +01:00', updatedby = 100, c_doctype_id = 1000011, ad_role_id = 1000036, ad_ref_list_id = 184
+WHERE ad_document_action_access_id = 1000020
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:37:26.000000 +01:00', createdby = 100, updated = '2015-11-05 14:37:26.000000 +01:00', updatedby = 100, c_doctype_id = 1000011, ad_role_id = 1000036, ad_ref_list_id = 188
+WHERE ad_document_action_access_id = 1000021
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:56:39.000000 +01:00', createdby = 100, updated = '2015-11-05 14:56:39.000000 +01:00', updatedby = 100, c_doctype_id = 1000002, ad_role_id = 1000038, ad_ref_list_id = 178
+WHERE ad_document_action_access_id = 1000023
+;
+
+UPDATE public.ad_document_action_access
+SET ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 14:56:49.000000 +01:00', createdby = 100, updated = '2015-11-05 14:56:49.000000 +01:00', updatedby = 100, c_doctype_id = 1000002, ad_role_id = 1000038, ad_ref_list_id = 184
+WHERE ad_document_action_access_id = 1000024
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (540687, 1000038, 1000000, 0, 'Y', '2022-02-01 15:55:51.000000 +01:00', 100, '2022-02-01 15:55:51.000000 +01:00', 100, 'Y', 1370482)
+;
+
+INSERT INTO public.ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_process_access_id)
+VALUES (541030, 1000038, 1000000, 0, 'Y', '2021-12-30 15:05:01.000000 +01:00', 100, '2021-12-30 15:05:01.000000 +01:00', 100, 'Y', 1348976)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540327, 1000040, 1000000, 0, 'Y', '2021-12-29 22:28:20.000000 +01:00', 100, '2021-12-29 22:28:20.000000 +01:00', 100, 'Y', 1267275)
+;
+
+UPDATE public.ad_role
+SET ad_client_id           = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:39:08.000000 +01:00', createdby = 100, updated = '2021-07-09 10:00:39.000000 +02:00', name = 'x_Stammdaten_Preise', updatedby = 100, description = NULL, userlevel = '__O', c_currency_id = 318, amtapproval = 0, ad_tree_menu_id = NULL, ismanual = 'Y', isshowacct = 'N', ispersonallock = 'N',
+    ispersonalaccess       = 'N', iscanexport = 'N', iscanreport = 'N', supervisor_id = NULL, iscanapproveowndoc = 'N', isaccessallorgs = 'N', ischangelog = 'N', preferencetype = 'O', overwritepricelimit = 'N', isuseuserorgaccess = 'N', ad_tree_org_id = NULL, confirmqueryrecords = 0, maxqueryrecords = 0, connectionprofile = NULL, allow_info_account = 'N', allow_info_asset = 'N',
+    allow_info_bpartner    = 'N', allow_info_cashjournal = 'N', allow_info_inout = 'N', allow_info_invoice = 'N', allow_info_order = 'N', allow_info_payment = 'N', allow_info_product = 'N', allow_info_resource = 'N', allow_info_schedule = 'N', userdiscount = 0.00, allow_info_mrp = 'N', allow_info_crp = 'N', isdiscountuptolimitprice = 'N', isdiscountallowedontotal = 'N', isautorolelogin = 'N',
+    ismenuavailable        = 'N', isorgloginmandatory = 'N', login_org_id = NULL, ad_form_id = NULL, isallowlogindateoverride = 'N', isrolealwaysusebetafunctions = 'N', isshowallentitytypes = 'N', seqno = NULL, root_menu_id = NULL, webui_role = 'Y', isallowedtrlbox = 'Y', isallowedmigrationscripts = 'N', isallowedinvoicingpriority = 'N', isattachmentdeletionallowed = 'N'
+WHERE ad_role_id = 1000041
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540320, 1000041, 1000000, 0, 'Y', '2021-07-09 10:01:37.000000 +02:00', 100, '2021-07-09 10:01:37.000000 +02:00', 100, 'Y', 1241569)
+;
+
+INSERT INTO public.ad_window_access (ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, isreadwrite, ad_window_access_id)
+VALUES (540321, 1000041, 1000000, 0, 'Y', '2021-07-09 10:01:22.000000 +02:00', 100, '2021-07-09 10:01:22.000000 +02:00', 100, 'Y', 1241568)
+;
+
+UPDATE public.ad_window_access
+SET ad_window_id = 146, ad_role_id = 1000041, ad_client_id = 1000000, ad_org_id = 0, isactive = 'Y', created = '2015-11-05 20:39:13.000000 +01:00', createdby = 100, updated = '2015-11-05 20:39:13.000000 +01:00', updatedby = 100, isreadwrite = 'Y'
+WHERE ad_window_access_id = 1000102
+;
