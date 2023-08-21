@@ -144,6 +144,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 --DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=582510
 --;
 
+DELETE FROM ad_ui_element WHERE AD_Field_ID=582510;
+
 -- 2021-10-08T12:26:43.453Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 --DELETE FROM AD_Field WHERE AD_Field_ID=582510
@@ -303,6 +305,17 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-10-11 19:57:29','Y
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Ref_List SET Value='P',Updated=TO_TIMESTAMP('2021-10-15 12:16:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542903
 ;
+
+/**
+ * Adding the commit; to avoid
+  psql:/opt/metasfresh/dist/sql/20-de.metas.business/5609590_sys_gh11866_InvoiceRule_AfterPick.sql:310: ERROR:  deadlock detected
+  DETAIL:  Process 10819 waits for AccessExclusiveLock on relation 148195189 of database 148180680; blocked by process 10822.
+  Process 10822 waits for AccessShareLock on relation 148195906 of database 148180680; blocked by process 10819.
+  HINT:  See server log for query details.
+  CONTEXT:  SQL statement "alter table public.c_bpartner alter column invoicerule type char(1)"
+  PL/pgSQL function altercolumn(name,name,name,character varying,character varying) line 85 at EXECUTE
+ */
+COMMIT;
 
 -- 2021-10-18T13:11:05.665Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
