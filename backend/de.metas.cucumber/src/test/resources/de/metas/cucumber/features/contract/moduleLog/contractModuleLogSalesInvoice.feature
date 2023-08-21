@@ -347,7 +347,6 @@ Feature: Modular contract log for sales invoice
 
 
   @Id:S0305_300
-  @dev:runThisOne
   @from:cucumber
   Scenario: Regression: When a sales invoice is completed without modular settings, validate that no modular contract log is created for invoice lines
   - complete SO and validate no ModCntr_Logs are created for order lines
