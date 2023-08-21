@@ -119,6 +119,8 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(flatrateTermId);
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
+
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
 
@@ -135,9 +137,9 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 				.contractId(flatrateTermId)
 				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
 				.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-				.collectionPointBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
-				.producerBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
-				.invoicingBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
+				.collectionPointBPartnerId(bPartnerId)
+				.producerBPartnerId(bPartnerId)
+				.invoicingBPartnerId(bPartnerId)
 				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
 				.documentType(LogEntryDocumentType.SHIPMENT)
 				.contractType(LogEntryContractType.MODULAR_CONTRACT)
