@@ -33,6 +33,7 @@ pull_request_rules:
               - base=koala_yawn_uat
               - base=mad_orange_uat
               - base=magic_oak_uat
+              - base=massive_entropy_uat
               - base=modified_carbon_uat
               - base=neon_underwear_uat
               - base=nerdy_frog_uat
@@ -53,6 +54,7 @@ pull_request_rules:
               - base=hard_encoded_hotfix
               - base=intensive_care_hotfix
               - base=mad_orange_hotfix
+              - base=massive_entropy_hotfix
               - base=secondary_opinion_hotfix
               - base=soft_panda_hotfix
               - base=science_vessel_hotfix

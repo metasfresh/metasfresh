@@ -23,6 +23,8 @@ release:
   - intensive_care_uat
   - intensive_care_hotfix
   - iron_plant_uat
+  - massive_entropy_uat
+  - massive_entropy_hotfix
   - mad_orange_uat
   - mad_orange_hotfix
   - magic_oak_uat
