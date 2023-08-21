@@ -238,6 +238,18 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public void setIsBillable (final boolean IsBillable)
+	{
+		set_Value (COLUMNNAME_IsBillable, IsBillable);
+	}
+
+	@Override
+	public boolean isBillable()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBillable);
+	}
+
+	@Override
 	public void setIsSOTrx (final boolean IsSOTrx)
 	{
 		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);

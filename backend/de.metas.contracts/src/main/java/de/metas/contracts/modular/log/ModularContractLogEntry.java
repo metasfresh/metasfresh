@@ -99,4 +99,6 @@ public class ModularContractLogEntry
 	@Nullable String description;
 
 	@Nullable ModularContractTypeId contractTypeId;
+	
+	boolean isBillable;
 }
