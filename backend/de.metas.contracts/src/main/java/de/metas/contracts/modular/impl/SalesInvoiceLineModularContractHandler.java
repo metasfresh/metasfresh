@@ -41,9 +41,7 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -155,12 +153,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
 
 		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(modularContractId);
-		final ModularContractTypeId modularContractTypeId = modularContractSettings.getModuleConfigs()
-				.stream()
-				.filter(config -> config.isMatchingClassName(SalesInvoiceLineModularContractHandler.class.getName()))
-				.map(ModuleConfig::getModularContractType)
-				.map(ModularContractType::getId)
-				.findFirst()
+		final ModularContractTypeId modularContractTypeId = modularContractSettings.getModularContractTypeId(SalesInvoiceLineModularContractHandler.class)
 				.orElse(null);
 		if (modularContractTypeId == null)
 		{
