@@ -46,8 +46,6 @@ import java.util.stream.Stream;
  */
 public interface IModularContractTypeHandler<T>
 {
-	IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-
 	@NonNull
 	Class<T> getType();
 
@@ -94,6 +92,7 @@ public interface IModularContractTypeHandler<T>
 	@NonNull
 	default Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermQuery request)
 	{
+		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 		return flatrateBL.streamModularFlatrateTermsByQuery(request);
 	}
 }
