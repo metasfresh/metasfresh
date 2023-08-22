@@ -268,6 +268,14 @@ import java.util.Set;
 		{
 			return accountDimension.getUserElementString7();
 		}
+		else if (elementType.equals(AcctSchemaElementType.HarvestingCalendar))
+		{
+			return accountDimension.getC_Harvesting_Calendar_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.HarvestingYear))
+		{
+			return accountDimension.getHarvesting_Year_ID();
+		}
 		else
 		{
 			// Unknown

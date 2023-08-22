@@ -106,6 +106,8 @@ public class C_InvoiceLine
 		invoiceLine.setUserElementString5(invoice.getUserElementString5());
 		invoiceLine.setUserElementString6(invoice.getUserElementString6());
 		invoiceLine.setUserElementString7(invoice.getUserElementString7());
+		invoiceLine.setC_Harvesting_Calendar_ID(invoice.getC_Harvesting_Calendar_ID());
+		invoiceLine.setHarvesting_Year_ID(invoice.getHarvesting_Year_ID());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
