@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
@@ -68,6 +69,6 @@ public class M_Inventory
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 		inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction));
+				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
 	}
 }

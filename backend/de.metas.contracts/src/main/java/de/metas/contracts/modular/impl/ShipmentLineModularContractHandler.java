@@ -110,6 +110,12 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	}
 
 	@Override
+	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	{
+		return logEntryContractType.isModularContractType();
+	}
+
+	@Override
 	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
 	{
 		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
@@ -162,6 +168,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 								   .referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
 								   .flatrateTermId(flatrateTermId)
 								   .description(msgText.translate(Env.getAD_Language()))
+								   .logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 								   .build());
 	}
 

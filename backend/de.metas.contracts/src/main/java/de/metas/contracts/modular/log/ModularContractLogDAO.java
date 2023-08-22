@@ -31,6 +31,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -45,9 +46,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -109,6 +112,7 @@ public class ModularContractLogDAO
 			log.setQty(quantity.toBigDecimal());
 			log.setC_UOM_ID(quantity.getUomId().getRepoId());
 		}
+
 		log.setHarvesting_Year_ID(YearId.toRepoId(request.getYear()));
 		log.setDescription(request.getDescription());
 		log.setModCntr_Type_ID(ModularContractTypeId.toRepoId(request.getModularContractTypeId()));
@@ -224,7 +228,8 @@ public class ModularContractLogDAO
 		final FlatrateTermId flatrateTermId = request.flatrateTermId();
 
 		final IQueryBuilder<I_ModCntr_Log> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType());
 		if (id != null)
 		{
 			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, id);
@@ -239,9 +244,27 @@ public class ModularContractLogDAO
 			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId);
 		}
 
-		queryBuilder.orderByDescending(I_ModCntr_Log.COLUMN_Created);
+		queryBuilder.orderByDescending(I_ModCntr_Log.COLUMNNAME_Created);
 		queryBuilder.orderByDescending(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID);
 
 		return queryBuilder;
+	}
+
+	public Optional<ModularContractLogEntry> getLastModularContractLog(
+			@NonNull final FlatrateTermId modularFlatrateTermId,
+			@NonNull final OrderLineId orderLineId)
+	{
+		final TableRecordReference modularRecordReference = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId);
+		final Optional<I_ModCntr_Log> modCntrLog = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Log.COLUMN_C_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, LogEntryContractType.MODULAR_CONTRACT)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, modularRecordReference.getRecord_ID())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, modularRecordReference.getAD_Table_ID())
+				.orderByDescending(I_ModCntr_Log.COLUMNNAME_Created)
+				.orderByDescending(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID)
+				.create()
+				.firstOptional();
+		return modCntrLog.map(this::fromDB);
 	}
 }

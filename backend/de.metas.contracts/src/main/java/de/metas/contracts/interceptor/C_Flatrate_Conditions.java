@@ -25,13 +25,13 @@ package de.metas.contracts.interceptor;
 import de.metas.cache.CacheMgt;
 import de.metas.contracts.FlatrateTransitionId;
 import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
@@ -157,8 +157,8 @@ public class C_Flatrate_Conditions
 
 	private void setFlatrateTransitionForModularContract(@NonNull final I_C_Flatrate_Conditions conditions)
 	{
-		final TypeConditions typeConditions = TypeConditions.ofCode(conditions.getType_Conditions());
-		if (!typeConditions.isModularOrInterim())
+		final LogEntryContractType logEntryContractType = LogEntryContractType.ofCode(conditions.getType_Conditions());
+		if (!logEntryContractType.isModularOrInterim())
 		{
 			return;
 		}

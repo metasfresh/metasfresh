@@ -120,6 +120,7 @@ import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -149,9 +150,11 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -218,6 +221,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	@Override
+	@Nullable
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
@@ -2447,5 +2451,19 @@ public class FlatrateBL implements IFlatrateBL
 	public Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(@NonNull final ModularFlatrateTermQuery modularFlatrateTermQuery)
 	{
 		return flatrateDAO.getModularFlatrateTermsByQuery(modularFlatrateTermQuery).stream();
+	}
+
+	@Nullable
+	@Override
+	public FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull final FlatrateTermId modularFlatrateTermId, @NonNull final Instant date)
+	{
+		return FlatrateTermId.ofRepoIdOrNull(queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+													 .addOnlyActiveRecordsFilter()
+													 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
+													 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE)
+													 .addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, date)
+													 .addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
+													 .create()
+													 .firstIdOnly());
 	}
 }

@@ -92,6 +92,12 @@ public class InventoryLineModularContractHandler implements IModularContractType
 	}
 
 	@Override
+	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	{
+		return logEntryContractType.isModularContractType();
+	}
+
+	@Override
 	@NonNull
 	public Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			@NonNull final I_M_InventoryLine inventoryLine,
@@ -167,6 +173,7 @@ public class InventoryLineModularContractHandler implements IModularContractType
 		return Optional.of(LogEntryReverseRequest.builder()
 								   .referencedModel(TableRecordReference.of(inventoryLine))
 								   .flatrateTermId(modularContractId)
+								   .logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 								   .build());
 	}
 

@@ -145,6 +145,12 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
+	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	{
+		return logEntryContractType.isModularContractType();
+	}
+
+	@Override
 	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			final @NonNull I_C_OrderLine orderLine,
 			final @NonNull FlatrateTermId modularContractId)
@@ -199,6 +205,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		final LogEntryReverseRequest request = LogEntryReverseRequest.builder()
 				.referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 				.flatrateTermId(flatrateTermId)
+				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 				.build();
 
 		final BigDecimal loggedQty = contractLogDAO.retrieveQuantityFromExistingLog(request);

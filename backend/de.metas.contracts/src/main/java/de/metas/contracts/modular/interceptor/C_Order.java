@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -124,6 +125,6 @@ public class C_Order
 			@NonNull final ModularContractService.ModelAction modelAction)
 	{
 		orderDAO.retrieveOrderLines(orderRecord)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction));
+				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
 	}
 }

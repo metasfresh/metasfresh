@@ -20,30 +20,42 @@
  * #L%
  */
 
-package de.metas.contracts.modular.interim.invoice.interceptor;
+package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
+import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.inout.IInOutDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
 
 @Interceptor(I_C_Flatrate_Term.class)
 @Component
 public class C_Flatrate_Term
 {
 	private final BPartnerInterimContractService bPartnerInterimContractService;
+	private final ModularContractService modularContractService;
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public C_Flatrate_Term(@NonNull final BPartnerInterimContractService bPartnerInterimContractService)
+	public C_Flatrate_Term(@NonNull final BPartnerInterimContractService bPartnerInterimContractService, final ModularContractService modularContractService)
 	{
 		this.bPartnerInterimContractService = bPartnerInterimContractService;
+		this.modularContractService = modularContractService;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -57,5 +69,32 @@ public class C_Flatrate_Term
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
 		interimInvoiceFlatrateTermBL.create(flatrateTermRecord, flatrateTermRecord.getStartDate(), flatrateTermRecord.getEndDate());
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void createInterimContractLogs(final I_C_Flatrate_Term flatrateTermRecord)
+	{
+		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType())
+		{
+			return;
+		}
+
+		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
+
+		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
+		queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addBetweenFilter(I_M_InOut.COLUMNNAME_MovementDate, flatrateTermRecord.getStartDate(), flatrateTermRecord.getEndDate())
+				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getModular_Flatrate_Term_ID())
+				.create()
+				.stream()
+				.forEach(this::invokeHandlerForInOutLine);
+	}
+
+	private void invokeHandlerForInOutLine(@NonNull final I_M_InOutLine inOutLineRecord)
+	{
+		modularContractService.invokeWithModel(inOutLineRecord, COMPLETED, LogEntryContractType.INTERIM);
 	}
 }

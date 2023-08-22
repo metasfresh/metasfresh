@@ -99,8 +99,8 @@ public class C_BPartner_InterimContract_Create extends JavaProcess implements IP
 				.yearId(bPartnerInterimContract.getYearAndCalendarId().yearId())
 				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
-				.dateFrom(p_DateFrom)
-				.dateTo(p_DateTo)
+				.dateFromLessOrEqual(p_DateFrom)
+				.dateToGreaterOrEqual(p_DateTo)
 				.build();
 
 		final AtomicBoolean isEmpty = new AtomicBoolean(true);

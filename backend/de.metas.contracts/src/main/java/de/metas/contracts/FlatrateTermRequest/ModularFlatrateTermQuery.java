@@ -49,7 +49,7 @@ public class ModularFlatrateTermQuery
 	@Nullable
 	CalendarId calendarId;
 	@Nullable
-	Timestamp dateFrom;
+	Timestamp dateFromLessOrEqual;
 	@Nullable
-	Timestamp dateTo;
+	Timestamp dateToGreaterOrEqual;
 }

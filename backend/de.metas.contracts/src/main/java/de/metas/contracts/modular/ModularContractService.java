@@ -24,8 +24,9 @@ package de.metas.contracts.modular;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
@@ -34,14 +35,13 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 @Service
 public class ModularContractService
 {
 	public enum ModelAction
 	{
-		COMPLETED, REVERSED, REACTIVATED, VOIDED
+		COMPLETED, REVERSED, REACTIVATED, VOIDED, CANCELED
 	}
 
 	private final ModularContractLogDAO contractLogDAO;
@@ -59,9 +59,9 @@ public class ModularContractService
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
 	}
 
-	public <T> void invokeWithModel(@NonNull final T model, @NonNull final ModelAction action)
+	public <T> void invokeWithModel(@NonNull final T model, @NonNull final ModelAction action, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		modularContractHandlerFactory.getApplicableHandlersFor(model)
+		modularContractHandlerFactory.getApplicableHandlersFor(model, logEntryContractType)
 				.forEach(handler -> invokeWithModel(handler, model, action));
 	}
 
@@ -79,7 +79,7 @@ public class ModularContractService
 
 	private <T> boolean isApplicableContract(@NonNull final IModularContractTypeHandler<T> handler, @NonNull final FlatrateTermId flatrateTermId)
 	{
-		if (!isModularContract(flatrateTermId))
+		if (!isModularOrInterimContract(flatrateTermId))
 		{
 			return false;
 		}
@@ -88,10 +88,11 @@ public class ModularContractService
 		return isHandlerApplicableForSettings(handler, settings);
 	}
 
-	private boolean isModularContract(@NonNull final FlatrateTermId flatrateTermId)
+	private boolean isModularOrInterimContract(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.getById(flatrateTermId);
-		return Objects.equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, flatrateTerm.getType_Conditions());
+		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(flatrateTermId);
+		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
+		return typeConditions.isModularOrInterim();
 	}
 
 	private static <T> boolean isHandlerApplicableForSettings(@NonNull final IModularContractTypeHandler<T> handler, @Nullable final ModularContractSettings settings)

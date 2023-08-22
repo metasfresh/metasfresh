@@ -20,38 +20,42 @@
  * #L%
  */
 
-package de.metas.contracts.modular.impl;
+package de.metas.contracts.modular.interim.logImpl;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.impl.MaterialReceiptLineHandlerHelper;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public class MaterialReceiptLineModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
+public class MaterialReceiptLineInterimContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
-
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-
 	private final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper;
 
-	public MaterialReceiptLineModularContractHandler(@NonNull final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper)
+	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
+	public MaterialReceiptLineInterimContractHandler(@NonNull final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper)
 	{
 		this.materialReceiptLineHandlerHelper = materialReceiptLineHandlerHelper;
 	}
@@ -71,7 +75,7 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 	}
 
 	@Override
-	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	public boolean applies(@NonNull final LogEntryContractType logEntryContractType)
 	{
 		return logEntryContractType.isModularContractType();
 	}
@@ -79,7 +83,7 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 	@Override
 	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
 	{
-		return materialReceiptLineHandlerHelper.createLogEntryCreateRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.MODULAR_CONTRACT);
+		return materialReceiptLineHandlerHelper.createLogEntryCreateRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.INTERIM);
 	}
 
 	@Override
@@ -88,8 +92,8 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 		return Optional.of(LogEntryReverseRequest.builder()
 								   .referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
 								   .flatrateTermId(flatrateTermId)
-								   .description("Receipt reversed") //TODO ADMsg
-								   .logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+								   .description("Receipt reversed") //TODO AdMsg
+								   .logEntryContractType(LogEntryContractType.INTERIM)
 								   .build());
 	}
 
@@ -102,7 +106,10 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 			return Stream.empty();
 		}
 
-		return Stream.of(FlatrateTermId.ofRepoId(inOutLineRecord.getC_Flatrate_Term_ID()));
+		final FlatrateTermId modularFlatrateTermId = FlatrateTermId.ofRepoId(inOutLineRecord.getC_Flatrate_Term_ID());
+
+		Check.assumeNotNull(inOutRecord.getMovementDate(), "MovementDate shouldn't be null");
+		return Stream.of(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, TimeUtil.asInstant(inOutRecord.getMovementDate())));
 	}
 
 	@Override
