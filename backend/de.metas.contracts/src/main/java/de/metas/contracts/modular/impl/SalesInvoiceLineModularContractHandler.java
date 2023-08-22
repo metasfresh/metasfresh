@@ -230,25 +230,23 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 	{
 		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
 
-		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(invoice.getC_Harvesting_Calendar_ID());
+		return flatrateBL.streamModularFlatrateTermIdsByQuery(
+				ModularFlatrateTermQuery.builder()
+						.calendarId(CalendarId.ofRepoIdOrNull(invoice.getC_Harvesting_Calendar_ID()))
+						.yearId(YearId.ofRepoIdOrNull(invoice.getHarvesting_Year_ID()))
+						.bPartnerId(extractWarehousePartnerId(invoice))
+						.productId(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
+						.typeConditions(TypeConditions.MODULAR_CONTRACT)
+						.soTrx(SOTrx.PURCHASE)
+						.build());
+	}
 
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(invoice.getHarvesting_Year_ID());
-
+	private BPartnerId extractWarehousePartnerId(final I_C_Invoice invoice)
+	{
 		final WarehouseId warehouseId = WarehouseId.optionalOfRepoId(invoice.getM_Warehouse_ID())
 				.orElseThrow(() -> new AdempiereException("WarehouseId should not be null at this stage!"));
 
-		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
-				.calendarId(harvestingCalendarId)
-				.yearId(harvestingYearId)
-				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
-				.productId(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
-				.typeConditions(TypeConditions.MODULAR_CONTRACT)
-				.soTrx(SOTrx.PURCHASE)
-				.build();
-
-		return flatrateBL.streamModularFlatrateTermsByQuery(query)
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoId);
+		return warehouseBL.getBPartnerId(warehouseId);
 	}
 
 	@Override

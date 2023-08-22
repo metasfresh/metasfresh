@@ -2455,4 +2455,12 @@ public class FlatrateBL implements IFlatrateBL
 		return !flatrateDAO.getModularFlatrateTermsByQuery(query).isEmpty();
 	}
 
+	@NonNull
+	@Override
+	public Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull final ModularFlatrateTermQuery query)
+	{
+		return streamModularFlatrateTermsByQuery(query).map(FlatrateBL::extractId);
+	}
+
+	private static FlatrateTermId extractId(final I_C_Flatrate_Term record) {return FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID());}
 }

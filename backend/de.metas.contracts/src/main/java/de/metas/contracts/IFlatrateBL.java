@@ -99,6 +99,8 @@ public interface IFlatrateBL extends ISingletonService
 
 	boolean isModularContractInProgress(@NonNull ModularFlatrateTermQuery query);
 
+	@NonNull Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull ModularFlatrateTermQuery query);
+
 	/**
 	 * term to extend
 	 * forceExtend - will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
