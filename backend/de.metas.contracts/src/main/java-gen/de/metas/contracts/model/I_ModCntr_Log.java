@@ -366,6 +366,27 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Invoiceable.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsBillable (boolean IsBillable);
+
+	/**
+	 * Get Invoiceable.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isBillable();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_IsBillable = new ModelColumn<>(I_ModCntr_Log.class, "IsBillable", null);
+	String COLUMNNAME_IsBillable = "IsBillable";
+
+	/**
 	 * Set Sales Transaction.
 	 * This is a Sales Transaction
 	 *

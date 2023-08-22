@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 239427743L;
+	private static final long serialVersionUID = -360488704L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -235,6 +235,18 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getHarvesting_Year_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
+	}
+
+	@Override
+	public void setIsBillable (final boolean IsBillable)
+	{
+		set_Value (COLUMNNAME_IsBillable, IsBillable);
+	}
+
+	@Override
+	public boolean isBillable() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBillable);
 	}
 
 	@Override
