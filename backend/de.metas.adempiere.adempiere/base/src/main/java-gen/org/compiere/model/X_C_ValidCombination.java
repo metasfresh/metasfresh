@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_ValidCombination, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1331950127L;
+	private static final long serialVersionUID = 1083165237L;
 
     /** Standard Constructor */
     public X_C_ValidCombination (final Properties ctx, final int C_ValidCombination_ID, @Nullable final String trxName)
@@ -35,18 +35,6 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getAccount()
-	{
-		return get_ValueAsPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setAccount(final org.compiere.model.I_C_ElementValue Account)
-	{
-		set_ValueFromPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class, Account);
-	}
-
-	@Override
 	public void setAccount_ID (final int Account_ID)
 	{
 		if (Account_ID < 1) 
@@ -59,18 +47,6 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	public int getAccount_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Account_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Org getAD_OrgTrx()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setAD_OrgTrx(final org.compiere.model.I_AD_Org AD_OrgTrx)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
 	}
 
 	@Override
@@ -128,18 +104,6 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	}
 
 	@Override
-	public org.compiere.model.I_C_Activity getC_Activity()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
-	}
-
-	@Override
-	public void setC_Activity(final org.compiere.model.I_C_Activity C_Activity)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
-	}
-
-	@Override
 	public void setC_Activity_ID (final int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
@@ -152,18 +116,6 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(final org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	@Override
@@ -206,6 +158,33 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	public int getC_Campaign_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Calendar getC_Harvesting_Calendar()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar(final org.compiere.model.I_C_Calendar C_Harvesting_Calendar)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Harvesting_Calendar);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar_ID (final int C_Harvesting_Calendar_ID)
+	{
+		if (C_Harvesting_Calendar_ID < 1) 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, C_Harvesting_Calendar_ID);
+	}
+
+	@Override
+	public int getC_Harvesting_Calendar_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
 	}
 
 	@Override
@@ -398,6 +377,33 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	}
 
 	@Override
+	public org.compiere.model.I_C_Year getHarvesting_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setHarvesting_Year(final org.compiere.model.I_C_Year Harvesting_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class, Harvesting_Year);
+	}
+
+	@Override
+	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
+	{
+		if (Harvesting_Year_ID < 1) 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
+	}
+
+	@Override
+	public int getHarvesting_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
+	}
+
+	@Override
 	public void setIsFullyQualified (final boolean IsFullyQualified)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsFullyQualified, IsFullyQualified);
@@ -407,18 +413,6 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	public boolean isFullyQualified() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFullyQualified);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(final org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	@Override
@@ -464,18 +458,6 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1()
-	{
-		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setUser1(final org.compiere.model.I_C_ElementValue User1)
-	{
-		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
-	}
-
-	@Override
 	public void setUser1_ID (final int User1_ID)
 	{
 		if (User1_ID < 1) 
@@ -488,18 +470,6 @@ public class X_C_ValidCombination extends org.compiere.model.PO implements I_C_V
 	public int getUser1_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User1_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_ElementValue getUser2()
-	{
-		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setUser2(final org.compiere.model.I_C_ElementValue User2)
-	{
-		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
 	}
 
 	@Override

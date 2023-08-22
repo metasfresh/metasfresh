@@ -36,11 +36,6 @@ public interface I_C_ValidCombination
 	 */
 	int getAccount_ID();
 
-	org.compiere.model.I_C_ElementValue getAccount();
-
-	void setAccount(org.compiere.model.I_C_ElementValue Account);
-
-	ModelColumn<I_C_ValidCombination, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new ModelColumn<>(I_C_ValidCombination.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_Account_ID = "Account_ID";
 
 	/**
@@ -75,7 +70,6 @@ public interface I_C_ValidCombination
 	 */
 	int getAD_Org_ID();
 
-	ModelColumn<I_C_ValidCombination, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new ModelColumn<>(I_C_ValidCombination.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
@@ -98,11 +92,6 @@ public interface I_C_ValidCombination
 	 */
 	int getAD_OrgTrx_ID();
 
-	@Nullable org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	void setAD_OrgTrx(@Nullable org.compiere.model.I_AD_Org AD_OrgTrx);
-
-	ModelColumn<I_C_ValidCombination, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new ModelColumn<>(I_C_ValidCombination.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
 	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
@@ -175,11 +164,6 @@ public interface I_C_ValidCombination
 	 */
 	int getC_Activity_ID();
 
-	@Nullable org.compiere.model.I_C_Activity getC_Activity();
-
-	void setC_Activity(@Nullable org.compiere.model.I_C_Activity C_Activity);
-
-	ModelColumn<I_C_ValidCombination, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new ModelColumn<>(I_C_ValidCombination.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
@@ -200,11 +184,6 @@ public interface I_C_ValidCombination
 	 */
 	int getC_BPartner_ID();
 
-	@Nullable org.compiere.model.I_C_BPartner getC_BPartner();
-
-	void setC_BPartner(@Nullable org.compiere.model.I_C_BPartner C_BPartner);
-
-	ModelColumn<I_C_ValidCombination, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new ModelColumn<>(I_C_ValidCombination.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
@@ -233,6 +212,31 @@ public interface I_C_ValidCombination
 
 	ModelColumn<I_C_ValidCombination, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_C_ValidCombination.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+
+	/**
+	 * Set Harvesting Calendar.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
+
+	/**
+	 * Get Harvesting Calendar.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Harvesting_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+
+	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+
+	ModelColumn<I_C_ValidCombination, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_ValidCombination.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
 	 * Set Location From.
@@ -312,8 +316,7 @@ public interface I_C_ValidCombination
 	String COLUMNNAME_Combination = "Combination";
 
 	/**
-	 * Set Order.
-	 * Order
+	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -322,8 +325,7 @@ public interface I_C_ValidCombination
 	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
-	 * Get Order.
-	 * Order
+	 * Get Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -484,6 +486,31 @@ public interface I_C_ValidCombination
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_C_ValidCombination, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_C_ValidCombination.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -549,11 +576,6 @@ public interface I_C_ValidCombination
 	 */
 	int getM_Product_ID();
 
-	@Nullable org.compiere.model.I_M_Product getM_Product();
-
-	void setM_Product(@Nullable org.compiere.model.I_M_Product M_Product);
-
-	ModelColumn<I_C_ValidCombination, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new ModelColumn<>(I_C_ValidCombination.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
@@ -626,11 +648,6 @@ public interface I_C_ValidCombination
 	 */
 	int getUser1_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser1();
-
-	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
-
-	ModelColumn<I_C_ValidCombination, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_ValidCombination.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -651,11 +668,6 @@ public interface I_C_ValidCombination
 	 */
 	int getUser2_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser2();
-
-	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
-
-	ModelColumn<I_C_ValidCombination, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_ValidCombination.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**

@@ -321,6 +321,31 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+	 * Set Harvesting Calendar.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
+
+	/**
+	 * Get Harvesting Calendar.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Harvesting_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+
+	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+
+	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
+
+	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -699,6 +724,10 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Set External IDs.
+	 * List of external IDs from C_Invoice_Candidates;
+ delimited with ';
+,;
+'
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -708,6 +737,10 @@ public interface I_C_InvoiceLine
 
 	/**
 	 * Get External IDs.
+	 * List of external IDs from C_Invoice_Candidates;
+ delimited with ';
+,;
+'
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -717,6 +750,73 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_ExternalIds = new ModelColumn<>(I_C_InvoiceLine.class, "ExternalIds", null);
 	String COLUMNNAME_ExternalIds = "ExternalIds";
+
+	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_C_InvoiceLine.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
+
+	/**
+	 * Set Accounting group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setis184_AccountingGroup (@Nullable java.lang.String is184_AccountingGroup);
+
+	/**
+	 * Get Accounting group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getis184_AccountingGroup();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_is184_AccountingGroup = new ModelColumn<>(I_C_InvoiceLine.class, "is184_AccountingGroup", null);
+	String COLUMNNAME_is184_AccountingGroup = "is184_AccountingGroup";
+
+	/**
+	 * Set Print text.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setis184_PrintText (@Nullable java.lang.String is184_PrintText);
+
+	/**
+	 * Get Print text.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getis184_PrintText();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_is184_PrintText = new ModelColumn<>(I_C_InvoiceLine.class, "is184_PrintText", null);
+	String COLUMNNAME_is184_PrintText = "is184_PrintText";
 
 	/**
 	 * Set Active.
