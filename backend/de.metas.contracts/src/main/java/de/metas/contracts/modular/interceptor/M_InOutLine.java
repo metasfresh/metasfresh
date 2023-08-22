@@ -22,7 +22,11 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -36,10 +40,12 @@ import org.springframework.stereotype.Component;
 public class M_InOutLine
 {
 	private final ModularContractLogService modularContractLogService;
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
-	public M_InOutLine(@NonNull final ModularContractLogService modularContractLogServic)
+	public M_InOutLine(@NonNull final ModularContractLogService modularContractLogService, @NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
-		this.modularContractLogService = modularContractLogServic;
+		this.modularContractLogService = modularContractLogService;
+		this.modularContractSettingsDAO = modularContractSettingsDAO;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -47,5 +53,27 @@ public class M_InOutLine
 	{
 		final TableRecordReference inOutLineRecordRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
 		modularContractLogService.throwErrorIfLogExistsForDocumentLine(inOutLineRecordRef);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			de.metas.inout.model.I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID })
+	public void propagateHarvestingDetails(@NonNull final I_M_InOutLine inOutLineRecord)
+	{
+		if (inOutLineRecord.getC_Flatrate_Term_ID() > 0)
+		{
+			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(inOutLineRecord.getC_Flatrate_Term_ID());
+			final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
+			final YearAndCalendarId harvestingYearAndCalendarId = modularContractSettings.getYearAndCalendarId();
+			if (harvestingYearAndCalendarId != null)
+			{
+				inOutLineRecord.setC_Harvesting_Calendar_ID(harvestingYearAndCalendarId.calendarId().getRepoId());
+				inOutLineRecord.setHarvesting_Year_ID(harvestingYearAndCalendarId.yearId().getRepoId());
+			}
+		}
+		else // make sure we reset the value
+		{
+			inOutLineRecord.setC_Harvesting_Calendar_ID(-1);
+			inOutLineRecord.setHarvesting_Year_ID(-1);
+		}
 	}
 }
