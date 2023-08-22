@@ -139,7 +139,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
-		return isModularContractInProgress(modularFlatrateTermQuery);
+		return flatrateBL.isModularContractInProgress(modularFlatrateTermQuery);
 	}
 
 	@Override
@@ -224,7 +224,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
 		Check.assume(harvestingCalendarId != null, "Harvesting calendar ID should not be null at this stage!");
 
-		final ModularFlatrateTermQuery request = ModularFlatrateTermQuery.builder()
+		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.calendarId(harvestingCalendarId)
@@ -233,7 +233,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
-		return streamModularContracts(request)
+		return flatrateBL.streamModularFlatrateTermsByQuery(query)
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
 	}

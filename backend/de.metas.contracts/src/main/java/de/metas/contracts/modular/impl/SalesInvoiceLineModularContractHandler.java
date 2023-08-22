@@ -142,7 +142,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 				.productId(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
 				.build();
 
-		return isModularContractInProgress(modularFlatrateTermQuery);
+		return flatrateBL.isModularContractInProgress(modularFlatrateTermQuery);
 	}
 
 	@Override
@@ -228,7 +228,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
 		Check.assume(warehouseId != null, "WarehouseId should not be null at this stage!");
 
-		final ModularFlatrateTermQuery request = ModularFlatrateTermQuery.builder()
+		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.calendarId(harvestingCalendarId)
 				.yearId(harvestingYearId)
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
@@ -237,7 +237,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 				.soTrx(SOTrx.PURCHASE)
 				.build();
 
-		return streamModularContracts(request)
+		return flatrateBL.streamModularFlatrateTermsByQuery(query)
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
 	}

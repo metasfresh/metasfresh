@@ -22,17 +22,11 @@
 
 package de.metas.contracts.modular;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.util.Services;
 import lombok.NonNull;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -75,24 +69,7 @@ public interface IModularContractTypeHandler<T>
 
 	void validateDocAction(@NonNull final T model, @NonNull final ModularContractService.ModelAction action);
 
-	default void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId)
-	{}
+	default void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId) {}
 
-	default void createContractIfRequired(@NonNull final T model)
-	{}
-
-	default boolean isModularContractInProgress(@NonNull final ModularFlatrateTermQuery request)
-	{
-		final List<I_C_Flatrate_Term> modularContracts = streamModularContracts(request)
-				.collect(ImmutableList.toImmutableList());
-
-		return !modularContracts.isEmpty();
-	}
-
-	@NonNull
-	default Stream<I_C_Flatrate_Term> streamModularContracts(@NonNull final ModularFlatrateTermQuery request)
-	{
-		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-		return flatrateBL.streamModularFlatrateTermsByQuery(request);
-	}
+	default void createContractIfRequired(@NonNull final T model) {}
 }

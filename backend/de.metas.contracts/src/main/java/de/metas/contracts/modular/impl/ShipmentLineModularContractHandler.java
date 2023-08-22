@@ -27,7 +27,7 @@ import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
-import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
@@ -81,7 +81,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -116,7 +116,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 		}
 
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(flatrateTermId);
+		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(flatrateTermId);
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
 
 		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());
@@ -158,10 +158,10 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_REVERSED);
 
 		return Optional.of(LogEntryReverseRequest.builder()
-								   .referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-								   .flatrateTermId(flatrateTermId)
-								   .description(msgText.translate(Env.getAD_Language()))
-								   .build());
+				.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
+				.flatrateTermId(flatrateTermId)
+				.description(msgText.translate(Env.getAD_Language()))
+				.build());
 	}
 
 	@Override
@@ -175,7 +175,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 
 		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
 
-		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
+		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
 				.yearId(harvestingYearId)
@@ -184,7 +184,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 				.calendarId(harvestingCalendarId)
 				.build();
 
-		return streamModularContracts(modularFlatrateTermQuery)
+		return flatrateBL.streamModularFlatrateTermsByQuery(query)
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
 	}
