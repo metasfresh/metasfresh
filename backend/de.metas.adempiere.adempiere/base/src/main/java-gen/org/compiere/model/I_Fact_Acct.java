@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for Fact_Acct
  *  @author metasfresh (generated) 
@@ -42,6 +41,27 @@ public interface I_Fact_Acct
 	String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
 	/**
+	 * Set Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAccountConceptualName (java.lang.String AccountConceptualName);
+
+	/**
+	 * Get Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAccountConceptualName();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct.class, "AccountConceptualName", null);
+	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
+
+	/**
 	 * Set Account.
 	 * Account used
 	 *
@@ -62,27 +82,6 @@ public interface I_Fact_Acct
 	int getAccount_ID();
 
 	String COLUMNNAME_Account_ID = "Account_ID";
-
-	/**
-	 * Set Account conceptual name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAccountConceptualName (java.lang.String AccountConceptualName);
-
-	/**
-	 * Get Account conceptual name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getAccountConceptualName();
-
-	ModelColumn<I_Fact_Acct, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct.class, "AccountConceptualName", null);
-	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
 
 	/**
 	 * Get Client.
@@ -296,6 +295,26 @@ public interface I_Fact_Acct
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -334,26 +353,6 @@ public interface I_Fact_Acct
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
-	 * Set Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner2_ID (int C_BPartner2_ID);
-
-	/**
-	 * Get Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner2_ID();
-
-	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
 
 	/**
 	 * Set Campaign.
@@ -425,6 +424,31 @@ public interface I_Fact_Acct
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Harvesting Calendar.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
+
+	/**
+	 * Get Harvesting Calendar.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Harvesting_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+
+	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+
+	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_Fact_Acct.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
 	 * Set Location From.
@@ -504,6 +528,31 @@ public interface I_Fact_Acct
 
 	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_Fact_Acct.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
+	/**
+	 * Set Counterpart Accounting Fact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCounterpart_Fact_Acct_ID (int Counterpart_Fact_Acct_ID);
+
+	/**
+	 * Get Counterpart Accounting Fact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCounterpart_Fact_Acct_ID();
+
+	@Nullable org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct();
+
+	void setCounterpart_Fact_Acct(@Nullable org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct);
+
+	ModelColumn<I_Fact_Acct, org.compiere.model.I_Fact_Acct> COLUMN_Counterpart_Fact_Acct_ID = new ModelColumn<>(I_Fact_Acct.class, "Counterpart_Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
+	String COLUMNNAME_Counterpart_Fact_Acct_ID = "Counterpart_Fact_Acct_ID";
 
 	/**
 	 * Set Period.
@@ -609,6 +658,31 @@ public interface I_Fact_Acct
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_Created = new ModelColumn<>(I_Fact_Acct.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Sales Region.
 	 * Sales coverage region
 	 *
@@ -705,56 +779,6 @@ public interface I_Fact_Acct
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Counterpart Accounting Fact.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCounterpart_Fact_Acct_ID (int Counterpart_Fact_Acct_ID);
-
-	/**
-	 * Get Counterpart Accounting Fact.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getCounterpart_Fact_Acct_ID();
-
-	@Nullable org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct();
-
-	void setCounterpart_Fact_Acct(@Nullable org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct);
-
-	ModelColumn<I_Fact_Acct, org.compiere.model.I_Fact_Acct> COLUMN_Counterpart_Fact_Acct_ID = new ModelColumn<>(I_Fact_Acct.class, "Counterpart_Fact_Acct_ID", org.compiere.model.I_Fact_Acct.class);
-	String COLUMNNAME_Counterpart_Fact_Acct_ID = "Counterpart_Fact_Acct_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_Fact_Acct, Object> COLUMN_Created = new ModelColumn<>(I_Fact_Acct.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Currency Rate.
@@ -985,6 +1009,31 @@ public interface I_Fact_Acct
 
 	ModelColumn<I_Fact_Acct, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new ModelColumn<>(I_Fact_Acct.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
 	String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
+
+	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_Fact_Acct, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_Fact_Acct.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
 	 * Set Active.

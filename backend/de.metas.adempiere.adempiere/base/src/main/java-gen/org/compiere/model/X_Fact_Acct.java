@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for Fact_Acct
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2075263139L;
+	private static final long serialVersionUID = -1515557199L;
 
     /** Standard Constructor */
     public X_Fact_Acct (final Properties ctx, final int Fact_Acct_ID, @Nullable final String trxName)
@@ -51,6 +51,18 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
+	public void setAccountConceptualName (final java.lang.String AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_AccountConceptualName, AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getAccountConceptualName() 
+	{
+		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
+	}
+
+	@Override
 	public void setAccount_ID (final int Account_ID)
 	{
 		if (Account_ID < 1) 
@@ -63,18 +75,6 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getAccount_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Account_ID);
-	}
-
-	@Override
-	public void setAccountConceptualName (final java.lang.String AccountConceptualName)
-	{
-		set_Value (COLUMNNAME_AccountConceptualName, AccountConceptualName);
-	}
-
-	@Override
-	public java.lang.String getAccountConceptualName() 
-	{
-		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
 	}
 
 	@Override
@@ -202,6 +202,21 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
+	public void setC_BPartner2_ID (final int C_BPartner2_ID)
+	{
+		if (C_BPartner2_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
+	}
+
+	@Override
+	public int getC_BPartner2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
+	}
+
+	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -229,21 +244,6 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
-	}
-
-	@Override
-	public void setC_BPartner2_ID (final int C_BPartner2_ID)
-	{
-		if (C_BPartner2_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner2_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
-	}
-
-	@Override
-	public int getC_BPartner2_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
 
 	@Override
@@ -301,6 +301,33 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Calendar getC_Harvesting_Calendar()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar(final org.compiere.model.I_C_Calendar C_Harvesting_Calendar)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Harvesting_Calendar);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar_ID (final int C_Harvesting_Calendar_ID)
+	{
+		if (C_Harvesting_Calendar_ID < 1) 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, C_Harvesting_Calendar_ID);
+	}
+
+	@Override
+	public int getC_Harvesting_Calendar_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
 	}
 
 	@Override
@@ -382,6 +409,33 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getC_OrderSO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct()
+	{
+		return get_ValueAsPO(COLUMNNAME_Counterpart_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class);
+	}
+
+	@Override
+	public void setCounterpart_Fact_Acct(final org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct)
+	{
+		set_ValueFromPO(COLUMNNAME_Counterpart_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class, Counterpart_Fact_Acct);
+	}
+
+	@Override
+	public void setCounterpart_Fact_Acct_ID (final int Counterpart_Fact_Acct_ID)
+	{
+		if (Counterpart_Fact_Acct_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Counterpart_Fact_Acct_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Counterpart_Fact_Acct_ID, Counterpart_Fact_Acct_ID);
+	}
+
+	@Override
+	public int getCounterpart_Fact_Acct_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Counterpart_Fact_Acct_ID);
 	}
 
 	@Override
@@ -565,33 +619,6 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
-	public org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct()
-	{
-		return get_ValueAsPO(COLUMNNAME_Counterpart_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class);
-	}
-
-	@Override
-	public void setCounterpart_Fact_Acct(final org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct)
-	{
-		set_ValueFromPO(COLUMNNAME_Counterpart_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class, Counterpart_Fact_Acct);
-	}
-
-	@Override
-	public void setCounterpart_Fact_Acct_ID (final int Counterpart_Fact_Acct_ID)
-	{
-		if (Counterpart_Fact_Acct_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Counterpart_Fact_Acct_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Counterpart_Fact_Acct_ID, Counterpart_Fact_Acct_ID);
-	}
-
-	@Override
-	public int getCounterpart_Fact_Acct_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Counterpart_Fact_Acct_ID);
-	}
-
-	@Override
 	public void setCurrencyRate (final @Nullable BigDecimal CurrencyRate)
 	{
 		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
@@ -725,6 +752,8 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	/** Cost Revaluation = CRD */
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
+	/** ModularOrder = MMO */
+	public static final String DOCBASETYPE_ModularOrder = "MMO";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -847,7 +876,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 1) 
+		if (GL_Category_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_GL_Category_ID, null);
 		else 
 			set_ValueNoCheck (COLUMNNAME_GL_Category_ID, GL_Category_ID);
@@ -857,6 +886,33 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getGL_Category_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_GL_Category_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Year getHarvesting_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setHarvesting_Year(final org.compiere.model.I_C_Year Harvesting_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class, Harvesting_Year);
+	}
+
+	@Override
+	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
+	{
+		if (Harvesting_Year_ID < 1) 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
+	}
+
+	@Override
+	public int getHarvesting_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
 	}
 
 	@Override
