@@ -67,7 +67,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -199,9 +198,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.flatrateTermId(flatrateTermId)
 				.build();
 
-		final BigDecimal loggedQty = contractLogDAO.retrieveQuantityFromExistingLog(request);
-
-		final Quantity quantity = Quantitys.create(loggedQty, UomId.ofRepoId(orderLine.getC_UOM_ID()));
+		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(request);
 
 		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(orderLine.getM_Product_ID()), quantity.toString()));
 

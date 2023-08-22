@@ -36,7 +36,9 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -46,8 +48,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Repository;
-
-import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -143,7 +143,7 @@ public class ModularContractLogDAO
 	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
-		final I_ModCntr_Log oldLog = getQuery(request)
+		final I_ModCntr_Log oldLog = toSqlQuery(request)
 				.firstOptional()
 				.orElseThrow(() -> new AdempiereException("No record found for request !")
 						.appendParametersToMessage()
@@ -206,18 +206,23 @@ public class ModularContractLogDAO
 	}
 
 	@NonNull
-	public BigDecimal retrieveQuantityFromExistingLog(final @NonNull LogEntryReverseRequest request)
+	public Quantity retrieveQuantityFromExistingLog(final @NonNull LogEntryReverseRequest request)
 	{
-		return getQuery(request)
+		return toSqlQuery(request)
 				.firstOptional()
-				.map(I_ModCntr_Log::getQty)
+				.map(ModularContractLogDAO::extractQty)
 				.orElseThrow(() -> new AdempiereException("No record found for request!")
 						.appendParametersToMessage()
 						.setParameter("LogEntryReverseRequest", request));
 	}
 
+	private static Quantity extractQty(@NonNull final I_ModCntr_Log record)
+	{
+		return Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
+	}
+
 	@NonNull
-	private IQueryBuilder<I_ModCntr_Log> getQuery(final @NonNull LogEntryReverseRequest request)
+	private IQueryBuilder<I_ModCntr_Log> toSqlQuery(final @NonNull LogEntryReverseRequest request)
 	{
 		final ModularContractLogEntryId id = request.id();
 		final TableRecordReference tableRecordReference = request.referencedModel();
