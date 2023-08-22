@@ -14,8 +14,6 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -40,17 +38,12 @@ import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.slf4j.Logger;
@@ -68,8 +61,6 @@ public class ContractChangeBL implements IContractChangeBL
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
 	@VisibleForTesting
 	static final AdMessageKey MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT = AdMessageKey.of("de.metas.contracts.isNotAllowedToTerminateCurrentContract");
@@ -156,11 +147,6 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
 		}
-		else
-		{
-			modularContractService.invokeWithModel(currentTerm, ModularContractService.ModelAction.CANCELED, LogEntryContractType.INTERIM);
-			reverseInterimReceiptLineLogsIfNeeded(currentTerm, contractChangeParameters);
-		}
 
 		setTerminatioReasonMemoAndDate(currentTerm, contractChangeParameters);
 		setMasterDates(currentTerm, contractChangeParameters);
@@ -181,28 +167,6 @@ public class ContractChangeBL implements IContractChangeBL
 			final List<I_C_Invoice_Candidate> icOfCurrentTerm = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(currentTerm));
 			invoiceCandBL.closeInvoiceCandidates(icOfCurrentTerm.iterator());
 		}
-	}
-
-	private void reverseInterimReceiptLineLogsIfNeeded(
-			@NonNull final I_C_Flatrate_Term currentTerm,
-			@NonNull final ContractChangeParameters contractChangeParameters)
-	{
-		final Timestamp cancelDate = computeMasterEndDate(currentTerm, contractChangeParameters.getChangeDate());
-		queryBL.createQueryBuilder(I_M_InOut.class)
-				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.GREATER, currentTerm.getEndDate())
-				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, cancelDate)
-				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, currentTerm.getModular_Flatrate_Term_ID())
-				.create()
-				.stream()
-				.forEach(this::invokeHandlerForInOutLine);
-	}
-
-	private void invokeHandlerForInOutLine(@NonNull final I_M_InOutLine inOutLineRecord)
-	{
-		modularContractService.invokeWithModel(inOutLineRecord, ModularContractService.ModelAction.CANCELED, LogEntryContractType.INTERIM);
 	}
 
 	@Override

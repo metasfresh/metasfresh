@@ -41,7 +41,6 @@ import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.organization.impl.OrgDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -63,7 +62,7 @@ public class MaterialReceiptLineHandlerHelper
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IOrgDAO orgDAO = Services.get(OrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
