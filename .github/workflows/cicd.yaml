@@ -1,0 +1,545 @@
+name: cicd
+on: [push, workflow_dispatch]
+env:
+  PIPELINE_VERSION: '0.2.1'
+jobs:
+
+  init:
+    runs-on: ubuntu-latest
+    outputs:
+      tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
+      tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
+      build-info-properties: ${{ steps.build-info-properties.outputs.content }}
+      git-properties: ${{ steps.git-properties.outputs.content }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: sanitize-ref-name
+        id: sanitize
+        env:
+          GIT_REF: ${{ github.ref_name }}
+        run: |
+          echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
+      - name: define-build-info-properties
+        id: build-info-properties
+        env:
+          BUILD_SYSTEM: ${{ runner.name }}
+          BUILD_USER: ${{ github.actor }}
+        run: |
+          echo "content=build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info).3-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          echo "mfversion=$(cat docker-builds/version.info)" >> $GITHUB_OUTPUT
+      - name: define-git-properties
+        id: git-properties
+        env:
+          GIT_URL: ${{ github.repositoryUrl }}
+          GIT_REF: ${{ github.ref }}
+          GIT_ID: ${{ github.sha }}
+        run: |
+          echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$(git show -s --format=%s $GIT_ID)" >> $GITHUB_OUTPUT
+      - name: print-vars
+        run: env
+      - name: print-info
+        env:
+          OUT_REFNAME: ${{ steps.sanitize.outputs.refname }}
+          OUT_BUILD_PROPS: ${{ steps.build-info-properties.outputs.content }}
+          OUT_GIT_PROPS: ${{ steps.git-properties.outputs.content }}
+        run: |
+          echo -e "[sanitized refname]\n$OUT_REFNAME\n"
+          echo -e "[build-info.properties]\n$OUT_BUILD_PROPS\n"
+          echo -e "[git-properties]\n$OUT_GIT_PROPS\n"
+          echo "#### pipeline ($PIPELINE_VERSION)" >> $GITHUB_STEP_SUMMARY
+          echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
+          echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
+          echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+
+  java:
+    runs-on: ubuntu-latest
+    needs: init
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
+      - name: build-commons
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.common \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+          --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-backend
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-backend-dist
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.dist \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-camel
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.camel \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-camel-dist
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.camel.dist \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: push-images
+        run: |
+          docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
+      - name: push-maven-dists
+        run: |
+          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+
+  frontend:
+    runs-on: ubuntu-latest
+    needs: init
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: build-frontend
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.frontend \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
+          .
+      # - name: build-mobile
+        # run: |
+          # docker buildx build \
+          # --file docker-builds/Dockerfile.mobile \
+          # --cache-to type=inline \
+          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
+          # .
+      - name: push-images
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
+        run: |
+          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
+      - name: produce-summary
+          # echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          
+  test-frontend:
+    name: test (frontend)
+    runs-on: ubuntu-latest
+    needs: [init, frontend]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
+      - name: run-tests
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.frontend \
+          --target test \
+          --tag metas-frontend:test \
+          .
+      - name: publish results
+        run: |
+          docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
+          find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
+          testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
+      - name: assert success
+        run: |
+          if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: jest-logs
+          path: jest/**/jest.log
+
+  backend:
+    runs-on: ubuntu-latest
+    needs: [init, java]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare
+        env:
+          INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
+          INIT_GIT_PROPS: ${{ needs.init.outputs.git-properties }}
+        run: |
+          echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
+          echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
+      - name: build-api
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.api \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-app
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.app \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-externalsystems
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.camel.externalsystems \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-db
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.db-standalone \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-db-preloaded
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.db-preloaded \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
+          .
+      - name: push-images
+        run: |
+          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+      - name: produce-summary
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded' >> $GITHUB_STEP_SUMMARY
+
+  compatibility-images:
+    runs-on: ubuntu-latest
+    needs: [init, frontend, backend]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare
+        env:
+          INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
+          INIT_GIT_PROPS: ${{ needs.init.outputs.git-properties }}
+        run: |
+          echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
+          echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
+      - name: build-api-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.api.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: build-app-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.app.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: build-report-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.backend.report.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      # - name: build-mobile-compat
+        # run: |
+          # docker buildx build \
+          # --file docker-builds/Dockerfile.mobile.compat \
+          # --cache-to type=inline \
+          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          # --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          # .
+      - name: build-frontend-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.frontend.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: push-images
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
+        run: |
+          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
+          docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
+          docker tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
+          docker tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: produce-summary
+        run: |
+          echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
+          echo 'and can be deployed on any regular system via metasfresh instances rollout using the above tag as *Baseversion*.' >> $GITHUB_STEP_SUMMARY
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+
+  junit:
+    name: test (java)
+    runs-on: ubuntu-latest
+    needs: [init, java]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
+      - name: run-junit-tests-j8
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.junit \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: run-junit-tests-j14
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.camel.junit \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
+          .
+      - name: push-result-image
+        run: |
+          docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
+      - name: push-results
+        run: |
+          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+          find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace 
+          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
+          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
+          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
+      - name: assert success
+        run: |
+          if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
+          if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/backend/junit.log && exit 1; fi      # print backend log and exit if backend failed
+          if [ $(cat junit/camel/junit.exit-code) != 0 ] || [ $(cat junit/camel/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/camel/junit.log && exit 1; fi            # print camel log and exit if camel failed
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: junit-logs
+          path: junit/**/junit.log
+
+  cucumber-build:
+    name: build (cucumber)
+    runs-on: ubuntu-latest
+    needs: [init, java]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
+      - name: build-cucumber
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.cucumber \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: push-images
+        run: |
+          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
+  cucumber-run:
+    name: test (cucumber)
+    runs-on: ubuntu-latest
+    needs: [init, backend, frontend, cucumber-build]
+    strategy:
+      max-parallel: 4
+      fail-fast: false
+      matrix:
+        profile: [profile1, profile2, catchall]
+        include:
+          - profile: profile1
+            params: -Dcucumber.filter.tags="@tag1 and not @ignore"
+          - profile: profile2
+            params: -Dcucumber.filter.tags="@tag2 and not @ignore"
+          - profile: catchall
+            params: -Dcucumber.filter.tags="not @tag1 and not @tag2 and not @ignore"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
+      - name: run-tests
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+          cucumberparams: ${{ matrix.params }}
+        timeout-minutes: 120
+        run: |
+          mkdir cucumber
+          docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
+          docker-compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
+          docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
+          docker-compose down
+          cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
+      # post cucumber database will not work as is with matrix strategy
+      - name: push-results
+        run: |
+          find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
+          testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
+      - name: produce-summary
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}' >> $GITHUB_STEP_SUMMARY
+      - name: assert success
+        run: |
+          if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi                                     # print cucumber log and exit if cucumber failed
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cucumber-logs
+          path: cucumber.log
+
+  redeploy:
+    runs-on: ubuntu-latest
+    needs: [init, backend, frontend]
+    environment: 'dev'
+    steps:
+      - name: dispatching-redeploy
+        run: |
+          curl -X "POST" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -d '{"event_type":"redeploy","client_payload":{"tag":"${{ needs.init.outputs.tag-floating }}"}}' https://api.github.com/repos/metasfresh/mf15-kubernetes/dispatches

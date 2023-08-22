@@ -13,7 +13,6 @@
 *.project
 *.classpath
 
-**/metasfresh*.properties
 **/swingui/log/
 **/serverRoot/log/
 **/serverRoot/data/
@@ -43,6 +42,8 @@ private
 # Intellij Idea
 *.iml
 /.metadata/
+.idea
+.idea/
 
 #
 # VSCode
@@ -58,3 +59,6 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 # Mac DS_Store files
 .DS_Store
+
+# this is ignored to prevent accidental git check-in of developer credentials
+**/mvn/local-settings.xml
