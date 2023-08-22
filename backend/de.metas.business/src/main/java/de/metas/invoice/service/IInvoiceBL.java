@@ -393,5 +393,5 @@ public interface IInvoiceBL extends ISingletonService
 
 	Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId);
 
-	List<I_C_InvoiceLine> retrieveLines(I_C_Invoice invoice);
+	List<I_C_InvoiceLine> getLines(InvoiceId invoiceId);
 }

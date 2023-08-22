@@ -1993,8 +1993,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public List<I_C_InvoiceLine> retrieveLines(final org.compiere.model.I_C_Invoice invoice)
+	public List<I_C_InvoiceLine> getLines(@NonNull final InvoiceId invoiceId)
 	{
-		return invoiceDAO.retrieveLines(invoice);
+		return invoiceDAO.retrieveLines(invoiceId);
 	}
 }

@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -64,7 +65,9 @@ public class C_Invoice
 			@NonNull final I_C_Invoice invoiceRecord,
 			@NonNull final ModularContractService.ModelAction modelAction)
 	{
-		invoiceBL.retrieveLines(invoiceRecord)
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
+
+		invoiceBL.getLines(invoiceId)
 				.forEach(line -> contractService.invokeWithModel(line, modelAction));
 	}
 }

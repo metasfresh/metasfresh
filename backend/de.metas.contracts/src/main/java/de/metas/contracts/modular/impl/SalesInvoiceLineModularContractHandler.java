@@ -57,7 +57,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,7 +67,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -83,7 +82,6 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -165,8 +163,8 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 				.map(ModularContractType::getId)
 				.findFirst();
 
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(invoiceLine.getQtyInvoiced(), uomId);
+		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
+		final Quantity quantity = Quantitys.create(invoiceLine.getQtyInvoiced(), uomId);
 
 		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
 		final Money amount = Money.of(invoiceLine.getLineNetAmt(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
@@ -208,10 +206,8 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 				.flatrateTermId(flatrateTermId)
 				.build();
 
-		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
 		final BigDecimal loggedQty = contractLogDAO.retrieveQuantityFromExistingLog(request);
-
-		final Quantity quantity = Quantity.of(loggedQty, uom);
+		final Quantity quantity = Quantitys.create(loggedQty, UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
 
 		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(invoiceLine.getM_Product_ID()), quantity.toString()));
 

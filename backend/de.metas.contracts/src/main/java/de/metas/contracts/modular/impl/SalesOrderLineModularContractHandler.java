@@ -55,7 +55,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -65,7 +65,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -80,7 +79,6 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -162,8 +160,8 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.map(ModularContractType::getId)
 				.findFirst();
 
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(orderLine.getQtyEntered(), uomId);
+		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+		final Quantity quantity = Quantitys.create(orderLine.getQtyEntered(), uomId);
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
@@ -203,8 +201,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 
 		final BigDecimal loggedQty = contractLogDAO.retrieveQuantityFromExistingLog(request);
 
-		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(loggedQty, uom);
+		final Quantity quantity = Quantitys.create(loggedQty, UomId.ofRepoId(orderLine.getC_UOM_ID()));
 
 		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(orderLine.getM_Product_ID()), quantity.toString()));
 
