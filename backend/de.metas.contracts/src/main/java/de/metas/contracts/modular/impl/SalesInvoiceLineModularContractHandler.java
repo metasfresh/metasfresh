@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
@@ -39,13 +38,13 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
@@ -65,13 +64,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -84,7 +83,6 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -176,7 +174,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered)
-						.translate(Language.getBaseAD_Language());
+				.translate(Language.getBaseAD_Language());
 
 		return Optional.of(
 				LogEntryCreateRequest.builder()
@@ -212,20 +210,26 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 			final @NonNull I_C_InvoiceLine invoiceLine,
 			final @NonNull FlatrateTermId flatrateTermId)
 	{
-		final LogEntryReverseRequest request = LogEntryReverseRequest.builder()
-				.referencedModel(TableRecordReference.of(I_C_InvoiceLine.Table_Name, invoiceLine.getC_InvoiceLine_ID()))
-				.flatrateTermId(flatrateTermId)
-				.build();
+		final TableRecordReference invoiceLineRef = TableRecordReference.of(I_C_InvoiceLine.Table_Name, invoiceLine.getC_InvoiceLine_ID());
 
-		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(request);
+		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
+				ModularContractLogQuery.builder()
+						.flatrateTermId(flatrateTermId)
+						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))
+						.build());
+
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = TranslatableStrings.adMessage(MSG_ON_REVERSE_DESCRIPTION, productName, quantity)
 				.translate(Language.getBaseAD_Language());
 
-		return Optional.of(request.toBuilder()
-				.description(description)
-				.build());
+		return Optional.of(
+				LogEntryReverseRequest.builder()
+						.referencedModel(invoiceLineRef)
+						.flatrateTermId(flatrateTermId)
+						.description(description)
+						.build()
+		);
 	}
 
 	@Override

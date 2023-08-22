@@ -11,6 +11,7 @@ import lombok.ToString;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -60,7 +61,7 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		return new TableRecordReferenceSet(recordRefs);
 	}
 
-	public static TableRecordReferenceSet of(final TableRecordReference recordRef)
+	public static TableRecordReferenceSet of(@Nullable final TableRecordReference recordRef)
 	{
 		return recordRef != null ? new TableRecordReferenceSet(ImmutableSet.of(recordRef)) : EMPTY;
 	}

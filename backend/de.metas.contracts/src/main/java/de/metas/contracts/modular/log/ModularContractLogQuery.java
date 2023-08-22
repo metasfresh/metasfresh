@@ -22,8 +22,8 @@
 
 package de.metas.contracts.modular.log;
 
+import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
@@ -33,7 +33,8 @@ import javax.annotation.Nullable;
 @Builder
 public class ModularContractLogQuery
 {
-	@NonNull TableRecordReferenceSet referenceSet;
-	
+	@Nullable TableRecordReferenceSet referenceSet;
 	@Nullable LogEntryContractType contractType;
+	@Nullable ModularContractLogEntryId entryId;
+	@Nullable FlatrateTermId flatrateTermId;
 }

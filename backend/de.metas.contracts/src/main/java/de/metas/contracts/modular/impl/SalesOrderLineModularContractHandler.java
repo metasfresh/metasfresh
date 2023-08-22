@@ -40,6 +40,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
@@ -61,6 +62,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
@@ -182,8 +184,8 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 				.processed(false)
 				.quantity(quantity)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
-															   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-															   orgDAO::getTimeZone))
+						OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+						orgDAO::getTimeZone))
 				.year(modularContractSettings.getYearAndCalendarId().yearId())
 				.description(description)
 				.modularContractTypeId(contractTypeId)
@@ -193,18 +195,22 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	@Override
 	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_C_OrderLine orderLine, final @NonNull FlatrateTermId flatrateTermId)
 	{
-		final LogEntryReverseRequest request = LogEntryReverseRequest.builder()
-				.referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
-				.flatrateTermId(flatrateTermId)
-				.build();
+		final TableRecordReference orderLineRef = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
 
-		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(request);
+		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
+				.flatrateTermId(flatrateTermId)
+				.referenceSet(TableRecordReferenceSet.of(orderLineRef))
+				.build());
 
 		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(orderLine.getM_Product_ID()), quantity.toString()));
 
-		return Optional.of(request.toBuilder()
-								   .description(description)
-								   .build());
+		return Optional.of(
+				LogEntryReverseRequest.builder()
+						.referencedModel(orderLineRef)
+						.flatrateTermId(flatrateTermId)
+						.description(description)
+						.build()
+		);
 	}
 
 	@Override
