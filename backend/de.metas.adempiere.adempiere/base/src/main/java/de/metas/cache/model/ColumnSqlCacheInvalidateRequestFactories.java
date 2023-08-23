@@ -161,9 +161,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 		public List<CacheInvalidateRequest> createRequestsFromModel(@NonNull final ICacheSourceModel sourceModel, final ModelCacheInvalidationTiming timing_NOTUSED)
 		{
 			final int targetRecordId = sourceModel.getValueAsInt(linkColumnName, -1);
-			final int recordId = sourceModel.getRecordId();
-			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceModel.getTableName());
-			if (recordId < InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName))
+			if (targetRecordId < 0)
 			{
 				return ImmutableList.of();
 			}
