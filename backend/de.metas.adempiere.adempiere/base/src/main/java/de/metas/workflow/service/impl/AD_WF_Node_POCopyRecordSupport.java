@@ -56,19 +56,7 @@ public class AD_WF_Node_POCopyRecordSupport extends GeneralCopyRecordSupport
 	@Override
 	public void updateSpecialColumnsName(final PO to)
 	{
-		final POInfo poInfo = to.getPOInfo();
-		if (poInfo.hasColumnName(COLUMNNAME_Name) && DisplayType.isText(poInfo.getColumnDisplayType(COLUMNNAME_Name)))
-		{
-			to.set_CustomColumn(COLUMNNAME_Name, to.get_Value(COLUMNNAME_Name));
-		}
-		else if (poInfo.hasColumnName(COLUMNNAME_Value))
-		{
-			to.set_CustomColumn(COLUMNNAME_Value, to.get_Value(COLUMNNAME_Value));
-		}
-		else
-		{
-			super.updateSpecialColumnsName(to);
-		}
+		// do nothing, copy all columns as is
 	}
 
 	@Override
