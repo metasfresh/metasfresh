@@ -169,6 +169,7 @@ public final class FactLine extends X_Fact_Acct
 		final MAccount m_account = services.getAccountById(account.getAccountId());
 		setAccount(acctSchema, m_account);
 		setAccountConceptualName(account.getAccountConceptualName());
+		updateHarvestingData();
 	}
 
 	public void setAccount(@NonNull final AcctSchema acctSchema, @NonNull final MAccount acct)
@@ -742,8 +743,6 @@ public final class FactLine extends X_Fact_Acct
 			setUser2_ID(m_doc.getUser2_ID());
 			// References in setAccount
 		}
-
-		updateHarvestingData();
 
 	}   // setDocumentInfo
 
