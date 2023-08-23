@@ -14,6 +14,7 @@ import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor.FetchTargetRecordsMethod;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -95,12 +96,8 @@ final class ColumnSqlCacheInvalidateRequestFactories
 		public List<CacheInvalidateRequest> createRequestsFromModel(@NonNull final ICacheSourceModel sourceModel, final ModelCacheInvalidationTiming timing_NOTNUSED)
 		{
 			final int sourceRecordId = sourceModel.getRecordId();
-			return createRequestsFromSourceRecordId(sourceRecordId);
-		}
-
-		private List<CacheInvalidateRequest> createRequestsFromSourceRecordId(final int sourceRecordId)
-		{
-			if (sourceRecordId <= 0)
+			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceModel.getTableName());
+			if (sourceRecordId < InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName))
 			{
 				return ImmutableList.of();
 			}
@@ -164,7 +161,9 @@ final class ColumnSqlCacheInvalidateRequestFactories
 		public List<CacheInvalidateRequest> createRequestsFromModel(@NonNull final ICacheSourceModel sourceModel, final ModelCacheInvalidationTiming timing_NOTUSED)
 		{
 			final int targetRecordId = sourceModel.getValueAsInt(linkColumnName, -1);
-			if (targetRecordId < 0)
+			final int recordId = sourceModel.getRecordId();
+			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceModel.getTableName());
+			if (recordId < InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName))
 			{
 				return ImmutableList.of();
 			}
