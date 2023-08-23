@@ -145,6 +145,12 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 	}
 
 	@Override
+	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	{
+		return logEntryContractType.isModularContractType();
+	}
+
+	@Override
 	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			final @NonNull I_C_InvoiceLine invoiceLine,
 			final @NonNull FlatrateTermId modularContractId)
