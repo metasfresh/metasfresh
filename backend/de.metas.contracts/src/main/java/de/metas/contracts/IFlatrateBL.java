@@ -99,6 +99,10 @@ public interface IFlatrateBL extends ISingletonService
 
 	ImmutableList<I_C_Flatrate_Term> retrieveNextFlatrateTerms(@NonNull I_C_Flatrate_Term term);
 
+	boolean isModularContractInProgress(@NonNull ModularFlatrateTermQuery query);
+
+	@NonNull Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull ModularFlatrateTermQuery query);
+
 	FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull FlatrateTermId modularFlatrateTermId, @NonNull Instant date);
 
 	/**

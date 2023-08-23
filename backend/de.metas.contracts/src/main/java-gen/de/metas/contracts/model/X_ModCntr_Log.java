@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -360488704L;
+	private static final long serialVersionUID = 828077476L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -244,7 +244,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public boolean isBillable() 
+	public boolean isBillable()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillable);
 	}
@@ -322,6 +322,8 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement = "DefinitiveFinalSettlement";
 	/** Inventory = Inventory */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_Inventory = "Inventory";
+	/** Sales invoice = SalesInvoice */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_SalesInvoice = "SalesInvoice";
 	@Override
 	public void setModCntr_Log_DocumentType (final String ModCntr_Log_DocumentType)
 	{

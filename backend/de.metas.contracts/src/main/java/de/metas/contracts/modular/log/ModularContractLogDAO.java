@@ -37,7 +37,9 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,7 +51,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
@@ -64,19 +65,12 @@ public class ModularContractLogDAO
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public ModularContractLogEntry get(@NonNull final ModularContractLogEntryId id)
+	public ModularContractLogEntry getById(@NonNull final ModularContractLogEntryId id)
 	{
-		return fromDB(load(ModularContractLogEntryId.toRepoId(id), I_ModCntr_Log.class));
+		return fromRecord(load(ModularContractLogEntryId.toRepoId(id), I_ModCntr_Log.class));
 	}
 
 	public ModularContractLogEntryId create(@NonNull final LogEntryCreateRequest request)
-	{
-		final I_ModCntr_Log log = fromLogEntryCreateRequest(request);
-		save(log);
-		return ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
-	}
-
-	private I_ModCntr_Log fromLogEntryCreateRequest(@NonNull final LogEntryCreateRequest request)
 	{
 		final I_ModCntr_Log log = newInstance(I_ModCntr_Log.class);
 		log.setC_Flatrate_Term_ID(FlatrateTermId.toRepoId(request.getContractId()));
@@ -117,41 +111,44 @@ public class ModularContractLogDAO
 		log.setDescription(request.getDescription());
 		log.setModCntr_Type_ID(ModularContractTypeId.toRepoId(request.getModularContractTypeId()));
 
-		return log;
+		save(log);
+
+		return ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
 	}
 
 	@NonNull
-	private ModularContractLogEntry fromDB(@NonNull final I_ModCntr_Log log)
+	private ModularContractLogEntry fromRecord(@NonNull final I_ModCntr_Log record)
 	{
 		return ModularContractLogEntry.builder()
-				.id(ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID()))
-				.contractId(FlatrateTermId.ofRepoIdOrNull(log.getC_Flatrate_Term_ID()))
-				.productId(ProductId.ofRepoIdOrNull(log.getM_Product_ID()))
-				.referencedRecord(TableRecordReference.of(log.getAD_Table_ID(), log.getRecord_ID()))
-				.contractType(LogEntryContractType.ofCode(log.getContractType()))
-				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(log.getCollectionPoint_BPartner_ID()))
-				.producerBPartnerId(BPartnerId.ofRepoIdOrNull(log.getProducer_BPartner_ID()))
-				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(log.getBill_BPartner_ID()))
-				.warehouseId(WarehouseId.ofRepoIdOrNull(log.getM_Warehouse_ID()))
-				.documentType(LogEntryDocumentType.ofCode(log.getModCntr_Log_DocumentType()))
-				.soTrx(SOTrx.ofBoolean(log.isSOTrx()))
-				.processed(log.isProcessed())
-				.quantity(Quantity.ofNullable(log.getQty(), uomDAO.getById(log.getC_UOM_ID())))
-				.amount(Money.ofOrNull(log.getAmount(), CurrencyId.ofRepoIdOrNull(log.getC_Currency_ID())))
-				.transactionDate(LocalDateAndOrgId.ofTimestamp(log.getDateTrx(), OrgId.ofRepoId(log.getAD_Org_ID()), orgDAO::getTimeZone))
-				.year(YearId.ofRepoId(log.getHarvesting_Year_ID()))
-				.isBillable(log.isBillable())
+				.id(ModularContractLogEntryId.ofRepoId(record.getModCntr_Log_ID()))
+				.contractId(FlatrateTermId.ofRepoIdOrNull(record.getC_Flatrate_Term_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.referencedRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
+				.contractType(LogEntryContractType.ofCode(record.getContractType()))
+				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(record.getCollectionPoint_BPartner_ID()))
+				.producerBPartnerId(BPartnerId.ofRepoIdOrNull(record.getProducer_BPartner_ID()))
+				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(record.getBill_BPartner_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
+				.documentType(LogEntryDocumentType.ofCode(record.getModCntr_Log_DocumentType()))
+				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
+				.processed(record.isProcessed())
+				.quantity(Quantity.ofNullable(record.getQty(), uomDAO.getById(record.getC_UOM_ID())))
+				.amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
+				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
+				.isBillable(record.isBillable())
 				.build();
 	}
 
 	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
-		final I_ModCntr_Log oldLog = getQuery(request)
-				.firstOptional()
-				.orElseThrow(() -> new AdempiereException("No record found for request !")
-						.appendParametersToMessage()
-						.setParameter("LogEntryReverseRequest", request));
+		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
+				.entryId(request.id())
+				.flatrateTermId(request.flatrateTermId())
+				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
+				.build())
+				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
 		if (oldLog.isProcessed())
 		{
@@ -159,7 +156,6 @@ public class ModularContractLogDAO
 		}
 
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);
-
 		copyValues(oldLog, reversedLog);
 
 		if (reversedLog.getQty() != null)
@@ -182,11 +178,9 @@ public class ModularContractLogDAO
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
 	}
 
-	public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordReference)
+	public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordRef)
 	{
-		return queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, recordReference.getAdTableId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, recordReference.getRecord_ID())
+		return toSqlQuery(ModularContractLogQuery.builder().referenceSet(TableRecordReferenceSet.of(recordRef)).build())
 				.create()
 				.anyMatch();
 	}
@@ -195,18 +189,7 @@ public class ModularContractLogDAO
 			@NonNull final ModularContractLogQuery query,
 			final boolean isBillable)
 	{
-		final TableRecordReferenceSet referenceSet = query.getReferenceSet();
-
-		final IQueryBuilder<I_ModCntr_Log> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, referenceSet.getSingleTableId())
-				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, referenceSet.toIntSet());
-
-		if (query.getContractType() != null)
-		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, query.getContractType().getCode());
-		}
-
-		queryBuilder
+		toSqlQuery(query)
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_IsBillable, isBillable)
@@ -214,45 +197,57 @@ public class ModularContractLogDAO
 				.execute();
 	}
 
-	@NonNull
-	public BigDecimal retrieveQuantityFromExistingLog(final @NonNull LogEntryReverseRequest request)
+	private IQueryBuilder<I_ModCntr_Log> toSqlQuery(@NonNull final ModularContractLogQuery query)
 	{
-		return getQuery(request)
-				.firstOptional()
-				.map(I_ModCntr_Log::getQty)
-				.orElseThrow(() -> new AdempiereException("No record found for request!")
-						.appendParametersToMessage()
-						.setParameter("LogEntryReverseRequest", request));
+		final IQueryBuilder<I_ModCntr_Log> sqlQueryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addOnlyActiveRecordsFilter();
+
+
+		final TableRecordReferenceSet referenceSet = query.getReferenceSet();
+		if (referenceSet != null)
+		{
+			sqlQueryBuilder
+					.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, referenceSet.getSingleTableId())
+					.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, referenceSet.toIntSet());
+		}
+
+		if (query.getContractType() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, query.getContractType().getCode());
+		}
+
+		if (query.getEntryId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, query.getEntryId());
+		}
+
+		if (query.getFlatrateTermId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, query.getFlatrateTermId());
+		}
+
+		return sqlQueryBuilder;
 	}
 
 	@NonNull
-	private IQueryBuilder<I_ModCntr_Log> getQuery(final @NonNull LogEntryReverseRequest request)
+	public Quantity retrieveQuantityFromExistingLog(final @NonNull ModularContractLogQuery query)
 	{
-		final ModularContractLogEntryId id = request.id();
-		final TableRecordReference tableRecordReference = request.referencedModel();
-		final FlatrateTermId flatrateTermId = request.flatrateTermId();
+		return lastRecord(query)
+				.map(ModularContractLogDAO::extractQty)
+				.orElseThrow(() -> new AdempiereException("No records found for " + query));
+	}
 
-		final IQueryBuilder<I_ModCntr_Log> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType());
-		if (id != null)
-		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, id);
-		}
-		if (tableRecordReference != null)
-		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId());
-			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID());
-		}
-		if (flatrateTermId != null)
-		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId);
-		}
+	private Optional<I_ModCntr_Log> lastRecord(final @NonNull ModularContractLogQuery query)
+	{
+		return toSqlQuery(query)
+				.orderByDescending(I_ModCntr_Log.COLUMN_Created)
+				.orderByDescending(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID)
+				.firstOptional();
+	}
 
-		queryBuilder.orderByDescending(I_ModCntr_Log.COLUMNNAME_Created);
-		queryBuilder.orderByDescending(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID);
-
-		return queryBuilder;
+	private static Quantity extractQty(@NonNull final I_ModCntr_Log record)
+	{
+		return Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 	}
 
 	public Optional<ModularContractLogEntry> getLastModularContractLog(
@@ -270,6 +265,6 @@ public class ModularContractLogDAO
 				.orderByDescending(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID)
 				.create()
 				.firstOptional();
-		return modCntrLog.map(this::fromDB);
+		return modCntrLog.map(this::fromRecord);
 	}
 }
