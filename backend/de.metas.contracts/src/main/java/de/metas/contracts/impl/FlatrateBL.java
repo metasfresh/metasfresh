@@ -2382,9 +2382,9 @@ public class FlatrateBL implements IFlatrateBL
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
 		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
 		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
-															   .yearAndCalendarId(yearAndCalendarId)
-															   .productId(productId)
-															   .build()))
+				.yearAndCalendarId(yearAndCalendarId)
+				.productId(productId)
+				.build()))
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);
 		}
@@ -2450,8 +2450,23 @@ public class FlatrateBL implements IFlatrateBL
 
 	@NonNull
 	@Override
-	public Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(@NonNull final ModularFlatrateTermQuery modularFlatrateTermQuery)
+	public Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(@NonNull final ModularFlatrateTermQuery query)
 	{
-		return flatrateDAO.getModularFlatrateTermsByQuery(modularFlatrateTermQuery).stream();
+		return flatrateDAO.getModularFlatrateTermsByQuery(query).stream();
 	}
+
+	@Override
+	public boolean isModularContractInProgress(@NonNull final ModularFlatrateTermQuery query)
+	{
+		return !flatrateDAO.getModularFlatrateTermsByQuery(query).isEmpty();
+	}
+
+	@NonNull
+	@Override
+	public Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull final ModularFlatrateTermQuery query)
+	{
+		return streamModularFlatrateTermsByQuery(query).map(FlatrateBL::extractId);
+	}
+
+	private static FlatrateTermId extractId(final I_C_Flatrate_Term record) {return FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID());}
 }

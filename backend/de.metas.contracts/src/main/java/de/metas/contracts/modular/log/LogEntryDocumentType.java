@@ -45,7 +45,8 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 	SHIPMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_Shipment),
 	FINAL_SETTLEMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_FinalSettlement),
 	DEFINITIVE_FINAL_SETTLEMENT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement),
-	INVENTORY(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_Inventory)
+	INVENTORY(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_Inventory),
+	SALES_INVOICE(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_SalesInvoice)
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<LogEntryDocumentType> index = ReferenceListAwareEnums.index(values());
