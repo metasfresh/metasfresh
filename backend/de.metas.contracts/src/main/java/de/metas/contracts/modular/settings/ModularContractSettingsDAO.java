@@ -77,6 +77,16 @@ public class ModularContractSettingsDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public ModularContractSettings getByFlatrateTermId(@NonNull final FlatrateTermId contractId)
+	{
+		final ModularContractSettings modularContractSettings = getByFlatrateTermIdOrNull(contractId);
+		if (modularContractSettings == null)
+		{
+			throw new AdempiereException("No modular contract settings found for " + contractId);
+		}
+		return modularContractSettings;
+	}
+
 	@Nullable
 	public ModularContractSettings getByFlatrateTermIdOrNull(@NonNull final FlatrateTermId contractId)
 	{
@@ -125,11 +135,11 @@ public class ModularContractSettingsDAO
 					.seqNo(SeqNo.ofInt(moduleRecord.getSeqNo()))
 					.invoicingGroup(moduleRecord.getInvoicingGroup())
 					.modularContractType(ModularContractType.builder()
-												 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
-												 .value(modCntrType.getValue())
-												 .name(modCntrType.getName())
-												 .className(modCntrType.getClassname())
-												 .build())
+							.id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
+							.value(modCntrType.getValue())
+							.name(modCntrType.getName())
+							.className(modCntrType.getClassname())
+							.build())
 					.build();
 
 			result.moduleConfig(moduleConfig);
@@ -272,8 +282,8 @@ public class ModularContractSettingsDAO
 			if (I_C_Flatrate_Conditions.Table_Name.equals(recordRef.getTableName()))
 			{
 				logger.debug("ComputeCachingKeys called for a ({},{}) that wasn't cached so far!",
-							 recordRef.getRecord_ID(),
-							 recordRef.getTableName());
+						recordRef.getRecord_ID(),
+						recordRef.getTableName());
 
 				return ImmutableSet.of();
 			}
@@ -282,8 +292,8 @@ public class ModularContractSettingsDAO
 				final FlatrateTermId contractId = recordRef.getIdAssumingTableName(I_C_Flatrate_Term.Table_Name, FlatrateTermId::ofRepoId);
 
 				logger.debug("ComputeCachingKeys called for ({},{})!",
-							 recordRef.getRecord_ID(),
-							 recordRef.getTableName());
+						recordRef.getRecord_ID(),
+						recordRef.getTableName());
 
 				return ImmutableSet.of(SettingsLookupKey.of(contractId));
 			}
