@@ -194,7 +194,6 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	@Override
-	@OverridingMethodsMustInvokeSuper
 	public void updateSpecialColumnsName(final PO to)
 	{
 		if (!isBase())
