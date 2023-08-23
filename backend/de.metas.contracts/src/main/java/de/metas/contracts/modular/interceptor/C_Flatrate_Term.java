@@ -88,7 +88,7 @@ public class C_Flatrate_Term
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
-		queryBL.createQueryBuilder(I_M_InOutLine.class)
+		queryBL.createQueryBuilder(I_M_InOut.class)
 				.addOnlyActiveRecordsFilter()
 				.addBetweenFilter(I_M_InOut.COLUMNNAME_MovementDate, flatrateTermRecord.getStartDate(), flatrateTermRecord.getEndDate())
 				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
@@ -107,19 +107,20 @@ public class C_Flatrate_Term
 		{
 			return;
 		}
+		reverseInterimReceiptLineLogsIfNeeded(flatrateTermRecord);
 		modularContractService.invokeWithModel(flatrateTermRecord, ModularContractService.ModelAction.CANCELED, LogEntryContractType.INTERIM);
 	}
 
-	private void reverseInterimReceiptLineLogsIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm)
+	private void reverseInterimReceiptLineLogsIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
-		final Timestamp oldEndDate = InterfaceWrapperHelper.createOld(currentTerm, I_C_Flatrate_Term.class).getEndDate();
+		final Timestamp oldEndDate = InterfaceWrapperHelper.createOld(flatrateTermRecord, I_C_Flatrate_Term.class).getEndDate();
 		queryBL.createQueryBuilder(I_M_InOut.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.GREATER, oldEndDate)
-				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, currentTerm.getEndDate())
+				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, flatrateTermRecord.getEndDate())
 				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, currentTerm.getModular_Flatrate_Term_ID())
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getModular_Flatrate_Term_ID())
 				.create()
 				.stream()
 				.forEach(inOutLine -> invokeHandlerForInOutLine(inOutLine, CANCELED));

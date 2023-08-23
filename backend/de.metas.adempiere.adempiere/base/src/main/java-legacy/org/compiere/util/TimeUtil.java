@@ -332,9 +332,9 @@ public class TimeUtil
 	 * The function returns true for b and false for a/b.
 	 *
 	 * @param start_1 start (1)
-	 * @param end_1   not included end (1)
-	 * @param start_2 start (2)
-	 * @param end_2   not included (2)
+	 * @param end_1   end (1)
+	 * @param start_2 included start (2)
+	 * @param end_2   included end (2)
 	 * @return true if in range
 	 */
 	static public boolean inRange(
@@ -352,20 +352,19 @@ public class TimeUtil
 		{
 			throw new UnsupportedOperationException("TimeUtil.inRange End_2=" + end_2 + " before Start_2=" + start_2);
 		}
-		// case a
-		if (!end_2.after(start_1))        // end not including
+		if (isBetween(start_1, start_2, end_2))
 		{
 			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-			return false;
+			return true;
 		}
 		// case c
-		if (!start_2.before(end_1))        // end not including
+		if (isBetween(end_1, start_2, end_2))
 		{
 			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-			return false;
+			return true;
 		}
 		// log.debug( "TimeUtil.InRange - Yes", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-		return true;
+		return false;
 	}    // inRange
 
 	/**

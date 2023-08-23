@@ -29,7 +29,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
@@ -40,6 +39,8 @@ import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrat
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.process.FlatrateTermCreator;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.logging.LogManager;
@@ -59,7 +60,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -93,7 +93,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final OrderLineId orderLineId;
 
 	@NonNull
-	final FlatrateTermId modulareFlatrateTermId;
+	private final FlatrateTermId modulareFlatrateTermId;
 
 	private final OrderLine orderLine;
 	private final I_C_Flatrate_Conditions conditions;
@@ -114,14 +114,14 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	@Builder
 	public InterimInvoiceFlatrateTermCreateCommand(@Nullable final BPartnerId bpartnerId,
 			@NonNull final ConditionsId conditionsId,
 			@Nullable final ProductId productId,
 			@NonNull final Instant dateFrom,
-			@Nullable final Instant dateTo,
+			@NonNull final Instant dateTo,
 			@NonNull final OrderLineId orderLineId,
 			@NonNull final FlatrateTermId modulareFlatrateTermId)
 	{
@@ -207,12 +207,6 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	@NonNull
 	private I_C_Flatrate_Term createFlatrateTerm(final I_C_BPartner bpartner)
 	{
-		if (hasOverlappingInterimContract(I_C_Flatrate_Term.COLUMNNAME_StartDate) ||
-				hasOverlappingInterimContract(I_C_Flatrate_Term.COLUMNNAME_EndDate))
-		{
-			throw new AdempiereException("Given time period overlaps with existing Interim Contract"); //TODO ADMsg
-		}
-
 		final I_C_Flatrate_Term flatrateTermRecord = FlatrateTermCreator.builder()
 				.bPartners(Collections.singleton(bpartner))
 				.orgId(orderLine.getOrgId())
@@ -221,7 +215,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.product(product)
 				.startDate(TimeUtil.asTimestamp(dateFrom))
 				.endDate(TimeUtil.asTimestamp(dateTo))
-				.isCompleteDocument(true)
+				.isCompleteDocument(false)
 				.build()
 				.createTermsForBPartners()
 				.stream()
@@ -231,31 +225,22 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setM_PricingSystem_ID(modularContract.getM_PricingSystem_ID());
 		flatrateTermRecord.setPlannedQtyPerUnit(modularContract.getPlannedQtyPerUnit());
 		flatrateTermRecord.setContractStatus(modularContract.getContractStatus());
-		flatrateTermRecord.setMasterStartDate(modularContract.getMasterStartDate());
-		flatrateTermRecord.setMasterEndDate(modularContract.getMasterEndDate());
+		flatrateTermRecord.setMasterStartDate(TimeUtil.asTimestamp(dateFrom));
+		flatrateTermRecord.setMasterEndDate(TimeUtil.asTimestamp(dateTo));
 		flatrateTermRecord.setPriceActual(modularContract.getPriceActual());
 		flatrateTermRecord.setC_TaxCategory_ID(modularContract.getC_TaxCategory_ID());
 		flatrateTermRecord.setC_Order_Term(modularContract.getC_Order_Term());
 		flatrateTermRecord.setC_OrderLine_Term(modularContract.getC_OrderLine_Term());
-		flatrateTermRecord.setModular_Flatrate_Term_ID(modularContract.getC_Flatrate_Term_ID());
+		flatrateTermRecord.setModular_Flatrate_Term_ID(modulareFlatrateTermId.getRepoId());
 		flatrateTermRecord.setC_UOM_ID(modularContract.getC_UOM_ID());
 		flatrateTermRecord.setDeliveryRule(modularContract.getDeliveryRule());
 		flatrateTermRecord.setDeliveryViaRule(modularContract.getDeliveryViaRule());
 
 		flatrateDAO.save(flatrateTermRecord);
 
-		return flatrateTermRecord;
-	}
+		documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-	private boolean hasOverlappingInterimContract(@NonNull final String columname)
-	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modulareFlatrateTermId)
-				.addBetweenFilter(columname, dateFrom, dateTo)
-				.create()
-				.anyMatch();
+		return flatrateTermRecord;
 	}
 
 	private InterimInvoiceFlatrateTerm createInterimInvoiceOverview(@NonNull final I_C_Flatrate_Term flatrateTerm)

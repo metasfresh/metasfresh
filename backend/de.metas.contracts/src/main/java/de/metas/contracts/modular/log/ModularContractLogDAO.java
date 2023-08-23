@@ -153,6 +153,11 @@ public class ModularContractLogDAO
 						.appendParametersToMessage()
 						.setParameter("LogEntryReverseRequest", request));
 
+		if (oldLog.isProcessed())
+		{
+			throw new AdempiereException("Already processed modular contract logs can't be reversed"); //TODO ADMsg
+		}
+
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);
 
 		copyValues(oldLog, reversedLog);

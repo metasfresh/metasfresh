@@ -163,6 +163,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -1450,9 +1451,10 @@ public class FlatrateBL implements IFlatrateBL
 	private void updateEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
 		final Timestamp endDate = computeEndDate(transition, term);
-		term.setEndDate(endDate);
+		term.setEndDate(endDate == null ? term.getEndDate() : endDate);
 	}
 
+	@Nullable
 	private Timestamp computeEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
 		final Timestamp firstDayOfTerm = term.getStartDate();
@@ -1732,7 +1734,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
-		newTerm.setEndDate(startDate); // will be updated later
+		newTerm.setEndDate(endDate != null ? endDate : startDate);
 
 		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 																										  billPartnerLocation.getC_BPartner_Location_ID(),
@@ -1777,25 +1779,17 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		newTerm.setIsSimulation(request.isSimulation());
 
+		if (productAndCategoryId != null)
+		{
+			newTerm.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
+		}
+
 		save(newTerm);
 
 		if (request.isCompleteIt())
 		{
 			complete(newTerm);
 		}
-
-		// dev note: these steps must be done after completion
-		if (productAndCategoryId != null)
-		{
-			newTerm.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
-		}
-
-		if (endDate != null)
-		{
-			newTerm.setEndDate(endDate);
-		}
-
-		save(newTerm);
 
 		final CacheInvalidateMultiRequest cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_C_Flatrate_Term.Table_Name);
 
@@ -1849,8 +1843,7 @@ public class FlatrateBL implements IFlatrateBL
 		// Therefore they can overlap without causing us any problems.
 		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions)
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement.equals(typeConditions)
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions)
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract.equals(typeConditions);
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions);
 		return allowedToOverlapWithOtherTerms;
 	}
 
@@ -1888,6 +1881,17 @@ public class FlatrateBL implements IFlatrateBL
 			// C_Flatrate_Term has access-level=Org, so there is no term with Org=*
 			// Also note that when finding a term for an invoice-candidate, that IC's org is used as a matching criterion
 			if (term.getAD_Org_ID() != newTerm.getAD_Org_ID())
+			{
+				continue;
+			}
+
+			if (!Objects.equals(term.getType_Conditions(), newTerm.getType_Conditions()))
+			{
+				continue;
+			}
+
+			if (TypeConditions.ofCode(newTerm.getType_Conditions()).isModularOrInterim()
+					&& term.getC_Flatrate_Conditions_ID() != newTerm.getC_Flatrate_Conditions_ID())
 			{
 				continue;
 			}

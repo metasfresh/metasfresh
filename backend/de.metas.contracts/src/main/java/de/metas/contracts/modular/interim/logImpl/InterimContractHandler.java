@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interim.logImpl;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
@@ -77,7 +78,7 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 	@Override
 	public boolean applies(final @NonNull I_C_Flatrate_Term flatrateTermRecord)
 	{
-		return LogEntryContractType.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType();
+		return TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType();
 	}
 
 	@Override
