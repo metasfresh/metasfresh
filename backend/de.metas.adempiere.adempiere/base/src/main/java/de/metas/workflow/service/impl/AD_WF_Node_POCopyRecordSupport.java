@@ -29,6 +29,8 @@ import org.compiere.model.GridField;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.PO;
+import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
 import org.eevolution.model.I_PP_WF_Node_Product;
 
 import java.util.List;
@@ -49,6 +51,24 @@ public class AD_WF_Node_POCopyRecordSupport extends GeneralCopyRecordSupport
 		return I_AD_Workflow.COLUMNNAME_Value.equals(gridField.getColumnName())
 				? String.valueOf(gridField.getValue())
 				: super.getValueToCopy(gridField);
+	}
+
+	@Override
+	public void updateSpecialColumnsName(final PO to)
+	{
+		final POInfo poInfo = to.getPOInfo();
+		if (poInfo.hasColumnName(COLUMNNAME_Name) && DisplayType.isText(poInfo.getColumnDisplayType(COLUMNNAME_Name)))
+		{
+			to.set_CustomColumn(COLUMNNAME_Name, to.get_Value(COLUMNNAME_Name));
+		}
+		else if (poInfo.hasColumnName(COLUMNNAME_Value))
+		{
+			to.set_CustomColumn(COLUMNNAME_Value, to.get_Value(COLUMNNAME_Value));
+		}
+		else
+		{
+			super.updateSpecialColumnsName(to);
+		}
 	}
 
 	@Override
