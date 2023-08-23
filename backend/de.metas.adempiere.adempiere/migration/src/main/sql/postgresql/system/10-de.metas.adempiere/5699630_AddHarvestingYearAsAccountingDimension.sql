@@ -947,3 +947,19 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE Fact_Acct ADD CONSTRAINT HarvestingYear_FactAcct FOREIGN KEY (Harvesting_Year_ID) REFERENCES public.C_Year DEFERRABLE INITIALLY DEFERRED
 ;
 
+
+-- Column: Fact_Acct.Harvesting_Year_ID
+-- 2023-08-23T11:40:08.089619700Z
+UPDATE AD_Column SET IsAutoApplyValidationRule='N',Updated=TO_TIMESTAMP('2023-08-23 14:40:08.088','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587313
+;
+
+-- Column: C_InvoiceLine.Harvesting_Year_ID
+-- 2023-08-23T12:00:10.417481800Z
+UPDATE AD_Column SET IsAutoApplyValidationRule='N',Updated=TO_TIMESTAMP('2023-08-23 15:00:10.417','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587309
+;
+
+-- Column: M_InOutLine.Harvesting_Year_ID
+-- 2023-08-23T12:01:21.946977900Z
+UPDATE AD_Column SET IsAutoApplyValidationRule='N',Updated=TO_TIMESTAMP('2023-08-23 15:01:21.946','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587311
+;
+

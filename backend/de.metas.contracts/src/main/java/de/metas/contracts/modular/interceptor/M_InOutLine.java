@@ -27,10 +27,17 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -42,7 +49,8 @@ public class M_InOutLine
 	private final ModularContractLogService modularContractLogService;
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
-	public M_InOutLine(@NonNull final ModularContractLogService modularContractLogService, @NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
+	public M_InOutLine(@NonNull final ModularContractLogService modularContractLogService,
+			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
 		this.modularContractLogService = modularContractLogService;
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
@@ -55,7 +63,7 @@ public class M_InOutLine
 		modularContractLogService.throwErrorIfLogExistsForDocumentLine(inOutLineRecordRef);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			de.metas.inout.model.I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID })
 	public void propagateHarvestingDetails(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
