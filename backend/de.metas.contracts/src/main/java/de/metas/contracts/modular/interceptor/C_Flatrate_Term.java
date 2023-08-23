@@ -38,6 +38,8 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.impl.SysConfigBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
@@ -57,6 +59,9 @@ public class C_Flatrate_Term
 	private final ModularContractService modularContractService;
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(SysConfigBL.class);
+
+	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
 
 	public C_Flatrate_Term(@NonNull final BPartnerInterimContractService bPartnerInterimContractService, final ModularContractService modularContractService)
 	{
@@ -65,8 +70,13 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createInterimInvoiceIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public void createInterimContractIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
+		if (sysConfigBL.getBooleanValue(SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE, true))
+		{
+			return;
+		}
+
 		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType()
 				|| !bPartnerInterimContractService.isBpartnerInterimInvoice(flatrateTermRecord))
 		{
