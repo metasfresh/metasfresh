@@ -23,7 +23,9 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=716027
 -- Field: Sales Invoice Candidates_OLD(540092,de.metas.invoicecandidate) -> Invoice Candidates(540279,de.metas.invoicecandidate) -> Invoicable quantity in price UOM
 -- Column: C_Invoice_Candidate.QtyToInvoiceInPriceUOM
 -- 2023-05-29T09:10:27.377Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,568528,716028,0,540279,TO_TIMESTAMP('2023-05-29 12:10:26','YYYY-MM-DD HH24:MI:SS'),100,'',10,'de.metas.invoicecandidate','Y','Y','N','N','N','N','N','Invoicable quantity in price UOM',TO_TIMESTAMP('2023-05-29 12:10:26','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) 
+SELECT 0,568528,716028,0,540279,TO_TIMESTAMP('2023-05-29 12:10:26','YYYY-MM-DD HH24:MI:SS'),100,'',10,'de.metas.invoicecandidate','Y','Y','N','N','N','N','N','Invoicable quantity in price UOM',TO_TIMESTAMP('2023-05-29 12:10:26','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from AD_Field where AD_Field_ID=716028)
 ;
 
 -- 2023-05-29T09:10:27.420Z
