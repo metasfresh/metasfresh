@@ -60,6 +60,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 
@@ -281,9 +282,14 @@ public class EverhourImporterService implements TimeBookingsImporter
 		}
 	}
 
-	private void acquireLock()
+	private void acquireLock() throws InterruptedException
 	{
-		final boolean lockAcquired = lock.tryLock();
+		if (lock.isHeldByCurrentThread())
+		{
+			throw new AdempiereException("current thread is already running the process! failing!");
+		}
+
+		final boolean lockAcquired = lock.tryLock(1, TimeUnit.MILLISECONDS);
 
 		if (!lockAcquired)
 		{
