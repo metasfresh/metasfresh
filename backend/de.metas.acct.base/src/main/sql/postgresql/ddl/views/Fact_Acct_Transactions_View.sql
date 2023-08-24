@@ -68,7 +68,9 @@ CREATE VIEW Fact_Acct_Transactions_View
              balance,
              m_costelement_id,
              c_bpartner2_id,
-             c_bpartner_location_id
+             c_bpartner_location_id,
+             c_harvesting_calendar_id,
+             harvesting_year_id
                 )
 AS
 SELECT fact.fact_acct_id,
@@ -137,6 +139,8 @@ SELECT fact.fact_acct_id,
        acctbalance(fact.account_id, fact.amtacctdr, fact.amtacctcr) AS balance,
        fact.m_costelement_id,
        fact.c_bpartner2_id,
-       fact.c_bpartner_location_id
+       fact.c_bpartner_location_id,
+       fact.c_harvesting_calendar_id,
+       fact.harvesting_year_id
 FROM fact_acct fact
 ;
