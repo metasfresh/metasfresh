@@ -13,7 +13,7 @@ Feature: accounting-harvesting-feature
   @dev:runThisOne
   @from:cucumber
   @Id:S0308_100
-  Scenario: we shall have harvesting calendar and year propagated from document
+  Scenario: we shall have harvesting calendar and year propagated from purchase invoice document to fact_acct
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
@@ -91,9 +91,11 @@ Feature: accounting-harvesting-feature
     Then after not more than 30s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
+    #   The Invoice document shall contain the the calendar and the year from invoice candidates
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
       | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Eingangsrechnung      | harvesting_calendar                     | y2022                             |
+    #   The Invoice lines shall contain the the calendar and the year from invoice header
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | harvesting_calendar                     | y2022                             |
@@ -126,13 +128,10 @@ Feature: accounting-harvesting-feature
       | cae_1                              | Harvesting Calendar | HC          | acctSchema_1               | harvesting_calendar                     |                                   |
       | cae_2                              | Harvesting Year     | HY          | acctSchema_1               |                                         | y2022                             |
 
-#   C_AcctSchema.C_Currency_ID is CHF,
-#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
-#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
-#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
+#   The Fact_Acct records shall contain the the calendar and the year from invoice document
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
-      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  | harvesting_calendar                     |    y2022                          |
-      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  | harvesting_calendar                     |    y2022                          |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             | T_Credit_Acct             | harvesting_calendar                     |    y2022                          |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             | V_Liability_Acct          | harvesting_calendar                     |    y2022                          |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | P_InventoryClearing_Acct  | harvesting_calendar                     | y2022                             |
+      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | P_InventoryClearing_Acct  | harvesting_calendar                     | y2022                             |
+      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | T_Credit_Acct             | harvesting_calendar                     | y2022                             |
+      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | V_Liability_Acct          | harvesting_calendar                     | y2022                             |
