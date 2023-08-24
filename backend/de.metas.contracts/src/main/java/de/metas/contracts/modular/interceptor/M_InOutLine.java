@@ -73,7 +73,7 @@ public class M_InOutLine
 		modularContractLogService.throwErrorIfLogExistsForDocumentLine(inOutLineRecordRef);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			de.metas.inout.model.I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID })
 	public void propagateHarvestingDetails(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
