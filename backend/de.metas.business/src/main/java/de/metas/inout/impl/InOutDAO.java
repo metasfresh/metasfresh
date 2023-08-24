@@ -582,4 +582,22 @@ public class InOutDAO implements IInOutDAO
 		record.setFEC_CurrencyRate(currencyRate);
 	}
 
+	@Override
+	public Optional<OrderId> getOrderIdForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		final I_M_InOutLine inOutLine = load(inoutLineId, I_M_InOutLine.class);
+
+		if (inOutLine == null)
+		{
+			return Optional.empty();
+		}
+
+		if (inOutLine.getC_Order_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(OrderId.ofRepoIdOrNull(inOutLine.getC_Order_ID()));
+	}
+
 }
