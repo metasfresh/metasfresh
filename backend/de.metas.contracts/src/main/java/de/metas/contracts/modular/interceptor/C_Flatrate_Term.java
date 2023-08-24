@@ -71,7 +71,7 @@ public class C_Flatrate_Term
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createInterimContractIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
-		if (sysConfigBL.getBooleanValue(SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE, true))
+		if (!sysConfigBL.getBooleanValue(SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE, true))
 		{
 			return;
 		}

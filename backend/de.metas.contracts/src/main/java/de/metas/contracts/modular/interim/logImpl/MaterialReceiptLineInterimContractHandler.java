@@ -101,15 +101,14 @@ public class MaterialReceiptLineInterimContractHandler implements IModularContra
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		if (inOutRecord.isSOTrx() || inOutLineRecord.getC_Flatrate_Term_ID() <= 0 || inOutLineRecord.getMovementQty().signum() < 0)
+		final FlatrateTermId modularFlatrateTermId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
+		if (inOutRecord.isSOTrx() || modularFlatrateTermId == null || inOutLineRecord.getMovementQty().signum() < 0)
 		{
 			return Stream.empty();
 		}
 
-		final FlatrateTermId modularFlatrateTermId = FlatrateTermId.ofRepoId(inOutLineRecord.getC_Flatrate_Term_ID());
-
 		Check.assumeNotNull(inOutRecord.getMovementDate(), "MovementDate shouldn't be null");
-		return Stream.of(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, TimeUtil.asInstant(inOutRecord.getMovementDate())));
+		return Stream.ofNullable(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, TimeUtil.asInstant(inOutRecord.getMovementDate())));
 	}
 
 	@Override

@@ -144,7 +144,7 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
-		return Stream.of(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
+		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(flatrateTermRecord.getC_Flatrate_Term_ID()));
 	}
 
 	@Override

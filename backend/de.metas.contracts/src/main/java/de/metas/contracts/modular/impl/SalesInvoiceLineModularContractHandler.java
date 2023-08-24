@@ -215,6 +215,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 				ModularContractLogQuery.builder()
 						.flatrateTermId(flatrateTermId)
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))
+						.contractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build());
 
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());

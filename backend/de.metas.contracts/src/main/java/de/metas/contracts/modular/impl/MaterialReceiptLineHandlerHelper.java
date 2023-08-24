@@ -87,25 +87,28 @@ public class MaterialReceiptLineHandlerHelper
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
 
-		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
-				.stream()
-				.filter(config -> config.isMatchingClassName(MaterialReceiptLineInterimContractHandler.class.getName()))
-				.map(ModuleConfig::getModularContractType)
-				.map(ModularContractType::getId)
-				.findFirst();
-
 		final String description;
+		final String className;
 		final boolean isBillable;
 		if (logEntryContractType.isInterimContractType())
 		{
 			description = "ReceiptLine for Interim Contract"; //TODO ADMsg
 			isBillable = inOutRecord.isInterimInvoiceable();
+			className = MaterialReceiptLineInterimContractHandler.class.getName();
 		}
 		else
 		{
 			description = "Receipt completed"; //TODO ADMsg
 			isBillable = true;
+			className = MaterialReceiptLineModularContractHandler.class.getName();
 		}
+
+		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
+				.stream()
+				.filter(config -> config.isMatchingClassName(className))
+				.map(ModuleConfig::getModularContractType)
+				.map(ModularContractType::getId)
+				.findFirst();
 
 		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
 				.contractId(flatrateTermId)
