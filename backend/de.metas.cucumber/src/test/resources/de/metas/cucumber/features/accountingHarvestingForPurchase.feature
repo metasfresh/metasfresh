@@ -13,7 +13,7 @@ Feature: accounting-harvesting-feature
   @dev:runThisOne
   @from:cucumber
   @Id:S0308_100
-  Scenario: we can have harvesting calendar and year propagated from document
+  Scenario: we shall have harvesting calendar and year propagated from document
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
@@ -21,6 +21,12 @@ Feature: accounting-harvesting-feature
       | Identifier | Name                       |
       | p_1        | purchaseProduct_06082023_1 |
       | p_2        | purchaseProduct_06082023_2 |
+    And load C_Calendar from metasfresh:
+      | C_Calendar_ID.Identifier | Name                  |
+      | harvesting_calendar      | Buchführungs-Kalender |
+    And load C_Year from metasfresh:
+      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
+      | y2022                | 2022       | harvesting_calendar      |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name        |
       | huPackingLU           | huPackingLU |
@@ -56,8 +62,8 @@ Feature: accounting-harvesting-feature
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endvendor_1              | Y                   | Y                   |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier |
-      | o_1        | N       | endvendor_1              | 2021-04-16  | 1000012              | po_ref_mock     | POO             | ps_1                              |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | 1000012              | po_ref_mock     | POO             | ps_1                              | harvesting_calendar                     | y2022                             |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -76,9 +82,9 @@ Feature: accounting-harvesting-feature
       | processedTopHU_1   | receiptSchedule_06082023_1      | inOut_210320222_1     |
       | processedTopHU_2   | receiptSchedule_06082023_2      | inOut_210320222_2     |
     And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoice_candidate_1               | ol_1                      | 10           |
-      | invoice_candidate_2               | ol_2                      | 10           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      | 10           | harvesting_calendar                     | y2022                             |
+      | invoice_candidate_2               | ol_2                      | 10           | harvesting_calendar                     | y2022                             |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier       |
       | invoice_candidate_1,invoice_candidate_2 |
@@ -86,12 +92,12 @@ Feature: accounting-harvesting-feature
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
-      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Eingangsrechnung      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock     | 1000002     | true      | CO        | Eingangsrechnung      | harvesting_calendar                     | y2022                             |
     And validate invoice lines for invoice_1:
-      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
-      | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            |
-      | invoiceLine1_2              | p_2                     | 10          | true      | 8                | 8               | 80             | 0            |
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | harvesting_calendar                     | y2022                             |
+      | invoiceLine1_2              | p_2                     | 10          | true      | 8                | 8               | 80             | 0            | harvesting_calendar                     | y2022                             |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |
@@ -115,113 +121,18 @@ Feature: accounting-harvesting-feature
       | eur                      | 102               |
       | chf                      | 318               |
 
-    And load C_Calendar from metasfresh:
-      | C_Calendar_ID.Identifier | Name                  |
-      | harvesting_calendar      | Buchführungs-Kalender |
-
-    And load C_Year from metasfresh:
-      | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
-      | y2022                | 2022       | harvesting_calendar      |
-
     And metasfresh contains C_AcctSchema_Element:
       | C_AcctSchema_Element_ID.Identifier | Name                | ElementType | C_AcctSchema_ID.Identifier | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
       | cae_1                              | Harvesting Calendar | HC          | acctSchema_1               | harvesting_calendar                     |                                   |
       | cae_2                              | Harvesting Year     | HY          | acctSchema_1               |                                         | y2022                             |
 
-#   Load conversion rates between CHF and EUR (from EUR to CHF) filtering them by both validFrom and validTo dates
-#   When multiple rates are valid at the same time (i.e. matches a date), then they are ordered in a descending order based on validFrom and the rate with the most recent validFrom is used
-    And load C_Conversion_Rate:
-      | C_Conversion_Rate_ID.Identifier | C_Currency_ID.Identifier | C_Currency_ID_To.Identifier | ValidFrom  | ValidTo    |
-      | currency_rate_1                 | eur                      | chf                         | 2015-05-21 | 2155-12-31 |
-      | currency_rate_2                 | eur                      | chf                         | 2019-05-21 | 2056-12-31 |
-
-    And validate C_Conversion_Rate:
-      | C_Conversion_Rate_ID.Identifier | OPT.MultiplyRate | OPT.DivideRate |
-      | currency_rate_1                 | 1.045236         | 0.95672173557  |
-      | currency_rate_2                 | 1.13             | 0.884955752212 |
-
-    And after not more than 30s, M_MatchInv are found:
-      | M_MatchInv_ID.Identifier | M_Product_ID.Identifier | C_Invoice_ID.Identifier | C_InvoiceLine_ID.Identifier |
-      | matchInv_1               | p_1                     | invoice_1               | invoiceLine1_1              |
-      | matchInv_2               | p_2                     | invoice_1               | invoiceLine1_2              |
-
 #   C_AcctSchema.C_Currency_ID is CHF,
 #   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
 #   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
 #   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName |
-      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  |
-      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             | T_Credit_Acct             |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             | V_Liability_Acct          |
-
-    And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName   |
-      | factAcct_5              | elementValue_6 | 113 | 0   | chf                      | 1                | P_InvoicePriceVariance_Acct |
-      | factAcct_6              | elementValue_5 | 0   | 100 | eur                      | 1.13             | P_InventoryClearing_Acct    |
-      | factAcct_7              | elementValue_4 | 0   | 0   | chf                      | 0                | NotInvoicedReceipts_Acct    |
-
-    And after not more than 30s, the matchInvoice document with identifier matchInv_2 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName   |
-      | factAcct_8              | elementValue_6 | 90.40 | 0  | chf                      | 1                | P_InvoicePriceVariance_Acct |
-      | factAcct_9              | elementValue_5 | 0     | 80 | eur                      | 1.13             | P_InventoryClearing_Acct    |
-      | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 0                | NotInvoicedReceipts_Acct    |
-
-    And metasfresh contains C_Invoice_Acct:
-      | C_Invoice_Acct_ID.Identifier | C_Invoice_ID.Identifier | C_AcctSchema_ID.Identifier | C_ElementValue_ID.Identifier | OPT.C_InvoiceLine_ID.Identifier |
-      | invoiceAcct_1                | invoice_1               | acctSchema_1               | elementValue_1               | invoiceLine1_1                  |
-
-    And fact account repost invoice document with identifier invoice_1:
-      | IsEnforcePosting |
-      | false            |
-
-    And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName |
-      | factAcct_1              | elementValue_1 | 100   | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  |
-      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             | T_Credit_Acct             |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             | V_Liability_Acct          |
-
-    And fact account repost matchInvoice document with identifier matchInv_1:
-      | IsEnforcePosting |
-      | false            |
-
-#   C_AcctSchema.C_Currency_ID is CHF,
-#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
-#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
-#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
-    And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName   |
-      | factAcct_5              | elementValue_1 | 113 | 0   | chf                      | 1                | P_InvoicePriceVariance_Acct |
-      | factAcct_6              | elementValue_1 | 0   | 100 | eur                      | 1.13             | P_InventoryClearing_Acct    |
-      | factAcct_7              | elementValue_4 | 0   | 0   | chf                      | 0                | NotInvoicedReceipts_Acct    |
-
-    And fact account repost matchInvoice document with identifier matchInv_2:
-      | IsEnforcePosting |
-      | false            |
-
-#   C_AcctSchema.C_Currency_ID is CHF,
-#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
-#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
-#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
-    And after not more than 30s, the matchInvoice document with identifier matchInv_2 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName   |
-      | factAcct_8              | elementValue_6 | 90.40 | 0  | chf                      | 1                | P_InvoicePriceVariance_Acct |
-      | factAcct_9              | elementValue_5 | 0     | 80 | eur                      | 1.13             | P_InventoryClearing_Acct    |
-      | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 0                | NotInvoicedReceipts_Acct    |
-
-    And update C_Invoice_Acct:
-      | C_Invoice_Acct_ID.Identifier | OPT.IsActive |
-      | invoiceAcct_1                | false        |
-
-    And fact account repost invoice document with identifier invoice_1:
-      | IsEnforcePosting |
-      | false            |
-
-    And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName |
-      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  |
-      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             | T_Credit_Acct             |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             | V_Liability_Acct          |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  | harvesting_calendar                     |    y2022                          |
+      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             | P_InventoryClearing_Acct  | harvesting_calendar                     |    y2022                          |
+      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             | T_Credit_Acct             | harvesting_calendar                     |    y2022                          |
+      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             | V_Liability_Acct          | harvesting_calendar                     |    y2022                          |

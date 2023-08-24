@@ -4,6 +4,8 @@ import de.metas.acct.api.IPostingRequestBuilder;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.cucumber.stepdefs.C_Currency_StepDefData;
 import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -11,6 +13,8 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableType;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.matchinv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -33,9 +37,11 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_SectionCode;
@@ -68,6 +74,8 @@ public class Fact_Acct_StepDef
 	private final Fact_Acct_StepDefData factAcctTable;
 	private final C_ElementValue_StepDefData elementValueTable;
 	private final C_Currency_StepDefData currencyTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
 
 	public Fact_Acct_StepDef(
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
@@ -77,7 +85,9 @@ public class Fact_Acct_StepDef
 			@NonNull final M_MatchInv_StepDefData matchInvTable,
 			@NonNull final Fact_Acct_StepDefData factAcctTable,
 			@NonNull final C_ElementValue_StepDefData elementValueTable,
-			@NonNull final C_Currency_StepDefData currencyTable)
+			@NonNull final C_Currency_StepDefData currencyTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable)
 	{
 		this.sectionCodeTable = sectionCodeTable;
 		this.invoiceTable = invoiceTable;
@@ -87,6 +97,8 @@ public class Fact_Acct_StepDef
 		this.factAcctTable = factAcctTable;
 		this.elementValueTable = elementValueTable;
 		this.currencyTable = currencyTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
 	}
 
 	@And("^after not more than (.*)s, Fact_Acct are found$")
@@ -267,6 +279,14 @@ public class Fact_Acct_StepDef
 		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_AccountConceptualName))
 				.ifPresent(factAcctQueryBuilder::accountConceptualName);
 
+		Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID))
+				.ifPresent(calendarIdentifier -> factAcctQueryBuilder.calendarId(CalendarId.ofRepoId(calendarIdentifier)));
+
+		Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID))
+				.ifPresent(yearIdentifier -> factAcctQueryBuilder.yearId(YearId.ofRepoId(yearIdentifier)));
+
+
+
 		return factAcctQueryBuilder
 				.build();
 	}
@@ -302,6 +322,8 @@ public class Fact_Acct_StepDef
 						.append(I_Fact_Acct.COLUMNNAME_C_Currency_ID).append(" : ").append(factAcctRecord.getC_Currency_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_CurrencyRate).append(" : ").append(factAcctRecord.getCurrencyRate()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(factAcctRecord.getAccountConceptualName()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID).append(" : ").append(factAcctRecord.getC_Harvesting_Calendar_ID()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID).append(" : ").append(factAcctRecord.getHarvesting_Year_ID()).append(" ; ")
 						.append("\n"));
 
 		return "see current context: \n" + message;
@@ -323,6 +345,12 @@ public class Fact_Acct_StepDef
 
 		Optional.ofNullable(factAcctQuery.getAccountConceptualName())
 				.ifPresent(accountConceptualName -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, accountConceptualName));
+
+		Optional.ofNullable(factAcctQuery.getCalendarId())
+				.ifPresent(calendarId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID, calendarId));
+
+		Optional.ofNullable(factAcctQuery.getYearId())
+				.ifPresent(yearId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID, yearId));
 
 		final I_Fact_Acct factAcctRecord = queryBuilder
 				.create()
@@ -379,6 +407,10 @@ public class Fact_Acct_StepDef
 		
 		@Nullable String accountConceptualName;
 
+		@Nullable CalendarId calendarId;
+
+		@Nullable YearId yearId;
+
 		public int getRecord_ID()
 		{
 			return tableRecordReference.getRecord_ID();
@@ -390,3 +422,4 @@ public class Fact_Acct_StepDef
 		}
 	}
 }
+

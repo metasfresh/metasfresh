@@ -30,6 +30,8 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -44,11 +46,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
@@ -85,6 +89,8 @@ public class C_InvoiceLine_StepDef
 	private final C_Tax_StepDefData taxTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Activity_StepDefData activityTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -93,7 +99,9 @@ public class C_InvoiceLine_StepDef
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
-			@NonNull final C_Activity_StepDefData activityTable)
+			@NonNull final C_Activity_StepDefData activityTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
@@ -102,6 +110,8 @@ public class C_InvoiceLine_StepDef
 		this.taxCategoryTable = taxCategoryTable;
 		this.projectTable = projectTable;
 		this.activityTable = activityTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
 	}
 
 	@And("metasfresh contains C_InvoiceLines")
@@ -347,6 +357,28 @@ public class C_InvoiceLine_StepDef
 		if (Check.isNotBlank(description))
 		{
 			softly.assertThat(invoiceLine.getDescription()).isEqualTo(description);
+		}
+
+		final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (de.metas.common.util.Check.isNotBlank(harvestingCalendarIdentifier))
+		{
+			final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
+			softly.assertThat(invoiceLine.getC_Harvesting_Calendar_ID()).as("C_Harvesting_Calendar_ID").isEqualTo(harvestingCalendarRecord.getC_Calendar_ID());
+		}
+
+		final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (de.metas.common.util.Check.isNotBlank(harvestingYearIdentifier))
+		{
+			final String harvestingYearIdentifierValue = DataTableUtil.nullToken2Null(harvestingYearIdentifier);
+			if (harvestingYearIdentifierValue == null)
+			{
+				softly.assertThat(invoiceLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isNull();
+			}
+			else
+			{
+				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
+				softly.assertThat(invoiceLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
+			}
 		}
 
 		softly.assertAll();
