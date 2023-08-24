@@ -120,6 +120,7 @@ import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -149,9 +150,11 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -160,6 +163,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -218,6 +222,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	@Override
+	@Nullable
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
@@ -1449,6 +1454,7 @@ public class FlatrateBL implements IFlatrateBL
 		term.setEndDate(endDate);
 	}
 
+	@Nullable
 	private Timestamp computeEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
 		final Timestamp firstDayOfTerm = term.getStartDate();
@@ -1499,7 +1505,7 @@ public class FlatrateBL implements IFlatrateBL
 		// but rely on what was set
 		else if (transition.getTermDuration() == 0)
 		{
-			return null;
+			return term.getEndDate();
 		}
 		else
 		{
@@ -1728,7 +1734,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
-		newTerm.setEndDate(startDate); // will be updated later
+		newTerm.setEndDate(endDate != null ? endDate : startDate);
 
 		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 				billPartnerLocation.getC_BPartner_Location_ID(),
@@ -1773,25 +1779,17 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		newTerm.setIsSimulation(request.isSimulation());
 
+		if (productAndCategoryId != null)
+		{
+			newTerm.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
+		}
+
 		save(newTerm);
 
 		if (request.isCompleteIt())
 		{
 			complete(newTerm);
 		}
-
-		// dev note: these steps must be done after completion
-		if (productAndCategoryId != null)
-		{
-			newTerm.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
-		}
-
-		if (endDate != null)
-		{
-			newTerm.setEndDate(endDate);
-		}
-
-		save(newTerm);
 
 		final CacheInvalidateMultiRequest cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_C_Flatrate_Term.Table_Name);
 
@@ -1845,8 +1843,7 @@ public class FlatrateBL implements IFlatrateBL
 		// Therefore they can overlap without causing us any problems.
 		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(typeConditions)
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_Procurement.equals(typeConditions)
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions)
-				|| X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract.equals(typeConditions);
+				|| X_C_Flatrate_Term.TYPE_CONDITIONS_CallOrder.equals(typeConditions);
 		return allowedToOverlapWithOtherTerms;
 	}
 
@@ -1884,6 +1881,17 @@ public class FlatrateBL implements IFlatrateBL
 			// C_Flatrate_Term has access-level=Org, so there is no term with Org=*
 			// Also note that when finding a term for an invoice-candidate, that IC's org is used as a matching criterion
 			if (term.getAD_Org_ID() != newTerm.getAD_Org_ID())
+			{
+				continue;
+			}
+
+			if (!Objects.equals(term.getType_Conditions(), newTerm.getType_Conditions()))
+			{
+				continue;
+			}
+
+			if (TypeConditions.ofCode(newTerm.getType_Conditions()).isModularOrInterim()
+					&& term.getC_Flatrate_Conditions_ID() != newTerm.getC_Flatrate_Conditions_ID())
 			{
 				continue;
 			}
@@ -2029,9 +2037,34 @@ public class FlatrateBL implements IFlatrateBL
 		final Timestamp endDate1 = term1.getEndDate();
 		final Timestamp endDate2 = term2.getEndDate();
 
-		final boolean overlaps = TimeUtil.inRange(startDate1, endDate1, startDate2, endDate2);
+		final boolean overlaps = isOverlapping(startDate1, endDate1, startDate2, endDate2);
 
 		return overlaps;
+	}
+
+	private boolean isOverlapping(
+			@NonNull final Timestamp start_1,
+			@NonNull final Timestamp end_1,
+			@NonNull final Timestamp start_2,
+			@NonNull final Timestamp end_2)
+	{
+		if (end_1.before(start_1))
+		{
+			throw new UnsupportedOperationException("TimeUtil.inRange End_1=" + end_1 + " before Start_1=" + start_1);
+		}
+		if (end_2.before(start_2))
+		{
+			throw new UnsupportedOperationException("TimeUtil.inRange End_2=" + end_2 + " before Start_2=" + start_2);
+		}
+		if (TimeUtil.isBetween(start_1, start_2, end_2))
+		{
+			return true;
+		}
+		if (TimeUtil.isBetween(end_1, start_2, end_2))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -2463,4 +2496,18 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	private static FlatrateTermId extractId(final I_C_Flatrate_Term record) {return FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID());}
+
+	@Nullable
+	@Override
+	public FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull final FlatrateTermId modularFlatrateTermId, @NonNull final Instant date)
+	{
+		return FlatrateTermId.ofRepoIdOrNull(queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+													 .addOnlyActiveRecordsFilter()
+													 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
+													 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE)
+													 .addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, date)
+													 .addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
+													 .create()
+													 .firstIdOnly());
+	}
 }

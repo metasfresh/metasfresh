@@ -89,8 +89,13 @@ public enum TypeConditions implements ReferenceListAwareEnum
 		return MODULAR_CONTRACT.equals(this);
 	}
 
+	public boolean isInterimContractType()
+	{
+		return INTERIM_INVOICE.equals(this);
+	}
+
 	public boolean isModularOrInterim()
 	{
-		return isModularContractType() || INTERIM_INVOICE.equals(this);
+		return isModularContractType() || isInterimContractType();
 	}
 }

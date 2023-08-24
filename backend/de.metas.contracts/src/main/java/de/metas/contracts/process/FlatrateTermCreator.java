@@ -82,7 +82,7 @@ public class FlatrateTermCreator
 	boolean isCompleteDocument;
 
 	/**
-	 * create terms for all the BPartners iterated from the subclass, each of them in its own transaction
+	 * create terms for all the BPartners iterated from the subclass
 	 */
 	public ImmutableList<I_C_Flatrate_Term> createTermsForBPartners()
 	{
@@ -92,9 +92,8 @@ public class FlatrateTermCreator
 
 		for (final I_C_BPartner partner : bPartners)
 		{
-			try (MDCCloseable ignored = TableRecordMDC.putTableRecordReference(partner))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(partner))
 			{
-				// create each term in its own transaction
 				trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 				{
 					@Override
@@ -103,17 +102,6 @@ public class FlatrateTermCreator
 						createTerm(partner, flatrateTermsCollector);
 						Loggables.addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
 						logger.debug("Created contract(s) for {}", partner);
-					}
-
-					// note for future developer: this swallows the user exception so it's no longer shown in webui, but as a "bell notification".
-					// Please consult with mark or torby if we want to swallow or throw.
-					// Please remember that this can be run for 10000 Partners when proposing this idea.
-					@Override
-					public boolean doCatch(final Throwable ex)
-					{
-						Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
-						logger.debug("Failed creating contract for {}", partner, ex);
-						return true; // rollback
 					}
 				});
 			}

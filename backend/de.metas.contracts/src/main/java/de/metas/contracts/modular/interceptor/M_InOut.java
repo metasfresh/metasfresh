@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -100,8 +101,10 @@ public class M_InOut
 			@NonNull final I_M_InOut inOutRecord,
 			@NonNull final ModularContractService.ModelAction modelAction)
 	{
-		inOutDAO.retrieveAllLines(inOutRecord)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction));
+		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveAllLines(inOutRecord);
+
+		inOutLines.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
+		inOutLines.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.INTERIM));
 	}
 }
 

@@ -22,11 +22,15 @@
 
 package de.metas.contracts.modular.log;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.order.OrderLineId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class ModularContractLogService
@@ -53,5 +57,13 @@ public class ModularContractLogService
 			final boolean isBillable)
 	{
 		modularContractLogDAO.changeBillableStatus(query, isBillable);
+	}
+
+	@NonNull
+	public Optional<ModularContractLogEntry> getLastModularContractLog(
+			@NonNull final FlatrateTermId modularFlatrateTermId,
+			@NonNull final OrderLineId orderLineId)
+	{
+		return modularContractLogDAO.getLastModularContractLog(modularFlatrateTermId, orderLineId);
 	}
 }
