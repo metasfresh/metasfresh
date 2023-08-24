@@ -228,6 +228,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 						.referencedModel(invoiceLineRef)
 						.flatrateTermId(flatrateTermId)
 						.description(description)
+						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build()
 		);
 	}
