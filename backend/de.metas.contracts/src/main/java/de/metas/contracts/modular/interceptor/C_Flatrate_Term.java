@@ -125,8 +125,8 @@ public class C_Flatrate_Term
 		final Timestamp oldEndDate = InterfaceWrapperHelper.createOld(flatrateTermRecord, I_C_Flatrate_Term.class).getEndDate();
 		queryBL.createQueryBuilder(I_M_InOut.class)
 				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.GREATER, oldEndDate)
-				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, flatrateTermRecord.getEndDate())
+				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, oldEndDate)
+				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.GREATER, flatrateTermRecord.getEndDate())
 				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getModular_Flatrate_Term_ID())

@@ -34,7 +34,6 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,6 +42,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -101,8 +101,7 @@ public class MaterialReceiptLineInterimContractHandler implements IModularContra
 			return Stream.empty();
 		}
 
-		Check.assumeNotNull(inOutRecord.getMovementDate(), "MovementDate shouldn't be null");
-		return Stream.ofNullable(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, TimeUtil.asInstant(inOutRecord.getMovementDate())));
+		return Stream.ofNullable(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, Objects.requireNonNull(TimeUtil.asInstant(inOutRecord.getMovementDate()))));
 	}
 
 	@Override

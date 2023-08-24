@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -33,9 +34,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -100,25 +99,20 @@ public class MaterialReceiptLineHandlerHelper
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity)
 				.translate(Language.getBaseAD_Language());
 
-		final String className;
+		final Class<? extends IModularContractTypeHandler<?>> handler;
 		final boolean isBillable;
 		if (logEntryContractType.isInterimContractType())
 		{
 			isBillable = inOutRecord.isInterimInvoiceable();
-			className = MaterialReceiptLineInterimContractHandler.class.getName();
+			handler = MaterialReceiptLineInterimContractHandler.class;
 		}
 		else
 		{
 			isBillable = true;
-			className = MaterialReceiptLineModularContractHandler.class.getName();
+			handler = MaterialReceiptLineModularContractHandler.class;
 		}
 
-		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
-				.stream()
-				.filter(config -> config.isMatchingClassName(className))
-				.map(ModuleConfig::getModularContractType)
-				.map(ModularContractType::getId)
-				.findFirst();
+		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModularContractTypeId(handler);
 
 		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
 				.contractId(flatrateTermId)

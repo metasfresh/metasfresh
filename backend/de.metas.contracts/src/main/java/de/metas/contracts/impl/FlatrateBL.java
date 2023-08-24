@@ -1451,7 +1451,7 @@ public class FlatrateBL implements IFlatrateBL
 	private void updateEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
 		final Timestamp endDate = computeEndDate(transition, term);
-		term.setEndDate(endDate == null ? term.getEndDate() : endDate);
+		term.setEndDate(endDate);
 	}
 
 	@Nullable
@@ -1505,7 +1505,7 @@ public class FlatrateBL implements IFlatrateBL
 		// but rely on what was set
 		else if (transition.getTermDuration() == 0)
 		{
-			return null;
+			return term.getEndDate();
 		}
 		else
 		{
@@ -2037,9 +2037,34 @@ public class FlatrateBL implements IFlatrateBL
 		final Timestamp endDate1 = term1.getEndDate();
 		final Timestamp endDate2 = term2.getEndDate();
 
-		final boolean overlaps = TimeUtil.inRange(startDate1, endDate1, startDate2, endDate2);
+		final boolean overlaps = isOverlapping(startDate1, endDate1, startDate2, endDate2);
 
 		return overlaps;
+	}
+
+	private boolean isOverlapping(
+			@NonNull final Timestamp start_1,
+			@NonNull final Timestamp end_1,
+			@NonNull final Timestamp start_2,
+			@NonNull final Timestamp end_2)
+	{
+		if (end_1.before(start_1))
+		{
+			throw new UnsupportedOperationException("TimeUtil.inRange End_1=" + end_1 + " before Start_1=" + start_1);
+		}
+		if (end_2.before(start_2))
+		{
+			throw new UnsupportedOperationException("TimeUtil.inRange End_2=" + end_2 + " before Start_2=" + start_2);
+		}
+		if (TimeUtil.isBetween(start_1, start_2, end_2))
+		{
+			return true;
+		}
+		if (TimeUtil.isBetween(end_1, start_2, end_2))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	@Override

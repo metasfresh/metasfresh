@@ -33,7 +33,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -49,7 +49,7 @@ public class ModularFlatrateTermQuery
 	@Nullable
 	CalendarId calendarId;
 	@Nullable
-	Timestamp dateFromLessOrEqual;
+	Instant dateFromLessOrEqual;
 	@Nullable
-	Timestamp dateToGreaterOrEqual;
+	Instant dateToGreaterOrEqual;
 }

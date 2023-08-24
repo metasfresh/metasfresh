@@ -42,6 +42,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -99,8 +100,8 @@ public class C_BPartner_InterimContract_Create extends JavaProcess implements IP
 				.yearId(bPartnerInterimContract.getYearAndCalendarId().yearId())
 				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
-				.dateFromLessOrEqual(p_DateFrom)
-				.dateToGreaterOrEqual(p_DateTo)
+				.dateFromLessOrEqual(TimeUtil.asInstant(p_DateFrom))
+				.dateToGreaterOrEqual(TimeUtil.asInstant(p_DateTo))
 				.build();
 
 		final AtomicBoolean isEmpty = new AtomicBoolean(true);

@@ -322,52 +322,6 @@ public class TimeUtil
 	}    // getDayTime
 
 	/**
-	 * Is the _1 in the Range of _2
-	 *
-	 * <pre>
-	 * 		Time_1         +--x--+
-	 * 		Time_2   +a+      +---b---+   +c+
-	 * </pre>
-	 * <p>
-	 * The function returns true for b and false for a/b.
-	 *
-	 * @param start_1 start (1)
-	 * @param end_1   end (1)
-	 * @param start_2 included start (2)
-	 * @param end_2   included end (2)
-	 * @return true if in range
-	 */
-	static public boolean inRange(
-			@NonNull final Timestamp start_1,
-			@NonNull final Timestamp end_1,
-			@NonNull final Timestamp start_2,
-			@NonNull final Timestamp end_2)
-	{
-		// validity check
-		if (end_1.before(start_1))
-		{
-			throw new UnsupportedOperationException("TimeUtil.inRange End_1=" + end_1 + " before Start_1=" + start_1);
-		}
-		if (end_2.before(start_2))
-		{
-			throw new UnsupportedOperationException("TimeUtil.inRange End_2=" + end_2 + " before Start_2=" + start_2);
-		}
-		if (isBetween(start_1, start_2, end_2))
-		{
-			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-			return true;
-		}
-		// case c
-		if (isBetween(end_1, start_2, end_2))
-		{
-			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-			return true;
-		}
-		// log.debug( "TimeUtil.InRange - Yes", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
-		return false;
-	}    // inRange
-
-	/**
 	 * Is start..end on one of the days ?
 	 *
 	 * @param start       start day

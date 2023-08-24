@@ -36,9 +36,7 @@ import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -118,12 +116,7 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 			return Optional.empty();
 		}
 
-		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
-				.stream()
-				.filter(config -> config.isMatchingClassName(InterimContractHandler.class.getName()))
-				.map(ModuleConfig::getModularContractType)
-				.map(ModularContractType::getId)
-				.findFirst();
+		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModularContractTypeId(InterimContractHandler.class);
 
 		final String productName = productBL.getProductValueAndName(modularContractLogEntry.getProductId());
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, modularContractLogEntry.getQuantity())
