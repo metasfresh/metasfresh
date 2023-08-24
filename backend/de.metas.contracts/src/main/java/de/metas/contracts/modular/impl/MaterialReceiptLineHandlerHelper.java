@@ -30,17 +30,22 @@ import de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimCont
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -63,8 +68,11 @@ public class MaterialReceiptLineHandlerHelper
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final static AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptReverseLogDescription");
+	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptCompleteLogDescription");
 
 	public MaterialReceiptLineHandlerHelper(final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
@@ -87,18 +95,20 @@ public class MaterialReceiptLineHandlerHelper
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
 
-		final String description;
+		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		final String productName = productBL.getProductValueAndName(productId);
+		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity)
+				.translate(Language.getBaseAD_Language());
+
 		final String className;
 		final boolean isBillable;
 		if (logEntryContractType.isInterimContractType())
 		{
-			description = "ReceiptLine for Interim Contract"; //TODO ADMsg
 			isBillable = inOutRecord.isInterimInvoiceable();
 			className = MaterialReceiptLineInterimContractHandler.class.getName();
 		}
 		else
 		{
-			description = "Receipt completed"; //TODO ADMsg
 			isBillable = true;
 			className = MaterialReceiptLineModularContractHandler.class.getName();
 		}
@@ -130,5 +140,23 @@ public class MaterialReceiptLineHandlerHelper
 				.modularContractTypeId(contractTypeId)
 				.isBillable(isBillable)
 				.build());
+	}
+
+	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId, @NonNull final LogEntryContractType logEntryContractType)
+	{
+		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
+		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
+
+		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		final String productName = productBL.getProductValueAndName(productId);
+		final String description = TranslatableStrings.adMessage(MSG_ON_REVERSE_DESCRIPTION, productName, quantity)
+				.translate(Language.getBaseAD_Language());
+
+		return Optional.of(LogEntryReverseRequest.builder()
+								   .referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
+								   .flatrateTermId(flatrateTermId)
+								   .description(description)
+								   .logEntryContractType(logEntryContractType)
+								   .build());
 	}
 }

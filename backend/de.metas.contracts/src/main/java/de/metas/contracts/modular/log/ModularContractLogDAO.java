@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -64,6 +65,8 @@ public class ModularContractLogDAO
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final static AdMessageKey ERR_MSG_ON_REVERSE_PROCESSED = AdMessageKey.of("de.metas.contracts.modular.reverseNotAllowedIfProcessed");
 
 	public ModularContractLogEntry getById(@NonNull final ModularContractLogEntryId id)
 	{
@@ -153,7 +156,7 @@ public class ModularContractLogDAO
 
 		if (oldLog.isProcessed())
 		{
-			throw new AdempiereException("Already processed modular contract logs can't be reversed"); //TODO ADMsg
+			throw new AdempiereException(ERR_MSG_ON_REVERSE_PROCESSED, oldLog);
 		}
 
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);

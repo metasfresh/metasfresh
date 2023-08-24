@@ -166,7 +166,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 															   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 															   orgDAO::getTimeZone))
 				.year(modularContractSettings.getYearAndCalendarId().yearId())
-				.description(null) //TODO ADMsg
+				.description(null)
 				.modularContractTypeId(contractTypeId)
 				.build());
 	}
@@ -179,7 +179,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		return Optional.of(LogEntryReverseRequest.builder()
 								   .referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, model.getC_OrderLine_ID()))
 								   .flatrateTermId(flatrateTermId)
-								   .description(null) //TODO ADMsg
+								   .description(null)
 								   .logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 								   .build());
 	}

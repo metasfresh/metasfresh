@@ -25,7 +25,6 @@ package de.metas.contracts.modular.log;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderLineId;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -61,21 +60,10 @@ public class ModularContractLogService
 	}
 
 	@NonNull
-	public ModularContractLogEntry getLastModularContractLog(
+	public Optional<ModularContractLogEntry> getLastModularContractLog(
 			@NonNull final FlatrateTermId modularFlatrateTermId,
 			@NonNull final OrderLineId orderLineId)
 	{
-		final Optional<ModularContractLogEntry> modularContractLogEntryOptional = modularContractLogDAO.getLastModularContractLog(modularFlatrateTermId, orderLineId);
-		if (modularContractLogEntryOptional.isEmpty())
-		{
-			throw new AdempiereException("No Modular Contract Log found for modular Contract"); //TODO ADMsg
-		}
-
-		Check.assumeNotNull(modularContractLogEntryOptional.get().getQuantity(), "Qty shouldn't be null");
-		if (modularContractLogEntryOptional.get().getQuantity().signum() < 0)
-		{
-			throw new AdempiereException("Last Modular Contract Log found for modular Contract has negative Qty"); //TODO ADMsg
-		}
-		return modularContractLogEntryOptional.get();
+		return modularContractLogDAO.getLastModularContractLog(modularFlatrateTermId, orderLineId);
 	}
 }

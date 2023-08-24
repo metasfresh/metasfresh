@@ -38,7 +38,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
@@ -89,12 +88,7 @@ public class MaterialReceiptLineInterimContractHandler implements IModularContra
 	@Override
 	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
 	{
-		return Optional.of(LogEntryReverseRequest.builder()
-								   .referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-								   .flatrateTermId(flatrateTermId)
-								   .description("Receipt reversed") //TODO AdMsg
-								   .logEntryContractType(LogEntryContractType.INTERIM)
-								   .build());
+		return materialReceiptLineHandlerHelper.createLogEntryReverseRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.INTERIM);
 	}
 
 	@Override
