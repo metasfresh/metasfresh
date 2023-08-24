@@ -43,8 +43,8 @@ Feature: workflow tests
       | clonedWorkflow_1          | testName_20220818:13:30:13 | M            | testDescription | testHelp | 1               | D                | 0           | 2022-08-18    | 2022-08-19  | 0            | 0                 | 2            | 1        | 1               | false         |
 
     And after not more than 10s, AD_WF_Node are found:
-      | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Duration | OPT.Description |
-      | clonedWFNode_1           | clonedWorkflow_1          | testResource                 | 4        | testDescription |
+      | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Duration | OPT.Description | OPT.Name | OPT.Value |
+      | clonedWFNode_1           | clonedWorkflow_1          | testResource                 | 4        | testDescription | testName | testValue |
 
     And after not more than 10s, PP_WF_Node_Product are found:
       | PP_WF_Node_Product_ID.Identifier | AD_WF_Node_ID.Identifier | M_Product_ID.Identifier | OPT.Qty | OPT.Specification | OPT.IsSubcontracting |
