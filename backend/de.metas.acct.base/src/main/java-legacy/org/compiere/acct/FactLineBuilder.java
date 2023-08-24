@@ -2,6 +2,8 @@ package org.compiere.acct;
 
 import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.bpartner.BPartnerId;
@@ -252,9 +254,38 @@ public final class FactLineBuilder
 
 		line.setAccountConceptualName(account.getAccountConceptualName());
 
+		updateIntegerElement(line, AcctSchemaElementType.HarvestingCalendar);
+		updateIntegerElement(line, AcctSchemaElementType.HarvestingYear);
+
 		//
 		log.debug("Built: {}", line);
 		return line;
+	}
+
+	private void updateIntegerElement(final FactLine factLine, final AcctSchemaElementType intElementType)
+	{
+		final AcctSchema acctSchema = getAcctSchema();
+		final AcctSchemaElement element = acctSchema.getSchemaElementByType(intElementType);
+		if (element != null)
+		{
+			final String columnName = element.getDisplayColumnName();
+
+			int valueInt = 0;
+			final DocLine<?> docLine = getDocLine();
+			if (docLine != null)
+			{
+				valueInt = docLine.getValue(columnName);
+			}
+			if (valueInt == 0)
+			{
+				valueInt = getDoc().getValueAsIntOrZero(columnName);
+			}
+
+			if (valueInt > 0)
+			{
+				factLine.set_ValueOfColumn(columnName, valueInt);
+			}
+		}
 	}
 
 	private void assertNotBuild()

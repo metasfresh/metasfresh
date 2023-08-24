@@ -141,6 +141,8 @@ public final class FactLine extends X_Fact_Acct
 		reversal.setQty(getQty().negate());
 		reversal.convert();
 		reversal.setDescription(description);
+		reversal.setC_Harvesting_Calendar_ID(getC_Harvesting_Calendar_ID());
+		reversal.setHarvesting_Year_ID(getHarvesting_Year_ID());
 		return reversal;
 	}    // reverse
 
@@ -161,6 +163,9 @@ public final class FactLine extends X_Fact_Acct
 		accrual.setAmtSource(getCurrencyId(), getAmtSourceCr(), getAmtSourceDr());
 		accrual.convert();
 		accrual.setDescription(description);
+		accrual.setC_Harvesting_Calendar_ID(getC_Harvesting_Calendar_ID());
+		accrual.setHarvesting_Year_ID(getHarvesting_Year_ID());
+
 		return accrual;
 	}    // reverse
 
@@ -169,7 +174,6 @@ public final class FactLine extends X_Fact_Acct
 		final MAccount m_account = services.getAccountById(account.getAccountId());
 		setAccount(acctSchema, m_account);
 		setAccountConceptualName(account.getAccountConceptualName());
-		updateHarvestingData();
 	}
 
 	public void setAccount(@NonNull final AcctSchema acctSchema, @NonNull final MAccount acct)
@@ -277,41 +281,6 @@ public final class FactLine extends X_Fact_Acct
 				if (userElementString != null)
 				{
 					set_Value(userElementStringColumnname, userElementString);
-				}
-			}
-		}
-	}
-
-	private void updateHarvestingData()
-	{
-		updateHarvestingElement(AcctSchemaElementType.HarvestingCalendar);
-		updateHarvestingElement(AcctSchemaElementType.HarvestingYear);
-	}
-
-	private void updateHarvestingElement(final AcctSchemaElementType stringElementType)
-	{
-		final AcctSchemaElement harvestingElement = acctSchema.getSchemaElementByType(stringElementType);
-		if (harvestingElement != null)
-		{
-			final String harvestingColumnName = harvestingElement.getDisplayColumnName();
-			if (harvestingColumnName != null)
-			{
-				int harvestingId = 0;
-				if (m_docLine != null)
-				{
-					harvestingId = m_docLine.getValue(harvestingColumnName);
-				}
-				if (harvestingId == 0)
-				{
-					if (m_doc == null)
-					{
-						throw new IllegalArgumentException("Document not set yet");
-					}
-					harvestingId = m_doc.getValueAsIntOrZero(harvestingColumnName);
-				}
-				if (harvestingId != 0)
-				{
-					set_Value(harvestingColumnName, harvestingId);
 				}
 			}
 		}
