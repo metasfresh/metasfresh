@@ -333,9 +333,16 @@ public class WOProjectStepRepository
 		final Instant endDate = TimeUtil.asInstant(stepRecord.getDateEnd());
 
 		final CalendarDateRange dateRange;
-		if (startDate == null || endDate == null)
+		if (startDate == null)
 		{
 			dateRange = null;
+		}
+		else if (endDate == null)
+		{
+			dateRange = CalendarDateRange.builder()
+					.startDate(startDate)
+					.endDate(Instant.MAX)
+					.build();
 		}
 		else
 		{
