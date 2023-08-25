@@ -342,6 +342,11 @@ public class M_InOut_Line_StepDef
 			softly.assertThat(shipmentLine.getC_Flatrate_Term_ID()).as(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID).isEqualTo(flatrateTermRecord.getC_Flatrate_Term_ID());
 		}
 
+		validateShipmentLine_HarvestingCalendarAndYear(shipmentLine, row, softly);
+	}
+
+	private void validateShipmentLine_HarvestingCalendarAndYear(final @NonNull I_M_InOutLine shipmentLine, final @NonNull Map<String, String> row, final SoftAssertions softly)
+	{
 		final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (de.metas.common.util.Check.isNotBlank(harvestingCalendarIdentifier))
 		{

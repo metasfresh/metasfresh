@@ -359,15 +359,22 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getDescription()).isEqualTo(description);
 		}
 
+		validateInvoiceLine_HarvestingCalendarAndYear(invoiceLine, row, softly);
+
+		softly.assertAll();
+	}
+
+	private void validateInvoiceLine_HarvestingCalendarAndYear(final @NonNull I_C_InvoiceLine invoiceLine, final @NonNull Map<String, String> row, final SoftAssertions softly)
+	{
 		final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (de.metas.common.util.Check.isNotBlank(harvestingCalendarIdentifier))
+		if (Check.isNotBlank(harvestingCalendarIdentifier))
 		{
 			final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
 			softly.assertThat(invoiceLine.getC_Harvesting_Calendar_ID()).as("C_Harvesting_Calendar_ID").isEqualTo(harvestingCalendarRecord.getC_Calendar_ID());
 		}
 
 		final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (de.metas.common.util.Check.isNotBlank(harvestingYearIdentifier))
+		if (Check.isNotBlank(harvestingYearIdentifier))
 		{
 			final String harvestingYearIdentifierValue = DataTableUtil.nullToken2Null(harvestingYearIdentifier);
 			if (harvestingYearIdentifierValue == null)
@@ -380,8 +387,6 @@ public class C_InvoiceLine_StepDef
 				softly.assertThat(invoiceLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
 			}
 		}
-
-		softly.assertAll();
 	}
 
 	private void create_C_InvoiceLine(@NonNull final Map<String, String> row)
