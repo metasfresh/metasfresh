@@ -97,6 +97,10 @@ public interface IFlatrateBL extends ISingletonService
 
 	ImmutableList<I_C_Flatrate_Term> retrieveNextFlatrateTerms(@NonNull I_C_Flatrate_Term term);
 
+	boolean isModularContractInProgress(@NonNull ModularFlatrateTermQuery query);
+
+	@NonNull Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull ModularFlatrateTermQuery query);
+
 	/**
 	 * term to extend
 	 * forceExtend - will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
