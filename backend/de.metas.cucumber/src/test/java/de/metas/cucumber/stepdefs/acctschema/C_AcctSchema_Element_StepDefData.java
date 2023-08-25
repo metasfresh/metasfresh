@@ -27,9 +27,7 @@ import io.cucumber.java.en.And;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
+
 public class C_AcctSchema_Element_StepDefData extends StepDefData<I_C_AcctSchema_Element>
 {
 	public C_AcctSchema_Element_StepDefData()
