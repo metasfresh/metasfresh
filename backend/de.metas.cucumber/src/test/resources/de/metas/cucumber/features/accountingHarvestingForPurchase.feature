@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor2
-Feature: accounting-harvesting-feature
+Feature: accounting-purchase-harvesting-feature
 
   Background:
     Given infrastructure and metasfresh are running
@@ -110,12 +110,9 @@ Feature: accounting-harvesting-feature
 
     And load C_ElementValue:
       | C_ElementValue_ID.Identifier | C_Element_ID.Identifier | Value |
-      | elementValue_1               | element_1               | 69100 |
-      | elementValue_2               | element_1               | 90014 |
-      | elementValue_3               | element_1               | 2000  |
-      | elementValue_4               | element_1               | 2060  |
-      | elementValue_5               | element_1               | 1105  |
-      | elementValue_6               | element_1               | 90044 |
+      | T_Credit_Acct                | element_1               | 90014 |
+      | V_Liability_Acct             | element_1               | 2000  |
+      | P_InventoryClearing_Acct     | element_1               | 1105  |
 
     And load C_Currency:
       | C_Currency_ID.Identifier | OPT.C_Currency_ID |
@@ -129,11 +126,11 @@ Feature: accounting-harvesting-feature
 
 #   The Fact_Acct records shall contain the the calendar and the year from invoice document
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
-      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | P_InventoryClearing_Acct  | harvesting_calendar                     | y2022                             |
-      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | P_InventoryClearing_Acct  | harvesting_calendar                     | y2022                             |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | T_Credit_Acct             | harvesting_calendar                     | y2022                             |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | V_Liability_Acct          | harvesting_calendar                     | y2022                             |
+      | Fact_Acct_ID.Identifier | Account                  | DR    | CR     | C_Currency_ID.Identifier | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | factAcct_1              | P_InventoryClearing_Acct | 100   | 0      | eur                      | P_InventoryClearing_Acct  | harvesting_calendar                     | y2022                             |
+      | factAcct_2              | P_InventoryClearing_Acct | 80    | 0      | eur                      | P_InventoryClearing_Acct  | harvesting_calendar                     | y2022                             |
+      | factAcct_3              | T_Credit_Acct            | 34.20 | 0      | eur                      | T_Credit_Acct             | harvesting_calendar                     | y2022                             |
+      | factAcct_4              | V_Liability_Acct         | 0     | 214.20 | eur                      | V_Liability_Acct          | harvesting_calendar                     | y2022                             |
 
 
   @from:cucumber
@@ -213,12 +210,12 @@ Feature: accounting-harvesting-feature
 
     And load C_Element:
       | C_Element_ID.Identifier | OPT.C_Element_ID |
-      | element_1               | 1000000          |
+      | coa_1                   | 1000000          |
 
     And load C_ElementValue:
       | C_ElementValue_ID.Identifier | C_Element_ID.Identifier | Value |
-      | elementValue_1               | element_1               | 90000 |
-      | elementValue_2               | element_1               | 2060  |
+      | P_Asset_Acct                 | coa_1                   | 90000 |
+      | NotInvoicedReceipts_Acct     | coa_1                   | 2060  |
 
 
     And metasfresh contains C_AcctSchema_Element:
@@ -274,7 +271,7 @@ Feature: accounting-harvesting-feature
 
 #   The Fact_Acct records shall contain the the calendar and the year from material receipt document
     And after not more than 30s, the inout document with identifier material_receipt_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | record_id          | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
-      | factAcct_10             | material_receipt_1 | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct              | harvesting_calendar                     | y2022                             |
-      | factAcct_20             | material_receipt_1 | elementValue_2 | 0  | 0  | chf                      | NotInvoicedReceipts_Acct  | harvesting_calendar                     | y2022                             |
+      | Fact_Acct_ID.Identifier | record_id          | Account                  | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | factAcct_10             | material_receipt_1 | P_Asset_Acct             | 0  | 0  | chf                      | P_Asset_Acct              | harvesting_calendar                     | y2022                             |
+      | factAcct_20             | material_receipt_1 | NotInvoicedReceipts_Acct | 0  | 0  | chf                      | NotInvoicedReceipts_Acct  | harvesting_calendar                     | y2022                             |
 

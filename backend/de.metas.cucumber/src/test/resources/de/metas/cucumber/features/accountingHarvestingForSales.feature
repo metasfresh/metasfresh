@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor2
-Feature: accounting-harvesting-feature
+Feature: accounting-sales-harvesting-feature
 
   Background:
     Given infrastructure and metasfresh are running
@@ -97,9 +97,9 @@ Feature: accounting-harvesting-feature
     And after not more than 30s, the inout document with identifier shipment_1 has the following accounting records:
       | Fact_Acct_ID.Identifier | record_id  | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
       | factAcct_11             | shipment_1 | P_Asset_Acct   | 0  | 0  | chf                      | P_Asset_Acct              | harvesting_calendar                     | y2022                             |
-      | factAcct_21             | shipment_1 | elementValue_2 | 0  | 0  | chf                      | P_COGS_Acct               | harvesting_calendar                     | y2022                             |
+      | factAcct_21             | shipment_1 | P_COGS_Acct | 0  | 0  | chf                      | P_COGS_Acct               | harvesting_calendar                     | y2022                             |
 
-  @dev:runThisOne
+
   @from:cucumber
   @Id:S0307_200
   Scenario: Harvesting calendar and year shall be propagated from sales order to invoice and then to fact_acct
