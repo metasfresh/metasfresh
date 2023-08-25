@@ -145,6 +145,12 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 	}
 
 	@Override
+	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	{
+		return logEntryContractType.isModularContractType();
+	}
+
+	@Override
 	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			final @NonNull I_C_InvoiceLine invoiceLine,
 			final @NonNull FlatrateTermId modularContractId)
@@ -209,6 +215,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 				ModularContractLogQuery.builder()
 						.flatrateTermId(flatrateTermId)
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))
+						.contractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build());
 
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
@@ -221,6 +228,7 @@ public class SalesInvoiceLineModularContractHandler implements IModularContractT
 						.referencedModel(invoiceLineRef)
 						.flatrateTermId(flatrateTermId)
 						.description(description)
+						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build()
 		);
 	}

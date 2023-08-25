@@ -1009,14 +1009,12 @@ public class FlatrateDAO implements IFlatrateDAO
 		final List<I_C_Invoice_Candidate> icsForCurrentTerm = invoiceCandDAO
 				.retrieveReferencing(TableRecordReference.of(contract));
 
-		final List<I_C_Invoice> currentFlatRateTermInvoices = icsForCurrentTerm
+		return icsForCurrentTerm
 				.stream()
 				.flatMap(ic -> invoiceCandDAO.retrieveIlForIc(ic).stream())
 				.filter(StreamUtils.distinctByKey(I_C_InvoiceLine::getC_Invoice_ID))
 				.map(il -> il.getC_Invoice())
 				.collect(ImmutableList.toImmutableList());
-
-		return currentFlatRateTermInvoices;
 	}
 
 	@Override
@@ -1182,14 +1180,14 @@ public class FlatrateDAO implements IFlatrateDAO
 			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductId());
 		}
 
-		if (modularFlatrateTermQuery.getDateFrom() != null)
+		if (modularFlatrateTermQuery.getDateFromLessOrEqual() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, modularFlatrateTermQuery.getDateFrom());
+			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, modularFlatrateTermQuery.getDateFromLessOrEqual());
 		}
 
-		if (modularFlatrateTermQuery.getDateTo() != null)
+		if (modularFlatrateTermQuery.getDateToGreaterOrEqual() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, modularFlatrateTermQuery.getDateTo());
+			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, modularFlatrateTermQuery.getDateToGreaterOrEqual());
 		}
 
 		return queryBuilder.create()

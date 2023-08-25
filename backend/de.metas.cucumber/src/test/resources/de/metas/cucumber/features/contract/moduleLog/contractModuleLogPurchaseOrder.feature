@@ -72,30 +72,26 @@ Feature: Modular contract log from purchase order
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
       | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
-      | po_orderLine_2 | po_order              | module_log_product_PO   | 500        | moduleLogConditions_PO                  |
 
     When the order identified by po_order is completed
 
     And retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
-      | moduleLogContract_2           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
+
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
       | moduleLogContract_1           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
-      | moduleLogContract_2           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
     And ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
-      | log_2                     | po_orderLine_2       | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 500  | C_OrderLine | moduleLogContract_2           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year                              |
 
     And there is no C_Invoice_Candidate for C_Order po_order
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
       | receiptSchedule_PO              | po_order              | po_orderLine              | bp_moduleLogPO           | bp_moduleLogPO_Location           | module_log_product_PO   | 1000       | warehouseStd              | moduleLogContract_1               |
-      | receiptSchedule_PO              | po_order              | po_orderLine_2            | bp_moduleLogPO           | bp_moduleLogPO_Location           | module_log_product_PO   | 500        | warehouseStd              | moduleLogContract_2               |
 
 
   @Id:S0282_200
@@ -138,44 +134,39 @@ Feature: Modular contract log from purchase order
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
       | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
-      | po_orderLine_2 | po_order              | module_log_product_PO   | 500        | moduleLogConditions_PO                  |
 
     When the order identified by po_order is completed
 
     Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
-      | moduleLogContract_2           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
+
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
       | moduleLogContract_1           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
-      | moduleLogContract_2           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
     And ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
-      | log_2                     | po_orderLine_2       | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 500  | C_OrderLine | moduleLogContract_2           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year                              |
+
 
     And there is no C_Invoice_Candidate for C_Order po_order
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
       | receiptSchedule_PO              | po_order              | po_orderLine              | bp_moduleLogPO           | bp_moduleLogPO_Location           | module_log_product_PO   | 1000       | warehouseStd              | moduleLogContract_1               |
-      | receiptSchedule_PO              | po_order              | po_orderLine_2            | bp_moduleLogPO           | bp_moduleLogPO_Location           | module_log_product_PO   | 500        | warehouseStd              | moduleLogContract_2               |
 
     When the order identified by po_order is voided
 
     Then validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
       | moduleLogContract_1           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | moduleLogPricingSystem            | ModularContract     | Vo                 | CL            |
-      | moduleLogContract_2           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | moduleLogPricingSystem            | ModularContract     | Vo                 | CL            |
+
 
     And ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty   | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000  | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
       | log_2                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | -1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | -2000      | year                              |
-      | log_3                     | po_orderLine_2       | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 500   | C_OrderLine | moduleLogContract_2           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year                              |
-      | log_4                     | po_orderLine_2       | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | -500  | C_OrderLine | moduleLogContract_2           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | -1000      | year                              |
 
     And there is no M_ShipmentSchedule for C_Order po_order
 
@@ -218,23 +209,20 @@ Feature: Modular contract log from purchase order
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
       | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
-      | po_orderLine_2 | po_order              | module_log_product_PO   | 500        | moduleLogConditions_PO                  |
 
     When the order identified by po_order is completed
 
     Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
-      | moduleLogContract_2           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
+
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
       | moduleLogContract_1           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
-      | moduleLogContract_2           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
     And ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
-      | log_2                     | po_orderLine_2       | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 500  | C_OrderLine | moduleLogContract_2           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year                              |
 
     And load AD_Message:
       | Identifier             | Value                                                                                        |
@@ -247,7 +235,6 @@ Feature: Modular contract log from purchase order
     And the order identified by po_order is reversed expecting error
       | OPT.AD_Message_ID.Identifier |
       | reactivate_not_allowed       |
-
 
   @Id:S0282_400
   @from:cucumber

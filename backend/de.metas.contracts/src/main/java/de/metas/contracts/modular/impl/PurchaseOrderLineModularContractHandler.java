@@ -116,6 +116,12 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	}
 
 	@Override
+	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	{
+		return logEntryContractType.isModularContractType();
+	}
+
+	@Override
 	@NonNull
 	public Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			@NonNull final I_C_OrderLine orderLine,
@@ -173,6 +179,8 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		return Optional.of(LogEntryReverseRequest.builder()
 								   .referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, model.getC_OrderLine_ID()))
 								   .flatrateTermId(flatrateTermId)
+								   .description(null)
+								   .logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 								   .build());
 	}
 

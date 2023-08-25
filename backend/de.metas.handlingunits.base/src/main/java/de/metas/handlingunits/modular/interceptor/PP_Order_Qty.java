@@ -23,6 +23,7 @@
 package de.metas.handlingunits.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -47,6 +48,6 @@ public class PP_Order_Qty
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Order_Qty.COLUMNNAME_Processed)
 	public void afterProcessed(@NonNull final I_PP_Order_Qty orderQtyRecord)
 	{
-		contractService.invokeWithModel(orderQtyRecord, orderQtyRecord.isProcessed() ? COMPLETED : REACTIVATED);
+		contractService.invokeWithModel(orderQtyRecord, orderQtyRecord.isProcessed() ? COMPLETED : REACTIVATED, LogEntryContractType.MODULAR_CONTRACT);
 	}
 }
