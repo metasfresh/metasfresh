@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.acctschema;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
@@ -33,7 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 
@@ -42,24 +40,23 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 public class C_AcctSchema_Element_StepDef
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final C_AcctSchema_Element_StepDefData acctElementTable;
+	private final C_AcctSchema_Element_StepDefData acctSchemaElementTable;
 	private final C_AcctSchema_StepDefData acctSchemaTable;
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
 
-	public C_AcctSchema_Element_StepDef(@NonNull final C_AcctSchema_Element_StepDefData acctElementTable,
+	public C_AcctSchema_Element_StepDef(
+			@NonNull final C_AcctSchema_Element_StepDefData acctSchemaElementTable,
 			@NonNull final C_AcctSchema_StepDefData acctSchemaTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
-			@NonNull final C_Year_StepDefData yearTable
-	)
+			@NonNull final C_Year_StepDefData yearTable)
 	{
-		this.acctElementTable = acctElementTable;
+		this.acctSchemaElementTable = acctSchemaElementTable;
 		this.acctSchemaTable = acctSchemaTable;
 		this.calendarTable = calendarTable;
 		this.yearTable = yearTable;
@@ -79,38 +76,36 @@ public class C_AcctSchema_Element_StepDef
 	{
 		final String name = DataTableUtil.extractStringForColumnName(row, I_C_AcctSchema_Element.COLUMNNAME_Name);
 
-
-		final I_C_AcctSchema_Element acctSchemaElement = CoalesceUtil.coalesceSuppliers(
-				() -> queryBL.createQueryBuilder(I_C_AcctSchema_Element.class)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(I_C_AcctSchema_Element.COLUMNNAME_Name, name)
-						.create()
-						.firstOnlyOrNull(I_C_AcctSchema_Element.class),
-				() -> InterfaceWrapperHelper.newInstance(I_C_AcctSchema_Element.class));
-
+		final I_C_AcctSchema_Element record = queryBL.createQueryBuilder(I_C_AcctSchema_Element.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AcctSchema_Element.COLUMNNAME_Name, name)
+				.create()
+				.firstOnlyOptional()
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_AcctSchema_Element.class));
 
 		final String type = DataTableUtil.extractStringForColumnName(row, I_C_AcctSchema_Element.COLUMN_ElementType.getColumnName());
 
-		final String calendarIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." +I_C_AcctSchema_Element.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Optional<I_C_Calendar> calendar = calendarIdentifier!= null ? Optional.of(calendarTable.get(calendarIdentifier)) : Optional.empty();
+		final String calendarIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_AcctSchema_Element.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Optional<I_C_Calendar> calendar = calendarIdentifier != null ? Optional.of(calendarTable.get(calendarIdentifier)) : Optional.empty();
 
-		final String yearIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." +I_C_AcctSchema_Element.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Optional<I_C_Year> year =  yearIdentifier!=null ? Optional.of(yearTable.get(yearIdentifier)) : Optional.empty();
+		final String yearIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_AcctSchema_Element.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Optional<I_C_Year> year = yearIdentifier != null ? Optional.of(yearTable.get(yearIdentifier)) : Optional.empty();
 
-		final String schemaIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_AcctSchema schema = acctSchemaTable.get(schemaIdentifier);
+		final String acctSchemaIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_AcctSchema acctSchema = acctSchemaTable.get(acctSchemaIdentifier);
 
-		acctSchemaElement.setName(name);
-		acctSchemaElement.setElementType(type);
-		calendar.ifPresent(calendarRec -> acctSchemaElement.setC_Harvesting_Calendar_ID(calendarRec.getC_Calendar_ID()));
-		year.ifPresent(yearRec -> acctSchemaElement.setHarvesting_Year_ID(yearRec.getC_Year_ID()));
-
-		acctSchemaElement.setC_AcctSchema_ID(schema.getC_AcctSchema_ID());
-		acctSchemaElement.setSeqNo(10);
-		InterfaceWrapperHelper.save(acctSchemaElement);
+		if (InterfaceWrapperHelper.isNew(record))
+		{
+			record.setSeqNo(10);
+		}
+		record.setC_AcctSchema_ID(acctSchema.getC_AcctSchema_ID());
+		record.setName(name);
+		record.setElementType(type);
+		calendar.ifPresent(calendarRec -> record.setC_Harvesting_Calendar_ID(calendarRec.getC_Calendar_ID()));
+		year.ifPresent(yearRec -> record.setHarvesting_Year_ID(yearRec.getC_Year_ID()));
+		InterfaceWrapperHelper.save(record);
 
 		final String acctSchemaElementIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_Element_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		acctElementTable.put(acctSchemaElementIdentifier, acctSchemaElement);
+		acctSchemaElementTable.put(acctSchemaElementIdentifier, record);
 	}
 }
