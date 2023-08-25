@@ -20,11 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.acctschema;
 
-public enum TableType
+import de.metas.cucumber.stepdefs.StepDefData;
+import io.cucumber.java.en.And;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_Element;
+
+
+public class C_AcctSchema_Element_StepDefData extends StepDefData<I_C_AcctSchema_Element>
 {
-	invoice,
-	matchInvoice,
-	inout
+	public C_AcctSchema_Element_StepDefData()
+	{
+		super(I_C_AcctSchema_Element.class);
+	}
 }

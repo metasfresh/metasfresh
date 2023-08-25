@@ -23,6 +23,7 @@
 package de.metas.document.dimension;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -45,6 +46,7 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 	@NonNull
 	public Dimension getFromRecord(@NonNull final I_C_InvoiceLine record)
 	{
+
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
@@ -62,6 +64,7 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 				.userElementString7(record.getUserElementString7())
 				.user1_ID(record.getUser1_ID())
 				.user2_ID(record.getUser2_ID())
+				.harvestingYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(record.getC_Harvesting_Calendar_ID(), record.getHarvesting_Year_ID()))
 				.build();
 	}
 
@@ -84,5 +87,9 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 		record.setUserElementString7(from.getUserElementString7());
 		record.setUser1_ID(from.getUser1_ID());
 		record.setUser2_ID(from.getUser2_ID());
+
+		final YearAndCalendarId harvestingYearAndCalendarId = from.getHarvestingYearAndCalendarId();
+		record.setC_Harvesting_Calendar_ID(harvestingYearAndCalendarId != null ? harvestingYearAndCalendarId.calendarId().getRepoId() : -1);
+		record.setHarvesting_Year_ID(harvestingYearAndCalendarId != null ? harvestingYearAndCalendarId.yearId().getRepoId() : -1);
 	}
 }

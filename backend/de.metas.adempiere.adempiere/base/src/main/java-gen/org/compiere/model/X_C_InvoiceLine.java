@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -779705090L;
+	private static final long serialVersionUID = -1222059933L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -249,6 +249,33 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getC_Flatrate_Term_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Calendar getC_Harvesting_Calendar()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar(final org.compiere.model.I_C_Calendar C_Harvesting_Calendar)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Harvesting_Calendar);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar_ID (final int C_Harvesting_Calendar_ID)
+	{
+		if (C_Harvesting_Calendar_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Harvesting_Calendar_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Harvesting_Calendar_ID, C_Harvesting_Calendar_ID);
+	}
+
+	@Override
+	public int getC_Harvesting_Calendar_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
 	}
 
 	@Override
@@ -555,6 +582,66 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public java.lang.String getExternalIds() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalIds);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Year getHarvesting_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setHarvesting_Year(final org.compiere.model.I_C_Year Harvesting_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class, Harvesting_Year);
+	}
+
+	@Override
+	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
+	{
+		if (Harvesting_Year_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Harvesting_Year_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
+	}
+
+	@Override
+	public int getHarvesting_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
+	}
+
+	/** 
+	 * is184_AccountingGroup AD_Reference_ID=541738
+	 * Reference name: C_InvoiceLine_AccountingGroup
+	 */
+	public static final int IS184_ACCOUNTINGGROUP_AD_Reference_ID=541738;
+	/** Leistung = Leistung */
+	public static final String IS184_ACCOUNTINGGROUP_Leistung = "Leistung";
+	/** Kosten = Kosten */
+	public static final String IS184_ACCOUNTINGGROUP_Kosten = "Kosten";
+	@Override
+	public void setis184_AccountingGroup (final @Nullable java.lang.String is184_AccountingGroup)
+	{
+		set_Value (COLUMNNAME_is184_AccountingGroup, is184_AccountingGroup);
+	}
+
+	@Override
+	public java.lang.String getis184_AccountingGroup() 
+	{
+		return get_ValueAsString(COLUMNNAME_is184_AccountingGroup);
+	}
+
+	@Override
+	public void setis184_PrintText (final @Nullable java.lang.String is184_PrintText)
+	{
+		set_Value (COLUMNNAME_is184_PrintText, is184_PrintText);
+	}
+
+	@Override
+	public java.lang.String getis184_PrintText() 
+	{
+		return get_ValueAsString(COLUMNNAME_is184_PrintText);
 	}
 
 	@Override

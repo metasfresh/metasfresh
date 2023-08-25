@@ -16,6 +16,9 @@ import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
@@ -138,6 +141,8 @@ public final class FactLine extends X_Fact_Acct
 		reversal.setQty(getQty().negate());
 		reversal.convert();
 		reversal.setDescription(description);
+		reversal.setC_Harvesting_Calendar_ID(getC_Harvesting_Calendar_ID());
+		reversal.setHarvesting_Year_ID(getHarvesting_Year_ID());
 		return reversal;
 	}    // reverse
 
@@ -158,6 +163,9 @@ public final class FactLine extends X_Fact_Acct
 		accrual.setAmtSource(getCurrencyId(), getAmtSourceCr(), getAmtSourceDr());
 		accrual.convert();
 		accrual.setDescription(description);
+		accrual.setC_Harvesting_Calendar_ID(getC_Harvesting_Calendar_ID());
+		accrual.setHarvesting_Year_ID(getHarvesting_Year_ID());
+
 		return accrual;
 	}    // reverse
 
@@ -234,7 +242,6 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		updateUserElementStrings();
-
 	}   // setAccount
 
 	private void updateUserElementStrings()
@@ -705,6 +712,7 @@ public final class FactLine extends X_Fact_Acct
 			setUser2_ID(m_doc.getUser2_ID());
 			// References in setAccount
 		}
+
 	}   // setDocumentInfo
 
 	private void setC_LocTo_ID(final LocationId locationToId)
@@ -1286,6 +1294,8 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString7(getUserElementString7())
 				.setSalesOrderId(getC_OrderSO_ID())
 				.setM_SectionCode_ID(getM_SectionCode_ID())
+				.setC_Harvesting_Calendar_ID(getC_Harvesting_Calendar_ID())
+				.setHarvesting_Year_ID(getHarvesting_Year_ID())
 				.build();
 	}
 
@@ -1560,6 +1570,15 @@ public final class FactLine extends X_Fact_Acct
 		setGL_Category_ID(GLCategoryId.toRepoId(glCategoryId));
 	}
 
+	public void setYearAndCalendarId(@Nullable final YearAndCalendarId yearAndCalendarId)
+	{
+		if (yearAndCalendarId != null )
+		{
+			super.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(yearAndCalendarId.calendarId()));
+			super.setHarvesting_Year_ID(YearId.toRepoId(yearAndCalendarId.yearId()));
+		}
+	}
+
 	public void setFromDimension(@NonNull final Dimension dimension)
 	{
 		setC_Project_ID(dimension.getProjectId());
@@ -1580,6 +1599,7 @@ public final class FactLine extends X_Fact_Acct
 		setUserElementString5(dimension.getUserElementString5());
 		setUserElementString6(dimension.getUserElementString6());
 		setUserElementString7(dimension.getUserElementString7());
+		setYearAndCalendarId(dimension.getHarvestingYearAndCalendarId());
 	}
 
 	public void setBPartnerIdAndLocation(@Nullable final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
@@ -1732,6 +1752,14 @@ public final class FactLine extends X_Fact_Acct
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString7))
 		{
 			setUserElementString7(dim.getUserElementString7());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.HarvestingCalendar))
+		{
+			setC_Harvesting_Calendar_ID(dim.getC_Harvesting_Calendar_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.HarvestingYear))
+		{
+			setHarvesting_Year_ID(dim.getHarvesting_Year_ID());
 		}
 	}
 

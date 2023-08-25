@@ -78,6 +78,8 @@ public class FactAcctBL implements IFactAcctBL
 				.setUserElementString5(fa.getUserElementString5())
 				.setUserElementString6(fa.getUserElementString6())
 				.setUserElementString7(fa.getUserElementString7())
+				.setC_Harvesting_Calendar_ID(fa.getC_Harvesting_Calendar_ID())
+				.setHarvesting_Year_ID(fa.getHarvesting_Year_ID())
 
 				.build();
 	}

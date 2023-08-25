@@ -8,7 +8,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -46,6 +45,7 @@ import java.util.List;
 public class M_InOutLine
 {
 	private final MatchInvoiceService matchInvoiceService;
+	final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	public M_InOutLine(@NonNull final MatchInvoiceService matchInvoiceService)
 	{
@@ -61,7 +61,6 @@ public class M_InOutLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void processorDeleted(final I_M_InOutLine packingMaterialLine)
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		final List<I_M_InOutLine> allReferencingLines = inOutDAO.retrieveAllReferencingLinesBuilder(packingMaterialLine)
 				.create()
 				.list(I_M_InOutLine.class);
@@ -69,7 +68,7 @@ public class M_InOutLine
 		for (final I_M_InOutLine referencingIol : allReferencingLines)
 		{
 			referencingIol.setM_PackingMaterial_InOutLine(null);
-			InterfaceWrapperHelper.save(referencingIol);
+			inOutDAO.save(referencingIol);
 		}
 	}
 
