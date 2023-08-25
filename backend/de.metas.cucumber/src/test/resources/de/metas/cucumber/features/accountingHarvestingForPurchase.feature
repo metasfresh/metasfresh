@@ -1,4 +1,3 @@
-@dev:runThisOne
 @from:cucumber
 @ghActions:run_on_executor2
 Feature: accounting-purchase-harvesting-feature
