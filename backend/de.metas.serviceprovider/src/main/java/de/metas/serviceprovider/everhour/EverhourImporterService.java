@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
 import de.metas.issue.tracking.everhour.api.model.Task;
@@ -65,8 +64,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static de.metas.serviceprovider.everhour.EverhourImportConstants.PROCESSING_DATE_INTERVAL_SIZE;
