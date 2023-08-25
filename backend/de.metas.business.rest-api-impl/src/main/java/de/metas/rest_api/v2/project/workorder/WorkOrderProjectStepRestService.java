@@ -688,12 +688,6 @@ public class WorkOrderProjectStepRestService
 					.appendParametersToMessage()
 					.setParameter("WOProjectStepId", existingWOProjectStep.getWoProjectStepId());
 		}
-		else if (actualDateStart != null && actualDateEnd == null)
-		{
-			throw new AdempiereException("DateEnd cannot be missing when DateStart is set!")
-					.appendParametersToMessage()
-					.setParameter("WOProjectStepId", existingWOProjectStep.getWoProjectStepId());
-		}
 		else if (actualDateStart == null)
 		{
 			return null;
@@ -707,7 +701,7 @@ public class WorkOrderProjectStepRestService
 
 		final Instant computedDateEnd = isSameDate
 				? TimeUtil.asEndOfDayInstant(actualDateEnd, zoneId)
-				: actualDateEnd;
+				: Optional.ofNullable(actualDateEnd).orElse(Instant.MAX);
 
 		return CalendarDateRange.builder()
 				.startDate(computedDateStart)
