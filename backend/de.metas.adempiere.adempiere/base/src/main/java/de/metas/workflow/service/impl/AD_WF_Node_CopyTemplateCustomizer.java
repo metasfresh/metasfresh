@@ -42,12 +42,6 @@ public class AD_WF_Node_CopyTemplateCustomizer implements CopyTemplateCustomizer
 	}
 
 	@Override
-	public ValueToCopy extractValueToCopy(final POInfo poInfo, final String columnName)
-	{
-		return I_AD_Workflow.COLUMNNAME_Value.equals(columnName) ? ValueToCopy.DIRECT_COPY : ValueToCopy.NOT_SPECIFIED;
-	}
-
-	@Override
 	public @NonNull InSetPredicate<String> getChildTableNames()
 	{
 		return InSetPredicate.only(I_PP_WF_Node_Product.Table_Name);
