@@ -39,6 +39,8 @@ import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrat
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.process.FlatrateTermCreator;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.logging.LogManager;
@@ -85,13 +87,13 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final ProductId productId;
 	@NonNull
 	private final Instant dateFrom;
-	@Nullable
+	@NonNull
 	private final Instant dateTo;
 	@NonNull
 	private final OrderLineId orderLineId;
 
 	@NonNull
-	final FlatrateTermId modulareFlatrateTermId;
+	private final FlatrateTermId modulareFlatrateTermId;
 
 	private final OrderLine orderLine;
 	private final I_C_Flatrate_Conditions conditions;
@@ -112,13 +114,14 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	@Builder
 	public InterimInvoiceFlatrateTermCreateCommand(@Nullable final BPartnerId bpartnerId,
 			@NonNull final ConditionsId conditionsId,
 			@Nullable final ProductId productId,
 			@NonNull final Instant dateFrom,
-			@Nullable final Instant dateTo,
+			@NonNull final Instant dateTo,
 			@NonNull final OrderLineId orderLineId,
 			@NonNull final FlatrateTermId modulareFlatrateTermId)
 	{
@@ -212,7 +215,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.product(product)
 				.startDate(TimeUtil.asTimestamp(dateFrom))
 				.endDate(TimeUtil.asTimestamp(dateTo))
-				.isCompleteDocument(true)
+				.isCompleteDocument(false)
 				.build()
 				.createTermsForBPartners()
 				.stream()
@@ -222,18 +225,20 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setM_PricingSystem_ID(modularContract.getM_PricingSystem_ID());
 		flatrateTermRecord.setPlannedQtyPerUnit(modularContract.getPlannedQtyPerUnit());
 		flatrateTermRecord.setContractStatus(modularContract.getContractStatus());
-		flatrateTermRecord.setMasterStartDate(modularContract.getMasterStartDate());
-		flatrateTermRecord.setMasterEndDate(modularContract.getMasterEndDate());
+		flatrateTermRecord.setMasterStartDate(TimeUtil.asTimestamp(dateFrom));
+		flatrateTermRecord.setMasterEndDate(TimeUtil.asTimestamp(dateTo));
 		flatrateTermRecord.setPriceActual(modularContract.getPriceActual());
 		flatrateTermRecord.setC_TaxCategory_ID(modularContract.getC_TaxCategory_ID());
 		flatrateTermRecord.setC_Order_Term(modularContract.getC_Order_Term());
 		flatrateTermRecord.setC_OrderLine_Term(modularContract.getC_OrderLine_Term());
-		flatrateTermRecord.setModular_Flatrate_Term_ID(modularContract.getC_Flatrate_Term_ID());
+		flatrateTermRecord.setModular_Flatrate_Term_ID(modulareFlatrateTermId.getRepoId());
 		flatrateTermRecord.setC_UOM_ID(modularContract.getC_UOM_ID());
 		flatrateTermRecord.setDeliveryRule(modularContract.getDeliveryRule());
 		flatrateTermRecord.setDeliveryViaRule(modularContract.getDeliveryViaRule());
 
 		flatrateDAO.save(flatrateTermRecord);
+
+		documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		return flatrateTermRecord;
 	}

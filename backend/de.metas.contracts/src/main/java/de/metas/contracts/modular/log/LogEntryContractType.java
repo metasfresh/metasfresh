@@ -53,4 +53,20 @@ public enum LogEntryContractType implements ReferenceListAwareEnum
 	{
 		return index.ofNullableCode(code);
 	}
+
+	public boolean isModularContractType()
+	{
+		return MODULAR_CONTRACT.equals(this);
+	}
+
+	public boolean isInterimContractType()
+	{
+		return INTERIM.equals(this);
+	}
+
+	public boolean isModularOrInterim()
+	{
+		return isModularContractType() || isInterimContractType();
+	}
 }
+

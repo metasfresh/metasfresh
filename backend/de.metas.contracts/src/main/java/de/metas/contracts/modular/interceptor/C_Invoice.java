@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
@@ -68,6 +69,6 @@ public class C_Invoice
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 
 		invoiceBL.getLines(invoiceId)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction));
+				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
 	}
 }

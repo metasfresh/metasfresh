@@ -90,7 +90,12 @@ public class LogEntryCreateRequest
 
 	@NonNull YearId year;
 
-	@Nullable String description;
+	@Nullable
+	String description;
 
-	@Nullable ModularContractTypeId modularContractTypeId;
+	@Nullable
+	ModularContractTypeId modularContractTypeId;
+
+	@Builder.Default
+	boolean isBillable = true;
 }

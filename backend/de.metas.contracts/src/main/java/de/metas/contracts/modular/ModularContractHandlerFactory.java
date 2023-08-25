@@ -25,6 +25,7 @@ package de.metas.contracts.modular;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -51,12 +52,13 @@ public class ModularContractHandlerFactory
 	}
 
 	@NonNull
-	public <T> Stream<IModularContractTypeHandler<T>> getApplicableHandlersFor(@NonNull final T model)
+	public <T> Stream<IModularContractTypeHandler<T>> getApplicableHandlersFor(@NonNull final T model, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		return knownHandlers.stream()
 				.filter(handler -> handler.getType().isAssignableFrom(model.getClass()))
 				.map(handler -> (IModularContractTypeHandler<T>)handler)
-				.filter(handler -> handler.applies(model));
+				.filter(handler -> handler.applies(model))
+				.filter(handler -> handler.applies(logEntryContractType));
 	}
 
 }

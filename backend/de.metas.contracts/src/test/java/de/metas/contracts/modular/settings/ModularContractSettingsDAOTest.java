@@ -31,6 +31,7 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import lombok.NonNull;
@@ -155,6 +156,12 @@ class ModularContractSettingsDAOTest
 		public boolean applies(final @NonNull Object model)
 		{
 			return true;
+		}
+
+		@Override
+		public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+		{
+			return logEntryContractType.isModularOrInterim();
 		}
 
 		@Override
