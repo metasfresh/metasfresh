@@ -29,6 +29,8 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -49,9 +51,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Message;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
@@ -84,6 +89,8 @@ public class M_InOut_Line_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_Project_StepDefData projectTable;
 	private final M_Locator_StepDefData locatorTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
 
 	private final C_Flatrate_Term_StepDefData flatrateTermTable;
 	private final AD_Message_StepDefData messageTable;
@@ -96,7 +103,9 @@ public class M_InOut_Line_StepDef
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final M_Locator_StepDefData locatorTable,
 			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable,
-			@NonNull final AD_Message_StepDefData messageTable)
+			@NonNull final AD_Message_StepDefData messageTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
@@ -106,6 +115,8 @@ public class M_InOut_Line_StepDef
 		this.locatorTable = locatorTable;
 		this.flatrateTermTable = flatrateTermTable;
 		this.messageTable = messageTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
 	}
 
 	@And("^validate the created (shipment|material receipt) lines$")
@@ -329,6 +340,28 @@ public class M_InOut_Line_StepDef
 		{
 			final I_C_Flatrate_Term flatrateTermRecord = flatrateTermTable.get(flatrateTermIdentifier);
 			softly.assertThat(shipmentLine.getC_Flatrate_Term_ID()).as(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID).isEqualTo(flatrateTermRecord.getC_Flatrate_Term_ID());
+		}
+
+		final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (de.metas.common.util.Check.isNotBlank(harvestingCalendarIdentifier))
+		{
+			final I_C_Calendar harvestingCalendarRecord = calendarTable.get(harvestingCalendarIdentifier);
+			softly.assertThat(shipmentLine.getC_Harvesting_Calendar_ID()).as("C_Harvesting_Calendar_ID").isEqualTo(harvestingCalendarRecord.getC_Calendar_ID());
+		}
+
+		final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (de.metas.common.util.Check.isNotBlank(harvestingYearIdentifier))
+		{
+			final String harvestingYearIdentifierValue = DataTableUtil.nullToken2Null(harvestingYearIdentifier);
+			if (harvestingYearIdentifierValue == null)
+			{
+				softly.assertThat(shipmentLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isNull();
+			}
+			else
+			{
+				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
+				softly.assertThat(shipmentLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
+			}
 		}
 	}
 

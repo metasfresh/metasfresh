@@ -12,7 +12,7 @@ Feature: accounting-harvesting-feature
 
   @from:cucumber
   @Id:S0308_100
-  Scenario: Harvesting calendar and year shall be propagated from purchase invoice document to fact_acct
+  Scenario: Harvesting calendar and year shall be propagated from purchase order to purchase invoice and then to fact_acct
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
@@ -136,10 +136,9 @@ Feature: accounting-harvesting-feature
       | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | V_Liability_Acct          | harvesting_calendar                     | y2022                             |
 
 
-  @dev:runThisOne
   @from:cucumber
   @Id:S0308_200
-  Scenario: Harvesting calendar and year shall be propagated from receipt document to fact_acct
+  Scenario: Harvesting calendar and year shall be propagated from order to  receipt document and then to fact_acct
 
     Given metasfresh contains M_Products:
       | Identifier            | Name                             |
@@ -208,6 +207,29 @@ Feature: accounting-harvesting-feature
       | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
       | moduleLogConditions_MR              | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ca                       | modCntr_settings_1                 |
 
+    And load C_AcctSchema:
+      | C_AcctSchema_ID.Identifier | OPT.Name              |
+      | acctSchema_1               | metas fresh UN/34 CHF |
+
+    And load C_Element:
+      | C_Element_ID.Identifier | OPT.C_Element_ID |
+      | element_1               | 1000000          |
+
+    And load C_ElementValue:
+      | C_ElementValue_ID.Identifier | C_Element_ID.Identifier | Value |
+      | elementValue_1               | element_1               | 90000 |
+      | elementValue_2               | element_1               | 2060  |
+
+
+    And metasfresh contains C_AcctSchema_Element:
+      | C_AcctSchema_Element_ID.Identifier | Name                | ElementType | C_AcctSchema_ID.Identifier | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | cae_1                              | Harvesting Calendar | HC          | acctSchema_1               | harvesting_calendar                     |                                   |
+      | cae_2                              | Harvesting Year     | HY          | acctSchema_1               |                                         | y2022                             |
+    And load C_Currency:
+      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
+      | eur                      | 102               |
+      | chf                      | 318               |
+
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    |
       | po_order   | false   | bp_moduleLogMR           | 2022-03-03  | POO             | mrModuleLogContract_ref_05072023_1 |
@@ -243,5 +265,16 @@ Feature: accounting-harvesting-feature
 
     Then validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
-      | shipmentLine_1            | material_receipt_1    | module_log_product_PO   | 1000        | true      | po_orderLine_1                | moduleLogContract_1               | harvesting_calendar                     | y2022                             |
-      | shipmentLine_2            | material_receipt_2    | module_log_product_MR   | 500         | true      | po_orderLine_2                | moduleLogContract_2               | harvesting_calendar                     | y2022                             |
+      | inoutLine_1               | material_receipt_1    | module_log_product_PO   | 1000        | true      | po_orderLine_1                | moduleLogContract_1               | harvesting_calendar                     | y2022                             |
+      | inoutLine_2               | material_receipt_2    | module_log_product_MR   | 500         | true      | po_orderLine_2                | moduleLogContract_2               | harvesting_calendar                     | y2022                             |
+
+    And validate M_In_Out status
+      | M_InOut_ID.Identifier | DocStatus |
+      | material_receipt_1    | CO        |
+
+#   The Fact_Acct records shall contain the the calendar and the year from material receipt document
+    And after not more than 30s, the inout document with identifier material_receipt_1 has the following accounting records:
+      | Fact_Acct_ID.Identifier | record_id          | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | factAcct_10             | material_receipt_1 | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct              | harvesting_calendar                     | y2022                             |
+      | factAcct_20             | material_receipt_1 | elementValue_2 | 0  | 0  | chf                      | NotInvoicedReceipts_Acct  | harvesting_calendar                     | y2022                             |
+
