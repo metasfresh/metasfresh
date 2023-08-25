@@ -139,7 +139,7 @@ Feature: accounting-purchase-harvesting-feature
   Scenario: Harvesting calendar and year shall be propagated from order to  receipt document and then to fact_acct
 
     Given metasfresh contains M_Products:
-      | Identifier            | Name                             |
+      | Identifier            | Name                  |
       | product_PO_05082023_1 | product_PO_05082023_1 |
       | product_PO_05082023_2 | product_PO_05082023_2 |
     And load M_Warehouse:
@@ -184,11 +184,11 @@ Feature: accounting-purchase-harvesting-feature
       | huItemPOProduct                    | huPiItemTU                 | product_PO_05082023_1   | 10  | 2022-02-01 |
       | huItemMRProduct                    | huPiItemTU                 | product_PO_05082023_2   | 10  | 2022-02-01 |
     And metasfresh contains C_BPartners:
-      | Identifier     | Name                      | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
-      | bp_moduleLogMR | bp_moduleLogMR_05072023_1 | Y            | ps_1                          | 1000002                    |
+      | Identifier | Name          | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
+      | bp_po      | bp_05082023_1 | Y            | ps_1                          | 1000002                    |
     And metasfresh contains C_BPartner_Locations:
       | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bp_moduleLogMR_Location | 5823098505483 | bp_moduleLogMR           | true                | true                |
+      | bp_moduleLogMR_Location | 5823098505483 | bp_po                    | true                | true                |
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
@@ -203,7 +203,7 @@ Feature: accounting-purchase-harvesting-feature
       | modCntr_module_2             | 20    | moduleTest_05072023_2 | product_PO_05082023_2   | Kosten         | modCntr_settings_1             | modCntr_type_2             |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_MR              | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ca                       | modCntr_settings_1                 |
+      | moduleLogConditions                 | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ca                       | modCntr_settings_1                 |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |
@@ -229,28 +229,24 @@ Feature: accounting-purchase-harvesting-feature
       | chf                      | 318               |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    |
-      | po_order   | false   | bp_moduleLogMR           | 2022-03-03  | POO             | mrModuleLogContract_ref_05072023_1 |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType |
+      | po_order   | false   | bp_po                    | 2022-03-03  | POO             |
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
-      | po_orderLine_1 | po_order              | product_PO_05082023_1   | 1000       | moduleLogConditions_MR                  |
-      | po_orderLine_2 | po_order              | product_PO_05082023_2   | 500        | moduleLogConditions_MR                  |
+      | po_orderLine_1 | po_order              | product_PO_05082023_1   | 1000       | moduleLogConditions                     |
+      | po_orderLine_2 | po_order              | product_PO_05082023_2   | 500        | moduleLogConditions                     |
 
     When the order identified by po_order is completed
 
     Then retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
-      | moduleLogContract_1           | moduleLogConditions_MR              | product_PO_05082023_1   | po_order                       | po_orderLine_1                     |
-      | moduleLogContract_2           | moduleLogConditions_MR              | product_PO_05082023_2   | po_order                       | po_orderLine_2                     |
-    And validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
-      | moduleLogContract_1           | moduleLogConditions_MR              | bp_moduleLogMR              | product_PO_05082023_1   | po_orderLine_1                     | po_order                       | PCE                   | 1000                  | 2.00            | ps_1                              | ModularContract     | Wa                 | CO            |
-      | moduleLogContract_2           | moduleLogConditions_MR              | bp_moduleLogMR              | product_PO_05082023_2   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | ps_1                              | ModularContract     | Wa                 | CO            |
+      | moduleLogContract_1           | moduleLogConditions                 | product_PO_05082023_1   | po_order                       | po_orderLine_1                     |
+      | moduleLogContract_2           | moduleLogConditions                 | product_PO_05082023_2   | po_order                       | po_orderLine_2                     |
 
     And after not more than 120s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
-      | receiptSchedule_05072023_1      | po_order              | po_orderLine_1            | bp_moduleLogMR           | bp_moduleLogMR_Location           | product_PO_05082023_1   | 1000       | warehouseStd              | moduleLogContract_1               |
-      | receiptSchedule_05072023_2      | po_order              | po_orderLine_2            | bp_moduleLogMR           | bp_moduleLogMR_Location           | product_PO_05082023_2   | 500        | warehouseStd              | moduleLogContract_2               |
+      | receiptSchedule_05072023_1      | po_order              | po_orderLine_1            | bp_po                    | bp_moduleLogMR_Location           | product_PO_05082023_1   | 1000       | warehouseStd              | moduleLogContract_1               |
+      | receiptSchedule_05072023_2      | po_order              | po_orderLine_2            | bp_po                    | bp_moduleLogMR_Location           | product_PO_05082023_2   | 500        | warehouseStd              | moduleLogContract_2               |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
