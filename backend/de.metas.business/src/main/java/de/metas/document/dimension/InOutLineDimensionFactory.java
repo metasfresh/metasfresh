@@ -88,10 +88,7 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 		record.setUser2_ID(from.getUser2_ID());
 
 		final YearAndCalendarId harvestingYearAndCalendarId = from.getHarvestingYearAndCalendarId();
-		if (harvestingYearAndCalendarId!=null)
-		{
-			record.setC_Harvesting_Calendar_ID(harvestingYearAndCalendarId.calendarId().getRepoId());
-			record.setHarvesting_Year_ID(harvestingYearAndCalendarId.yearId().getRepoId());
-		}
+		record.setC_Harvesting_Calendar_ID(harvestingYearAndCalendarId != null ? harvestingYearAndCalendarId.calendarId().getRepoId() : -1);
+		record.setHarvesting_Year_ID(harvestingYearAndCalendarId != null ? harvestingYearAndCalendarId.yearId().getRepoId() : -1);
 	}
 }

@@ -585,19 +585,13 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public Optional<OrderId> getOrderIdForLineId(@NonNull final InOutLineId inoutLineId)
 	{
-		final I_M_InOutLine inOutLine = load(inoutLineId, I_M_InOutLine.class);
-
+		final I_M_InOutLine inOutLine = getLineByIdInTrx(inoutLineId);
 		if (inOutLine == null)
 		{
 			return Optional.empty();
 		}
 
-		if (inOutLine.getC_Order_ID() <= 0)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.ofNullable(OrderId.ofRepoIdOrNull(inOutLine.getC_Order_ID()));
+		return OrderId.optionalOfRepoId(inOutLine.getC_Order_ID());
 	}
 
 }

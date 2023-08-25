@@ -27,28 +27,19 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @Interceptor(I_M_InOutLine.class)
@@ -78,23 +69,23 @@ public class M_InOutLine
 	public void propagateHarvestingDetails(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 
-		final Optional<OrderId> orderId = inOutDAO.getOrderIdForLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID()));
+		final OrderId orderId = inOutDAO.getOrderIdForLineId(InOutLineId.ofRepoId(inOutLineRecord.getM_InOutLine_ID())).orElse(null);
 
 
-		if (inOutLineRecord.getC_Flatrate_Term_ID() > 0)
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
+		if (flatrateTermId != null)
 		{
-			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(inOutLineRecord.getC_Flatrate_Term_ID());
 			final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
-			final YearAndCalendarId harvestingYearAndCalendarId = modularContractSettings.getYearAndCalendarId();
-			if (harvestingYearAndCalendarId != null)
+			if (modularContractSettings != null)
 			{
+				final YearAndCalendarId harvestingYearAndCalendarId = modularContractSettings.getYearAndCalendarId();
 				inOutLineRecord.setC_Harvesting_Calendar_ID(harvestingYearAndCalendarId.calendarId().getRepoId());
 				inOutLineRecord.setHarvesting_Year_ID(harvestingYearAndCalendarId.yearId().getRepoId());
 			}
 		}
-		else if (orderId.isPresent())
+		else if (orderId != null)
 		{
-			final I_C_Order order = orderDAO.getById(orderId.get());
+			final I_C_Order order = orderDAO.getById(orderId);
 			inOutLineRecord.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
 			inOutLineRecord.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
 		}
