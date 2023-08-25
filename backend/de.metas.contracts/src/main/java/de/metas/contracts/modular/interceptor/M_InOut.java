@@ -25,6 +25,7 @@ package de.metas.contracts.modular.interceptor;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.inout.IInOutDAO;
@@ -115,8 +116,10 @@ public class M_InOut
 			@NonNull final I_M_InOut inOutRecord,
 			@NonNull final ModularContractService.ModelAction modelAction)
 	{
-		inOutDAO.retrieveAllLines(inOutRecord)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction));
+		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveAllLines(inOutRecord);
+
+		inOutLines.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
+		inOutLines.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.INTERIM));
 	}
 
 	private void propagateHarvestingDetails(@NonNull final I_M_InOutLine inOutLineRecord)

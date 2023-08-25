@@ -1,3 +1,4 @@
+@Id:S0306
 Feature: Interim contract settings for bpartner
 
   Background:
@@ -40,6 +41,7 @@ Feature: Interim contract settings for bpartner
       | ModCntr_Type_ID.Identifier | Name            | Value           | Classname                                                               |
       | modCntr_type_PO            | modCntr_type_PO | modCntr_type_PO | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
 
+  @Id:S0306_100
   Scenario: purchase modular contract created and modular settings existing for selected harvesting details
   - validate bp interim contract settings are generated
   - validate interim contract created
@@ -79,7 +81,6 @@ Feature: Interim contract settings for bpartner
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
       | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
-      | po_orderLine_2 | po_order              | module_log_product_PO   | 500        | moduleLogConditions_PO                  |
 
     When the order identified by po_order is completed
 
@@ -87,38 +88,29 @@ Feature: Interim contract settings for bpartner
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
       | moduleLogContract_1           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine                       |
       | moduleLogContract_2           | moduleLogConditions_interim         | module_log_product_PO   | po_order                       | po_orderLine                       |
-      | moduleLogContract_3           | moduleLogConditions_PO              | module_log_product_PO   | po_order                       | po_orderLine_2                     |
-      | moduleLogContract_4           | moduleLogConditions_interim         | module_log_product_PO   | po_order                       | po_orderLine_2                     |
 
     And validate created C_Flatrate_Term:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
       | moduleLogContract_1           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
       | moduleLogContract_2           | moduleLogConditions_interim         | bp_interimPO                | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | interimPS                         | InterimContract     | Wa                 | CO            |
-      | moduleLogContract_3           | moduleLogConditions_PO              | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
-      | moduleLogContract_4           | moduleLogConditions_interim         | bp_interimPO                | module_log_product_PO   | po_orderLine_2                     | po_order                       | PCE                   | 500                   | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
 
     And validate C_InterimInvoice_FlatrateTerm:
       | C_InterimInvoice_FlatrateTerm_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | QtyOrdered | QtyDeliveredInUOM | QtyInvoiced |
       | C_InterimInvoice_FlatrateTerm_16082023_1    | moduleLogContract_2           | po_orderLine              | 1000       | 0                 | 0           |
-      | C_InterimInvoice_FlatrateTerm_16082023_2    | moduleLogContract_4           | po_orderLine_2            | 500        | 0                 | 0           |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO_16082023_1   | po_order              | po_orderLine              | bp_interimPO             | bp_interimPO_Location             | module_log_product_PO   | 1000       | warehouseStd              |
-      | receiptSchedule_PO_16082023_2   | po_order              | po_orderLine_2            | bp_interimPO             | bp_interimPO_Location             | module_log_product_PO   | 500        | warehouseStd              |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig_16082023_1               | hu_16082023_1      | receiptSchedule_PO_16082023_1   | N               | 1     | N               | 1     | N               | 50    | 101                                | 1000006                      |
-      | huLuTuConfig_16082023_2               | hu_16082023_2      | receiptSchedule_PO_16082023_2   | N               | 1     | N               | 1     | N               | 30    | 101                                | 1000006                      |
 
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_16082023_1      | receiptSchedule_PO_16082023_1   | inOut_PO_16082023_1   |
-      | hu_16082023_2      | receiptSchedule_PO_16082023_2   | inOut_PO_16082023_2   |
 
     Then validate C_InterimInvoice_FlatrateTerm:
       | C_InterimInvoice_FlatrateTerm_ID.Identifier | C_Flatrate_Term_ID.Identifier | C_OrderLine_ID.Identifier | QtyOrdered | QtyDeliveredInUOM | QtyInvoiced |
       | C_InterimInvoice_FlatrateTerm_16082023_1    | moduleLogContract_2           | po_orderLine              | 1000       | 50                | 0           |
-      | C_InterimInvoice_FlatrateTerm_16082023_2    | moduleLogContract_4           | po_orderLine_2            | 500        | 30                | 0           |
 

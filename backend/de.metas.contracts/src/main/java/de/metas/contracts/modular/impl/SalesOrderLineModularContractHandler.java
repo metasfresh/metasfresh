@@ -144,6 +144,12 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
+	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	{
+		return logEntryContractType.isModularContractType();
+	}
+
+	@Override
 	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			final @NonNull I_C_OrderLine orderLine,
 			final @NonNull FlatrateTermId modularContractId)
@@ -209,6 +215,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 						.referencedModel(orderLineRef)
 						.flatrateTermId(flatrateTermId)
 						.description(description)
+						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build()
 		);
 	}

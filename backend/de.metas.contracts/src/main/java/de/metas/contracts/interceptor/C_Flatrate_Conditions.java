@@ -62,6 +62,7 @@ public class C_Flatrate_Conditions
 	public static final AdMessageKey MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P = AdMessageKey.of("Conditions_Error_Subscription_Not_Supported"); // 03204
 
 	private static final String SYSCONFIG_MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE = "C_Flatrate_Conditions.MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE";
+	private static final String SYSCONFIG_INTERIM_CONTRACT_TRANSITION_DEFAULT_VALUE = "C_Flatrate_Conditions.INTERIM_CONTRACT_TRANSITION_DEFAULT_VALUE";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -135,6 +136,7 @@ public class C_Flatrate_Conditions
 		}
 
 		setFlatrateTransitionForModularContract(cond);
+		setFlatrateTransitionForInterimContract(cond);
 
 		final boolean hasHoCompletedTransition = cond.getC_Flatrate_Transition_ID() <= 0 || !X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus());
 		if (hasHoCompletedTransition)
@@ -158,7 +160,7 @@ public class C_Flatrate_Conditions
 	private void setFlatrateTransitionForModularContract(@NonNull final I_C_Flatrate_Conditions conditions)
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(conditions.getType_Conditions());
-		if (!typeConditions.isModularOrInterim())
+		if (!typeConditions.isModularContractType())
 		{
 			return;
 		}
@@ -167,15 +169,33 @@ public class C_Flatrate_Conditions
 
 		if (flatrateTransitionId == null)
 		{
-			throw new AdempiereException("Missing default value for flatrate condition configured for MODULAR CONTRACTS! Please set value for system configuration \"C_Flatrate_Conditions.MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE\"")
+			throw new AdempiereException("Missing default value for flatrate condition's transition configured for MODULAR CONTRACTS! Please set value for system configuration \"" + SYSCONFIG_MODULAR_CONTRACT_TRANSITION_DEFAULT_VALUE + "\"")
 					.markAsUserValidationError();
 		}
 
 		conditions.setC_Flatrate_Transition_ID(flatrateTransitionId.getRepoId());
 	}
 
+	private void setFlatrateTransitionForInterimContract(@NonNull final I_C_Flatrate_Conditions conditions)
+	{
+		final TypeConditions typeConditions = TypeConditions.ofCode(conditions.getType_Conditions());
+		if (!typeConditions.isInterimContractType())
+		{
+			return;
+		}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },  ifColumnsChanged =I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID )
+		final FlatrateTransitionId flatrateTransitionId = FlatrateTransitionId.ofRepoIdOrNull(sysConfigBL.getIntValue(SYSCONFIG_INTERIM_CONTRACT_TRANSITION_DEFAULT_VALUE, -1));
+
+		if (flatrateTransitionId == null)
+		{
+			throw new AdempiereException("Missing default value for flatrate condition's transition configured for INTERIM CONTRACTS! Please set value for system configuration \"" + SYSCONFIG_INTERIM_CONTRACT_TRANSITION_DEFAULT_VALUE + "\"")
+					.markAsUserValidationError();
+		}
+
+		conditions.setC_Flatrate_Transition_ID(flatrateTransitionId.getRepoId());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID)
 	void test(@NonNull final I_C_Flatrate_Conditions conditions)
 	{
 		CacheMgt.get().reset(I_C_Year.Table_Name);
