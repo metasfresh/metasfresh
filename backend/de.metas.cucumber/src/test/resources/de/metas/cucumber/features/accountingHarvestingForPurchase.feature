@@ -1,3 +1,4 @@
+@dev:runThisOne
 @from:cucumber
 @ghActions:run_on_executor2
 Feature: accounting-purchase-harvesting-feature
@@ -8,7 +9,6 @@ Feature: accounting-purchase-harvesting-feature
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
-
 
   @from:cucumber
   @Id:S0308_100
@@ -26,6 +26,30 @@ Feature: accounting-purchase-harvesting-feature
     And load C_Year from metasfresh:
       | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
       | y2022                | 2022       | harvesting_calendar      |
+    And load C_AcctSchema:
+      | C_AcctSchema_ID.Identifier | OPT.Name              |
+      | acctSchema_1               | metas fresh UN/34 CHF |
+
+    And load C_Element:
+      | C_Element_ID.Identifier | OPT.C_Element_ID |
+      | element_1               | 1000000          |
+
+    And load C_ElementValue:
+      | C_ElementValue_ID.Identifier | C_Element_ID.Identifier | Value |
+      | T_Credit_Acct                | element_1               | 90014 |
+      | V_Liability_Acct             | element_1               | 2000  |
+      | P_InventoryClearing_Acct     | element_1               | 1105  |
+
+    And load C_Currency:
+      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
+      | eur                      | 102               |
+      | chf                      | 318               |
+
+    And metasfresh contains C_AcctSchema_Element:
+      | C_AcctSchema_Element_ID.Identifier | Name                | ElementType | C_AcctSchema_ID.Identifier | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | cae_1                              | Harvesting Calendar | HC          | acctSchema_1               | harvesting_calendar                     |                                   |
+      | cae_2                              | Harvesting Year     | HY          | acctSchema_1               |                                         | y2022                             |
+
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name        |
       | huPackingLU           | huPackingLU |
@@ -100,29 +124,6 @@ Feature: accounting-purchase-harvesting-feature
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | harvesting_calendar                     | y2022                             |
       | invoiceLine1_2              | p_2                     | 10          | true      | 8                | 8               | 80             | 0            | harvesting_calendar                     | y2022                             |
 
-    And load C_AcctSchema:
-      | C_AcctSchema_ID.Identifier | OPT.Name              |
-      | acctSchema_1               | metas fresh UN/34 CHF |
-
-    And load C_Element:
-      | C_Element_ID.Identifier | OPT.C_Element_ID |
-      | element_1               | 1000000          |
-
-    And load C_ElementValue:
-      | C_ElementValue_ID.Identifier | C_Element_ID.Identifier | Value |
-      | T_Credit_Acct                | element_1               | 90014 |
-      | V_Liability_Acct             | element_1               | 2000  |
-      | P_InventoryClearing_Acct     | element_1               | 1105  |
-
-    And load C_Currency:
-      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
-      | eur                      | 102               |
-      | chf                      | 318               |
-
-    And metasfresh contains C_AcctSchema_Element:
-      | C_AcctSchema_Element_ID.Identifier | Name                | ElementType | C_AcctSchema_ID.Identifier | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
-      | cae_1                              | Harvesting Calendar | HC          | acctSchema_1               | harvesting_calendar                     |                                   |
-      | cae_2                              | Harvesting Year     | HY          | acctSchema_1               |                                         | y2022                             |
 
 #   The Fact_Acct records shall contain the the calendar and the year from invoice document
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
