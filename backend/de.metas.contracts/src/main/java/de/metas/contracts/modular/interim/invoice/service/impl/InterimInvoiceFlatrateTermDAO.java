@@ -79,6 +79,7 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 				.orElse(null);
 	}
 
+	@Override
 	public InterimInvoiceFlatrateTerm save(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm)
 	{
 		final I_C_InterimInvoice_FlatrateTerm model = toDbObject(interimInvoiceFlatrateTerm);
@@ -145,6 +146,7 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 	/**
 	 * Lookup if an interimInvoice contract exists that would match this InOutLine (Bpartner/Product/Date/OrderLine).
 	 */
+	@Override
 	@Nullable
 	public InterimInvoiceFlatrateTerm getInterimInvoiceOverviewForInOutLine(@NonNull final I_M_InOutLine inOutLine)
 	{
@@ -169,6 +171,7 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 				.orElse(null);
 	}
 
+	@Override
 	@Nullable
 	public InterimInvoiceFlatrateTerm getInterimInvoiceForFlatrateTermAndOrderLineId(@NonNull final FlatrateTermId flatrateTermId, final @NonNull OrderLineId orderLineId)
 	{
@@ -183,15 +186,16 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 				.orElse(null);
 	}
 
+	@Override
 	@Nullable
 	public InterimInvoiceFlatrateTerm getInterimInvoiceFlatrateTermForWithwoldingOrInterimICId(@NonNull final InvoiceCandidateId icId)
 	{
 		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(queryBL.createCompositeQueryFilter(I_C_InterimInvoice_FlatrateTerm.class)
-						.setJoinOr()
-						.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Invoice_Candidate_Withholding_ID, icId)
-						.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Interim_Invoice_Candidate_ID, icId))
+								.setJoinOr()
+								.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Invoice_Candidate_Withholding_ID, icId)
+								.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Interim_Invoice_Candidate_ID, icId))
 				.orderByDescending(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID)
 				.create()
 				.firstOptional(I_C_InterimInvoice_FlatrateTerm.class)
@@ -210,6 +214,7 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 	 * @param interimInvoiceFlatrateTerm the {@link InterimInvoiceFlatrateTerm} to verify
 	 * @return true if the given {@link InterimInvoiceFlatrateTerm} is still usable, false otherwise
 	 */
+	@Override
 	public boolean isInterimInvoiceStillUsable(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm)
 	{
 		if (interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId() == null && interimInvoiceFlatrateTerm.getWithholdingInvoiceCandidateId() == null)
@@ -265,5 +270,4 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 		dbObject.setPriceActual(Money.toBigDecimalOrZero(object.getPriceActual()));
 		return dbObject;
 	}
-
 }

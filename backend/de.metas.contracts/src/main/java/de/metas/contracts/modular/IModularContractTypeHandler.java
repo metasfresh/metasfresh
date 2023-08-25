@@ -23,6 +23,7 @@
 package de.metas.contracts.modular;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import lombok.NonNull;
@@ -44,6 +45,8 @@ public interface IModularContractTypeHandler<T>
 	Class<T> getType();
 
 	boolean applies(@NonNull final T model);
+
+	boolean applies(@NonNull final LogEntryContractType logEntryContractType);
 
 	/**
 	 * Return a {@code LogEntryCreateRequest} if the framework shall create the log, or {@link Optional#empty()} otherwise.

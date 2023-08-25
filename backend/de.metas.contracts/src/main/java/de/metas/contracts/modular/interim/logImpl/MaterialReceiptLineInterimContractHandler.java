@@ -20,12 +20,14 @@
  * #L%
  */
 
-package de.metas.contracts.modular.impl;
+package de.metas.contracts.modular.interim.logImpl;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.impl.MaterialReceiptLineHandlerHelper;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -37,20 +39,22 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public class MaterialReceiptLineModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
+public class MaterialReceiptLineInterimContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
-
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-
 	private final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper;
 
-	public MaterialReceiptLineModularContractHandler(@NonNull final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper)
+	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
+	public MaterialReceiptLineInterimContractHandler(@NonNull final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper)
 	{
 		this.materialReceiptLineHandlerHelper = materialReceiptLineHandlerHelper;
 	}
@@ -70,7 +74,7 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 	}
 
 	@Override
-	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	public boolean applies(@NonNull final LogEntryContractType logEntryContractType)
 	{
 		return logEntryContractType.isModularContractType();
 	}
@@ -78,25 +82,26 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 	@Override
 	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
 	{
-		return materialReceiptLineHandlerHelper.createLogEntryCreateRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.MODULAR_CONTRACT);
+		return materialReceiptLineHandlerHelper.createLogEntryCreateRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.INTERIM);
 	}
 
 	@Override
 	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
 	{
-		return materialReceiptLineHandlerHelper.createLogEntryReverseRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.MODULAR_CONTRACT);
+		return materialReceiptLineHandlerHelper.createLogEntryReverseRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.INTERIM);
 	}
 
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		if (inOutRecord.isSOTrx() || inOutLineRecord.getMovementQty().signum() < 0)
+		final FlatrateTermId modularFlatrateTermId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
+		if (inOutRecord.isSOTrx() || modularFlatrateTermId == null || inOutLineRecord.getMovementQty().signum() < 0)
 		{
 			return Stream.empty();
 		}
 
-		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID()));
+		return Stream.ofNullable(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, Objects.requireNonNull(TimeUtil.asInstant(inOutRecord.getMovementDate()))));
 	}
 
 	@Override
