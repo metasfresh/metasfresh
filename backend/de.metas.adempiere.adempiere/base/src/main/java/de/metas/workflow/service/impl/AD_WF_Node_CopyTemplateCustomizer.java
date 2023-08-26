@@ -23,13 +23,7 @@
 package de.metas.workflow.service.impl;
 
 import de.metas.copy_with_details.template.CopyTemplateCustomizer;
-import de.metas.util.InSetPredicate;
-import lombok.NonNull;
 import org.compiere.model.I_AD_WF_Node;
-import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.POInfo;
-import org.compiere.model.copy.ValueToCopy;
-import org.eevolution.model.I_PP_WF_Node_Product;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,11 +33,5 @@ public class AD_WF_Node_CopyTemplateCustomizer implements CopyTemplateCustomizer
 	public String getTableName()
 	{
 		return I_AD_WF_Node.Table_Name;
-	}
-
-	@Override
-	public @NonNull InSetPredicate<String> getChildTableNames()
-	{
-		return InSetPredicate.only(I_PP_WF_Node_Product.Table_Name);
 	}
 }

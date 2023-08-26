@@ -27,7 +27,6 @@ import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
-import org.eevolution.model.I_PP_WF_Node_Product;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -42,6 +41,6 @@ public class AD_Workflow_CopyTemplateCustomizer implements CopyTemplateCustomize
 	@Override
 	public @NonNull InSetPredicate<String> getChildTableNames()
 	{
-		return InSetPredicate.only(I_AD_WF_Node.Table_Name, I_PP_WF_Node_Product.Table_Name);
+		return InSetPredicate.only(I_AD_WF_Node.Table_Name);
 	}
 }
