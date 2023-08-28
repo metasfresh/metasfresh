@@ -30,10 +30,12 @@ import de.metas.order.copy.C_OrderLine_CopyRecordSupport;
 import de.metas.order.copy.C_Order_CopyRecordSupport;
 import de.metas.order.copy.C_Order_Cost_CopyRecordSupport;
 import de.metas.workflow.service.impl.AD_WF_Node_CopyRecordSupport;
+import de.metas.workflow.service.impl.AD_Workflow_CopyRecordSupport;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_WF_Node;
+import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -53,6 +55,7 @@ public class CopyValidator extends AbstractModelInterceptor
 		CopyRecordFactory.registerCopyRecordSupport(I_C_OrderLine.Table_Name, C_OrderLine_CopyRecordSupport.class);
 		CopyRecordFactory.registerCopyRecordSupport(I_C_Order_Cost.Table_Name, C_Order_Cost_CopyRecordSupport.class);
 		CopyRecordFactory.registerCopyRecordSupport(I_AD_WF_Node.Table_Name, AD_WF_Node_CopyRecordSupport.class);
+		CopyRecordFactory.registerCopyRecordSupport(I_AD_Workflow.Table_Name, AD_Workflow_CopyRecordSupport.class);
 
 		// Backward compatibility
 		CopyRecordFactory.enableForTableName(I_C_Invoice.Table_Name);
