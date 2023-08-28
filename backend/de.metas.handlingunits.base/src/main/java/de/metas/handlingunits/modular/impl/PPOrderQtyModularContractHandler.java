@@ -95,6 +95,12 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 	}
 
 	@Override
+	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
+	{
+		return logEntryContractType.isModularContractType();
+	}
+
+	@Override
 	@NonNull
 	public Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final I_PP_Order_Qty ppOrderQty, final @NonNull FlatrateTermId modularContractId)
 	{

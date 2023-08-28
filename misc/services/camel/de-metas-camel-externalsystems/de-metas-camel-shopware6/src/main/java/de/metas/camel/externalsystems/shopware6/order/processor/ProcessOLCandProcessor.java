@@ -52,9 +52,9 @@ public class ProcessOLCandProcessor implements Processor
 				.map(externalHeaderId -> JsonOLCandProcessRequest.builder()
 						.externalHeaderId(externalHeaderId)
 						.inputDataSourceName(DATA_SOURCE_INT_SHOPWARE)
-						.ship(false)
-						.invoice(false)
-						.closeOrder(false)
+						.ship(true)
+						.invoice(true)
+						.closeOrder(true)
 						.build())
 				.collect(Collectors.toList());
 

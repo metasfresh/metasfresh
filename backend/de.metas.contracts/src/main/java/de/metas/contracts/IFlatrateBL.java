@@ -50,6 +50,7 @@ import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -89,6 +90,7 @@ public interface IFlatrateBL extends ISingletonService
 	void updateEntry(I_C_Flatrate_DataEntry dataEntry);
 
 	void updateFlatrateTermProductAndPrice(@NonNull FlatrateTermPriceRequest request);
+
 	void updateFlatrateTermBillBPartner(FlatrateTermBillPartnerRequest request);
 
 	I_C_Flatrate_Term getById(@NonNull FlatrateTermId flatrateTermId);
@@ -98,6 +100,8 @@ public interface IFlatrateBL extends ISingletonService
 	boolean isModularContractInProgress(@NonNull ModularFlatrateTermQuery query);
 
 	@NonNull Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull ModularFlatrateTermQuery query);
+
+	FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull FlatrateTermId modularFlatrateTermId, @NonNull Instant date);
 
 	/**
 	 * term to extend
