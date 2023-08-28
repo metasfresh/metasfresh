@@ -35,6 +35,7 @@ import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.PO;
 
@@ -124,6 +125,25 @@ public class AD_Workflow_StepDef
 		for (final Map<String, String> row : rows)
 		{
 			validateWorkflow(row);
+		}
+	}
+
+	@And("update AD_Workflow:")
+	public void update_AD_Workflow(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String workflowIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_AD_Workflow workflowRecord = workflowTable.get(workflowIdentifier);
+
+			final String wfNodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_WF_Node_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(wfNodeIdentifier))
+			{
+				final I_AD_WF_Node wfNode = wfNodeTable.get(wfNodeIdentifier);
+				workflowRecord.setAD_WF_Node_ID(wfNode.getAD_WF_Node_ID());
+			}
+			InterfaceWrapperHelper.saveRecord(workflowRecord);
 		}
 	}
 

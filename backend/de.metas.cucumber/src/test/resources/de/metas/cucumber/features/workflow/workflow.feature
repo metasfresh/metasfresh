@@ -23,17 +23,23 @@ Feature: workflow tests
       | testResource             | 540006        |
 
     And create AD_WF_Node:
-      | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Name     | Value     | Duration | OPT.Description |
-      | wfNode_1                 | workflow_1                | testResource                 | testName | testValue | 4        | testDescription |
+      | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Name      | Value      | Duration | OPT.Description  |
+      | wfNode_1                 | workflow_1                | testResource                 | testName1 | testValue1 | 4        | testDescription1 |
+      | wfNode_2                 | workflow_1                | testResource                 | testName2 | testValue2 | 4        | testDescription2 |
 
     And metasfresh contains M_Products:
-      | Identifier | Name                     |
-      | p_1        | workflowProduct_08092023 |
+      | Identifier | Name                      |
+      | p_1        | workflowProduct1_08092023 |
+      | p_2        | workflowProduct2_08092023 |
 
     And create PP_WF_Node_Product:
       | PP_WF_Node_Product_ID.Identifier | AD_WF_Node_ID.Identifier | M_Product_ID.Identifier | OPT.Qty | OPT.Specification | OPT.IsSubcontracting |
       | wfNodeProduct_1                  | wfNode_1                 | p_1                     | 4       | testSpecification | Y                    |
+      | wfNodeProduct_2                  | wfNode_2                 | p_2                     | 4       | testSpecification | Y                    |
 
+    And update AD_Workflow:
+      | AD_Workflow_ID.Identifier | OPT.AD_WF_Node_ID.Identifier |
+      | workflow_1                | wfNode_2                     |
     When clone AD_Workflow:
       | AD_Workflow_ID.Identifier | ClonedWorkflow.AD_Workflow_ID.Identifier |
       | workflow_1                | clonedWorkflow_1                         |
@@ -43,9 +49,15 @@ Feature: workflow tests
       | clonedWorkflow_1          | testName_20220818:13:30:13 | M            | testDescription | testHelp | 1               | D                | 0           | 2022-08-18    | 2022-08-19  | 0            | 0                 | 2            | 1        | 1               | false         |
 
     And after not more than 10s, AD_WF_Node are found:
-      | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Duration | OPT.Description | OPT.Name | OPT.Value |
-      | clonedWFNode_1           | clonedWorkflow_1          | testResource                 | 4        | testDescription | testName | testValue |
+      | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Duration | OPT.Description  | OPT.Name  | OPT.Value  |
+      | clonedWFNode_1           | clonedWorkflow_1          | testResource                 | 4        | testDescription1 | testName1 | testValue1 |
+      | clonedWFNode_2           | clonedWorkflow_1          | testResource                 | 4        | testDescription2 | testName2 | testValue2 |
+
+    Then validate AD_Workflow:
+      | AD_Workflow_ID.Identifier | Name                       | WorkflowType | OPT.AD_WF_Node_ID.Identifier |
+      | clonedWorkflow_1          | testName_20220818:13:30:13 | M            | clonedWFNode_2               |
 
     And after not more than 10s, PP_WF_Node_Product are found:
       | PP_WF_Node_Product_ID.Identifier | AD_WF_Node_ID.Identifier | M_Product_ID.Identifier | OPT.Qty | OPT.Specification | OPT.IsSubcontracting |
       | clonedWFNodeProduct_1            | clonedWFNode_1           | p_1                     | 4       | testSpecification | Y                    |
+      | clonedWFNodeProduct_2            | clonedWFNode_2           | p_2                     | 4       | testSpecification | Y                    |

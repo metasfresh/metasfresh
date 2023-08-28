@@ -79,6 +79,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -1383,6 +1384,12 @@ public class InterfaceWrapperHelper
 	public static <T> T getDynAttribute(@NonNull final Object model, @NonNull final String attributeName)
 	{
 		return helpers.getDynAttribute(model, attributeName);
+	}
+
+	@Nullable
+	public static <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return helpers.computeDynAttributeIfAbsent(model, attributeName, supplier);
 	}
 
 	/**

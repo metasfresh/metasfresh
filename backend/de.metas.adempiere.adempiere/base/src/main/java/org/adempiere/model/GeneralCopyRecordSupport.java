@@ -153,6 +153,11 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 		//
 		// Copy children
+		copyChildren(toPO, fromPO, trxName);
+	}
+
+	private void copyChildren(final PO toPO, final PO fromPO, final String trxName)
+	{
 		for (final CopyRecordSupportTableInfo childTableInfo : getSuggestedChildren(fromPO, getSuggestedChildrenToCopy()))
 		{
 			for (final Iterator<Object> it = retrieveChildPOsForParent(childTableInfo, fromPO); it.hasNext(); )
@@ -170,6 +175,8 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				log.debug("Copied {}", childPO);
 			}
 		}
+
+		fireOnRecordAndChildrenCopied(toPO, fromPO);
 	}
 
 	/**
@@ -189,6 +196,16 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	protected void onRecordCopied(final PO to, final PO from)
+	{
+		// nothing on this level
+	}
+
+	private void fireOnRecordAndChildrenCopied(final PO to, final PO from)
+	{
+		onRecordAndChildrenCopied(to, from);
+	}
+
+	protected void onRecordAndChildrenCopied(final PO to, final PO from)
 	{
 		// nothing on this level
 	}
