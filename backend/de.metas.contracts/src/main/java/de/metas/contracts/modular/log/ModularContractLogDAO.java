@@ -23,6 +23,8 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
@@ -49,6 +51,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
@@ -193,12 +196,15 @@ public class ModularContractLogDAO
 			@NonNull final ModularContractLogQuery query,
 			final boolean isBillable)
 	{
-		toSqlQuery(query)
-				.create()
-				.updateDirectly()
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
+		sqlQuery.updateDirectly()
 				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_IsBillable, isBillable)
 				.setExecuteDirectly(true)
 				.execute();
+
+		CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+				I_ModCntr_Log.Table_Name,
+				sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
 	}
 
 	private IQueryBuilder<I_ModCntr_Log> toSqlQuery(@NonNull final ModularContractLogQuery query)

@@ -7,7 +7,6 @@ import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
