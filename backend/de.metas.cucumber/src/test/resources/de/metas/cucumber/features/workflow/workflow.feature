@@ -36,9 +36,6 @@ Feature: workflow tests
       | wfNodeProduct_1                  | workflow_1                | wfNode_1                 | p_1                     | 4       | testSpecification | Y                    |
       | wfNodeProduct_2                  | workflow_1                | wfNode_2                 | p_2                     | 4       | testSpecification | Y                    |
 
-    And update AD_Workflow:
-      | AD_Workflow_ID.Identifier | OPT.AD_WF_Node_ID.Identifier |
-      | workflow_1                | wfNode_2                     |
     When clone AD_Workflow:
       | AD_Workflow_ID.Identifier | ClonedWorkflow.AD_Workflow_ID.Identifier |
       | workflow_1                | clonedWorkflow_1                         |
