@@ -909,4 +909,8 @@ public interface I_PP_Product_BOMLine
 
 	ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_VariantGroup = new ModelColumn<>(I_PP_Product_BOMLine.class, "VariantGroup", null);
 	String COLUMNNAME_VariantGroup = "VariantGroup";
+
+	// TODO Introduce DB column
+	default void setAllowIssuingAnyProduct(boolean b) {}
+	default boolean isAllowIssuingAnyProduct() { return true; }
 }

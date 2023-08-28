@@ -137,19 +137,24 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final Set<WarehouseId> issueFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 
 		final AttributeSetInstanceId expectedASI = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderBomLine.getM_AttributeSetInstance_ID());
-
 		final ImmutableAttributeSet storageRelevantAttributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(expectedASI)
 				.filterOnlyStorageRelevantAttributes();
 
-		return handlingUnitsDAO
+		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO
 				.createHUQueryBuilder()
-				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
-				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
+				.addOnlyInWarehouseIds(issueFromWarehouseIds)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.addOnlyWithAttributes(storageRelevantAttributeSet)
 				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
 				.onlyNotLocked();
+
+		if (!ppOrderBomLine.isAllowIssuingAnyProduct())
+		{
+			huQueryBuilder.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()));
+		}
+
+		return huQueryBuilder;
 	}
 
 	private static final ImmutableMultimap<PPOrderPlanningStatus, PPOrderPlanningStatus> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<PPOrderPlanningStatus, PPOrderPlanningStatus>builder()
