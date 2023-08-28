@@ -49,6 +49,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.AdTableId;
@@ -1212,5 +1213,19 @@ public class FlatrateDAO implements IFlatrateDAO
 		}
 
 		return queryBuilder.create();
+	}
+
+	@Override
+	public boolean isExistsModularOrInterimContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter)
+	{
+		return getFlatrateTermQueryBuilder(flatrateTermFilter)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, X_C_Flatrate_Term.TYPE_CONDITIONS_InterimInvoice)
+				.anyMatch();
+	}
+	@NonNull
+	private IQueryBuilder<I_C_Flatrate_Term> getFlatrateTermQueryBuilder(@NonNull final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(flatrateTermFilter);
 	}
 }

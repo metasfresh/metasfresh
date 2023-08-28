@@ -143,10 +143,9 @@ public class ContractChangeBL implements IContractChangeBL
 			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT, currentTerm);
 		}
 
-		if (!TypeConditions.ofCode(currentTerm.getType_Conditions()).isInterimContractType())
-		{
-			createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
-		}
+
+		createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
+
 
 		setTerminatioReasonMemoAndDate(currentTerm, contractChangeParameters);
 		setMasterDates(currentTerm, contractChangeParameters);
