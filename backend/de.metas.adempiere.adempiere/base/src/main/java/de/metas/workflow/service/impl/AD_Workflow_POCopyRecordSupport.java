@@ -24,8 +24,10 @@ package de.metas.workflow.service.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.workflow.WFNodeId;
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
@@ -52,6 +54,21 @@ public class AD_Workflow_POCopyRecordSupport extends GeneralCopyRecordSupport
 		return I_AD_Workflow.COLUMNNAME_Name.equals(gridField.getColumnName())
 				? String.valueOf(gridField.getValue()).concat("_").concat(DATE_FORMATTER.format(SystemTime.asLocalDateTime()))
 				: super.getValueToCopy(gridField);
+	}
+
+	@Override
+	protected void onRecordAndChildrenCopied(final PO to, final PO from)
+	{
+		final I_AD_Workflow toWorkflow = InterfaceWrapperHelper.create(to, I_AD_Workflow.class);
+		final I_AD_Workflow fromWorkflow = InterfaceWrapperHelper.create(from, I_AD_Workflow.class);
+
+		final ClonedWFNodesInfo clonedWFNodesInfo = ClonedWFNodesInfo.getOrNull(toWorkflow);
+		if (clonedWFNodesInfo != null)
+		{
+			final WFNodeId clonedWFNodeId = clonedWFNodesInfo.getTargetWFStepId(WFNodeId.ofRepoId(fromWorkflow.getAD_WF_Node_ID()));
+			toWorkflow.setAD_WF_Node_ID(clonedWFNodeId.getRepoId());
+			InterfaceWrapperHelper.saveRecord(toWorkflow);
+		}
 	}
 
 	@Override
