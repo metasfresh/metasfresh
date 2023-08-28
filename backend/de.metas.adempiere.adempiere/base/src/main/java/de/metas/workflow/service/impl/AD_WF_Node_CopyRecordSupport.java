@@ -25,6 +25,7 @@ package de.metas.workflow.service.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.copy_with_details.GeneralCopyRecordSupport;
 import de.metas.copy_with_details.template.CopyTemplate;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WorkflowId;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
+import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.PO;
 import org.eevolution.model.I_PP_WF_Node_Product;
 
@@ -45,6 +47,15 @@ public class AD_WF_Node_CopyRecordSupport extends GeneralCopyRecordSupport
 		final I_AD_WF_Node toWFNode = InterfaceWrapperHelper.create(to, I_AD_WF_Node.class);
 		final I_AD_WF_Node fromWFNode = InterfaceWrapperHelper.create(from, I_AD_WF_Node.class);
 		cloneWFNodeProductsForWFNode(toWFNode, fromWFNode);
+
+		ClonedWFNodesInfo.getOrCreate(getTargetWorkflow())
+				.addOriginalToClonedWFStepMapping(WFNodeId.ofRepoId(fromWFNode.getAD_WF_Node_ID()),
+												  WFNodeId.ofRepoId(toWFNode.getAD_WF_Node_ID()));
+	}
+
+	private I_AD_Workflow getTargetWorkflow()
+	{
+		return Check.assumeNotNull(getParentModel(I_AD_Workflow.class), "target workflow is not null");
 	}
 
 	private void cloneWFNodeProductsForWFNode(@NonNull final I_AD_WF_Node toWFNode, @NonNull final I_AD_WF_Node fromWFNode)
