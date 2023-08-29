@@ -1,6 +1,8 @@
 package de.metas.acct.api.impl;
 
 import de.metas.acct.api.AcctSchemaElementType;
+import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.X_C_AcctSchema_Element;
 
 /*
  * #%L
@@ -56,7 +58,9 @@ public enum AcctSegmentType
 	UserElementString6(AcctSchemaElementType.UserElementString6),
 	UserElementString7(AcctSchemaElementType.UserElementString7),
 	SalesOrder(AcctSchemaElementType.SalesOrder),
-	SectionCode(AcctSchemaElementType.SectionCode);
+	SectionCode(AcctSchemaElementType.SectionCode),
+	HarvestingCalendar(AcctSchemaElementType.HarvestingCalendar),
+	HarvestingYear(AcctSchemaElementType.HarvestingYear);
 
 	AcctSegmentType(@SuppressWarnings("unused") final AcctSchemaElementType elementType)
 	{

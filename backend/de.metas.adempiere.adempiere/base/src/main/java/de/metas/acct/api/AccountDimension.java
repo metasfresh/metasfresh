@@ -216,6 +216,16 @@ public final class AccountDimension
 		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString7));
 	}
 
+	public int getC_Harvesting_Calendar_ID()
+	{
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.HarvestingCalendar),0);
+	}
+
+	public int getHarvesting_Year_ID()
+	{
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.HarvestingYear),0);
+	}
+
 	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
@@ -449,6 +459,18 @@ public final class AccountDimension
 		public Builder setUserElementString7(final String userElementString7)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString7, userElementString7);
+			return this;
+		}
+
+		public Builder setC_Harvesting_Calendar_ID(final int C_Harvesting_Calendar_ID)
+		{
+			setSegmentValue(AcctSegmentType.HarvestingCalendar, C_Harvesting_Calendar_ID);
+			return this;
+		}
+
+		public Builder setHarvesting_Year_ID(final int Harvesting_Year_ID)
+		{
+			setSegmentValue(AcctSegmentType.HarvestingYear, Harvesting_Year_ID);
 			return this;
 		}
 	}

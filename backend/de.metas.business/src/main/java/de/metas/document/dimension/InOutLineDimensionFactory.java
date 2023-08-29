@@ -23,6 +23,7 @@
 package de.metas.document.dimension;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -62,6 +63,7 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 				.userElementString7(record.getUserElementString7())
 				.user1_ID(record.getUser1_ID())
 				.user2_ID(record.getUser2_ID())
+				.harvestingYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(record.getC_Harvesting_Calendar_ID(), record.getHarvesting_Year_ID()))
 				.build();
 	}
 
@@ -84,5 +86,9 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 		record.setUserElementString7(from.getUserElementString7());
 		record.setUser1_ID(from.getUser1_ID());
 		record.setUser2_ID(from.getUser2_ID());
+
+		final YearAndCalendarId harvestingYearAndCalendarId = from.getHarvestingYearAndCalendarId();
+		record.setC_Harvesting_Calendar_ID(harvestingYearAndCalendarId != null ? harvestingYearAndCalendarId.calendarId().getRepoId() : -1);
+		record.setHarvesting_Year_ID(harvestingYearAndCalendarId != null ? harvestingYearAndCalendarId.yearId().getRepoId() : -1);
 	}
 }
