@@ -38,7 +38,6 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -57,17 +56,20 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public class PPOrderQtyModularContractHandler implements IModularContractTypeHandler<I_PP_Order_Qty>
+public class PPCostCollectorModularContractHandler implements IModularContractTypeHandler<I_PP_Cost_Collector>
 {
-	private static final AdMessageKey MSG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description");
-	
+	private static final AdMessageKey MSG_DESCRIPTION_ISSUE = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Issue");
+	private static final AdMessageKey MSG_DESCRIPTION_RECEIPT = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Receipt");
+
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -76,22 +78,22 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
-	public PPOrderQtyModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
+	public PPCostCollectorModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
 	}
 
 	@Override
 	@NonNull
-	public Class<I_PP_Order_Qty> getType()
+	public Class<I_PP_Cost_Collector> getType()
 	{
-		return I_PP_Order_Qty.class;
+		return I_PP_Cost_Collector.class;
 	}
 
 	@Override
-	public boolean applies(@NonNull final I_PP_Order_Qty issueReceiptQty)
+	public boolean applies(@NonNull final I_PP_Cost_Collector issueCostCollector)
 	{
-		return ppOrderBL.isModularOrder(PPOrderId.ofRepoId(issueReceiptQty.getPP_Order_ID()));
+		return ppOrderBL.isModularOrder(PPOrderId.ofRepoId(issueCostCollector.getPP_Order_ID()));
 	}
 
 	@Override
@@ -102,20 +104,20 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 
 	@Override
 	@NonNull
-	public Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final I_PP_Order_Qty ppOrderQty, final @NonNull FlatrateTermId modularContractId)
+	public Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final I_PP_Cost_Collector ppCostCollector, final @NonNull FlatrateTermId modularContractId)
 	{
 		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(modularContractId);
 		if (modularContractSettings == null)
 		{
 			throw new AdempiereException("Invalid contract missing settings")
 					.appendParametersToMessage()
-					.setParameter("PP_Order_ID", ppOrderQty.getPP_Order_ID())
+					.setParameter("PP_Order_ID", ppCostCollector.getPP_Order_ID())
 					.setParameter("ModularContractID", modularContractId);
 		}
 
 		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
 				.stream()
-				.filter(config -> config.isMatchingClassName(PPOrderQtyModularContractHandler.class.getName()))
+				.filter(config -> config.isMatchingClassName(PPCostCollectorModularContractHandler.class.getName()))
 				.map(ModuleConfig::getModularContractType)
 				.map(ModularContractType::getId)
 				.findFirst();
@@ -126,26 +128,40 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 		}
 
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(modularContractId);
-		final I_PP_Order ppOrderRecord = ppOrderBL.getById(PPOrderId.ofRepoId(ppOrderQty.getPP_Order_ID()));
+		final I_PP_Order ppOrderRecord = ppOrderBL.getById(PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID()));
 
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(ppOrderQty.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(ppOrderQty.getQty(), uomId);
+		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(ppCostCollector.getC_UOM_ID()));
 
-		final ProductId productId = ProductId.ofRepoId(ppOrderQty.getM_Product_ID());
-		final String description = msgBL.getMsg(MSG_DESCRIPTION, ImmutableList.of(quantity.abs().toString(), productId.getRepoId()));
+		final ProductId productId = ProductId.ofRepoId(ppCostCollector.getM_Product_ID());
+
+		final Quantity collectorMovementQty = Quantity.of(ppCostCollector.getMovementQty(), uomId);
+		final Quantity modCntrLogQty;
+		final String description;
+
+		if (ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt)
+				|| ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance))
+		{
+			modCntrLogQty = collectorMovementQty.negateIfNot(collectorMovementQty.isPositive());
+			description = msgBL.getMsg(MSG_DESCRIPTION_RECEIPT, ImmutableList.of(collectorMovementQty.abs().toString(), productId.getRepoId()));
+		}
+		else
+		{
+			modCntrLogQty = collectorMovementQty.negateIf(collectorMovementQty.isPositive());
+			description = msgBL.getMsg(MSG_DESCRIPTION_ISSUE, ImmutableList.of(collectorMovementQty.negate().abs().toString(), productId.getRepoId()));
+		}
 
 		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
 				.contractId(modularContractId)
-				.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppOrderQty.getPP_Order_ID()))
-				.productId(ProductId.ofRepoId(ppOrderQty.getM_Product_ID()))
+				.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
+				.productId(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()))
 				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
 				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
 				.documentType(LogEntryDocumentType.PRODUCTION)
 				.contractType(LogEntryContractType.MODULAR_CONTRACT)
 				.soTrx(SOTrx.PURCHASE)
-				.quantity(quantity)
-				.transactionDate(LocalDateAndOrgId.ofTimestamp(ppOrderQty.getMovementDate(),
-															   OrgId.ofRepoId(ppOrderQty.getAD_Org_ID()),
+				.quantity(modCntrLogQty)
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(ppCostCollector.getMovementDate(),
+															   OrgId.ofRepoId(ppCostCollector.getAD_Org_ID()),
 															   orgDAO::getTimeZone))
 				.year(modularContractSettings.getYearAndCalendarId().yearId())
 				.description(description)
@@ -155,16 +171,16 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 
 	@Override
 	@NonNull
-	public Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_PP_Order_Qty issueReceiptQty, final @NonNull FlatrateTermId flatrateTermId)
+	public Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_PP_Cost_Collector issueCostCollector, final @NonNull FlatrateTermId flatrateTermId)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	@NonNull
-	public Stream<FlatrateTermId> streamContractIds(@NonNull final I_PP_Order_Qty issueReceiptQty)
+	public Stream<FlatrateTermId> streamContractIds(@NonNull final I_PP_Cost_Collector issueCostCollector)
 	{
-		return Optional.of(issueReceiptQty.getPP_Order_ID())
+		return Optional.of(issueCostCollector.getPP_Order_ID())
 				.map(PPOrderId::ofRepoId)
 				.map(ppOrderBL::getById)
 				.map(I_PP_Order::getModular_Flatrate_Term_ID)
@@ -173,14 +189,14 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 	}
 
 	@Override
-	public void validateDocAction(@NonNull final I_PP_Order_Qty issueReceiptQty, @NonNull final ModularContractService.ModelAction action)
+	public void validateDocAction(@NonNull final I_PP_Cost_Collector issueCostCollector, @NonNull final ModularContractService.ModelAction action)
 	{
 		if (action != ModularContractService.ModelAction.COMPLETED)
 		{
 			throw new AdempiereException("Unsupported model action!")
 					.appendParametersToMessage()
 					.setParameter("Action", action)
-					.setParameter("PP_Order_Qty_ID", issueReceiptQty.getPP_Order_Qty_ID());
+					.setParameter("PP_Cost_Collector_ID", issueCostCollector.getPP_Cost_Collector_ID());
 		}
 	}
 }
