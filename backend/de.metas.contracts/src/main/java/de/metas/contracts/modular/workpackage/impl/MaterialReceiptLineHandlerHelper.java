@@ -20,22 +20,18 @@
  * #L%
  */
 
-package de.metas.contracts.modular.impl;
+package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutDAO;
@@ -58,10 +54,8 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 @Component
-public class MaterialReceiptLineHandlerHelper
+class MaterialReceiptLineHandlerHelper
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -69,28 +63,16 @@ public class MaterialReceiptLineHandlerHelper
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	private final static AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptReverseLogDescription");
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptCompleteLogDescription");
 
-	public MaterialReceiptLineHandlerHelper(final ModularContractSettingsDAO modularContractSettingsDAO)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
+			@NonNull final IModularContractLogHandler.CreateLogRequest<I_M_InOutLine> request)
 	{
-		this.modularContractSettingsDAO = modularContractSettingsDAO;
-	}
-
-	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(
-			@NonNull final I_M_InOutLine inOutLineRecord,
-			@NonNull final FlatrateTermId flatrateTermId,
-			@NonNull final LogEntryContractType logEntryContractType)
-	{
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
-		if (modularContractSettings == null)
-		{
-			return Optional.empty();
-		}
+		final I_M_InOutLine inOutLineRecord = request.getHandleLogsRequest().getModel();
 
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(flatrateTermId);
+		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(request.getContractId());
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
 
@@ -99,45 +81,38 @@ public class MaterialReceiptLineHandlerHelper
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity)
 				.translate(Language.getBaseAD_Language());
 
-		final Class<? extends IModularContractTypeHandler<?>> handler;
-		final boolean isBillable;
-		if (logEntryContractType.isInterimContractType())
-		{
-			isBillable = inOutRecord.isInterimInvoiceable();
-			handler = MaterialReceiptLineInterimContractHandler.class;
-		}
-		else
-		{
-			isBillable = true;
-			handler = MaterialReceiptLineModularContractHandler.class;
-		}
+		final boolean isBillable = request.getHandleLogsRequest().getLogEntryContractType().isInterimContractType()
+				? inOutRecord.isInterimInvoiceable()
+				: true;
 
-		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModularContractTypeId(handler);
-
-		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
-				.contractId(flatrateTermId)
-				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
-				.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-				.collectionPointBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
-				.producerBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
-				.invoicingBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
-				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
-				.documentType(LogEntryDocumentType.MATERIAL_RECEIPT)
-				.contractType(logEntryContractType)
-				.soTrx(SOTrx.PURCHASE)
-				.processed(false)
-				.quantity(quantity)
-				.amount(null)
-				.transactionDate(LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(), OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
-				.year(modularContractSettings.getYearAndCalendarId().yearId())
-				.description(description)
-				.modularContractTypeId(contractTypeId)
-				.isBillable(isBillable)
-				.build());
+		return ExplainedOptional.of(LogEntryCreateRequest.builder()
+											.contractId(request.getContractId())
+											.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
+											.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
+											.collectionPointBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
+											.producerBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
+											.invoicingBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
+											.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
+											.documentType(LogEntryDocumentType.MATERIAL_RECEIPT)
+											.contractType(request.getHandleLogsRequest().getLogEntryContractType())
+											.soTrx(SOTrx.PURCHASE)
+											.processed(false)
+											.quantity(quantity)
+											.amount(null)
+											.transactionDate(LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(), OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
+											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
+											.description(description)
+											.modularContractTypeId(request.getTypeId())
+											.isBillable(isBillable)
+											.build());
 	}
 
-	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId, @NonNull final LogEntryContractType logEntryContractType)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
+			final @NonNull IModularContractLogHandler.HandleLogsRequest<I_M_InOutLine> request,
+			final @NonNull FlatrateTermId contractId)
 	{
+		final I_M_InOutLine inOutLineRecord = request.getModel();
+
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
 
@@ -146,11 +121,11 @@ public class MaterialReceiptLineHandlerHelper
 		final String description = TranslatableStrings.adMessage(MSG_ON_REVERSE_DESCRIPTION, productName, quantity)
 				.translate(Language.getBaseAD_Language());
 
-		return Optional.of(LogEntryReverseRequest.builder()
-								   .referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-								   .flatrateTermId(flatrateTermId)
-								   .description(description)
-								   .logEntryContractType(logEntryContractType)
-								   .build());
+		return ExplainedOptional.of(LogEntryReverseRequest.builder()
+											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
+											.flatrateTermId(contractId)
+											.description(description)
+											.logEntryContractType(request.getLogEntryContractType())
+											.build());
 	}
 }

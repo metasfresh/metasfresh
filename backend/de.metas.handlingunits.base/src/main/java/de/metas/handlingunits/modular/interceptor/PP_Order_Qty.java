@@ -31,8 +31,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.REACTIVATED;
+import static de.metas.contracts.modular.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModelAction.REACTIVATED;
 
 @Interceptor(I_PP_Order_Qty.class)
 @Component

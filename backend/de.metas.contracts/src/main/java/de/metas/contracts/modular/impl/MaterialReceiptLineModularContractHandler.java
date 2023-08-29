@@ -24,11 +24,9 @@ package de.metas.contracts.modular.impl;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
@@ -39,7 +37,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
@@ -47,13 +44,6 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 {
 
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-
-	private final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper;
-
-	public MaterialReceiptLineModularContractHandler(@NonNull final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper)
-	{
-		this.materialReceiptLineHandlerHelper = materialReceiptLineHandlerHelper;
-	}
 
 	@Override
 	@NonNull
@@ -76,18 +66,6 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 	}
 
 	@Override
-	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
-	{
-		return materialReceiptLineHandlerHelper.createLogEntryCreateRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.MODULAR_CONTRACT);
-	}
-
-	@Override
-	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
-	{
-		return materialReceiptLineHandlerHelper.createLogEntryReverseRequest(inOutLineRecord, flatrateTermId, LogEntryContractType.MODULAR_CONTRACT);
-	}
-
-	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
@@ -100,9 +78,9 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 	}
 
 	@Override
-	public void validateDocAction(final @NonNull I_M_InOutLine model, final ModularContractService.@NonNull ModelAction action)
+	public void validateDocAction(final @NonNull I_M_InOutLine model, final @NonNull ModelAction action)
 	{
-		if (action == ModularContractService.ModelAction.VOIDED)
+		if (action == ModelAction.VOIDED)
 		{
 			throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 		}

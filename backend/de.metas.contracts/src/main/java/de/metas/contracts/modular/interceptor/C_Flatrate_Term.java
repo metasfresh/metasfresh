@@ -25,6 +25,7 @@ package de.metas.contracts.modular.interceptor;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
@@ -47,8 +48,8 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.util.Objects;
 
-import static de.metas.contracts.modular.ModularContractService.ModelAction.CANCELED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModelAction.CANCELED;
+import static de.metas.contracts.modular.ModelAction.COMPLETED;
 
 @Interceptor(I_C_Flatrate_Term.class)
 @Component
@@ -117,7 +118,7 @@ public class C_Flatrate_Term
 			return;
 		}
 		reverseInterimReceiptLineLogsIfNeeded(flatrateTermRecord);
-		modularContractService.invokeWithModel(flatrateTermRecord, ModularContractService.ModelAction.CANCELED, LogEntryContractType.INTERIM);
+		modularContractService.invokeWithModel(flatrateTermRecord, ModelAction.CANCELED, LogEntryContractType.INTERIM);
 	}
 
 	private void reverseInterimReceiptLineLogsIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
@@ -135,7 +136,7 @@ public class C_Flatrate_Term
 				.forEach(inOutLine -> invokeHandlerForInOutLine(inOutLine, CANCELED));
 	}
 
-	private void invokeHandlerForInOutLine(@NonNull final I_M_InOutLine inOutLineRecord, @NonNull final ModularContractService.ModelAction action)
+	private void invokeHandlerForInOutLine(@NonNull final I_M_InOutLine inOutLineRecord, @NonNull final ModelAction action)
 	{
 		modularContractService.invokeWithModel(inOutLineRecord, action, LogEntryContractType.INTERIM);
 	}

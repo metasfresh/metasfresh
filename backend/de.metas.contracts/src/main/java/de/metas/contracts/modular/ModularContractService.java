@@ -27,45 +27,41 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
 @Service
+@RequiredArgsConstructor
 public class ModularContractService
 {
-	public enum ModelAction
-	{
-		COMPLETED, REVERSED, REACTIVATED, VOIDED, CANCELED
-	}
-
-	private final ModularContractLogDAO contractLogDAO;
-	private final ModularContractHandlerFactory modularContractHandlerFactory;
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
-	public ModularContractService(
-			@NonNull final ModularContractLogDAO contractLogDAO,
-			@NonNull final ModularContractHandlerFactory modularContractHandlerFactory,
-			@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
-	{
-		this.contractLogDAO = contractLogDAO;
-		this.modularContractHandlerFactory = modularContractHandlerFactory;
-		this.modularContractSettingsDAO = modularContractSettingsDAO;
-	}
+	@NonNull
+	private final ModularContractHandlerFactory modularContractHandlerFactory;
+	@NonNull
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull
+	private final ProcessModularLogsEnqueuer processLogsEnqueuer;
 
 	public <T> void invokeWithModel(@NonNull final T model, @NonNull final ModelAction action, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		modularContractHandlerFactory.getApplicableHandlersFor(model, logEntryContractType)
-				.forEach(handler -> invokeWithModel(handler, model, action));
+				.forEach(handler -> invokeWithModel(handler, model, action, logEntryContractType));
 	}
 
-	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action)
+	private <T> void invokeWithModel(
+			@NonNull final IModularContractTypeHandler<T> handler,
+			@NonNull final T model,
+			@NonNull final ModelAction action,
+			@NonNull final LogEntryContractType logEntryContractType)
 	{
 		if (ModelAction.COMPLETED == action)
 		{
@@ -74,7 +70,7 @@ public class ModularContractService
 
 		handler.streamContractIds(model)
 				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
-				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId));
+				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId, logEntryContractType));
 	}
 
 	private <T> boolean isApplicableContract(@NonNull final IModularContractTypeHandler<T> handler, @NonNull final FlatrateTermId flatrateTermId)
@@ -95,7 +91,9 @@ public class ModularContractService
 		return typeConditions.isModularOrInterim();
 	}
 
-	private static <T> boolean isHandlerApplicableForSettings(@NonNull final IModularContractTypeHandler<T> handler, @Nullable final ModularContractSettings settings)
+	private static <T> boolean isHandlerApplicableForSettings(
+			@NonNull final IModularContractTypeHandler<T> handler,
+			@Nullable final ModularContractSettings settings)
 	{
 		if (settings == null)
 		{
@@ -107,27 +105,25 @@ public class ModularContractService
 				.anyMatch(config -> config.isMatchingClassName(handlerClassName));
 	}
 
-	private <T> void invokeWithModel(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
+	private <T> void invokeWithModel(
+			@NonNull final IModularContractTypeHandler<T> handler,
+			@NonNull final T model,
+			@NonNull final ModelAction action,
+			@NonNull final FlatrateTermId flatrateTermId,
+			@NonNull final LogEntryContractType logEntryContractType)
 	{
 		handler.validateDocAction(model, action);
 
-		createLogEntries(handler, model, action, flatrateTermId);
-
 		handleAction(handler, model, action, flatrateTermId);
+
+		processLogsEnqueuer.enqueueAfterCommit(TableRecordReference.of(model), action, logEntryContractType);
 	}
 
-	private <T> void createLogEntries(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
-	{
-		switch (action)
-		{
-			case COMPLETED -> handler.createLogEntryCreateRequest(model, flatrateTermId)
-					.ifPresent(contractLogDAO::create);
-			case VOIDED, REACTIVATED, REVERSED, CANCELED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
-					.ifPresent(contractLogDAO::reverse);
-		}
-	}
-
-	private <T> void handleAction(@NonNull final IModularContractTypeHandler<T> handler, final @NonNull T model, final @NonNull ModelAction action, @NonNull final FlatrateTermId flatrateTermId)
+	private <T> void handleAction(
+			@NonNull final IModularContractTypeHandler<T> handler,
+			@NonNull final T model,
+			@NonNull final ModelAction action,
+			@NonNull final FlatrateTermId flatrateTermId)
 	{
 		switch (action)
 		{

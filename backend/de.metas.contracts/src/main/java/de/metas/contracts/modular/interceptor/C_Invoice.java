@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.invoice.InvoiceId;
@@ -34,8 +35,8 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.REVERSED;
+import static de.metas.contracts.modular.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModelAction.REVERSED;
 
 @Component
 @Interceptor(I_C_Invoice.class)
@@ -64,7 +65,7 @@ public class C_Invoice
 
 	private void invokeHandlerForEachLine(
 			@NonNull final I_C_Invoice invoiceRecord,
-			@NonNull final ModularContractService.ModelAction modelAction)
+			@NonNull final ModelAction modelAction)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 

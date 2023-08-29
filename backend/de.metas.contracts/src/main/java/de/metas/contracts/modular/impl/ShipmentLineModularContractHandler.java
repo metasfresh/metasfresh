@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.impl;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
@@ -31,66 +30,34 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractType;
-import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfig;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
 public class ShipmentLineModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
-	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
-	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
-
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
-
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-	public ShipmentLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
-	{
-		this.modularContractSettingsDAO = modularContractSettingsDAO;
-	}
 
 	@Override
 	@NonNull
@@ -110,65 +77,6 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
 	{
 		return logEntryContractType.isModularContractType();
-	}
-
-	@Override
-	public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
-	{
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
-		if (modularContractSettings == null)
-		{
-			return Optional.empty();
-		}
-
-		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(flatrateTermId);
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
-
-		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());
-		final Quantity quantity = Quantitys.create(inOutLineRecord.getMovementQty(), uomId);
-
-		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_COMPLETED);
-
-		final Optional<ModularContractTypeId> modularContractTypeId = modularContractSettings.getModuleConfigs()
-				.stream()
-				.filter(config -> config.isMatchingClassName(ShipmentLineModularContractHandler.class.getName()))
-				.map(ModuleConfig::getModularContractType)
-				.map(ModularContractType::getId)
-				.findFirst();
-
-		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
-				.contractId(flatrateTermId)
-				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
-				.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-				.collectionPointBPartnerId(bPartnerId)
-				.producerBPartnerId(bPartnerId)
-				.invoicingBPartnerId(bPartnerId)
-				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
-				.documentType(LogEntryDocumentType.SHIPMENT)
-				.contractType(LogEntryContractType.MODULAR_CONTRACT)
-				.soTrx(SOTrx.PURCHASE)
-				.processed(false)
-				.quantity(quantity)
-				.amount(null)
-				.transactionDate(LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(), OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
-				.year(modularContractSettings.getYearAndCalendarId().yearId())
-				.description(msgText.translate(Env.getAD_Language()))
-				.modularContractTypeId(contractTypeId)
-				.build());
-	}
-
-	@Override
-	public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_M_InOutLine inOutLineRecord, final @NonNull FlatrateTermId flatrateTermId)
-	{
-		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_REVERSED);
-
-		return Optional.of(LogEntryReverseRequest.builder()
-									.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-									.flatrateTermId(flatrateTermId)
-									.description(msgText.translate(Env.getAD_Language()))
-									.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-									.build());
 	}
 
 	@Override
@@ -197,7 +105,7 @@ public class ShipmentLineModularContractHandler implements IModularContractTypeH
 	}
 
 	@Override
-	public void validateDocAction(final @NonNull I_M_InOutLine model, final ModularContractService.@NonNull ModelAction action)
+	public void validateDocAction(final @NonNull I_M_InOutLine model, final @NonNull ModelAction action)
 	{
 		switch (action)
 		{
