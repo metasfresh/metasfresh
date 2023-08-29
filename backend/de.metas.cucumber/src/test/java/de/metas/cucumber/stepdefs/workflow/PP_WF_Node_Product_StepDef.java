@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
+import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_WF_Node_Product;
 
@@ -52,15 +53,18 @@ public class PP_WF_Node_Product_StepDef
 	private final PP_WF_Node_Product_StepDefData workflowNodeProductTable;
 	private final AD_WF_Node_StepDefData workflowNodeTable;
 	private final M_Product_StepDefData productTable;
+	private final AD_Workflow_StepDefData workflowTable;
 
 	public PP_WF_Node_Product_StepDef(
 			@NonNull final PP_WF_Node_Product_StepDefData workflowNodeProductTable,
 			@NonNull final AD_WF_Node_StepDefData workflowNodeTable,
-			@NonNull final M_Product_StepDefData productTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final AD_Workflow_StepDefData workflowTable)
 	{
 		this.workflowNodeProductTable = workflowNodeProductTable;
 		this.workflowNodeTable = workflowNodeTable;
 		this.productTable = productTable;
+		this.workflowTable = workflowTable;
 	}
 
 	@And("create PP_WF_Node_Product:")
@@ -79,12 +83,16 @@ public class PP_WF_Node_Product_StepDef
 			final String wfStepIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_AD_WF_Node wfNode = workflowNodeTable.get(wfStepIdentifier);
 
+			final String workflowIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_WF_Node_Product.COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_AD_Workflow workflow = workflowTable.get(workflowIdentifier);
+
 			final I_PP_WF_Node_Product wfNodeProduct = InterfaceWrapperHelper.newInstance(I_PP_WF_Node_Product.class);
 			wfNodeProduct.setQty(quantity);
 			wfNodeProduct.setSpecification(specification);
 			wfNodeProduct.setIsSubcontracting(isSubcontracting);
 			wfNodeProduct.setM_Product_ID(product.getM_Product_ID());
 			wfNodeProduct.setAD_WF_Node_ID(wfNode.getAD_WF_Node_ID());
+			wfNodeProduct.setAD_Workflow_ID(workflow.getAD_Workflow_ID());
 
 			InterfaceWrapperHelper.saveRecord(wfNodeProduct);
 
@@ -122,9 +130,13 @@ public class PP_WF_Node_Product_StepDef
 		final String wfStepIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_AD_WF_Node wfNode = workflowNodeTable.get(wfStepIdentifier);
 
+		final String workflowIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_WF_Node_Product.COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_AD_Workflow workflow = workflowTable.get(workflowIdentifier);
+
 		final IQueryBuilder<I_PP_WF_Node_Product> ppWFNodeProductQueryBuilder = queryBL.createQueryBuilder(I_PP_WF_Node_Product.class)
 				.addEqualsFilter(I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID, wfNode.getAD_WF_Node_ID())
-				.addEqualsFilter(I_PP_WF_Node_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID());
+				.addEqualsFilter(I_PP_WF_Node_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_PP_WF_Node_Product.COLUMNNAME_AD_Workflow_ID, workflow.getAD_Workflow_ID());
 
 		if (isSubcontracting != null)
 		{
