@@ -35,6 +35,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -52,6 +53,7 @@ public class C_Flatrate_Term
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
 
@@ -80,13 +82,17 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createInterimContractLogs(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public void onInterimContractComplete(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType())
 		{
 			return;
 		}
+		trxManager.runAfterCommit(() -> createInterimContractLogs(flatrateTermRecord));
+	}
 
+	private void createInterimContractLogs(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");

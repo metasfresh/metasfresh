@@ -174,7 +174,7 @@ Feature: Modular contract log from purchase order
   @Id:S0282_300
   @from:cucumber
   Scenario: REACTIVATE | REVERSE purchase order with linked modular contract
-  - purchase order created with two lines with modular contract terms
+  - purchase order created with one lines with modular contract terms
   - complete PO
   - validate two modular contracts are created, one for each line
   - validate two Log Entries are created
@@ -245,6 +245,7 @@ Feature: Modular contract log from purchase order
   validate on receipt void error is thrown
   validate on receiptLine delete error is thrown if modular contract log exist for this line
   validate on `VOID` purchase order with material receipt created -> `VoidNotAllowed` error is thrown
+  validate on second order with same partner, product, condition and overlapping time period error is thrown
 
     Given metasfresh contains M_Products:
       | Identifier            | Name                             |
@@ -400,4 +401,14 @@ Feature: Modular contract log from purchase order
     And the order identified by po_order is voided expecting error
       | OPT.AD_Message_ID.Identifier | OPT.M_InOut_ID.Identifier |
       | po_void_not_allowed          | material_receipt_1        |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    |
+      | po_order_2 | false   | bp_moduleLogMR           | 2022-03-03  | POO             | mrModuleLogContract_ref_05072023_2 |
+
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
+      | po_orderLine_1 | po_order_2            | module_log_product_PO   | 1000       | moduleLogConditions_MR                  |
+
+    Then the order identified by po_order_2 is completed and an exception with error-code de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm is thrown
 

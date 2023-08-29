@@ -57,6 +57,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -264,17 +265,13 @@ public class ModularContractLogDAO
 			@NonNull final FlatrateTermId modularFlatrateTermId,
 			@NonNull final OrderLineId orderLineId)
 	{
-		final TableRecordReference modularRecordReference = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId);
-		final Optional<I_ModCntr_Log> modCntrLog = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Log.COLUMN_C_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, LogEntryContractType.MODULAR_CONTRACT)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, modularRecordReference.getRecord_ID())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, modularRecordReference.getAD_Table_ID())
-				.orderByDescending(I_ModCntr_Log.COLUMNNAME_Created)
-				.orderByDescending(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID)
-				.create()
-				.firstOptional();
+		final TableRecordReferenceSet modularRecordReference = TableRecordReferenceSet.of(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId));
+
+		final Optional<I_ModCntr_Log> modCntrLog = lastRecord(ModularContractLogQuery.builder()
+																	  .contractType(MODULAR_CONTRACT)
+																	  .flatrateTermId(modularFlatrateTermId)
+																	  .referenceSet(modularRecordReference)
+																	  .build());
 		return modCntrLog.map(this::fromRecord);
 	}
 }
