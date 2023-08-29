@@ -23,6 +23,7 @@
 package de.metas.document.dimension;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
@@ -69,6 +70,7 @@ public class Dimension implements Comparable<Dimension>
 	@Nullable String userElementString5;
 	@Nullable String userElementString6;
 	@Nullable String userElementString7;
+	@Nullable YearAndCalendarId harvestingYearAndCalendarId;
 
 	@Nullable Instant userElementDate1;
 	@Nullable Instant userElementDate2;
@@ -116,8 +118,7 @@ public class Dimension implements Comparable<Dimension>
 				.userElementString5(CoalesceUtil.coalesce(this.userElementString5, other.userElementString5))
 				.userElementString6(CoalesceUtil.coalesce(this.userElementString6, other.userElementString6))
 				.userElementString7(CoalesceUtil.coalesce(this.userElementString7, other.userElementString7))
-				.userElementDate1(CoalesceUtil.coalesce(this.userElementDate1, other.userElementDate1))
-				.userElementDate2(CoalesceUtil.coalesce(this.userElementDate2, other.userElementDate2))
+				.harvestingYearAndCalendarId(CoalesceUtil.coalesce(this.harvestingYearAndCalendarId, other.harvestingYearAndCalendarId))
 				.build();
 
 		if (newDimension.equals(this))
@@ -165,6 +166,7 @@ public class Dimension implements Comparable<Dimension>
 		@Nullable HashSet<String> userElementString7 = null;
 		@Nullable HashSet<Instant> userElementDate1 = null;
 		@Nullable HashSet<Instant> userElementDate2 = null;
+		@Nullable HashSet<YearAndCalendarId> yearAndCalendarId = null;
 
 		for (final Dimension dimension : collection)
 		{
@@ -188,6 +190,7 @@ public class Dimension implements Comparable<Dimension>
 			userElementString7 = collectValueIfNotNull(userElementString7, dimension.getUserElementString7());
 			userElementDate1 = collectValueIfNotNull(userElementDate1, dimension.getUserElementDate1());
 			userElementDate2 = collectValueIfNotNull(userElementDate2, dimension.getUserElementDate2());
+			yearAndCalendarId = collectValueIfNotNull(yearAndCalendarId, dimension.getHarvestingYearAndCalendarId());
 		}
 
 		return builder()
@@ -211,6 +214,7 @@ public class Dimension implements Comparable<Dimension>
 				.userElementString7(CollectionUtils.singleElementOrNull(userElementString7))
 				.userElementDate1(CollectionUtils.singleElementOrNull(userElementDate1))
 				.userElementDate2(CollectionUtils.singleElementOrNull(userElementDate2))
+				.harvestingYearAndCalendarId(CollectionUtils.singleElementOrNull(yearAndCalendarId))
 				.build();
 	}
 

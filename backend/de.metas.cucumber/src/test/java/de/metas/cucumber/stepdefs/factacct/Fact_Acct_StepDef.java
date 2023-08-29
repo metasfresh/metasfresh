@@ -4,6 +4,8 @@ import de.metas.acct.api.IPostingRequestBuilder;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.cucumber.stepdefs.C_Currency_StepDefData;
 import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -11,10 +13,13 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableType;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
+import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.matchinv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -33,10 +38,13 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
@@ -65,9 +73,12 @@ public class Fact_Acct_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
 	private final M_MatchInv_StepDefData matchInvTable;
+	private final M_InOut_StepDefData inoutTable;
 	private final Fact_Acct_StepDefData factAcctTable;
 	private final C_ElementValue_StepDefData elementValueTable;
 	private final C_Currency_StepDefData currencyTable;
+	private final C_Calendar_StepDefData calendarTable;
+	private final C_Year_StepDefData yearTable;
 
 	public Fact_Acct_StepDef(
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
@@ -77,7 +88,10 @@ public class Fact_Acct_StepDef
 			@NonNull final M_MatchInv_StepDefData matchInvTable,
 			@NonNull final Fact_Acct_StepDefData factAcctTable,
 			@NonNull final C_ElementValue_StepDefData elementValueTable,
-			@NonNull final C_Currency_StepDefData currencyTable)
+			@NonNull final C_Currency_StepDefData currencyTable,
+			@NonNull final C_Calendar_StepDefData calendarTable,
+			@NonNull final C_Year_StepDefData yearTable,
+			@NonNull final M_InOut_StepDefData inoutTable)
 	{
 		this.sectionCodeTable = sectionCodeTable;
 		this.invoiceTable = invoiceTable;
@@ -87,6 +101,9 @@ public class Fact_Acct_StepDef
 		this.factAcctTable = factAcctTable;
 		this.elementValueTable = elementValueTable;
 		this.currencyTable = currencyTable;
+		this.calendarTable = calendarTable;
+		this.yearTable = yearTable;
+		this.inoutTable = inoutTable;
 	}
 
 	@And("^after not more than (.*)s, Fact_Acct are found$")
@@ -142,7 +159,7 @@ public class Fact_Acct_StepDef
 		}
 	}
 
-	@And("^after not more than (.*)s, the (invoice|matchInvoice) document with identifier (.*) has the following accounting records:$")
+	@And("^after not more than (.*)s, the (invoice|matchInvoice|inout) document with identifier (.*) has the following accounting records:$")
 	public void find_Fact_Acct(
 			final int timeoutSec,
 			@NonNull final String tableType,
@@ -200,6 +217,10 @@ public class Fact_Acct_StepDef
 			case I_C_Invoice.Table_Name:
 				final I_C_Invoice invoice = invoiceTable.get(recordIdentifier);
 				queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, invoice.getC_Invoice_ID());
+				break;
+			case I_M_InOut.Table_Name:
+				final I_M_InOut inout = inoutTable.get(recordIdentifier);
+				queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, inout.getM_InOut_ID());
 				break;
 			default:
 				throw new AdempiereException("Unhandled tableName")
@@ -267,6 +288,17 @@ public class Fact_Acct_StepDef
 		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_AccountConceptualName))
 				.ifPresent(factAcctQueryBuilder::accountConceptualName);
 
+		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID+ "." + TABLECOLUMN_IDENTIFIER))
+				.ifPresent(calendarIdentifier -> {
+					final I_C_Calendar calendarRecord = calendarTable.get(calendarIdentifier);
+					factAcctQueryBuilder.calendarId(CalendarId.ofRepoId(calendarRecord.getC_Calendar_ID()));
+				});
+
+		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID+ "." + TABLECOLUMN_IDENTIFIER))
+				.ifPresent(yearIdentifier -> {
+					final I_C_Year year = yearTable.get(yearIdentifier);
+					factAcctQueryBuilder.yearId(YearId.ofRepoId(year.getC_Year_ID()));
+				});
 		return factAcctQueryBuilder
 				.build();
 	}
@@ -278,6 +310,7 @@ public class Fact_Acct_StepDef
 
 		message.append("Looking for instance with:").append("\n")
 				.append(I_Fact_Acct.COLUMNNAME_AD_Table_ID).append(" : ").append(factAcctQuery.getAD_Table_ID()).append("\n")
+				.append(I_Fact_Acct.COLUMNNAME_Record_ID).append(" : ").append(factAcctQuery.getRecord_ID()).append("\n")
 				.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(factAcctQuery.getAccountId()).append("\n")
 				.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctQuery.getCrAmt()).append("\n")
 				.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctQuery.getDrAmt()).append("\n")
@@ -296,12 +329,15 @@ public class Fact_Acct_StepDef
 				.stream(I_Fact_Acct.class)
 				.forEach(factAcctRecord -> message
 						.append(I_Fact_Acct.COLUMNNAME_AD_Table_ID).append(" : ").append(factAcctRecord.getAD_Table_ID()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_Record_ID).append(" : ").append(factAcctRecord.getRecord_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(factAcctRecord.getAccount_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctRecord.getAmtSourceCr()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctRecord.getAmtSourceDr()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_C_Currency_ID).append(" : ").append(factAcctRecord.getC_Currency_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_CurrencyRate).append(" : ").append(factAcctRecord.getCurrencyRate()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(factAcctRecord.getAccountConceptualName()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID).append(" : ").append(factAcctRecord.getC_Harvesting_Calendar_ID()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID).append(" : ").append(factAcctRecord.getHarvesting_Year_ID()).append(" ; ")
 						.append("\n"));
 
 		return "see current context: \n" + message;
@@ -323,6 +359,12 @@ public class Fact_Acct_StepDef
 
 		Optional.ofNullable(factAcctQuery.getAccountConceptualName())
 				.ifPresent(accountConceptualName -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, accountConceptualName));
+
+		Optional.ofNullable(factAcctQuery.getCalendarId())
+				.ifPresent(calendarId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID, calendarId));
+
+		Optional.ofNullable(factAcctQuery.getYearId())
+				.ifPresent(yearId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID, yearId));
 
 		final I_Fact_Acct factAcctRecord = queryBuilder
 				.create()
@@ -353,6 +395,8 @@ public class Fact_Acct_StepDef
 				return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceTable.get(identifier).getC_Invoice_ID());
 			case matchInvoice:
 				return TableRecordReference.of(I_M_MatchInv.Table_Name, matchInvTable.get(identifier).getM_MatchInv_ID());
+			case inout:
+				return TableRecordReference.of(I_M_InOut.Table_Name, inoutTable.get(identifier).getM_InOut_ID());
 			default:
 				throw new AdempiereException("Invalid table type!")
 						.appendParametersToMessage()
@@ -375,9 +419,17 @@ public class Fact_Acct_StepDef
 
 		@NonNull CurrencyId currencyId;
 
-		@Nullable BigDecimal currencyRate;
-		
-		@Nullable String accountConceptualName;
+		@Nullable
+		BigDecimal currencyRate;
+
+		@Nullable
+		String accountConceptualName;
+
+		@Nullable
+		CalendarId calendarId;
+
+		@Nullable
+		YearId yearId;
 
 		public int getRecord_ID()
 		{
@@ -390,3 +442,4 @@ public class Fact_Acct_StepDef
 		}
 	}
 }
+

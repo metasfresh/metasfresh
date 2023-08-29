@@ -76,6 +76,8 @@ public class MAccount extends X_C_ValidCombination
 							   int UserElement1_ID,
 							   int UserElement2_ID,
 							   int C_OrderSO_ID,
+							   int C_Harvesting_Calendar_ID,
+			                   int Harvesting_Year_ID,
 							   int M_SectionCode_ID)
 	{
 		final AccountDimension dim = AccountDimension.builder()
@@ -99,6 +101,8 @@ public class MAccount extends X_C_ValidCombination
 				.setUserElement2_ID(UserElement2_ID)
 				.setSalesOrderId(C_OrderSO_ID)
 				.setM_SectionCode_ID(M_SectionCode_ID)
+				.setC_Harvesting_Calendar_ID(C_Harvesting_Calendar_ID)
+				.setHarvesting_Year_ID(Harvesting_Year_ID)
 
 				.build();
 		return get(ctx, dim);
@@ -154,6 +158,8 @@ public class MAccount extends X_C_ValidCombination
 		newAccount.setUserElementString7(dimension.getUserElementString7());
 		newAccount.setUserElementDate1(TimeUtil.asTimestamp(dimension.getUserElementDate1()));
 		newAccount.setUserElementDate2(TimeUtil.asTimestamp(dimension.getUserElementDate2()));
+		newAccount.setC_Harvesting_Calendar_ID(dimension.getC_Harvesting_Calendar_ID());
+		newAccount.setHarvesting_Year_ID(dimension.getHarvesting_Year_ID());
 		InterfaceWrapperHelper.save(newAccount);
 		logger.debug("New: {}", newAccount);
 		return newAccount;
@@ -241,6 +247,10 @@ public class MAccount extends X_C_ValidCombination
 				sb.append(",UserElement1_ID=").append(getUserElement1_ID());
 			if (getUserElement2_ID() > 0)
 				sb.append(",UserElement2_ID=").append(getUserElement2_ID());
+			if (getC_Harvesting_Calendar_ID() > 0)
+				sb.append(",C_Harvesting_Calendar_ID=").append(getC_Harvesting_Calendar_ID());
+			if (getHarvesting_Year_ID() > 0)
+				sb.append(",Harvesting_Year_ID=").append(getHarvesting_Year_ID());
 		}
 		sb.append("]");
 		return sb.toString();

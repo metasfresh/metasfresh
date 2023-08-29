@@ -61,7 +61,8 @@ public enum AcctSchemaElementType
 	SectionCode(X_C_AcctSchema_Element.ELEMENTTYPE_SectionCode, I_C_ValidCombination.COLUMNNAME_M_SectionCode_ID),
 	UserElementDate1(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementDate1, I_C_ValidCombination.COLUMNNAME_UserElementDate1),//
 	UserElementDate2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementDate2, I_C_ValidCombination.COLUMNNAME_UserElementDate2)//
-
+	HarvestingCalendar(X_C_AcctSchema_Element.ELEMENTTYPE_HarvestingCalendar, I_C_ValidCombination.COLUMNNAME_C_Harvesting_Calendar_ID), //
+	HarvestingYear(X_C_AcctSchema_Element.ELEMENTTYPE_HarvestingYear, I_C_ValidCombination.COLUMNNAME_Harvesting_Year_ID)
 	;
 
 	/**
