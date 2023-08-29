@@ -26,21 +26,15 @@ import de.metas.async.QueueWorkPackageId;
 import de.metas.error.AdIssueId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
-@Value
 @Builder
-public class ModularLogCreateStatus
+record ModularLogCreateStatus(
+		@NonNull TableRecordReference recordReference,
+		@NonNull QueueWorkPackageId workPackageId,
+		@NonNull ProcessingStatus status,
+		@Nullable AdIssueId issueId)
 {
-	@NonNull
-	TableRecordReference recordReference;
-	@NonNull
-	QueueWorkPackageId workPackageId;
-	@NonNull
-	ProcessingStatus status;
-	@Nullable
-	AdIssueId issueId;
 }

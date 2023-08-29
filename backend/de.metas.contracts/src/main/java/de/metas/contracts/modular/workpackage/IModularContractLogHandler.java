@@ -36,6 +36,7 @@ import de.metas.i18n.ExplainedOptional;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import java.util.Set;
 
@@ -55,6 +56,7 @@ public interface IModularContractLogHandler<T>
 	@NonNull
 	default Class<? extends IModularContractTypeHandler<T>> getModularContractTypeHandlerClass()
 	{
+		//noinspection unchecked
 		return (Class<? extends IModularContractTypeHandler<T>>)getModularContractTypeHandler().getClass();
 	}
 
@@ -87,6 +89,8 @@ public interface IModularContractLogHandler<T>
 		@NonNull LogEntryContractType logEntryContractType;
 		@NonNull ModelAction modelAction;
 		@NonNull QueueWorkPackageId workPackageId;
+
+		public TableRecordReference getModelRef() {return TableRecordReference.of(model);}
 	}
 
 	@Value

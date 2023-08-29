@@ -56,7 +56,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
-import java.text.MessageFormat;
 import java.util.Optional;
 
 @Component
@@ -77,11 +76,11 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> request)
 	{
 		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case CANCELED -> LogAction.REVERSE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		{
+			case COMPLETED -> LogAction.CREATE;
+			case CANCELED -> LogAction.REVERSE;
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+		};
 	}
 
 	@Override
@@ -97,10 +96,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 
 		if (modularContractLogEntryOptional.isEmpty())
 		{
-			return ExplainedOptional.emptyBecause(MessageFormat.format("No ModularContractLogEntry found for modularContractId: {},"
-																			   + " orderLineTermId: {}! No logs will be created",
-																	   modularContractId,
-																	   flatrateTermRecord.getC_OrderLine_Term_ID()));
+			return ExplainedOptional.emptyBecause("No ModularContractLogEntry found for modularContractId: " + modularContractId + ", orderLineTermId: " + flatrateTermRecord.getC_OrderLine_Term_ID() + "! No logs will be created");
 		}
 
 		final ModularContractLogEntry modularContractLogEntry = modularContractLogEntryOptional.get();
@@ -110,26 +106,26 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 				.translate(Language.getBaseAD_Language());
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(request.getContractId())
-											.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
-											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
-											.producerBPartnerId(modularContractLogEntry.getProducerBPartnerId())
-											.invoicingBPartnerId(modularContractLogEntry.getInvoicingBPartnerId())
-											.collectionPointBPartnerId(modularContractLogEntry.getCollectionPointBPartnerId())
-											.warehouseId(modularContractLogEntry.getWarehouseId())
-											.documentType(LogEntryDocumentType.CONTRACT_PREFINANCING)
-											.contractType(LogEntryContractType.INTERIM)
-											.soTrx(SOTrx.PURCHASE)
-											.processed(false)
-											.quantity(modularContractLogEntry.getQuantity())
-											.amount(modularContractLogEntry.getAmount())
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(),
-																						   OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
-											.year(modularContractLogEntry.getYear())
-											.description(description)
-											.modularContractTypeId(request.getTypeId())
-											.build());
+				.contractId(request.getContractId())
+				.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
+				.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
+				.producerBPartnerId(modularContractLogEntry.getProducerBPartnerId())
+				.invoicingBPartnerId(modularContractLogEntry.getInvoicingBPartnerId())
+				.collectionPointBPartnerId(modularContractLogEntry.getCollectionPointBPartnerId())
+				.warehouseId(modularContractLogEntry.getWarehouseId())
+				.documentType(LogEntryDocumentType.CONTRACT_PREFINANCING)
+				.contractType(LogEntryContractType.INTERIM)
+				.soTrx(SOTrx.PURCHASE)
+				.processed(false)
+				.quantity(modularContractLogEntry.getQuantity())
+				.amount(modularContractLogEntry.getAmount())
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(),
+						OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),
+						orgDAO::getTimeZone))
+				.year(modularContractLogEntry.getYear())
+				.description(description)
+				.modularContractTypeId(request.getTypeId())
+				.build());
 	}
 
 	@Override
@@ -148,11 +144,11 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 				.translate(Language.getBaseAD_Language());
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, flatrateTermRecord.getC_Flatrate_Term_ID()))
-											.flatrateTermId(contractId)
-											.description(description)
-											.logEntryContractType(LogEntryContractType.INTERIM)
-											.build());
+				.referencedModel(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, flatrateTermRecord.getC_Flatrate_Term_ID()))
+				.flatrateTermId(contractId)
+				.description(description)
+				.logEntryContractType(LogEntryContractType.INTERIM)
+				.build());
 	}
 
 	@Override

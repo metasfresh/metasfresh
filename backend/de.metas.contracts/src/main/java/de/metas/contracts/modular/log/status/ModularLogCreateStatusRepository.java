@@ -40,15 +40,15 @@ class ModularLogCreateStatusRepository
 
 	public void save(@NonNull final ModularLogCreateStatus createStatus)
 	{
-		final I_ModCntr_Log_Status logStatus = getByWorkPackageId(createStatus.getWorkPackageId())
+		final I_ModCntr_Log_Status logStatus = getByWorkPackageId(createStatus.workPackageId())
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Log_Status.class));
 
-		logStatus.setProcessingStatus(createStatus.getStatus().getCode());
-		logStatus.setC_Queue_WorkPackage_ID(createStatus.getWorkPackageId().getRepoId());
-		logStatus.setRecord_ID(createStatus.getRecordReference().getRecord_ID());
-		logStatus.setAD_Table_ID(createStatus.getRecordReference().getAD_Table_ID());
+		logStatus.setProcessingStatus(createStatus.status().getCode());
+		logStatus.setC_Queue_WorkPackage_ID(createStatus.workPackageId().getRepoId());
+		logStatus.setRecord_ID(createStatus.recordReference().getRecord_ID());
+		logStatus.setAD_Table_ID(createStatus.recordReference().getAD_Table_ID());
 
-		logStatus.setAD_Issue_ID(AdIssueId.toRepoId(createStatus.getIssueId()));
+		logStatus.setAD_Issue_ID(AdIssueId.toRepoId(createStatus.issueId()));
 
 		InterfaceWrapperHelper.save(logStatus);
 	}

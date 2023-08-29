@@ -22,19 +22,51 @@
 
 package de.metas.contracts.modular.log.status;
 
+import de.metas.async.QueueWorkPackageId;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ModularLogCreateStatusService
 {
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+
 	@NonNull
 	private final ModularLogCreateStatusRepository statusRepository;
 
-	public void save(@NonNull final ModularLogCreateStatus createStatus)
+	public void setStatusEnqueued(@NonNull final QueueWorkPackageId workPackageId, @NonNull final TableRecordReference recordRef)
 	{
-		statusRepository.save(createStatus);
+		statusRepository.save(ModularLogCreateStatus.builder()
+				.workPackageId(workPackageId)
+				.recordReference(recordRef)
+				.status(ProcessingStatus.ENQUEUED)
+				.build());
+	}
+
+	public void setStatusSuccessfullyProcessed(@NonNull final QueueWorkPackageId workPackageId, @NonNull final TableRecordReference recordRef)
+	{
+		statusRepository.save(ModularLogCreateStatus.builder()
+				.workPackageId(workPackageId)
+				.recordReference(recordRef)
+				.status(ProcessingStatus.SUCCESSFULLY_PROCESSED)
+				.build());
+	}
+
+	public void setStatusErrored(@NonNull final QueueWorkPackageId workPackageId, @NonNull final TableRecordReference recordRef, @NonNull final Throwable error)
+	{
+		final AdIssueId adIssueId = errorManager.createIssue(error);
+
+		statusRepository.save(ModularLogCreateStatus.builder()
+				.workPackageId(workPackageId)
+				.recordReference(recordRef)
+				.status(ProcessingStatus.ERRORED)
+				.issueId(adIssueId)
+				.build());
 	}
 }

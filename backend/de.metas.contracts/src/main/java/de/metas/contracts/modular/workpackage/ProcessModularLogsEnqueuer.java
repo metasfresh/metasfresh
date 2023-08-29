@@ -22,19 +22,20 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.status.ModularLogCreateStatus;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
-import de.metas.contracts.modular.log.status.ProcessingStatus;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -42,7 +43,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.List;
 
 import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.LOG_ENTRY_CONTRACT_TYPE;
 import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.MODEL_ACTION;
@@ -64,43 +67,56 @@ public class ProcessModularLogsEnqueuer
 			@NonNull final ModelAction action,
 			@NonNull final LogEntryContractType logEntryContractType)
 	{
-		trxManager.runAfterCommit(() -> enqueue(recordReference, action, logEntryContractType));
+		trxManager.accumulateAndProcessAfterCommit(
+				ProcessModularLogsEnqueuer.class.getSimpleName(),
+				ImmutableList.of(
+						EnqueueRequest.builder()
+								.recordReference(recordReference)
+								.action(action)
+								.logEntryContractType(logEntryContractType)
+								.userInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+								.build()
+				),
+				this::enqueueAllNow);
 	}
 
-	private void enqueue(
-			@NonNull final TableRecordReference recordReference,
-			@NonNull final ModelAction action,
-			@NonNull final LogEntryContractType logEntryContractType)
+	private void enqueueAllNow(final List<EnqueueRequest> requests) {requests.forEach(this::enqueueNow);}
+
+	private void enqueueNow(@NonNull final EnqueueRequest request)
 	{
+		@NonNull final TableRecordReference recordReference = request.recordReference();
+		@NonNull final ModelAction action = request.action();
+		@NonNull final LogEntryContractType logEntryContractType = request.logEntryContractType();
+		@Nullable final UserId userInChargeId = request.userInChargeId();
+
 		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ModularLogsWorkPackageProcessor.class);
 
 		final I_C_Queue_WorkPackage workPackage = workPackageQueue.newWorkPackage()
-				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+				.setUserInChargeId(userInChargeId)
 				.parameter(MODEL_ACTION.name(), action.name())
 				.parameter(LOG_ENTRY_CONTRACT_TYPE.name(), logEntryContractType.getCode())
-				.setElementsLocker(getLock(recordReference))
+				.setElementsLocker(createElementsLocker(recordReference))
 				.addElement(recordReference)
 				.buildAndEnqueue();
 
-		final ModularLogCreateStatus createStatus = ModularLogCreateStatus.builder()
-				.workPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()))
-				.recordReference(recordReference)
-				.status(ProcessingStatus.ENQUEUED)
-				.build();
-
-		createStatusService.save(createStatus);
+		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID());
+		createStatusService.setStatusEnqueued(workPackageId, recordReference);
 	}
 
 	@NonNull
-	private ILockCommand getLock(@NonNull final TableRecordReference recordReference)
+	private ILockCommand createElementsLocker(@NonNull final TableRecordReference recordReference)
 	{
-		final LockOwner lockOwner = LockOwner.newOwner(ProcessModularLogsEnqueuer.class.getSimpleName() + "_" + Instant.now());
-
-		return lockManager
-				.lock()
-				.setOwner(lockOwner)
+		return lockManager.lock()
+				.setOwner(LockOwner.newOwner(ProcessModularLogsEnqueuer.class.getSimpleName() + "_" + Instant.now()))
 				.setAutoCleanup(false)
 				.setFailIfAlreadyLocked(true)
 				.setRecordByRecordReference(recordReference);
 	}
+
+	@Builder
+	private record EnqueueRequest(
+			@NonNull TableRecordReference recordReference,
+			@NonNull ModelAction action,
+			@NonNull LogEntryContractType logEntryContractType,
+			@Nullable UserId userInChargeId) {}
 }
