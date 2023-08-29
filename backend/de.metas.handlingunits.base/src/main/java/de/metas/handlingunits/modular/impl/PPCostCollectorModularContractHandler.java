@@ -142,12 +142,12 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 				|| ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance))
 		{
 			modCntrLogQty = collectorMovementQty.negateIfNot(collectorMovementQty.isPositive());
-			description = msgBL.getMsg(MSG_DESCRIPTION_RECEIPT, ImmutableList.of(collectorMovementQty.abs().toString(), productId.getRepoId()));
+			description = msgBL.getMsg(MSG_DESCRIPTION_RECEIPT, ImmutableList.of(modCntrLogQty.abs().toString(), productId.getRepoId()));
 		}
 		else
 		{
 			modCntrLogQty = collectorMovementQty.negateIf(collectorMovementQty.isPositive());
-			description = msgBL.getMsg(MSG_DESCRIPTION_ISSUE, ImmutableList.of(collectorMovementQty.negate().abs().toString(), productId.getRepoId()));
+			description = msgBL.getMsg(MSG_DESCRIPTION_ISSUE, ImmutableList.of(modCntrLogQty.negate().abs().toString(), productId.getRepoId()));
 		}
 
 		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
