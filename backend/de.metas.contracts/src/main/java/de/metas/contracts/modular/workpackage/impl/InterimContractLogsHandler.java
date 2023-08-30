@@ -78,7 +78,6 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 		return switch (request.getModelAction())
 		{
 			case COMPLETED -> LogAction.CREATE;
-			case CANCELED -> LogAction.REVERSE;
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		};
 	}
@@ -109,7 +108,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 				.translate(Language.getBaseAD_Language());
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-				.contractId(request.getContractId())
+				.contractId(modularContractId)
 				.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
 				.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
 				.producerBPartnerId(modularContractLogEntry.getProducerBPartnerId())
