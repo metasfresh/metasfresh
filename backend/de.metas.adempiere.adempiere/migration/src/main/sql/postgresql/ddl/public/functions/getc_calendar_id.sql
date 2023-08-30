@@ -1,18 +1,19 @@
-DROP FUNCTION IF EXISTS getc_calendar_id(
-    p_ad_client_id numeric,
-    p_ad_org_id    numeric
+DROP FUNCTION IF EXISTS getC_Calendar_ID(
+    p_AD_Client_ID numeric,
+    p_AD_Org_ID    numeric
 )
 ;
 
-CREATE FUNCTION getc_calendar_id(
-    p_ad_client_id numeric,
-    p_ad_org_id    numeric
+
+CREATE OR REPLACE FUNCTION getC_Calendar_ID(
+    p_AD_Client_ID numeric,
+    p_AD_Org_ID    numeric
 )
     RETURNS numeric
-    STABLE
     LANGUAGE plpgsql
+    STABLE
 AS
-$$
+$BODY$
 DECLARE
     v_C_Calendar_ID numeric;
 BEGIN
@@ -40,6 +41,7 @@ BEGIN
 
     RETURN v_C_Calendar_ID;
 END;
-$$
+$BODY$
 ;
+
 
