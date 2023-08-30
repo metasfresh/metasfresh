@@ -133,11 +133,11 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(modularContractId);
 		final I_PP_Order ppOrderRecord = ppOrderBL.getById(PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID()));
 
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(ppCostCollector.getC_UOM_ID()));
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(ppCostCollector.getC_UOM_ID()));
 
 		final I_M_Product product = productBL.getById(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
 
-		final Quantity collectorMovementQty = Quantity.of(ppCostCollector.getMovementQty(), uomId);
+		final Quantity collectorMovementQty = Quantity.of(ppCostCollector.getMovementQty(), uom);
 		final Quantity modCntrLogQty;
 		final String description;
 
