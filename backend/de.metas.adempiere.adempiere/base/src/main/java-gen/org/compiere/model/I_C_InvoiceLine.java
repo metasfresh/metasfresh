@@ -800,48 +800,6 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
-	 * Set Accounting group.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setis184_AccountingGroup (@Nullable java.lang.String is184_AccountingGroup);
-
-	/**
-	 * Get Accounting group.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getis184_AccountingGroup();
-
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_is184_AccountingGroup = new ModelColumn<>(I_C_InvoiceLine.class, "is184_AccountingGroup", null);
-	String COLUMNNAME_is184_AccountingGroup = "is184_AccountingGroup";
-
-	/**
-	 * Set Print text.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setis184_PrintText (@Nullable java.lang.String is184_PrintText);
-
-	/**
-	 * Get Print text.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getis184_PrintText();
-
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_is184_PrintText = new ModelColumn<>(I_C_InvoiceLine.class, "is184_PrintText", null);
-	String COLUMNNAME_is184_PrintText = "is184_PrintText";
-
-	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
