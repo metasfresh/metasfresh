@@ -23,6 +23,8 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
@@ -49,11 +51,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -193,12 +197,15 @@ public class ModularContractLogDAO
 			@NonNull final ModularContractLogQuery query,
 			final boolean isBillable)
 	{
-		toSqlQuery(query)
-				.create()
-				.updateDirectly()
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
+		sqlQuery.updateDirectly()
 				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_IsBillable, isBillable)
 				.setExecuteDirectly(true)
 				.execute();
+
+		CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+				I_ModCntr_Log.Table_Name,
+				sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
 	}
 
 	private IQueryBuilder<I_ModCntr_Log> toSqlQuery(@NonNull final ModularContractLogQuery query)
@@ -258,17 +265,13 @@ public class ModularContractLogDAO
 			@NonNull final FlatrateTermId modularFlatrateTermId,
 			@NonNull final OrderLineId orderLineId)
 	{
-		final TableRecordReference modularRecordReference = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId);
-		final Optional<I_ModCntr_Log> modCntrLog = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Log.COLUMN_C_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, LogEntryContractType.MODULAR_CONTRACT)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, modularRecordReference.getRecord_ID())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, modularRecordReference.getAD_Table_ID())
-				.orderByDescending(I_ModCntr_Log.COLUMNNAME_Created)
-				.orderByDescending(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID)
-				.create()
-				.firstOptional();
+		final TableRecordReferenceSet modularRecordReference = TableRecordReferenceSet.of(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId));
+
+		final Optional<I_ModCntr_Log> modCntrLog = lastRecord(ModularContractLogQuery.builder()
+																	  .contractType(MODULAR_CONTRACT)
+																	  .flatrateTermId(modularFlatrateTermId)
+																	  .referenceSet(modularRecordReference)
+																	  .build());
 		return modCntrLog.map(this::fromRecord);
 	}
 }

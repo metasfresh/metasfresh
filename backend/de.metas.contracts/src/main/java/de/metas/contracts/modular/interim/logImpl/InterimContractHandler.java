@@ -123,7 +123,7 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 				.translate(Language.getBaseAD_Language());
 
 		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()
-				.contractId(flatrateTermId)
+				.contractId(modularContractId)
 				.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
 				.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, flatrateTermId))
 				.producerBPartnerId(modularContractLogEntry.getProducerBPartnerId())
@@ -174,7 +174,7 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 	@Override
 	public void validateDocAction(final @NonNull I_C_Flatrate_Term model, final ModularContractService.@NonNull ModelAction action)
 	{
-		if (action != ModularContractService.ModelAction.COMPLETED && action != ModularContractService.ModelAction.CANCELED)
+		if (action != ModularContractService.ModelAction.COMPLETED)
 		{
 			throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}

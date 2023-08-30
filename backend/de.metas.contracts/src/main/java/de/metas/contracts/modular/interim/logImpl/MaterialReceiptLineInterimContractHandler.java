@@ -76,7 +76,7 @@ public class MaterialReceiptLineInterimContractHandler implements IModularContra
 	@Override
 	public boolean applies(@NonNull final LogEntryContractType logEntryContractType)
 	{
-		return logEntryContractType.isModularContractType();
+		return logEntryContractType.isInterimContractType();
 	}
 
 	@Override
