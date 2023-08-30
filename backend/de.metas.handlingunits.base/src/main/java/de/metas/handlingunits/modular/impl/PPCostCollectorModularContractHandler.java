@@ -192,14 +192,14 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 	}
 
 	@Override
-	public void validateDocAction(@NonNull final I_PP_Cost_Collector issueCostCollector, @NonNull final ModularContractService.ModelAction action)
+	public void validateDocAction(@NonNull final I_PP_Cost_Collector ppCostCollector, @NonNull final ModularContractService.ModelAction action)
 	{
 		if (action != ModularContractService.ModelAction.COMPLETED)
 		{
 			throw new AdempiereException("Unsupported model action!")
 					.appendParametersToMessage()
 					.setParameter("Action", action)
-					.setParameter("PP_Cost_Collector_ID", issueCostCollector.getPP_Cost_Collector_ID());
+					.setParameter("PP_Cost_Collector_ID", ppCostCollector.getPP_Cost_Collector_ID());
 		}
 	}
 }
