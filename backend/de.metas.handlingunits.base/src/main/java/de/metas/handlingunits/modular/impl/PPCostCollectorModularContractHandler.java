@@ -174,16 +174,16 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 
 	@Override
 	@NonNull
-	public Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_PP_Cost_Collector issueCostCollector, final @NonNull FlatrateTermId flatrateTermId)
+	public Optional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull I_PP_Cost_Collector ppCostCollector, final @NonNull FlatrateTermId flatrateTermId)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	@NonNull
-	public Stream<FlatrateTermId> streamContractIds(@NonNull final I_PP_Cost_Collector issueCostCollector)
+	public Stream<FlatrateTermId> streamContractIds(@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
-		return Optional.of(issueCostCollector.getPP_Order_ID())
+		return Optional.of(ppCostCollector.getPP_Order_ID())
 				.map(PPOrderId::ofRepoId)
 				.map(ppOrderBL::getById)
 				.map(I_PP_Order::getModular_Flatrate_Term_ID)
