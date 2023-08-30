@@ -84,10 +84,10 @@ public class ProcessModularLogsEnqueuer
 
 	private void enqueueNow(@NonNull final EnqueueRequest request)
 	{
-		@NonNull final TableRecordReference recordReference = request.recordReference();
-		@NonNull final ModelAction action = request.action();
-		@NonNull final LogEntryContractType logEntryContractType = request.logEntryContractType();
-		@Nullable final UserId userInChargeId = request.userInChargeId();
+		final TableRecordReference recordReference = request.recordReference();
+		final ModelAction action = request.action();
+		final LogEntryContractType logEntryContractType = request.logEntryContractType();
+		final UserId userInChargeId = request.userInChargeId();
 
 		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ModularLogsWorkPackageProcessor.class);
 

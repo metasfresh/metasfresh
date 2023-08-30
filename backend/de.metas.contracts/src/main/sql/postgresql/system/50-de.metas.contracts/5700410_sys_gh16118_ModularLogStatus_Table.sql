@@ -253,5 +253,5 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ CREATE TABLE public.ModCntr_Log_Status (AD_Client_ID NUMERIC(10) NOT NULL, AD_Issue_ID NUMERIC(10), AD_Org_ID NUMERIC(10) NOT NULL, AD_Table_ID NUMERIC(10) NOT NULL, C_Queue_WorkPackage_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, ModCntr_Log_Status_ID NUMERIC(10) NOT NULL, ProcessingStatus VARCHAR(2) NOT NULL, Record_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT ADIssue_ModCntrLogStatus FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED, CONSTRAINT ADTable_ModCntrLogStatus FOREIGN KEY (AD_Table_ID) REFERENCES public.AD_Table DEFERRABLE INITIALLY DEFERRED, CONSTRAINT CQueueWorkPackage_ModCntrLogStatus FOREIGN KEY (C_Queue_WorkPackage_ID) REFERENCES public.C_Queue_WorkPackage DEFERRABLE INITIALLY DEFERRED, CONSTRAINT ModCntr_Log_Status_Key PRIMARY KEY (ModCntr_Log_Status_ID))
 ;
 
-CREATE UNIQUE INDEX idx_unq_workpackage_id on ModCntr_Log_Status(C_Queue_WorkPackage_ID)
+CREATE UNIQUE INDEX idx_unq_workpackage_id on ModCntr_Log_Status(C_Queue_WorkPackage_ID, Record_ID, AD_Table_ID)
 ;

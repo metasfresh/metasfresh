@@ -58,7 +58,10 @@ public class ModularLogCreateStatusService
 				.build());
 	}
 
-	public void setStatusErrored(@NonNull final QueueWorkPackageId workPackageId, @NonNull final TableRecordReference recordRef, @NonNull final Throwable error)
+	public void setStatusErrored(
+			@NonNull final QueueWorkPackageId workPackageId,
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final Throwable error)
 	{
 		final AdIssueId adIssueId = errorManager.createIssue(error);
 

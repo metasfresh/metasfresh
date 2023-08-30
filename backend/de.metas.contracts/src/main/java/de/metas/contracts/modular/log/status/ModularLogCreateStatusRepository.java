@@ -29,6 +29,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -40,7 +41,7 @@ class ModularLogCreateStatusRepository
 
 	public void save(@NonNull final ModularLogCreateStatus createStatus)
 	{
-		final I_ModCntr_Log_Status logStatus = getByWorkPackageId(createStatus.workPackageId())
+		final I_ModCntr_Log_Status logStatus = getByRefRecordAndWorkPackageId(createStatus.workPackageId(), createStatus.recordReference())
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Log_Status.class));
 
 		logStatus.setProcessingStatus(createStatus.status().getCode());
@@ -54,10 +55,14 @@ class ModularLogCreateStatusRepository
 	}
 
 	@NonNull
-	private Optional<I_ModCntr_Log_Status> getByWorkPackageId(@NonNull final QueueWorkPackageId workPackageId)
+	private Optional<I_ModCntr_Log_Status> getByRefRecordAndWorkPackageId(
+			@NonNull final QueueWorkPackageId workPackageId,
+			@NonNull final TableRecordReference recordReference)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Log_Status.class)
 				.addEqualsFilter(I_ModCntr_Log_Status.COLUMNNAME_C_Queue_WorkPackage_ID, workPackageId)
+				.addEqualsFilter(I_ModCntr_Log_Status.COLUMNNAME_Record_ID, recordReference.getRecord_ID())
+				.addEqualsFilter(I_ModCntr_Log_Status.COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
 				.create()
 				.firstOnlyOptional(I_ModCntr_Log_Status.class);
 	}

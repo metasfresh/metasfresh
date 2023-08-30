@@ -1,48 +1,7 @@
 package de.metas.inventory.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
-import org.compiere.util.Env;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.engine.DocStatus;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
@@ -54,6 +13,22 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class InventoryBL implements IInventoryBL
 {
@@ -221,5 +196,13 @@ public class InventoryBL implements IInventoryBL
 	{
 		return Optional.ofNullable(inventoryDAO.getById(inventoryId))
 				.orElseThrow(() -> new AdempiereException("No record found for " + inventoryId));
+	}
+
+	@Override
+	public boolean isReversal(@NonNull final I_M_Inventory inventory)
+	{
+		final InventoryId reversalId = InventoryId.ofRepoIdOrNull(inventory.getReversal_ID());
+
+		return reversalId != null && reversalId.getRepoId() < inventory.getM_Inventory_ID();
 	}
 }

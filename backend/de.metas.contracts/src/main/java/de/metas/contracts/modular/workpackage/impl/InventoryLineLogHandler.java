@@ -91,10 +91,9 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 
 		final I_M_Inventory inventory = inventoryBL.getById(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
 
-		final InventoryId reversalId = InventoryId.ofRepoIdOrNull(inventory.getReversal_ID());
-		if (reversalId != null)
+		if (inventoryBL.isReversal(inventory))
 		{
-			return ExplainedOptional.emptyBecause(MessageFormat.format("InventoryId: {0} | The inventory was reversed, the log entries are created only for the reversal!",
+			return ExplainedOptional.emptyBecause(MessageFormat.format("InventoryId: {0} | The enqueued inventory is a reversal, the log entries are created only for the reversed inventory",
 																	   inventory.getM_Inventory_ID()));
 		}
 
@@ -130,10 +129,9 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 	{
 		final I_M_Inventory inventory = inventoryBL.getById(InventoryId.ofRepoId(handleLogsRequest.getModel().getM_Inventory_ID()));
 
-		final InventoryId reversalId = InventoryId.ofRepoIdOrNull(inventory.getReversal_ID());
-		if (reversalId != null)
+		if (inventoryBL.isReversal(inventory))
 		{
-			return ExplainedOptional.emptyBecause(MessageFormat.format("InventoryId: {0} | The inventory was reversed, the log entries are created only for the reversal!",
+			return ExplainedOptional.emptyBecause(MessageFormat.format("InventoryId: {0} | The enqueued inventory is a reversal, the log entries are created only for the reversed inventory",
 																	   inventory.getM_Inventory_ID()));
 		}
 

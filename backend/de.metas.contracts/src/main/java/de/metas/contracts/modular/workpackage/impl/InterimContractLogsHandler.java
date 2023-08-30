@@ -96,7 +96,10 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 
 		if (modularContractLogEntryOptional.isEmpty())
 		{
-			return ExplainedOptional.emptyBecause("No ModularContractLogEntry found for modularContractId: " + modularContractId + ", orderLineTermId: " + flatrateTermRecord.getC_OrderLine_Term_ID() + "! No logs will be created");
+			return ExplainedOptional.emptyBecause("No ModularContractLogEntry found for"
+														  + " modularContractId: " + modularContractId + ","
+														  + " orderLineTermId: " + flatrateTermRecord.getC_OrderLine_Term_ID()
+														  + "! No logs will be created");
 		}
 
 		final ModularContractLogEntry modularContractLogEntry = modularContractLogEntryOptional.get();
