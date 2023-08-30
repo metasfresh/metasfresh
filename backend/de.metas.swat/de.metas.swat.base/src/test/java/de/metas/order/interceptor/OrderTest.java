@@ -9,6 +9,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.project.service.ProjectService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -64,7 +65,8 @@ public class OrderTest
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
 		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, productWarehouseAssignmentService));
+		final ProjectService projectService = ProjectService.newInstanceForUnitTesting();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, productWarehouseAssignmentService, projectService));
 	}
 
 	@Test

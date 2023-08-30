@@ -2964,6 +2964,26 @@ public interface I_C_Order
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Project Manager.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProjectManager_ID (int ProjectManager_ID);
+
+	/**
+	 * Get Project Manager.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getProjectManager_ID();
+
+	String COLUMNNAME_ProjectManager_ID = "ProjectManager_ID";
+
+	/**
 	 * Set Promotion Code.
 	 * User entered promotion code at sales time
 	 *
