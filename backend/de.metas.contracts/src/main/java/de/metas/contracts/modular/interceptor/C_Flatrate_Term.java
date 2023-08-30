@@ -24,31 +24,24 @@ package de.metas.contracts.modular.interceptor;
 
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.util.Objects;
-
-import static de.metas.contracts.modular.ModelAction.CANCELED;
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 
 @Interceptor(I_C_Flatrate_Term.class)
@@ -60,6 +53,7 @@ public class C_Flatrate_Term
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
 
@@ -88,56 +82,34 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createInterimContractLogs(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public void onInterimContractComplete(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType())
 		{
 			return;
 		}
+		trxManager.runAfterCommit(() -> createInterimContractLogs(flatrateTermRecord));
+	}
 
+	private void createInterimContractLogs(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
 		queryBL.createQueryBuilder(I_M_InOut.class)
 				.addOnlyActiveRecordsFilter()
 				.addBetweenFilter(I_M_InOut.COLUMNNAME_MovementDate, flatrateTermRecord.getStartDate(), flatrateTermRecord.getEndDate())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getModular_Flatrate_Term_ID())
 				.create()
 				.stream()
-				.forEach(inOutLine -> invokeHandlerForInOutLine(inOutLine, COMPLETED));
+				.forEach(this::invokeHandlerForInOutLine);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Flatrate_Term.COLUMNNAME_ContractStatus })
-	public void onInterimContractCancel(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	private void invokeHandlerForInOutLine(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
-		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType()
-				|| !Objects.equals(flatrateTermRecord.getContractStatus(), X_C_Flatrate_Term.CONTRACTSTATUS_Quit))
-		{
-			return;
-		}
-		reverseInterimReceiptLineLogsIfNeeded(flatrateTermRecord);
-		modularContractService.invokeWithModel(flatrateTermRecord, ModelAction.CANCELED, LogEntryContractType.INTERIM);
-	}
-
-	private void reverseInterimReceiptLineLogsIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
-	{
-		final Timestamp oldEndDate = InterfaceWrapperHelper.createOld(flatrateTermRecord, I_C_Flatrate_Term.class).getEndDate();
-		queryBL.createQueryBuilder(I_M_InOut.class)
-				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, oldEndDate)
-				.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, CompareQueryFilter.Operator.GREATER, flatrateTermRecord.getEndDate())
-				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getModular_Flatrate_Term_ID())
-				.create()
-				.stream()
-				.forEach(inOutLine -> invokeHandlerForInOutLine(inOutLine, CANCELED));
-	}
-
-	private void invokeHandlerForInOutLine(@NonNull final I_M_InOutLine inOutLineRecord, @NonNull final ModelAction action)
-	{
-		modularContractService.invokeWithModel(inOutLineRecord, action, LogEntryContractType.INTERIM);
+		modularContractService.invokeWithModel(inOutLineRecord, COMPLETED, LogEntryContractType.INTERIM);
 	}
 }

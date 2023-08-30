@@ -41,6 +41,8 @@ import org.compiere.model.I_M_InOutLine;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial;
+
 public class M_InOut_ReadyForInterimInvoicing extends JavaProcess implements IProcessPrecondition
 {
 	@Param(parameterName = "IsInterimInvoiceable")
@@ -96,6 +98,7 @@ public class M_InOut_ReadyForInterimInvoicing extends JavaProcess implements IPr
 				.addOnlyActiveRecordsFilter()
 				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_IsPackagingMaterial, false)
 				.stream()
 				.map(I_M_InOutLine::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoIdOrNull);

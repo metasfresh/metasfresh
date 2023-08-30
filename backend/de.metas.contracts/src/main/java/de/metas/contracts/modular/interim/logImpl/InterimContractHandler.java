@@ -65,7 +65,7 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 	@Override
 	public void validateDocAction(final @NonNull I_C_Flatrate_Term model, final @NonNull ModelAction action)
 	{
-		if (action != ModelAction.COMPLETED && action != ModelAction.CANCELED)
+		if (action != ModelAction.COMPLETED)
 		{
 			throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}

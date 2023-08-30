@@ -22,60 +22,74 @@
 
 package de.metas.cucumber.stepdefs.interiminvoice.contract;
 
-import de.metas.contracts.ConditionsId;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.modular.interim.invoice.command.InterimInvoiceFlatrateTermCreateCommand;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
-import de.metas.order.OrderLineId;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.TimeUtil;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Term_CreateInterimContract_StepDef
 {
-	final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
-	final C_OrderLine_StepDefData orderLineTable;
+	private final C_Flatrate_Term_StepDefData flatrateTermTable;
+	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 
 	public C_Flatrate_Term_CreateInterimContract_StepDef(
-			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable)
+			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable)
 	{
-		this.flatrateConditionsTable = flatrateConditionsTable;
-		this.orderLineTable = orderLineTable;
+		this.flatrateTermTable = flatrateTermTable;
 	}
 
-	@And("create interim invoice contract for C_OrderLine")
+	@And("create interim contract for modular contract")
 	public void create_interim_contract(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String flatrateConditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
-
-			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+			final String flatrateTermTableIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Flatrate_Term flatrateTerm = flatrateTermTable.get(flatrateTermTableIdentifier);
 
 			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, "DateFrom");
 			final Timestamp dateTo = DataTableUtil.extractDateTimestampForColumnName(tableRow, "DateTo");
 
-			InterimInvoiceFlatrateTermCreateCommand.builder()
-					.conditionsId(ConditionsId.ofRepoId(flatrateConditions.getC_Flatrate_Conditions_ID()))
-					.orderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
-					.dateFrom(TimeUtil.asInstantNonNull(dateFrom))
-					.dateTo(TimeUtil.asInstantNonNull(dateTo))
-					.build()
-					.execute();
+			interimInvoiceFlatrateTermBL.create(flatrateTerm, dateFrom, dateTo);
 		}
+	}
+
+	@And("create interim contract for modular contract with error")
+	public void create_interim_contract_with_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String flatrateTermTableIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Flatrate_Term flatrateTerm = flatrateTermTable.get(flatrateTermTableIdentifier);
+
+			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, "DateFrom");
+			final Timestamp dateTo = DataTableUtil.extractDateTimestampForColumnName(tableRow, "DateTo");
+
+			final String errorCode = DataTableUtil.extractStringForColumnName(tableRow, "errorCode");
+
+			try
+			{
+				interimInvoiceFlatrateTermBL.create(flatrateTerm, dateFrom, dateTo);
+				assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+			}
+			catch (final AdempiereException exception)
+			{
+				assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+			}
+		}
+
 	}
 }
