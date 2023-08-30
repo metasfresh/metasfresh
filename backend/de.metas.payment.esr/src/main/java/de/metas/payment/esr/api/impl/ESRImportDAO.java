@@ -437,6 +437,11 @@ public class ESRImportDAO implements IESRImportDAO
 																					  .build())
 				.stream().iterator();
 
+		if(!paymentIdIterator.hasNext())
+		{
+			return Optional.empty(); // no point searching ESR_ImportLines
+		}
+		
 		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText(), esrLine.getESR_ImportLine_ID());
 
 		while (paymentIdIterator.hasNext())
