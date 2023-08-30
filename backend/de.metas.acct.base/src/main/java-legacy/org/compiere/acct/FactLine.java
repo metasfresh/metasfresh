@@ -750,12 +750,12 @@ public class FactLine
 				.map(date -> date.toInstant(doc.getServices()::getTimeZone));
 	}
 
-	private Optional<YearAndCalendarId> computeYearAndCalendarId(final AcctSchema acctSchema, final Doc<?> m_doc, final DocLine<?> m_docLine)
+	private static Optional<YearAndCalendarId> computeYearAndCalendarId(final AcctSchema acctSchema, final Doc<?> m_doc, final DocLine<?> m_docLine)
 	{
 		int calendarId = computeAcctSchemaElementAsId(AcctSchemaElementType.HarvestingCalendar, acctSchema, m_doc, m_docLine).orElse(0);
 		int yearId = computeAcctSchemaElementAsId(AcctSchemaElementType.HarvestingYear, acctSchema, m_doc, m_docLine).orElse(0);
 
-		return calendarId > 0 && yearId >0 ? Optional.of(YearAndCalendarId.ofRepoId(yearId, calendarId)) : Optional.empty();
+		return YearAndCalendarId.optionalOfRepoId(yearId, calendarId);
 	}
 
 
@@ -1495,13 +1495,9 @@ public class FactLine
 
 		if (dim.isSegmentValueSet(AcctSegmentType.HarvestingCalendar) && dim.isSegmentValueSet(AcctSegmentType.HarvestingYear))
 		{
-			int calendarId = dim.getC_Harvesting_Calendar_ID();
-			int yearId = dim.getHarvesting_Year_ID();
-
-			if (calendarId > 0 && yearId >0)
-			{
-				setYearAndCalendarId(YearAndCalendarId.ofRepoId(yearId, calendarId));
-			}
+			final int calendarId = dim.getC_Harvesting_Calendar_ID();
+			final int yearId = dim.getHarvesting_Year_ID();
+			YearAndCalendarId.optionalOfRepoId(yearId, calendarId).ifPresent(this::setYearAndCalendarId);
 		}
 
 	}

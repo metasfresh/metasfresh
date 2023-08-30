@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public record YearAndCalendarId(@NonNull YearId yearId, @NonNull CalendarId calendarId)
 {
@@ -48,5 +49,13 @@ public record YearAndCalendarId(@NonNull YearId yearId, @NonNull CalendarId cale
 				calendarId != null && calendarId > 0 && yearId != null && yearId > 0
 						? new YearAndCalendarId(YearId.ofRepoId(yearId), CalendarId.ofRepoId(calendarId))
 						: null;
+	}
+
+	@NonNull
+	public static Optional<YearAndCalendarId> optionalOfRepoId(@Nullable final Integer yearId, @Nullable final Integer calendarId)
+	{
+		return
+				calendarId != null && calendarId > 0 && yearId != null && yearId > 0
+						? Optional.of(new YearAndCalendarId(YearId.ofRepoId(yearId), CalendarId.ofRepoId(calendarId))) : Optional.empty();
 	}
 }
