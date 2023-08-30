@@ -75,9 +75,6 @@ public interface IESRImportDAO extends ISingletonService
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
 
 	/**
-	 * count lines
-	 *
-	 * @param esrImport
 	 * @param processed 3 possible values: null = ignore processed status; true = only count processed lines; false = only count unprocessed lines
 	 * @return lines count
 	 */

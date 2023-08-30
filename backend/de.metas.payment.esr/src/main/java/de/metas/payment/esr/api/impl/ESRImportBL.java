@@ -102,7 +102,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 @Service
 public class ESRImportBL implements IESRImportBL
 {
-	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
+	private static final Logger logger = LogManager.getLogger(ESRImportBL.class);
 	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -121,7 +121,7 @@ public class ESRImportBL implements IESRImportBL
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 	/**
-	 * task https://github.com/metasfresh/metasfresh/issues/2118
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/2118">https://github.com/metasfresh/metasfresh/issues/2118</a>
 	 */
 	private static final String CFG_PROCESS_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.ProcessUnspportedTrxTypes";
 
@@ -144,7 +144,7 @@ public class ESRImportBL implements IESRImportBL
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	private final void lockAndProcess(
+	private void lockAndProcess(
 			@NonNull final I_ESR_Import esrImport,
 			@NonNull final Runnable processor)
 	{
@@ -221,7 +221,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			in.close();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -375,7 +375,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), X_C_DocType.DOCBASETYPE_APPayment, importLine.getAD_Org_ID());
 		}
-		catch (PeriodClosedException p)
+		catch (final PeriodClosedException p)
 		{
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine, p.getLocalizedMessage());
 		}
@@ -404,9 +404,6 @@ public class ESRImportBL implements IESRImportBL
 	 * <li>AccountingDate</li>
 	 * <li>PaymentDate</li>
 	 * </ul>
-	 *
-	 * @param importedLines
-	 * @return
 	 */
 	private Map<ArrayKey, List<I_ESR_ImportLine>> groupLines(final List<I_ESR_ImportLine> importedLines)
 	{
@@ -422,12 +419,7 @@ public class ESRImportBL implements IESRImportBL
 
 			final ArrayKey key = mkESRLineKey(line);
 
-			List<I_ESR_ImportLine> linesOfInvoice = key2Lines.get(key);
-			if (linesOfInvoice == null)
-			{
-				linesOfInvoice = new ArrayList<>();
-				key2Lines.put(key, linesOfInvoice);
-			}
+			List<I_ESR_ImportLine> linesOfInvoice = key2Lines.computeIfAbsent(key, k -> new ArrayList<>());
 			linesOfInvoice.add(line);
 
 		}
@@ -669,7 +661,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/2118
+	 * task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private void handleUnsupportedTrxType(@NonNull final I_ESR_ImportLine line)
 	{
