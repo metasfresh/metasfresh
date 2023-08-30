@@ -94,9 +94,9 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 	}
 
 	@Override
-	public boolean applies(@NonNull final I_PP_Cost_Collector issueCostCollector)
+	public boolean applies(@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
-		return ppOrderBL.isModularOrder(PPOrderId.ofRepoId(issueCostCollector.getPP_Order_ID()));
+		return ppOrderBL.isModularOrder(PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID()));
 	}
 
 	@Override
