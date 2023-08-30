@@ -136,21 +136,21 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID());
 		final Set<WarehouseId> issueFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 
-		final AttributeSetInstanceId expectedASI = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderBomLine.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet storageRelevantAttributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(expectedASI)
-				.filterOnlyStorageRelevantAttributes();
-
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO
 				.createHUQueryBuilder()
 				.addOnlyInWarehouseIds(issueFromWarehouseIds)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.addOnlyWithAttributes(storageRelevantAttributeSet)
 				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
 				.onlyNotLocked();
 
 		if (!ppOrderBomLine.isAllowIssuingAnyProduct())
 		{
+			final AttributeSetInstanceId expectedASI = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderBomLine.getM_AttributeSetInstance_ID());
+			final ImmutableAttributeSet storageRelevantAttributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(expectedASI)
+					.filterOnlyStorageRelevantAttributes();
+			huQueryBuilder.addOnlyWithAttributes(storageRelevantAttributeSet);
+
 			huQueryBuilder.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()));
 		}
 
