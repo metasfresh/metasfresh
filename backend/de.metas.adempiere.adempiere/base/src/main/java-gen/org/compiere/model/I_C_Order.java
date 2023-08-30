@@ -3012,6 +3012,26 @@ public interface I_C_Order
 	String COLUMNNAME_Ref_Proposal_ID = "Ref_Proposal_ID";
 
 	/**
+	 * Set Requestor.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRequestor_ID (int Requestor_ID);
+
+	/**
+	 * Get Requestor.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRequestor_ID();
+
+	String COLUMNNAME_Requestor_ID = "Requestor_ID";
+
+	/**
 	 * Set Sales partner code.
 	 *
 	 * <br>Type: String
