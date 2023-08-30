@@ -37,6 +37,7 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.project.service.ProjectService;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -134,10 +135,11 @@ class PaymentRestEndpointTest
 		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 
 		// run the "before_complete" interceptor
-		new C_Order(bpartnerBL, 
-					new OrderLineDetailRepository(), 
-					documentLocationBL, 
-					new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()))
+		new C_Order(bpartnerBL,
+				new OrderLineDetailRepository(),
+				documentLocationBL,
+				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
+				ProjectService.newInstanceForUnitTesting())
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

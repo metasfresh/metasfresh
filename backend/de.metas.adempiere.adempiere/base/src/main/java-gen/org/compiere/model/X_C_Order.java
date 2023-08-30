@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1525097525L;
+	private static final long serialVersionUID = 162943407L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1973,6 +1973,21 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public void setProjectManager_ID (final int ProjectManager_ID)
+	{
+		if (ProjectManager_ID < 1) 
+			set_Value (COLUMNNAME_ProjectManager_ID, null);
+		else 
+			set_Value (COLUMNNAME_ProjectManager_ID, ProjectManager_ID);
+	}
+
+	@Override
+	public int getProjectManager_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ProjectManager_ID);
 	}
 
 	@Override
