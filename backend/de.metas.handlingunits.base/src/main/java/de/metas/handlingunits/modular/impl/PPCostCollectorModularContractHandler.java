@@ -44,6 +44,7 @@ import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -54,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -75,6 +77,7 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
@@ -132,7 +135,7 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(ppCostCollector.getC_UOM_ID()));
 
-		final ProductId productId = ProductId.ofRepoId(ppCostCollector.getM_Product_ID());
+		final I_M_Product product = productBL.getById(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
 
 		final Quantity collectorMovementQty = Quantity.of(ppCostCollector.getMovementQty(), uomId);
 		final Quantity modCntrLogQty;
@@ -141,13 +144,13 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 		if (ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt)
 				|| ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance))
 		{
-			modCntrLogQty = collectorMovementQty.negateIfNot(collectorMovementQty.isPositive());
-			description = msgBL.getMsg(MSG_DESCRIPTION_RECEIPT, ImmutableList.of(modCntrLogQty.abs().toString(), productId.getRepoId()));
+			modCntrLogQty = collectorMovementQty.abs();
+			description = msgBL.getMsg(MSG_DESCRIPTION_RECEIPT, ImmutableList.of(modCntrLogQty.abs().toString(), product.getName()));
 		}
 		else
 		{
-			modCntrLogQty = collectorMovementQty.negateIf(collectorMovementQty.isPositive());
-			description = msgBL.getMsg(MSG_DESCRIPTION_ISSUE, ImmutableList.of(modCntrLogQty.negate().abs().toString(), productId.getRepoId()));
+			modCntrLogQty = collectorMovementQty.isPositive() ? collectorMovementQty.negate() : collectorMovementQty;
+			description = msgBL.getMsg(MSG_DESCRIPTION_ISSUE, ImmutableList.of(modCntrLogQty.abs().toString(), product.getName()));
 		}
 
 		return modularContractTypeId.map(contractTypeId -> LogEntryCreateRequest.builder()

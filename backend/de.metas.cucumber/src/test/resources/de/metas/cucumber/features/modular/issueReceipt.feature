@@ -46,8 +46,8 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | modCntr_settings_1             | testSettings_07212023_1 | componentProduct        | harvesting_calendar      | year                 | moduleLogPricingSystem            |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                          | Value                         | Classname                                                            |
-      | modCntr_type_1             | manufacturingOrder_07212023_1 | manufacturingOrder_07212023_1 | de.metas.handlingunits.modular.impl.PPOrderQtyModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name                          | Value                         | Classname                                                                 |
+      | modCntr_type_1             | manufacturingOrder_07212023_1 | manufacturingOrder_07212023_1 | de.metas.handlingunits.modular.impl.PPCostCollectorModularContractHandler |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
