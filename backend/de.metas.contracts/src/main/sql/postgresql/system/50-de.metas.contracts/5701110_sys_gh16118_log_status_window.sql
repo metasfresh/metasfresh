@@ -710,3 +710,38 @@ UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2023-08-31 20:04:1
 UPDATE AD_Column SET IsSelectionColumn='N',Updated=TO_TIMESTAMP('2023-08-31 20:11:18.214','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587340
 ;
 
+-- Element: ModCntr_Log_Status_ID
+-- 2023-08-31T17:29:50.416186Z
+UPDATE AD_Element_Trl SET Name='Modularer Log-Erstellungsstatus', PrintName='Modularer Log-Erstellungsstatus',Updated=TO_TIMESTAMP('2023-08-31 20:29:50.416','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582662 AND AD_Language='de_CH'
+;
+
+-- 2023-08-31T17:29:50.516240800Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582662,'de_CH')
+;
+
+-- Element: ModCntr_Log_Status_ID
+-- 2023-08-31T17:29:53.620201500Z
+UPDATE AD_Element_Trl SET Name='Modularer Log-Erstellungsstatus', PrintName='Modularer Log-Erstellungsstatus',Updated=TO_TIMESTAMP('2023-08-31 20:29:53.619','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582662 AND AD_Language='de_DE'
+;
+
+-- 2023-08-31T17:29:53.621563700Z
+UPDATE AD_Element SET Name='Modularer Log-Erstellungsstatus', PrintName='Modularer Log-Erstellungsstatus' WHERE AD_Element_ID=582662
+;
+
+-- 2023-08-31T17:29:54.567045100Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582662,'de_DE')
+;
+
+-- 2023-08-31T17:29:54.574566900Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582662,'de_DE')
+;
+
+-- Element: ModCntr_Log_Status_ID
+-- 2023-08-31T17:29:59.576605200Z
+UPDATE AD_Element_Trl SET Name='Modularer Log-Erstellungsstatus', PrintName='Modularer Log-Erstellungsstatus',Updated=TO_TIMESTAMP('2023-08-31 20:29:59.576','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582662 AND AD_Language='fr_CH'
+;
+
+-- 2023-08-31T17:29:59.579273900Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582662,'fr_CH')
+;
+
