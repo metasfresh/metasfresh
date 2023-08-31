@@ -128,7 +128,7 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | PP_Order_ID.Identifier |
       | ppOrder_manufacturing  |
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier  | ContractType    | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | ppOrder_manufacturing | ModularContract | warehouse                     | componentProduct        | bp_moduleLogMO                  | -10 | PP_Order  | moduleLogContract_1           | modCntr_type_1                 | false         | Production                   | PCE                   | year                              |
       | log_2                     | ppOrder_manufacturing | ModularContract | warehouse                     | manufacturingProduct    | bp_moduleLogMO                  | 10  | PP_Order  | moduleLogContract_1           | modCntr_type_1                 | false         | Production                   | PCE                   | year                              |

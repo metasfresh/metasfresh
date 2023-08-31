@@ -24,6 +24,7 @@ package de.metas.contracts.modular.interceptor;
 
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -48,10 +49,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.REACTIVATED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.REVERSED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.VOIDED;
+import static de.metas.contracts.modular.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModelAction.REACTIVATED;
+import static de.metas.contracts.modular.ModelAction.REVERSED;
+import static de.metas.contracts.modular.ModelAction.VOIDED;
 
 @Component
 @Interceptor(I_M_InOut.class)
@@ -114,7 +115,7 @@ public class M_InOut
 
 	private void invokeHandlerForEachLine(
 			@NonNull final I_M_InOut inOutRecord,
-			@NonNull final ModularContractService.ModelAction modelAction)
+			@NonNull final ModelAction modelAction)
 	{
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveAllLines(inOutRecord);
 

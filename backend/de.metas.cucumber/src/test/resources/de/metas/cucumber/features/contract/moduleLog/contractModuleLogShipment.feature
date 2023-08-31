@@ -103,7 +103,7 @@ Feature: Modular contract log from shipment
 
     When the order identified by so_order_S0303_100 is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1_S0303_100         | soLine_1_S0303_100   | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_100   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2_S0303_100         | soLine_2_S0303_100   | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_100   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
@@ -133,7 +133,7 @@ Feature: Modular contract log from shipment
 
     When the shipment identified by s_1_S0303_100 is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | shipLog_1_S0303_100       | s_l_1_S0303_100      | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract_S0303_100   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | false       |
       | shipLog_2_S0303_100       | s_l_2_S0303_100      | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_100 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | M_InOutLine | moduleLogContract_S0303_100   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | false       |
@@ -196,7 +196,7 @@ Feature: Modular contract log from shipment
 
     When the order identified by so_order_S0303_200 is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1_S0303_200         | soLine_1_S0303_200   | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_200   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2_S0303_200         | soLine_2_S0303_200   | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_200   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
@@ -291,7 +291,7 @@ Feature: Modular contract log from shipment
 
     When the order identified by so_order_S0303_300 is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1_S0303_300         | soLine_1_S0303_300   | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract_S0303_300   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2_S0303_300         | soLine_2_S0303_300   | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract_S0303_300   | modCntr_type_SO_S0303          | false         | SalesOrder                   | year_2023                         | false       |
@@ -321,14 +321,14 @@ Feature: Modular contract log from shipment
 
     When the shipment identified by s_1_S0303_300 is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | shipLog_1_S0303_300       | s_l_1_S0303_300      | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | M_InOutLine | moduleLogContract_S0303_300   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | false       |
       | shipLog_2_S0303_300       | s_l_2_S0303_300      | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | M_InOutLine | moduleLogContract_S0303_300   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | false       |
 
     When the shipment identified by s_1_S0303_300 is reversed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | shipLog_1_S0303_300       | s_l_1_S0303_300      | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | -8  | M_InOutLine | moduleLogContract_S0303_300   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | false       |
       | shipLog_2_S0303_300       | s_l_2_S0303_300      | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0303_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | -3  | M_InOutLine | moduleLogContract_S0303_300   | modCntr_type_SHIP_S0303        | false         | Shipment                     | year_2023                         | false       |

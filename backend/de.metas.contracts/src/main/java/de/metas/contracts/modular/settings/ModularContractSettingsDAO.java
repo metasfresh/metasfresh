@@ -93,12 +93,6 @@ public class ModularContractSettingsDAO
 		return getOrLoadBy(contractId);
 	}
 
-	@Nullable
-	public ModularContractSettings getByFlatrateConditonsIdOrNull(@NonNull final ConditionsId conditionsId)
-	{
-		return getOrLoadBy(conditionsId);
-	}
-
 	@NonNull
 	private ModularContractSettings getById(@NonNull final ModularContractSettingsId contractSettingsId)
 	{
@@ -186,8 +180,19 @@ public class ModularContractSettingsDAO
 		return id2ModularContractSettings.getOrLoad(settingsId, this::getById);
 	}
 
+	@NonNull
+	public ModularContractSettings getByFlatrateConditionsId(@NonNull final ConditionsId conditionsId)
+	{
+		final ModularContractSettings settings = getByFlatrateConditionsIdOrNull(conditionsId);
+		if (settings == null)
+		{
+			throw new AdempiereException("No modular contract settings found for " + conditionsId);
+		}
+		return settings;
+	}
+
 	@Nullable
-	private ModularContractSettings getOrLoadBy(@NonNull final ConditionsId conditionsId)
+	public ModularContractSettings getByFlatrateConditionsIdOrNull(@NonNull final ConditionsId conditionsId)
 	{
 		final SettingsLookupKey key = SettingsLookupKey.of(conditionsId);
 
