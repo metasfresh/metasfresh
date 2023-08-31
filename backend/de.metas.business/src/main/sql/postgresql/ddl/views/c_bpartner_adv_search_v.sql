@@ -1,10 +1,10 @@
 DROP VIEW IF EXISTS C_BPartner_Adv_Search_v
 ;
 
-CREATE VIEW c_bpartner_adv_search_v(c_bpartner_id, c_bpartner_location_id, c_bp_contact_id, value, externalid, iscompany, name, firstname, lastname, companyname, address1, city, postal, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, es_documentid) AS
+CREATE OR REPLACE VIEW C_BPartner_Adv_Search_v AS
 SELECT bp.c_bpartner_id,
        bpl.c_bpartner_location_id,
-       COALESCE(u.ad_user_id, '-1'::integer::numeric)                                                                                                            AS c_bp_contact_id,
+       COALESCE(u.ad_user_id, -1)                                                                                                            AS C_BP_Contact_ID,
        bp.value,
        (SELECT ExternalReference
         FROM S_ExternalReference

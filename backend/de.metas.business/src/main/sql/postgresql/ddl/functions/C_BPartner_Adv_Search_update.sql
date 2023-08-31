@@ -1,46 +1,6 @@
 DROP FUNCTION IF EXISTS C_BPartner_Adv_Search_Update()
 ;
 
-CREATE FUNCTION c_bpartner_adv_search_update() RETURNS void
-    LANGUAGE plpgsql
-AS
-$$
-DECLARE
-    rowcount numeric;
-BEGIN
-    DELETE FROM c_bpartner_adv_search WHERE TRUE;
-    GET DIAGNOSTICS rowcount = ROW_COUNT;
-    RAISE NOTICE 'Removed % rows', rowcount;
-
-    INSERT INTO c_bpartner_adv_search (ad_client_id, ad_org_id, address1, c_bp_contact_id, c_bpartner_id, c_bpartner_location_id, city, created, createdby, es_documentid, firstname, isactive, iscompany, lastname, name, companyname, postal, updated, updatedby, value, externalid)
-    SELECT v.ad_client_id,
-           v.ad_org_id,
-           v.address1,
-           v.c_bp_contact_id,
-           v.c_bpartner_id,
-           v.c_bpartner_location_id,
-           v.city,
-           v.created,
-           v.createdby,
-           v.es_documentid,
-           v.firstname,
-           v.isactive,
-           v.iscompany,
-           v.lastname,
-           v.name,
-           v.companyname,
-           v.postal,
-           v.updated,
-           v.updatedby,
-           v.value,
-           v.externalid
-    FROM c_bpartner_adv_search_v v;
-    GET DIAGNOSTICS rowcount = ROW_COUNT;
-    RAISE NOTICE 'Inserted % rows', rowcount;
-END;
-$$
-;
-
 DROP FUNCTION IF EXISTS C_BPartner_Adv_Search_Update(
     p_C_BPartner_IDs numeric[]
 )
@@ -54,7 +14,7 @@ CREATE FUNCTION c_bpartner_adv_search_update(p_c_bpartner_ids numeric[])
             )
     LANGUAGE plpgsql
 AS
-$$
+$BODY$
 DECLARE
     v_transactionId        text;
     rowcount               integer;
@@ -129,6 +89,51 @@ BEGIN
                t.t          AS es_documentid
         FROM UNNEST(v_inserted_documentIds) t;
 END;
-$$
+$BODY$
+    LANGUAGE plpgsql
+    VOLATILE
+    COST 100
 ;
 
+CREATE FUNCTION c_bpartner_adv_search_update() RETURNS void
+    LANGUAGE plpgsql
+AS
+$BODY$
+DECLARE
+    rowcount numeric;
+BEGIN
+    DELETE FROM c_bpartner_adv_search WHERE TRUE;
+    GET DIAGNOSTICS rowcount = ROW_COUNT;
+    RAISE NOTICE 'Removed % rows', rowcount;
+
+    INSERT INTO c_bpartner_adv_search (ad_client_id, ad_org_id, address1, c_bp_contact_id, c_bpartner_id, c_bpartner_location_id, city, created, createdby, es_documentid, firstname, isactive, iscompany, lastname, name, companyname, postal, updated, updatedby, value, externalid)
+    SELECT v.ad_client_id,
+           v.ad_org_id,
+           v.address1,
+           v.c_bp_contact_id,
+           v.c_bpartner_id,
+           v.c_bpartner_location_id,
+           v.city,
+           v.created,
+           v.createdby,
+           v.es_documentid,
+           v.firstname,
+           v.isactive,
+           v.iscompany,
+           v.lastname,
+           v.name,
+           v.companyname,
+           v.postal,
+           v.updated,
+           v.updatedby,
+           v.value,
+           v.externalid
+    FROM c_bpartner_adv_search_v v;
+    GET DIAGNOSTICS rowcount = ROW_COUNT;
+    RAISE NOTICE 'Inserted % rows', rowcount;
+END;
+$BODY$
+    LANGUAGE plpgsql
+    VOLATILE
+    COST 100
+;
