@@ -160,7 +160,7 @@ import java.util.Set;
 	private String _errorIfNoHUs_ADMessage = null;
 	@Nullable private Boolean onlyStockedProducts;
 
-	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull final AgeAttributesService ageAttributesService)
+	public  HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull final AgeAttributesService ageAttributesService)
 	{
 		this.huReservationRepository = huReservationRepository;
 
@@ -390,23 +390,23 @@ import java.util.Set;
 		//
 		// Filter only those HUs which contains our products restriction
 		final Set<ProductId> onlyWithProductIds = getOnlyWithProductIds();
+		final IQueryBuilder<I_M_HU_Storage> huStoragesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
+				.addOnlyActiveRecordsFilter();
 		if (!onlyWithProductIds.isEmpty())
 		{
-			final IQueryBuilder<I_M_HU_Storage> huStoragesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
-					.addOnlyActiveRecordsFilter()
+			huStoragesQueryBuilder
 					.addInArrayOrAllFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, onlyWithProductIds);
-
-			if (!_allowEmptyStorage)
-			{
-				huStoragesQueryBuilder.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO);
-			}
-
-			final IQuery<I_M_HU_Storage> huStoragesQuery = huStoragesQueryBuilder.create();
-
-			andFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID,
-					I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
 		}
 
+		if (!_allowEmptyStorage)
+		{
+			huStoragesQueryBuilder.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO);
+		}
+
+		final IQuery<I_M_HU_Storage> huStoragesQuery = huStoragesQueryBuilder.create();
+
+		andFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID,
+									   I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
 		//
 		// Empty storage filter
 		if (_emptyStorageOnly != null)
