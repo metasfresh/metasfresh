@@ -84,7 +84,7 @@ public class C_Flatrate_Term
 													return;
 												}
 
-												PurchaseOrderLineModularContractHandler.crosslinkInterimContractAndSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
+												PurchaseOrderLineModularContractHandler.crossLinkInterimContractAndSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
 											});
 	}
 
@@ -99,7 +99,7 @@ public class C_Flatrate_Term
 		final I_C_OrderLine sourcePurchaseOrderLine = PurchaseOrderLineModularContractHandler.getSourcePurchaseOrderLine(flatrateTermRecord);
 		if (sourcePurchaseOrderLine != null)
 		{
-			//dev-note: interim contract logs creation will be handled as part of the purchase orde line processing
+			//dev-note: interim contract logs creation will be handled as part of the purchase order line processing
 			return;
 		}
 

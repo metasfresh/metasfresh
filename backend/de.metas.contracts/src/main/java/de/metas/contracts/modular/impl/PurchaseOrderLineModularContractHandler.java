@@ -84,9 +84,15 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	}
 
 	@Nullable
-	public static I_C_OrderLine getSourcePurchaseOrderLine(@NonNull final I_C_Flatrate_Term modularContract)
+	public static I_C_OrderLine getSourcePurchaseOrderLine(@NonNull final I_C_Flatrate_Term contract)
 	{
-		return InterfaceWrapperHelper.getDynAttribute(modularContract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE);
+		return InterfaceWrapperHelper.getDynAttribute(contract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE);
+	}
+
+	public static void crossLinkInterimContractAndSourcePurchaseOrderLine(@NonNull final I_C_Flatrate_Term interimContract, @NonNull final I_C_OrderLine sourcePurchaseOrderLine)
+	{
+		setSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
+		InterfaceWrapperHelper.setDynAttribute(sourcePurchaseOrderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE, interimContract);
 	}
 
 	@Nullable
@@ -95,15 +101,9 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		return InterfaceWrapperHelper.getDynAttribute(orderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE);
 	}
 
-	public static void crosslinkInterimContractAndSourcePurchaseOrderLine(@NonNull final I_C_Flatrate_Term interimContract, @NonNull final I_C_OrderLine sourcePurchaseOrderLine)
+	private static void setSourcePurchaseOrderLine(final @NonNull I_C_Flatrate_Term contract, final @NonNull I_C_OrderLine sourcePurchaseOrderLine)
 	{
-		setSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
-		InterfaceWrapperHelper.setDynAttribute(sourcePurchaseOrderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE, interimContract);
-	}
-
-	private static void setSourcePurchaseOrderLine(final @NonNull I_C_Flatrate_Term interimContract, final @NonNull I_C_OrderLine sourcePurchaseOrderLine)
-	{
-		InterfaceWrapperHelper.setDynAttribute(interimContract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE, sourcePurchaseOrderLine);
+		InterfaceWrapperHelper.setDynAttribute(contract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE, sourcePurchaseOrderLine);
 	}
 
 	@NonNull
