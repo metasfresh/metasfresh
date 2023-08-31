@@ -139,7 +139,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getBill_BPartner_ID()));
 		this.productId = CoalesceUtil.coalesceNotNull(productId, orderLine.getProductId());
 		this.conditions = flatrateDAO.getConditionsById(conditionsId);
-		this.modularContractSettings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
+		this.modularContractSettings = modularContractSettingsDAO.getByFlatrateConditionsIdOrNull(conditionsId);
 		this.modulareFlatrateTermId = modulareFlatrateTermId;
 		this.product = productDAO.getById(this.productId);
 		this.modularContract = flatrateDAO.getById(modulareFlatrateTermId);

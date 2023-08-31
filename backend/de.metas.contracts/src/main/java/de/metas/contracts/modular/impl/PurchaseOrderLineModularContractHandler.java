@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.Check;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractChangeBL;
@@ -240,10 +239,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 
 	private void validateContractSettingEligible(@NonNull final ConditionsId conditionsId)
 	{
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
-
-		Check.assume(settings != null, "ModularContractSettings should not be null at this stage!");
-
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditionsId(conditionsId);
 		if (settings.getModuleConfigs().isEmpty())
 		{
 			throw new AdempiereException("Could not create contract! Missing module configs for modular contract term")

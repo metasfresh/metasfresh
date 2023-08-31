@@ -110,7 +110,7 @@ public class BPartnerInterimContractService
 	public boolean isBpartnerInterimInvoice(final I_C_Flatrate_Term modularFlatrateTermRecord)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(modularFlatrateTermRecord.getC_Flatrate_Conditions_ID());
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
+		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateConditionsIdOrNull(conditionsId);
 		Check.assumeNotNull(modularContractSettings, "Modular Contract Settings shouldn't be null at this point");
 
 		return bPartnerInterimContractRepo.getByRequest(BPartnerInterimContractUpsertRequest.builder()
