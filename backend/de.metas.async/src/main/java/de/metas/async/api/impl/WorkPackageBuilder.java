@@ -25,9 +25,11 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
@@ -76,6 +78,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	private ILockCommand _elementsLocker = null;
 	/** Lock aquired when enqueued elements were locked */
 	private Future<ILock> _futureElementsLock;
+	@Nullable
+	private Consumer<I_C_Queue_WorkPackage> beforeEnqueueInterceptor;
 
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
@@ -299,9 +303,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 		return this;
 	}
 
+	@Override
+	public IWorkPackageBuilder setBeforeEnqueueInterceptor(@Nullable final Consumer<I_C_Queue_WorkPackage> beforeEnqueueInterceptor)
+	{
+		assertNotBuilt();
+		this.beforeEnqueueInterceptor = beforeEnqueueInterceptor;
+		return this;
+	}
+
 	@NonNull
 	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final  ILockCommand elementsLocker)
 	{
+		Optional.ofNullable(beforeEnqueueInterceptor).ifPresent(interceptor -> interceptor.accept(workPackage));
+
 		final IWorkPackageQueue workPackageQueue = getWorkpackageQueue();
 
 		final IWorkpackagePrioStrategy workPackagePriority = getPriority();
