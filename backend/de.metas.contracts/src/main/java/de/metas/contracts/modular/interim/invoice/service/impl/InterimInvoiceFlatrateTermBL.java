@@ -52,7 +52,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -243,12 +242,11 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(modularFlatrateTermRecord.getC_OrderLine_Term_ID());
 		if (orderLineId == null)
 		{
-			logger.debug("On create skipped C_Flatrate_Term_ID=" + flatrateTermId.getRepoId() + ", because of missing C_OrderLine_Term_ID");
+			logger.debug("On create skipped C_Flatrate_Term_ID={}, because of missing C_OrderLine_Term_ID", flatrateTermId);
 			return;
 		}
 
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
-		Check.assumeNotNull(modularContractSettings, "ModularContractSettings should not be null at this stage!");
+		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
 		final ConditionsId interimConditionsId = modularContractSettingsBL.retrieveFlatrateConditionId(modularContractSettings, TypeConditions.INTERIM_INVOICE);
 
 		InterimInvoiceFlatrateTermCreateCommand.builder()

@@ -168,8 +168,6 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class FlatrateBL implements IFlatrateBL
 {
@@ -220,6 +218,26 @@ public class FlatrateBL implements IFlatrateBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+
+	@Override
+	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)
+	{
+		return flatrateDAO.getConditionsById(flatrateConditionsId);
+	}
+
+	@Override
+	public List<I_C_Flatrate_Term> retrieveTerms(
+			final I_C_BPartner bpartner,
+			final I_C_Flatrate_Conditions flatrateConditions)
+	{
+		return flatrateDAO.retrieveTerms(bpartner, flatrateConditions);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	{
+		flatrateDAO.save(flatrateTerm);
+	}
 
 	@Override
 	@Nullable
@@ -368,7 +386,7 @@ public class FlatrateBL implements IFlatrateBL
 					candToClear.setQtyInvoiced(candToClear.getQtyToInvoice());
 					candToClear.setQtyToInvoice(BigDecimal.ZERO);
 
-					save(candToClear);
+					InterfaceWrapperHelper.saveRecord(candToClear);
 
 					// C_Flatrate_DataEntry_ID and QtyCleared have already been set by InvoiceCandidateValidator
 					Check.assume(alloc.getC_Flatrate_DataEntry_ID() == dataEntry.getC_Flatrate_DataEntry_ID(),
@@ -376,7 +394,7 @@ public class FlatrateBL implements IFlatrateBL
 
 					// update the allocation record
 					alloc.setC_Invoice_Candidate_ID(newCand.getC_Invoice_Candidate_ID());
-					save(alloc);
+					InterfaceWrapperHelper.saveRecord(alloc);
 				}
 			}
 		}
@@ -530,7 +548,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		setILCandHandler(ctx, newCand);
 
-		save(newCand);
+		InterfaceWrapperHelper.saveRecord(newCand);
 
 		return newCand;
 	}
@@ -874,7 +892,7 @@ public class FlatrateBL implements IFlatrateBL
 				newDataEntry.setM_Product_DataEntry_ID(product.getM_Product_ID());
 				newDataEntry.setC_UOM_ID(uom.getC_UOM_ID());
 
-				save(newDataEntry);
+				InterfaceWrapperHelper.saveRecord(newDataEntry);
 				counter++;
 			}
 		}
@@ -930,7 +948,7 @@ public class FlatrateBL implements IFlatrateBL
 				newDataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
 				newDataEntry.setC_UOM_ID(uom.getC_UOM_ID());
 
-				save(newDataEntry);
+				InterfaceWrapperHelper.saveRecord(newDataEntry);
 				counter++;
 			}
 		}
@@ -1328,7 +1346,7 @@ public class FlatrateBL implements IFlatrateBL
 			nextConditions = currentTerm.getC_Flatrate_Conditions();
 		}
 
-		final I_C_Flatrate_Term nextTerm = newInstance(I_C_Flatrate_Term.class, currentTerm);
+		final I_C_Flatrate_Term nextTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, currentTerm);
 		nextTerm.setAD_Org_ID(currentTerm.getAD_Org_ID());
 
 		nextTerm.setC_Flatrate_Data_ID(currentTerm.getC_Flatrate_Data_ID());
@@ -1662,7 +1680,7 @@ public class FlatrateBL implements IFlatrateBL
 		if (null != entry)
 		{
 			entry.setActualQty(entry.getActualQty().add(documentAmount));
-			save(entry);
+			InterfaceWrapperHelper.saveRecord(entry);
 		}
 	}
 
@@ -2502,12 +2520,12 @@ public class FlatrateBL implements IFlatrateBL
 	public FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull final FlatrateTermId modularFlatrateTermId, @NonNull final Instant date)
 	{
 		return FlatrateTermId.ofRepoIdOrNull(queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-													 .addOnlyActiveRecordsFilter()
-													 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
-													 .addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE)
-													 .addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, date)
-													 .addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
-													 .create()
-													 .firstIdOnly());
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID, modularFlatrateTermId.getRepoId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, date)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
+				.create()
+				.firstIdOnly());
 	}
 }

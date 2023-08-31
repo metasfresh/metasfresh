@@ -20,6 +20,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.InOutLineQuery;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
@@ -82,6 +83,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -162,6 +164,12 @@ public class InOutBL implements IInOutBL
 	public List<I_M_InOutLine> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds)
 	{
 		return inOutDAO.getLinesByIds(inoutLineIds, I_M_InOutLine.class);
+	}
+
+	@Override
+	public Stream<I_M_InOutLine> streamLines(@NonNull final InOutLineQuery query)
+	{
+		return inOutDAO.stream(query);
 	}
 
 	@Override

@@ -31,12 +31,13 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutLineQuery;
+import de.metas.inout.InOutQuery;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -44,7 +45,7 @@ import java.util.stream.Stream;
 @Component
 public class InterimContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 	@Override
 	public @NonNull Class<I_C_Flatrate_Term> getType()
@@ -89,16 +90,15 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 			return;
 		}
 
-		de.metas.util.Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
-		queryBL.createQueryBuilder(I_M_InOut.class)
-				.addOnlyActiveRecordsFilter()
-				.addBetweenFilter(I_M_InOut.COLUMNNAME_MovementDate, interimContract.getStartDate(), interimContract.getEndDate())
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, interimContract.getModular_Flatrate_Term_ID())
-				.create()
-				.stream()
+		inoutBL.streamLines(
+						InOutLineQuery.builder()
+								.headerQuery(InOutQuery.builder()
+										.docStatus(DocStatus.Completed)
+										.movementDateFrom(interimContract.getStartDate().toInstant())
+										.movementDateTo(Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null").toInstant())
+										.build())
+								.flatrateTermId(interimContract.getModular_Flatrate_Term_ID())
+								.build())
 				.forEach(inoutLine -> contractService.invokeWithModel(inoutLine, modelAction, LogEntryContractType.INTERIM));
 	}
 }
