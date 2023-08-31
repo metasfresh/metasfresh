@@ -23,18 +23,19 @@ SELECT bp.c_bpartner_id,
        bp.ad_client_id,
        bp.ad_org_id,
        bp.isactive,
-       LEAST(bp.created, bpl.created, u.created)                                                                                                                 AS created,
-       0::numeric                                                                                                                                                AS createdby,
-       GREATEST(bp.updated, bpl.updated, u.updated)                                                                                                              AS updated,
-       0::numeric                                                                                                                                                AS updatedby,
-       (((bp.c_bpartner_id || '-'::text) || bpl.c_bpartner_location_id) || '-'::text) || COALESCE(u.ad_user_id::character varying, 'X'::character varying)::text AS es_documentid
+       LEAST(bp.created, bpl.created, u.created)                                                            AS created,
+       0::numeric                                                                                           AS createdby,
+       GREATEST(bp.updated, bpl.updated, u.updated)                                                         AS updated,
+       0::numeric                                                                                           AS updatedby,
+       --
+       bp.c_bpartner_id || '-' || bpl.c_bpartner_location_id || '-' || COALESCE(u.ad_user_id::varchar, 'X') AS es_documentid
 FROM c_bpartner bp
          INNER JOIN c_bpartner_location bpl ON bp.c_bpartner_id = bpl.c_bpartner_id AND bp.isactive = 'Y' AND bpl.isactive = 'Y'
          INNER JOIN c_location l ON bpl.c_location_id = l.c_location_id AND l.isactive = 'Y'
          INNER JOIN ad_org o ON bp.ad_org_id = o.ad_org_id AND o.isactive = 'Y'
     --
          LEFT JOIN ad_user u ON (
-            u.c_bpartner_id = bp.c_bpartner_id
+        u.c_bpartner_id = bp.c_bpartner_id
         AND (u.c_bpartner_location_id IS NULL OR u.c_bpartner_location_id = bpl.c_bpartner_location_id)
         AND u.isactive = 'Y')
      --
