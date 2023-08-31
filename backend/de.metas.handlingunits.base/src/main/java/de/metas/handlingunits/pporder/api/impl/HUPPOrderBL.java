@@ -142,6 +142,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved()
 				.setOnlyTopLevelHUs()
+				.setNotEmptyStorageOnly()
 				.onlyNotLocked();
 
 		if (!ppOrderBomLine.isAllowIssuingAnyProduct())
