@@ -182,5 +182,5 @@ public interface IWorkPackageBuilder
 
 	IWorkPackageBuilder setAD_PInstance_ID(final PInstanceId adPInstanceId);
 
-	IWorkPackageBuilder setBeforeEnqueueInterceptor(@Nullable Consumer<I_C_Queue_WorkPackage> beforeEnqueueInterceptor);
+	IWorkPackageBuilder setAfterEnqueueInterceptor(@Nullable Consumer<I_C_Queue_WorkPackage> afterEnqueueInterceptor);
 }

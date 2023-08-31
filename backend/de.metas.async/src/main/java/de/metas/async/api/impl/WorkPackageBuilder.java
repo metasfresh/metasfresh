@@ -79,7 +79,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	/** Lock aquired when enqueued elements were locked */
 	private Future<ILock> _futureElementsLock;
 	@Nullable
-	private Consumer<I_C_Queue_WorkPackage> beforeEnqueueInterceptor;
+	private Consumer<I_C_Queue_WorkPackage> afterEnqueueInterceptor;
 
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
@@ -304,18 +304,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@Override
-	public IWorkPackageBuilder setBeforeEnqueueInterceptor(@Nullable final Consumer<I_C_Queue_WorkPackage> beforeEnqueueInterceptor)
+	public IWorkPackageBuilder setAfterEnqueueInterceptor(@Nullable final Consumer<I_C_Queue_WorkPackage> afterEnqueueInterceptor)
 	{
 		assertNotBuilt();
-		this.beforeEnqueueInterceptor = beforeEnqueueInterceptor;
+		this.afterEnqueueInterceptor = afterEnqueueInterceptor;
 		return this;
 	}
 
 	@NonNull
 	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final  ILockCommand elementsLocker)
 	{
-		Optional.ofNullable(beforeEnqueueInterceptor).ifPresent(interceptor -> interceptor.accept(workPackage));
-
 		final IWorkPackageQueue workPackageQueue = getWorkpackageQueue();
 
 		final IWorkpackagePrioStrategy workPackagePriority = getPriority();
@@ -336,6 +334,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 			try (final MDCCloseable workpackageRecordMDC = TableRecordMDC.putTableRecordReference(workpackage))
 			{
+				Optional.ofNullable(afterEnqueueInterceptor).ifPresent(interceptor -> interceptor.accept(workpackage));
+
 				// Set the Async batch if provided
 				// TODO: optimize this and set everything in one shot and then save it.
 				if (asyncBatchSet)

@@ -89,7 +89,7 @@ public class ProcessModularLogsEnqueuer
 				.parameter(LOG_ENTRY_CONTRACT_TYPE.name(), logEntryContractType.getCode())
 				.setElementsLocker(createElementsLocker(recordReference))
 				.addElement(recordReference)
-				.setBeforeEnqueueInterceptor(workPackage -> createStatusService
+				.setAfterEnqueueInterceptor(workPackage -> createStatusService
 						.setStatusEnqueued(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()), recordReference))
 				.buildAndEnqueue();
 	}
