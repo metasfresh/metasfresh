@@ -45,6 +45,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -212,7 +213,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		final I_C_Flatrate_Term interimContract = PurchaseOrderLineModularContractHandler.getInterminContract(orderLine);
 		if (interimContract != null)
 		{
-			de.metas.util.Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
+			Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
 
 			contractService.invokeWithModel(interimContract, modelAction, LogEntryContractType.INTERIM);
 		}
