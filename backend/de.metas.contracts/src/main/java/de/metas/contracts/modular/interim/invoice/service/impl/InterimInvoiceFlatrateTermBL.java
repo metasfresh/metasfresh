@@ -62,8 +62,10 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.function.Consumer;
 
 public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTermBL
 {
@@ -84,27 +86,17 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 			@NonNull final Timestamp startDate,
 			@NonNull final Timestamp endDate)
 	{
-		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(modularFlatrateTermRecord.getC_Flatrate_Term_ID());
+		createInterimContract(modularFlatrateTermRecord, startDate, endDate, null);
+	}
 
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(modularFlatrateTermRecord.getC_OrderLine_Term_ID());
-		if (orderLineId == null)
-		{
-			logger.debug("On create skipped C_Flatrate_Term_ID=" + flatrateTermId.getRepoId() + ", because of missing C_OrderLine_Term_ID");
-			return;
-		}
-
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
-		Check.assumeNotNull(modularContractSettings, "ModularContractSettings should not be null at this stage!");
-		final ConditionsId interimConditionsId = modularContractSettingsBL.retrieveFlatrateConditionId(modularContractSettings, TypeConditions.INTERIM_INVOICE);
-
-		InterimInvoiceFlatrateTermCreateCommand.builder()
-				.modulareFlatrateTermId(flatrateTermId)
-				.conditionsId(interimConditionsId)
-				.orderLineId(orderLineId)
-				.dateFrom(TimeUtil.asInstantNonNull(startDate))
-				.dateTo(TimeUtil.asInstantNonNull(endDate))
-				.build()
-				.execute();
+	@Override
+	public void create(
+			@NonNull final I_C_Flatrate_Term modularFlatrateTermRecord,
+			@NonNull final Timestamp startDate,
+			@NonNull final Timestamp endDate,
+			@NonNull final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor)
+	{
+		createInterimContract(modularFlatrateTermRecord, startDate, endDate, beforeCompleteInterceptor);
 	}
 
 	@Override
@@ -240,4 +232,33 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 				.execute();
 	}
 
+	private void createInterimContract(
+			@NonNull final I_C_Flatrate_Term modularFlatrateTermRecord,
+			@NonNull final Timestamp startDate,
+			@NonNull final Timestamp endDate,
+			@Nullable final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor)
+	{
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(modularFlatrateTermRecord.getC_Flatrate_Term_ID());
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(modularFlatrateTermRecord.getC_OrderLine_Term_ID());
+		if (orderLineId == null)
+		{
+			logger.debug("On create skipped C_Flatrate_Term_ID=" + flatrateTermId.getRepoId() + ", because of missing C_OrderLine_Term_ID");
+			return;
+		}
+
+		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
+		Check.assumeNotNull(modularContractSettings, "ModularContractSettings should not be null at this stage!");
+		final ConditionsId interimConditionsId = modularContractSettingsBL.retrieveFlatrateConditionId(modularContractSettings, TypeConditions.INTERIM_INVOICE);
+
+		InterimInvoiceFlatrateTermCreateCommand.builder()
+				.modulareFlatrateTermId(flatrateTermId)
+				.conditionsId(interimConditionsId)
+				.orderLineId(orderLineId)
+				.dateFrom(TimeUtil.asInstantNonNull(startDate))
+				.dateTo(TimeUtil.asInstantNonNull(endDate))
+				.beforeCompleteInterceptor(beforeCompleteInterceptor)
+				.build()
+				.execute();
+	}
 }

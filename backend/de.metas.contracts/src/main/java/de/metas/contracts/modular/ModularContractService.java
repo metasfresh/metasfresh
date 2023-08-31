@@ -63,14 +63,22 @@ public class ModularContractService
 			@NonNull final ModelAction action,
 			@NonNull final LogEntryContractType logEntryContractType)
 	{
-		if (ModelAction.COMPLETED == action)
-		{
-			handler.createContractIfRequired(model);
-		}
+		createContractNowIfRequired(handler, model, action);
 
 		handler.streamContractIds(model)
 				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
 				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId, logEntryContractType));
+	}
+
+	private <T> void createContractNowIfRequired(
+			@NonNull final IModularContractTypeHandler<T> handler,
+			@NonNull final T model,
+			@NonNull final ModelAction action)
+	{
+		if (ModelAction.COMPLETED == action)
+		{
+			handler.createContractIfRequired(model);
+		}
 	}
 
 	private <T> boolean isApplicableContract(@NonNull final IModularContractTypeHandler<T> handler, @NonNull final FlatrateTermId flatrateTermId)
@@ -114,9 +122,9 @@ public class ModularContractService
 	{
 		handler.validateDocAction(model, action);
 
-		handleAction(handler, model, action, flatrateTermId);
-
 		processLogsEnqueuer.enqueueAfterCommit(TableRecordReference.of(model), action, logEntryContractType);
+
+		handleAction(handler, model, action, flatrateTermId);
 	}
 
 	private <T> void handleAction(
@@ -125,9 +133,11 @@ public class ModularContractService
 			@NonNull final ModelAction action,
 			@NonNull final FlatrateTermId flatrateTermId)
 	{
-		switch (action)
+		switch (action) //FIXME
 		{
 			case VOIDED -> handler.cancelLinkedContractsIfAllowed(model, flatrateTermId);
 		}
+
+		handler.handleAction(model, action, this);
 	}
 }

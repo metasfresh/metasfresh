@@ -34,6 +34,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -48,6 +49,7 @@ import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -65,6 +67,9 @@ import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleC
 @Component
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
+	public static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
+	public static final String INTERIM_CONTRACT_DYN_ATTRIBUTE = "InterimContract";
+
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
 	private static final AdMessageKey MSG_VOID_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.VoidNotAllowed");
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -170,6 +175,27 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		createModularContract(orderLine);
 	}
 
+	public void handleAction(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final ModelAction modelAction,
+			@NonNull final ModularContractService contractService)
+	{
+		if (modelAction != ModelAction.COMPLETED)
+		{
+			return;
+		}
+
+		//dev-note: the interim contract that was just created as a result of completing the current purchase order
+		final I_C_Flatrate_Term interimContract = InterfaceWrapperHelper.getDynAttribute(orderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE);
+
+		if (interimContract != null)
+		{
+			de.metas.util.Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
+
+			contractService.invokeWithModel(interimContract, modelAction, LogEntryContractType.INTERIM);
+		}
+	}
+
 	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
@@ -177,17 +203,16 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.orElse(false);
 	}
 
-	@NonNull
-	private I_C_Flatrate_Term createModularContract(@NonNull final I_C_OrderLine orderLine)
+	private void createModularContract(@NonNull final I_C_OrderLine orderLine)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
 		validateContractSettingEligible(conditionsId);
 
-		final I_C_Flatrate_Term newTerm = flatrateBL.createContractForOrderLine(orderLine);
+		final I_C_Flatrate_Term modularContract = flatrateBL.createContractForOrderLine(orderLine);
 
-		documentBL.processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
+		InterfaceWrapperHelper.setDynAttribute(modularContract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE, orderLine);
 
-		return newTerm;
+		documentBL.processEx(modularContract, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
 	}
 
 	private void validateContractSettingEligible(@NonNull final ConditionsId conditionsId)

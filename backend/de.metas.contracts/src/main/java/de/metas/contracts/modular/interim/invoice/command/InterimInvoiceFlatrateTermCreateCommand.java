@@ -75,6 +75,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class InterimInvoiceFlatrateTermCreateCommand
 {
@@ -94,6 +95,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 
 	@NonNull
 	private final FlatrateTermId modulareFlatrateTermId;
+	@Nullable
+	private final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor;
 
 	private final OrderLine orderLine;
 	private final I_C_Flatrate_Conditions conditions;
@@ -123,7 +126,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 			@NonNull final Instant dateFrom,
 			@NonNull final Instant dateTo,
 			@NonNull final OrderLineId orderLineId,
-			@NonNull final FlatrateTermId modulareFlatrateTermId)
+			@NonNull final FlatrateTermId modulareFlatrateTermId,
+			@Nullable final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor)
 	{
 
 		this.dateFrom = dateFrom;
@@ -139,6 +143,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		this.modulareFlatrateTermId = modulareFlatrateTermId;
 		this.product = productDAO.getById(this.productId);
 		this.modularContract = flatrateDAO.getById(modulareFlatrateTermId);
+		this.beforeCompleteInterceptor = beforeCompleteInterceptor;
 	}
 
 	public InterimInvoiceFlatrateTerm execute()
@@ -237,6 +242,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setDeliveryViaRule(modularContract.getDeliveryViaRule());
 
 		flatrateDAO.save(flatrateTermRecord);
+
+		Optional.ofNullable(beforeCompleteInterceptor).ifPresent(interceptor -> interceptor.accept(flatrateTermRecord));
 
 		documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 

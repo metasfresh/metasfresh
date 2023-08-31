@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.workpackage;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -45,7 +44,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.List;
 
 import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.LOG_ENTRY_CONTRACT_TYPE;
 import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.MODEL_ACTION;
@@ -67,20 +65,15 @@ public class ProcessModularLogsEnqueuer
 			@NonNull final ModelAction action,
 			@NonNull final LogEntryContractType logEntryContractType)
 	{
-		trxManager.accumulateAndProcessAfterCommit(
-				ProcessModularLogsEnqueuer.class.getSimpleName(),
-				ImmutableList.of(
-						EnqueueRequest.builder()
-								.recordReference(recordReference)
-								.action(action)
-								.logEntryContractType(logEntryContractType)
-								.userInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
-								.build()
-				),
-				this::enqueueAllNow);
-	}
+		final EnqueueRequest request = EnqueueRequest.builder()
+				.recordReference(recordReference)
+				.action(action)
+				.logEntryContractType(logEntryContractType)
+				.userInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+				.build();
 
-	private void enqueueAllNow(final List<EnqueueRequest> requests) {requests.forEach(this::enqueueNow);}
+		trxManager.runAfterCommit(() -> enqueueNow(request));
+	}
 
 	private void enqueueNow(@NonNull final EnqueueRequest request)
 	{

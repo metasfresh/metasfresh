@@ -28,21 +28,20 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.document.engine.DocStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE;
+import static de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.INTERIM_CONTRACT_DYN_ATTRIBUTE;
 
 @Interceptor(I_C_Flatrate_Term.class)
 @Component
@@ -51,9 +50,7 @@ public class C_Flatrate_Term
 	private final BPartnerInterimContractService bPartnerInterimContractService;
 	private final ModularContractService modularContractService;
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
 
@@ -77,8 +74,21 @@ public class C_Flatrate_Term
 			return;
 		}
 
+		final I_C_OrderLine sourcePurchaseOrderLine = InterfaceWrapperHelper.getDynAttribute(flatrateTermRecord, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE);
+
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
-		interimInvoiceFlatrateTermBL.create(flatrateTermRecord, flatrateTermRecord.getStartDate(), flatrateTermRecord.getEndDate());
+		interimInvoiceFlatrateTermBL.create(flatrateTermRecord,
+											flatrateTermRecord.getStartDate(),
+											flatrateTermRecord.getEndDate(),
+											(interimContract) -> {
+												if (sourcePurchaseOrderLine == null)
+												{
+													return;
+												}
+
+												InterfaceWrapperHelper.setDynAttribute(interimContract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE, sourcePurchaseOrderLine);
+												InterfaceWrapperHelper.setDynAttribute(sourcePurchaseOrderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE, interimContract);
+											});
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -88,28 +98,15 @@ public class C_Flatrate_Term
 		{
 			return;
 		}
-		trxManager.runAfterCommit(() -> createInterimContractLogs(flatrateTermRecord));
-	}
 
-	private void createInterimContractLogs(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
-	{
+		final I_C_OrderLine sourcePurchaseOrderLine = InterfaceWrapperHelper.getDynAttribute(flatrateTermRecord, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE);
+
+		if (sourcePurchaseOrderLine != null)
+		{
+			//dev-note: interim contract logs creation will be handled as part of the purchase orde line processing
+			return;
+		}
+
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
-
-		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
-		queryBL.createQueryBuilder(I_M_InOut.class)
-				.addOnlyActiveRecordsFilter()
-				.addBetweenFilter(I_M_InOut.COLUMNNAME_MovementDate, flatrateTermRecord.getStartDate(), flatrateTermRecord.getEndDate())
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getModular_Flatrate_Term_ID())
-				.create()
-				.stream()
-				.forEach(this::invokeHandlerForInOutLine);
-	}
-
-	private void invokeHandlerForInOutLine(@NonNull final I_M_InOutLine inOutLineRecord)
-	{
-		modularContractService.invokeWithModel(inOutLineRecord, COMPLETED, LogEntryContractType.INTERIM);
 	}
 }

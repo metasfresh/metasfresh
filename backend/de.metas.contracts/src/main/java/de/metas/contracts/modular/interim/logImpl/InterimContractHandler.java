@@ -27,10 +27,16 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.document.engine.DocStatus;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -38,6 +44,8 @@ import java.util.stream.Stream;
 @Component
 public class InterimContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public @NonNull Class<I_C_Flatrate_Term> getType()
 	{
@@ -69,5 +77,28 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 		{
 			throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
+	}
+
+	public void handleAction(
+			@NonNull final I_C_Flatrate_Term interimContract,
+			@NonNull final ModelAction modelAction,
+			@NonNull final ModularContractService contractService)
+	{
+		if (modelAction != ModelAction.COMPLETED)
+		{
+			return;
+		}
+
+		de.metas.util.Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
+		queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addBetweenFilter(I_M_InOut.COLUMNNAME_MovementDate, interimContract.getStartDate(), interimContract.getEndDate())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, interimContract.getModular_Flatrate_Term_ID())
+				.create()
+				.stream()
+				.forEach(inoutLine -> contractService.invokeWithModel(inoutLine, modelAction, LogEntryContractType.INTERIM));
 	}
 }

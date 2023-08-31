@@ -60,4 +60,6 @@ public interface IModularContractTypeHandler<T>
 	default void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId) {}
 
 	default void createContractIfRequired(@NonNull final T model) {}
+
+	default void handleAction(@NonNull final T model, @NonNull final ModelAction modelAction, @NonNull final ModularContractService contractService) {}
 }
