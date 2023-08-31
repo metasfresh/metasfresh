@@ -56,6 +56,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -67,7 +68,7 @@ import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleC
 @Component
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
-	public static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
+	private static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
 	public static final String INTERIM_CONTRACT_DYN_ATTRIBUTE = "InterimContract";
 
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
@@ -83,6 +84,29 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	public PurchaseOrderLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
 	{
 		this.modularContractSettingsDAO = modularContractSettingsDAO;
+	}
+
+	@Nullable
+	public static I_C_OrderLine getSourcePurchaseOrderLine(@NonNull final I_C_Flatrate_Term modularContract)
+	{
+		return InterfaceWrapperHelper.getDynAttribute(modularContract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE);
+	}
+
+	@Nullable
+	public static I_C_Flatrate_Term getInterminContract(@NonNull final I_C_OrderLine orderLine)
+	{
+		return InterfaceWrapperHelper.getDynAttribute(orderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE);
+	}
+
+	public static void crosslinkInterimContractAndSourcePurchaseOrderLine(@NonNull final I_C_Flatrate_Term interimContract, @NonNull final I_C_OrderLine sourcePurchaseOrderLine)
+	{
+		setSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
+		InterfaceWrapperHelper.setDynAttribute(sourcePurchaseOrderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE, interimContract);
+	}
+
+	private static void setSourcePurchaseOrderLine(final @NonNull I_C_Flatrate_Term interimContract, final @NonNull I_C_OrderLine sourcePurchaseOrderLine)
+	{
+		InterfaceWrapperHelper.setDynAttribute(interimContract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE, sourcePurchaseOrderLine);
 	}
 
 	@NonNull
@@ -186,8 +210,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		}
 
 		//dev-note: the interim contract that was just created as a result of completing the current purchase order
-		final I_C_Flatrate_Term interimContract = InterfaceWrapperHelper.getDynAttribute(orderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE);
-
+		final I_C_Flatrate_Term interimContract = PurchaseOrderLineModularContractHandler.getInterminContract(orderLine);
 		if (interimContract != null)
 		{
 			de.metas.util.Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
@@ -210,7 +233,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 
 		final I_C_Flatrate_Term modularContract = flatrateBL.createContractForOrderLine(orderLine);
 
-		InterfaceWrapperHelper.setDynAttribute(modularContract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE, orderLine);
+		setSourcePurchaseOrderLine(modularContract, orderLine);
 
 		documentBL.processEx(modularContract, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
 	}

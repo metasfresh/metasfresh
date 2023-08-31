@@ -25,6 +25,7 @@ package de.metas.contracts.modular.interceptor;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -33,15 +34,12 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
-import static de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE;
-import static de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.INTERIM_CONTRACT_DYN_ATTRIBUTE;
 
 @Interceptor(I_C_Flatrate_Term.class)
 @Component
@@ -74,7 +72,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final I_C_OrderLine sourcePurchaseOrderLine = InterfaceWrapperHelper.getDynAttribute(flatrateTermRecord, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE);
+		final I_C_OrderLine sourcePurchaseOrderLine = PurchaseOrderLineModularContractHandler.getSourcePurchaseOrderLine(flatrateTermRecord);
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
 		interimInvoiceFlatrateTermBL.create(flatrateTermRecord,
@@ -86,8 +84,7 @@ public class C_Flatrate_Term
 													return;
 												}
 
-												InterfaceWrapperHelper.setDynAttribute(interimContract, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE, sourcePurchaseOrderLine);
-												InterfaceWrapperHelper.setDynAttribute(sourcePurchaseOrderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE, interimContract);
+												PurchaseOrderLineModularContractHandler.crosslinkInterimContractAndSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
 											});
 	}
 
@@ -99,8 +96,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final I_C_OrderLine sourcePurchaseOrderLine = InterfaceWrapperHelper.getDynAttribute(flatrateTermRecord, CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE);
-
+		final I_C_OrderLine sourcePurchaseOrderLine = PurchaseOrderLineModularContractHandler.getSourcePurchaseOrderLine(flatrateTermRecord);
 		if (sourcePurchaseOrderLine != null)
 		{
 			//dev-note: interim contract logs creation will be handled as part of the purchase orde line processing
