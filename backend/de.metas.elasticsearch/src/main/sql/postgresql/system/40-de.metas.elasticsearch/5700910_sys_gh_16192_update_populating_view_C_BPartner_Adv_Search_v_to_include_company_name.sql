@@ -35,7 +35,7 @@ FROM c_bpartner bp
          INNER JOIN ad_org o ON bp.ad_org_id = o.ad_org_id AND o.isactive = 'Y'
     --
          LEFT JOIN ad_user u ON (
-        u.c_bpartner_id = bp.c_bpartner_id
+            u.c_bpartner_id = bp.c_bpartner_id
         AND (u.c_bpartner_location_id IS NULL OR u.c_bpartner_location_id = bpl.c_bpartner_location_id)
         AND u.isactive = 'Y')
      --

@@ -27,33 +27,58 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.contracts.modular.log.LogEntryCreateRequest;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractType;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
-public class PPOrderQtyModularContractHandler implements IModularContractTypeHandler<I_PP_Order_Qty>
+public class PPCostCollectorModularContractHandler implements IModularContractTypeHandler<I_PP_Cost_Collector>
 {
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 	@Override
 	@NonNull
-	public Class<I_PP_Order_Qty> getType()
+	public Class<I_PP_Cost_Collector> getType()
 	{
-		return I_PP_Order_Qty.class;
+		return I_PP_Cost_Collector.class;
 	}
 
 	@Override
-	public boolean applies(@NonNull final I_PP_Order_Qty issueReceiptQty)
+	public boolean applies(@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
-		return ppOrderBL.isModularOrder(PPOrderId.ofRepoId(issueReceiptQty.getPP_Order_ID()));
+		return ppOrderBL.isModularOrder(PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID()));
 	}
 
 	@Override
@@ -64,9 +89,9 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 
 	@Override
 	@NonNull
-	public Stream<FlatrateTermId> streamContractIds(@NonNull final I_PP_Order_Qty issueReceiptQty)
+	public Stream<FlatrateTermId> streamContractIds(@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
-		return Optional.of(issueReceiptQty.getPP_Order_ID())
+		return Optional.of(ppCostCollector.getPP_Order_ID())
 				.map(PPOrderId::ofRepoId)
 				.map(ppOrderBL::getById)
 				.map(I_PP_Order::getModular_Flatrate_Term_ID)
@@ -75,14 +100,14 @@ public class PPOrderQtyModularContractHandler implements IModularContractTypeHan
 	}
 
 	@Override
-	public void validateDocAction(@NonNull final I_PP_Order_Qty issueReceiptQty, @NonNull final ModelAction action)
+	public void validateDocAction(@NonNull final I_PP_Cost_Collector ppCostCollector, @NonNull final ModularContractService.ModelAction action)
 	{
-		if (action != ModelAction.COMPLETED)
+		if (action != ModularContractService.ModelAction.COMPLETED)
 		{
 			throw new AdempiereException("Unsupported model action!")
 					.appendParametersToMessage()
 					.setParameter("Action", action)
-					.setParameter("PP_Order_Qty_ID", issueReceiptQty.getPP_Order_Qty_ID());
+					.setParameter("PP_Cost_Collector_ID", ppCostCollector.getPP_Cost_Collector_ID());
 		}
 	}
 }
