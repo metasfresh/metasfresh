@@ -41,7 +41,7 @@ public class ModularContractService
 {
 	public enum ModelAction
 	{
-		COMPLETED, REVERSED, REACTIVATED, VOIDED, CANCELED
+		COMPLETED, REVERSED, REACTIVATED, VOIDED
 	}
 
 	private final ModularContractLogDAO contractLogDAO;
@@ -122,7 +122,7 @@ public class ModularContractService
 		{
 			case COMPLETED -> handler.createLogEntryCreateRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::create);
-			case VOIDED, REACTIVATED, REVERSED, CANCELED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
+			case VOIDED, REACTIVATED, REVERSED -> handler.createLogEntryReverseRequest(model, flatrateTermId)
 					.ifPresent(contractLogDAO::reverse);
 		}
 	}

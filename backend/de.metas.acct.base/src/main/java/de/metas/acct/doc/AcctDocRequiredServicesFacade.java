@@ -31,6 +31,9 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
@@ -571,6 +574,10 @@ public class AcctDocRequiredServicesFacade
 
 		record.setOI_TrxType(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getTrxType().getCode() : null);
 		record.setOpenItemKey(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getKey().getAsString() : null);
+
+		final YearAndCalendarId calendarAndYearId = factLine.getYearAndCalendarId();
+		record.setC_Harvesting_Calendar_ID(calendarAndYearId !=null ? CalendarId.toRepoId(calendarAndYearId.calendarId()) : -1);
+		record.setHarvesting_Year_ID(calendarAndYearId !=null ? YearId.toRepoId(calendarAndYearId.yearId()) : -1);
 
 		factAcctDAO.save(record);
 		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));

@@ -113,6 +113,8 @@ public class C_InvoiceLine
 
 		final Dimension invoiceDimension = dimensionService.getFromRecord(invoice);
 		dimensionService.updateRecordUserElements(invoiceLine, invoiceDimension);
+		invoiceLine.setC_Harvesting_Calendar_ID(invoice.getC_Harvesting_Calendar_ID());
+		invoiceLine.setHarvesting_Year_ID(invoice.getHarvesting_Year_ID());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //

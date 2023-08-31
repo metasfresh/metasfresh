@@ -37,10 +37,7 @@ public class M_InOutLine
 {
 	private final ModularContractLogService modularContractLogService;
 
-	public M_InOutLine(@NonNull final ModularContractLogService modularContractLogServic)
-	{
-		this.modularContractLogService = modularContractLogServic;
-	}
+	public M_InOutLine(@NonNull final ModularContractLogService modularContractLogService)	{this.modularContractLogService = modularContractLogService;}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_M_InOutLine inOutLineRecord)

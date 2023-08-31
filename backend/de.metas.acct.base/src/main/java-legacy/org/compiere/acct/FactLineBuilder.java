@@ -62,9 +62,8 @@ import java.util.Optional;
 public final class FactLineBuilder
 {
 	private static final Logger log = Fact.log;
-	private boolean built = false;
-
 	private final Fact fact;
+	private boolean built = false;
 	private DocLine<?> docLine = null;
 	private Integer subLineId = null;
 
@@ -109,6 +108,23 @@ public final class FactLineBuilder
 	FactLineBuilder(@NonNull final Fact fact)
 	{
 		this.fact = fact;
+	}
+
+	@Nullable
+	private static Money extractAmtSource(@Nullable final CostAmount costAmount)
+	{
+		if (costAmount == null)
+		{
+			return null;
+		}
+		else if (costAmount.toSourceMoney() != null)
+		{
+			return costAmount.toSourceMoney();
+		}
+		else
+		{
+			return costAmount.toMoney();
+		}
 	}
 
 	/**
@@ -293,15 +309,15 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	private Integer getSubLine_ID()
+	{
+		return subLineId;
+	}
+
 	public FactLineBuilder setSubLine_ID(final int subLineId)
 	{
 		this.subLineId = subLineId;
 		return this;
-	}
-
-	private Integer getSubLine_ID()
-	{
-		return subLineId;
 	}
 
 	private CurrencyId getAcctCurrencyId()
@@ -422,23 +438,6 @@ public final class FactLineBuilder
 	}
 
 	@Nullable
-	private static Money extractAmtSource(@Nullable final CostAmount costAmount)
-	{
-		if (costAmount == null)
-		{
-			return null;
-		}
-		else if (costAmount.toSourceMoney() != null)
-		{
-			return costAmount.toSourceMoney();
-		}
-		else
-		{
-			return costAmount.toMoney();
-		}
-	}
-
-	@Nullable
 	private BigDecimal extractAmtAcct(@Nullable final CostAmount costAmount)
 	{
 		if (costAmount == null)
@@ -479,13 +478,6 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	public FactLineBuilder setCurrencyConversionCtx(@Nullable final CurrencyConversionContext currencyConversionCtx)
-	{
-		assertNotBuild();
-		this.currencyConversionCtx = currencyConversionCtx;
-		return this;
-	}
-
 	@Nullable
 	private CurrencyConversionContext getCurrencyConversionCtx()
 	{
@@ -495,6 +487,13 @@ public final class FactLineBuilder
 		}
 
 		return fact.getCurrencyConversionContext();
+	}
+
+	public FactLineBuilder setCurrencyConversionCtx(@Nullable final CurrencyConversionContext currencyConversionCtx)
+	{
+		assertNotBuild();
+		this.currencyConversionCtx = currencyConversionCtx;
+		return this;
 	}
 
 	@Nullable
