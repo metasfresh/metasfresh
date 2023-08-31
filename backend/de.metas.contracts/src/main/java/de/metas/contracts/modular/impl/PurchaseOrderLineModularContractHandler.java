@@ -30,7 +30,6 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
@@ -38,7 +37,6 @@ import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
@@ -78,7 +76,6 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
 	public PurchaseOrderLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
@@ -235,7 +232,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 
 		setSourcePurchaseOrderLine(modularContract, orderLine);
 
-		documentBL.processEx(modularContract, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
+		flatrateBL.complete(modularContract);
 	}
 
 	private void validateContractSettingEligible(@NonNull final ConditionsId conditionsId)
