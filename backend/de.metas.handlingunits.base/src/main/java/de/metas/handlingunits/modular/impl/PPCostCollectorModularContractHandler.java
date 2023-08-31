@@ -26,38 +26,13 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractType;
-import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfig;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.lang.SOTrx;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -100,9 +75,9 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 	}
 
 	@Override
-	public void validateDocAction(@NonNull final I_PP_Cost_Collector ppCostCollector, @NonNull final ModularContractService.ModelAction action)
+	public void validateDocAction(@NonNull final I_PP_Cost_Collector ppCostCollector, @NonNull final ModelAction action)
 	{
-		if (action != ModularContractService.ModelAction.COMPLETED)
+		if (action != ModelAction.COMPLETED)
 		{
 			throw new AdempiereException("Unsupported model action!")
 					.appendParametersToMessage()
