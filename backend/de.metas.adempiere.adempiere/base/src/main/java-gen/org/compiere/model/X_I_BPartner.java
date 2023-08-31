@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -382711088L;
+	private static final long serialVersionUID = -509780670L;
 
     /** Standard Constructor */
     public X_I_BPartner (final Properties ctx, final int I_BPartner_ID, @Nullable final String trxName)
@@ -797,12 +797,19 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	 * Delivery = D
 	 */
 	public static final String DELIVERYVIARULE_Delivery = "D";
-	/** Shipper = S */
+	/**
+	 * Shipper = S
+	 */
 	public static final String DELIVERYVIARULE_Shipper = "S";
-	/** Normalpost = NP */
+	/**
+	 * Normalpost = NP
+	 */
 	public static final String DELIVERYVIARULE_Normalpost = "NP";
-	/** Luftpost = LU */
+	/**
+	 * Luftpost = LU
+	 */
 	public static final String DELIVERYVIARULE_Luftpost = "LU";
+
 	@Override
 	public void setDeliveryViaRule (final @Nullable java.lang.String DeliveryViaRule)
 	{
@@ -1437,33 +1444,33 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	}
 
 	@Override
-	public java.lang.String getPaymentRulePO() 
+	public java.lang.String getPaymentRulePO()
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentRulePO);
 	}
 
 	@Override
-	public void setPaymentTerm (final @Nullable java.lang.String PaymentTerm)
+	public void setpayment_term_po(final @Nullable java.lang.String payment_term_po)
 	{
-		set_Value (COLUMNNAME_PaymentTerm, PaymentTerm);
+		set_Value(COLUMNNAME_payment_term_po, payment_term_po);
 	}
 
 	@Override
-	public java.lang.String getPaymentTerm() 
+	public java.lang.String getpayment_term_po()
 	{
-		return get_ValueAsString(COLUMNNAME_PaymentTerm);
+		return get_ValueAsString(COLUMNNAME_payment_term_po);
 	}
 
 	@Override
-	public void setPaymentTermValue (final @Nullable java.lang.String PaymentTermValue)
+	public void setpayment_term_so(final @Nullable java.lang.String payment_term_so)
 	{
-		set_Value (COLUMNNAME_PaymentTermValue, PaymentTermValue);
+		set_Value(COLUMNNAME_payment_term_so, payment_term_so);
 	}
 
 	@Override
-	public java.lang.String getPaymentTermValue() 
+	public java.lang.String getpayment_term_so() 
 	{
-		return get_ValueAsString(COLUMNNAME_PaymentTermValue);
+		return get_ValueAsString(COLUMNNAME_payment_term_so);
 	}
 
 	@Override
