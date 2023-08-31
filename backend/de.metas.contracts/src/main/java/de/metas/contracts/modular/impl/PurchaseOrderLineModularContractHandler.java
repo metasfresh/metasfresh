@@ -90,7 +90,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	}
 
 	@Nullable
-	public static I_C_Flatrate_Term getInterminContract(@NonNull final I_C_OrderLine orderLine)
+	private static I_C_Flatrate_Term getInterimContract(@NonNull final I_C_OrderLine orderLine)
 	{
 		return InterfaceWrapperHelper.getDynAttribute(orderLine, INTERIM_CONTRACT_DYN_ATTRIBUTE);
 	}
@@ -207,7 +207,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		}
 
 		//dev-note: the interim contract that was just created as a result of completing the current purchase order
-		final I_C_Flatrate_Term interimContract = PurchaseOrderLineModularContractHandler.getInterminContract(orderLine);
+		final I_C_Flatrate_Term interimContract = PurchaseOrderLineModularContractHandler.getInterimContract(orderLine);
 		if (interimContract != null)
 		{
 			Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
