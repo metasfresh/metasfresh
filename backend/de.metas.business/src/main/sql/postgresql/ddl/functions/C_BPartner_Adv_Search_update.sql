@@ -90,9 +90,6 @@ BEGIN
         FROM UNNEST(v_inserted_documentIds) t;
 END;
 $BODY$
-    LANGUAGE plpgsql
-    VOLATILE
-    COST 100
 ;
 
 CREATE FUNCTION c_bpartner_adv_search_update() RETURNS void
@@ -133,7 +130,4 @@ BEGIN
     RAISE NOTICE 'Inserted % rows', rowcount;
 END;
 $BODY$
-    LANGUAGE plpgsql
-    VOLATILE
-    COST 100
 ;
