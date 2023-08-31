@@ -68,7 +68,7 @@ import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleC
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
 	private static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
-	public static final String INTERIM_CONTRACT_DYN_ATTRIBUTE = "InterimContract";
+	private static final String INTERIM_CONTRACT_DYN_ATTRIBUTE = "InterimContract";
 
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
 	private static final AdMessageKey MSG_VOID_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.VoidNotAllowed");
