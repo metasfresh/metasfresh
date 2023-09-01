@@ -1,6 +1,7 @@
 package de.metas.workflow.execution.approval.strategy;
 
 import de.metas.document.DocBaseType;
+import de.metas.document.engine.IDocument;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.user.UserId;
@@ -8,6 +9,7 @@ import de.metas.util.Check;
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.execution.WFActivityId;
 import de.metas.workflow.execution.WFProcessId;
+import de.metas.workflow.execution.WorkflowExecutionContext;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +29,7 @@ public interface WFApprovalStrategy
 	@Builder
 	class Request
 	{
+		@NonNull WorkflowExecutionContext context;
 		@NonNull TableRecordReference documentRef;
 		@NonNull UserId documentOwnerId;
 		@NonNull ClientAndOrgId clientAndOrgId;
@@ -39,6 +42,8 @@ public interface WFApprovalStrategy
 		@NonNull WFResponsible responsible;
 		@Nullable WFProcessId wfProcessId;
 		@Nullable WFActivityId wfActivityId;
+
+		public IDocument getDocument() {return context.getDocument(documentRef);}
 	}
 
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)

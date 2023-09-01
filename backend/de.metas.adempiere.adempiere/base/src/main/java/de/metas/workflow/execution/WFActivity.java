@@ -758,6 +758,7 @@ public class WFActivity
 				: null;
 
 		return WFApprovalStrategy.Request.builder()
+				.context(context)
 				.documentRef(documentRef)
 				.documentOwnerId(documentOwnerId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(document.getAD_Client_ID(), document.getAD_Org_ID()))

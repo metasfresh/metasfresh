@@ -9,23 +9,19 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.security.permissions.DocumentApprovalConstraint;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -39,10 +35,9 @@ import java.util.Set;
 public class StandardApprovalStrategy implements WFApprovalStrategy
 {
 	private static final Logger log = LogManager.getLogger(StandardApprovalStrategy.class);
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	@Override
@@ -129,11 +124,7 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 
 			//
 			// Gets user's supervisor
-			currentUserId = getSupervisorOfUserId(currentUserId).orElse(null);
-			if (currentUserId == null)
-			{
-				currentUserId = getSupervisorOfOrgId(document.getClientAndOrgId().getOrgId()).orElse(null);
-			}
+			currentUserId = userBL.getSupervisorId(currentUserId, document.getClientAndOrgId().getOrgId()).orElse(null);
 		}
 
 		log.debug("No user found");
@@ -142,15 +133,18 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 
 	private boolean isUserAllowedToApproveDocument(
 			@NonNull final UserId userId,
-			@NonNull final WFApprovalStrategy.Request document)
+			@NonNull final WFApprovalStrategy.Request request)
 	{
 
-		final List<IUserRolePermissions> roles = getUserRolesPermissionsForUserWithOrgAccess(
+		final @NonNull ClientAndOrgId clientAndOrgId = request.getClientAndOrgId();
+		final List<IUserRolePermissions> roles = userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
+				clientAndOrgId.getClientId(),
+				clientAndOrgId.getOrgId(),
 				userId,
-				document.getClientAndOrgId());
+				Env.getLocalDate());
 		for (final IUserRolePermissions role : roles)
 		{
-			if (isRoleAllowedToApproveDocument(role, userId, document))
+			if (isRoleAllowedToApproveDocument(role, userId, request))
 			{
 				return true;
 			}
@@ -162,18 +156,18 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 	private boolean isRoleAllowedToApproveDocument(
 			@NonNull final IUserRolePermissions role,
 			@NonNull final UserId userId,
-			@NonNull final WFApprovalStrategy.Request document)
+			@NonNull final WFApprovalStrategy.Request request)
 	{
 		final DocumentApprovalConstraint docApprovalConstraints = role.getConstraint(DocumentApprovalConstraint.class)
 				.orElse(DocumentApprovalConstraint.DEFAULT);
 
-		final boolean ownDocument = UserId.equals(document.getDocumentOwnerId(), userId);
+		final boolean ownDocument = UserId.equals(request.getDocumentOwnerId(), userId);
 		if (ownDocument && !docApprovalConstraints.canApproveOwnDoc())
 		{
 			return false;
 		}
 
-		final Money amountToApprove = document.getAmountToApprove();
+		final Money amountToApprove = request.getAmountToApprove();
 		if (amountToApprove == null)
 		{
 			return true;
@@ -185,66 +179,14 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 			return false;
 		}
 
-		maxAllowedAmount = convertMoney(maxAllowedAmount, amountToApprove.getCurrencyId(), document.getClientAndOrgId());
+		maxAllowedAmount = convertMoney(maxAllowedAmount, amountToApprove.getCurrencyId(), request.getClientAndOrgId());
 
 		return amountToApprove.isLessThanOrEqualTo(maxAllowedAmount);
-	}
-
-	private Optional<UserId> getSupervisorOfUserId(@NonNull final UserId userId)
-	{
-		final I_AD_User user = getUserById(userId);
-		final UserId supervisorId = UserId.ofRepoIdOrNullIfSystem(user.getSupervisor_ID());
-		return Optional.ofNullable(supervisorId);
-	}
-
-	private Optional<UserId> getSupervisorOfOrgId(@NonNull final OrgId orgId)
-	{
-		OrgId currentOrgId = orgId;
-		final HashSet<OrgId> alreadyCheckedOrgIds = new HashSet<>();
-		while (currentOrgId != null)
-		{
-			if (!alreadyCheckedOrgIds.add(currentOrgId))
-			{
-				log.debug("Org look detected, returning empty: {}", alreadyCheckedOrgIds);
-				return Optional.empty();
-			}
-
-			final OrgInfo orgInfo = getOrgInfoById(currentOrgId);
-			if (orgInfo.getSupervisorId() != null)
-			{
-				return Optional.of(orgInfo.getSupervisorId());
-			}
-
-			currentOrgId = orgInfo.getParentOrgId();
-		}
-
-		return Optional.empty();
-	}
-
-	private I_AD_User getUserById(@NonNull final UserId userId)
-	{
-		return userDAO.getById(userId);
 	}
 
 	private Set<UserId> getUserIdsByRoleId(@NonNull final RoleId roleId)
 	{
 		return roleDAO.retrieveUserIdsForRoleId(roleId);
-	}
-
-	private List<IUserRolePermissions> getUserRolesPermissionsForUserWithOrgAccess(
-			@NonNull final UserId userId,
-			@NonNull final ClientAndOrgId clientAndOrgId)
-	{
-		return userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
-				clientAndOrgId.getClientId(),
-				clientAndOrgId.getOrgId(),
-				userId,
-				Env.getLocalDate());
-	}
-
-	private OrgInfo getOrgInfoById(@NonNull final OrgId orgId)
-	{
-		return orgsRepo.getOrgInfoById(orgId);
 	}
 
 	private Money convertMoney(
