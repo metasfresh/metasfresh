@@ -100,7 +100,6 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 		final ModularContractSettings modularContractSettings = request.getModularContractSettings();
 
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(contractId);
-		final I_C_Flatrate_Data flatrateDataRecord = flatrateDAO.retrieveFlatrateData(modularContractRecord);
 
 		final I_PP_Order ppOrderRecord = ppOrderBL.getById(PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID()));
 
@@ -140,7 +139,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 											.year(modularContractSettings.getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
-											.collectionPointBPartnerId(BPartnerId.ofRepoId(flatrateDataRecord.getC_BPartner_ID()))
+											.collectionPointBPartnerId(BPartnerId.ofRepoId(modularContractRecord.getDropShip_BPartner_ID()))
 											.build());
 	}
 
