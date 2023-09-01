@@ -2,9 +2,7 @@ package de.metas.workflow.execution.approval;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.user.UserId;
-import de.metas.util.Services;
 import de.metas.workflow.execution.WorkflowExecutor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class WFApprovalRequestService
 {
-	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final WFApprovalRequestRepository repository;
 
 	public boolean canBeApprovedBy(@NonNull final WFApprovalRequestId requestId, @NonNull final UserId approverId)
