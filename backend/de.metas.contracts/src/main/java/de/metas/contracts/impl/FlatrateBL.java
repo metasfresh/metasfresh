@@ -127,6 +127,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -175,7 +176,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class FlatrateBL implements IFlatrateBL
 {
@@ -2451,7 +2451,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		newModCntrSettings.setC_Year_ID(year.getC_Year_ID());
 
-		save(newModCntrSettings);
+		InterfaceWrapperHelper.saveRecord(newModCntrSettings);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_ModCntr_Settings.Table_Name);
 		childCRS.copyChildren(to, from); // note that the method expects the copy-*target* as first parameter
@@ -2485,7 +2485,7 @@ public class FlatrateBL implements IFlatrateBL
 		newConditions.setModCntr_Settings_ID(modCntrSettings.getModCntr_Settings_ID());
 		newConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Drafted);
 
-		save(newConditions);
+		InterfaceWrapperHelper.saveRecord(newConditions);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Flatrate_Conditions.Table_Name);
 		childCRS.copyChildren(from, to);
