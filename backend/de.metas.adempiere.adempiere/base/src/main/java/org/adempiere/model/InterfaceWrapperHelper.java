@@ -88,7 +88,6 @@ import java.util.stream.Collectors;
  * It internally relates on a {@link CompositeInterfaceWrapperHelper} which in turn supports all the types that are supported by this class.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public class InterfaceWrapperHelper
@@ -237,12 +236,10 @@ public class InterfaceWrapperHelper
 	 * See {@link #create(Object, Class)} for additional infos.
 	 *
 	 * @param modelClass   model class
-	 * @param useOldValues
-	 *            <ul>
-	 *                                <li>true if old values shall be used
-	 *                                <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
-	 *                                </ul>
-	 *
+	 * @param useOldValues <ul>
+	 *                                                    <li>true if old values shall be used
+	 *                                                    <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
+	 *                                                    </ul>
 	 * @deprecated Because this method is tricky and we consider to make it private, please use:
 	 * <ul>
 	 * <li>{@link #create(Object, Class)}
@@ -349,6 +346,16 @@ public class InterfaceWrapperHelper
 		return load(id.getRepoId(), modelClass);
 	}
 
+	public static <T> T loadNotNull(@NonNull final RepoIdAware id, @NonNull final Class<T> modelClass)
+	{
+		final T record = load(id, modelClass);
+		if (record == null)
+		{
+			throw new AdempiereException("No " + modelClass.getSimpleName() + " found for " + id);
+		}
+		return record;
+	}
+
 	/**
 	 * Loads given model, using thread inherited transaction.
 	 *
@@ -443,7 +450,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Refresh all models that were given using {@link #refresh(Object)}.
-	 *
+	 * <p>
 	 * NOTE: developers are encouraged to use this method because here we would be able to do more optimizations.
 	 */
 	public static <T> void refreshAll(final Iterable<T> models)
@@ -477,7 +484,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Mark the model as staled. It means that it needs to be reloaded first in case some values need to be retrieved.
-	 *
+	 * <p>
 	 * NOTE: this method is currently refreshing the model right away, because we did not implement it.
 	 *
 	 * @param model
@@ -513,11 +520,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 *
 	 * @param model
 	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
-	 *
 	 * @throws AdempiereException if the given model is neither handled by {@link POWrapper} nor by {@link POJOWrapper} and ignoreIfNotHandled is <code>false</code>.
 	 */
 	public static void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
@@ -1047,7 +1052,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Get TableName of wrapped model.
-	 *
+	 * <p>
 	 * This method returns null when:
 	 * <ul>
 	 * <li>model is null
@@ -1257,7 +1262,6 @@ public class InterfaceWrapperHelper
 	 *
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
-	 *
 	 * @deprecated Favor using the actual getters. It's easier to trace/debug later.
 	 */
 	@Deprecated
@@ -1295,7 +1299,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Set value for given <code>columnName</code>.
-	 *
+	 * <p>
 	 * If column was not found in <code>model</code> a warning will be logged but no exception will be thrown
 	 *
 	 * @return true if value was set
@@ -1311,7 +1315,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Set values for given <code>Map<columnName, value></code>.
-	 *
+	 * <p>
 	 * If a column was not found in <code>model</code>, an exception will be thrown.
 	 *
 	 * @return true if all values were set
@@ -1346,13 +1350,13 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Explicitly mark a column that was changed.
-	 *
+	 * <p>
 	 * It is helpful to do this when:
 	 * <ul>
 	 * <li>you set a value for a column but the new value can be the same as the old value
 	 * <li>and you really really what to trigger the database UPDATE or you really really want to trigger the model validators
 	 * </ul>
-	 *
+	 * <p>
 	 * NOTE:
 	 * <ul>
 	 * <li>if you are marking the column as changed but you are not explicitly set a value (i.e. a new value), this command will have no effect
@@ -1427,7 +1431,6 @@ public class InterfaceWrapperHelper
 	private static final String DYNATTR_SaveDeleteDisabled = "SaveDeleteDisabled";
 
 	/**
-	 *
 	 * @param model
 	 * @return true if save/delete was not disabled on purpose for given model
 	 * @see #DYNATTR_SaveDeleteDisabled
@@ -1518,7 +1521,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 *
 	 * @return true if this object was just created (saved or not). Compared to {@link #isNew(Object)} this method will return <code>true</code> even if the model was already saved.
 	 */
 	public static boolean isJustCreated(final Object model)
@@ -1538,7 +1540,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 *
 	 * @return true if this model is created, updated or deleted by a manual user action (from UI window)
 	 */
 	public static boolean isUIAction(final Object model)
@@ -1629,7 +1630,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 *
 	 * @param model
 	 * @return how many times given model was loaded/reloaded
 	 */
@@ -1771,7 +1771,7 @@ public class InterfaceWrapperHelper
 	/**
 	 * Disables the read only (i.e. not updateable) columns enforcement.
 	 * So basically, after you are calling this method you will be able to change the values for any not updateable column.
-	 *
+	 * <p>
 	 * WARNING: please make sure you know what are you doing before calling this method. If you are not sure, please don't use it.
 	 */
 	public static void disableReadOnlyColumnCheck(final Object model)
