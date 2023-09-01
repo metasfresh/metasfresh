@@ -21,11 +21,9 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;
 import de.metas.workflow.execution.WorkflowExecutionResult;
 import de.metas.workflow.execution.WorkflowExecutor;
-import de.metas.workflow.service.IADWorkflowDAO;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -414,21 +412,15 @@ public final class ProcessExecutor
 
 	private void startWorkflow()
 	{
-		final WorkflowId workflowId = pi.getWorkflowId();
-		Check.assumeNotNull(workflowId, "workflowId");
+		final WorkflowId workflowId = Check.assumeNotNull(pi.getWorkflowId(), "workflowId");
 		logger.debug("startWorkflow: {} ({})", workflowId, pi);
 
-		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
-		final Workflow workflow = workflowDAO.getById(workflowId);
-
 		final WorkflowExecutionResult workflowExecutionResult = WorkflowExecutor.builder()
-				.workflow(workflow)
 				.clientId(pi.getClientId())
-				.adLanguage(Env.getADLanguageOrBaseLanguage())
-				.documentRef(pi.getRecordRefOrNull())
+				.documentRef(pi.getRecordRefNotNull())
 				.userId(pi.getUserId())
 				.build()
-				.start();
+				.start(workflowId);
 		logger.debug("Executed {} and got {}", workflowId, workflowExecutionResult);
 
 		//

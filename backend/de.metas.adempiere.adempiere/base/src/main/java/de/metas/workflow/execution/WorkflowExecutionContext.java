@@ -23,10 +23,6 @@
 package de.metas.workflow.execution;
 
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.time.SystemTime;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -37,18 +33,12 @@ import de.metas.email.templates.MailTextBuilder;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.event.Topic;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.security.IRoleDAO;
-import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -56,11 +46,10 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.workflow.WFEventAudit;
 import de.metas.workflow.WFEventAuditList;
-import de.metas.workflow.WFNode;
-import de.metas.workflow.WFNodeId;
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.Workflow;
+import de.metas.workflow.WorkflowId;
 import de.metas.workflow.service.IADWorkflowDAO;
 import de.metas.workflow.service.WFEventAuditRepository;
 import lombok.Builder;
@@ -72,7 +61,6 @@ import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -80,13 +68,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -114,70 +99,27 @@ public final class WorkflowExecutionContext
 
 	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.distributed("de.metas.document.UserNotifications");
 
-	@NonNull
-	@Getter
-	private final Instant startTime;
-
-	@NonNull
-	@Getter
-	private final Workflow workflow;
-
-	@NonNull
-	@Getter
-	private final ClientId clientId;
-
-	@NonNull
-	@Getter
-	private final String adLanguage;
-
-	@NonNull
-	@Getter
-	private final TableRecordReference documentRef;
-
-	@NonNull
-	@Getter
-	private final UserId userId;
+	@NonNull @Getter private final ClientId clientId;
+	@NonNull @Getter private final TableRecordReference documentRef;
+	@NonNull @Getter private final UserId userId;
 
 	private final HashMap<TableRecordReference, PO> poByRef = new HashMap<>();
 	private final WFEventAuditList auditList = new WFEventAuditList();
 
 	@Builder
 	private WorkflowExecutionContext(
-			@NonNull final Workflow workflow,
-			@NonNull final ClientId clientId,
-			@NonNull final String adLanguage,
+			@Nullable final ClientId clientId,
 			@NonNull final TableRecordReference documentRef,
 			@NonNull final UserId userId)
 	{
-		this.startTime = SystemTime.asInstant();
-		this.workflow = workflow;
-		this.clientId = clientId;
-		this.adLanguage = adLanguage;
+		this.clientId = clientId != null ? clientId : ClientId.ofRepoId(getPO(documentRef).getAD_Client_ID());
 		this.documentRef = documentRef;
 		this.userId = userId;
-
-		if (!TimeUtil.isBetween(startTime, workflow.getValidFrom(), workflow.getValidTo()))
-		{
-			throw new AdempiereException("Workflow not valid on " + startTime);
-		}
 	}
 
-	@NonNull
-	public WFResponsibleId getWFResponsibleId()
-	{
-		return CoalesceUtil.coalesceNotNull(getWorkflow().getResponsibleId(), WFResponsibleId.Invoker);
-	}
+	public Workflow getWorkflowById(final WorkflowId workflowId) {return workflowDAO.getById(workflowId);}
 
-	@NonNull
-	public WFNode getNodeById(@NonNull final WFNodeId nodeId)
-	{
-		return workflow.getNodeById(nodeId);
-	}
-
-	public WFResponsible getResponsibleById(final WFResponsibleId wfResponsibleId)
-	{
-		return workflowDAO.getWFResponsibleById(wfResponsibleId);
-	}
+	public WFResponsible getResponsibleById(final WFResponsibleId wfResponsibleId) {return workflowDAO.getWFResponsibleById(wfResponsibleId);}
 
 	void save(@NonNull final WFProcess wfProcess)
 	{
@@ -283,41 +225,6 @@ public final class WorkflowExecutionContext
 		return roleDAO.retrieveUserIdsForRoleId(roleId);
 	}
 
-	public List<IUserRolePermissions> getUserRolesPermissionsForUserWithOrgAccess(
-			@NonNull final UserId userId,
-			@NonNull final ClientAndOrgId clientAndOrgId)
-	{
-		return userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
-				clientAndOrgId.getClientId(),
-				clientAndOrgId.getOrgId(),
-				userId,
-				Env.getLocalDate());
-	}
-
-	public Money convertMoney(
-			@NonNull final Money amount,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final ClientAndOrgId clientAndOrgId)
-	{
-		if (CurrencyId.equals(amount.getCurrencyId(), toCurrencyId))
-		{
-			return amount;
-		}
-
-		final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-				LocalDateAndOrgId.ofLocalDate(SystemTime.asLocalDate(), clientAndOrgId.getOrgId()),
-				(CurrencyConversionTypeId)null,
-				clientAndOrgId.getClientId());
-
-		final CurrencyConversionResult conversionResult = currencyBL.convert(
-				conversionCtx,
-				amount.toBigDecimal(),
-				amount.getCurrencyId(),
-				toCurrencyId);
-
-		return Money.of(conversionResult.getAmount(), toCurrencyId);
-	}
-
 	public I_AD_User getUserById(@NonNull final UserId userId)
 	{
 		return userDAO.getById(userId);
@@ -338,7 +245,7 @@ public final class WorkflowExecutionContext
 		return orgsRepo.getOrgInfoById(orgId);
 	}
 
-	public void sendNotification(@NonNull final WFUserNotification notification)
+	void sendNotification(@NonNull final WFUserNotification notification)
 	{
 		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.topic(USER_NOTIFICATIONS_TOPIC)

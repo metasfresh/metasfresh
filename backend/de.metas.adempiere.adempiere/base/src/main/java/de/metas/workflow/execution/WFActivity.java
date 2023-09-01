@@ -58,6 +58,7 @@ import de.metas.workflow.WFNodeParameter;
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
+import de.metas.workflow.WorkflowId;
 import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
 import de.metas.workflow.execution.approval.strategy.impl.RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy;
 import lombok.Getter;
@@ -87,6 +88,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class WFActivity
 {
 	private static final Logger log = LogManager.getLogger(WFActivity.class);
@@ -100,8 +102,7 @@ public class WFActivity
 	@NonNull private final WFNode wfNode;
 	@NonNull @Getter private final TableRecordReference documentRef;
 
-	@Nullable
-	private Optional<String> m_newValue = null;
+	@Nullable private Optional<String> m_newValue;
 	private ArrayList<EMailAddress> m_emails = new ArrayList<>();
 
 	private final Instant startTime;
@@ -115,7 +116,7 @@ public class WFActivity
 	{
 		this.context = wfProcess.getContext();
 		this.wfProcess = wfProcess;
-		this.wfNode = context.getNodeById(nodeId);
+		this.wfNode = wfProcess.getWorkflow().getNodeById(nodeId);
 		this.documentRef = wfProcess.getDocumentRef();
 		this.startTime = SystemTime.asInstant();
 
@@ -163,20 +164,19 @@ public class WFActivity
 	{
 		this.context = wfProcess.getContext();
 		this.wfProcess = wfProcess;
-		this.wfNode = context.getNodeById(state.getWfNodeId());
+		this.wfNode = wfProcess.getWorkflow().getNodeById(state.getWfNodeId());
 		this.documentRef = wfProcess.getDocumentRef();
 		this.startTime = SystemTime.asInstant();
 		this.state = state;
 	}
 
 	@NonNull
-	WorkflowExecutionContext getContext() {return context;}
-
-	@NonNull
 	private WFProcess getWorkflowProcess() {return wfProcess;}
 
 	@NonNull
 	public WFProcessId getWfProcessId() {return getWorkflowProcess().getWfProcessId();}
+
+	public WorkflowId getWorkflowId() {return getWorkflowProcess().getWorkflowId();}
 
 	@Nullable
 	public WFActivityId getId() {return state.getId();}
@@ -304,6 +304,7 @@ public class WFActivity
 				: WFEventAuditType.StateChanged;
 
 		final WFEventAudit audit = prepareEventAudit(eventType).build();
+		//noinspection OptionalAssignedToNull
 		if (m_newValue != null)
 		{
 			audit.setAttributeValueNew(m_newValue.orElse(null));
@@ -327,11 +328,6 @@ public class WFActivity
 	Object getAttributeValue()
 	{
 		final WFNode node = getNode();
-		if (node == null)
-		{
-			return null;
-		}
-
 		final AdColumnId AD_Column_ID = AdColumnId.ofRepoIdOrNull(node.getDocumentColumnId());
 		if (AD_Column_ID == null)
 		{
@@ -393,15 +389,21 @@ public class WFActivity
 
 	private WFResponsible getResponsible() {return context.getResponsibleById(getWFResponsibleId());}
 
-	/**************************************************************************
-	 * Execute Work.
-	 * Called from MWFProcess.startNext
-	 * Feedback to Process via setWFState -> checkActivities
-	 */
-	public void run()
+	public void start()
+	{
+		run(WFAction.Start);
+	}
+
+	public void resume()
+	{
+		run(WFAction.Resume);
+	}
+
+	private void run(@NonNull WFAction action)
 	{
 		logAuditActivityStarted();
 
+		//noinspection OptionalAssignedToNull
 		m_newValue = null;
 
 		context.getTrxManager().runInThreadInheritedTrx(new TrxRunnableAdapter()
@@ -412,9 +414,9 @@ public class WFActivity
 			@Override
 			public void run(final String localTrxName)
 			{
-				if (!getState().isValidAction(WFAction.Start))
+				if (!getState().isValidAction(action))
 				{
-					addTextMsg(new AdempiereException("Cannot start activity from state " + getState()));
+					addTextMsg(new AdempiereException("Cannot " + action + " activity from state " + getState()));
 					changeWFStateTo(WFState.Terminated);
 					return;
 				}
@@ -431,7 +433,6 @@ public class WFActivity
 			public boolean doCatch(final Throwable ex)
 			{
 				this.exception = ex;
-
 				wfProcess.setProcessingResultMessage(ex);
 
 				addTextMsg(ex);
@@ -784,6 +785,7 @@ public class WFActivity
 
 	private void setVariable(@Nullable final String valueStr, final int displayType)
 	{
+		//noinspection OptionalAssignedToNull
 		m_newValue = null;
 
 		// Set Value

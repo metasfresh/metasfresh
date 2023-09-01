@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.CCache;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
@@ -34,7 +35,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -214,7 +214,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 				.validFrom(TimeUtil.asInstant(workflowRecord.getValidFrom()))
 				.validTo(TimeUtil.asInstant(workflowRecord.getValidTo()))
 				//
-				.responsibleId(WFResponsibleId.ofRepoIdOrNull(workflowRecord.getAD_WF_Responsible_ID()))
+				.responsibleId(WFResponsibleId.optionalOfRepoId(workflowRecord.getAD_WF_Responsible_ID()).orElse(WFResponsibleId.Invoker))
 				//
 				.firstNodeId(WFNodeId.ofRepoId(workflowRecord.getAD_WF_Node_ID()))
 				.nodes(retrieveNodes(workflowId, durationPerOneUnit))

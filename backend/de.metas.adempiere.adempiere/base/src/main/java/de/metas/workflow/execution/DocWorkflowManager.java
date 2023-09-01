@@ -35,7 +35,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluator;
 import org.slf4j.Logger;
 
@@ -119,14 +118,12 @@ public class DocWorkflowManager
 				.setRecord(document.get_Table_ID(), document.get_ID())
 				.build();
 
-		final WorkflowExecutionResult result = WorkflowExecutor.builder()
-				.workflow(workflow)
+		WorkflowExecutor.builder()
 				.clientId(pi.getClientId())
-				.adLanguage(Env.getADLanguageOrBaseLanguage())
-				.documentRef(pi.getRecordRefOrNull())
+				.documentRef(pi.getRecordRefNotNull())
 				.userId(pi.getUserId())
 				.build()
-				.start();
+				.start(workflow.getId());
 
 		countStarted.incrementAndGet();
 	}
