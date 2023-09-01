@@ -210,4 +210,12 @@ public class InventoryBL implements IInventoryBL
 		inventoryLine.setIsCounted(true);
 		save(inventoryLine);
 	}
+
+	@Override
+	public boolean isReversal(@NonNull final I_M_Inventory inventory)
+	{
+		final InventoryId reversalId = InventoryId.ofRepoIdOrNull(inventory.getReversal_ID());
+
+		return reversalId != null && reversalId.getRepoId() < inventory.getM_Inventory_ID();
+	}
 }

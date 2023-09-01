@@ -24,30 +24,30 @@ package de.metas.handlingunits.modular.interceptor;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
-import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.REACTIVATED;
+import static de.metas.contracts.modular.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModelAction.REACTIVATED;
 
-@Interceptor(I_PP_Order_Qty.class)
+@Interceptor(I_PP_Cost_Collector.class)
 @Component
-public class PP_Order_Qty
+public class PP_Cost_Collector
 {
 	private final ModularContractService contractService;
 
-	public PP_Order_Qty(@NonNull final ModularContractService contractService)
+	public PP_Cost_Collector(@NonNull final ModularContractService contractService)
 	{
 		this.contractService = contractService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Order_Qty.COLUMNNAME_Processed)
-	public void afterProcessed(@NonNull final I_PP_Order_Qty orderQtyRecord)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Cost_Collector.COLUMNNAME_Processed)
+	public void afterProcessed(@NonNull final I_PP_Cost_Collector orderCostCollector)
 	{
-		contractService.invokeWithModel(orderQtyRecord, orderQtyRecord.isProcessed() ? COMPLETED : REACTIVATED, LogEntryContractType.MODULAR_CONTRACT);
+		contractService.invokeWithModel(orderCostCollector, orderCostCollector.isProcessed() ? COMPLETED : REACTIVATED, LogEntryContractType.MODULAR_CONTRACT);
 	}
 }

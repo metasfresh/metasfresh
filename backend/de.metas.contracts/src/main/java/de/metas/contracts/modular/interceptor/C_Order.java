@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
@@ -41,10 +42,10 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.REACTIVATED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.REVERSED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.VOIDED;
+import static de.metas.contracts.modular.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModelAction.REACTIVATED;
+import static de.metas.contracts.modular.ModelAction.REVERSED;
+import static de.metas.contracts.modular.ModelAction.VOIDED;
 
 /**
  * Glue-code that invokes the {@link ModularContractService} on certain order events.
@@ -122,7 +123,7 @@ public class C_Order
 
 	private void invokeHandlerForEachLine(
 			@NonNull final I_C_Order orderRecord,
-			@NonNull final ModularContractService.ModelAction modelAction)
+			@NonNull final ModelAction modelAction)
 	{
 		orderDAO.retrieveOrderLines(orderRecord)
 				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));

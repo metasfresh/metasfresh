@@ -30,10 +30,8 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Calendar;
@@ -41,7 +39,6 @@ import org.compiere.model.I_C_Year;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -123,25 +120,13 @@ class ModularContractSettingsDAOTest
 		}
 
 		@Override
-		public @NonNull Optional<LogEntryCreateRequest> createLogEntryCreateRequest(final @NonNull Object model, final @NonNull FlatrateTermId flatrateTermId)
-		{
-			return Optional.empty();
-		}
-
-		@Override
-		public @NonNull Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final Object model, final @NonNull FlatrateTermId flatrateTermId)
-		{
-			return Optional.empty();
-		}
-
-		@Override
 		public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final Object model)
 		{
 			return Stream.empty();
 		}
 
 		@Override
-		public void validateDocAction(final @NonNull Object model, final ModularContractService.@NonNull ModelAction action)
+		public void validateDocAction(final @NonNull Object model, final @NonNull ModelAction action)
 		{
 			return;
 		}

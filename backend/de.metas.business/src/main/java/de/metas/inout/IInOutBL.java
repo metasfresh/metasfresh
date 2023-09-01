@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -84,6 +85,8 @@ public interface IInOutBL extends ISingletonService
 	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
 
 	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
+
+	Stream<I_M_InOutLine> streamLines(@NonNull InOutLineQuery query);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
