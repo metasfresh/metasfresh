@@ -24,6 +24,7 @@ package de.metas.contracts.modular.workpackage;
 
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -83,15 +84,17 @@ public class ProcessModularLogsEnqueuer
 
 		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ModularLogsWorkPackageProcessor.class);
 
-		workPackageQueue.newWorkPackage()
+		final I_C_Queue_WorkPackage workPackage = workPackageQueue.newWorkPackage()
+				.bindToThreadInheritedTrx()
 				.setUserInChargeId(userInChargeId)
 				.parameter(MODEL_ACTION.name(), action.name())
 				.parameter(LOG_ENTRY_CONTRACT_TYPE.name(), logEntryContractType.getCode())
 				.setElementsLocker(createElementsLocker(recordReference))
 				.addElement(recordReference)
-				.setAfterEnqueueInterceptor(workPackage -> createStatusService
-						.setStatusEnqueued(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()), recordReference))
 				.buildAndEnqueue();
+
+		createStatusService
+				.setStatusEnqueued(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()), recordReference);
 	}
 
 	@NonNull
