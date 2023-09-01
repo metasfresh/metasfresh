@@ -24,6 +24,7 @@ package de.metas.contracts.modular.workpackage;
 
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -71,10 +72,10 @@ public class ProcessModularLogsEnqueuer
 				.userInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.build();
 
-		trxManager.runAfterCommit(() -> enqueueNow(request));
+		enqueueAfterCommit(request);
 	}
 
-	private void enqueueNow(@NonNull final EnqueueRequest request)
+	private void enqueueAfterCommit(@NonNull final EnqueueRequest request)
 	{
 		final TableRecordReference recordReference = request.recordReference();
 		final ModelAction action = request.action();
@@ -83,15 +84,18 @@ public class ProcessModularLogsEnqueuer
 
 		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ModularLogsWorkPackageProcessor.class);
 
-		workPackageQueue.newWorkPackage()
+		final I_C_Queue_WorkPackage workPackage = workPackageQueue.newWorkPackage()
+				//ensures we are only enqueueing after this trx is committed
+				.bindToThreadInheritedTrx()
 				.setUserInChargeId(userInChargeId)
 				.parameter(MODEL_ACTION.name(), action.name())
 				.parameter(LOG_ENTRY_CONTRACT_TYPE.name(), logEntryContractType.getCode())
 				.setElementsLocker(createElementsLocker(recordReference))
 				.addElement(recordReference)
-				.setAfterEnqueueInterceptor(workPackage -> createStatusService
-						.setStatusEnqueued(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()), recordReference))
 				.buildAndEnqueue();
+
+		createStatusService
+				.setStatusEnqueued(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()), recordReference);
 	}
 
 	@NonNull

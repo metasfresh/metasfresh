@@ -19,7 +19,6 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 
 /*
  * #%L
@@ -181,6 +180,4 @@ public interface IWorkPackageBuilder
 	I_C_Queue_WorkPackage buildWithPackageProcessor();
 
 	IWorkPackageBuilder setAD_PInstance_ID(final PInstanceId adPInstanceId);
-
-	IWorkPackageBuilder setAfterEnqueueInterceptor(@Nullable Consumer<I_C_Queue_WorkPackage> afterEnqueueInterceptor);
 }

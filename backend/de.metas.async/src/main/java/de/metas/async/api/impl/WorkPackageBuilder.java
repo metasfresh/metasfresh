@@ -25,11 +25,9 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
@@ -78,8 +76,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	private ILockCommand _elementsLocker = null;
 	/** Lock aquired when enqueued elements were locked */
 	private Future<ILock> _futureElementsLock;
-	@Nullable
-	private Consumer<I_C_Queue_WorkPackage> afterEnqueueInterceptor;
 
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
@@ -303,14 +299,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 		return this;
 	}
 
-	@Override
-	public IWorkPackageBuilder setAfterEnqueueInterceptor(@Nullable final Consumer<I_C_Queue_WorkPackage> afterEnqueueInterceptor)
-	{
-		assertNotBuilt();
-		this.afterEnqueueInterceptor = afterEnqueueInterceptor;
-		return this;
-	}
-
 	@NonNull
 	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final  ILockCommand elementsLocker)
 	{
@@ -334,8 +322,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 			try (final MDCCloseable workpackageRecordMDC = TableRecordMDC.putTableRecordReference(workpackage))
 			{
-				Optional.ofNullable(afterEnqueueInterceptor).ifPresent(interceptor -> interceptor.accept(workpackage));
-
 				// Set the Async batch if provided
 				// TODO: optimize this and set everything in one shot and then save it.
 				if (asyncBatchSet)
