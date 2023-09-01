@@ -23,7 +23,6 @@
 package de.metas.rest_api.v2.bpartner;
 
 import au.com.origin.snapshots.Expect;
-
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
@@ -76,7 +75,7 @@ import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
-import de.metas.job.JobRepository;
+import de.metas.job.JobService;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.creditLimit.CreditLimitService;
@@ -141,7 +140,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class BpartnerRestControllerTest
@@ -193,7 +193,7 @@ class BpartnerRestControllerTest
 				new GreetingRepository(),
 				new TitleRepository(),
 				currencyRepository,
-				new JobRepository(),
+				JobService.newInstanceForUnitTesting(),
 				externalReferenceRestControllerService,
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,
