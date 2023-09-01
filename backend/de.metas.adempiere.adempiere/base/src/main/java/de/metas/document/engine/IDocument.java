@@ -3,11 +3,14 @@ package de.metas.document.engine;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -207,5 +210,10 @@ public interface IDocument
 	default Object getDocumentModel()
 	{
 		return this;
+	}
+
+	default Optional<Object> getValue(@NonNull final String columnName)
+	{
+		return InterfaceWrapperHelper.getValue(getDocumentModel(), columnName);
 	}
 }
