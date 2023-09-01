@@ -138,7 +138,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 											.year(modularContractSettings.getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
-											.collectionPointBPartnerId(BPartnerId.ofRepoId(modularContractRecord.getDropShip_BPartner_ID()))
+											.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID()))
 											.build());
 	}
 

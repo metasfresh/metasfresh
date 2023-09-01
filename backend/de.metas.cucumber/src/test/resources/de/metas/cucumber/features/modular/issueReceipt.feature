@@ -58,8 +58,8 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | moduleLogConditions_MO              | moduleLogConditions_MO_07212023_1 | ModularContract | moduleLogPricingSystem            | Ca                       | modCntr_settings_1                 |
 
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | moduleLogContract_1 | moduleLogConditions_MO              | bp_moduleLogMO              | 2021-10-31 | 2022-10-30 | componentProduct            |
+      | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier |
+      | moduleLogContract_1 | moduleLogConditions_MO              | bp_moduleLogMO              | 2021-10-31 | 2022-10-30 | componentProduct            | bp_moduleLogMO                      |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
