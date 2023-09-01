@@ -1161,6 +1161,12 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@NonNull
+	public I_C_Flatrate_Data retrieveFlatrateData(@NonNull final I_C_Flatrate_Term flatrateTerm)
+	{
+		return InterfaceWrapperHelper.load(flatrateTerm.getC_Flatrate_Data_ID(), I_C_Flatrate_Data.class);
+	}
+
+	@NonNull
 	private ImmutableList<I_C_Flatrate_Term> retrieveByModularContractQuery(@NonNull final ModularFlatrateTermQuery modularFlatrateTermQuery)
 	{
 		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
