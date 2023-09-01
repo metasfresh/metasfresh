@@ -24,6 +24,7 @@ package de.metas.workflow.execution;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -155,6 +156,11 @@ public final class WorkflowExecutionContext
 	{
 		final PO po = getPO(documentRef);
 		return documentBL.getDocumentOrNull(po);
+	}
+
+	public Optional<DocBaseType> getDocBaseType(final IDocument document)
+	{
+		return documentBL.getDocBaseType(document);
 	}
 
 	public void setDocumentColumnValue(

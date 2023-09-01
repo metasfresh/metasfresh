@@ -730,17 +730,14 @@ public class WFActivity
 			public PerformWorkResult pending() {return PerformWorkResult.SUSPENDED;}
 
 			@Override
-			public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId)
+			public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId, @Nullable TableRecordReference documentToOpen)
 			{
-				WFActivity.this.forwardTo(
-						forwardToUserId,
-						msgApprovalRequest()
-				);
+				WFActivity.this.forwardTo(forwardToUserId, msgApprovalRequest(), documentToOpen);
 
 				context.sendNotification(WFUserNotification.builder()
 						.userId(request.getWorkflowInvokerId())
 						.content(MSG_DocumentSentToApproval, documentRef, context.getUserFullnameById(forwardToUserId))
-						.documentToOpen(documentRef)
+						.documentToOpen(documentToOpen)
 						.build());
 
 				return PerformWorkResult.SUSPENDED;
@@ -764,9 +761,15 @@ public class WFActivity
 				.documentRef(documentRef)
 				.documentOwnerId(documentOwnerId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(document.getAD_Client_ID(), document.getAD_Org_ID()))
+				.documentNo(document.getDocumentNo())
+				.docBaseType(context.getDocBaseType(document).orElse(null))
+				//
 				.amountToApprove(amountToApprove)
+				//
 				.workflowInvokerId(invokerId)
 				.responsible(getResponsible())
+				.wfProcessId(getWfProcessId())
+				.wfActivityId(getId())
 				.build();
 	}
 
@@ -815,7 +818,10 @@ public class WFActivity
 		m_newValue = Optional.ofNullable(valueStr);
 	}    // setVariable
 
-	private void forwardTo(@NonNull final UserId newUserId, @NonNull final ADMessageAndParams subject)
+	private void forwardTo(
+			@NonNull final UserId newUserId,
+			@NonNull final ADMessageAndParams subject,
+			@Nullable TableRecordReference documentToOpen)
 	{
 		final UserId oldUserId = getUserId();
 		if (UserId.equals(newUserId, oldUserId))
@@ -834,7 +840,7 @@ public class WFActivity
 		context.sendNotification(WFUserNotification.builder()
 				.userId(newUserId)
 				.content(subject)
-				.documentToOpen(getDocumentRef())
+				.documentToOpen(CoalesceUtil.coalesce(documentToOpen, getDocumentRef()))
 				.build());
 
 		context.addEventAudit(prepareEventAudit(WFEventAuditType.StateChanged)

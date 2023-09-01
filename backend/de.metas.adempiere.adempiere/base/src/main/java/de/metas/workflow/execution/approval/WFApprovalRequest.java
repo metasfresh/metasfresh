@@ -2,6 +2,7 @@ package de.metas.workflow.execution.approval;
 
 import de.metas.document.DocBaseType;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
 import de.metas.workflow.execution.WFActivityId;
 import de.metas.workflow.execution.WFProcessId;
@@ -12,6 +13,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_WF_Approval_Request;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -25,8 +27,8 @@ public class WFApprovalRequest
 	@Nullable private WFApprovalRequestId id;
 
 	@NonNull private final TableRecordReference documentRef;
-	@Nullable private final DocBaseType docBaseType;
 	@Nullable private final String documentNo;
+	@Nullable private final DocBaseType docBaseType;
 
 	@NonNull private final SeqNo seqNo;
 	@NonNull private final UserId userId;
@@ -38,7 +40,12 @@ public class WFApprovalRequest
 	@Nullable private final WFProcessId wfProcessId;
 	@Nullable private final WFActivityId wfActivityId;
 
+	@NonNull
+	public WFApprovalRequestId getIdNotNull() {return Check.assumeNotNull(id, "request is saved: {}", this);}
+
 	void setId(@NonNull final WFApprovalRequestId id) {this.id = id;}
+
+	public TableRecordReference toTableRecordReference() {return TableRecordReference.of(I_AD_WF_Approval_Request.Table_Name, getIdNotNull());}
 
 	public boolean canBeApprovedBy(@NonNull final UserId approverId)
 	{

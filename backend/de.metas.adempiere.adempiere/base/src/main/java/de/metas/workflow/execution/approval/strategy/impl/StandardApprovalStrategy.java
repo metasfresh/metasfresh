@@ -92,8 +92,6 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 		if (autoApproval)
 		{
 			return Response.APPROVED;
-			// context.processDocument(getDocumentRef(), IDocument.ACTION_Approve);
-			// return WFActivity.PerformWorkResult.COMPLETED;
 		}
 		else
 		{
@@ -103,13 +101,6 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 			}
 
 			return Response.forwardTo(approverId);
-			// forwardTo(approverId, msgApprovalRequest(), null);
-			// context.sendNotification(WFUserNotification.builder()
-			// 		.userId(workflowInvokerId)
-			// 		.content(MSG_DocumentSentToApproval, getDocumentRef(), getUserFullnameById(approverId))
-			// 		.documentToOpen(getDocumentRef())
-			// 		.build());
-			// return WFActivity.PerformWorkResult.SUSPENDED;
 		}
 	}
 
@@ -137,7 +128,7 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 			}
 
 			//
-			// Get's user's supervisor
+			// Gets user's supervisor
 			currentUserId = getSupervisorOfUserId(currentUserId).orElse(null);
 			if (currentUserId == null)
 			{
@@ -147,7 +138,7 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 
 		log.debug("No user found");
 		return Optional.empty();
-	}    // getApproval
+	}
 
 	private boolean isUserAllowedToApproveDocument(
 			@NonNull final UserId userId,
@@ -279,5 +270,4 @@ public class StandardApprovalStrategy implements WFApprovalStrategy
 
 		return Money.of(conversionResult.getAmount(), toCurrencyId);
 	}
-
 }

@@ -43,7 +43,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 				}
 				case Pending ->
 				{
-					return Response.forwardTo(approvalRequest.getUserId());
+					return Response.forwardTo(approvalRequest.getUserId(), approvalRequest.toTableRecordReference());
 				}
 			}
 		}
@@ -77,8 +77,8 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 			approvalRequests.add(
 					WFApprovalRequest.builder()
 							.documentRef(request.getDocumentRef())
-							// TODO .docBaseType()
-							// TODO .documentNo()
+							.documentNo(request.getDocumentNo())
+							.docBaseType(request.getDocBaseType())
 							//
 							.seqNo(seqNoProvider.getAndIncrement())
 							.userId(approverId)
@@ -87,8 +87,9 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 							.requestDate(SystemTime.asInstant())
 							.responseDate(null)
 							//
-							// TODO wfProcessId;
-							// TODO wfActivityId;
+							.wfProcessId(request.getWfProcessId())
+							.wfActivityId(request.getWfActivityId())
+							//
 							.build()
 			);
 		}
