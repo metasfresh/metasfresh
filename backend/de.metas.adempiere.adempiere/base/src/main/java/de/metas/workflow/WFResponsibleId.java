@@ -30,6 +30,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value
 public class WFResponsibleId implements RepoIdAware
@@ -46,10 +47,9 @@ public class WFResponsibleId implements RepoIdAware
 		return new WFResponsibleId(repoId);
 	}
 
-	public static WFResponsibleId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
-	}
+	public static WFResponsibleId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
+
+	public static Optional<WFResponsibleId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	int repoId;
 
@@ -65,13 +65,7 @@ public class WFResponsibleId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(@Nullable final WFResponsibleId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
+	public static int toRepoId(@Nullable final WFResponsibleId id) {return id != null ? id.getRepoId() : -1;}
 
-	public static boolean equals(@Nullable final WFResponsibleId id1, @Nullable final WFResponsibleId id2)
-	{
-		return Objects.equals(id1, id2);
-	}
+	public static boolean equals(@Nullable final WFResponsibleId id1, @Nullable final WFResponsibleId id2) {return Objects.equals(id1, id2);}
 }
