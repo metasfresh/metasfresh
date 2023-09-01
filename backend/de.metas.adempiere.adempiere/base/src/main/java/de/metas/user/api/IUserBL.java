@@ -50,7 +50,7 @@ public interface IUserBL extends ISingletonService
 
 		if (firstName != null && !Check.isBlank(firstName))
 		{
-			if (contactName.length() > 0)
+			if (!contactName.isEmpty())
 			{
 				contactName.append(", ");
 			}
