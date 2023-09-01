@@ -24,5 +24,7 @@ public enum WFApprovalRequestStatus implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	public boolean isPending() {return Pending.equals(this);}
 }
 

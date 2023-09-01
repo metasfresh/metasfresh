@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -24,11 +25,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 	@Override
 	public Response approve(@NonNull final WFApprovalStrategy.Request request)
 	{
-		List<WFApprovalRequest> approvalRequests = wfApprovalRequestRepository.getByDocumentRef(request.getDocumentRef());
-		if (approvalRequests.isEmpty())
-		{
-			approvalRequests = createApprovalRequests(request);
-		}
+		final List<WFApprovalRequest> approvalRequests = getOrCreateApprovalRequestsOrderedBySeqNo(request);
 		if (approvalRequests.isEmpty())
 		{
 			return Response.APPROVED;
@@ -44,10 +41,31 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 				{
 					return Response.REJECTED;
 				}
+				case Pending ->
+				{
+					return Response.forwardTo(approvalRequest.getUserId());
+				}
 			}
 		}
 
 		return approvalRequests.size() == countApproved ? Response.APPROVED : Response.PENDING;
+	}
+
+	private List<WFApprovalRequest> getOrCreateApprovalRequestsOrderedBySeqNo(@NonNull final WFApprovalStrategy.Request request)
+	{
+		List<WFApprovalRequest> approvalRequests = wfApprovalRequestRepository.getByDocumentRef(request.getDocumentRef());
+		if (approvalRequests.isEmpty())
+		{
+			approvalRequests = createApprovalRequests(request);
+		}
+		if (approvalRequests.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return approvalRequests.stream()
+				.sorted(Comparator.comparing(WFApprovalRequest::getSeqNo))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private List<WFApprovalRequest> createApprovalRequests(@NonNull final WFApprovalStrategy.Request request)
