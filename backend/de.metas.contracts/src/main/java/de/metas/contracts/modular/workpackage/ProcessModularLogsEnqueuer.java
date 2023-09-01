@@ -72,10 +72,10 @@ public class ProcessModularLogsEnqueuer
 				.userInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.build();
 
-		trxManager.runAfterCommit(() -> enqueueNow(request));
+		enqueueAfterCommit(request);
 	}
 
-	private void enqueueNow(@NonNull final EnqueueRequest request)
+	private void enqueueAfterCommit(@NonNull final EnqueueRequest request)
 	{
 		final TableRecordReference recordReference = request.recordReference();
 		final ModelAction action = request.action();
@@ -85,6 +85,7 @@ public class ProcessModularLogsEnqueuer
 		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ModularLogsWorkPackageProcessor.class);
 
 		final I_C_Queue_WorkPackage workPackage = workPackageQueue.newWorkPackage()
+				//ensures we are only enqueueing after this trx is committed
 				.bindToThreadInheritedTrx()
 				.setUserInChargeId(userInChargeId)
 				.parameter(MODEL_ACTION.name(), action.name())
