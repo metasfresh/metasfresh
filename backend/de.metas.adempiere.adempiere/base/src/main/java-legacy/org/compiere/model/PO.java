@@ -20,8 +20,8 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -3280,9 +3280,9 @@ public abstract class PO
 				continue;
 			}
 			// Update Document No
-			if (columnName.equals("DocumentNo"))
+			if (columnName.equals("DocumentNo") && p_info.isUseDocSequence(i))
 			{
-				final String documentNo = (String)value;
+				final String documentNo = (String)Null.unbox(value);
 				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
@@ -3317,7 +3317,10 @@ public abstract class PO
 				}
 				else
 				{
-					log.warn("DocumentNo updated: " + m_oldValues[i] + " -> " + value);
+					if(is_ValueChanged(i))
+					{
+						log.warn("DocumentNo updated: {} -> {}", m_oldValues[i], value);
+					}
 				}
 			}
 
