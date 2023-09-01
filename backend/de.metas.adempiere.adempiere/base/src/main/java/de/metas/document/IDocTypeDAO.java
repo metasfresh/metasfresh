@@ -105,5 +105,7 @@ public interface IDocTypeDAO extends ISingletonService
 		int documentCopies;
 	}
 
+	DocBaseType getDocBaseTypeById(@NonNull DocTypeId docTypeId);
+
 	DocBaseAndSubType getDocBaseAndSubTypeById(DocTypeId docTypeId);
 }
