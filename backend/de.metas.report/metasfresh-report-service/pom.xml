@@ -156,7 +156,11 @@
 			<artifactId>roboto-fonts</artifactId>
 			<version>2012023.1-2</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>de.metas.report.jasper</groupId>
+			<artifactId>open-sans-fonts</artifactId>
+			<version>1.10</version>
+		</dependency>
 		<dependency>
 			<groupId>de.metas.report.jasper</groupId>
 			<artifactId>source-code-pro-fonts</artifactId>
