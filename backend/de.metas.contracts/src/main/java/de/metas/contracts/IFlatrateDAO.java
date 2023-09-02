@@ -166,6 +166,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	boolean isExistsModularOrInterimContract(@NonNull IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter);
 
+
 	@Value
 	@Builder
 	class TermsQuery

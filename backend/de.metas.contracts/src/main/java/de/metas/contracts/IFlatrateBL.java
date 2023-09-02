@@ -43,6 +43,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -57,6 +58,14 @@ import java.util.stream.Stream;
 
 public interface IFlatrateBL extends ISingletonService
 {
+	I_C_Flatrate_Conditions getConditionsById(ConditionsId flatrateConditionsId);
+
+	List<I_C_Flatrate_Term> retrieveTerms(
+			I_C_BPartner bpartner,
+			I_C_Flatrate_Conditions flatrateConditions);
+
+	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
+
 	String beforeCompleteDataEntry(I_C_Flatrate_DataEntry dataEntry);
 
 	/**

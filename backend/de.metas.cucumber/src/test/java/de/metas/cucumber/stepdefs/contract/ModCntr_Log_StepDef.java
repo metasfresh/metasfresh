@@ -30,7 +30,9 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
@@ -125,17 +127,17 @@ public class ModCntr_Log_StepDef
 		this.invoiceLineTable = invoiceLineTable;
 	}
 
-	@And("ModCntr_Logs are found:")
-	public void validateModCntr_Logs(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s, ModCntr_Logs are found:$")
+	public void validateModCntr_Logs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			validateModCntr_Log(row);
+			validateModCntr_Log(timeoutSec, row);
 		}
 	}
 
-	private void validateModCntr_Log(@NonNull final Map<String, String> tableRow)
+	private void validateModCntr_Log(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
 	{
 		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
 		final int tableId = tableDAO.retrieveTableId(tableName);
@@ -163,7 +165,7 @@ public class ModCntr_Log_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final I_ModCntr_Log modCntrLogRecord = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+		final ItemProvider<I_ModCntr_Log> locateLog = () -> queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, tableId)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, recordId)
@@ -172,7 +174,10 @@ public class ModCntr_Log_StepDef
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 				.create()
 				.firstOnlyOptional()
-				.orElseThrow(() -> new AdempiereException("\n Context: " + getLogContextForWarehouseId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))));
+				.map(ItemProvider.ProviderResult::resultWasFound)
+				.orElse(ItemProvider.ProviderResult.resultWasNotFound("No logs found for criteria!"));
+
+		final I_ModCntr_Log modCntrLogRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateLog);
 
 		final SoftAssertions softly = new SoftAssertions();
 
@@ -305,9 +310,11 @@ public class ModCntr_Log_StepDef
 		return "Current ModCntr_Logs available for C_Flatrate_Term_ID:\n\n" + messageBuilder;
 	}
 
-	@And("no ModCntr_Logs are found:")
-	public void noModCntr_Logs_found(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s, no ModCntr_Logs are found:$")
+	public void noModCntr_Logs_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		Thread.sleep(timeoutSec);
+
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{

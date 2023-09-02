@@ -28,7 +28,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
@@ -39,8 +39,6 @@ import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrat
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.process.FlatrateTermCreator;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.logging.LogManager;
@@ -75,56 +73,50 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class InterimInvoiceFlatrateTermCreateCommand
 {
 	private static final Logger logger = LogManager.getLogger(InterimInvoiceFlatrateTermCreateCommand.class);
-
-	@NonNull
-	private final BPartnerId bpartnerId;
-
-	@NonNull
-	private final ProductId productId;
-	@NonNull
-	private final Instant dateFrom;
-	@NonNull
-	private final Instant dateTo;
-	@NonNull
-	private final OrderLineId orderLineId;
-
-	@NonNull
-	private final FlatrateTermId modulareFlatrateTermId;
-
-	private final OrderLine orderLine;
-	private final I_C_Flatrate_Conditions conditions;
-	private final ModularContractSettings modularContractSettings;
-	private final I_M_Product product;
-
-	private final I_C_Flatrate_Term modularContract;
-
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 	private final IInterimInvoiceFlatrateTermDAO interimInvoiceFlatrateTermDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
 	private final IInterimInvoiceFlatrateTermLineDAO interimInvoiceFlatrateTermLineDAO = Services.get(IInterimInvoiceFlatrateTermLineDAO.class);
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+	@NonNull private final BPartnerId bpartnerId;
+	@NonNull private final ProductId productId;
+	@NonNull private final Instant dateFrom;
+	@NonNull private final Instant dateTo;
+	@NonNull private final OrderLineId orderLineId;
+
+	@NonNull private final FlatrateTermId modulareFlatrateTermId;
+	@Nullable private final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor;
+
+	@NonNull private final OrderLine orderLine;
+	@NonNull private final I_C_Flatrate_Conditions conditions;
+	@NonNull private final ModularContractSettings modularContractSettings;
+	@NonNull private final I_M_Product product;
+	@NonNull private final I_C_Flatrate_Term modularContract;
 
 	@Builder
-	public InterimInvoiceFlatrateTermCreateCommand(@Nullable final BPartnerId bpartnerId,
+	public InterimInvoiceFlatrateTermCreateCommand(
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ConditionsId conditionsId,
 			@Nullable final ProductId productId,
 			@NonNull final Instant dateFrom,
 			@NonNull final Instant dateTo,
 			@NonNull final OrderLineId orderLineId,
-			@NonNull final FlatrateTermId modulareFlatrateTermId)
+			@NonNull final FlatrateTermId modulareFlatrateTermId,
+			@Nullable final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor)
 	{
+		final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
+		final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 		this.dateFrom = dateFrom;
 		this.dateTo = dateTo;
@@ -134,11 +126,12 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				() -> bpartnerId,
 				() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getBill_BPartner_ID()));
 		this.productId = CoalesceUtil.coalesceNotNull(productId, orderLine.getProductId());
-		this.conditions = flatrateDAO.getConditionsById(conditionsId);
-		this.modularContractSettings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
+		this.conditions = flatrateBL.getConditionsById(conditionsId);
+		this.modularContractSettings = modularContractSettingsDAO.getByFlatrateConditionsId(conditionsId);
 		this.modulareFlatrateTermId = modulareFlatrateTermId;
 		this.product = productDAO.getById(this.productId);
-		this.modularContract = flatrateDAO.getById(modulareFlatrateTermId);
+		this.modularContract = flatrateBL.getById(modulareFlatrateTermId);
+		this.beforeCompleteInterceptor = beforeCompleteInterceptor;
 	}
 
 	public InterimInvoiceFlatrateTerm execute()
@@ -196,7 +189,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 
 	private Optional<I_C_Flatrate_Term> getExistingFlatrateTerm(final @NonNull I_C_BPartner bpartner)
 	{
-		return flatrateDAO.retrieveTerms(bpartner, conditions)
+		return flatrateBL.retrieveTerms(bpartner, conditions)
 				.stream()
 				.filter(term -> Objects.equals(dateFrom, TimeUtil.asInstant(term.getStartDate())))
 				.filter(term -> Objects.equals(dateTo, TimeUtil.asInstant(term.getEndDate())))
@@ -236,9 +229,11 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setDeliveryRule(modularContract.getDeliveryRule());
 		flatrateTermRecord.setDeliveryViaRule(modularContract.getDeliveryViaRule());
 
-		flatrateDAO.save(flatrateTermRecord);
+		flatrateBL.save(flatrateTermRecord);
 
-		documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		Optional.ofNullable(beforeCompleteInterceptor).ifPresent(interceptor -> interceptor.accept(flatrateTermRecord));
+
+		flatrateBL.complete(flatrateTermRecord);
 
 		return flatrateTermRecord;
 	}
