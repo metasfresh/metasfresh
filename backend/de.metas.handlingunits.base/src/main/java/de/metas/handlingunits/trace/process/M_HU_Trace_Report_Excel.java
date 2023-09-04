@@ -126,6 +126,22 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				I_M_HU_Trace.COLUMNNAME_M_Inventory_ID,
 				I_M_InOut.COLUMNNAME_MovementDate,
 				I_M_HU_Trace.COLUMNNAME_Qty,
-				I_M_Product.COLUMNNAME_C_UOM_ID);
+				I_M_Product.COLUMNNAME_C_UOM_ID,
+				"Detail_Type",
+				"Finished_Product_No",
+				"Finished_Product_Name",
+				"Finished_Product_Qty",
+				"Finished_Product_Lot",
+				"Vendor_Lot",
+				"Finished_Product_Mhd",
+				"Finished_Product_Clearance",
+				"Customer_Vendor_No",
+				"Customer_Vendor",
+				"ShipmentQty",
+				"Shipment_Note",
+				"Prod_Stock Numeric",
+				"TraceId",
+				"ReportDate"
+				);
 	}
 }
