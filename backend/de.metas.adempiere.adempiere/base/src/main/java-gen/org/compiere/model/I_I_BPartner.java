@@ -2321,48 +2321,48 @@ public interface I_I_BPartner
 	String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
 
 	/**
-	 * Set Payment Term Customer.
+	 * Set Payment term vendor.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPaymentTerm (@Nullable java.lang.String PaymentTerm);
+	void setpayment_term_po(@Nullable java.lang.String payment_term_po);
 
 	/**
-	 * Get Payment Term Customer.
+	 * Get Payment term vendor.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPaymentTerm();
+	@Nullable
+	java.lang.String getpayment_term_po();
 
-	ModelColumn<I_I_BPartner, Object> COLUMN_PaymentTerm = new ModelColumn<>(I_I_BPartner.class, "PaymentTerm", null);
-	String COLUMNNAME_PaymentTerm = "PaymentTerm";
+	ModelColumn<I_I_BPartner, Object> COLUMN_payment_term_po = new ModelColumn<>(I_I_BPartner.class, "payment_term_po", null);
+	String COLUMNNAME_payment_term_po = "payment_term_po";
 
 	/**
-	 * Set Payment Term Key.
-	 * Key of the Payment Term
+	 * Set Payment term customer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPaymentTermValue (@Nullable java.lang.String PaymentTermValue);
+	void setpayment_term_so(@Nullable java.lang.String payment_term_so);
 
 	/**
-	 * Get Payment Term Key.
-	 * Key of the Payment Term
+	 * Get Payment term customer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPaymentTermValue();
+	@Nullable
+	java.lang.String getpayment_term_so();
 
-	ModelColumn<I_I_BPartner, Object> COLUMN_PaymentTermValue = new ModelColumn<>(I_I_BPartner.class, "PaymentTermValue", null);
-	String COLUMNNAME_PaymentTermValue = "PaymentTermValue";
+	ModelColumn<I_I_BPartner, Object> COLUMN_payment_term_so = new ModelColumn<>(I_I_BPartner.class, "payment_term_so", null);
+	String COLUMNNAME_payment_term_so = "payment_term_so";
 
 	/**
 	 * Set Phone.

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.job.JobId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -13,6 +14,7 @@ import lombok.NonNull;
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface IUserBL extends ISingletonService
 {
@@ -48,7 +50,7 @@ public interface IUserBL extends ISingletonService
 
 		if (firstName != null && !Check.isBlank(firstName))
 		{
-			if (contactName.length() > 0)
+			if (!contactName.isEmpty())
 			{
 				contactName.append(", ");
 			}
@@ -86,4 +88,8 @@ public interface IUserBL extends ISingletonService
 
 	@NonNull
 	ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull String externalId, @NonNull OrgId orgId);
+
+	Optional<UserId> getSupervisorId(@NonNull UserId userId, @NonNull OrgId orgId);
+
+	ImmutableSet<UserId> getUserIdsByJobId(@NonNull JobId jobId);
 }

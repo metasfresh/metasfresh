@@ -54,6 +54,9 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectService;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -116,6 +119,7 @@ public class C_Order
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
+	private final ProjectService projectService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -127,13 +131,15 @@ public class C_Order
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
-			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService)
+			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService,
+			@NonNull final ProjectService projectService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
 		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
+		this.projectService = projectService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -217,8 +223,7 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
 	public void updateProjectFromOrder(@NonNull final I_C_Order order)
 	{
 		if (order.getC_Project_ID() <= 0)
@@ -231,6 +236,18 @@ public class C_Order
 			orderLine.setC_Project_ID(order.getC_Project_ID());
 			orderDAO.save(orderLine);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
+	public void copyFieldsFromProject(@NonNull final I_C_Order order)
+	{
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
+
+		final UserId projectManagerId = Optional.ofNullable(projectId)
+				.flatMap(projectService::getProjectManagerByProjectId)
+				.orElse(null);
+
+		order.setProjectManager_ID(UserId.toRepoId(projectManagerId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -792,7 +809,7 @@ public class C_Order
 					{
 						return;
 					}
-					
+
 					final ProductWarehouseAssignments assignments = productWarehouseAssignmentService.getByProductIdOrError(productId);
 
 					if (!assignments.isWarehouseAssigned(orderWarehouseId))

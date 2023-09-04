@@ -19,6 +19,9 @@ import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.CostElementId;
@@ -151,6 +154,7 @@ public class FactLine
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString7;
 	@Getter @Setter(AccessLevel.PRIVATE) private Instant userElementDate1;
 	@Getter @Setter(AccessLevel.PRIVATE) private Instant userElementDate2;
+	@Getter @Setter(AccessLevel.PRIVATE) private YearAndCalendarId yearAndCalendarId;
 
 	@Getter @Nullable private FAOpenItemTrxInfo openItemTrxInfo;
 
@@ -185,7 +189,8 @@ public class FactLine
 			@Nullable final Optional<OrderId> salesOrderId,
 			@Nullable final Optional<String> userElementString1,
 			@Nullable final Optional<String> description,
-			@Nullable final String additionalDescription)
+			@Nullable final String additionalDescription
+	)
 	{
 		this.services = services;
 		this.m_doc = doc;
@@ -345,6 +350,8 @@ public class FactLine
 		this.userElementString7 = computeAcctSchemaElementAsString(null, AcctSchemaElementType.UserElementString7, this.acctSchema, m_doc, m_docLine).orElse(null);
 		this.userElementDate1 = computeAcctSchemaElementAsDate(AcctSchemaElementType.UserElementDate1, this.acctSchema, m_doc, m_docLine).orElse(null);
 		this.userElementDate2 = computeAcctSchemaElementAsDate(AcctSchemaElementType.UserElementDate2, this.acctSchema, m_doc, m_docLine).orElse(null);
+		this.yearAndCalendarId = computeYearAndCalendarId(acctSchema, m_doc, m_docLine).orElse(null);
+
 	}   // FactLine
 
 	@Nullable
@@ -623,6 +630,7 @@ public class FactLine
 		reversal.setAmtSource(this.currencyId, this.amtSourceDr.negate(), this.amtSourceCr.negate());
 		reversal.convert();
 		reversal.setDescription(description);
+		reversal.setYearAndCalendarId(getYearAndCalendarId());
 		return reversal;
 	}    // reverse
 
@@ -651,6 +659,7 @@ public class FactLine
 		accrual.setAmtSource(currencyId, this.amtSourceCr, this.amtSourceDr);
 		accrual.convert();
 		accrual.setDescription(description);
+
 		return accrual;
 	}    // reverse
 
@@ -740,6 +749,15 @@ public class FactLine
 		return Optional.ofNullable(value)
 				.map(date -> date.toInstant(doc.getServices()::getTimeZone));
 	}
+
+	private static Optional<YearAndCalendarId> computeYearAndCalendarId(final AcctSchema acctSchema, final Doc<?> m_doc, final DocLine<?> m_docLine)
+	{
+		int calendarId = computeAcctSchemaElementAsId(AcctSchemaElementType.HarvestingCalendar, acctSchema, m_doc, m_docLine).orElse(0);
+		int yearId = computeAcctSchemaElementAsId(AcctSchemaElementType.HarvestingYear, acctSchema, m_doc, m_docLine).orElse(0);
+
+		return YearAndCalendarId.optionalOfRepoId(yearId, calendarId);
+	}
+
 
 	public CurrencyId getAcctCurrencyId()
 	{
@@ -1193,6 +1211,8 @@ public class FactLine
 
 	public AccountDimension toAccountDimension()
 	{
+		final YearAndCalendarId calendarAndYearId = getYearAndCalendarId();
+
 		return AccountDimension.builder()
 				.setAcctSchemaId(this.acctSchema.getId())
 				.setAD_Client_ID(ClientId.toRepoId(this.AD_Client_ID))
@@ -1223,6 +1243,8 @@ public class FactLine
 				.setM_SectionCode_ID(SectionCodeId.toRepoId(this.M_SectionCode_ID))
 				.setUserElementDate1(TimeUtil.asInstant(getUserElementDate1()))
 				.setUserElementDate2(TimeUtil.asInstant(getUserElementDate2()))
+				.setC_Harvesting_Calendar_ID(calendarAndYearId !=null ? CalendarId.toRepoId(yearAndCalendarId.calendarId()) : -1)
+				.setHarvesting_Year_ID(calendarAndYearId !=null ? YearId.toRepoId(yearAndCalendarId.yearId()) : -1)
 				.build();
 	}
 
@@ -1348,6 +1370,7 @@ public class FactLine
 		setUserElementString7(dimension.getUserElementString7());
 		setUserElementDate1(dimension.getUserElementDate1());
 		setUserElementDate2(dimension.getUserElementDate2());
+		setYearAndCalendarId(dimension.getHarvestingYearAndCalendarId());
 	}
 
 	public void updateFromDimension(final AccountDimension dim)
@@ -1469,6 +1492,14 @@ public class FactLine
 		{
 			setUserElementDate2(dim.getUserElementDate2());
 		}
+
+		if (dim.isSegmentValueSet(AcctSegmentType.HarvestingCalendar) && dim.isSegmentValueSet(AcctSegmentType.HarvestingYear))
+		{
+			final int calendarId = dim.getC_Harvesting_Calendar_ID();
+			final int yearId = dim.getHarvesting_Year_ID();
+			YearAndCalendarId.optionalOfRepoId(yearId, calendarId).ifPresent(this::setYearAndCalendarId);
+		}
+
 	}
 
 	public void setBPartnerIdAndLocation(final int bpartnerRepoId, final int bpartnerLocationRepoId)

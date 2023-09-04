@@ -298,6 +298,11 @@ public final class ProcessInfoParameter implements Serializable
 		return TimeUtil.asInstant(m_Parameter);
 	}
 
+	public Instant getParameter_ToAsInstant()
+	{
+		return TimeUtil.asInstant(m_Parameter_To);
+	}
+
 	@Nullable
 	public ZonedDateTime getParameter_ToAsZonedDateTime()
 	{

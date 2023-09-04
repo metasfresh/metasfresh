@@ -65,6 +65,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static de.metas.serviceprovider.everhour.EverhourImportConstants.PROCESSING_DATE_INTERVAL_SIZE;
@@ -202,7 +203,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 	}
 
 	private void storeFailed(
-			@NonNull final TimeRecord timeRecord, @NonNull final String errorMsg, @NonNull OrgId orgId)
+			@NonNull final TimeRecord timeRecord, @NonNull final String errorMsg, @NonNull final OrgId orgId)
 	{
 		final StringBuilder errorMessage = new StringBuilder(errorMsg);
 
@@ -238,7 +239,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 		final Stopwatch stopWatch = Stopwatch.createStarted();
 
 		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(ExternalSystem.EVERHOUR);
-		for (FailedTimeBooking failedTimeBooking : failedTimeBookings)
+		for(final FailedTimeBooking failedTimeBooking:failedTimeBookings)
 		{
 			if (Check.isBlank(failedTimeBooking.getJsonValue()))
 			{
@@ -265,9 +266,14 @@ public class EverhourImporterService implements TimeBookingsImporter
 		}
 	}
 
-	private void acquireLock()
+	private void acquireLock() throws InterruptedException
 	{
-		final boolean lockAcquired = lock.tryLock();
+		if (lock.isHeldByCurrentThread())
+		{
+			throw new AdempiereException("current thread is already running the process! failing!");
+		}
+
+		final boolean lockAcquired = lock.tryLock(1, TimeUnit.MILLISECONDS);
 
 		if (!lockAcquired)
 		{
@@ -279,9 +285,11 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 	private void releaseLock()
 	{
-		lock.unlock();
-
-		log.debug(" {} EverhourImporterService: lock released!", IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
+		if (lock.isHeldByCurrentThread())
+		{
+			lock.unlock();
+			log.debug(" {} EverhourImporterService: lock released!", IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
+		}
 	}
 
 	@NonNull

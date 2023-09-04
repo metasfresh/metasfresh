@@ -1,22 +1,22 @@
-DROP FUNCTION IF EXISTS getc_period_id_by_date(
-    p_date          timestamp WITH TIME ZONE,
-    p_ad_client_id  numeric,
-    p_ad_org_id     numeric,
-    p_c_calendar_id numeric
-)
+DROP FUNCTION IF EXISTS getC_Period_ID_by_Date(
+    p_Date          timestamp WITH TIME ZONE,
+    p_AD_Client_ID  numeric,
+    p_AD_Org_ID     numeric,
+    p_C_Calendar_ID numeric)
 ;
 
-CREATE FUNCTION getc_period_id_by_date(
-    p_date          timestamp WITH TIME ZONE,
-    p_ad_client_id  numeric DEFAULT 1000000,
-    p_ad_org_id     numeric DEFAULT 0,
-    p_c_calendar_id numeric DEFAULT NULL::numeric
+
+CREATE OR REPLACE FUNCTION getC_Period_ID_by_Date(
+    p_Date          timestamp WITH TIME ZONE,
+    p_AD_Client_ID  numeric = 1000000,
+    p_AD_Org_ID     numeric = 0,
+    p_C_Calendar_ID numeric = NULL
 )
     RETURNS numeric
-    STABLE
     LANGUAGE plpgsql
+    STABLE
 AS
-$$
+$BODY$
 DECLARE
     v_C_Calendar_ID numeric;
     v_C_Period_ID   numeric;
@@ -54,5 +54,28 @@ BEGIN
 
     RETURN v_C_Period_ID;
 END;
-$$
+$BODY$
 ;
+
+/* TEST:
+SELECT cal.c_calendar_id,
+       cal.name                                                                                                                  AS calendar_name,
+       p.c_period_id,
+       p.name,
+       p.startdate::date,
+       p.enddate::date,
+       (SELECT p2.name FROM c_period p2 WHERE p2.c_period_id = getC_Period_ID_by_Date(p.startdate, p.ad_client_id, p.ad_org_id, y.c_calendar_id)) AS p1,
+       (SELECT p2.name FROM c_period p2 WHERE p2.c_period_id = getC_Period_ID_by_Date(p.enddate, p.ad_client_id, p.ad_org_id, y.c_calendar_id))   AS p2
+FROM c_period p
+         INNER JOIN c_year y ON y.c_year_id = p.c_year_id
+         INNER JOIN c_calendar cal ON cal.c_calendar_id = y.c_calendar_id
+WHERE TRUE
+  -- and y.c_calendar_id = 1000000
+--   AND (
+--             p.c_period_id != getC_Period_ID_by_Date(p.startdate, p.ad_client_id, p.ad_org_id, y.c_calendar_id)
+--         OR p.c_period_id != getC_Period_ID_by_Date(p.enddate, p.ad_client_id, p.ad_org_id, y.c_calendar_id))
+ORDER BY p.startdate
+ */
+
+
+

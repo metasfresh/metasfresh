@@ -47,7 +47,7 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
-import de.metas.job.JobRepository;
+import de.metas.job.JobService;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -153,7 +153,7 @@ public class ProductsRestControllerTest
 				new GreetingRepository(),
 				new TitleRepository(),
 				currencyRepository,
-				new JobRepository(),
+				JobService.newInstanceForUnitTesting(),
 				Mockito.mock(de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService.class),
 				new SectionCodeService(sectionCodeRepository),
 				new IncotermsRepository(),

@@ -30,9 +30,12 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -56,6 +59,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOutLine;
@@ -91,6 +95,7 @@ public class ModCntr_Log_StepDef
 
 	private final M_InOutLine_StepDefData inOutLineTable;
 	private final PP_Order_StepDefData manufacturingOrderTable;
+	private final C_InvoiceLine_StepDefData invoiceLineTable;
 
 	public ModCntr_Log_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -104,7 +109,8 @@ public class ModCntr_Log_StepDef
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
 			@NonNull final M_InOutLine_StepDefData inOutLineTable,
-			@NonNull final PP_Order_StepDefData manufacturingOrderTable)
+			@NonNull final PP_Order_StepDefData manufacturingOrderTable,
+			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.warehouseTable = warehouseTable;
@@ -118,19 +124,20 @@ public class ModCntr_Log_StepDef
 		this.inventoryLineTable = inventoryLineTable;
 		this.inOutLineTable = inOutLineTable;
 		this.manufacturingOrderTable = manufacturingOrderTable;
+		this.invoiceLineTable = invoiceLineTable;
 	}
 
-	@And("ModCntr_Logs are found:")
-	public void validateModCntr_Logs(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s, ModCntr_Logs are found:$")
+	public void validateModCntr_Logs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			validateModCntr_Log(row);
+			validateModCntr_Log(timeoutSec, row);
 		}
 	}
 
-	private void validateModCntr_Log(@NonNull final Map<String, String> tableRow)
+	private void validateModCntr_Log(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
 	{
 		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
 		final int tableId = tableDAO.retrieveTableId(tableName);
@@ -148,6 +155,8 @@ public class ModCntr_Log_StepDef
 			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
 			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
 			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
+			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
+			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);
@@ -156,7 +165,7 @@ public class ModCntr_Log_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final I_ModCntr_Log modCntrLogRecord = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+		final ItemProvider<I_ModCntr_Log> locateLog = () -> queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, tableId)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, recordId)
@@ -165,7 +174,10 @@ public class ModCntr_Log_StepDef
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 				.create()
 				.firstOnlyOptional()
-				.orElseThrow(() -> new AdempiereException("\n Context: " + getLogContextForWarehouseId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))));
+				.map(ItemProvider.ProviderResult::resultWasFound)
+				.orElse(ItemProvider.ProviderResult.resultWasNotFound("No logs found for criteria!"));
+
+		final I_ModCntr_Log modCntrLogRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateLog);
 
 		final SoftAssertions softly = new SoftAssertions();
 
@@ -298,9 +310,11 @@ public class ModCntr_Log_StepDef
 		return "Current ModCntr_Logs available for C_Flatrate_Term_ID:\n\n" + messageBuilder;
 	}
 
-	@And("no ModCntr_Logs are found:")
-	public void noModCntr_Logs_found(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s, no ModCntr_Logs are found:$")
+	public void noModCntr_Logs_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		Thread.sleep(timeoutSec);
+
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
@@ -318,6 +332,8 @@ public class ModCntr_Log_StepDef
 		switch (tableName)
 		{
 			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
+			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
+			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);

@@ -101,7 +101,7 @@ Feature: Modular contract log from sales order
 
     When the order identified by so_order is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
@@ -162,14 +162,14 @@ Feature: Modular contract log from sales order
 
     When the order identified by so_order is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier  | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 10  | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 5   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
 
     When the order identified by so_order is voided
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier  | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 10  | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 5   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
@@ -237,14 +237,14 @@ Feature: Modular contract log from sales order
 
     When the order identified by so_order is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier  | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 10  | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 5   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
 
     When the order identified by so_order is reactivated
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier  | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 10  | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 5   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
@@ -266,7 +266,7 @@ Feature: Modular contract log from sales order
 
     When the order identified by so_order is completed
 
-    Then ModCntr_Logs are found:
+    Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier  | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 10  | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 5   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
@@ -293,7 +293,7 @@ Feature: Modular contract log from sales order
 
     When the order identified by so_order is completed
 
-    Then no ModCntr_Logs are found:
+    Then after not more than 30s, no ModCntr_Logs are found:
       | Record_ID.Identifier | TableName   |
       | soLine_1             | C_OrderLine |
       | soLine_2             | C_OrderLine |

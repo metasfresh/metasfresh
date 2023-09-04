@@ -22,7 +22,9 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
@@ -34,8 +36,8 @@ import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import static de.metas.contracts.modular.ModularContractService.ModelAction.COMPLETED;
-import static de.metas.contracts.modular.ModularContractService.ModelAction.REVERSED;
+import static de.metas.contracts.modular.ModelAction.COMPLETED;
+import static de.metas.contracts.modular.ModelAction.REVERSED;
 
 @Component
 @Interceptor(I_M_Inventory.class)
@@ -64,10 +66,10 @@ public class M_Inventory
 
 	private void invokeHandlerForEachLine(
 			@NonNull final I_M_Inventory inventoryRecord,
-			@NonNull final ModularContractService.ModelAction modelAction)
+			@NonNull final ModelAction modelAction)
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 		inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction));
+				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
 	}
 }

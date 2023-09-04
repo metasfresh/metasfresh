@@ -37,6 +37,7 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.project.service.ProjectService;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -137,11 +138,12 @@ class PaymentRestEndpointTest
 
 		// run the "before_complete" interceptor
 		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
-		new C_Order(bpartnerBL, 
-					new OrderLineDetailRepository(), 
-					documentLocationBL, 
-					new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
-					productWarehouseAssignmentService)
+		new C_Order(bpartnerBL,
+				new OrderLineDetailRepository(),
+				documentLocationBL,
+				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
+				productWarehouseAssignmentService,
+				ProjectService.newInstanceForUnitTesting())
 				.linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment

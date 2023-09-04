@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -33,6 +34,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -62,4 +64,14 @@ public class ModularContractSettings
 	@NonNull
 	@Singular
 	List<ModuleConfig> moduleConfigs;
+
+	public Optional<ModularContractTypeId> getModularContractTypeId(@NonNull final Class<? extends IModularContractTypeHandler<?>> handlerType)
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(config -> config.isMatchingClassName(handlerType.getName()))
+				.map(ModuleConfig::getModularContractType)
+				.map(ModularContractType::getId)
+				.findFirst();
+	}
 }

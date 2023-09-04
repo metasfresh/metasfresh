@@ -16,9 +16,12 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.job.JobId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserAuthTokenRepository;
@@ -49,13 +52,14 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
-
 
 	private static final Logger logger = LogManager.getLogger(UserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -65,6 +69,7 @@ public class UserBL implements IUserBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IValuePreferenceDAO valuePreferenceDAO = Services.get(IValuePreferenceDAO.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig#CUSTOMTYPE_OrgCompiereUtilLogin
@@ -441,7 +446,7 @@ public class UserBL implements IUserBL
 	private String getBPartnerLanguage(@NonNull final I_AD_User userRecord)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
-		if(bpartnerId == null)
+		if (bpartnerId == null)
 		{
 			return null;
 		}
@@ -487,7 +492,49 @@ public class UserBL implements IUserBL
 		getUserMailRepository().deleteUserMailByUserId(userId);
 
 		getUserQueryRepository().deleteUserQueryByUserId(userId);
+	}
 
+	@Override
+	public Optional<UserId> getSupervisorId(@NonNull final UserId userId, @NonNull final OrgId orgId)
+	{
+		return getSupervisorOfUserId(userId).or(() -> getSupervisorOfOrgId(orgId));
+	}
+
+	private Optional<UserId> getSupervisorOfUserId(@NonNull final UserId userId)
+	{
+		final I_AD_User user = getById(userId);
+		final UserId supervisorId = UserId.ofRepoIdOrNullIfSystem(user.getSupervisor_ID());
+		return Optional.ofNullable(supervisorId);
+	}
+
+	private Optional<UserId> getSupervisorOfOrgId(@NonNull final OrgId orgId)
+	{
+		OrgId currentOrgId = orgId;
+		final HashSet<OrgId> alreadyCheckedOrgIds = new HashSet<>();
+		while (currentOrgId != null)
+		{
+			if (!alreadyCheckedOrgIds.add(currentOrgId))
+			{
+				logger.debug("Org look detected, returning empty: {}", alreadyCheckedOrgIds);
+				return Optional.empty();
+			}
+
+			final OrgInfo orgInfo = orgDAO.getOrgInfoById(currentOrgId);
+			if (orgInfo.getSupervisorId() != null)
+			{
+				return Optional.of(orgInfo.getSupervisorId());
+			}
+
+			currentOrgId = orgInfo.getParentOrgId();
+		}
+
+		return Optional.empty();
+	}
+
+	@Override
+	public ImmutableSet<UserId> getUserIdsByJobId(@NonNull final JobId jobId)
+	{
+		return userDAO.retrieveUsersByJobId(jobId);
 	}
 
 	@NonNull

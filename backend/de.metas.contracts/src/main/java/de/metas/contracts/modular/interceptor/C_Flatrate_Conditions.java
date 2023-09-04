@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.interceptor;
 
-import de.metas.common.util.Check;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -64,10 +63,7 @@ public class C_Flatrate_Conditions
 
 	private void validateModularContractSettings(@NonNull final ConditionsId conditionsId)
 	{
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditonsIdOrNull(conditionsId);
-
-		Check.assume(settings != null, "ModularContractSettings should not be null at this stage!");
-
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditionsId(conditionsId);
 		if (settings.getModuleConfigs().isEmpty())
 		{
 			throw new AdempiereException(MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS)

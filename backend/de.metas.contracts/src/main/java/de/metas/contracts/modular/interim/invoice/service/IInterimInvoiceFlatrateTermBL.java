@@ -31,6 +31,7 @@ import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 
 import java.sql.Timestamp;
+import java.util.function.Consumer;
 
 /**
  * Note: this BL is not about flartate-terms, but about {@link org.compiere.model.I_C_InterimInvoice_FlatrateTerm}s.
@@ -41,6 +42,12 @@ public interface IInterimInvoiceFlatrateTermBL extends ISingletonService
 			@NonNull I_C_Flatrate_Term modularFlatrateTermRecord,
 			@NonNull Timestamp startDate,
 			@NonNull Timestamp endDate);
+
+	void create(
+			@NonNull I_C_Flatrate_Term modularFlatrateTermRecord,
+			@NonNull Timestamp startDate,
+			@NonNull Timestamp endDate,
+			@NonNull final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor);
 
 	void updateInterimInvoiceFlatrateTermForInOut(I_M_InOut inOutLine);
 

@@ -43,6 +43,7 @@ echo.
 
 docker build -f docker-builds/Dockerfile.common --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-common:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.backend --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-backend:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.backend.dist -t %pubregistry%/metas-mvn-backend-dist:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.camel --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-mvn-camel:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.camel.dist -t %pubregistry%/metas-mvn-camel-dist:%qualifier% . || @goto error
 

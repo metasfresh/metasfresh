@@ -14,6 +14,8 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.InOutLineQuery;
+import de.metas.inout.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -613,6 +615,59 @@ public class InOutDAO implements IInOutDAO
 		record.setFEC_From_Currency_ID(CurrencyId.toRepoId(fromCurrencyId));
 		record.setFEC_To_Currency_ID(CurrencyId.toRepoId(toCurrencyId));
 		record.setFEC_CurrencyRate(currencyRate);
+	}
+
+	@Override
+	public Optional<OrderId> getOrderIdForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		final I_M_InOutLine inOutLine = getLineByIdInTrx(inoutLineId);
+		if (inOutLine == null)
+		{
+			return Optional.empty();
+		}
+
+		return OrderId.optionalOfRepoId(inOutLine.getC_Order_ID());
+	}
+
+	@Override
+	public Stream<I_M_InOutLine> stream(@NonNull final InOutLineQuery query)
+	{
+		return toSqlQuery(query).stream();
+	}
+
+	private IQueryBuilder<I_M_InOutLine> toSqlQuery(@NonNull final InOutLineQuery query)
+	{
+		final IQueryBuilder<I_M_InOutLine> sqlQueryBuilder = toSqlQuery(query.getHeaderQuery())
+				.andCollectChildren(I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getFlatrateTermId() > 0)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_Flatrate_Term_ID, query.getFlatrateTermId());
+		}
+
+		return sqlQueryBuilder;
+	}
+
+	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
+	{
+		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getMovementDateFrom() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, Operator.GREATER_OR_EQUAL, query.getMovementDateFrom());
+		}
+		if (query.getMovementDateTo() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, Operator.LESS_OR_EQUAL, query.getMovementDateTo());
+		}
+		if (query.getDocStatus() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+
+		return sqlQueryBuilder;
 	}
 
 }

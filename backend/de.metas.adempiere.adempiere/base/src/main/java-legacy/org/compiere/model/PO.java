@@ -621,15 +621,6 @@ public abstract class PO
 		this.p_ctx = ctx;
 	}
 
-	/**
-	 * @return logger that is still used in some legacy classes
-	 */
-	@Deprecated
-	public final Logger get_Logger()
-	{
-		return log;
-	}    // getLogger
-
 	/**************************************************************************
 	 * Get Value
 	 *
@@ -1530,7 +1521,7 @@ public abstract class PO
 		{
 			m_loading = true;
 
-			if(!services.isPerfMonActive())
+			if (!services.isPerfMonActive())
 			{
 				return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record;
 			}
@@ -2519,7 +2510,7 @@ public abstract class PO
 	 */
 	public final void saveEx() throws AdempiereException
 	{
-		if(!services.isPerfMonActive())
+		if (!services.isPerfMonActive())
 		{
 			saveEx0();
 		}
@@ -2956,9 +2947,9 @@ public abstract class PO
 				continue;
 			}
 			// Update Document No
-			if (columnName.equals("DocumentNo"))
+			if (columnName.equals("DocumentNo") && p_info.isUseDocSequence(i))
 			{
-				final String documentNo = (String)value;
+				final String documentNo = (String)Null.unbox(value);
 				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
@@ -2993,7 +2984,10 @@ public abstract class PO
 				}
 				else
 				{
-					log.warn("DocumentNo updated: " + m_oldValues[i] + " -> " + value);
+					if (is_ValueChanged(i))
+					{
+						log.warn("DocumentNo updated: {} -> {}", m_oldValues[i], value);
+					}
 				}
 			}
 
@@ -3489,10 +3483,10 @@ public abstract class PO
 		//
 		// Execute actual database INSERT
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert.toString(),
-															   (Object[])null,  // params,
-															   m_trxName,
-															   0,  // timeOut,
-															   loadAfterInsertProcessor);
+				(Object[])null,  // params,
+				m_trxName,
+				0,  // timeOut,
+				loadAfterInsertProcessor);
 		boolean ok = no == 1;
 
 		//

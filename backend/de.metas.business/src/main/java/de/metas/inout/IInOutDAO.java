@@ -148,4 +148,8 @@ public interface IInOutDAO extends ISingletonService
 	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
 
 	Collection<InOutAndLineId> retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(OrderLineId orderLine);
+
+	Optional<OrderId> getOrderIdForLineId(@NonNull InOutLineId inoutLineId);
+
+	Stream<I_M_InOutLine> stream(@NonNull InOutLineQuery query);
 }

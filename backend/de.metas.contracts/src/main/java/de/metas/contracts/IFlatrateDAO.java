@@ -48,6 +48,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
@@ -162,6 +163,9 @@ public interface IFlatrateDAO extends ISingletonService
 	boolean bpartnerHasExistingRunningTerms(@NonNull final I_C_Flatrate_Term flatrateTerm);
 
 	I_C_Flatrate_Term retrieveFirstFlatrateTerm(@NonNull I_C_Invoice invoice);
+
+	boolean isExistsModularOrInterimContract(@NonNull IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter);
+
 
 	@Value
 	@Builder

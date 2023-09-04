@@ -43,6 +43,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -50,12 +51,21 @@ import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
 
 
 public interface IFlatrateBL extends ISingletonService
 {
+	I_C_Flatrate_Conditions getConditionsById(ConditionsId flatrateConditionsId);
+
+	List<I_C_Flatrate_Term> retrieveTerms(
+			I_C_BPartner bpartner,
+			I_C_Flatrate_Conditions flatrateConditions);
+
+	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
+
 	String beforeCompleteDataEntry(I_C_Flatrate_DataEntry dataEntry);
 
 	/**
@@ -89,11 +99,18 @@ public interface IFlatrateBL extends ISingletonService
 	void updateEntry(I_C_Flatrate_DataEntry dataEntry);
 
 	void updateFlatrateTermProductAndPrice(@NonNull FlatrateTermPriceRequest request);
+
 	void updateFlatrateTermBillBPartner(FlatrateTermBillPartnerRequest request);
 
 	I_C_Flatrate_Term getById(@NonNull FlatrateTermId flatrateTermId);
 
 	ImmutableList<I_C_Flatrate_Term> retrieveNextFlatrateTerms(@NonNull I_C_Flatrate_Term term);
+
+	boolean isModularContractInProgress(@NonNull ModularFlatrateTermQuery query);
+
+	@NonNull Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull ModularFlatrateTermQuery query);
+
+	FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull FlatrateTermId modularFlatrateTermId, @NonNull Instant date);
 
 	/**
 	 * term to extend

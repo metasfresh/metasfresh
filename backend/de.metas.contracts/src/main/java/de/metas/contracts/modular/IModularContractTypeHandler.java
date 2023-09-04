@@ -23,11 +23,9 @@
 package de.metas.contracts.modular;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -45,17 +43,7 @@ public interface IModularContractTypeHandler<T>
 
 	boolean applies(@NonNull final T model);
 
-	/**
-	 * Return a {@code LogEntryCreateRequest} if the framework shall create the log, or {@link Optional#empty()} otherwise.
-	 */
-	@NonNull
-	Optional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
-
-	/**
-	 * Return a {@code LogEntryReverseRequest} of requests if the framework shall create one or more reversal-record log records, or {@link Optional#empty()} otherwise.
-	 */
-	@NonNull
-	Optional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId);
+	boolean applies(@NonNull final LogEntryContractType logEntryContractType);
 
 	/**
 	 * The handler's implementation will need to somehow extract the corresponding contract(s):
@@ -67,11 +55,11 @@ public interface IModularContractTypeHandler<T>
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull T model);
 
-	void validateDocAction(@NonNull final T model, @NonNull final ModularContractService.ModelAction action);
+	void validateDocAction(@NonNull final T model, @NonNull final ModelAction action);
 
-	default void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId)
-	{}
+	default void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId) {}
 
-	default void createContractIfRequired(@NonNull final T model)
-	{}
+	default void createContractIfRequired(@NonNull final T model) {}
+
+	default void handleAction(@NonNull final T model, @NonNull final ModelAction modelAction, @NonNull final ModularContractService contractService) {}
 }
