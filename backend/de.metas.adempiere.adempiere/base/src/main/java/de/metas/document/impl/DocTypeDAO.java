@@ -283,7 +283,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			dt.setAD_Org_ID(request.getAdOrgId());
 		}
-		if (request.getPrintName() != null && request.getPrintName().length() > 0)
+		if (request.getPrintName() != null && !request.getPrintName().isEmpty())
 		{
 			dt.setPrintName(request.getPrintName()); // Defaults to Name
 		}
@@ -332,6 +332,13 @@ public class DocTypeDAO implements IDocTypeDAO
 	public void save(@NonNull final I_C_DocType docTypeRecord)
 	{
 		InterfaceWrapperHelper.saveRecord(docTypeRecord);
+	}
+
+	@Override
+	public DocBaseType getDocBaseTypeById(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docTypeRecord = getById(docTypeId);
+		return DocBaseType.ofCode(docTypeRecord.getDocBaseType());
 	}
 
 	@Override

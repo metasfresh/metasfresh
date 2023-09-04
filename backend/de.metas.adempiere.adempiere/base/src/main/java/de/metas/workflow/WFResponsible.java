@@ -25,6 +25,7 @@ package de.metas.workflow;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -53,11 +54,13 @@ public class WFResponsible
 	@Nullable
 	OrgId orgId;
 
-	public boolean isInvoker() { return userId == null && roleId == null; }
+	public boolean isInvoker() {return userId == null && roleId == null;}
 
-	public boolean isHuman() { return type == WFResponsibleType.Human && userId != null; }
+	public boolean isHuman() {return type == WFResponsibleType.Human && userId != null;}
 
-	public boolean isRole() { return type == WFResponsibleType.Role && roleId != null; }
+	public boolean isRole() {return type == WFResponsibleType.Role && roleId != null;}
 
-	public boolean isOrganization() { return type == WFResponsibleType.Organization && orgId != null; }
+	public boolean isOrganization() {return type == WFResponsibleType.Organization && orgId != null;}
+
+	public RoleId getRoleIdNotNull() {return Check.assumeNotNull(roleId, "Expected a role based responsible: {}", this);}
 }

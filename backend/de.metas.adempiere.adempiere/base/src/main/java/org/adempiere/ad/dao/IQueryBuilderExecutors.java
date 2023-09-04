@@ -31,4 +31,6 @@ public interface IQueryBuilderExecutors<T>
 	default Stream<T> stream() {return create().stream();}
 
 	default void forEach(@NonNull final Consumer<T> action) {create().forEach(action);}
+
+	default int count() {return create().count();}
 }

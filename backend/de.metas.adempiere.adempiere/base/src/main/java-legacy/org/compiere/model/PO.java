@@ -20,8 +20,8 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -619,15 +619,6 @@ public abstract class PO
 	{
 		this.p_ctx = ctx;
 	}
-
-	/**
-	 * @return logger that is still used in some legacy classes
-	 */
-	@Deprecated
-	public final Logger get_Logger()
-	{
-		return log;
-	}    // getLogger
 
 	/**************************************************************************
 	 * Get Value
@@ -1702,7 +1693,7 @@ public abstract class PO
 		{
 			m_loading = true;
 
-			if(!services.isPerfMonActive())
+			if (!services.isPerfMonActive())
 			{
 				return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record;
 			}
@@ -2825,7 +2816,7 @@ public abstract class PO
 	 */
 	public final void saveEx() throws AdempiereException
 	{
-		if(!services.isPerfMonActive())
+		if (!services.isPerfMonActive())
 		{
 			saveEx0();
 		}
@@ -2951,7 +2942,7 @@ public abstract class PO
 
 		//
 		// Create cache invalidation request
-		if(p_info.isSingleKeyColumnName())
+		if (p_info.isSingleKeyColumnName())
 		{
 			try
 			{
@@ -3054,8 +3045,8 @@ public abstract class PO
 		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
 		final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
 		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
-						? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
-						: null;
+				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
+				: null;
 
 		final int columnsCount = p_info.getColumnCount();
 
@@ -3280,9 +3271,9 @@ public abstract class PO
 				continue;
 			}
 			// Update Document No
-			if (columnName.equals("DocumentNo"))
+			if (columnName.equals("DocumentNo") && p_info.isUseDocSequence(i))
 			{
-				final String documentNo = (String)value;
+				final String documentNo = (String)Null.unbox(value);
 				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(documentNo))
 				{
 					value = null;
@@ -3317,7 +3308,10 @@ public abstract class PO
 				}
 				else
 				{
-					log.warn("DocumentNo updated: " + m_oldValues[i] + " -> " + value);
+					if (is_ValueChanged(i))
+					{
+						log.warn("DocumentNo updated: {} -> {}", m_oldValues[i], value);
+					}
 				}
 			}
 
@@ -3816,10 +3810,10 @@ public abstract class PO
 		//
 		// Execute actual database INSERT
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert.toString(),
-															   (Object[])null,  // params,
-															   m_trxName,
-															   0,  // timeOut,
-															   loadAfterInsertProcessor);
+				(Object[])null,  // params,
+				m_trxName,
+				0,  // timeOut,
+				loadAfterInsertProcessor);
 		boolean ok = no == 1;
 
 		//
@@ -4151,7 +4145,6 @@ public abstract class PO
 				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
 				: null;
 
-
 		//
 		// Execute SQL DELETE
 		final StringBuilder sql = new StringBuilder("DELETE FROM ")
@@ -4317,7 +4310,7 @@ public abstract class PO
 	private void deleteTranslations()
 	{
 		final POTrlInfo trlInfo = p_info.getTrlInfo();
-		if(!trlInfo.isTranslated())
+		if (!trlInfo.isTranslated())
 		{
 			return;
 		}
@@ -5040,9 +5033,8 @@ public abstract class PO
 		}
 
 		//noinspection unchecked
-		return (T)m_dynAttrs.computeIfAbsent(name, k->supplier.get());
+		return (T)m_dynAttrs.computeIfAbsent(name, k -> supplier.get());
 	}
-
 
 	/**
 	 * Fire Model Change Event.

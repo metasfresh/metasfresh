@@ -21,11 +21,9 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;
 import de.metas.workflow.execution.WorkflowExecutionResult;
 import de.metas.workflow.execution.WorkflowExecutor;
-import de.metas.workflow.service.IADWorkflowDAO;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -84,7 +82,7 @@ public final class ProcessExecutor
 	private static final ThreadLocal<OrgId> s_currentOrg_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(ProcessExecutor.class);
+	private static final Logger logger = LogManager.getLogger(ProcessExecutor.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
@@ -122,7 +120,7 @@ public final class ProcessExecutor
 	{
 		Check.assumeNull(m_thread, "not already started");
 
-		final Thread thread = new Thread(() -> executeSync());
+		final Thread thread = new Thread(this::executeSync);
 		thread.setName(buildThreadName());
 
 		thread.start();
@@ -142,7 +140,7 @@ public final class ProcessExecutor
 		if (pi.getProcessClassInfo().isRunOutOfTransaction()
 				&& trxManager.hasThreadInheritedTrx())
 		{
-			final Thread thread = new Thread(() -> executeNow());
+			final Thread thread = new Thread(this::executeNow);
 			thread.setName(buildThreadName());
 			logger.debug("Starting thread with name={}", thread.getName());
 			thread.start();
@@ -207,6 +205,7 @@ public final class ProcessExecutor
 				if (isReport && hasProcessClass)
 				{
 					// nothing to do, the Jasper process class implementation is responsible for triggering the report preview if any
+					//noinspection UnnecessaryReturnStatement
 					return;
 				}
 				else if (isReport)
@@ -234,8 +233,8 @@ public final class ProcessExecutor
 		final AdProcessId previousProcessId = s_currentProcess_ID.get();
 		final OrgId previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
-		try (final IAutoCloseable contextRestorer = switchContextIfNeeded();
-				final IAutoCloseable mdcCloseable = ProcessMDC.putProcessAndInstanceId(pi.getAdProcessId(), pi.getPinstanceId()))
+		try (final IAutoCloseable ignored = switchContextIfNeeded();
+				final IAutoCloseable ignored1 = ProcessMDC.putProcessAndInstanceId(pi.getAdProcessId(), pi.getPinstanceId()))
 		{
 			s_currentProcess_ID.set(pi.getAdProcessId());
 			s_currentOrg_ID.set(pi.getOrgId());
@@ -292,7 +291,7 @@ public final class ProcessExecutor
 		return DocumentReportRequest.builder()
 				.flavor(DocumentReportFlavor.PRINT)
 				.reportProcessId(processInfo.getAdProcessId())
-				.documentRef(processInfo.getRecordRefOrNull())
+				.documentRef(processInfo.getRecordRefNotNull())
 				.clientId(processInfo.getClientId())
 				.orgId(processInfo.getOrgId())
 				.userId(processInfo.getUserId())
@@ -328,7 +327,7 @@ public final class ProcessExecutor
 		{
 			final AdProcessId adProcessId = pi.getAdProcessId();
 			final Boolean access = permissions.getProcessAccess(adProcessId.getRepoId());
-			if (access == null || !access.booleanValue())
+			if (access == null || !access)
 			{
 				// get the process value, such that an admin can directly insert the right process
 				final I_AD_Process processRecord = adProcessDAO.getById(adProcessId);
@@ -414,21 +413,15 @@ public final class ProcessExecutor
 
 	private void startWorkflow()
 	{
-		final WorkflowId workflowId = pi.getWorkflowId();
-		Check.assumeNotNull(workflowId, "workflowId");
+		final WorkflowId workflowId = Check.assumeNotNull(pi.getWorkflowId(), "workflowId");
 		logger.debug("startWorkflow: {} ({})", workflowId, pi);
 
-		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
-		final Workflow workflow = workflowDAO.getById(workflowId);
-
 		final WorkflowExecutionResult workflowExecutionResult = WorkflowExecutor.builder()
-				.workflow(workflow)
 				.clientId(pi.getClientId())
-				.adLanguage(Env.getADLanguageOrBaseLanguage())
-				.documentRef(pi.getRecordRefOrNull())
+				.documentRef(pi.getRecordRefNotNull())
 				.userId(pi.getUserId())
 				.build()
-				.start();
+				.start(workflowId);
 		logger.debug("Executed {} and got {}", workflowId, workflowExecutionResult);
 
 		//
@@ -444,12 +437,6 @@ public final class ProcessExecutor
 		}
 	}   // startWorkflow
 
-	/**
-	 * Start Java/Script process.
-	 *
-	 * @return true if success
-	 * @throws Exception
-	 */
 	private void startJavaOrScriptProcess() throws Exception
 	{
 		logger.debug("startProcess: {}", pi);
@@ -551,7 +538,7 @@ public final class ProcessExecutor
 		result.setSummary(msgBL.parseTranslation(ctx, msg)); // Parse Variables
 	}
 
-	private void startJavaProcess() throws Exception
+	private void startJavaProcess()
 	{
 		final ProcessInfo pi = this.pi;
 
@@ -563,7 +550,7 @@ public final class ProcessExecutor
 
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 
-		try (final IAutoCloseable currentInstanceRestorer = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
+		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstanceOverriding(process))
 		{
 			process.startProcess(pi, trx);
 
@@ -587,11 +574,10 @@ public final class ProcessExecutor
 	/**
 	 * Start Database Process
 	 *
-	 * @return true if success
 	 */
 	private void startDBProcess()
 	{
-		final String dbProcedureName = pi.getDBProcedureName().get();
+		final String dbProcedureName = pi.getDBProcedureName().orElseThrow();
 		logger.debug("startDBProcess: {} ({})", dbProcedureName, pi);
 
 		final String sql = "{call " + dbProcedureName + "(?)}";
