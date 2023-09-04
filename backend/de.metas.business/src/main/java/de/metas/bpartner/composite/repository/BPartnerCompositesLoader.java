@@ -373,6 +373,7 @@ final class BPartnerCompositesLoader
 				.sapBPartnerCode(bpartnerRecord.getSAP_BPartnerCode())
 				.sectionGroupPartner(bpartnerRecord.isSectionGroupPartner())
 				.sectionPartner(bpartnerRecord.isSectionPartner())
+				.urproduzent(bpartnerRecord.isFresh_Urproduzent())
 				.build();
 	}
 

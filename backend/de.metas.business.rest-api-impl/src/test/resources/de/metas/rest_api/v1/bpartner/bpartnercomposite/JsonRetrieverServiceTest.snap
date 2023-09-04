@@ -58,6 +58,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": false,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true

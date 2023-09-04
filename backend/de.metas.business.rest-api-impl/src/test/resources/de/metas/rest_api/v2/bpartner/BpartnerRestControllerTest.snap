@@ -20,6 +20,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": false,
+      "urproduzent": false,
       "vendor": false
     },
     "contacts": [ ],
@@ -112,6 +113,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "sectionPartner": false,
       "storageWarehouse": true,
       "url": "bPartner.url",
+      "urproduzent": false,
       "vatId": "bPartner.vatId",
       "vendor": false,
       "vendorPaymentTermId": 1000003
@@ -388,6 +390,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
@@ -624,6 +627,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
@@ -857,6 +861,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
@@ -1055,6 +1060,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
@@ -1424,6 +1430,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "vatId": "VATaxID",
       "vendor": true,
       "vendorPaymentTermId": 1000001
@@ -1522,6 +1529,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "vatId": "VATaxID",
       "vendor": true,
       "vendorPaymentTermId": 1000001
@@ -1620,6 +1628,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
       "sectionGroupPartner": false,
       "sectionPartner": false,
       "storageWarehouse": true,
+      "urproduzent": false,
       "vatId": "VATaxID",
       "vendor": true,
       "vendorPaymentTermId": 1000001
@@ -1739,6 +1748,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID",
           "vendor": true,
           "vendorPaymentTermId": 1000001
@@ -1833,6 +1843,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID_1",
           "vendor": true,
           "vendorPaymentTermId": 1000003
@@ -1940,6 +1951,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID_2",
           "vendor": true,
           "vendorPaymentTermId": 1000005
@@ -2034,6 +2046,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID_3",
           "vendor": true,
           "vendorPaymentTermId": 1000007
@@ -2141,6 +2154,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "sectionGroupPartner": false,
           "sectionPartner": false,
           "storageWarehouse": true,
+          "urproduzent": false,
           "vatId": "VATaxID_4",
           "vendor": true,
           "vendorPaymentTermId": 1000009

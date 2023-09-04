@@ -85,6 +85,7 @@ public class JsonResponseBPartner
 	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
 	public static final String SECTION_GROUP_PARTNER = "sectionGroupPartner";
 	public static final String SECTION_PARTNER = "sectionPartner";
+	public static final String URPRODUZENT = "urproduzent";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -287,6 +288,11 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	boolean sectionPartner;
 
+	@Schema(description = "This translates to `C_BPartner.Fresh_Urproduzent`")
+	@JsonProperty(URPRODUZENT)
+	@JsonInclude(Include.NON_NULL)
+	boolean urproduzent;
+
 	@Schema // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -337,6 +343,7 @@ public class JsonResponseBPartner
 			@JsonProperty(SAP_BPARTNER_CODE) @Nullable final String sapBPartnerCode,
 			@JsonProperty(SECTION_GROUP_PARTNER) final boolean sectionGroupPartner,
 			@JsonProperty(SECTION_PARTNER) final boolean sectionPartner,
+			@JsonProperty(URPRODUZENT) final boolean urproduzent,
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
 			//
 	{
@@ -392,6 +399,7 @@ public class JsonResponseBPartner
 		this.sapBPartnerCode = sapBPartnerCode;
 		this.sectionGroupPartner = sectionGroupPartner;
 		this.sectionPartner = sectionPartner;
+		this.urproduzent = urproduzent;
 
 		this.changeInfo = changeInfo;
 	}
