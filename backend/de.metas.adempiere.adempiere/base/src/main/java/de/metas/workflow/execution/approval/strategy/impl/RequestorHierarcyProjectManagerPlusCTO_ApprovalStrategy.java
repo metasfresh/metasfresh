@@ -9,6 +9,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.job.Job;
 import de.metas.job.JobService;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -31,11 +32,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -43,6 +46,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements WFApprovalStrategy
 {
+	private static final Logger logger = LogManager.getLogger(RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
@@ -149,8 +153,14 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 		else if (requestorId != null)
 		{
 			UserId supervisorId = userBL.getSupervisorId(requestorId, orgId).orElse(null);
+			final HashSet<UserId> seenSupervisorIds = new HashSet<>();
 			while (supervisorId != null)
 			{
+				if(!seenSupervisorIds.add(supervisorId))
+				{
+					logger.warn("Cycle detected in supervisors hierarchy: {}", seenSupervisorIds);
+					break;
+				}
 				if (isApprovalRequired(request, supervisorId))
 				{
 					addUserToApprove(userIdsToApprove, supervisorId);
