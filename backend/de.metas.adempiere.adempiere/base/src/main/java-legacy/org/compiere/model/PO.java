@@ -22,7 +22,6 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;

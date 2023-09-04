@@ -71,7 +71,7 @@ public class WFApprovalRequestsRelatedDocumentProvider implements IRelatedDocume
 								.internalName(I_AD_WF_Approval_Request.Table_Name)
 								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowId(windowId))
 								.priority(relatedDocumentsPriority)
-								.query(query)
+								.querySupplier(() -> query)
 								.windowCaption(adWindowDAO.retrieveWindowName(windowId))
 								.documentsCountSupplier(recordsCountSupplier)
 								.build()));
