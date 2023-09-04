@@ -169,12 +169,6 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 		}
 
 		return userIdsToApprove;
-
-		// FIXME HARDCODED
-		// return ImmutableList.of(
-		// 		UserId.ofRepoId(2188224),
-		// 		UserId.ofRepoId(2188225),
-		// 		UserId.ofRepoId(2188226));
 	}
 
 	private static void addUserToApprove(@NonNull final ArrayList<UserId> list, @Nullable final UserId userId)
