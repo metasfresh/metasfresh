@@ -3992,4 +3992,25 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_Xing = new ModelColumn<>(I_C_BPartner.class, "Xing", null);
 	String COLUMNNAME_Xing = "Xing";
+
+	/**
+	 * Set Farming Producer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFresh_Urproduzent (boolean Fresh_Urproduzent);
+
+	/**
+	 * Get Farming Producer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isFresh_Urproduzent();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Fresh_Urproduzent = new ModelColumn<>(I_C_BPartner.class, "Fresh_Urproduzent", null);
+	String COLUMNNAME_Fresh_Urproduzent = "Fresh_Urproduzent";
 }
