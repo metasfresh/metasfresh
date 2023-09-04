@@ -286,6 +286,7 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setSAP_BPartnerCode(bpartner.getSapBPartnerCode());
 		bpartnerRecord.setIsSectionGroupPartner(bpartner.isSectionGroupPartner());
 		bpartnerRecord.setIsSectionPartner(bpartner.isSectionPartner());
+		bpartnerRecord.setFresh_Urproduzent(bpartner.isUrproduzent());
 
 		saveRecord(bpartnerRecord);
 

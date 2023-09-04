@@ -170,6 +170,7 @@ public class JsonRetrieverService
 			.put(BPartner.SAP_BPARTNER_CODE, JsonResponseBPartner.SAP_BPARTNER_CODE)
 			.put(BPartner.SECTION_GROUP_PARTNER, JsonResponseBPartner.SECTION_GROUP_PARTNER)
 			.put(BPartner.SECTION_PARTNER, JsonResponseBPartner.SECTION_PARTNER)
+			.put(BPartner.URPRODUZENT, JsonResponseBPartner.URPRODUZENT)
 			.build();
 
 	/**
@@ -351,6 +352,7 @@ public class JsonRetrieverService
 		}
 	}
 
+	@NonNull
 	private JsonResponseBPartner toJson(@NonNull final BPartner bpartner)
 	{
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bpartner.getChangeLog(), BPARTNER_FIELD_MAP);
@@ -407,6 +409,7 @@ public class JsonRetrieverService
 				.sapBPartnerCode(bpartner.getSapBPartnerCode())
 				.sectionGroupPartner(bpartner.isSectionGroupPartner())
 				.sectionPartner(bpartner.isSectionPartner())
+				.urproduzent(bpartner.isUrproduzent())
 				.build();
 	}
 

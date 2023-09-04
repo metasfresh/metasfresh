@@ -288,6 +288,12 @@ public class CreateBPartnerV2_StepDef
 				softly.assertThat(bPartnerRecord.isProspect()).isEqualTo(isProspect);
 			}
 
+			final Boolean isFreshUrproduzent = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_Fresh_Urproduzent);
+			if (isFreshUrproduzent != null)
+			{
+				softly.assertThat(bPartnerRecord.isFresh_Urproduzent()).isEqualTo(isFreshUrproduzent);
+			}
+
 			softly.assertAll();
 
 			if (org != null)

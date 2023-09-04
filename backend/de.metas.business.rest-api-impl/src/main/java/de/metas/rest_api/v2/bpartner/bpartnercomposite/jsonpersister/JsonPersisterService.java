@@ -1176,19 +1176,24 @@ public class JsonPersisterService
 			bpartner.setProspect(jsonBPartner.getProspect());
 		}
 
-		if(jsonBPartner.isSapBPartnerCodeSet())
+		if (jsonBPartner.isSapBPartnerCodeSet())
 		{
 			bpartner.setSapBPartnerCode(jsonBPartner.getSapBPartnerCode());
 		}
 
-		if(jsonBPartner.isSectionGroupPartnerSet())
+		if (jsonBPartner.isSectionGroupPartnerSet())
 		{
 			bpartner.setSectionGroupPartner(jsonBPartner.isSectionGroupPartner());
 		}
 
-		if(jsonBPartner.isSectionPartnerSet())
+		if (jsonBPartner.isSectionPartnerSet())
 		{
 			bpartner.setSectionPartner(jsonBPartner.isSectionPartner());
+		}
+		
+		if (jsonBPartner.isUrproduzentSet())
+		{
+			bpartner.setUrproduzent(jsonBPartner.isUrproduzent());
 		}
 
 		return BooleanWithReason.TRUE;
