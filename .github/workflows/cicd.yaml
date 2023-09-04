@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.2.1'
+  PIPELINE_VERSION: '0.2.2'
 jobs:
 
   init:
@@ -263,6 +263,16 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: build-db-migrations
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.db-migrations \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations \
+          .
       - name: build-db-preloaded
         run: |
           docker buildx build \
@@ -283,6 +293,8 @@ jobs:
           docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
       - name: produce-summary
@@ -292,6 +304,7 @@ jobs:
           echo '* metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded' >> $GITHUB_STEP_SUMMARY
 
   compatibility-images:
