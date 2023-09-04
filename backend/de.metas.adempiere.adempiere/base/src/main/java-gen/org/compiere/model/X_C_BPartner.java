@@ -2669,4 +2669,16 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		return get_ValueAsString(COLUMNNAME_Xing);
 	}
+
+	@Override
+	public void setFresh_Urproduzent(final boolean Fresh_Urproduzent)
+	{
+		set_Value(COLUMNNAME_Fresh_Urproduzent, Fresh_Urproduzent);
+	}
+
+	@Override
+	public boolean isFresh_Urproduzent()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Fresh_Urproduzent);
+	}
 }

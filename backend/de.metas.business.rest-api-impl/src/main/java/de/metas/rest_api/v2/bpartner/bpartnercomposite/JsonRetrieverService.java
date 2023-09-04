@@ -351,6 +351,7 @@ public class JsonRetrieverService
 		}
 	}
 
+	@NonNull
 	private JsonResponseBPartner toJson(@NonNull final BPartner bpartner)
 	{
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bpartner.getChangeLog(), BPARTNER_FIELD_MAP);
@@ -407,6 +408,7 @@ public class JsonRetrieverService
 				.sapBPartnerCode(bpartner.getSapBPartnerCode())
 				.sectionGroupPartner(bpartner.isSectionGroupPartner())
 				.sectionPartner(bpartner.isSectionPartner())
+				.urproduzent(bpartner.isUrproduzent())
 				.build();
 	}
 

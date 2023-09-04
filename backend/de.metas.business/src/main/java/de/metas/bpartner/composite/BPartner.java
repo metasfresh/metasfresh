@@ -224,6 +224,8 @@ public class BPartner
 
 	private boolean sectionPartner;
 
+	private boolean urproduzent;
+
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 */
@@ -285,7 +287,8 @@ public class BPartner
 			@Nullable final Boolean prospect,
 			@Nullable final String sapBPartnerCode,
 			@Nullable final Boolean sectionGroupPartner,
-			@Nullable final Boolean sectionPartner)
+			@Nullable final Boolean sectionPartner,
+			@Nullable final Boolean urproduzent)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -349,6 +352,7 @@ public class BPartner
 		this.sapBPartnerCode = sapBPartnerCode;
 		this.sectionGroupPartner = coalesce(sectionGroupPartner, false);
 		this.sectionPartner = coalesce(sectionPartner, false);
+		this.urproduzent = coalesce(urproduzent, false);
 	}
 
 	/**
