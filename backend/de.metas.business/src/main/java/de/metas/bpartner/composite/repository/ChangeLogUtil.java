@@ -113,6 +113,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_SAP_BPartnerCode, BPartner.SAP_BPARTNER_CODE)
 			.put(I_C_BPartner.COLUMNNAME_IsSectionGroupPartner, BPartner.SECTION_GROUP_PARTNER)
 			.put(I_C_BPartner.COLUMNNAME_IsSectionPartner, BPartner.SECTION_PARTNER)
+			.put(I_C_BPartner.COLUMNNAME_Fresh_Urproduzent, BPartner.URPRODUZENT)
 			.build();
 
 	@VisibleForTesting

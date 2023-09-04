@@ -103,6 +103,7 @@ public class BPartner
 	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
 	public static final String SECTION_GROUP_PARTNER = "sectionGroupPartner";
 	public static final String SECTION_PARTNER = "sectionPartner";
+	public static final String URPRODUZENT = "urproduzent";
 
 	/**
 	 * May be null if the bpartner was not yet saved.

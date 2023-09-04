@@ -170,6 +170,7 @@ public class JsonRetrieverService
 			.put(BPartner.SAP_BPARTNER_CODE, JsonResponseBPartner.SAP_BPARTNER_CODE)
 			.put(BPartner.SECTION_GROUP_PARTNER, JsonResponseBPartner.SECTION_GROUP_PARTNER)
 			.put(BPartner.SECTION_PARTNER, JsonResponseBPartner.SECTION_PARTNER)
+			.put(BPartner.URPRODUZENT, JsonResponseBPartner.URPRODUZENT)
 			.build();
 
 	/**
