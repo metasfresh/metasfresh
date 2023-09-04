@@ -130,7 +130,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 		return approvalRequests;
 	}
 
-	public List<UserId> findUsersToApprove(@NonNull final WFApprovalStrategy.Request request)
+	private List<UserId> findUsersToApprove(@NonNull final WFApprovalStrategy.Request request)
 	{
 		final ArrayList<UserId> userIdsToApprove = new ArrayList<>();
 
