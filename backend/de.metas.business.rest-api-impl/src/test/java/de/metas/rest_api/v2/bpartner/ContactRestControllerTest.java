@@ -51,7 +51,7 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.repository.IncotermsRepository;
-import de.metas.job.JobRepository;
+import de.metas.job.JobService;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.sectionCode.SectionCodeRepository;
@@ -99,9 +99,9 @@ import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.setupTimeSource;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class ContactRestControllerTest
 {
 	private ContactRestController contactRestController;
@@ -113,7 +113,7 @@ class ContactRestControllerTest
 	private SectionCodeRepository sectionCodeRepository;
 
 	private IncotermsRepository incotermsRepository;
-	
+
 	private Expect expect;
 
 	@BeforeEach
@@ -148,7 +148,7 @@ class ContactRestControllerTest
 				new GreetingRepository(),
 				new TitleRepository(),
 				new CurrencyRepository(),
-				new JobRepository(),
+				JobService.newInstanceForUnitTesting(),
 				externalReferenceRestControllerService,
 				new SectionCodeService(sectionCodeRepository),
 				incotermsRepository,

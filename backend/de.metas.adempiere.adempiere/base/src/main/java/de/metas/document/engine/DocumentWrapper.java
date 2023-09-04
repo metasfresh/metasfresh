@@ -1,6 +1,5 @@
 package de.metas.document.engine;
 
-import de.metas.logging.LogManager;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -11,7 +10,6 @@ import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -26,8 +24,6 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		return new DocumentWrapper(docActionModel, handler);
 	}
 
-	private static final Logger logger = LogManager.getLogger(DocumentWrapper.class);
-
 	private final DocumentTableFields model;
 	private final DocumentHandler handler;
 
@@ -40,7 +36,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		this.handler = handler;
 	}
 
-	private final void fireDocValidateEvent(final int timing)
+	private void fireDocValidateEvent(final int timing)
 	{
 		if (POJOWrapper.isHandled(model))
 		{
@@ -279,12 +275,6 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	public int get_Table_ID()
 	{
 		return InterfaceWrapperHelper.getModelTableId(model);
-	}
-
-	@Override
-	public Logger get_Logger()
-	{
-		return logger;
 	}
 
 	@Override

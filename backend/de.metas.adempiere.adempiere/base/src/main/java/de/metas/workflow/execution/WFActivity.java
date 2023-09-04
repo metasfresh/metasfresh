@@ -22,6 +22,7 @@
 
 package de.metas.workflow.execution;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
@@ -40,10 +41,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.report.ReportResultData;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.DocumentApprovalConstraint;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -60,14 +58,17 @@ import de.metas.workflow.WFNodeParameter;
 import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
-import lombok.Builder;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
+import de.metas.workflow.execution.approval.strategy.impl.RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 import lombok.With;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
@@ -83,27 +84,25 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class WFActivity
 {
 	private static final Logger log = LogManager.getLogger(WFActivity.class);
 
 	private static final AdMessageKey MSG_DocumentApprovalRequest = AdMessageKey.of("DocumentApprovalRequest");
 	private static final AdMessageKey MSG_DocumentSentToApproval = AdMessageKey.of("DocumentSentToApproval");
-	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
+	//private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	@NonNull private final WorkflowExecutionContext context;
 	@NonNull private final WFProcess wfProcess;
 	@NonNull private final WFNode wfNode;
-	@NonNull private final TableRecordReference documentRef;
+	@NonNull @Getter private final TableRecordReference documentRef;
 
-	@Nullable
-	private Optional<String> m_newValue = null;
+	@Nullable private Optional<String> m_newValue;
 	private ArrayList<EMailAddress> m_emails = new ArrayList<>();
 
 	private final Instant startTime;
@@ -117,7 +116,7 @@ public class WFActivity
 	{
 		this.context = wfProcess.getContext();
 		this.wfProcess = wfProcess;
-		this.wfNode = context.getNodeById(nodeId);
+		this.wfNode = wfProcess.getWorkflow().getNodeById(nodeId);
 		this.documentRef = wfProcess.getDocumentRef();
 		this.startTime = SystemTime.asInstant();
 
@@ -159,33 +158,32 @@ public class WFActivity
 				.build();
 	}
 
-	public WFActivity(
+	WFActivity(
 			@NonNull final WFProcess wfProcess,
 			@NonNull final WFActivityState state)
 	{
 		this.context = wfProcess.getContext();
 		this.wfProcess = wfProcess;
-		this.wfNode = context.getNodeById(state.getWfNodeId());
+		this.wfNode = wfProcess.getWorkflow().getNodeById(state.getWfNodeId());
 		this.documentRef = wfProcess.getDocumentRef();
 		this.startTime = SystemTime.asInstant();
 		this.state = state;
 	}
 
 	@NonNull
-	WorkflowExecutionContext getContext() { return context; }
+	private WFProcess getWorkflowProcess() {return wfProcess;}
 
 	@NonNull
-	private WFProcess getWorkflowProcess() { return wfProcess; }
+	public WFProcessId getWfProcessId() {return getWorkflowProcess().getWfProcessId();}
 
-	@NonNull
-	public WFProcessId getWfProcessId() { return getWorkflowProcess().getWfProcessId(); }
+	public WorkflowId getWorkflowId() {return getWorkflowProcess().getWorkflowId();}
 
 	@Nullable
-	public WFActivityId getId() { return state.getId(); }
+	public WFActivityId getId() {return state.getId();}
 
-	void setId(@NonNull final WFActivityId id) { state.setId(id); }
+	void setId(@NonNull final WFActivityId id) {state.setId(id);}
 
-	public int getPriority() { return state.getPriority(); }
+	public int getPriority() {return state.getPriority();}
 
 	public WFState getState()
 	{
@@ -233,22 +231,22 @@ public class WFActivity
 	}    // setWFState
 
 	@Nullable
-	public UserId getUserId() { return state.getUserId(); }
+	public UserId getUserId() {return state.getUserId();}
 
-	public void setUserId(@NonNull final UserId userId) { state.setUserId(userId); }
+	public void setUserId(@NonNull final UserId userId) {state.setUserId(userId);}
 
-	private void setPriority(final int priority) { state.setPriority(priority); }
+	private void setPriority(final int priority) {state.setPriority(priority);}
 
-	private void setEndWaitTime(@NonNull final Instant endWaitTime) { state.setEndWaitTime(endWaitTime); }
+	private void setEndWaitTime(@NonNull final Instant endWaitTime) {state.setEndWaitTime(endWaitTime);}
 
 	@Nullable
-	public Instant getEndWaitTime() { return state.getEndWaitTime(); }
+	public Instant getEndWaitTime() {return state.getEndWaitTime();}
 
-	public Duration getElapsedTime() { return Duration.between(startTime, SystemTime.asInstant()); }
+	public Duration getElapsedTime() {return Duration.between(startTime, SystemTime.asInstant());}
 
-	public boolean isProcessed() { return state.isProcessed(); }
+	public boolean isProcessed() {return state.isProcessed();}
 
-	void setProcessed() { state.setProcessed(true); }
+	void setProcessed() {state.setProcessed(true);}
 
 	/**
 	 * @return true if closed
@@ -306,6 +304,7 @@ public class WFActivity
 				: WFEventAuditType.StateChanged;
 
 		final WFEventAudit audit = prepareEventAudit(eventType).build();
+		//noinspection OptionalAssignedToNull
 		if (m_newValue != null)
 		{
 			audit.setAttributeValueNew(m_newValue.orElse(null));
@@ -314,15 +313,13 @@ public class WFActivity
 		context.addEventAudit(audit);
 	}
 
-	private IDocument getDocument() { return context.getDocument(documentRef); }
+	private IDocument getDocument() {return context.getDocument(documentRef);}
 
-	public IDocument getDocumentOrNull() { return context.getDocumentOrNull(documentRef); }
+	public IDocument getDocumentOrNull() {return context.getDocumentOrNull(documentRef);}
 
-	public TableRecordReference getDocumentRef() { return documentRef; }
+	public Object getDocumentColumnValueByColumnId(final AdColumnId adColumnId) {return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId);}
 
-	public Object getDocumentColumnValueByColumnId(final AdColumnId adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
-
-	public Object getDocumentColumnValueByColumnName(final String columnName) { return context.getDocumentColumnValueByColumnName(getDocumentRef(), columnName); }
+	public Object getDocumentColumnValueByColumnName(final String columnName) {return context.getDocumentColumnValueByColumnName(getDocumentRef(), columnName);}
 
 	/**
 	 * @return Attribute Value (based on Node) of PO
@@ -331,11 +328,6 @@ public class WFActivity
 	Object getAttributeValue()
 	{
 		final WFNode node = getNode();
-		if (node == null)
-		{
-			return null;
-		}
-
 		final AdColumnId AD_Column_ID = AdColumnId.ofRepoIdOrNull(node.getDocumentColumnId());
 		if (AD_Column_ID == null)
 		{
@@ -345,12 +337,13 @@ public class WFActivity
 		return context.getDocumentColumnValueByColumnId(getDocumentRef(), AD_Column_ID);
 	}
 
-	@NonNull public WFNode getNode() { return wfNode; }
+	@NonNull
+	public WFNode getNode() {return wfNode;}
 
 	@Nullable
-	public String getTextMsg() { return state.getTextMsg(); }
+	public String getTextMsg() {return state.getTextMsg();}
 
-	private void setTextMsg(@Nullable final String textMsg) { state.setTextMsg(textMsg); }
+	private void setTextMsg(@Nullable final String textMsg) {state.setTextMsg(textMsg);}
 
 	public void addTextMsg(@Nullable final String textMsg)
 	{
@@ -384,190 +377,33 @@ public class WFActivity
 		setIssueId(adIssueId);
 	}
 
-	private void setIssueId(@NonNull final AdIssueId issueId) { state.setIssueId(issueId); }
+	private void setIssueId(@NonNull final AdIssueId issueId) {state.setIssueId(issueId);}
 
 	@Nullable
-	public AdIssueId getIssueId() { return state.getIssueId(); }
+	public AdIssueId getIssueId() {return state.getIssueId();}
 
 	/**
 	 * Set Responsible and User from Process / Node
 	 */
-	public WFResponsibleId getWFResponsibleId() { return state.getWfResponsibleId(); }
+	WFResponsibleId getWFResponsibleId() {return state.getWfResponsibleId();}
 
-	private WFResponsible getResponsible()
+	private WFResponsible getResponsible() {return context.getResponsibleById(getWFResponsibleId());}
+
+	public void start()
 	{
-		return context.getResponsibleById(getWFResponsibleId());
+		run(WFAction.Start);
 	}
 
-	public void setWFResponsibleId(@NonNull final WFResponsibleId wfResponsibleId) { state.setWfResponsibleId(wfResponsibleId); }
-
-	private boolean isInvoker()
+	public void resume()
 	{
-		return getResponsible().isInvoker();
-	}    // isInvoker
-
-	@Value
-	@Builder
-	private static class DocumentToApproveRequest
-	{
-		@NonNull
-		UserId workflowInvokerId;
-
-		@Nullable
-		Money amountToApprove;
-		@NonNull
-		UserId documentOwnerId;
-		@NonNull
-		ClientAndOrgId clientAndOrgId;
+		run(WFAction.Resume);
 	}
 
-	private DocumentToApproveRequest getDocumentToApproveRequest()
-	{
-		final IDocument doc = context.getDocument(getDocumentRef());
-		final UserId documentOwnerId = UserId.ofRepoId(doc.getDoc_User_ID());
-		final UserId invokerId = CoalesceUtil.coalesce(
-				getUserId(),
-				documentOwnerId);
-
-		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(doc.getC_Currency_ID());
-		final Money amountToApprove = currencyId != null
-				? Money.of(doc.getApprovalAmt(), currencyId)
-				: null;
-
-		return DocumentToApproveRequest.builder()
-				.workflowInvokerId(invokerId)
-				.amountToApprove(amountToApprove)
-				.documentOwnerId(documentOwnerId)
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(doc.getAD_Client_ID(), doc.getAD_Org_ID()))
-				.build();
-	}
-
-	private Optional<UserId> getApproverId(@NonNull final DocumentToApproveRequest document)
-	{
-		// Nothing to approve
-		if (document.getAmountToApprove() == null || document.getAmountToApprove().signum() == 0)
-		{
-			return Optional.of(document.getWorkflowInvokerId());
-		}
-
-		UserId currentUserId = document.getWorkflowInvokerId();
-		final HashSet<UserId> alreadyCheckedUserIds = new HashSet<>();
-		while (currentUserId != null)
-		{
-			if (!alreadyCheckedUserIds.add(currentUserId))
-			{
-				log.debug("Loop - {}", alreadyCheckedUserIds);
-				return Optional.empty();
-			}
-
-			if (isUserAllowedToApproveDocument(currentUserId, document))
-			{
-				return Optional.of(currentUserId);
-			}
-
-			//
-			// Get's user's supervisor
-			currentUserId = getSupervisorOfUserId(currentUserId).orElse(null);
-			if (currentUserId == null)
-			{
-				currentUserId = getSupervisorOfOrgId(document.getClientAndOrgId().getOrgId()).orElse(null);
-			}
-		}
-
-		log.debug("No user found");
-		return Optional.empty();
-	}    // getApproval
-
-	private boolean isUserAllowedToApproveDocument(
-			@NonNull final UserId userId,
-			@NonNull final DocumentToApproveRequest document)
-	{
-
-		final List<IUserRolePermissions> roles = context.getUserRolesPermissionsForUserWithOrgAccess(
-				userId,
-				document.getClientAndOrgId());
-		for (final IUserRolePermissions role : roles)
-		{
-			if (isRoleAllowedToApproveDocument(role, userId, document))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private boolean isRoleAllowedToApproveDocument(
-			@NonNull final IUserRolePermissions role,
-			@NonNull final UserId userId,
-			@NonNull final DocumentToApproveRequest document)
-	{
-		final DocumentApprovalConstraint docApprovalConstraints = role.getConstraint(DocumentApprovalConstraint.class)
-				.orElse(DocumentApprovalConstraint.DEFAULT);
-
-		final boolean ownDocument = UserId.equals(document.getDocumentOwnerId(), userId);
-		if (ownDocument && !docApprovalConstraints.canApproveOwnDoc())
-		{
-			return false;
-		}
-
-		final Money amountToApprove = document.getAmountToApprove();
-		if (amountToApprove == null)
-		{
-			return true;
-		}
-
-		Money maxAllowedAmount = docApprovalConstraints.getAmtApproval(amountToApprove.getCurrencyId());
-		if (maxAllowedAmount.signum() <= 0)
-		{
-			return false;
-		}
-
-		maxAllowedAmount = context.convertMoney(maxAllowedAmount, amountToApprove.getCurrencyId(), document.getClientAndOrgId());
-
-		return amountToApprove.isLessThanOrEqualTo(maxAllowedAmount);
-	}
-
-	private Optional<UserId> getSupervisorOfUserId(@NonNull final UserId userId)
-	{
-		final I_AD_User user = context.getUserById(userId);
-		final UserId supervisorId = UserId.ofRepoIdOrNullIfSystem(user.getSupervisor_ID());
-		return Optional.ofNullable(supervisorId);
-	}
-
-	private Optional<UserId> getSupervisorOfOrgId(@NonNull final OrgId orgId)
-	{
-		OrgId currentOrgId = orgId;
-		final HashSet<OrgId> alreadyCheckedOrgIds = new HashSet<>();
-		while (currentOrgId != null)
-		{
-			if (!alreadyCheckedOrgIds.add(currentOrgId))
-			{
-				log.debug("Org look detected, returning empty: {}", alreadyCheckedOrgIds);
-				return Optional.empty();
-			}
-
-			final OrgInfo orgInfo = context.getOrgInfoById(currentOrgId);
-			if (orgInfo.getSupervisorId() != null)
-			{
-				return Optional.of(orgInfo.getSupervisorId());
-			}
-
-			currentOrgId = orgInfo.getParentOrgId();
-		}
-
-		return Optional.empty();
-	}
-
-	/**************************************************************************
-	 * Execute Work.
-	 * Called from MWFProcess.startNext
-	 * Feedback to Process via setWFState -> checkActivities
-	 */
-	public void run()
+	private void run(@NonNull WFAction action)
 	{
 		logAuditActivityStarted();
 
+		//noinspection OptionalAssignedToNull
 		m_newValue = null;
 
 		context.getTrxManager().runInThreadInheritedTrx(new TrxRunnableAdapter()
@@ -578,9 +414,9 @@ public class WFActivity
 			@Override
 			public void run(final String localTrxName)
 			{
-				if (!getState().isValidAction(WFAction.Start))
+				if (!getState().isValidAction(action))
 				{
-					addTextMsg(new AdempiereException("Cannot start activity from state " + getState()));
+					addTextMsg(new AdempiereException("Cannot " + action + " activity from state " + getState()));
 					changeWFStateTo(WFState.Terminated);
 					return;
 				}
@@ -589,15 +425,14 @@ public class WFActivity
 
 				// Do Work
 				final PerformWorkResult result = performWork();
-				docStatusChanged = result.getNewDocStatus() != null;
-				changeWFStateTo(result.getNewWFState());
+				docStatusChanged = result.newDocStatus() != null;
+				changeWFStateTo(result.newWFState());
 			}
 
 			@Override
 			public boolean doCatch(final Throwable ex)
 			{
 				this.exception = ex;
-
 				wfProcess.setProcessingResultMessage(ex);
 
 				addTextMsg(ex);
@@ -628,20 +463,11 @@ public class WFActivity
 		});
 	}
 
-	@Value
-	@Builder
-	private static class PerformWorkResult
+	private record PerformWorkResult(@NonNull WFState newWFState, @Nullable @With DocStatus newDocStatus)
 	{
-		public static final PerformWorkResult COMPLETED = builder().newWFState(WFState.Completed).build();
-		public static final PerformWorkResult SUSPENDED = builder().newWFState(WFState.Suspended).build();
-		public static final PerformWorkResult ABORTED = builder().newWFState(WFState.Aborted).build();
-
-		@NonNull
-		WFState newWFState;
-
-		@Nullable
-		@With
-		DocStatus newDocStatus;
+		public static final PerformWorkResult COMPLETED = new PerformWorkResult(WFState.Completed, null);
+		public static final PerformWorkResult SUSPENDED = new PerformWorkResult(WFState.Suspended, null);
+		public static final PerformWorkResult ABORTED = new PerformWorkResult(WFState.Aborted, null);
 	}
 
 	private PerformWorkResult performWork()
@@ -736,7 +562,7 @@ public class WFActivity
 			}
 			if (!Check.isBlank(mailTextBuilder.getMailHeader()))
 			{
-				if (subject.length() > 0)
+				if (!subject.isEmpty())
 				{
 					subject.append(": ");
 				}
@@ -780,11 +606,13 @@ public class WFActivity
 	private void performWork_AppsReport()
 	{
 		final WFNode wfNode = getNode();
+		final UserId userId = Check.assumeNotNull(getUserId(), "User is set: {}", state);
+
 		log.debug("Report: AD_Process_ID={}", wfNode.getProcessId());
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setClientId(context.getClientId())
-				.setUserId(getUserId())
+				.setUserId(userId)
 				.setAD_Process_ID(wfNode.getProcessId())
 				.setTitle(wfNode.getName().getDefaultValue())
 				.setRecord(getDocumentRef())
@@ -804,7 +632,7 @@ public class WFActivity
 		final File report = reportData.writeToTemporaryFile("report_");
 		// Notice
 		final int AD_Message_ID = 753;        // HARDCODED WorkflowResult
-		final MNote note = new MNote(Env.getCtx(), AD_Message_ID, getUserId().getRepoId(), ITrx.TRXNAME_ThreadInherited);
+		final MNote note = new MNote(Env.getCtx(), AD_Message_ID, userId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 		note.setTextMsg(wfNode.getName().getDefaultValue());
 		note.setDescription(wfNode.getDescription().getDefaultValue());
 		note.setRecord(getDocumentRef());
@@ -843,10 +671,7 @@ public class WFActivity
 		addTextMsg(document.getSummary());
 		wfProcess.setProcessingResultMessage(document.getProcessMsg());
 
-		return PerformWorkResult.builder()
-				.newWFState(WFState.Completed)
-				.newDocStatus(DocStatus.ofCode(document.getDocStatus()))
-				.build();
+		return PerformWorkResult.COMPLETED.withNewDocStatus(DocStatus.ofCode(document.getDocStatus()));
 	}
 
 	private void performWork_SetVariable()
@@ -855,7 +680,7 @@ public class WFActivity
 		final String value = wfNode.getAttributeValue();
 		log.debug("SetVariable:AD_Column_ID={} to {}", wfNode.getDocumentColumnId(), value);
 		final ReferenceId dt = wfNode.getDocumentColumnValueType();
-		setVariable(value, dt.getRepoId(), null);
+		setVariable(value, dt.getRepoId());
 	}
 
 	private PerformWorkResult performWork_UserChoice()
@@ -882,71 +707,78 @@ public class WFActivity
 			return PerformWorkResult.SUSPENDED;
 		}
 
-		//
-		// Find who shall approve the document
-		final DocumentToApproveRequest approvalRequest = getDocumentToApproveRequest();
-		final UserId workflowInvokerId = approvalRequest.getWorkflowInvokerId();
-		final WFResponsible responsible = getResponsible();
-		final boolean autoApproval;
-		final UserId approverId;
-		if (responsible.isInvoker())
-		{
-			approverId = getApproverId(approvalRequest).orElse(null);
-			autoApproval = UserId.equals(workflowInvokerId, approverId);
-		}
-		else if (responsible.isHuman())
-		{
-			approverId = responsible.getUserId();
-			autoApproval = UserId.equals(workflowInvokerId, approverId);
-		}
-		else if (responsible.isRole())
-		{
-			final Set<UserId> allRoleUserIds = context.getUserIdsByRoleId(responsible.getRoleId());
-			autoApproval = allRoleUserIds.contains(workflowInvokerId);
-			if (autoApproval)
-			{
-				approverId = workflowInvokerId;
-			}
-			else
-			{
-				// NOTE: atm we cannot forward to all of those users, so we just pick the first one
-				approverId = allRoleUserIds.stream().findFirst().orElse(null);
-			}
-		}
-		else if (responsible.isOrganization())
-		{
-			throw new AdempiereException("Support not implemented for " + responsible);
-		}
-		else
-		{
-			throw new AdempiereException("@NotSupported@ " + responsible);
-		}
+		final WFApprovalStrategy approvalStrategy = getApprovalStrategy();
+		final WFApprovalStrategy.Request request = newWFApprovalRequest();
+		final TableRecordReference documentRef = getDocumentRef();
 
-		//
-		//
-		if (autoApproval)
+		final WFApprovalStrategy.Response response = approvalStrategy.approve(request);
+		return response.map(new WFApprovalStrategy.Response.CaseMapper<>()
 		{
-			context.processDocument(getDocumentRef(), IDocument.ACTION_Approve);
-
-			return PerformWorkResult.COMPLETED;
-		}
-		else
-		{
-			if (approverId == null)
+			@Override
+			public PerformWorkResult approved()
 			{
-				throw new AdempiereException("No user to approve found!"); // TODO: trl
+				context.processDocument(documentRef, IDocument.ACTION_Approve);
+				return PerformWorkResult.COMPLETED;
 			}
 
-			forwardTo(approverId, msgApprovalRequest(), null);
+			@Override
+			public PerformWorkResult rejected()
+			{
+				return PerformWorkResult.ABORTED;
+			}
 
-			context.sendNotification(WFUserNotification.builder()
-					.userId(workflowInvokerId)
-					.content(MSG_DocumentSentToApproval, getDocumentRef(), context.getUserFullnameById(approverId))
-					.documentToOpen(getDocumentRef())
-					.build());
+			public PerformWorkResult pending() {return PerformWorkResult.SUSPENDED;}
 
-			return PerformWorkResult.SUSPENDED;
-		}
+			@Override
+			public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId, @Nullable TableRecordReference documentToOpen)
+			{
+				WFActivity.this.forwardTo(forwardToUserId, msgApprovalRequest(), documentToOpen);
+
+				context.sendNotification(WFUserNotification.builder()
+						.userId(request.getWorkflowInvokerId())
+						.content(MSG_DocumentSentToApproval, documentRef, context.getUserFullnameById(forwardToUserId))
+						.documentToOpen(documentToOpen)
+						.build());
+
+				return PerformWorkResult.SUSPENDED;
+			}
+		});
+	}
+
+	private WFApprovalStrategy.Request newWFApprovalRequest()
+	{
+		final TableRecordReference documentRef = getDocumentRef();
+		final IDocument document = context.getDocument(documentRef);
+		final UserId documentOwnerId = UserId.ofRepoId(document.getDoc_User_ID());
+		final UserId invokerId = CoalesceUtil.coalesceNotNull(getUserId(), documentOwnerId);
+
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(document.getC_Currency_ID());
+		final Money amountToApprove = currencyId != null
+				? Money.of(document.getApprovalAmt(), currencyId)
+				: null;
+
+		return WFApprovalStrategy.Request.builder()
+				.context(context)
+				.documentRef(documentRef)
+				.documentOwnerId(documentOwnerId)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(document.getAD_Client_ID(), document.getAD_Org_ID()))
+				.documentNo(document.getDocumentNo())
+				.docBaseType(context.getDocBaseType(document).orElse(null))
+				//
+				.amountToApprove(amountToApprove)
+				//
+				.workflowInvokerId(invokerId)
+				.responsible(getResponsible())
+				.wfProcessId(getWfProcessId())
+				.wfActivityId(getId())
+				.build();
+	}
+
+	private WFApprovalStrategy getApprovalStrategy()
+	{
+		// TODO
+		//return SpringContextHolder.instance.getBean(StandardApprovalStrategy.class);
+		return SpringContextHolder.instance.getBean(RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy.class);
 	}
 
 	private ADMessageAndParams msgApprovalRequest()
@@ -955,19 +787,9 @@ public class WFActivity
 		return ADMessageAndParams.of(MSG_DocumentApprovalRequest, invokerName, getDocumentRef());
 	}
 
-	/**
-	 * Set Variable
-	 *
-	 * @param valueStr    new Value
-	 * @param displayType display type
-	 * @param textMsg     optional Message
-	 * @throws AdempiereException if error
-	 */
-	private void setVariable(
-			@Nullable final String valueStr,
-			final int displayType,
-			@Nullable final String textMsg)
+	private void setVariable(@Nullable final String valueStr, final int displayType)
 	{
+		//noinspection OptionalAssignedToNull
 		m_newValue = null;
 
 		// Set Value
@@ -993,152 +815,40 @@ public class WFActivity
 		context.setDocumentColumnValue(getDocumentRef(), nodeColumnName, dbValue);
 
 		// Info
-		String msg = nodeColumnName + "=" + valueStr;
-		if (textMsg != null && textMsg.length() > 0)
-		{
-			msg += " - " + textMsg;
-		}
-		addTextMsg(msg);
+		addTextMsg(nodeColumnName + "=" + valueStr);
 		m_newValue = Optional.ofNullable(valueStr);
 	}    // setVariable
 
-	/**
-	 * Set User Choice
-	 */
-	public void setUserChoice(
-			@NonNull final UserId userId,
-			final String value,
-			final int displayType,
-			@Nullable final String textMsg)
-	{
-		changeWFStateTo(WFState.Running);
-		setUserId(userId);
-		setVariable(value, displayType, textMsg);
-
-		final WFState newState;
-		if (getNode().isUserApproval())
-		{
-			final boolean approved = StringUtils.toBoolean(value);
-			newState = setUserChoice_DocumentApproval(approved);
-		}
-		else
-		{
-			newState = WFState.Completed;
-		}
-
-		changeWFStateTo(newState);
-	}    // setUserChoice
-
-	private WFState setUserChoice_DocumentApproval(final boolean approved)
-	{
-		WFState newState = WFState.Completed;
-
-		if (getDocumentOrNull() == null)
-		{
-			return newState;
-		}
-
-		try
-		{
-			// Not approved
-			if (!approved)
-			{
-				context.processDocument(getDocumentRef(), IDocument.ACTION_Reject);
-				newState = WFState.Aborted;
-			}
-			else
-			{
-				if (isInvoker())
-				{
-					final DocumentToApproveRequest documentToApprove = getDocumentToApproveRequest();
-					final UserId approverId = getApproverId(documentToApprove).orElse(null);
-
-					// No Approver
-					if (approverId == null)
-					{
-						newState = WFState.Aborted;
-						addTextMsg("Cannot Approve - No Approver");
-						context.processDocument(getDocumentRef(), IDocument.ACTION_Reject);
-					}
-					// Another user is allowed to approve it => forward to that user
-					else if (!UserId.equals(documentToApprove.getWorkflowInvokerId(), approverId))
-					{
-						forwardTo(approverId, msgApprovalRequest(), null);
-						newState = WFState.Suspended;
-					}
-					else
-					// Approve
-					{
-						context.processDocument(getDocumentRef(), IDocument.ACTION_Approve);
-					}
-				}
-				// No Invoker - Approve
-				else
-				{
-					context.processDocument(getDocumentRef(), IDocument.ACTION_Approve);
-				}
-			}
-		}
-		catch (final Exception ex)
-		{
-			newState = WFState.Terminated;
-			addTextMsg(ex);
-			log.warn("", ex);
-		}
-
-		//
-		// Send Not Approved Notification
-		final IDocument doc = getDocument();
-		final UserId userId = UserId.ofRepoIdOrNullIfSystem(doc.getDoc_User_ID());
-		if (newState.equals(WFState.Aborted) && userId != null)
-		{
-			final String docInfo = (doc.getSummary() != null ? doc.getSummary() + "\n" : "")
-					+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
-					+ (getTextMsg() != null ? getTextMsg() : "");
-
-			context.sendNotification(WFUserNotification.builder()
-					.userId(userId)
-					.content(MSG_NotApproved, getDocumentRef(), docInfo)
-					.documentToOpen(getDocumentRef())
-					.build());
-		}
-
-		return newState;
-	}
-
-	/**
-	 * Forward To
-	 */
-	public void forwardTo(
-			@NonNull final UserId userId,
+	private void forwardTo(
+			@NonNull final UserId newUserId,
 			@NonNull final ADMessageAndParams subject,
-			@Nullable final String textMsg)
+			@Nullable TableRecordReference documentToOpen)
 	{
 		final UserId oldUserId = getUserId();
-		if (UserId.equals(userId, oldUserId))
+		if (UserId.equals(newUserId, oldUserId))
 		{
-			log.warn("Asked to forward to same user `{}`. Do nothing.", userId);
+			log.debug("Asked to forward to same user `{}`. Do nothing.", newUserId);
 			return;
 		}
 
 		// Update
-		setUserId(userId);
-		addTextMsg(textMsg);
+		setUserId(newUserId);
+		//addTextMsg();
 		//context.save(this);
 
 		//
 		// Notify user
 		context.sendNotification(WFUserNotification.builder()
-				.userId(userId)
+				.userId(newUserId)
 				.content(subject)
-				.documentToOpen(getDocumentRef())
+				.documentToOpen(CoalesceUtil.coalesce(documentToOpen, getDocumentRef()))
 				.build());
 
 		context.addEventAudit(prepareEventAudit(WFEventAuditType.StateChanged)
 				.userId(oldUserId)
 				.attributeName("AD_User_ID")
 				.attributeValueOld(buildUserSummary(oldUserId))
-				.attributeValueNew(buildUserSummary(userId))
+				.attributeValueNew(buildUserSummary(newUserId))
 				.build());
 	}
 
@@ -1153,17 +863,6 @@ public class WFActivity
 		final String name = context.getUserFullnameById(userId);
 		return name + " (" + userId.getRepoId() + ")";
 	}
-
-	public void setUserConfirmation(@NonNull final UserId userId, @Nullable final String textMsg)
-	{
-		changeWFStateTo(WFState.Running);
-		setUserId(userId);
-		if (textMsg != null)
-		{
-			addTextMsg(textMsg);
-		}
-		changeWFStateTo(WFState.Completed);
-	}    // setUserConfirmation
 
 	private List<ProcessInfoParameter> createProcessInfoParameters()
 	{
@@ -1350,7 +1049,7 @@ public class WFActivity
 			}
 			else if (resp.isRole())
 			{
-				for (final UserId adUserId : context.getUserIdsByRoleId(resp.getRoleId()))
+				for (final UserId adUserId : context.getUserIdsByRoleId(resp.getRoleIdNotNull()))
 				{
 					sendEMail(client, adUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
 				}

@@ -22,36 +22,82 @@
 
 package de.metas.job;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Job;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
-public class JobRepository
+class JobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@NonNull
-	public Job getById(@NonNull final JobId jobId)
-	{
-		final I_C_Job record = queryBL
-				.createQueryBuilder(I_C_Job.class)
-				.addEqualsFilter(I_C_Job.COLUMNNAME_C_Job_ID, jobId)
-				.create()
-				.firstOnlyNotNull(I_C_Job.class);
+	private final CCache<Integer, JobMap> cache = CCache.<Integer, JobMap>builder()
+			.tableName(I_C_Job.Table_Name)
+			.build();
 
-		return ofRecord(record);
+	@NonNull
+	public Job getById(@NonNull final JobId jobId) {return getMap().getById(jobId);}
+
+	public Optional<Job> getCTO(@NonNull final ClientId clientId) {return getMap().getCTO(clientId);}
+
+	private JobMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
+
+	private JobMap retrieveMap()
+	{
+		return queryBL.createQueryBuilder(I_C_Job.class)
+				.stream()
+				.map(JobRepository::fromRecord)
+				.collect(GuavaCollectors.collectUsingListAccumulator(JobMap::new));
 	}
 
 	@NonNull
-	private static Job ofRecord(@NonNull final I_C_Job record)
+	private static Job fromRecord(@NonNull final I_C_Job record)
 	{
 		return Job.builder()
 				.id(JobId.ofRepoId(record.getC_Job_ID()))
-				.name(record.getName())
+				.name(StringUtils.trimBlankToOptional(record.getName()).orElseThrow())
 				.isActive(record.isActive())
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.build();
+	}
+
+	private static class JobMap
+	{
+		private final ImmutableMap<JobId, Job> byId;
+
+		JobMap(@NonNull final List<Job> list)
+		{
+			this.byId = Maps.uniqueIndex(list, Job::getId);
+		}
+
+		public Job getById(@NonNull final JobId id)
+		{
+			final Job job = byId.get(id);
+			if (job == null)
+			{
+				throw new AdempiereException("No Job found for " + id);
+			}
+			return job;
+		}
+
+		public Optional<Job> getCTO(@NonNull final ClientId clientId)
+		{
+			return byId.values()
+					.stream()
+					.filter(job -> job.isCTO() && ClientId.equals(job.getClientId(), clientId))
+					.findFirst();
+		}
 	}
 }

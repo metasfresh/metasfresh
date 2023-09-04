@@ -3,12 +3,14 @@ package de.metas.document.engine;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -66,43 +68,60 @@ public interface IDocument
 	 * <pre>
 	 * reference to COLUMNNAME_Reversal_ID is ambiguous
 	 * </pre>
-	 *
+	 * <p>
 	 * in (legacy) sub classes of this class.
-	 *
 	 */
 	String Reversal_ID = "Reversal_ID";
 
 	@Nullable
 	String getProcessMsg();
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	default boolean processIt(final String docAction)
 	{
 		return Services.get(IDocumentBL.class).processIt(this, docAction);
 	}
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean unlockIt();
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean invalidateIt();
 
-	/** @return new status (In Progress or Invalid) */
+	/**
+	 * @return new status (In Progress or Invalid)
+	 */
 	String prepareIt();
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean approveIt();
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean rejectIt();
 
-	/** @return new status (Complete, In Progress, Invalid, Waiting ..) */
+	/**
+	 * @return new status (Complete, In Progress, Invalid, Waiting etc)
+	 */
 	String completeIt();
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean voidIt();
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean closeIt();
 
 	default void unCloseIt()
@@ -110,24 +129,36 @@ public interface IDocument
 		throw new UnsupportedOperationException();
 	}
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean reverseCorrectIt();
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean reverseAccrualIt();
 
-	/** @return true if success */
+	/**
+	 * @return true if success
+	 */
 	boolean reActivateIt();
 
 	File createPDF();
 
-	/** @return Summary of Document */
+	/**
+	 * @return Summary of Document
+	 */
 	String getSummary();
 
-	/** @return Document No */
+	/**
+	 * @return Document No
+	 */
 	String getDocumentNo();
 
-	/** @return Type and Document No */
+	/**
+	 * @return Type and Document No
+	 */
 	String getDocumentInfo();
 
 	int getDoc_User_ID();
@@ -156,9 +187,9 @@ public interface IDocument
 
 	int get_Table_ID();
 
-	Logger get_Logger();
-
-	/** @return true if saved */
+	/**
+	 * @return true if saved
+	 */
 	boolean save();
 
 	String get_TrxName();
@@ -170,14 +201,19 @@ public interface IDocument
 		return TableRecordReference.of(get_Table_ID(), get_ID());
 	}
 
-	/** 
-	 * We use this constant in {@link org.adempiere.ad.wrapper.POJOWrapper}. 
-	 * Please keep it in sync with {@link #getDocumentModel()}. 
+	/**
+	 * We use this constant in {@link org.adempiere.ad.wrapper.POJOWrapper}.
+	 * Please keep it in sync with {@link #getDocumentModel()}.
 	 */
 	String METHOD_NAME_getDocumentModel = "getDocumentModel";
 
 	default Object getDocumentModel()
 	{
 		return this;
+	}
+
+	default Optional<Object> getValue(@NonNull final String columnName)
+	{
+		return InterfaceWrapperHelper.getValue(getDocumentModel(), columnName);
 	}
 }

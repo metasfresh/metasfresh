@@ -78,7 +78,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.Job;
-import de.metas.job.JobRepository;
+import de.metas.job.JobService;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
@@ -258,7 +258,7 @@ public class JsonRetrieverService
 	private final transient BPGroupRepository bpGroupRepository;
 
 	private final transient GreetingRepository greetingRepository;
-	private final JobRepository jobRepository;
+	private final JobService jobService;
 	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final IPaymentTermRepository paymentTermRepository;
@@ -274,7 +274,7 @@ public class JsonRetrieverService
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final TitleRepository titleRepository,
-			@NonNull final JobRepository jobRepository,
+			@NonNull final JobService jobService,
 			final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final IPaymentTermRepository paymentTermRepository,
 			@NonNull final String identifier)
@@ -284,7 +284,7 @@ public class JsonRetrieverService
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
 		this.titleRepository = titleRepository;
-		this.jobRepository = jobRepository;
+		this.jobService = jobService;
 		this.externalReferenceService = externalReferenceService;
 		this.paymentTermRepository = paymentTermRepository;
 		this.identifier = identifier;
@@ -490,7 +490,7 @@ public class JsonRetrieverService
 			Job job = null;
 			if (contact.getJobId() != null)
 			{
-				job = jobRepository.getById(contact.getJobId());
+				job = jobService.getById(contact.getJobId());
 			}
 
 			final List<JsonResponseContactRole> roles = contact.getRoles()
