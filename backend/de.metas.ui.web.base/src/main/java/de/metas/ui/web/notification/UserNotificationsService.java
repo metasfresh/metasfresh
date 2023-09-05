@@ -86,13 +86,12 @@ public class UserNotificationsService
 		logger.trace("Enabling for sessionId={}, adUserId={}, jsonOptions={}", sessionId, adUserId, jsonOptions);
 
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId, k -> UserNotificationsQueue.builder()
-
 				.userId(adUserId)
 				.jsonOptions(jsonOptions)
 				.notificationsRepo(Services.get(INotificationRepository.class))
 				.websocketSender(websocketSender)
 				.build());
-
+		notificationsQueue.setLanguage(jsonOptions.getAdLanguage()); // just to make sure in case user changed his language, we use his/her last option
 		notificationsQueue.addActiveSessionId(sessionId);
 
 		subscribeToEventTopicsIfNeeded();
