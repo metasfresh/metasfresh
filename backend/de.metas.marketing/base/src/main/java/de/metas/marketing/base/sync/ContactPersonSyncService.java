@@ -84,6 +84,19 @@ public class ContactPersonSyncService
 				.forEach(contactPersonService::saveSyncResult);
 	}
 
+	public void syncLocalToRemote(
+			@NonNull final Campaign campaign,
+			@NonNull final List<ContactPerson> contactsToSync)
+	{
+		final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
+
+		contactsToSync.stream()
+				.map(contactPerson -> platformClient.upsertContact(campaign, contactPerson))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.forEach(contactPersonService::saveSyncResult);
+	}
+
 	public void syncRemoteToLocal(@NonNull final Campaign campaign)
 	{
 		final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
