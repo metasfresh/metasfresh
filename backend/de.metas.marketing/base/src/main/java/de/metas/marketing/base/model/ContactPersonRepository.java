@@ -403,6 +403,11 @@ public class ContactPersonRepository
 	@NonNull
 	public List<ContactPerson> retrieveByCampaignAndRemoteIds(@NonNull final CampaignId campaignId, @NonNull final Set<String> remoteIds)
 	{
+		if(remoteIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_Campaign_ID, campaignId.getRepoId())

@@ -56,12 +56,9 @@ import java.util.function.Function;
 @Service
 public class ContactPersonSyncService
 {
-	@NonNull
-	final PlatformClientService platformClientService;
-	@NonNull
-	final ContactPersonService contactPersonService;
-	@NonNull
-	final CampaignService campaignService;
+	@NonNull final PlatformClientService platformClientService;
+	@NonNull final ContactPersonService contactPersonService;
+	@NonNull final CampaignService campaignService;
 
 	public ContactPersonSyncService(
 			final @NonNull PlatformClientService platformClientService,
@@ -126,23 +123,25 @@ public class ContactPersonSyncService
 		while (moreContacts)
 		{
 			final ContactPersonToUpsertPage contactPersonToUpsertPage = platformClient.getContactPersonToUpsertPage(campaign, currentPageDescriptor);
+			if (!contactPersonToUpsertPage.getRemoteContacts().isEmpty())
+			{
+				final Request request = Request.builder()
+						.orgId(platformClient.getCampaignConfig().getOrgId())
+						.platformId(platformClient.getCampaignConfig().getPlatformId())
+						.campaignId(campaign.getCampaignId())
+						.remoteContactPersons(contactPersonToUpsertPage.getRemoteContacts())
+						.build();
 
-			final Request request = Request.builder()
-					.orgId(platformClient.getCampaignConfig().getOrgId())
-					.platformId(platformClient.getCampaignConfig().getPlatformId())
-					.campaignId(campaign.getCampaignId())
-					.remoteContactPersons(contactPersonToUpsertPage.getRemoteContacts())
-					.build();
+				final List<RemoteToLocalSyncResult> syncResults = syncRemoteContacts(request);
 
-			final List<RemoteToLocalSyncResult> syncResults = syncRemoteContacts(request);
+				final List<ContactPerson> savedContacts = contactPersonService.saveSyncResults(syncResults);
+				campaignService.addContactPersonsToCampaign(savedContacts, campaign.getCampaignId());
 
-			final List<ContactPerson> savedContacts = contactPersonService.saveSyncResults(syncResults);
-			campaignService.addContactPersonsToCampaign(savedContacts, campaign.getCampaignId());
-
-			contactPersonToUpsertPage.getRemoteContacts()
-					.stream()
-					.map(ContactPersonRemoteUpdate::getRemoteId)
-					.forEach(contactRemoteIds::add);
+				contactPersonToUpsertPage.getRemoteContacts()
+						.stream()
+						.map(ContactPersonRemoteUpdate::getRemoteId)
+						.forEach(contactRemoteIds::add);
+			}
 
 			currentPageDescriptor = contactPersonToUpsertPage.getNext();
 			moreContacts = currentPageDescriptor != null;
