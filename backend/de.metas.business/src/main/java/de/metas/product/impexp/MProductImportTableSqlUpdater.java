@@ -407,7 +407,9 @@ public class MProductImportTableSqlUpdater
 		{
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i ")
-					.append(" set C_TaxCategory_ID=(select tc.C_TaxCategory_ID from C_TaxCategory tc where tc.Name=i.C_TaxCategory_Name and tc.AD_Client_ID=")
+					.append(" set C_TaxCategory_ID=(select tc.C_TaxCategory_ID from C_TaxCategory tc "
+									+ "where (tc.Name = i.C_TaxCategory_Name or tc.c_taxcategory_id = i.c_taxcategory_id) "
+									+ "and tc.AD_Client_ID=")
 					.append(adClientId)
 					.append(" and tc.IsActive='Y' order by tc.C_TaxCategory_ID limit 1)")
 					.append(" where true")
