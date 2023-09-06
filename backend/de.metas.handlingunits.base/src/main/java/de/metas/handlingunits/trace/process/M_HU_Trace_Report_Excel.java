@@ -131,6 +131,7 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				"Finished_Product_No",
 				"Finished_Product_Name",
 				"Finished_Product_Qty",
+				"Finished_Product_UOM",
 				"Finished_Product_Lot",
 				"Vendor_Lot",
 				"Finished_Product_Mhd",
@@ -139,7 +140,8 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				"Customer_Vendor",
 				"ShipmentQty",
 				"Shipment_Note",
-				"Prod_Stock Numeric",
+				"Shipment_Date",
+				"Prod_Stock",
 				"TraceId",
 				"ReportDate"
 				);
