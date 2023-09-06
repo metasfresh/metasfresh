@@ -77,6 +77,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
+	private boolean _isExternalProperty = false; // default false
 
 	/**
 	 *
@@ -268,6 +269,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
 		huBuilder.setHUClearanceStatusInfo(getHUClearanceStatusInfo());
+		huBuilder.setIsExternalProperty(isExternalProperty());
 
 		return huBuilder;
 	}
@@ -731,5 +733,18 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	public final ClearanceStatusInfo getHUClearanceStatusInfo()
 	{
 		return _huClearanceStatusInfo;
+	}
+
+	@Override
+	public final IHUProducerAllocationDestination setIsExternalProperty(final boolean isExternalProperty)
+	{
+		assertConfigurable();
+		_isExternalProperty = isExternalProperty;
+		return this;
+	}
+
+	public final boolean isExternalProperty()
+	{
+		return _isExternalProperty;
 	}
 }

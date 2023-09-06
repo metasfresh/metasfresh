@@ -144,6 +144,10 @@ public class DDOrderAdvisedHandler
 			{
 				return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
 			}
+			else
+			{
+				return CandidatesQuery.FALSE;
+			}
 		}
 
 		final DDOrderAdvisedEvent ddOrderAdvisedEvent = cast(ddOrderEvent);

@@ -116,6 +116,8 @@ public class PP_Product_Planning_StepDef
 
 		final boolean isAttributeDependant = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant, false);
 
+		final boolean isLotForLot = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_Planning.COLUMNNAME_IsLotForLot, false);
+
 		final int workflowId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER))
 				.map(workflowTable::get)
 				.map(I_AD_Workflow::getAD_Workflow_ID)
@@ -131,6 +133,7 @@ public class PP_Product_Planning_StepDef
 		productPlanningRecord.setIsCreatePlan(isCreatePlan);
 		productPlanningRecord.setIsAttributeDependant(isAttributeDependant);
 		productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
+		productPlanningRecord.setIsLotForLot(isLotForLot);
 
 		if (bomVersionsIdentifier != null)
 		{

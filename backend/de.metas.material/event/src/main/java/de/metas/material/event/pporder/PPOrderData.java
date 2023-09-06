@@ -92,6 +92,8 @@ public class PPOrderData
 	 */
 	BigDecimal qtyDelivered;
 
+	String lotForLot;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderData(
@@ -107,7 +109,8 @@ public class PPOrderData
 			@JsonProperty("dateStartSchedule") @NonNull final Instant dateStartSchedule,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
-			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
+			@JsonProperty("lotForLot") final String lotForLot)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
@@ -122,6 +125,7 @@ public class PPOrderData
 		this.qtyRequired = qtyRequired;
 		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 		this.materialDispoGroupId = materialDispoGroupId;
+		this.lotForLot = lotForLot;
 	}
 
 	@JsonIgnore

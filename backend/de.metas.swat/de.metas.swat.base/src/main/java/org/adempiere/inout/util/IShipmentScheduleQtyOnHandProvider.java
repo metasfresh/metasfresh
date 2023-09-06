@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,14 @@
  * #L%
  */
 
-package de.metas.ui.web.pporder.util;
+package org.adempiere.inout.util;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
-import de.metas.inout.ShipmentScheduleId;
-import lombok.Builder;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
-import lombok.Value;
-import org.eevolution.api.PPOrderId;
 
-import javax.annotation.Nullable;
-@Value
-@Builder
-public class ProcessPickingRequest
+import java.util.List;
+
+public interface IShipmentScheduleQtyOnHandProvider
 {
-	@Nullable
-	PPOrderId ppOrderId;
-
-	@NonNull
-	ImmutableSet<HuId> huIds;
-
-	@NonNull
-	ShipmentScheduleId shipmentScheduleId;
-
-	boolean isTakeWholeHU;
+	IShipmentScheduleQtyOnHandStorage getStorageFor(@NonNull List<I_M_ShipmentSchedule> lines);
 }

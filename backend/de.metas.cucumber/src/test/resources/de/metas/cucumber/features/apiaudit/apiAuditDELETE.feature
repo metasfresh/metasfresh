@@ -1,4 +1,5 @@
 @from:cucumber
+@tag1
 Feature: API Audit DELETE http method
 
   Background:

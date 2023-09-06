@@ -56,6 +56,9 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_SupplierApproval_Norm;
@@ -427,7 +430,7 @@ public class ProductDAO implements IProductDAO
 	{
 		final ProductId productId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
@@ -441,12 +444,7 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public void updateProductsByResourceIds(@NonNull final Set<ResourceId> resourceIds, @NonNull final Consumer<I_M_Product> productUpdater)
 	{
-		updateProductsByResourceIds(resourceIds, (resourceId, product) -> {
-			if (product != null)
-			{
-				productUpdater.accept(product);
-			}
-		});
+		updateProductsByResourceIds(resourceIds, (resourceId, product) -> productUpdater.accept(product));
 	}
 
 	@Override
@@ -454,22 +452,22 @@ public class ProductDAO implements IProductDAO
 	{
 		Check.assumeNotEmpty(resourceIds, "resourceIds is not empty");
 
-		final Set<ProductId> productIds = queryBL
+		final Set<ProductId> existingProductIds = queryBL
 				.createQueryBuilder(I_M_Product.class) // in trx!
-				.addInArrayFilter(I_M_Product.COLUMN_S_Resource_ID, resourceIds)
+				.addInArrayFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceIds)
 				.create()
 				.listIds(ProductId::ofRepoId);
-		if (productIds.isEmpty())
-		{
-			return;
-		}
 
-		final Map<ResourceId, I_M_Product> productsByResourceId = Maps.uniqueIndex(
-				loadByRepoIdAwares(productIds, I_M_Product.class),
+		final Map<ResourceId, I_M_Product> existingProductsByResourceId = Maps.uniqueIndex(
+				loadByRepoIdAwares(existingProductIds, I_M_Product.class),
 				product -> ResourceId.ofRepoId(product.getS_Resource_ID()));
 
 		resourceIds.forEach(resourceId -> {
-			final I_M_Product product = productsByResourceId.get(resourceId); // might be null
+			I_M_Product product = existingProductsByResourceId.get(resourceId); // might be null
+			if (product == null)
+			{
+				product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			}
 			productUpdater.accept(resourceId, product);
 			saveRecord(product);
 		});
@@ -653,4 +651,30 @@ public class ProductDAO implements IProductDAO
 				.create()
 				.firstId(ProductCategoryId::ofRepoIdOrNull);
 	}
+
+	@Override
+	public boolean isProductUsed(@NonNull final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_M_InOutLine.class)
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch();
+	}
+
 }

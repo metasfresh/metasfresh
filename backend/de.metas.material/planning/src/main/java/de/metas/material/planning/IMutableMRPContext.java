@@ -66,4 +66,8 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 	 * @see #isAllowCleanup()
 	 */
 	void setAllowCleanup(boolean allowCleanup);
+
+	I_PP_Product_Planning getPpOrderProductPlanning();
+
+	void setPpOrderProductPlanning(I_PP_Product_Planning ppOrderProductPlanning);
 }

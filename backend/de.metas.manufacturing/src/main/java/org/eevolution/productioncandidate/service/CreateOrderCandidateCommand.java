@@ -34,14 +34,14 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
+import org.reflections.util.Utils;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -51,7 +51,7 @@ public class CreateOrderCandidateCommand
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
 
-	private final PPOrderCandidateDAO ppOrderCandidateDAO = SpringContextHolder.instance.getBean(PPOrderCandidateDAO.class);
+	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 
 	private final PPOrderCandidateCreateRequest request;
 
@@ -104,6 +104,11 @@ public class CreateOrderCandidateCommand
 		if (request.isSimulated())
 		{
 			ppOrderCandidateRecord.setProcessed(true);
+		}
+
+		if(!Utils.isEmpty(request.getLotForLot()))
+		{
+			ppOrderCandidateRecord.setIsLotForLot(request.getLotForLot());
 		}
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
