@@ -38,6 +38,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyConversionTypeId;
@@ -147,9 +148,9 @@ public class AcctDocRequiredServicesFacade
 		trxManager.runInThreadInheritedTrx(runnable);
 	}
 
-	public int deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
+	public void deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
 	{
-		return factAcctDAO.deleteForDocumentModel(documentPO);
+		factAcctDAO.deleteForDocumentModel(documentPO);
 	}
 
 	public boolean getSysConfigBooleanValue(@NonNull final String sysConfigName)
@@ -295,6 +296,12 @@ public class AcctDocRequiredServicesFacade
 		return costingService.createCostDetail(request);
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
+	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	{
+		return costingService.createCostDetailOrEmpty(request);
+	}
+
 	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
 	{
 		return costingService.moveCosts(request);
@@ -303,6 +310,11 @@ public class AcctDocRequiredServicesFacade
 	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
 	{
 		return costingService.createReversalCostDetails(request);
+	}
+
+	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest request)
+	{
+		return costingService.createReversalCostDetailsOrEmpty(request);
 	}
 
 	public Optional<CostPrice> getCurrentCostPrice(

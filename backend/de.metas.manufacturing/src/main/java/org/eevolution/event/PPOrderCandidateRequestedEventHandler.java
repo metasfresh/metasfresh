@@ -113,6 +113,7 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 															   .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
 															   .simulated(isSimulated)
 															   .traceId(traceId)
+															   .lotForLot(ppOrderData.getLotForLot())
 															   .build());
 	}
 }

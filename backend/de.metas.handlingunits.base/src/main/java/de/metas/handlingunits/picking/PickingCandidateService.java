@@ -29,6 +29,7 @@ import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.ProcessPickingRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -42,7 +43,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -179,19 +179,18 @@ public class PickingCandidateService
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
-		final OnOverDelivery onOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery()
-				? OnOverDelivery.TAKE_WHOLE_HU
-				: OnOverDelivery.FAIL;
+		final ProcessPickingRequest request = ProcessPickingRequest.builder()
+				.huIds(ImmutableSet.copyOf(pickFromHuIds))
+				.shipmentScheduleId(shipmentScheduleId)
+				.build();
 
-		processForHUIds(pickFromHuIds, shipmentScheduleId, onOverDelivery, null);
+		processForHUIds(request);
 	}
 
-	public void processForHUIds(
-			@NonNull final Set<HuId> pickFromHuIds,
-			@Nullable final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final OnOverDelivery onOverDelivery,
-			@Nullable final PPOrderId orderId)
+	public void processForHUIds(@NonNull final ProcessPickingRequest request)
 	{
+		final ImmutableSet<HuId> pickFromHuIds = request.getHuIds();
+		final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
 
 		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
 				.stream()
@@ -210,8 +209,8 @@ public class PickingCandidateService
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(pickingCandidatesToProcess)
 				.additionalPickFromHuIds(pickFromHuIds)
-				.onOverDelivery(onOverDelivery)
-				.ppOrderId(orderId)
+				.onOverDelivery(getOnOverDelivery(request.isShouldSplitHUIfOverDelivery()))
+				.ppOrderId(request.getPpOrderId())
 				.build()
 				.perform();
 
@@ -376,5 +375,11 @@ public class PickingCandidateService
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
 	{
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+	}
+	
+	@NonNull
+	private OnOverDelivery getOnOverDelivery(final boolean splitHUIfOverDelivery)
+	{
+		return OnOverDelivery.ofConfigs(splitHUIfOverDelivery, pickingConfigRepository.getPickingConfig().isAllowOverDelivery());
 	}
 }

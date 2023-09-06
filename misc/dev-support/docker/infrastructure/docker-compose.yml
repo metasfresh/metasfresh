@@ -1,7 +1,7 @@
 db:
   build: db
   container_name: ${BRANCH_NAME}_db
-  restart: always
+  #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
   volumes:
     # Use a named volume for storing Postgres data.
     #
@@ -27,7 +27,7 @@ rabbitmq:
   expose:
     - "${RABBITMQ_PORT}"
     - "${RABBITMQ_MGMT_PORT}"
-  restart: always
+  #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
   environment:
     RABBITMQ_DEFAULT_USER: "guest"
     RABBITMQ_DEFAULT_PASS: "guest"
@@ -53,7 +53,7 @@ search:
     - ${BRANCH_NAME}_metasfresh_elasticsearch:/usr/share/elasticsearch/data
   environment:
     - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
-  restart: always
+  #restart: always #avoid restart on docker restart, because we use 1 docker-compose per customer now
 postgrest:
   build: postgrest
   container_name: ${BRANCH_NAME}_postgrest

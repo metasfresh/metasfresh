@@ -106,6 +106,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	public HandlingUnitsDAO()
 	{
@@ -962,7 +963,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.filter(locatorRepoId -> locatorRepoId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return Services.get(IWarehouseDAO.class).getWarehouseIdsForLocatorRepoIds(locatorRepoIds);
+		return warehouseDAO.getWarehouseIdsForLocatorRepoIds(locatorRepoIds);
 	}
 
 	@Override
@@ -981,7 +982,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		final Set<WarehouseId> huWarehouseIds = retrieveWarehouseIdsForHUs(hus);
 
-		return Services.get(IWarehouseDAO.class).getByOrgId(orgId)
+		return warehouseDAO.getByOrgId(orgId)
 				.stream()
 				.filter(warehouse -> !huWarehouseIds.contains(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
 				.collect(ImmutableList.toImmutableList());
