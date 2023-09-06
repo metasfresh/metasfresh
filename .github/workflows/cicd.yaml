@@ -126,6 +126,7 @@ jobs:
         with:
           max_attempts: 3
           retry_wait_seconds: 60
+          timeout_minutes: 5
           command: |
             docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
@@ -176,6 +177,7 @@ jobs:
         with:
           max_attempts: 3
           retry_wait_seconds: 60
+          timeout_minutes: 5
           command: |
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
@@ -296,6 +298,7 @@ jobs:
         with:
           max_attempts: 3
           retry_wait_seconds: 60
+          timeout_minutes: 5
           command: |
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
@@ -392,6 +395,7 @@ jobs:
         with:
           max_attempts: 3
           retry_wait_seconds: 60
+          timeout_minutes: 5
           command: |
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
@@ -461,6 +465,7 @@ jobs:
         with:
           max_attempts: 3
           retry_wait_seconds: 60
+          timeout_minutes: 5
           command: |
             docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
@@ -512,6 +517,7 @@ jobs:
         with:
           max_attempts: 3
           retry_wait_seconds: 60
+          timeout_minutes: 5
           command: |
             docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
@@ -562,6 +568,7 @@ jobs:
         with:
           max_attempts: 3
           retry_wait_seconds: 60
+          timeout_minutes: 5
           command: |
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
       - name: produce-summary
