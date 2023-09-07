@@ -1,3 +1,5 @@
+DROP VIEW de_metas_endcustomer_fresh_reports.C_Invoice_V;
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.hasFreeEUTaxes(numeric) CASCADE
 ;
 
