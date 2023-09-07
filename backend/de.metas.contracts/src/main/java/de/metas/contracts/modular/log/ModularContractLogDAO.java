@@ -283,9 +283,9 @@ public class ModularContractLogDAO
 				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
 				.setExecuteDirectly(true)
 				.execute();
-
-		CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
-				I_ModCntr_Log.Table_Name,
-				sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+//TODO uncomment
+		// CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+		// 		I_ModCntr_Log.Table_Name,
+		// 		sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
 	}
 }

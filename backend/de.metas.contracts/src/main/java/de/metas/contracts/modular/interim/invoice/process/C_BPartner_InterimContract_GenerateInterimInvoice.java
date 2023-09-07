@@ -35,6 +35,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lang.SOTrx;
 import de.metas.process.IProcessPrecondition;
@@ -47,6 +48,7 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
+import java.util.Properties;
 import java.util.Set;
 
 public class C_BPartner_InterimContract_GenerateInterimInvoice extends JavaProcess implements IProcessPrecondition
@@ -104,21 +106,30 @@ public class C_BPartner_InterimContract_GenerateInterimInvoice extends JavaProce
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return prepareAndEnqeue(invoiceCandidateIds);
+		return prepareAndEnqueue(invoiceCandidateIds);
 	}
 
-	private String prepareAndEnqeue(@NonNull final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds)
+	private String prepareAndEnqueue(@NonNull final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, getTrxName());
+		final String trxName = getTrxName();
+		final Properties ctx = getCtx();
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, trxName);
+
+		//this needs to happen manually, because the auto-creation of InvoiceEnqueueingWorkpackageProcessor happens after the Trx is committed,
+		//which is waaay too late
+		// so we're invoking this manually to give the handler a chance to fix the ICs before they're enqueued
+		invoiceCandBL.updateInvalid()
+				.setContext(ctx, trxName)
+				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(invoiceCandidatesSelectionId))
+				.update();
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-				.setContext(getCtx())
+				.setContext(ctx)
 				.setInvoicingParams(getInvoicingParams())
 				.setFailIfNothingEnqueued(true) // If no workpackages were created, display error message that no selection was made (07666)
-				//
 				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
 
-		return enqueueResult.getSummaryTranslated(getCtx());
+		return enqueueResult.getSummaryTranslated(ctx);
 	}
 
 	private InvoicingParams getInvoicingParams()

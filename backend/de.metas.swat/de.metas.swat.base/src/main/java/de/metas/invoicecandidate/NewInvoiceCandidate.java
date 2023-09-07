@@ -111,6 +111,7 @@ public class NewInvoiceCandidate
 	List<InvoiceDetailItem> invoiceDetailItems;
 
 	YearAndCalendarId harvestYearAndCalendarId;
+	boolean isInterimInvoice;
 
 	private NewInvoiceCandidate(
 			@NonNull final OrgId orgId,
@@ -140,7 +141,7 @@ public class NewInvoiceCandidate
 			@Nullable final TableRecordReference recordReference,
 			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
-			@Nullable final YearAndCalendarId harvestYearAndCalendarId)
+			@Nullable final YearAndCalendarId harvestYearAndCalendarId, final boolean isInterimInvoice)
 	{
 		this.orgId = orgId;
 
@@ -170,6 +171,7 @@ public class NewInvoiceCandidate
 		this.paymentTermId = paymentTermId;
 		this.invoiceDetailItems = invoiceDetailItems;
 		this.harvestYearAndCalendarId = harvestYearAndCalendarId;
+		this.isInterimInvoice = isInterimInvoice;
 
 		if (priceEnteredOverride != null)
 		{

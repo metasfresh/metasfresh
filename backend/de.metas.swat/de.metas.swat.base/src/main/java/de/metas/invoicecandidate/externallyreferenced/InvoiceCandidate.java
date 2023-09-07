@@ -88,7 +88,8 @@ public class InvoiceCandidate
 				.invoiceDetailItems(newIC.getInvoiceDetailItems())
 				.activityId(newIC.getActivityId())
 				.paymentTermId(newIC.getPaymentTermId())
-				.harvestYearAndCalendarId(newIC.getHarvestYearAndCalendarId());
+				.harvestYearAndCalendarId(newIC.getHarvestYearAndCalendarId())
+				.isInterimInvoice(newIC.isInterimInvoice());
 	}
 
 	private final OrgId orgId;
@@ -178,6 +179,7 @@ public class InvoiceCandidate
 	private final TableRecordReference recordReference;
 
 	private List<InvoiceDetailItem> invoiceDetailItems;
+	private final boolean isInterimInvoice;
 
 	@Builder
 	private InvoiceCandidate(
@@ -213,7 +215,8 @@ public class InvoiceCandidate
 			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
 			@Nullable final TableRecordReference recordReference,
-			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
+			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
+			final boolean isInterimInvoice)
 	{
 		this.orgId = orgId;
 		this.id = id;
@@ -248,6 +251,7 @@ public class InvoiceCandidate
 		this.harvestYearAndCalendarId = harvestYearAndCalendarId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
+		this.isInterimInvoice = isInterimInvoice;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(

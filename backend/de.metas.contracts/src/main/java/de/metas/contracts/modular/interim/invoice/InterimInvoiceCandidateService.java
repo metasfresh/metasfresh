@@ -36,6 +36,7 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -50,10 +51,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -61,7 +59,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -78,10 +75,9 @@ public class InterimInvoiceCandidateService
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final ManualCandidateService manualCandidateService = SpringContextHolder.instance.getBean(ManualCandidateService.class);
 	private final InterimInvoiceCandidateRepository interimInvoiceCandidateRepository = SpringContextHolder.instance.getBean(InterimInvoiceCandidateRepository.class);
 	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
@@ -103,21 +99,8 @@ public class InterimInvoiceCandidateService
 
 		inOutLines.forEach(
 				inOutLine -> {
+					final StockQtyAndUOMQty stockDeliveredQty = inOutBL.getStockQtyAndQtyInUOM(inOutLine);
 
-					final I_C_UOM inOutUOM = uomDAO.getById(inOutLine.getC_UOM_ID());
-
-					final Quantity enteredQty = Quantity.of(inOutLine.getQtyEntered(), inOutUOM);
-					final StockQtyAndUOMQty stockEnteredQty = StockQtyAndUOMQty.builder()
-							.uomQty(enteredQty)
-							.productId(productId)
-							.stockQty(uomConversionBL.convertQuantityTo(enteredQty, productId, stockUOM))
-							.build();
-					final Quantity movementQty = Quantity.of(inOutLine.getMovementQty(), inOutUOM);
-					final StockQtyAndUOMQty stockDeliveredQty = StockQtyAndUOMQty.builder()
-							.uomQty(movementQty)
-							.productId(productId)
-							.stockQty(uomConversionBL.convertQuantityTo(movementQty, productId, stockUOM))
-							.build();
 					final NewInvoiceCandidate newInvoiceCandidate = NewInvoiceCandidate.builder()
 							.orgId(orgId)
 							.soTrx(SOTrx.PURCHASE)
@@ -132,10 +115,12 @@ public class InterimInvoiceCandidateService
 									.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getBill_User_ID()))
 									.build())
 							.invoicingUomId(stockUOM)
-							.qtyOrdered(stockEnteredQty)
+							.qtyOrdered(stockDeliveredQty)
 							.qtyDelivered(stockDeliveredQty)
 							.presetDateInvoiced(LocalDate.now(orgTimeZone))
 							.dateOrdered(TimeUtil.asLocalDate(order.getDateOrdered(), orgTimeZone))
+							.recordReference(TableRecordReference.of(flatrateTermRecord))
+							.isInterimInvoice(true)
 							.build();
 
 					final InvoiceCandidateId invoiceCandidateId = interimInvoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));

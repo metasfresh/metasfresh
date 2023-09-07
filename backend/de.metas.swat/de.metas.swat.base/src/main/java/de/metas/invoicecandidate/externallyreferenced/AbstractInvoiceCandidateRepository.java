@@ -135,6 +135,7 @@ public abstract class AbstractInvoiceCandidateRepository
 				icRecord.setC_Harvesting_Calendar_ID(harvestYearAndCalendarId.calendarId().getRepoId());
 				icRecord.setHarvesting_Year_ID(harvestYearAndCalendarId.yearId().getRepoId());
 			}
+			icRecord.setIsInterimInvoice(ic.isInterimInvoice());
 		}
 		else
 		{
