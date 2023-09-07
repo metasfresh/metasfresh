@@ -62,7 +62,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 	{
 		final MD_Candidate_StepDefTable.MD_Candidate_StepDefTableBuilder materialDispoTableBuilder = MD_Candidate_StepDefTable.builder();
 
-		final List<Map<String, String>> dataTableRows = dataTable.asMaps();
+		final List<Map<String, String>> dataTableRows = dataTable.asMaps(String.class, String.class);
 
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
