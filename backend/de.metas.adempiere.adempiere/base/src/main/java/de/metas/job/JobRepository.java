@@ -50,7 +50,7 @@ class JobRepository
 	@NonNull
 	public Job getById(@NonNull final JobId jobId) {return getMap().getById(jobId);}
 
-	public Optional<Job> getCTO(@NonNull final ClientId clientId) {return getMap().getCTO(clientId);}
+	public Optional<Job> getCFO(@NonNull final ClientId clientId) {return getMap().getCFO(clientId);}
 
 	private JobMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
 
@@ -92,11 +92,11 @@ class JobRepository
 			return job;
 		}
 
-		public Optional<Job> getCTO(@NonNull final ClientId clientId)
+		public Optional<Job> getCFO(@NonNull final ClientId clientId)
 		{
 			return byId.values()
 					.stream()
-					.filter(job -> job.isCTO() && ClientId.equals(job.getClientId(), clientId))
+					.filter(job -> job.isCFO() && ClientId.equals(job.getClientId(), clientId))
 					.findFirst();
 		}
 	}

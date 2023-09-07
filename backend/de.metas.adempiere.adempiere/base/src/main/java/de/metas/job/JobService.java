@@ -22,5 +22,5 @@ public class JobService
 
 	public Job getById(@NonNull JobId id) {return repo.getById(id);}
 
-	public Optional<Job> getCTO(@NonNull ClientId clientId) {return repo.getCTO(clientId);}
+	public Optional<Job> getCFO(@NonNull ClientId clientId) {return repo.getCFO(clientId);}
 }

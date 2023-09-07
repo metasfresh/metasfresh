@@ -44,9 +44,9 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements WFApprovalStrategy
+public class RequestorHierarcyProjectManagerPlusCFO_ApprovalStrategy implements WFApprovalStrategy
 {
-	private static final Logger logger = LogManager.getLogger(RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy.class);
+	private static final Logger logger = LogManager.getLogger(RequestorHierarcyProjectManagerPlusCFO_ApprovalStrategy.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
@@ -156,7 +156,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 			final HashSet<UserId> seenSupervisorIds = new HashSet<>();
 			while (supervisorId != null)
 			{
-				if(!seenSupervisorIds.add(supervisorId))
+				if (!seenSupervisorIds.add(supervisorId))
 				{
 					logger.warn("Cycle detected in supervisors hierarchy: {}", seenSupervisorIds);
 					break;
@@ -171,11 +171,11 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 
 		}
 
-		final Job ctoJob = jobService.getCTO(clientId).orElse(null);
-		if (ctoJob != null)
+		final Job cfoJob = jobService.getCFO(clientId).orElse(null);
+		if (cfoJob != null)
 		{
-			final Set<UserId> ctoUserIds = userBL.getUserIdsByJobId(ctoJob.getId());
-			ctoUserIds.forEach(ctoId -> addUserToApprove(userIdsToApprove, ctoId));
+			final Set<UserId> cfoUserIds = userBL.getUserIdsByJobId(cfoJob.getId());
+			cfoUserIds.forEach(cfoId -> addUserToApprove(userIdsToApprove, cfoId));
 		}
 
 		return userIdsToApprove;

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1041809730L;
+	private static final long serialVersionUID = -94544158L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -320,8 +320,8 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final int APPROVALSTRATEGY_AD_Reference_ID=541818;
 	/** Standard = STD */
 	public static final String APPROVALSTRATEGY_Standard = "STD";
-	/** Requestor Hierarcy / Project Manager + CTO = RH+PM+CTO */
-	public static final String APPROVALSTRATEGY_RequestorHierarcyProjectManagerPlusCTO = "RH+PM+CTO";
+	/** Requestor Hierarcy / Project Manager + CFO = RH+PM+CFO */
+	public static final String APPROVALSTRATEGY_RequestorHierarcyProjectManagerPlusCFO = "RH+PM+CFO";
 	@Override
 	public void setApprovalStrategy (final @Nullable java.lang.String ApprovalStrategy)
 	{

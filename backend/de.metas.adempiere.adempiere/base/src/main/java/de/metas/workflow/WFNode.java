@@ -88,6 +88,7 @@ public class WFNode
 	//
 	// Action: User Choice
 	boolean userApproval;
+	@Nullable WFApprovalStrategyType approvalStrategyType;
 
 	//
 	// Action: Open Form

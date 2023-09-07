@@ -31,12 +31,12 @@ import org.adempiere.service.ClientId;
 @Builder
 public class Job
 {
-	private static final String NAME_CTO = "CTO";
+	private static final String NAME_CFO = "CFO";
 
 	@NonNull JobId id;
 	@NonNull String name;
 	boolean isActive;
 	@NonNull ClientId clientId;
 
-	public boolean isCTO() {return NAME_CTO.equals(name);}
+	public boolean isCFO() {return NAME_CFO.equals(name);}
 }

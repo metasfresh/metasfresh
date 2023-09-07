@@ -48,6 +48,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.workflow.WFAction;
+import de.metas.workflow.WFApprovalStrategyType;
 import de.metas.workflow.WFEventAudit;
 import de.metas.workflow.WFEventAuditType;
 import de.metas.workflow.WFNode;
@@ -60,7 +61,8 @@ import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
 import de.metas.workflow.WorkflowId;
 import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
-import de.metas.workflow.execution.approval.strategy.impl.RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy;
+import de.metas.workflow.execution.approval.strategy.impl.RequestorHierarcyProjectManagerPlusCFO_ApprovalStrategy;
+import de.metas.workflow.execution.approval.strategy.impl.StandardApprovalStrategy;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.With;
@@ -776,9 +778,12 @@ public class WFActivity
 
 	private WFApprovalStrategy getApprovalStrategy()
 	{
-		// TODO
-		//return SpringContextHolder.instance.getBean(StandardApprovalStrategy.class);
-		return SpringContextHolder.instance.getBean(RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy.class);
+		final WFApprovalStrategyType approvalStrategyType = CoalesceUtil.coalesceNotNull(wfNode.getApprovalStrategyType(), WFApprovalStrategyType.Standard);
+		return switch (approvalStrategyType)
+		{
+			case Standard -> SpringContextHolder.instance.getBean(StandardApprovalStrategy.class);
+			case RequestorHierarcyProjectManagerPlusCFO -> SpringContextHolder.instance.getBean(RequestorHierarcyProjectManagerPlusCFO_ApprovalStrategy.class);
+		};
 	}
 
 	private ADMessageAndParams msgApprovalRequest()

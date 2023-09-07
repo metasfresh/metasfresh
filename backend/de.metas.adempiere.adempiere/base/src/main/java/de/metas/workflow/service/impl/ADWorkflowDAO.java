@@ -40,6 +40,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.workflow.WFApprovalStrategyType;
 import de.metas.workflow.WFDurationUnit;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WFNodeAction;
@@ -282,6 +283,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 				//
 				// Action: User Choice
 				.userApproval(action.isUserChoice() && "IsApproved".equals(documentColumnName))
+				.approvalStrategyType(WFApprovalStrategyType.ofNullableCode(nodeRecord.getApprovalStrategy()))
 				//
 				// Action: Open Form
 				.adFormId(nodeRecord.getAD_Form_ID())
