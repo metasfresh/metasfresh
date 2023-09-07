@@ -407,7 +407,9 @@ public class MProductImportTableSqlUpdater
 		{
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i ")
-					.append(" set C_TaxCategory_ID=(select tc.C_TaxCategory_ID from C_TaxCategory tc where tc.Name=i.C_TaxCategory_Name and tc.AD_Client_ID=")
+					.append(" set C_TaxCategory_ID=(select tc.C_TaxCategory_ID from C_TaxCategory tc "
+									+ "where (tc.Name = i.C_TaxCategory_Name or tc.c_taxcategory_id = i.c_taxcategory_id) "
+									+ "and tc.AD_Client_ID=")
 					.append(adClientId)
 					.append(" and tc.IsActive='Y' order by tc.C_TaxCategory_ID limit 1)")
 					.append(" where true")
@@ -566,7 +568,7 @@ public class MProductImportTableSqlUpdater
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Value not unique,' ")
 				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" <>'Y'")
-				.append(" AND Value IN (SELECT Value FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY Value HAVING COUNT(*) > 1)")
+				.append(" AND Value IN (SELECT Value FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY Value, M_PriceList_Version_Name, C_TaxCategory_Name HAVING COUNT(*) > 1)")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
