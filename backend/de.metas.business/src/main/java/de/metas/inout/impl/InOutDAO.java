@@ -19,6 +19,7 @@ import de.metas.inout.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -41,6 +42,7 @@ import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchPO;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -243,13 +245,35 @@ public class InOutDAO implements IInOutDAO
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineId)
-				// .filterByClientId()
 				.addOnlyActiveRecordsFilter();
 		queryBuilder.orderBy()
 				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
 
 		return queryBuilder.create()
 				.list(clazz);
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveInterimInvoiceableInOuts(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final IQuery<I_M_MatchPO> matchPOSubQuery = queryBL.createQueryBuilder(I_M_MatchPO.class)
+				.addEqualsFilter(I_M_MatchPO.COLUMNNAME_C_OrderLine_ID, orderAndLineId.getOrderLineId())
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsInterimInvoiceable, true)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderAndLineId.getOrderId())
+				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderAndLineId.getOrderLineId())
+				.addNotInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, I_M_MatchPO.COLUMNNAME_M_InOutLine_ID, matchPOSubQuery)
+				.addOnlyActiveRecordsFilter();
+		queryBuilder.orderBy()
+				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
+
+		return queryBuilder.create()
+				.list();
 	}
 
 	@Override

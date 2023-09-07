@@ -22,46 +22,45 @@
 
 package de.metas.contracts.modular.interim.invoice.process;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContract;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractId;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
-import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
+import de.metas.contracts.modular.interim.invoice.InterimInvoiceCandidateService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lang.SOTrx;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.TimeUtil;
+import org.compiere.util.DB;
 
-import java.sql.Timestamp;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 
-public class C_BPartner_InterimContract_Create extends JavaProcess implements IProcessPrecondition
+public class C_BPartner_InterimContract_GenerateInterimInvoice extends JavaProcess implements IProcessPrecondition
 {
-	@Param(mandatory = true, parameterName = "DateFrom")
-	private Timestamp p_DateFrom;
-	@Param(mandatory = true, parameterName = "DateTo")
-	private Timestamp p_DateTo;
-
-	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
 	private final BPartnerInterimContractService bPartnerInterimContractService = SpringContextHolder.instance.getBean(BPartnerInterimContractService.class);
+	private final InterimInvoiceCandidateService interimInvoiceCandidateService = SpringContextHolder.instance.getBean(InterimInvoiceCandidateService.class);
 
 	private final static AdMessageKey MSG_REJECTION_NO_INTERIM_CONTRACT = AdMessageKey.of("de.metas.contracts.modular.interim.notActiveRejection");
-
-	private final static AdMessageKey ERROR_NO_MODULAR_CONTRACTS_FOUND = AdMessageKey.of("de.metas.contracts.modular.interim.noModularContractsFound");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -97,23 +96,34 @@ public class C_BPartner_InterimContract_Create extends JavaProcess implements IP
 				.calendarId(bPartnerInterimContract.getYearAndCalendarId().calendarId())
 				.yearId(bPartnerInterimContract.getYearAndCalendarId().yearId())
 				.soTrx(SOTrx.PURCHASE)
-				.typeConditions(TypeConditions.MODULAR_CONTRACT)
-				.dateFromLessOrEqual(TimeUtil.asInstant(p_DateFrom))
-				.dateToGreaterOrEqual(TimeUtil.asInstant(p_DateTo))
+				.typeConditions(TypeConditions.INTERIM_INVOICE)
 				.build();
 
-		final AtomicBoolean isEmpty = new AtomicBoolean(true);
-		flatrateBL.streamModularFlatrateTermsByQuery(modularFlatrateTermQuery)
-				.forEach(flatrateTermRecord -> {
-					isEmpty.set(false);
-					interimInvoiceFlatrateTermBL.create(flatrateTermRecord, p_DateFrom, p_DateTo);
-				});
-		if (isEmpty.get())
-		{
-			throw new AdempiereException(ERROR_NO_MODULAR_CONTRACTS_FOUND);
-		}
+		final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = flatrateBL.streamModularFlatrateTermsByQuery(modularFlatrateTermQuery)
+				.map(flatrateTermRecord -> interimInvoiceCandidateService.createInterimInvoiceCandidatesFor(flatrateTermRecord, bPartnerInterimContract))
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
 
-		return MSG_OK;
+		return prepareAndEnqeue(invoiceCandidateIds);
+	}
+
+	private String prepareAndEnqeue(@NonNull final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, getTrxName());
+
+		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
+				.setContext(getCtx())
+				.setInvoicingParams(getInvoicingParams())
+				.setFailIfNothingEnqueued(true) // If no workpackages were created, display error message that no selection was made (07666)
+				//
+				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+
+		return enqueueResult.getSummaryTranslated(getCtx());
+	}
+
+	private InvoicingParams getInvoicingParams()
+	{
+		return InvoicingParams.ofParams(getParameterAsIParams());
 	}
 
 }

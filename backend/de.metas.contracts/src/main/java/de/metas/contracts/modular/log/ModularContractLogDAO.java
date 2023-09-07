@@ -274,4 +274,18 @@ public class ModularContractLogDAO
 																	  .build());
 		return modCntrLog.map(this::fromRecord);
 	}
+
+	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
+		sqlQuery.updateDirectly()
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
+				.setExecuteDirectly(true)
+				.execute();
+
+		CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+				I_ModCntr_Log.Table_Name,
+				sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+	}
 }

@@ -24,6 +24,7 @@ package de.metas.contracts.modular.log;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -65,5 +66,12 @@ public class ModularContractLogService
 			@NonNull final OrderLineId orderLineId)
 	{
 		return modularContractLogDAO.getLastModularContractLog(modularFlatrateTermId, orderLineId);
+	}
+
+	public void setICProcessed(
+			@NonNull final ModularContractLogQuery query,
+			@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		modularContractLogDAO.setICProcessed(query, invoiceCandidateId);
 	}
 }

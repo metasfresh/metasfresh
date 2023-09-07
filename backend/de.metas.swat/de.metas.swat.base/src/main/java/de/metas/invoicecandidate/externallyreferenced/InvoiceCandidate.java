@@ -24,9 +24,11 @@ package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.NewInvoiceCandidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
@@ -56,14 +58,14 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class ExternallyReferencedCandidate
+public class InvoiceCandidate
 {
 	/**
 	 * Note that {@code newIC} does not contain the paymentTermId. It's later deducted from the billPartnerId and soTrx.
 	 */
-	public static ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder createBuilder(@NonNull final NewManualInvoiceCandidate newIC)
+	public static InvoiceCandidate.InvoiceCandidateBuilder createBuilder(@NonNull final NewInvoiceCandidate newIC)
 	{
-		return ExternallyReferencedCandidate
+		return InvoiceCandidate
 				.builder()
 				.billPartnerInfo(newIC.getBillPartnerInfo())
 				.dateOrdered(newIC.getDateOrdered())
@@ -85,7 +87,8 @@ public class ExternallyReferencedCandidate
 				.projectId(newIC.getProjectId())
 				.invoiceDetailItems(newIC.getInvoiceDetailItems())
 				.activityId(newIC.getActivityId())
-				.paymentTermId(newIC.getPaymentTermId());
+				.paymentTermId(newIC.getPaymentTermId())
+				.harvestYearAndCalendarId(newIC.getHarvestYearAndCalendarId());
 	}
 
 	private final OrgId orgId;
@@ -165,6 +168,9 @@ public class ExternallyReferencedCandidate
 	@NonNull
 	PaymentTermId paymentTermId;
 
+	@Nullable
+	final YearAndCalendarId harvestYearAndCalendarId;
+
 	/**
 	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
 	 */
@@ -174,7 +180,7 @@ public class ExternallyReferencedCandidate
 	private List<InvoiceDetailItem> invoiceDetailItems;
 
 	@Builder
-	private ExternallyReferencedCandidate(
+	private InvoiceCandidate(
 			@NonNull final OrgId orgId,
 			@Nullable final InvoiceCandidateId id,
 			@Nullable final ExternalId externalHeaderId,
@@ -205,6 +211,7 @@ public class ExternallyReferencedCandidate
 			@Nullable final ProjectId projectId,
 			@Nullable final String descriptionBottom,
 			@NonNull final PaymentTermId paymentTermId,
+			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -238,6 +245,7 @@ public class ExternallyReferencedCandidate
 		this.userInChargeId = userInChargeId;
 		this.activityId = activityId;
 		this.paymentTermId = paymentTermId;
+		this.harvestYearAndCalendarId = harvestYearAndCalendarId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 

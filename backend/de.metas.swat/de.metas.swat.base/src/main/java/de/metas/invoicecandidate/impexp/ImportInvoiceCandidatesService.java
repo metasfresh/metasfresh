@@ -29,9 +29,9 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.NewInvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
-import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -89,13 +89,13 @@ public class ImportInvoiceCandidatesService
 	@NonNull
 	public InvoiceCandidateId createInvoiceCandidate(@NonNull final I_I_Invoice_Candidate record)
 	{
-		final NewManualInvoiceCandidate newManualInvoiceCandidate = createManualInvoiceCand(record);
+		final NewInvoiceCandidate newInvoiceCandidate = createManualInvoiceCand(record);
 
-		return externallyReferencedCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newManualInvoiceCandidate));
+		return externallyReferencedCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
 	}
 
 	@NonNull
-	private NewManualInvoiceCandidate createManualInvoiceCand(@NonNull final I_I_Invoice_Candidate record)
+	private NewInvoiceCandidate createManualInvoiceCand(@NonNull final I_I_Invoice_Candidate record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
@@ -126,7 +126,7 @@ public class ImportInvoiceCandidatesService
 		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(billPartnerInfo.getBpartnerId(), soTrx);
 		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(paymentTermQuery);
 
-		return NewManualInvoiceCandidate.builder()
+		return NewInvoiceCandidate.builder()
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
 				.poReference(record.getPOReference())
