@@ -24,7 +24,7 @@ package de.metas.contracts.modular.interim.invoice;
 
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.externallyreferenced.AbstractInvoiceCandidateRepository;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
@@ -32,9 +32,10 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class InterimInvoiceCandidateRepository extends ExternallyReferencedCandidateRepository
+public class InterimInvoiceCandidateRepository extends AbstractInvoiceCandidateRepository
 {
 	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+
 	@Override
 	protected void setICHandler(final I_C_Invoice_Candidate icRecord)
 	{
