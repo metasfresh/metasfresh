@@ -151,10 +151,10 @@ public class ModularContractLogDAO
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
 		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
-														.entryId(request.id())
-														.flatrateTermId(request.flatrateTermId())
-														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-														.contractType(request.logEntryContractType())
+				.entryId(request.id())
+				.flatrateTermId(request.flatrateTermId())
+				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
+				.contractType(request.logEntryContractType())
 				.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
@@ -213,7 +213,6 @@ public class ModularContractLogDAO
 		final IQueryBuilder<I_ModCntr_Log> sqlQueryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter();
 
-
 		final TableRecordReferenceSet referenceSet = query.getReferenceSet();
 		if (referenceSet != null)
 		{
@@ -268,10 +267,10 @@ public class ModularContractLogDAO
 		final TableRecordReferenceSet modularRecordReference = TableRecordReferenceSet.of(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId));
 
 		final Optional<I_ModCntr_Log> modCntrLog = lastRecord(ModularContractLogQuery.builder()
-																	  .contractType(MODULAR_CONTRACT)
-																	  .flatrateTermId(modularFlatrateTermId)
-																	  .referenceSet(modularRecordReference)
-																	  .build());
+				.contractType(MODULAR_CONTRACT)
+				.flatrateTermId(modularFlatrateTermId)
+				.referenceSet(modularRecordReference)
+				.build());
 		return modCntrLog.map(this::fromRecord);
 	}
 
@@ -283,9 +282,8 @@ public class ModularContractLogDAO
 				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
 				.setExecuteDirectly(true)
 				.execute();
-//TODO uncomment
-		// CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
-		// 		I_ModCntr_Log.Table_Name,
-		// 		sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+		CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+				I_ModCntr_Log.Table_Name,
+				sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
 	}
 }
