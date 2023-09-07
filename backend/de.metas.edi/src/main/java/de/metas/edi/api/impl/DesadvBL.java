@@ -107,7 +107,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class DesadvBL implements IDesadvBL
 {
-	private final static transient Logger logger = LogManager.getLogger(DesadvBL.class);
+	private final static Logger logger = LogManager.getLogger(DesadvBL.class);
 
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 
@@ -615,19 +615,24 @@ public class DesadvBL implements IDesadvBL
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
 
+
+		// TODO (this i my last TODO although for the reader it's probably the first one)
+		// TODO I think what we need in the end is a method similar to HU.retainProduct(ProductId), but that retains just the parts assigned to the given inOutLineRecord via M_HU_Assignment
+		// TODO ...maybe a method HU.retainAssigned(TableRecordReference) and then call that one instead of retainProduct(..) 
+		
 		final HU rootHU = huRepository
 				.getById(HuId.ofRepoId(huRecord.getM_HU_ID()))
 				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
 				.orElse(null);
-
+		
 		if (rootHU == null || !rootHU.getType().isLU())
 		{
 			final UomId desadvUomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
 			return StockQtyAndUOMQtys.createZero(productId, desadvUomId); // we don't do HU-related stuffs if the HU is not a LU.
 		}
-
+		
 		// note that rootHU only contains children, quantities and weights for productId
-		final Quantity qtyInStockUOM = rootHU.getProductQtysInStockUOM().get(productId);
+		final Quantity qtyInStockUOM = rootHU.getProductQtysInStockUOM().get(productId); // TODO only consider the qty of the *CU* that is allocated to the given inOutLineRecord; if no *CU* set, then only consider the qty of the allocated TU etc
 
 		final I_EDI_DesadvLine_Pack packRecord = findOrCreatePackRecord(existingPacks, desadvLineRecord, qtyInStockUOM.toBigDecimal());
 
@@ -635,11 +640,12 @@ public class DesadvBL implements IDesadvBL
 		packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
 		packRecord.setM_HU_ID(huRecord.getM_HU_ID());
 
-		final Quantity qtyCUInStockUOM = rootHU.extractMedianCUQtyPerChildHU(productId);
+		final Quantity qtyCUInStockUOM = rootHU.extractMedianCUQtyPerChildHU(productId); // TODO ...only for the CUs/TUs attached to this current shipment-line
 
 		packRecord.setQtyItemCapacity(qtyCUInStockUOM.toBigDecimal());
 
 		// get minimum best before of all HUs and sub-HUs
+		// TODO ...only for the CUs/TUs attached to this current shipment-line 
 		final Date bestBefore = rootHU.extractSingleAttributeValue(
 				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
 				TimeUtil::min);
@@ -666,12 +672,13 @@ public class DesadvBL implements IDesadvBL
 			packRecord.setIsManual_IPA_SSCC18(false);
 		}
 
+		// TODO if there are multiple TUs then make sure to only consider the one(s) attached to the current shipment-line
 		extractAndSetPackagingCodes(rootHU, packRecord);
 		extractAndSetPackagingGTINs(rootHU, bPartnerId, packRecord);
 
-		packRecord.setQtyTU(rootHU.getChildHUs().size());
+		packRecord.setQtyTU(rootHU.getChildHUs().size()); // TODO if the given inOutLineRecord has a TU allocated, then only consider that. 
 
-		final Optional<Quantity> weight = rootHU.getWeightNet();
+		final Optional<Quantity> weight = rootHU.getWeightNet(); // TODO get the weight (from HU-Attributes) of the *CU* that is allocated to the given inOutLineRecord; if no *CU* set, then only consider the qty of the allocated TU etc
 		final StockQtyAndUOMQty quantity;
 		if (weight.isPresent())
 		{
