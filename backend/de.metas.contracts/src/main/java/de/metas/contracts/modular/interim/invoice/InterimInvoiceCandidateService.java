@@ -64,9 +64,11 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -107,12 +109,13 @@ public class InterimInvoiceCandidateService
 					final Quantity enteredQty = Quantity.of(inOutLine.getQtyEntered(), inOutUOM);
 					final StockQtyAndUOMQty stockEnteredQty = StockQtyAndUOMQty.builder()
 							.uomQty(enteredQty)
-							.stockQty(uomConversionBL.convertQuantityTo(enteredQty, productId, stockUOM))
 							.productId(productId)
+							.stockQty(uomConversionBL.convertQuantityTo(enteredQty, productId, stockUOM))
 							.build();
 					final Quantity movementQty = Quantity.of(inOutLine.getMovementQty(), inOutUOM);
 					final StockQtyAndUOMQty stockDeliveredQty = StockQtyAndUOMQty.builder()
 							.uomQty(movementQty)
+							.productId(productId)
 							.stockQty(uomConversionBL.convertQuantityTo(movementQty, productId, stockUOM))
 							.build();
 					final NewInvoiceCandidate newInvoiceCandidate = NewInvoiceCandidate.builder()
@@ -126,12 +129,12 @@ public class InterimInvoiceCandidateService
 							.billPartnerInfo(BPartnerInfo.builder()
 									.bpartnerId(bpartnerId)
 									.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getBill_Location_ID()))
-									.contactId(BPartnerContactId.ofRepoId(bpartnerId, order.getBill_User_ID()))
+									.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getBill_User_ID()))
 									.build())
 							.invoicingUomId(stockUOM)
 							.qtyOrdered(stockEnteredQty)
 							.qtyDelivered(stockDeliveredQty)
-							.presetDateInvoiced(TimeUtil.asLocalDate(TimeUtil.getToday(), orgTimeZone))
+							.presetDateInvoiced(LocalDate.now(orgTimeZone))
 							.dateOrdered(TimeUtil.asLocalDate(order.getDateOrdered(), orgTimeZone))
 							.build();
 
@@ -151,6 +154,7 @@ public class InterimInvoiceCandidateService
 		if (interimInvoiceDocType == null)
 		{
 			interimInvoiceDocType = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.adClientId(Env.getAD_Client_ID())
 					.docBaseType(DocBaseType.APInvoice)
 					.docSubType(X_C_DocType.DOCSUBTYPE_DownPayment)
 					.build());

@@ -258,6 +258,7 @@ public class InOutDAO implements IInOutDAO
 	{
 		final IQuery<I_M_MatchPO> matchPOSubQuery = queryBL.createQueryBuilder(I_M_MatchPO.class)
 				.addEqualsFilter(I_M_MatchPO.COLUMNNAME_C_OrderLine_ID, orderAndLineId.getOrderLineId())
+				.addIsNull(I_M_MatchPO.COLUMNNAME_C_InvoiceLine_ID)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
@@ -267,7 +268,7 @@ public class InOutDAO implements IInOutDAO
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderAndLineId.getOrderId())
 				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderAndLineId.getOrderLineId())
-				.addNotInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, I_M_MatchPO.COLUMNNAME_M_InOutLine_ID, matchPOSubQuery)
+				.addInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, I_M_MatchPO.COLUMNNAME_M_InOutLine_ID, matchPOSubQuery)
 				.addOnlyActiveRecordsFilter();
 		queryBuilder.orderBy()
 				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
