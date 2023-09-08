@@ -32,6 +32,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContract;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
@@ -89,13 +90,14 @@ public class InterimInvoiceCandidateService
 	private final ManualCandidateService manualCandidateService = SpringContextHolder.instance.getBean(ManualCandidateService.class);
 	private final InvoiceCandidateRepository invoiceCandidateRepository = SpringContextHolder.instance.getBean(InvoiceCandidateRepository.class);
 	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
 
 	private DocTypeId interimInvoiceDocType;
 
 	public ImmutableSet<InvoiceCandidateId> createInterimInvoiceCandidatesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord, @NonNull final BPartnerInterimContract bPartnerInterimContract)
 	{
 		final List<I_M_InOutLine> inOutLines = getUnprocessedInOutLines(flatrateTermRecord);
-		if(inOutLines.isEmpty())
+		if (inOutLines.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
@@ -108,13 +110,16 @@ public class InterimInvoiceCandidateService
 		final UomId stockUOM = productBL.getStockUOMId(productId);
 		final OrgId orgId = OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID());
 		final ZoneId orgTimeZone = orgDAO.getTimeZone(orgId);
+		final ProductId productIdToInvoice = modCntrInvoicingGroupRepository.getInvoicingGroupProductFor(productId)
+				.orElse(productId);
+
 		final NewInvoiceCandidate.NewInvoiceCandidateBuilder newInvoiceCandidateTemplate = NewInvoiceCandidate.builder()
 				.orgId(orgId)
 				.soTrx(SOTrx.PURCHASE)
 				.invoiceDocTypeId(getInterimInvoiceDocType())
 				.invoiceRule(InvoiceRule.Immediate)
 				.harvestYearAndCalendarId(bPartnerInterimContract.getYearAndCalendarId())
-				.productId(productId)
+				.productId(productIdToInvoice)
 				.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
 				.billPartnerInfo(BPartnerInfo.builder()
 						.bpartnerId(bpartnerId)

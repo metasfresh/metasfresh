@@ -28,10 +28,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_ModCntr_InvoicingGroup;
 import org.compiere.model.I_ModCntr_InvoicingGroup_Product;
@@ -39,6 +38,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
@@ -53,13 +54,6 @@ public class ModCntrInvoicingGroupRepository
 			@NonNull final Timestamp validFrom,
 			@NonNull final Timestamp validTo)
 	{
-
-		final ICompositeQueryFilter<I_ModCntr_InvoicingGroup> validFromFilter = queryBL.createCompositeQueryFilter(I_ModCntr_InvoicingGroup.class)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS, validFrom)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, CompareQueryFilter.Operator.GREATER, validFrom);
-		final ICompositeQueryFilter<I_ModCntr_InvoicingGroup> validToFilter = queryBL.createCompositeQueryFilter(I_ModCntr_InvoicingGroup.class)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS, validTo)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, CompareQueryFilter.Operator.GREATER, validTo);
 		final IQueryBuilder<I_ModCntr_InvoicingGroup_Product> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_M_Product_ID, productId);
@@ -69,11 +63,7 @@ public class ModCntrInvoicingGroupRepository
 		}
 		final boolean invoicingGroupsOverlapingForProduct = queryBuilder
 				.andCollect(I_ModCntr_InvoicingGroup_Product.COLUMN_ModCntr_InvoicingGroup_ID)
-				.addFilter(
-						queryBL.createCompositeQueryFilter(I_ModCntr_InvoicingGroup.class)
-								.setJoinOr()
-								.addFilter(validFromFilter)
-								.addFilter(validToFilter))
+				.addIntervalIntersection(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, validFrom.toInstant(), validTo.toInstant())
 				.create()
 				.anyMatch();
 		if (invoicingGroupsOverlapingForProduct)
@@ -85,8 +75,22 @@ public class ModCntrInvoicingGroupRepository
 	public Stream<I_ModCntr_InvoicingGroup_Product> streamInvoicingGroupProductsFor(@NonNull final InvoicingGroupId invoicingGroupId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup_Product.class)
-				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_ModCntr_InvoicingGroup_ID,invoicingGroupId)
+				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_ModCntr_InvoicingGroup_ID, invoicingGroupId)
 				.addOnlyActiveRecordsFilter()
 				.stream();
+	}
+
+	public Optional<ProductId> getInvoicingGroupProductFor(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_M_Product_ID, productId)
+				.andCollect(I_ModCntr_InvoicingGroup_Product.COLUMN_ModCntr_InvoicingGroup_ID)
+				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, Operator.LESS, Instant.now())
+				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, Operator.GREATER, Instant.now())
+				.create()
+				.firstOnlyOptional()
+				.map(group -> ProductId.ofRepoId(group.getGroup_Product_ID()));
+
 	}
 }
