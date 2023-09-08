@@ -1,8 +1,32 @@
-package de.metas.invoicecandidate.externallyreferenced;
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.invoicecandidate;
 
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
+import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
@@ -26,34 +50,12 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  * A "manual" IC is not programmatically created but imported into the system.
  */
 @Value
 @Builder
-public class NewManualInvoiceCandidate
+public class NewInvoiceCandidate
 {
 	OrgId orgId;
 
@@ -109,7 +111,12 @@ public class NewManualInvoiceCandidate
 
 	List<InvoiceDetailItem> invoiceDetailItems;
 
-	private NewManualInvoiceCandidate(
+	YearAndCalendarId harvestYearAndCalendarId;
+	boolean isInterimInvoice;
+	ILCandHandlerId handlerId;
+	boolean isManual;
+
+	private NewInvoiceCandidate(
 			@NonNull final OrgId orgId,
 
 			@Nullable final ExternalId externalHeaderId,
@@ -136,7 +143,11 @@ public class NewManualInvoiceCandidate
 			@Nullable final ActivityId activityId,
 			@Nullable final TableRecordReference recordReference,
 			@NonNull final PaymentTermId paymentTermId,
-			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
+			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
+			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
+			final boolean isInterimInvoice,
+			@NonNull final ILCandHandlerId handlerId,
+			final boolean isManual)
 	{
 		this.orgId = orgId;
 
@@ -165,6 +176,10 @@ public class NewManualInvoiceCandidate
 		this.invoiceRule = invoiceRule;
 		this.paymentTermId = paymentTermId;
 		this.invoiceDetailItems = invoiceDetailItems;
+		this.harvestYearAndCalendarId = harvestYearAndCalendarId;
+		this.isInterimInvoice = isInterimInvoice;
+		this.handlerId = handlerId;
+		this.isManual = isManual;
 
 		if (priceEnteredOverride != null)
 		{

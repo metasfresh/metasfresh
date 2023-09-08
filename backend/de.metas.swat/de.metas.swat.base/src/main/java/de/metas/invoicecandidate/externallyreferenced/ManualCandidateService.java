@@ -27,6 +27,7 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.invoicecandidate.NewInvoiceCandidate;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.money.Money;
@@ -68,9 +69,9 @@ public class ManualCandidateService
 	/**
 	 * Invokes different metasfresh services to complement additional fields such as the price.
 	 */
-	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
+	public InvoiceCandidate createInvoiceCandidate(@NonNull final NewInvoiceCandidate newIC)
 	{
-		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
+		final InvoiceCandidate.InvoiceCandidateBuilder candidate = InvoiceCandidate.createBuilder(newIC);
 
 		final ProductPrice priceEnteredOverride = newIC.getPriceEnteredOverride();
 		final Percent discountOverride = newIC.getDiscountOverride();

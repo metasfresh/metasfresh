@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.log;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -55,6 +56,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRACT;
@@ -151,10 +153,10 @@ public class ModularContractLogDAO
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
 		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
-														.entryId(request.id())
-														.flatrateTermId(request.flatrateTermId())
-														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-														.contractType(request.logEntryContractType())
+				.entryId(request.id())
+				.flatrateTermId(request.flatrateTermId())
+				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
+				.contractType(request.logEntryContractType())
 				.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
@@ -213,7 +215,6 @@ public class ModularContractLogDAO
 		final IQueryBuilder<I_ModCntr_Log> sqlQueryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter();
 
-
 		final TableRecordReferenceSet referenceSet = query.getReferenceSet();
 		if (referenceSet != null)
 		{
@@ -267,11 +268,38 @@ public class ModularContractLogDAO
 	{
 		final TableRecordReferenceSet modularRecordReference = TableRecordReferenceSet.of(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId));
 
-		final Optional<I_ModCntr_Log> modCntrLog = lastRecord(ModularContractLogQuery.builder()
-																	  .contractType(MODULAR_CONTRACT)
-																	  .flatrateTermId(modularFlatrateTermId)
-																	  .referenceSet(modularRecordReference)
-																	  .build());
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.contractType(MODULAR_CONTRACT)
+				.flatrateTermId(modularFlatrateTermId)
+				.referenceSet(modularRecordReference)
+				.build();
+		final Optional<I_ModCntr_Log> modCntrLog = lastRecord(query);
 		return modCntrLog.map(this::fromRecord);
 	}
+
+	@NonNull
+	public List<ModularContractLogEntry> getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	{
+		return toSqlQuery(query)
+				.stream()
+				.map(this::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
+		sqlQuery.updateDirectly()
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
+				.setExecuteDirectly(true)
+				.execute();
+		if (sqlQuery.anyMatch())
+		{
+			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+					I_ModCntr_Log.Table_Name,
+					sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+		}
+	}
+
 }

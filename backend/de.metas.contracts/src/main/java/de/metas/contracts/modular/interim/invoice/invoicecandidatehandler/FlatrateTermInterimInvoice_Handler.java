@@ -24,10 +24,12 @@ package de.metas.contracts.modular.interim.invoice.invoicecandidatehandler;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.InterimInvoiceFlatrateTerm;
@@ -45,19 +47,25 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
@@ -66,6 +74,8 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
@@ -93,11 +103,9 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	@Override
 	public Quantity calculateQtyEntered(final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = getInterimInvoiceFlatrateTermForIC(invoiceCandidateRecord);
+		final UomId uomId = HandlerTools.retrieveUomId(invoiceCandidateRecord);
 
-		final Quantity qtyDelivered = interimInvoiceFlatrateTermBL.getQtyDelivered(interimInvoiceFlatrateTerm);
-
-		return qtyDelivered.negateIf(!invoiceCandidateRecord.isInterimInvoice());
+		return Quantitys.create(invoiceCandidateRecord.getQtyEntered(), uomId);
 	}
 
 	@NonNull
@@ -224,26 +232,35 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	}
 
 	@Override
-	public IInvoiceCandidateHandler.PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
+	public IInvoiceCandidateHandler.PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = getInterimInvoiceFlatrateTermForIC(ic);
-		final I_C_Invoice_Candidate originalIC = getInvoiceCandidateForOrderLine(interimInvoiceFlatrateTerm.getOrderLineId());
-
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
 
-		final TaxId taxId = TaxId.ofRepoId(originalIC.getC_Tax_ID());
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
+				term,
+				taxCategoryId,
+				term.getM_Product_ID(),
+				ic.getDateOrdered(), // shipDate
+				OrgId.ofRepoId(term.getAD_Org_ID()),
+				(WarehouseId)null,
+				CoalesceUtil.coalesceSuppliersNotNull(
+						() -> ContractLocationHelper.extractDropshipLocationId(term),
+						() -> ContractLocationHelper.extractBillToLocationId(term)),
+				SOTrx.ofBoolean(ic.isSOTrx()),
+				vatCodeId);
 
 		return IInvoiceCandidateHandler.PriceAndTax.builder()
-				.pricingSystemId(PricingSystemId.ofRepoId(originalIC.getM_PricingSystem_ID()))
-				.priceActual(originalIC.getPriceActual())
-				.priceEntered(originalIC.getPriceActual()) // cg : task 04917 -- same as price actual
-				.priceUOMId(UomId.ofRepoId(originalIC.getC_UOM_ID())) // 07090: when setting a priceActual, we also need to specify a PriceUOM
-				.taxCategoryId(taxCategoryId)
+				.pricingSystemId(PricingSystemId.ofRepoId(term.getM_PricingSystem_ID()))
+				.priceActual(term.getPriceActual())
+				.priceEntered(term.getPriceActual()) // cg : task 04917 -- same as price actual
+				.priceUOMId(UomId.ofRepoId(term.getC_UOM_ID())) // 07090: when setting a priceActual, we also need to specify a PriceUOM
+				.taxCategoryId(TaxCategoryId.ofRepoId(term.getC_TaxCategory_ID()))
 				.taxId(taxId)
-				.taxIncluded(originalIC.isTaxIncluded())
-				.currencyId(CurrencyId.ofRepoIdOrNull(originalIC.getC_Currency_ID()))
+				.taxIncluded(term.isTaxIncluded())
+				.currencyId(CurrencyId.ofRepoIdOrNull(term.getC_Currency_ID()))
 				.build();
 	}
 
