@@ -47,7 +47,11 @@ public class ModCntrInvoicingGroupRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final static AdMessageKey MSG_PRODUCT_IN_ANOTHER_INVOICING_GROUP = AdMessageKey.of("de.metas.contracts.modular.invgroup.ProductInAnotherGroup");
 
-	public void validateInvoicingGroupProductNoOverlap(@NonNull final ProductId productId, @Nullable final InvoicingGroupProductId invoicingGroupProductId, @NonNull final Timestamp validFrom, @NonNull final Timestamp validTo)
+	public void validateInvoicingGroupProductNoOverlap(
+			@NonNull final ProductId productId,
+			@Nullable final InvoicingGroupProductId excludeInvoicingGroupProductId,
+			@NonNull final Timestamp validFrom,
+			@NonNull final Timestamp validTo)
 	{
 
 		final ICompositeQueryFilter<I_ModCntr_InvoicingGroup> validFromFilter = queryBL.createCompositeQueryFilter(I_ModCntr_InvoicingGroup.class)
@@ -59,9 +63,9 @@ public class ModCntrInvoicingGroupRepository
 		final IQueryBuilder<I_ModCntr_InvoicingGroup_Product> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_M_Product_ID, productId);
-		if (invoicingGroupProductId != null)
+		if (excludeInvoicingGroupProductId != null)
 		{
-			queryBuilder.addNotEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_ModCntr_InvoicingGroup_Product_ID, invoicingGroupProductId);
+			queryBuilder.addNotEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_ModCntr_InvoicingGroup_Product_ID, excludeInvoicingGroupProductId);
 		}
 		final boolean invoicingGroupsOverlapingForProduct = queryBuilder
 				.andCollect(I_ModCntr_InvoicingGroup_Product.COLUMN_ModCntr_InvoicingGroup_ID)

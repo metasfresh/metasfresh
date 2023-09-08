@@ -52,15 +52,7 @@ public interface IInvoiceCandidateHandlerDAO extends ISingletonService
 	List<I_C_ILCandHandler> retrieveForClass(Properties ctx, Class<? extends IInvoiceCandidateHandler> clazz);
 
 	@NonNull
-	ILCandHandlerId retrieveIdForClassOneOnly(Properties ctx,
-			@NonNull Class<? extends IInvoiceCandidateHandler> handlerClass);
-
-	@NonNull
-	default ILCandHandlerId retrieveIdForClassOneOnly(@NonNull Class<? extends IInvoiceCandidateHandler> handlerClass)
-	{
-		return retrieveIdForClassOneOnly(Env.getCtx(), handlerClass);
-	}
-
+	ILCandHandlerId retrieveIdForClassOneOnly(@NonNull Class<? extends IInvoiceCandidateHandler> handlerClass);
 
 	/**
 	 * Retrieve {@link I_C_ILCandHandler} by given <code>handlerClass</code>

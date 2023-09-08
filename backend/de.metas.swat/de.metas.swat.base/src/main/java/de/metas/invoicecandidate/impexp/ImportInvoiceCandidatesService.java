@@ -158,7 +158,7 @@ public class ImportInvoiceCandidatesService
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				.paymentTermId(paymentTermId)
 				.isManual(true)
-				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class))
+				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(ManualCandidateHandler.class))
 				.build();
 	}
 

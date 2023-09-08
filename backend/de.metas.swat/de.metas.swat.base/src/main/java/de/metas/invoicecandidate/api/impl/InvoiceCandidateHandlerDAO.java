@@ -36,6 +36,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.util.Env;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -79,10 +80,9 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 
 	@Override
 	@NonNull
-	public ILCandHandlerId retrieveIdForClassOneOnly(final Properties ctx,
-			@NonNull final Class<? extends IInvoiceCandidateHandler> handlerClass)
+	public ILCandHandlerId retrieveIdForClassOneOnly(@NonNull final Class<? extends IInvoiceCandidateHandler> handlerClass)
 	{
-		return ILCandHandlerId.ofRepoId(retrieveForClassOneOnly(ctx, handlerClass).getC_ILCandHandler_ID());
+		return ILCandHandlerId.ofRepoId(retrieveForClassOneOnly(Env.getCtx(), handlerClass).getC_ILCandHandler_ID());
 	}
 
 	@Override

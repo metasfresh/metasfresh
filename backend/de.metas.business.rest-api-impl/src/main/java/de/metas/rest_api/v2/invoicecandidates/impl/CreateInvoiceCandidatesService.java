@@ -295,7 +295,7 @@ public class CreateInvoiceCandidatesService
 		}
 
 		candidate.isManual(true);
-		candidate.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class));
+		candidate.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(ManualCandidateHandler.class));
 
 		return candidate
 				.externalHeaderId(JsonExternalIds.toExternalId(item.getExternalHeaderId()))
