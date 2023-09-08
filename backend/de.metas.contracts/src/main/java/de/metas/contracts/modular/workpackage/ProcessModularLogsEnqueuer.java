@@ -36,10 +36,10 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -48,10 +48,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.LOG_ENTRY_CONTRACT_TYPE;
 import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.MODEL_ACTION;
@@ -95,24 +94,25 @@ public class ProcessModularLogsEnqueuer
 
 	private void enqueueAllInNewTrx(@NonNull final List<EnqueueRequest> requests)
 	{
-		final TableRecordReferenceSet referenceSet = getTableRecordReferenceSet(requests);
-		final ModelAction action = getSingleModelAction(requests);
-		final ContractTypeParameter  logEntryContractTypeMap = buildContractTypeMap(requests);
-		final UserId userInChargeId = requests.get(0).userInChargeId();
+		aggregateRequests(requests).forEach(this::enqueueRequest);
+	}
 
+	private void enqueueRequest(@NonNull final AggregatedEnqueueRequest request)
+	{
 		final IWorkPackageQueue workPackageQueue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ModularLogsWorkPackageProcessor.class);
 
 		final I_C_Queue_WorkPackage workPackage = workPackageQueue.newWorkPackage()
 				//ensures we are only enqueueing after this trx is committed
 				.bindToThreadInheritedTrx()
-				.setUserInChargeId(userInChargeId)
-				.parameter(MODEL_ACTION.name(), action.name())
-				.parameter(LOG_ENTRY_CONTRACT_TYPE.name(), JsonObjectMapperHolder.toJsonNonNull(logEntryContractTypeMap))
-				.setElementsLocker(createElementsLocker(referenceSet))
-				.addElements(referenceSet.getRecordRefs())
+				.setUserInChargeId(request.userInChargeId())
+				.parameter(MODEL_ACTION.name(), request.action().name())
+				.parameter(LOG_ENTRY_CONTRACT_TYPE.name(), JsonObjectMapperHolder.toJsonNonNull(request.contractTypeMappings()))
+				.setElementsLocker(createElementsLocker(request.recordReferenceSet()))
+				.addElements(request.recordReferenceSet().getRecordRefs())
 				.buildAndEnqueue();
 
-		referenceSet.streamReferences()
+		request.recordReferenceSet()
+				.streamReferences()
 				.forEach(recordReference -> createStatusService
 						.setStatusEnqueued(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()), recordReference));
 	}
@@ -128,39 +128,36 @@ public class ProcessModularLogsEnqueuer
 	}
 
 	@NonNull
-	private static ContractTypeParameter buildContractTypeMap(@NonNull final List<EnqueueRequest> requests)
+	private static ImmutableList<AggregatedEnqueueRequest> aggregateRequests(@NonNull final List<EnqueueRequest> enqueueRequests)
 	{
-		final Map<Integer, List<LogEntryContractType>> logEntryContractTypeMap = requests.stream()
-				.collect(Collectors.groupingBy(
-						request -> request.recordReference().getRecord_ID(),
-						Collectors.mapping(EnqueueRequest::logEntryContractType, Collectors.toList())
-				));
+		final List<AggregatedEnqueueRequest> aggregatedEnqueueRequests = new ArrayList<>();
 
-		return ContractTypeParameter.builder()
-				.recordId2ContractType(logEntryContractTypeMap)
-				.build();
-	}
+		RequestAggregator requestAggregator = null;
 
-	@NonNull
-	private static ModelAction getSingleModelAction(@NonNull final List<EnqueueRequest> requests)
-	{
-		final Set<ModelAction> actions = requests.stream()
-				.map(EnqueueRequest::action)
-				.collect(Collectors.toSet());
+		for (final EnqueueRequest enqueueRequest : enqueueRequests)
+		{
+			if (requestAggregator == null)
+			{
+				requestAggregator = RequestAggregator.init(enqueueRequest);
+			}
+			else
+			{
+				final boolean isAggregated = requestAggregator.aggregate(enqueueRequest);
 
-		return CollectionUtils.singleElement(actions);
-	}
+				if (isAggregated)
+				{
+					aggregatedEnqueueRequests.add(requestAggregator.build());
+					requestAggregator = null;
+				}
+			}
+		}
 
-	@NonNull
-	private static TableRecordReferenceSet getTableRecordReferenceSet(@NonNull final List<EnqueueRequest> requests)
-	{
-		final TableRecordReferenceSet referenceSet = requests.stream()
-				.map(EnqueueRequest::recordReference)
-				.collect(TableRecordReferenceSet.collect());
+		if (requestAggregator != null)
+		{
+			aggregatedEnqueueRequests.add(requestAggregator.build());
+		}
 
-		referenceSet.assertSingleTableName();
-
-		return referenceSet;
+		return ImmutableList.copyOf(aggregatedEnqueueRequests);
 	}
 
 	@Builder
@@ -170,5 +167,84 @@ public class ProcessModularLogsEnqueuer
 			@NonNull LogEntryContractType logEntryContractType,
 			@Nullable UserId userInChargeId)
 	{
+	}
+
+	@Builder
+	private record AggregatedEnqueueRequest(
+			@NonNull TableRecordReferenceSet recordReferenceSet,
+			@NonNull ModelAction action,
+			@NonNull ContractTypeParameter contractTypeMappings,
+			@Nullable UserId userInChargeId)
+	{
+	}
+
+	@Value
+	@Builder
+	private static class RequestAggregator
+	{
+		@NonNull ArrayList<TableRecordReference> recordReferenceList;
+		@NonNull HashMap<Integer, List<LogEntryContractType>> recordId2ContractType;
+		@NonNull ModelAction modelAction;
+		@Nullable
+		UserId userInChargeId;
+
+		@NonNull
+		static RequestAggregator init(@NonNull final EnqueueRequest enqueueRequest)
+		{
+			final ArrayList<LogEntryContractType> contractTypes = new ArrayList<>();
+			contractTypes.add(enqueueRequest.logEntryContractType());
+
+			return RequestAggregator.builder()
+					.recordReferenceList(new ArrayList<>()
+					{{
+						add(enqueueRequest.recordReference());
+					}})
+					.recordId2ContractType(new HashMap<>()
+					{{
+						put(enqueueRequest.recordReference().getRecord_ID(), contractTypes);
+					}})
+					.modelAction(enqueueRequest.action())
+					.userInChargeId(enqueueRequest.userInChargeId())
+					.build();
+
+		}
+
+		boolean aggregate(@NonNull final EnqueueRequest enqueueRequest)
+		{
+			if (!enqueueRequest.recordReference().getTableName().equals(recordReferenceList.get(0).getTableName()))
+			{
+				return false;
+			}
+
+			if (enqueueRequest.action() != modelAction)
+			{
+				return false;
+			}
+
+			recordReferenceList.add(enqueueRequest.recordReference());
+			final ArrayList<LogEntryContractType> newContractTypes = new ArrayList<>();
+			newContractTypes.add(enqueueRequest.logEntryContractType());
+			recordId2ContractType.merge(enqueueRequest.recordReference().getRecord_ID(), newContractTypes, (oldList, newList) -> {
+				oldList.addAll(newList);
+				return oldList;
+			});
+
+			return true;
+		}
+
+		@NonNull
+		AggregatedEnqueueRequest build()
+		{
+			final TableRecordReferenceSet referenceSet = TableRecordReferenceSet.of(recordReferenceList);
+
+			return AggregatedEnqueueRequest.builder()
+					.action(modelAction)
+					.recordReferenceSet(referenceSet)
+					.contractTypeMappings(ContractTypeParameter.builder()
+												  .recordId2ContractType(recordId2ContractType)
+												  .build())
+					.userInChargeId(userInChargeId)
+					.build();
+		}
 	}
 }
