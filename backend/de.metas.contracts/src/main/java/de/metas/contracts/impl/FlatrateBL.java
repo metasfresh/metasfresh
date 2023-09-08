@@ -92,6 +92,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -164,6 +165,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -2527,5 +2529,11 @@ public class FlatrateBL implements IFlatrateBL
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
 				.create()
 				.firstIdOnly());
+	}
+
+	@NonNull
+	public Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull final OrderLineId orderLineId, @NonNull final TypeConditions typeConditions)
+	{
+		return flatrateDAO.getByOrderLineId(orderLineId, typeConditions);
 	}
 }
