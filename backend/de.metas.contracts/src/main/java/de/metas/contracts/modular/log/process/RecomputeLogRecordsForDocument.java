@@ -32,6 +32,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderDAO;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -61,7 +62,8 @@ public class RecomputeLogRecordsForDocument extends JavaProcess
 	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
 	@Override
-	protected String doIt() throws Exception
+	@RunOutOfTrx
+	protected String doIt()
 	{
 		final String tableName = getTableName();
 

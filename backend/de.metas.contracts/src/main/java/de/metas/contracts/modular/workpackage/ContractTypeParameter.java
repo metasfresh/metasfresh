@@ -28,6 +28,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,11 @@ import java.util.Map;
 @Jacksonized
 public class ContractTypeParameter
 {
-	@NonNull
-	Map<Integer, List<LogEntryContractType>> recordId2ContractType;
+	@NonNull Map<Integer, List<LogEntryContractType>> recordId2ContractType;
+
+	@Nullable
+	public List<LogEntryContractType> getContractTypesByRecordId(final int recordId)
+	{
+		return recordId2ContractType.get(recordId);
+	}
 }

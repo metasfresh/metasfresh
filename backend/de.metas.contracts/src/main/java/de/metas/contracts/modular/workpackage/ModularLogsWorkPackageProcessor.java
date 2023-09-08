@@ -36,7 +36,6 @@ import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -65,14 +64,13 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 		enqueuedModels.assertSingleTableName();
 
 		final ModelAction modelAction = getModelAction();
-		final Map<Integer, List<LogEntryContractType>> recordId2ContractTypes = getRecordId2ContractType();
+		final ContractTypeParameter contractTypeParameter = getLogEntryContractType();
 
 		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID());
 
 		return enqueuedModels.streamReferences()
 				.flatMap(recordReference -> {
-					final List<LogEntryContractType> contractTypes = recordId2ContractTypes.get(recordReference.getRecord_ID());
-
+					final List<LogEntryContractType> contractTypes = contractTypeParameter.getContractTypesByRecordId(recordReference.getRecord_ID());
 					if (contractTypes == null || contractTypes.isEmpty())
 					{
 						throw new AdempiereException("Missing mandatory parameter for record reference=" + recordReference)
@@ -92,18 +90,16 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 	}
 
 	@NonNull
-	private Map<Integer, List<LogEntryContractType>> getRecordId2ContractType()
+	private ContractTypeParameter getLogEntryContractType()
 	{
 		final String recordId2ContractTypesString = getParameters().getParameterAsString(Params.LOG_ENTRY_CONTRACT_TYPE.name());
 
-		final ContractTypeParameter contractTypeParameter = Optional
+		return Optional
 				.ofNullable(recordId2ContractTypesString)
 				.map(recordId2ContractTypesStringParam -> JsonObjectMapperHolder.fromJson(recordId2ContractTypesStringParam, ContractTypeParameter.class))
 				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
 						.appendParametersToMessage()
 						.setParameter("wpParameterName", Params.LOG_ENTRY_CONTRACT_TYPE.name()));
-
-		return contractTypeParameter.getRecordId2ContractType();
 	}
 
 	@NonNull
