@@ -189,9 +189,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(1047) 
 ;
 
--- 2023-09-05T13:49:26.709242100Z
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
 
 -- 2023-09-05T13:49:26.717691100Z
 INSERT INTO AD_Workflow (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Table_ID,AD_Workflow_ID,Author,Cost,Created,CreatedBy,DocumentNo,Duration,DurationUnit,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsValid,Name,PublishStatus,Updated,UpdatedBy,Value,Version,WaitingTime,WorkflowType,WorkingTime) VALUES ('1',0,0,542365,540123,'metasfresh ERP',0,TO_TIMESTAMP('2023-09-05 16:49:26.555','YYYY-MM-DD HH24:MI:SS.US'),100,'10000000',1,'D','D','Y','N','N','N','Process_M_Shipping_Notification','R',TO_TIMESTAMP('2023-09-05 16:49:26.555','YYYY-MM-DD HH24:MI:SS.US'),100,'Process_M_Shipping_Notification',0,0,'P',0)
@@ -3237,4 +3234,177 @@ UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-09-06 17:51:49.6
 UPDATE AD_Column SET ReadOnlyLogic='1=2',Updated=TO_TIMESTAMP('2023-09-06 17:54:07.819','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587456
 ;
 
+
+--- doc type---
+
+
+
+-- Name: C_DocType Shipping Notification
+-- 2023-09-06T15:27:51.205443600Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540656,'C_DocType.docbasetype = ''SN''',TO_TIMESTAMP('2023-09-06 18:27:51.028','YYYY-MM-DD HH24:MI:SS.US'),100,'Shipping Notification document type','de.metas.shippingnotification','Y','C_DocType Shipping Notification','S',TO_TIMESTAMP('2023-09-06 18:27:51.028','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- Column: M_Shipping_Notification.C_DocType_ID
+-- 2023-09-06T15:28:07.164618Z
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=170, AD_Val_Rule_ID=540656, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2023-09-06 18:28:07.164','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587397
+;
+
+-- Reference: C_DocType DocBaseType
+-- Value: SN
+-- ValueName: Shipping notification
+-- 2023-09-07T06:48:31.171799100Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,183,543548,TO_TIMESTAMP('2023-09-07 09:48:30.951','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification','Y','Shipping notification',TO_TIMESTAMP('2023-09-07 09:48:30.951','YYYY-MM-DD HH24:MI:SS.US'),100,'SN','Shipping notification')
+;
+
+-- 2023-09-07T06:48:31.200924500Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543548 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Reference Item: C_DocType DocBaseType -> SN_Shipping notification
+-- 2023-09-07T06:48:42.571871200Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Lieferavis',Updated=TO_TIMESTAMP('2023-09-07 09:48:42.571','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543548
+;
+
+-- Reference Item: C_DocType DocBaseType -> SN_Shipping notification
+-- 2023-09-07T06:48:45.812699300Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-07 09:48:45.812','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543548
+;
+
+-- Reference Item: C_DocType DocBaseType -> SN_Shipping notification
+-- 2023-09-07T06:48:52.812085800Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Lieferavis',Updated=TO_TIMESTAMP('2023-09-07 09:48:52.812','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543548
+;
+
+-- 2023-09-07T06:48:52.814180800Z
+UPDATE AD_Ref_List SET Name='Lieferavis' WHERE AD_Ref_List_ID=543548
+;
+
+-- 2023-09-07T06:59:46.225377100Z
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewMonth,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556307,TO_TIMESTAMP('2023-09-07 09:59:46.097','YYYY-MM-DD HH24:MI:SS.US'),100,10000000,10000000,'DocumentNo/Value for Table M_ShippingNotification',1,'Y','N','Y','N','DocumentNo_M_ShippingNotification','N','N',10000000,TO_TIMESTAMP('2023-09-07 09:59:46.097','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-09-07T07:01:27.072434600Z
+UPDATE AD_Sequence SET CurrentNext=1000000,Updated=TO_TIMESTAMP('2023-09-07 10:01:27.07','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Sequence_ID=556307
+;
+
+---
+
+--
+-- Script: /tmp/webui_migration_scripts_2023-09-06_8450706617159403874/5701760_migration_2023-09-07_postgresql.sql
+-- User: metasfresh
+-- OS user: root
+--
+
+
+-- 2023-09-07T07:14:19.839443049Z
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541109,TO_TIMESTAMP('2023-09-07 09:14:19.836','YYYY-MM-DD HH24:MI:SS.US'),100,'MMO',1,'C',0,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Shipping Notification','Shipping Notification',TO_TIMESTAMP('2023-09-07 09:14:19.836','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-09-07T07:14:19.862267022Z
+INSERT INTO C_DocType_Trl (AD_Language,C_DocType_ID, Description,DocumentNote,Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.C_DocType_ID, t.Description,t.DocumentNote,t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, C_DocType t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.C_DocType_ID=541109 AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_DocType_ID=t.C_DocType_ID)
+;
+
+-- 2023-09-07T07:14:19.866363613Z
+INSERT INTO AD_Document_Action_Access (AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) (SELECT 1000000,0,'Y', now(),100, now(),100, doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID FROM AD_Client client INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) WHERE client.AD_Client_ID=1000000 AND doctype.C_DocType_ID=541109 AND rol.IsManual='N')
+;
+
+-- 2023-09-07T07:14:32.753712974Z
+UPDATE C_DocType_Trl SET Name='Lieferavis',Updated=TO_TIMESTAMP('2023-09-07 09:14:32.753','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541109
+;
+
+-- 2023-09-07T07:14:34.225755602Z
+UPDATE C_DocType_Trl SET PrintName='Lieferavis',Updated=TO_TIMESTAMP('2023-09-07 09:14:34.225','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541109
+;
+
+-- 2023-09-07T07:14:34.294096336Z
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-07 09:14:34.293','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541109
+;
+
+-- 2023-09-07T07:14:38.027692650Z
+UPDATE C_DocType_Trl SET Name='Lieferavis',Updated=TO_TIMESTAMP('2023-09-07 09:14:38.027','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541109
+;
+
+-- 2023-09-07T07:14:38.028502181Z
+UPDATE C_DocType SET Name='Lieferavis' WHERE C_DocType_ID=541109
+;
+
+-- 2023-09-07T07:14:40.574946451Z
+UPDATE C_DocType_Trl SET PrintName='Lieferavis',Updated=TO_TIMESTAMP('2023-09-07 09:14:40.574','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541109
+;
+
+-- 2023-09-07T07:14:40.575528556Z
+UPDATE C_DocType SET PrintName='Lieferavis' WHERE C_DocType_ID=541109
+;
+
+
+update c_doctype
+set entitytype='de.metas.shippingnotification',
+    docnosequence_id=556307,
+    docbasetype='SN'
+where c_doctype_id=541109;
+
+-- 2023-09-07T08:27:00.888779200Z
+/* DDL */ SELECT public.db_alter_table('M_Shipping_Notification','ALTER TABLE public.M_Shipping_Notification ADD COLUMN Description TEXT')
+;
+
+
+
+-- UI Element: Lieferavis(541734,de.metas.inout) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Erntejahr
+-- Column: M_Shipping_Notification.Harvesting_Year_ID
+-- 2023-09-07T08:41:52.456318600Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,720421,0,547218,551131,620459,'F',TO_TIMESTAMP('2023-09-07 11:41:52.264','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','Y','N','N','Erntejahr',25,50,0,TO_TIMESTAMP('2023-09-07 11:41:52.264','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-09-07T08:42:01.907074800Z
+DELETE FROM AD_UI_ElementField WHERE AD_UI_ElementField_ID=541730
+;
+
+-- UI Element: Lieferavis(541734,de.metas.inout) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Geschäftspartner
+-- Column: M_Shipping_Notification.C_BPartner_ID
+-- 2023-09-07T08:42:19.746327Z
+UPDATE AD_UI_Element SET IsMultiLine='Y',Updated=TO_TIMESTAMP('2023-09-07 11:42:19.746','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620436
+;
+
+-- UI Element: Lieferavis(541734,de.metas.inout) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Geschäftspartner
+-- Column: M_Shipping_Notification.C_BPartner_ID
+-- 2023-09-07T08:43:47.826482400Z
+UPDATE AD_UI_Element SET UIStyle='primary', WidgetSize='L',Updated=TO_TIMESTAMP('2023-09-07 11:43:47.825','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620436
+;
+
+-- UI Element: Lieferavis(541734,de.metas.inout) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Geschäftspartner
+-- Column: M_Shipping_Notification.C_BPartner_ID
+-- 2023-09-07T08:44:10.284823Z
+UPDATE AD_UI_Element SET IsMultiLine='N',Updated=TO_TIMESTAMP('2023-09-07 11:44:10.284','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620436
+;
+
+-- 2023-09-07T08:45:37.041426700Z
+UPDATE AD_UI_ElementField SET SeqNo=10,Updated=TO_TIMESTAMP('2023-09-07 11:45:37.038','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_ElementField_ID=541729
+;
+
+-- 2023-09-07T08:45:41.314008700Z
+UPDATE AD_UI_ElementField SET SeqNo=20,Updated=TO_TIMESTAMP('2023-09-07 11:45:41.31','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_ElementField_ID=541728
+;
+
+
+-- Column: M_Shipping_NotificationLine.Processed
+-- 2023-09-07T11:09:44.058643900Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587457,1047,0,20,542366,'Processed',TO_TIMESTAMP('2023-09-07 14:09:43.865','YYYY-MM-DD HH24:MI:SS.US'),100,'N','N','Checkbox sagt aus, ob der Datensatz verarbeitet wurde. ','de.metas.shippingnotification',0,1,'Verarbeitete Datensatz dürfen in der Regel nich mehr geändert werden.','Y','N','Y','N','N','N','Y','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Verarbeitet',0,0,TO_TIMESTAMP('2023-09-07 14:09:43.865','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-09-07T11:09:44.066446800Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587457 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-09-07T11:09:44.073294500Z
+/* DDL */  select update_Column_Translation_From_AD_Element(1047) 
+;
+
+-- 2023-09-07T11:09:47.265738800Z
+/* DDL */ SELECT public.db_alter_table('M_Shipping_NotificationLine','ALTER TABLE public.M_Shipping_NotificationLine ADD COLUMN Processed CHAR(1) DEFAULT ''N'' CHECK (Processed IN (''Y'',''N'')) NOT NULL')
+;
+
+-- Column: M_Shipping_NotificationLine.M_Shipping_Notification_ID
+-- 2023-09-08T14:58:52.643444800Z
+UPDATE AD_Column SET IsParent='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2023-09-08 17:58:52.643','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587412
+;
 
