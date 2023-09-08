@@ -22,14 +22,17 @@
 
 package de.metas.contracts.modular.interim.invoice;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContract;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.document.DocBaseType;
@@ -38,6 +41,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.NewInvoiceCandidate;
@@ -92,7 +96,8 @@ public class InterimInvoiceCandidateService
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getBill_BPartner_ID());
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final UomId stockUOM = productBL.getStockUOMId(productId);
-		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveInterimInvoiceableInOuts(orderAndLineId);
+		final List<I_M_InOutLine> inOutLines = getUnprocessedInOutLines(flatrateTermRecord);
+
 		final OrgId orgId = OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID());
 		final ZoneId orgTimeZone = orgDAO.getTimeZone(orgId);
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
@@ -132,6 +137,28 @@ public class InterimInvoiceCandidateService
 				});
 
 		return invoiceCandidateSet.build();
+	}
+
+	@NonNull
+	private List<I_M_InOutLine> getUnprocessedInOutLines(final @NonNull I_C_Flatrate_Term flatrateTermRecord)
+	{
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(flatrateTermRecord.getC_Order_Term_ID(), flatrateTermRecord.getC_OrderLine_Term_ID());
+		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveInterimInvoiceableInOuts(orderAndLineId);
+		final TableRecordReferenceSet tableRecordReferences = TableRecordReferenceSet.of(inOutLines.stream()
+				.map(TableRecordReference::of)
+				.collect(ImmutableSet.toImmutableSet()));
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.referenceSet(tableRecordReferences)
+				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
+				.contractType(LogEntryContractType.INTERIM)
+				.build();
+		final ImmutableSet<InOutLineId> inOutLineIds = modularContractLogService.getModularContractLogEntries(query)
+				.stream().filter(ModularContractLogEntry::isProcessed)
+				.map(entry -> InOutLineId.ofRepoId(entry.getReferencedRecord().getRecord_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		return inOutLines.stream()
+				.filter(line -> !inOutLineIds.contains(InOutLineId.ofRepoId(line.getM_InOutLine_ID())))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private DocTypeId getInterimInvoiceDocType()

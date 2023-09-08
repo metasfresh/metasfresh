@@ -42,7 +42,6 @@ import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchPO;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -256,24 +255,17 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public List<I_M_InOutLine> retrieveInterimInvoiceableInOuts(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		final IQuery<I_M_MatchPO> matchPOSubQuery = queryBL.createQueryBuilder(I_M_MatchPO.class)
-				.addEqualsFilter(I_M_MatchPO.COLUMNNAME_C_OrderLine_ID, orderAndLineId.getOrderLineId())
-				.addIsNull(I_M_MatchPO.COLUMNNAME_C_InvoiceLine_ID)
-				.addOnlyActiveRecordsFilter()
-				.create();
-
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+		return queryBL.createQueryBuilder(I_M_InOut.class)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsInterimInvoiceable, true)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderAndLineId.getOrderId())
 				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderAndLineId.getOrderLineId())
-				.addInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, I_M_MatchPO.COLUMNNAME_M_InOutLine_ID, matchPOSubQuery)
-				.addOnlyActiveRecordsFilter();
-		queryBuilder.orderBy()
-				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
-
-		return queryBuilder.create()
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID)
+				.endOrderBy()
+				.create()
 				.list();
 	}
 
@@ -331,7 +323,6 @@ public class InOutDAO implements IInOutDAO
 				.orderBy()
 				.addColumn(I_M_InOutLine.COLUMNNAME_Line)
 				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy();
-
 	}
 
 	@Override
