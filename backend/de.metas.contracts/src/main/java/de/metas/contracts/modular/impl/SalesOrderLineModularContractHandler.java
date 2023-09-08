@@ -35,13 +35,16 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
@@ -51,12 +54,17 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
+
 @Component
+@RequiredArgsConstructor
 public class SalesOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
+	@NonNull private final ModularContractLogService contractLogService;
 
 	@Override
 	public @NonNull Class<I_C_OrderLine> getType()
@@ -141,13 +149,15 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public void validateDocAction(final @NonNull I_C_OrderLine model, final @NonNull ModelAction action)
+	public void validateAction(final @NonNull I_C_OrderLine model, final @NonNull ModelAction action)
 	{
 		switch (action)
 		{
 			case COMPLETED, VOIDED, REACTIVATED ->
 			{
 			}
+			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
+																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}

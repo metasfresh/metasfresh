@@ -55,11 +55,14 @@ public interface IModularContractTypeHandler<T>
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull T model);
 
-	void validateDocAction(@NonNull final T model, @NonNull final ModelAction action);
-
-	default void cancelLinkedContractsIfAllowed(@NonNull final T model, @NonNull final FlatrateTermId flatrateTermId) {}
+	void validateAction(@NonNull final T model, @NonNull final ModelAction action);
 
 	default void createContractIfRequired(@NonNull final T model) {}
 
-	default void handleAction(@NonNull final T model, @NonNull final ModelAction modelAction, @NonNull final ModularContractService contractService) {}
+	default void handleAction(
+			@NonNull final T model,
+			@NonNull final ModelAction modelAction,
+			@NonNull final FlatrateTermId contractId,
+			@NonNull final ModularContractService contractService)
+	{}
 }

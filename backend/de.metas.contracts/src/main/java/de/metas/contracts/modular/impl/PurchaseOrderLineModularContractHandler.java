@@ -35,6 +35,7 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.i18n.AdMessageKey;
@@ -46,8 +47,10 @@ import de.metas.order.OrderLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -62,8 +65,10 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract;
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
+@RequiredArgsConstructor
 public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
 	private static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
@@ -76,12 +81,9 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
-	public PurchaseOrderLineModularContractHandler(@NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
-	{
-		this.modularContractSettingsDAO = modularContractSettingsDAO;
-	}
+	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModularContractLogService contractLogService;
 
 	@Nullable
 	public static I_C_OrderLine getSourcePurchaseOrderLine(@NonNull final I_C_Flatrate_Term contract)
@@ -140,20 +142,21 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.stream();
 	}
 
-	public void validateDocAction(
-			@NonNull final I_C_OrderLine ignored,
+	public void validateAction(
+			@NonNull final I_C_OrderLine model,
 			@NonNull final ModelAction action)
 	{
 		switch (action)
 		{
 			case COMPLETED, VOIDED -> {}
 			case REACTIVATED, REVERSED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
+			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
+																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 
-	@Override
-	public void cancelLinkedContractsIfAllowed(@NonNull final I_C_OrderLine model, @NonNull final FlatrateTermId flatrateTermId)
+	private void cancelLinkedContractsIfAllowed(@NonNull final I_C_OrderLine model, @NonNull final FlatrateTermId flatrateTermId)
 	{
 		final List<I_M_InOutLine> generatedInOutLines = inOutDAO.retrieveLinesForOrderLine(model);
 
@@ -199,20 +202,13 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	public void handleAction(
 			@NonNull final I_C_OrderLine orderLine,
 			@NonNull final ModelAction modelAction,
+			@NonNull final FlatrateTermId contractId,
 			@NonNull final ModularContractService contractService)
 	{
-		if (modelAction != ModelAction.COMPLETED)
+		switch (modelAction)
 		{
-			return;
-		}
-
-		//dev-note: the interim contract that was just created as a result of completing the current purchase order
-		final I_C_Flatrate_Term interimContract = PurchaseOrderLineModularContractHandler.getInterimContract(orderLine);
-		if (interimContract != null)
-		{
-			Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
-
-			contractService.invokeWithModel(interimContract, modelAction, LogEntryContractType.INTERIM);
+			case VOIDED -> cancelLinkedContractsIfAllowed(orderLine, contractId);
+			case COMPLETED -> invokeHandlersForCreatedInterimContract(orderLine, modelAction, contractService);
 		}
 	}
 
@@ -244,6 +240,20 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 					.appendParametersToMessage()
 					.setParameter("ConditionsId", conditionsId)
 					.markAsUserValidationError();
+		}
+	}
+
+	private void invokeHandlersForCreatedInterimContract(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final ModelAction modelAction,
+			@NonNull final ModularContractService contractService)
+	{
+		final I_C_Flatrate_Term interimContract = PurchaseOrderLineModularContractHandler.getInterimContract(orderLine);
+		if (interimContract != null)
+		{
+			Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null");
+
+			contractService.invokeWithModel(interimContract, modelAction, LogEntryContractType.INTERIM);
 		}
 	}
 }

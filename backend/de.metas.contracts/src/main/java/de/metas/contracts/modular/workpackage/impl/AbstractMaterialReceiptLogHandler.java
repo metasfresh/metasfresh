@@ -26,14 +26,18 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
@@ -47,25 +51,51 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.springframework.stereotype.Component;
 
-@Component
-class MaterialReceiptLineHandlerHelper
+abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogHandler<I_M_InOutLine>
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	private final static AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptReverseLogDescription");
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptCompleteLogDescription");
 
+	@Override
+	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_InOutLine> request)
+	{
+		return switch (request.getModelAction())
+				{
+					case COMPLETED -> LogAction.CREATE;
+					case REVERSED, REACTIVATED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
+					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+				};
+	}
+
+	@Override
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine model)
+	{
+		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(model.getM_InOut_ID()));
+
+		if (!inOutDocStatus.isCompleted())
+		{
+			return BooleanWithReason.falseBecause("The M_Inout.DocStatus is " + inOutDocStatus);
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			@NonNull final IModularContractLogHandler.CreateLogRequest<I_M_InOutLine> request)
 	{
@@ -107,6 +137,7 @@ class MaterialReceiptLineHandlerHelper
 											.build());
 	}
 
+	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
 			final @NonNull IModularContractLogHandler.HandleLogsRequest<I_M_InOutLine> request,
 			final @NonNull FlatrateTermId contractId)

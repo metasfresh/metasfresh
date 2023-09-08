@@ -155,7 +155,7 @@ public class ModularContractLogDAO
 														.flatrateTermId(request.flatrateTermId())
 														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
 														.contractType(request.logEntryContractType())
-				.build())
+														.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
 		if (oldLog.isProcessed())
@@ -208,11 +208,28 @@ public class ModularContractLogDAO
 				sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
 	}
 
+	public boolean anyMatch(@NonNull final ModularContractLogQuery query)
+	{
+		return toSqlQuery(query)
+				.create()
+				.anyMatch();
+	}
+
+	public void delete(@NonNull final LogEntryDeleteRequest request)
+	{
+		queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, request.referencedModel().getAD_Table_ID())
+				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, request.referencedModel().getRecord_ID())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, request.flatrateTermId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType())
+				.create()
+				.delete(true);
+	}
+
 	private IQueryBuilder<I_ModCntr_Log> toSqlQuery(@NonNull final ModularContractLogQuery query)
 	{
 		final IQueryBuilder<I_ModCntr_Log> sqlQueryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addOnlyActiveRecordsFilter();
-
 
 		final TableRecordReferenceSet referenceSet = query.getReferenceSet();
 		if (referenceSet != null)
@@ -235,6 +252,11 @@ public class ModularContractLogDAO
 		if (query.getFlatrateTermId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, query.getFlatrateTermId());
+		}
+
+		if (query.getProcessed() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
 		}
 
 		return sqlQueryBuilder;

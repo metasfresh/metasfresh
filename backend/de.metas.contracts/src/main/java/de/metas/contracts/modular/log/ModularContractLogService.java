@@ -28,6 +28,7 @@ import de.metas.order.OrderLineId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -65,5 +66,25 @@ public class ModularContractLogService
 			@NonNull final OrderLineId orderLineId)
 	{
 		return modularContractLogDAO.getLastModularContractLog(modularFlatrateTermId, orderLineId);
+	}
+
+	public void throwErrorIfProcessedLogsExistForRecord(
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final AdMessageKey errorMessage)
+	{
+		if (hasAnyProcessedLogs(tableRecordReference))
+		{
+			throw new AdempiereException(errorMessage);
+		}
+	}
+
+	private boolean hasAnyProcessedLogs(@NonNull final TableRecordReference tableRecordReference)
+	{
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.referenceSet(TableRecordReferenceSet.of(tableRecordReference))
+				.processed(true)
+				.build();
+
+		return modularContractLogDAO.anyMatch(query);
 	}
 }

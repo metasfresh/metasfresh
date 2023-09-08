@@ -24,26 +24,38 @@ package de.metas.contracts.modular.workpackage;
 
 import ch.qos.logback.classic.Level;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Service
 @RequiredArgsConstructor
 class ModularContractLogHandler
 {
 	public static final Logger logger = LogManager.getLogger(ModularContractLogHandler.class);
+
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull
 	private final ModularContractLogHandlerRegistry handlerRegistry;
@@ -53,18 +65,27 @@ class ModularContractLogHandler
 	private final ModularContractLogDAO contractLogDAO;
 	@NonNull
 	private final ModularLogCreateStatusService createStatusService;
+	@NonNull
+	private final ModularContractLogService modularLogService;
 
-	public <T> void handleLogs(@NonNull final IModularContractLogHandler.HandleLogsRequest<T> request)
+	public <T> void handleLogs(@NonNull final List<IModularContractLogHandler.HandleLogsRequest<T>> requestList)
 	{
 		try
 		{
-			handlerRegistry.streamHandlers(request).forEach(handler -> handleLogs(handler, request));
-
-			createStatusService.setStatusSuccessfullyProcessed(request.getWorkPackageId(), request.getModelRef());
+			requestList.forEach(request -> handlerRegistry
+					.streamHandlers(request)
+					.forEach(handler -> {
+						handleLogs(handler, request);
+						createStatusService.setStatusSuccessfullyProcessed(request.getWorkPackageId(), request.getModelRef());
+					}));
 		}
 		catch (final Throwable error)
 		{
-			createStatusService.setStatusErrored(request.getWorkPackageId(), request.getModelRef(), error);
+			// the current one will be rolled back
+			trxManager.runInNewTrx(() -> requestList.forEach(request -> createStatusService
+					.setStatusErrored(request.getWorkPackageId(), request.getModelRef(), error)));
+
+			throw error;
 		}
 	}
 
@@ -111,15 +132,20 @@ class ModularContractLogHandler
 		}
 
 		final IModularContractLogHandler.LogAction action = handler.getLogAction(request);
+
+		final Supplier<IModularContractLogHandler.CreateLogRequest<T>> buildCreateRequest = () -> IModularContractLogHandler.CreateLogRequest
+				.<T>builder()
+				.handleLogsRequest(request)
+				.modularContractSettings(settings)
+				.typeId(contractTypeId)
+				.contractId(contractId)
+				.build();
+
 		switch (action)
 		{
-			case CREATE -> createLogs(handler, IModularContractLogHandler.CreateLogRequest.<T>builder()
-					.handleLogsRequest(request)
-					.modularContractSettings(settings)
-					.typeId(contractTypeId)
-					.contractId(contractId)
-					.build());
+			case CREATE -> createLogs(handler, buildCreateRequest.get());
 			case REVERSE -> reverseLogs(handler, request, contractId);
+			case RECOMPUTE -> recreateLogs(handler, buildCreateRequest.get());
 			default -> throw new AdempiereException("Unknown action: " + action);
 		}
 	}
@@ -128,7 +154,7 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler<T> handler,
 			@NonNull final IModularContractLogHandler.CreateLogRequest<T> request)
 	{
-		handler.createLogEntryCreateRequest(request)
+		createLogEntryCreateRequest(handler, request)
 				.ifPresent(contractLogDAO::create)
 				.ifAbsent(explanation -> Loggables.withLogger(logger, Level.DEBUG)
 						.addLog("Method: {} | No logs created for request: {}! reason: {}!",
@@ -150,5 +176,34 @@ class ModularContractLogHandler
 								contractId,
 								request,
 								explanation.getDefaultValue()));
+	}
+
+	private <T> void recreateLogs(
+			@NonNull final IModularContractLogHandler<T> handler,
+			@NonNull final IModularContractLogHandler.CreateLogRequest<T> request)
+	{
+		modularLogService.throwErrorIfProcessedLogsExistForRecord(request.getHandleLogsRequest().getModelRef(), MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
+
+		contractLogDAO.delete(handler.getDeleteRequestFor(request.getHandleLogsRequest(), request.getContractId()));
+
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("Method: {} | Logs were successfully deleted for request: {}!", "recreateLogs", request);
+
+		createLogs(handler, request);
+	}
+
+	private <T> ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
+			@NonNull final IModularContractLogHandler<T> handler,
+			@NonNull final IModularContractLogHandler.CreateLogRequest<T> createLogRequest)
+	{
+		final BooleanWithReason areLogsRequired = handler.doesRecordStateRequireLogCreation(
+				createLogRequest.getHandleLogsRequest().getModel());
+
+		if (areLogsRequired.isFalse())
+		{
+			return ExplainedOptional.emptyBecause(areLogsRequired.getReason());
+		}
+
+		return handler.createLogEntryCreateRequest(createLogRequest);
 	}
 }

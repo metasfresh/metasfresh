@@ -1997,4 +1997,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return invoiceDAO.retrieveLines(invoiceId);
 	}
+
+	@Override
+	public DocStatus getDocStatus(@NonNull final InvoiceId invoiceId)
+	{
+		return DocStatus.ofCode(invoiceDAO.getByIdInTrx(invoiceId).getDocStatus());
+	}
 }

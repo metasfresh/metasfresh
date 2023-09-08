@@ -32,6 +32,8 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.document.engine.DocStatus;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -73,14 +75,28 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 				{
 					case COMPLETED -> LogAction.CREATE;
 					case REACTIVATED, REVERSED, VOIDED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_OrderLine> request)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_OrderLine model)
 	{
-		final I_C_OrderLine orderLine = request.getHandleLogsRequest().getModel();
+		final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(model.getC_Order_ID()));
+
+		if (!orderDocStatus.isCompleted())
+		{
+			return BooleanWithReason.falseBecause("The C_Order.DocStatus is " + orderDocStatus);
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	@Override
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_OrderLine> createLogRequest)
+	{
+		final I_C_OrderLine orderLine = createLogRequest.getHandleLogsRequest().getModel();
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
@@ -89,7 +105,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(request.getContractId())
+											.contractId(createLogRequest.getContractId())
 											.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 											.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
@@ -105,9 +121,9 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
 																						   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 																						   orgDAO::getTimeZone))
-											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
+											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(null)
-											.modularContractTypeId(request.getTypeId())
+											.modularContractTypeId(createLogRequest.getTypeId())
 											.build());
 	}
 

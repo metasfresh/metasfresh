@@ -37,7 +37,9 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -83,16 +85,30 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 				{
 					case COMPLETED -> LogAction.CREATE;
 					case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_OrderLine> request)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_OrderLine model)
 	{
-		final I_C_OrderLine orderLine = request.getHandleLogsRequest().getModel();
+		final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(model.getC_Order_ID()));
 
-		final I_C_Flatrate_Term contract = flatrateBL.getById(request.getContractId());
+		if (!orderDocStatus.isCompletedOrClosed())
+		{
+			return BooleanWithReason.falseBecause("The C_Order.DocStatus is " + orderDocStatus);
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	@Override
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_OrderLine> createLogRequest)
+	{
+		final I_C_OrderLine orderLine = createLogRequest.getHandleLogsRequest().getModel();
+
+		final I_C_Flatrate_Term contract = flatrateBL.getById(createLogRequest.getContractId());
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
 
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
@@ -106,7 +122,7 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
-											.contractId(request.getContractId())
+											.contractId(createLogRequest.getContractId())
 											.collectionPointBPartnerId(bPartnerId)
 											.producerBPartnerId(bPartnerId)
 											.invoicingBPartnerId(bPartnerId)
@@ -120,9 +136,9 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
 																						   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 																						   orgDAO::getTimeZone))
-											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
+											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
-											.modularContractTypeId(request.getTypeId())
+											.modularContractTypeId(createLogRequest.getTypeId())
 											.build());
 	}
 

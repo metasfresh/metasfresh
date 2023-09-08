@@ -31,12 +31,14 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
+import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.handlingunits.modular.impl.PPCostCollectorModularContractHandler;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -86,17 +88,28 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 		return switch (request.getModelAction())
 				{
 					case COMPLETED -> LogAction.CREATE;
-					case REACTIVATED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_PP_Cost_Collector> request)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_PP_Cost_Collector model)
 	{
-		final I_PP_Cost_Collector ppCostCollector = request.getHandleLogsRequest().getModel();
-		final FlatrateTermId contractId = request.getContractId();
-		final ModularContractSettings modularContractSettings = request.getModularContractSettings();
+		if (!model.isProcessed())
+		{
+			return BooleanWithReason.falseBecause("The PP_Cost_Collector.Processed is false");
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	@Override
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_PP_Cost_Collector> createLogRequest)
+	{
+		final I_PP_Cost_Collector ppCostCollector = createLogRequest.getHandleLogsRequest().getModel();
+		final FlatrateTermId contractId = createLogRequest.getContractId();
+		final ModularContractSettings modularContractSettings = createLogRequest.getModularContractSettings();
 
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(contractId);
 
@@ -137,7 +150,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 																						   orgDAO::getTimeZone))
 											.year(modularContractSettings.getYearAndCalendarId().yearId())
 											.description(description)
-											.modularContractTypeId(request.getTypeId())
+											.modularContractTypeId(createLogRequest.getTypeId())
 											.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID()))
 											.build());
 	}
@@ -152,5 +165,20 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	public @NonNull IModularContractTypeHandler<I_PP_Cost_Collector> getModularContractTypeHandler()
 	{
 		return contractHandler;
+	}
+
+	@Override
+	@NonNull
+	public LogEntryDeleteRequest getDeleteRequestFor(
+			@NonNull final HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest,
+			@NonNull final FlatrateTermId contractId)
+	{
+		final I_PP_Cost_Collector ppCostCollector = handleLogsRequest.getModel();
+
+		return LogEntryDeleteRequest.builder()
+				.referencedModel(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
+				.flatrateTermId(contractId)
+				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
+				.build();
 	}
 }
