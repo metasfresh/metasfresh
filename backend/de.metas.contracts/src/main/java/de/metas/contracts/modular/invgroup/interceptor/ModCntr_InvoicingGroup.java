@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ModCntr_InvoicingGroup
 {
-	private ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo })
 	public void validateProductNotAlreadyUsed(@NonNull final I_ModCntr_InvoicingGroup invoicingGroup)

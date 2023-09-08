@@ -262,10 +262,7 @@ public class InOutDAO implements IInOutDAO
 				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderAndLineId.getOrderLineId())
 				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID)
-				.endOrderBy()
-				.create()
+				.orderBy(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID)
 				.list();
 	}
 
