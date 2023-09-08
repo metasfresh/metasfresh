@@ -24,12 +24,14 @@ package de.metas.contracts.modular.log;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -65,5 +67,18 @@ public class ModularContractLogService
 			@NonNull final OrderLineId orderLineId)
 	{
 		return modularContractLogDAO.getLastModularContractLog(modularFlatrateTermId, orderLineId);
+	}
+
+	public void setICProcessed(
+			@NonNull final ModularContractLogQuery query,
+			@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		modularContractLogDAO.setICProcessed(query, invoiceCandidateId);
+	}
+
+	@NonNull
+	public List<ModularContractLogEntry> getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractLogEntries(query);
 	}
 }
