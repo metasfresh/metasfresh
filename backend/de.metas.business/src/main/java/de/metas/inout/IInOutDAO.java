@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -88,6 +89,8 @@ public interface IInOutDAO extends ISingletonService
 	List<I_M_InOutLine> retrieveLinesForOrderLine(I_C_OrderLine orderLine);
 
 	<T extends I_M_InOutLine> List<T> retrieveCompleteOrClosedLinesForOrderLine(@NonNull final OrderLineId orderLineId, Class<T> clazz);
+
+	<T extends I_M_InOutLine> List<T> retrieveInterimInvoiceableInOuts(@NonNull OrderAndLineId orderAndLineId);
 
 	<T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(I_C_OrderLine orderLine, Class<T> clazz);
 

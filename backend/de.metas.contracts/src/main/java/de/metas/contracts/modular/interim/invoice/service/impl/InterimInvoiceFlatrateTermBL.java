@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -43,6 +44,7 @@ import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
+import de.metas.invoicecandidate.NewInvoiceCandidate;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -258,5 +260,11 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 				.beforeCompleteInterceptor(beforeCompleteInterceptor)
 				.build()
 				.execute();
+	}
+
+	@Override
+	public void generateICsFor(final ModularFlatrateTermQuery modularFlatrateTermQuery, final NewInvoiceCandidate.NewInvoiceCandidateBuilder flatrateTermRecord)
+	{
+
 	}
 }
