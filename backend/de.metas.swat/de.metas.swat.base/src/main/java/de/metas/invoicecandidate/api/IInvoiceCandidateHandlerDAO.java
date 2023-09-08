@@ -29,6 +29,7 @@ import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 
 import java.util.List;
 import java.util.Properties;
@@ -53,6 +54,13 @@ public interface IInvoiceCandidateHandlerDAO extends ISingletonService
 	@NonNull
 	ILCandHandlerId retrieveIdForClassOneOnly(Properties ctx,
 			@NonNull Class<? extends IInvoiceCandidateHandler> handlerClass);
+
+	@NonNull
+	default ILCandHandlerId retrieveIdForClassOneOnly(@NonNull Class<? extends IInvoiceCandidateHandler> handlerClass)
+	{
+		return retrieveIdForClassOneOnly(Env.getCtx(), handlerClass);
+	}
+
 
 	/**
 	 * Retrieve {@link I_C_ILCandHandler} by given <code>handlerClass</code>

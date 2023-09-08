@@ -94,52 +94,62 @@ public class InterimInvoiceCandidateService
 
 	public ImmutableSet<InvoiceCandidateId> createInterimInvoiceCandidatesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord, @NonNull final BPartnerInterimContract bPartnerInterimContract)
 	{
+		final List<I_M_InOutLine> inOutLines = getUnprocessedInOutLines(flatrateTermRecord);
+		if(inOutLines.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(flatrateTermRecord.getC_Order_Term_ID(), flatrateTermRecord.getC_OrderLine_Term_ID());
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
 		final I_C_Order order = orderDAO.getById(orderAndLineId.getOrderId());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getBill_BPartner_ID());
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final UomId stockUOM = productBL.getStockUOMId(productId);
-		final List<I_M_InOutLine> inOutLines = getUnprocessedInOutLines(flatrateTermRecord);
-
 		final OrgId orgId = OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID());
 		final ZoneId orgTimeZone = orgDAO.getTimeZone(orgId);
+		final NewInvoiceCandidate.NewInvoiceCandidateBuilder newInvoiceCandidateTemplate = NewInvoiceCandidate.builder()
+				.orgId(orgId)
+				.soTrx(SOTrx.PURCHASE)
+				.invoiceDocTypeId(getInterimInvoiceDocType())
+				.invoiceRule(InvoiceRule.Immediate)
+				.harvestYearAndCalendarId(bPartnerInterimContract.getYearAndCalendarId())
+				.productId(productId)
+				.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
+				.billPartnerInfo(BPartnerInfo.builder()
+						.bpartnerId(bpartnerId)
+						.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getBill_Location_ID()))
+						.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getBill_User_ID()))
+						.build())
+				.invoicingUomId(stockUOM)
+				//.qtyOrdered(stockDeliveredQty)
+				//.qtyDelivered(stockDeliveredQty)
+				.presetDateInvoiced(LocalDate.now(orgTimeZone))
+				.dateOrdered(TimeUtil.asLocalDate(order.getDateOrdered(), orgTimeZone))
+				.recordReference(TableRecordReference.of(flatrateTermRecord))
+				.isInterimInvoice(true)
+				.isManual(false)
+				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(FlatrateTerm_Handler.class));
+
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
 
 		inOutLines.forEach(
 				inOutLine -> {
 					final StockQtyAndUOMQty stockDeliveredQty = inOutBL.getStockQtyAndQtyInUOM(inOutLine);
 
-					final NewInvoiceCandidate newInvoiceCandidate = NewInvoiceCandidate.builder()
-							.orgId(orgId)
-							.soTrx(SOTrx.PURCHASE)
-							.invoiceDocTypeId(getInterimInvoiceDocType())
-							.invoiceRule(InvoiceRule.Immediate)
-							.harvestYearAndCalendarId(bPartnerInterimContract.getYearAndCalendarId())
-							.productId(productId)
-							.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
-							.billPartnerInfo(BPartnerInfo.builder()
-									.bpartnerId(bpartnerId)
-									.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getBill_Location_ID()))
-									.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getBill_User_ID()))
-									.build())
-							.invoicingUomId(stockUOM)
+					final NewInvoiceCandidate newInvoiceCandidate = newInvoiceCandidateTemplate
 							.qtyOrdered(stockDeliveredQty)
 							.qtyDelivered(stockDeliveredQty)
-							.presetDateInvoiced(LocalDate.now(orgTimeZone))
-							.dateOrdered(TimeUtil.asLocalDate(order.getDateOrdered(), orgTimeZone))
-							.recordReference(TableRecordReference.of(flatrateTermRecord))
-							.isInterimInvoice(true)
-							.isManual(false)
-							.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(Env.getCtx(), FlatrateTerm_Handler.class))
 							.build();
 
 					final InvoiceCandidateId invoiceCandidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
 					invoiceCandidateSet.add(invoiceCandidateId);
-					modularContractLogService.setICProcessed(ModularContractLogQuery.builder()
-							.contractType(LogEntryContractType.INTERIM)
-							.referenceSet(TableRecordReferenceSet.of(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLine.getM_InOutLine_ID())))
-							.build(), invoiceCandidateId);
+					modularContractLogService.setICProcessed(
+							ModularContractLogQuery.builder()
+									.contractType(LogEntryContractType.INTERIM)
+									.referenceSet(TableRecordReferenceSet.of(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLine.getM_InOutLine_ID())))
+									.build(),
+							invoiceCandidateId);
 				});
 
 		return invoiceCandidateSet.build();
