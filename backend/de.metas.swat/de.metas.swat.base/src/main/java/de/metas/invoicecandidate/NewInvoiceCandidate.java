@@ -26,6 +26,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
+import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
@@ -112,6 +113,8 @@ public class NewInvoiceCandidate
 
 	YearAndCalendarId harvestYearAndCalendarId;
 	boolean isInterimInvoice;
+	ILCandHandlerId handlerId;
+	boolean isManual;
 
 	private NewInvoiceCandidate(
 			@NonNull final OrgId orgId,
@@ -141,7 +144,10 @@ public class NewInvoiceCandidate
 			@Nullable final TableRecordReference recordReference,
 			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
-			@Nullable final YearAndCalendarId harvestYearAndCalendarId, final boolean isInterimInvoice)
+			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
+			final boolean isInterimInvoice,
+			@NonNull final ILCandHandlerId handlerId,
+			final boolean isManual)
 	{
 		this.orgId = orgId;
 
@@ -172,6 +178,8 @@ public class NewInvoiceCandidate
 		this.invoiceDetailItems = invoiceDetailItems;
 		this.harvestYearAndCalendarId = harvestYearAndCalendarId;
 		this.isInterimInvoice = isInterimInvoice;
+		this.handlerId = handlerId;
+		this.isManual = isManual;
 
 		if (priceEnteredOverride != null)
 		{

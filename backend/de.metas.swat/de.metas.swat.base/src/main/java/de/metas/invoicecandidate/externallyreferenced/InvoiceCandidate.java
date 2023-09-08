@@ -29,6 +29,7 @@ import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
@@ -89,7 +90,9 @@ public class InvoiceCandidate
 				.activityId(newIC.getActivityId())
 				.paymentTermId(newIC.getPaymentTermId())
 				.harvestYearAndCalendarId(newIC.getHarvestYearAndCalendarId())
-				.isInterimInvoice(newIC.isInterimInvoice());
+				.isInterimInvoice(newIC.isInterimInvoice())
+				.handlerId(newIC.getHandlerId())
+				.isManual(newIC.isManual());
 	}
 
 	private final OrgId orgId;
@@ -180,6 +183,8 @@ public class InvoiceCandidate
 
 	private List<InvoiceDetailItem> invoiceDetailItems;
 	private final boolean isInterimInvoice;
+	private final ILCandHandlerId handlerId;
+	private final boolean isManual;
 
 	@Builder
 	private InvoiceCandidate(
@@ -216,7 +221,9 @@ public class InvoiceCandidate
 			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
-			final boolean isInterimInvoice)
+			final boolean isInterimInvoice,
+			@NonNull final ILCandHandlerId handlerId,
+			final boolean isManual)
 	{
 		this.orgId = orgId;
 		this.id = id;
@@ -252,6 +259,8 @@ public class InvoiceCandidate
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 		this.isInterimInvoice = isInterimInvoice;
+		this.handlerId = handlerId;
+		this.isManual = isManual;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(

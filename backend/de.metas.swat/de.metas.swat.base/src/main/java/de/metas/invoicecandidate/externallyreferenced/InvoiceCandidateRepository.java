@@ -33,12 +33,13 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
+import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
@@ -69,6 +70,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -81,12 +83,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-public abstract class AbstractInvoiceCandidateRepository
+@Repository
+public class InvoiceCandidateRepository
 {
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+
 
 	public InvoiceCandidateId save(@NonNull final InvoiceCandidate ic)
 	{
@@ -97,8 +102,6 @@ public abstract class AbstractInvoiceCandidateRepository
 		if (invoiceCandidateId == null)
 		{
 			icRecord = newInstance(I_C_Invoice_Candidate.class);
-
-			setICHandler(icRecord);
 
 			icRecord.setAD_Org_ID(ic.getOrgId().getRepoId());
 			icRecord.setM_Product_ID(ic.getProductId().getRepoId());
@@ -136,6 +139,8 @@ public abstract class AbstractInvoiceCandidateRepository
 				icRecord.setHarvesting_Year_ID(harvestYearAndCalendarId.yearId().getRepoId());
 			}
 			icRecord.setIsInterimInvoice(ic.isInterimInvoice());
+			icRecord.setC_ILCandHandler_ID(ic.getHandlerId().getRepoId());
+			icRecord.setIsManual(ic.isManual());
 		}
 		else
 		{
@@ -202,8 +207,6 @@ public abstract class AbstractInvoiceCandidateRepository
 		return persistedInvoiceCandidateId;
 	}
 
-	protected abstract void setICHandler(final I_C_Invoice_Candidate icRecord);
-
 	private void syncBillPartnerToRecord(
 			@NonNull final InvoiceCandidate invoiceCandidate,
 			@NonNull final I_C_Invoice_Candidate icRecord)
@@ -229,7 +232,7 @@ public abstract class AbstractInvoiceCandidateRepository
 	public ImmutableList<InvoiceCandidate> getAllBy(
 			@NonNull final Collection<InvoiceCandidateLookupKey> lookupKeys)
 	{
-		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
+		final InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
 		for (final InvoiceCandidateLookupKey invoiceCandidateLookupKey : lookupKeys)
 		{
 			final InvoiceCandidateQuery query;
@@ -243,9 +246,9 @@ public abstract class AbstractInvoiceCandidateRepository
 			{
 				query = InvoiceCandidateQuery.builder()
 						.externalIds(ExternalHeaderIdWithExternalLineIds.builder()
-											 .externalHeaderId(invoiceCandidateLookupKey.getExternalHeaderId())
-											 .externalLineId(invoiceCandidateLookupKey.getExternalLineId())
-											 .build())
+								.externalHeaderId(invoiceCandidateLookupKey.getExternalHeaderId())
+								.externalLineId(invoiceCandidateLookupKey.getExternalLineId())
+								.build())
 						.build();
 			}
 			multiQuery.query(query);
@@ -336,6 +339,10 @@ public abstract class AbstractInvoiceCandidateRepository
 		candidate.activityId(ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()));
 
 		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
+		candidate.isManual(icRecord.isManual());
+		candidate.isInterimInvoice(icRecord.isInterimInvoice());
+		candidate.handlerId(ILCandHandlerId.ofRepoId(icRecord.getC_ILCandHandler_ID()));
+		candidate.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(icRecord.getHarvesting_Year_ID(), icRecord.getC_Harvesting_Calendar_ID()));
 
 		return candidate.build();
 	}

@@ -43,10 +43,12 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.NewInvoiceCandidate;
 import de.metas.invoicecandidate.NewInvoiceCandidate.NewInvoiceCandidateBuilder;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
+import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
+import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -119,8 +121,9 @@ public class CreateInvoiceCandidatesService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 
-	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
+	private final InvoiceCandidateRepository invoiceCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
 
 	public CreateInvoiceCandidatesService(
@@ -129,14 +132,14 @@ public class CreateInvoiceCandidatesService
 			@NonNull final DocTypeService docTypeService,
 			@NonNull final CurrencyService currencyService,
 			@NonNull final ManualCandidateService manualCandidateService,
-			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
+			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
 		this.manualCandidateService = manualCandidateService;
-		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
+		this.invoiceCandidateRepository = invoiceCandidateRepository;
 	}
 
 	public JsonCreateInvoiceCandidatesResponse createInvoiceCandidates(@NonNull final JsonCreateInvoiceCandidatesRequest request)
@@ -145,7 +148,7 @@ public class CreateInvoiceCandidatesService
 
 		// candidates
 		final ImmutableList<InvoiceCandidate> //
-		exitingCandidates = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
+				exitingCandidates = invoiceCandidateRepository.getAllBy(lookupKey2Item.keySet());
 		failIfNotEmpty(exitingCandidates);
 
 		final ImmutableList.Builder<NewInvoiceCandidate> candidatesToSave = ImmutableList.builder();
@@ -163,7 +166,7 @@ public class CreateInvoiceCandidatesService
 			final JsonExternalId headerId = JsonExternalIds.ofOrNull(candidateToSave.getExternalHeaderId());
 			final JsonExternalId lineId = JsonExternalIds.ofOrNull(candidateToSave.getExternalLineId());
 
-			final InvoiceCandidateId candidateId = externallyReferencedCandidateRepository.save(manualCandidateService.createInvoiceCandidate(candidateToSave));
+			final InvoiceCandidateId candidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(candidateToSave));
 
 			final JsonInvoiceCandidatesResponseItem responseItem = JsonInvoiceCandidatesResponseItem.builder()
 					.externalHeaderId(headerId)
@@ -291,6 +294,9 @@ public class CreateInvoiceCandidatesService
 
 			candidate.invoiceDetailItems(invoiceDetailItems);
 		}
+
+		candidate.isManual(true);
+		candidate.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class));
 
 		return candidate
 				.externalHeaderId(JsonExternalIds.toExternalId(item.getExternalHeaderId()))

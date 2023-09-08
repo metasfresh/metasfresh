@@ -30,9 +30,11 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.NewInvoiceCandidate;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -56,6 +58,7 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -74,16 +77,16 @@ public class ImportInvoiceCandidatesService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-
+	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 	private final ManualCandidateService manualCandidateService;
-	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
+	private final InvoiceCandidateRepository invoiceCandidateRepository;
 
 	public ImportInvoiceCandidatesService(
 			@NonNull final ManualCandidateService manualCandidateService,
-			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
+			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository)
 	{
 		this.manualCandidateService = manualCandidateService;
-		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
+		this.invoiceCandidateRepository = invoiceCandidateRepository;
 	}
 
 	@NonNull
@@ -91,7 +94,7 @@ public class ImportInvoiceCandidatesService
 	{
 		final NewInvoiceCandidate newInvoiceCandidate = createManualInvoiceCand(record);
 
-		return externallyReferencedCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
+		return invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
 	}
 
 	@NonNull
@@ -154,6 +157,8 @@ public class ImportInvoiceCandidatesService
 				.soTrx(soTrx)
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				.paymentTermId(paymentTermId)
+				.isManual(true)
+				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class))
 				.build();
 	}
 

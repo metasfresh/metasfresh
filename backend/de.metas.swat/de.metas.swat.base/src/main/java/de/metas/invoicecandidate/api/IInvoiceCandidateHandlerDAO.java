@@ -22,16 +22,16 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
+import java.util.Properties;
 
 public interface IInvoiceCandidateHandlerDAO extends ISingletonService
 {
@@ -49,6 +49,10 @@ public interface IInvoiceCandidateHandlerDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_ILCandHandler> retrieveForClass(Properties ctx, Class<? extends IInvoiceCandidateHandler> clazz);
+
+	@NonNull
+	ILCandHandlerId retrieveIdForClassOneOnly(Properties ctx,
+			@NonNull Class<? extends IInvoiceCandidateHandler> handlerClass);
 
 	/**
 	 * Retrieve {@link I_C_ILCandHandler} by given <code>handlerClass</code>

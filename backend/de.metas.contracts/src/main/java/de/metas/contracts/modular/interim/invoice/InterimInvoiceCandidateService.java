@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContract;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -45,6 +46,8 @@ import de.metas.inout.InOutLineId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
@@ -82,8 +85,9 @@ public class InterimInvoiceCandidateService
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 	private final ManualCandidateService manualCandidateService = SpringContextHolder.instance.getBean(ManualCandidateService.class);
-	private final InterimInvoiceCandidateRepository interimInvoiceCandidateRepository = SpringContextHolder.instance.getBean(InterimInvoiceCandidateRepository.class);
+	private final InvoiceCandidateRepository invoiceCandidateRepository = SpringContextHolder.instance.getBean(InvoiceCandidateRepository.class);
 	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
 
 	private DocTypeId interimInvoiceDocType;
@@ -126,9 +130,11 @@ public class InterimInvoiceCandidateService
 							.dateOrdered(TimeUtil.asLocalDate(order.getDateOrdered(), orgTimeZone))
 							.recordReference(TableRecordReference.of(flatrateTermRecord))
 							.isInterimInvoice(true)
+							.isManual(false)
+							.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(Env.getCtx(), FlatrateTerm_Handler.class))
 							.build();
 
-					final InvoiceCandidateId invoiceCandidateId = interimInvoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
+					final InvoiceCandidateId invoiceCandidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
 					invoiceCandidateSet.add(invoiceCandidateId);
 					modularContractLogService.setICProcessed(ModularContractLogQuery.builder()
 							.contractType(LogEntryContractType.INTERIM)
