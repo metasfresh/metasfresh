@@ -155,6 +155,15 @@ Feature: Interim contract for bpartner
       | log_7                     | shipmentLine_2       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_3           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
       | log_8                     | shipmentLine_2       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
 
+    And after not more than 30s, ModCntr_Log_Statuses are found:
+      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
+      | log_status_1                     | po_orderLine_1       | C_OrderLine     | SP               |                     |
+      | log_status_2                     | po_orderLine_2       | C_OrderLine     | SP               |                     |
+      | shipLog_status_1                 | shipmentLine_1       | M_InOutLine     | SP               |                     |
+      | shipLog_status_1                 | shipmentLine_2       | M_InOutLine     | SP               |                     |
+      | ilLog_status_1                   | moduleLogContract_2  | C_Flatrate_Term | SP               | 2                   |
+      | ilLog_status_1                   | moduleLogContract_4  | C_Flatrate_Term | SP               | 2                   |
+
 
   @Id:S0306_200
   Scenario: purchase modular and interim contract (manually) + logs are created, with C_BPartner_InterimContract
@@ -261,6 +270,15 @@ Feature: Interim contract for bpartner
       | log_6                     | moduleLogContract_4  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_Flatrate_Term | moduleLogContract_2           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 1000       | year_2022                         |
       | log_7                     | shipmentLine_1       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_3           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
       | log_8                     | shipmentLine_2       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
+
+    And after not more than 30s, ModCntr_Log_Statuses are found:
+      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
+      | log_status_1                     | po_orderLine_1       | C_OrderLine     | SP               |                     |
+      | log_status_2                     | po_orderLine_2       | C_OrderLine     | SP               |                     |
+      | shipLog_status_1                 | shipmentLine_1       | M_InOutLine     | SP               |                     |
+      | shipLog_status_1                 | shipmentLine_2       | M_InOutLine     | SP               |                     |
+      | ilLog_status_1                   | moduleLogContract_3  | C_Flatrate_Term | SP               | 2                   |
+      | ilLog_status_1                   | moduleLogContract_4  | C_Flatrate_Term | SP               | 2                   |
 
     When create interim contract for modular contract with error
       | C_Flatrate_Term_ID.Identifier | DateFrom   | DateTo     | errorCode                                                        |

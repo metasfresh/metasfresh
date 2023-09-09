@@ -132,4 +132,13 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier  | ContractType    | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier |
       | log_1                     | ppOrder_manufacturing | ModularContract | warehouse                     | componentProduct        | bp_moduleLogMO                  | -10 | PP_Order  | moduleLogContract_1           | modCntr_type_1                 | false         | Production                   | PCE                   | year                              | bp_moduleLogMO                             |
       | log_2                     | ppOrder_manufacturing | ModularContract | warehouse                     | manufacturingProduct    | bp_moduleLogMO                  | 10  | PP_Order  | moduleLogContract_1           | modCntr_type_1                 | false         | Production                   | PCE                   | year                              | bp_moduleLogMO                             |
-    
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
+      | ppOrder_CostCollector_1         | ppOrder_manufacturing  | manufacturingProduct    | 10          | CO        |
+      | ppOrder_CostCollector_2         | ppOrder_manufacturing  | componentProduct        | 10          | CO        |
+
+    And after not more than 30s, ModCntr_Log_Statuses are found:
+      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier    | TableName         | ProcessingStatus |
+      | log_status_1                     | ppOrder_CostCollector_1 | PP_Cost_Collector | SP               |
+      | log_status_2                     | ppOrder_CostCollector_2 | PP_Cost_Collector | SP               |

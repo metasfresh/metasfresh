@@ -106,6 +106,11 @@ Feature: Modular contract log from sales order
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
 
+    And after not more than 30s, ModCntr_Log_Statuses are found:
+      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier | TableName   | ProcessingStatus |
+      | soLog_status_1                   | soLine_1             | C_OrderLine | SP               |
+      | soLog_status_2                   | soLine_2             | C_OrderLine | SP               |
+
   @Id:S0298_200
   @from:cucumber
   Scenario: When a sales order is voided, a modular contract log is created with negated qty
@@ -175,6 +180,11 @@ Feature: Modular contract log from sales order
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | 5   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_3                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | -10 | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_4                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | -5  | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
+
+    And after not more than 30s, ModCntr_Log_Statuses are found:
+      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
+      | soLog_status_1                   | soLine_1             | C_OrderLine | SP               | 2                   |
+      | soLog_status_2                   | soLine_2             | C_OrderLine | SP               | 2                   |
 
 
   @Id:S0298_300
@@ -275,6 +285,11 @@ Feature: Modular contract log from sales order
       | soLog_5                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 12  | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_6                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 7   | C_OrderLine | moduleLogContract             | modCntr_type_SO                | false         | SalesOrder                   | year_2023                         | false       |
 
+    And after not more than 30s, ModCntr_Log_Statuses are found:
+      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
+      | soLog_status_1                   | soLine_1             | C_OrderLine | SP               | 3                   |
+      | soLog_status_2                   | soLine_2             | C_OrderLine | SP               | 3                   |
+
 
   @Id:S0298_400
   @from:cucumber
@@ -294,6 +309,11 @@ Feature: Modular contract log from sales order
     When the order identified by so_order is completed
 
     Then after not more than 30s, no ModCntr_Logs are found:
+      | Record_ID.Identifier | TableName   |
+      | soLine_1             | C_OrderLine |
+      | soLine_2             | C_OrderLine |
+
+    And after not more than 30s, no ModCntr_Log_Statuses are found:
       | Record_ID.Identifier | TableName   |
       | soLine_1             | C_OrderLine |
       | soLine_2             | C_OrderLine |
