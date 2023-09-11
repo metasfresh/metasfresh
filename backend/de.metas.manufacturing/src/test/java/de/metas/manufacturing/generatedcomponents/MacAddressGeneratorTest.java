@@ -42,7 +42,7 @@ import org.mockito.Mockito;
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class MacAddressGeneratorTest
 {
@@ -104,6 +104,33 @@ class MacAddressGeneratorTest
 		}
 	}
 
+	@Builder(builderMethodName = "context", builderClassName = "$contextBuilder")
+	private ComponentGeneratorContext createContext(
+			@NonNull final Integer qty,
+			@Nullable final String alreadySetMAC1,
+			@Nullable final String alreadySetMAC2)
+	{
+		final ImmutableAttributeSet.Builder existingAttributes = ImmutableAttributeSet.builder();
+		if (alreadySetMAC1 != null)
+		{
+			existingAttributes.attributeValue(AttributeConstants.RouterMAC1, alreadySetMAC1);
+		}
+		if (alreadySetMAC2 != null)
+		{
+			existingAttributes.attributeValue(AttributeConstants.RouterMAC2, alreadySetMAC2);
+		}
+
+		return ComponentGeneratorContext.builder()
+				.qty(qty)
+				.bomLineAttributes(ImmutableAttributeSet.EMPTY)
+				.existingAttributes(existingAttributes.build())
+				.parameters(ComponentGeneratorParams.builder()
+						.sequenceId(DocSequenceId.ofRepoId(123456))
+						.build())
+				.clientId(ClientId.METASFRESH) // irrelevant
+				.build();
+	}
+
 	@Nested
 	public class generate
 	{
@@ -144,32 +171,6 @@ class MacAddressGeneratorTest
 							.build();
 				}
 			};
-		}
-
-		@Builder(builderMethodName = "context", builderClassName = "$contextBuilder")
-		private ComponentGeneratorContext createContext(
-				@NonNull final Integer qty,
-				@Nullable String alreadySetMAC1,
-				@Nullable String alreadySetMAC2)
-		{
-			final ImmutableAttributeSet.Builder existingAttributes = ImmutableAttributeSet.builder();
-			if (alreadySetMAC1 != null)
-			{
-				existingAttributes.attributeValue(AttributeConstants.RouterMAC1, alreadySetMAC1);
-			}
-			if (alreadySetMAC2 != null)
-			{
-				existingAttributes.attributeValue(AttributeConstants.RouterMAC2, alreadySetMAC2);
-			}
-
-			return ComponentGeneratorContext.builder()
-					.qty(qty)
-					.existingAttributes(existingAttributes.build())
-					.parameters(ComponentGeneratorParams.builder()
-							.sequenceId(DocSequenceId.ofRepoId(123456))
-							.build())
-					.clientId(ClientId.METASFRESH) // irrelevant
-					.build();
 		}
 
 		@Test

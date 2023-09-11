@@ -7,7 +7,6 @@ import de.metas.document.dimension.ForecastLineDimensionFactory;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -76,10 +75,8 @@ import static org.mockito.Mockito.when;
 public class ForecastCreatedHandlerTest
 {
 	private ForecastCreatedHandler forecastCreatedHandler;
-	private CandidateRepositoryRetrieval candidateRepository;
 	private AvailableToPromiseRepository stockRepository;
 	private PostMaterialEventService postMaterialEventService;
-	private DimensionService dimensionService;
 
 	int forecastLineId;
 	@BeforeEach
@@ -90,10 +87,8 @@ public class ForecastCreatedHandlerTest
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
 		dimensionFactories.add(new ForecastLineDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
-		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
-		candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
 		stockRepository = Mockito.mock(AvailableToPromiseRepository.class);
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -101,7 +96,7 @@ public class ForecastCreatedHandlerTest
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(new DimensionService(dimensionFactories), stockChangeDetailRepo);
 		forecastCreatedHandler = new ForecastCreatedHandler(
 				new CandidateChangeService(ImmutableList.of(
 						new StockUpCandiateHandler(
@@ -211,7 +206,7 @@ public class ForecastCreatedHandlerTest
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		verify(postMaterialEventService)
-				.postEventNow(eventCaptor.capture(), null);
+				.postEventAsync(eventCaptor.capture());
 
 		final SupplyRequiredEvent event = (SupplyRequiredEvent)eventCaptor.getValue();
 

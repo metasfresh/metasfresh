@@ -44,6 +44,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderDocBaseType;
@@ -56,11 +57,14 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_BOM;
 import org.eevolution.model.validator.PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -126,6 +130,8 @@ public class PPOrderRequestedEventHandlerTests
 		AdempiereTestHelper.get().init();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, adClientId.getRepoId());
 
+		SpringContextHolder.registerJUnitBean(new ProductBOMVersionsDAO());
+
 		final I_C_Order order = newInstance(I_C_Order.class);
 		save(order);
 
@@ -152,6 +158,8 @@ public class PPOrderRequestedEventHandlerTests
 		final I_PP_Product_BOM productBom = newInstance(I_PP_Product_BOM.class);
 		productBom.setM_Product_ID(bomMainProduct.getM_Product_ID());
 		productBom.setC_UOM_ID(uom.getC_UOM_ID());
+		productBom.setValidFrom(TimeUtil.asTimestamp(Instant.now().minus(1, ChronoUnit.HOURS)));
+		productBom.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Completed);
 		productBom.setPP_Product_BOMVersions_ID(productBomVersions.getPP_Product_BOMVersions_ID());
 		save(productBom);
 
