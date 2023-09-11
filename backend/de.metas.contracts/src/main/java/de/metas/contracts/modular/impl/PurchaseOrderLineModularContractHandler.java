@@ -65,6 +65,7 @@ import java.util.stream.Stream;
 
 import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_REACTIVATE_NOT_ALLOWED;
 
 @Component
 @RequiredArgsConstructor
@@ -79,8 +80,10 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
-	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull
+	private final ModularContractLogService contractLogService;
 
 	@Nullable
 	public static I_C_OrderLine getSourcePurchaseOrderLine(@NonNull final I_C_Flatrate_Term contract)

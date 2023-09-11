@@ -93,7 +93,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public void validateDocAction(
+	public void validateAction(
 			@NonNull final I_C_OrderLine ignored,
 			@NonNull final ModelAction action)
 	{
