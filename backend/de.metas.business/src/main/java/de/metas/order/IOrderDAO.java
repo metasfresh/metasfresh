@@ -7,6 +7,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -143,4 +144,6 @@ public interface IOrderDAO extends ISingletonService
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
 
 	boolean hasIsOnConsignmentLines(@NonNull OrderId orderId);
+
+	Stream<I_C_Order> streamOrders(@NonNull IQueryFilter<I_C_Order> orderFilter);
 }

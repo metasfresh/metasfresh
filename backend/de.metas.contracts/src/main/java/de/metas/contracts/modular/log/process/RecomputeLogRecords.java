@@ -26,6 +26,7 @@ import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -47,6 +48,7 @@ public class RecomputeLogRecords extends JavaProcess
 	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final Iterator<I_ModCntr_Log> logsIterator = queryBL.createQueryBuilder(I_ModCntr_Log.class)

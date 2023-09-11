@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.log.process;
 
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
@@ -29,7 +30,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.IOrderDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
@@ -45,6 +46,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -53,11 +55,13 @@ public class RecomputeLogRecordsForDocument extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
@@ -89,75 +93,60 @@ public class RecomputeLogRecordsForDocument extends JavaProcess
 
 	private void recomputeForInvoice()
 	{
-		queryBL.createQueryBuilder(I_C_Invoice.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create()
-				.iterateAndStreamIds(InvoiceId::ofRepoId)
+		invoiceDAO.stream(getProcessInfo().getQueryFilterOrElseFalse())
+				.map(I_C_Invoice::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
 				//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 				.forEach(this::recomputeForInvoice);
 	}
 
 	private void recomputeForInOut()
 	{
-		queryBL.createQueryBuilder(I_M_InOut.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create()
-				.iterateAndStream()
+		inOutDAO.stream(getProcessInfo().getQueryFilterOrElseFalse())
 				//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 				.forEach(this::recomputeForInOut);
 	}
 
 	private void recomputeForOrder()
 	{
-		queryBL.createQueryBuilder(I_C_Order.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create()
-				.iterateAndStream()
+		orderDAO.streamOrders(getProcessInfo().getQueryFilterOrElseFalse())
 				.forEach(this::recomputeForOrder);
 	}
 
 	private void recomputeForFlatrate()
 	{
-		queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create()
-				.iterateAndStream()
+		flatrateDAO.stream(getProcessInfo().getQueryFilterOrElseFalse())
 				.forEach(this::recomputeForFlatrate);
 	}
 
 	private void recomputeForInventory()
 	{
-		queryBL.createQueryBuilder(I_M_Inventory.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create()
-				.iterateAndStreamIds(InventoryId::ofRepoId)
+		inventoryDAO.stream(getProcessInfo().getQueryFilterOrElseFalse())
+				.map(I_M_Inventory::getM_Inventory_ID)
+				.map(InventoryId::ofRepoId)
 				.forEach(this::recomputeForInventory);
 
 	}
 
 	private void recomputeForCostCollector()
 	{
-		queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create()
-				.iterateAndStream()
+		ppCostCollectorDAO.stream(getProcessInfo().getQueryFilterOrElseFalse())
 				.forEach(this::recomputeForCostCollector);
 	}
 
 	private void recomputeForPPOrder()
 	{
-		queryBL.createQueryBuilder(I_PP_Order.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.create()
-				.iterateAndStreamIds(PPOrderId::ofRepoId)
+		ppOrderDAO.stream(getProcessInfo().getQueryFilterOrElseFalse())
+				.map(I_PP_Order::getPP_Order_ID)
+				.map(PPOrderId::ofRepoId)
 				.forEach(this::recomputeForPPOrder);
 	}
 
 	private void recomputeForInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
-		trxManager.runInNewTrx(() -> invoiceBL
-				.getLines(invoiceId)
+		trxManager.runInNewTrx(() -> invoiceDAO
+				.retrieveLines(invoiceId)
 				.forEach(line -> modularContractService.invokeWithModelForAllContractTypes(line, ModelAction.RECREATE_LOGS)));
 	}
 
