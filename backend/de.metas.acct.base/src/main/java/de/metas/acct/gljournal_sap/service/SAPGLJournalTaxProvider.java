@@ -60,4 +60,16 @@ public class SAPGLJournalTaxProvider
 
 		return Money.of(taxAmtBD, currencyId);
 	}
+
+	public Money calculateTaxBaseAmt(
+			@NonNull final Money grossAmt,
+			@NonNull final TaxId taxId)
+	{
+		final CurrencyId currencyId = grossAmt.getCurrencyId();
+		final CurrencyPrecision precision = moneyService.getStdPrecision(currencyId);
+		final Tax tax = taxBL.getTaxById(taxId);
+		final BigDecimal taxAmtBD = tax.calculateBaseAmt(grossAmt.toBigDecimal(), true, precision.toInt() );
+
+		return Money.of(taxAmtBD, currencyId);
+	}
 }
