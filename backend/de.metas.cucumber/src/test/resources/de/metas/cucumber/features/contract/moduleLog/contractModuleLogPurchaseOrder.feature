@@ -37,6 +37,7 @@ Feature: Modular contract log from purchase order
 
 
   @Id:S0282_100
+  @Id:S0298_700
   @from:cucumber
   Scenario: Happy flow - purchase order -> material receipt schedule
   - purchase order created with two lines with modular contract terms

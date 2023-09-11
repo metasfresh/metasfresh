@@ -300,6 +300,8 @@ Feature: Modular contract log from sales order
       | soLine_1             | C_OrderLine |
       | soLine_2             | C_OrderLine |
 
+  @Id:S0298_500
+  @from:cucumber
   Scenario: When a sales order is completed, create a sales modular contract for each of the lines that require it
   - create modular contract terms
   - create a modular sales order and complete it
@@ -345,6 +347,7 @@ Feature: Modular contract log from sales order
       | soLog_1                   | moduleLogContract    | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogSO                      | bp_moduleLogSO                  | 10  | C_Flatrate_Term | moduleLogContract             | modCntr_type_MC                | false         | SalesModularContract         | year_2023                         | true        |
 
 
+  @Id:S0298_600
   @from:cucumber
   Scenario: REACTIVATE | REVERSE sales order with linked sales modular contract
   - sales order created with one line with modular contract terms
