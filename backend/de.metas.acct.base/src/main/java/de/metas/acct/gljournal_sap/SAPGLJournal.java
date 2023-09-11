@@ -200,7 +200,14 @@ public class SAPGLJournal
 		final TaxId taxId = Check.assumeNotNull(baseLine.getTaxId(), "line shall have the tax set: {}", baseLine);
 		final PostingSign taxPostingSign = baseLine.getPostingSign();
 		final Account taxAccount = taxProvider.getTaxAccount(taxId, acctSchemaId, taxPostingSign);
-		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
+
+		//
+		// calculate baseAmt from GrossAmt
+		final Money taxBaseAmt = taxProvider.calculateTaxBaseAmt(baseLine.getAmount(), taxId);
+		final Money taxBaseAmtAcct = currencyConverter.convertToAcctCurrency(taxBaseAmt, conversionCtx);
+
+		// calculate  taxAmt for the generated line
+		final Money taxAmt = taxProvider.calculateTaxAmt(taxBaseAmt, taxId);
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
 		return SAPGLJournalLine.builder()
