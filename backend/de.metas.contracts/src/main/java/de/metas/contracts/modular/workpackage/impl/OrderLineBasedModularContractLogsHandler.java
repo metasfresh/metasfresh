@@ -90,11 +90,9 @@ class OrderLineBasedModularContractLogsHandler implements IModularContractLogHan
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_Flatrate_Term> request)
 	{
 		final I_C_Flatrate_Term modularContractRecord = request.getHandleLogsRequest().getModel();
-		final ProductId productId = Optional.ofNullable(ProductId.ofRepoIdOrNull(modularContractRecord.getM_Product_ID()))
-				.orElseThrow(() -> new AdempiereException("Product cannot be null at this point!"));
+		final ProductId productId = ProductId.ofRepoId(modularContractRecord.getM_Product_ID());
 
-		final OrderId orderId = Optional.ofNullable(OrderId.ofRepoIdOrNull(modularContractRecord.getC_Order_Term_ID()))
-				.orElseThrow(() -> new AdempiereException("OrderTermId cannot be null at this point!"));
+		final OrderId orderId = OrderId.ofRepoId(modularContractRecord.getC_Order_Term_ID());
 
 		final I_C_Order order = orderBL.getById(orderId);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());

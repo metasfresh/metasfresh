@@ -117,14 +117,11 @@ public class SOLineForPOModularContractHandler implements IModularContractTypeHa
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
-		Check.assume(warehouseId != null, "WarehouseId should not be null at this stage!");
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
 
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
-		Check.assume(harvestingYearId != null, "Harvesting year ID should not be null at this stage!");
+		final YearId harvestingYearId = YearId.ofRepoId(order.getHarvesting_Year_ID());
 
-		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
-		Check.assume(harvestingCalendarId != null, "Harvesting calendar ID should not be null at this stage!");
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoId(order.getC_Harvesting_Calendar_ID());
 
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
