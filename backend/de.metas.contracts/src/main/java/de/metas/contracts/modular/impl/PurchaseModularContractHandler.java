@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
 import java.util.stream.Stream;
 
 @Component
-public class PurchaseOrderLineBasedModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
+public class PurchaseModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);

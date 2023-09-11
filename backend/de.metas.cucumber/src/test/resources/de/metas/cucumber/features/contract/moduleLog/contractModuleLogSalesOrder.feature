@@ -42,11 +42,11 @@ Feature: Modular contract log from sales order
       | year_2023            | 2023       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                   | Value                  | Classname                                                                 |
-      | modCntr_type_PO            | modCntr_type_PO        | modCntr_type_PO        | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler   |
-      | modCntr_type_SO_for_PO     | modCntr_type_SO_for_PO | modCntr_type_SO_for_PO | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler         |
-      | modCntr_type_SO            | modCntr_type_SO        | modCntr_type_SO        | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler      |
-      | modCntr_type_MC            | modCntr_type_MC        | modCntr_type_MC        | de.metas.contracts.modular.impl.SalesOrderLineBasedModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name                   | Value                  | Classname                                                               |
+      | modCntr_type_PO            | modCntr_type_PO        | modCntr_type_PO        | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
+      | modCntr_type_SO_for_PO     | modCntr_type_SO_for_PO | modCntr_type_SO_for_PO | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler       |
+      | modCntr_type_SO            | modCntr_type_SO        | modCntr_type_SO        | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler    |
+      | modCntr_type_MC            | modCntr_type_MC        | modCntr_type_MC        | de.metas.contracts.modular.impl.SalesModularContractHandler             |
 
 
   @Id:S0298_100
