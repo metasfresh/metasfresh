@@ -185,14 +185,14 @@ Feature: Modular contract log for sales invoice
       | ilLog_1                   | il_1                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_InvoiceLine | moduleLogContract             | modCntr_type_INV_SO            | false         | SalesInvoice                 | year_2023                         | false       |
       | ilLog_2                   | il_2                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_InvoiceLine | moduleLogContract             | modCntr_type_INV_SO            | false         | SalesInvoice                 | year_2023                         | false       |
 
-    And after not more than 30s, ModCntr_Log_Statuses are found:
-      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier | TableName     | ProcessingStatus |
-      | log_status_1                     | soLine_1             | C_OrderLine   | SP               |
-      | log_status_2                     | soLine_2             | C_OrderLine   | SP               |
-      | shipLog_status_1                 | shipLine_1           | M_InOutLine   | SP               |
-      | shipLog_status_1                 | shipLine_2           | M_InOutLine   | SP               |
-      | ilLog_status_1                   | il_1                 | C_InvoiceLine | SP               |
-      | ilLog_status_1                   | il_2                 | C_InvoiceLine | SP               |
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName     | ProcessingStatus |
+      | soLine_1             | C_OrderLine   | SP               |
+      | soLine_2             | C_OrderLine   | SP               |
+      | shipLine_1           | M_InOutLine   | SP               |
+      | shipLine_2           | M_InOutLine   | SP               |
+      | il_1                 | C_InvoiceLine | SP               |
+      | il_2                 | C_InvoiceLine | SP               |
 
     And update C_Aggregation:
       | C_Aggregation_ID.Identifier | OPT.IsDefault |
@@ -349,14 +349,14 @@ Feature: Modular contract log for sales invoice
       | ilLog_3                   | il_1                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | -8  | C_InvoiceLine | moduleLogContract             | modCntr_type_INV_SO            | false         | SalesInvoice                 | year_2023                         | false       |
       | ilLog_4                   | il_2                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | -3  | C_InvoiceLine | moduleLogContract             | modCntr_type_INV_SO            | false         | SalesInvoice                 | year_2023                         | false       |
 
-    And after not more than 30s, ModCntr_Log_Statuses are found:
-      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier | TableName     | ProcessingStatus | OPT.noOfLogStatuses |
-      | log_status_1                     | soLine_1             | C_OrderLine   | SP               |                     |
-      | log_status_2                     | soLine_2             | C_OrderLine   | SP               |                     |
-      | shipLog_status_1                 | shipLine_1           | M_InOutLine   | SP               |                     |
-      | shipLog_status_1                 | shipLine_2           | M_InOutLine   | SP               |                     |
-      | ilLog_status_1                   | il_1                 | C_InvoiceLine | SP               | 2                   |
-      | ilLog_status_1                   | il_2                 | C_InvoiceLine | SP               | 2                   |
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName     | ProcessingStatus | OPT.noOfLogStatuses |
+      | soLine_1             | C_OrderLine   | SP               |                     |
+      | soLine_2             | C_OrderLine   | SP               |                     |
+      | shipLine_1           | M_InOutLine   | SP               |                     |
+      | shipLine_2           | M_InOutLine   | SP               |                     |
+      | il_1                 | C_InvoiceLine | SP               | 2                   |
+      | il_2                 | C_InvoiceLine | SP               | 2                   |
 
     And update C_Aggregation:
       | C_Aggregation_ID.Identifier | OPT.IsDefault |

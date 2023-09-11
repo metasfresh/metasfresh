@@ -144,10 +144,10 @@ public class ProcessModularLogsEnqueuer
 			{
 				final boolean isAggregated = requestAggregator.aggregate(enqueueRequest);
 
-				if (isAggregated)
+				if (!isAggregated)
 				{
 					aggregatedEnqueueRequests.add(requestAggregator.build());
-					requestAggregator = null;
+					requestAggregator = RequestAggregator.init(enqueueRequest);
 				}
 			}
 		}

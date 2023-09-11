@@ -138,7 +138,7 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | ppOrder_CostCollector_1         | ppOrder_manufacturing  | manufacturingProduct    | 10          | CO        |
       | ppOrder_CostCollector_2         | ppOrder_manufacturing  | componentProduct        | 10          | CO        |
 
-    And after not more than 30s, ModCntr_Log_Statuses are found:
-      | ModCntr_Log_Status_ID.Identifier | Record_ID.Identifier    | TableName         | ProcessingStatus |
-      | log_status_1                     | ppOrder_CostCollector_1 | PP_Cost_Collector | SP               |
-      | log_status_2                     | ppOrder_CostCollector_2 | PP_Cost_Collector | SP               |
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier    | TableName         | ProcessingStatus |
+      | ppOrder_CostCollector_1 | PP_Cost_Collector | SP               |
+      | ppOrder_CostCollector_2 | PP_Cost_Collector | SP               |

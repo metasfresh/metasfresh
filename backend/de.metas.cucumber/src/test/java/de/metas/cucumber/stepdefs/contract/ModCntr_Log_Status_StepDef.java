@@ -22,13 +22,11 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Log_Status;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
@@ -41,7 +39,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
@@ -50,7 +47,7 @@ import org.compiere.model.I_M_InventoryLine;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
@@ -86,44 +83,18 @@ public class ModCntr_Log_Status_StepDef
 		this.costCollectorTable = costCollectorTable;
 	}
 
-	@And("^after not more than (.*)s, ModCntr_Log_Statuses are found:$")
-	public void validateModCntr_Log_Statuses(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	@And("validate ModCntr_Log_Statuses:")
+	public void validateModCntr_Log_Statuses(@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			final Supplier<Boolean> validateModCntrLogStatus = () ->
-			{
-				final List<I_ModCntr_Log_Status> modCntrLogStatuses = fetchModCntrLogStatuses(row);
+			final List<I_ModCntr_Log_Status> modCntrLogStatuses = fetchModCntrLogStatusList(row);
 
-				if (modCntrLogStatuses.isEmpty())
-				{
-					return false;
-				}
+			final Integer noOfLogStatuses = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.noOfLogStatuses"))
+					.orElse(1);
 
-				final Integer noOfLogStatuses = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.noOfLogStatuses");
-
-				final SoftAssertions softly = new SoftAssertions();
-
-				if (noOfLogStatuses != null)
-				{
-					softly.assertThat(modCntrLogStatuses.size()).isEqualTo(noOfLogStatuses);
-				}
-				else
-				{
-					softly.assertThat(modCntrLogStatuses.size()).isEqualTo(1);
-				}
-
-				softly.assertAll();
-
-				final String modCntrLogStatusIdentifier = DataTableUtil.extractStringForColumnName(row, I_ModCntr_Log_Status.COLUMNNAME_ModCntr_Log_Status_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-				modCntrLogStatuses.forEach(modCntrLogStatus -> modCntrLogStatusTable.putOrReplace(modCntrLogStatusIdentifier, modCntrLogStatus));
-
-				return true;
-			};
-
-			StepDefUtil.tryAndWait(timeoutSec, 500, validateModCntrLogStatus);
+			assertThat(modCntrLogStatuses.size()).isEqualTo(noOfLogStatuses);
 		}
 	}
 
@@ -166,7 +137,7 @@ public class ModCntr_Log_Status_StepDef
 		assertThat(modCntrLogStatusRecord).isNull();
 	}
 
-	private List<I_ModCntr_Log_Status> fetchModCntrLogStatuses(@NonNull final Map<String, String> tableRow)
+	private List<I_ModCntr_Log_Status> fetchModCntrLogStatusList(@NonNull final Map<String, String> tableRow)
 	{
 		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
 		final int tableId = tableDAO.retrieveTableId(tableName);
@@ -174,19 +145,7 @@ public class ModCntr_Log_Status_StepDef
 		final String processingStatus = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log_Status.COLUMNNAME_ProcessingStatus);
 
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int recordId;
-		switch (tableName)
-		{
-			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
-			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
-			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
-			case I_PP_Cost_Collector.Table_Name -> recordId = costCollectorTable.get(recordIdentifier).getPP_Order_ID();
-			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
-			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
-			default -> throw new AdempiereException("Unsupported TableName !")
-					.appendParametersToMessage()
-					.setParameter("TableName", tableName);
-		}
+		final int recordId = resolveRepoId(tableName, recordIdentifier);
 
 		return queryBL.createQueryBuilder(I_ModCntr_Log_Status.class)
 				.addOnlyActiveRecordsFilter()
@@ -194,7 +153,22 @@ public class ModCntr_Log_Status_StepDef
 				.addEqualsFilter(I_ModCntr_Log_Status.COLUMNNAME_Record_ID, recordId)
 				.addEqualsFilter(I_ModCntr_Log_Status.COLUMNNAME_ProcessingStatus, processingStatus)
 				.create()
-				.stream(I_ModCntr_Log_Status.class)
-				.collect(ImmutableList.toImmutableList());
+				.listImmutable();
+	}
+
+	private int resolveRepoId(@NonNull final String tableName, @NonNull final String stepDefDataIdentifier)
+	{
+		return switch (tableName)
+				{
+					case I_C_OrderLine.Table_Name -> orderLineTable.get(stepDefDataIdentifier).getC_OrderLine_ID();
+					case I_M_InventoryLine.Table_Name -> inventoryLineTable.get(stepDefDataIdentifier).getM_InventoryLine_ID();
+					case I_M_InOutLine.Table_Name -> inOutLineTable.get(stepDefDataIdentifier).getM_InOutLine_ID();
+					case I_PP_Cost_Collector.Table_Name -> costCollectorTable.get(stepDefDataIdentifier).getPP_Order_ID();
+					case I_C_InvoiceLine.Table_Name -> invoiceLineTable.get(stepDefDataIdentifier).getC_InvoiceLine_ID();
+					case I_C_Flatrate_Term.Table_Name -> flatrateTermTable.get(stepDefDataIdentifier).getC_Flatrate_Term_ID();
+					default -> throw new AdempiereException("Unsupported TableName !")
+							.appendParametersToMessage()
+							.setParameter("TableName", tableName);
+				};
 	}
 }
