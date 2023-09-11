@@ -64,7 +64,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC
 
 @Component
 @RequiredArgsConstructor
-class OrderLineBasedModularContractLogsHandler implements IModularContractLogHandler<I_C_Flatrate_Term>
+class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_Flatrate_Term>
 {
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
 
@@ -119,7 +119,6 @@ class OrderLineBasedModularContractLogsHandler implements IModularContractLogHan
 				.translate(Language.getBaseAD_Language());
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
-		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
@@ -129,9 +128,9 @@ class OrderLineBasedModularContractLogsHandler implements IModularContractLogHan
 											.invoicingBPartnerId(billBPartnerId)
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
 											.warehouseId(warehouseId)
-											.documentType(soTrx.isSales() ? LogEntryDocumentType.SALES_MODULAR_CONTRACT : LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT)
+											.documentType(LogEntryDocumentType.SALES_MODULAR_CONTRACT)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(soTrx)
+											.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 											.processed(false)
 											.quantity(quantity)
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(modularContractRecord.getStartDate(),
