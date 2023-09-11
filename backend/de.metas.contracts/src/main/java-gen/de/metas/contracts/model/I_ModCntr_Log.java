@@ -231,19 +231,19 @@ public interface I_ModCntr_Log
 	 * Set Contract Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setContractType (@Nullable String ContractType);
+	void setContractType (String ContractType);
 
 	/**
 	 * Get Contract Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getContractType();
+	String getContractType();
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_ContractType = new ModelColumn<>(I_ModCntr_Log.class, "ContractType", null);
 	String COLUMNNAME_ContractType = "ContractType";

@@ -27,7 +27,6 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
@@ -74,9 +73,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	private static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
 	private static final String INTERIM_CONTRACT_DYN_ATTRIBUTE = "InterimContract";
 
-	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed");
 	private static final AdMessageKey MSG_VOID_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.VoidNotAllowed");
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
@@ -137,7 +134,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 			return Stream.empty();
 		}
 
-		return flatrateDAO.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()), TypeConditions.MODULAR_CONTRACT)
+		return flatrateBL.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()), TypeConditions.MODULAR_CONTRACT)
 				.map(flatrateTerm -> FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.stream();
 	}
@@ -169,7 +166,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 			throw new AdempiereException(MSG_VOID_NOT_ALLOWED, inoutIds);
 		}
 
-		final I_C_Flatrate_Term contract = flatrateDAO.getById(flatrateTermId);
+		final I_C_Flatrate_Term contract = flatrateBL.getById(flatrateTermId);
 
 		// dev-note: for now set fallback endDate one year from start date
 		final Timestamp endDate = Optional.ofNullable(contract.getEndDate())
