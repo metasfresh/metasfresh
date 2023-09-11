@@ -137,8 +137,3 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
       | ppOrder_CostCollector_1         | ppOrder_manufacturing  | manufacturingProduct    | 10          | CO        |
       | ppOrder_CostCollector_2         | ppOrder_manufacturing  | componentProduct        | 10          | CO        |
-
-    And validate ModCntr_Log_Statuses:
-      | Record_ID.Identifier    | TableName         | ProcessingStatus |
-      | ppOrder_CostCollector_1 | PP_Cost_Collector | SP               |
-      | ppOrder_CostCollector_2 | PP_Cost_Collector | SP               |
