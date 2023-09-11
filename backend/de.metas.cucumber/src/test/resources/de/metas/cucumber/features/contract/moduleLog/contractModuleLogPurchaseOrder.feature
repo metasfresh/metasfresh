@@ -37,12 +37,14 @@ Feature: Modular contract log from purchase order
 
 
   @Id:S0282_100
+  @Id:S0298_700
   @from:cucumber
   Scenario: Happy flow - purchase order -> material receipt schedule
   - purchase order created with two lines with modular contract terms
   - complete PO
-  - validate two modular contracts are created, one for each line
-  - validate two Log Entries are created
+  - validate modular contract is created for the line
+  - validate Log Entry is created for the line
+  - validate Log Entry is created for the purchase modular contract
   - validate no invoice candidate is created
   - validate material receipt schedule is created and modular contract id is propagated
 
@@ -57,11 +59,13 @@ Feature: Modular contract log from purchase order
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_06292023_2 | module_log_product_PO   | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name              | Value             | Classname                                                               |
-      | modCntr_type_1             | poLine_06292023_2 | poLine_06292023_2 | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name                       | Value                      | Classname                                                               |
+      | modCntr_type_1             | poLine_06292023_2          | poLine_06292023_2          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
+      | modCntr_type_MC            | modCntr_type_MC_09072023_1 | modCntr_type_MC_09072023_1 | de.metas.contracts.modular.impl.OrderLineBasedModularContractHandler    |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_06292023_2 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | modCntr_module_MC            | 20    | name_09072023_20      | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_MC            |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
       | moduleLogConditions_PO              | moduleLogConditions_po_06292023_2 | ModularContract | moduleLogPricingSystem            | Ca                       | modCntr_settings_1                 |
@@ -70,8 +74,8 @@ Feature: Modular contract log from purchase order
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    |
       | po_order   | false   | bp_moduleLogPO           | 2022-03-03  | POO             | poModuleLogContract_ref_06292023_2 |
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
-      | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
+      | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
+      | po_orderLine | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
 
     When the order identified by po_order is completed
 
@@ -83,9 +87,14 @@ Feature: Modular contract log from purchase order
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
       | moduleLogContract_1           | moduleLogConditions_PO              | bp_moduleLogPO              | module_log_product_PO   | po_orderLine                       | po_order                       | PCE                   | 1000                  | 2.00            | moduleLogPricingSystem            | ModularContract     | Wa                 | CO            |
 
+    And load C_BPartner:
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | cp_bp                    | 2155894           |
+
     And after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
-      | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
+      | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
+      | poLog_1                   | moduleLogContract_1  | ModularContract | cp_bp                                      | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_MC                | false         | PurchaseModularContract      |                            | PCE                   |            | year                              |
 
     And there is no C_Invoice_Candidate for C_Order po_order
 
@@ -132,8 +141,8 @@ Feature: Modular contract log from purchase order
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    |
       | po_order   | false   | bp_moduleLogPO           | 2022-03-03  | POO             | poModuleLogContract_ref_06292023_4 |
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
-      | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
+      | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
+      | po_orderLine | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
 
     When the order identified by po_order is completed
 
@@ -207,8 +216,8 @@ Feature: Modular contract log from purchase order
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    |
       | po_order   | false   | bp_moduleLogPO           | 2022-03-03  | POO             | poModuleLogContract_ref_07032023_2 |
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
-      | po_orderLine   | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
+      | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
+      | po_orderLine | po_order              | module_log_product_PO   | 1000       | moduleLogConditions_PO                  |
 
     When the order identified by po_order is completed
 
@@ -225,8 +234,8 @@ Feature: Modular contract log from purchase order
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
 
     And load AD_Message:
-      | Identifier             | Value                                                                                        |
-      | reactivate_not_allowed | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler.ReactivateNotAllowed |
+      | Identifier             | Value                                                |
+      | reactivate_not_allowed | de.metas.contracts.modular.impl.ReactivateNotAllowed |
 
     And the order identified by po_order is reactivated expecting error
       | OPT.AD_Message_ID.Identifier |

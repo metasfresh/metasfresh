@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 828077476L;
+	private static final long serialVersionUID = -1586168036L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -175,7 +175,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	/** Modular Contract = ModularContract */
 	public static final String CONTRACTTYPE_ModularContract = "ModularContract";
 	@Override
-	public void setContractType (final @Nullable String ContractType)
+	public void setContractType (final String ContractType)
 	{
 		set_Value (COLUMNNAME_ContractType, ContractType);
 	}
@@ -244,7 +244,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public boolean isBillable()
+	public boolean isBillable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillable);
 	}
@@ -324,6 +324,10 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_Inventory = "Inventory";
 	/** Sales invoice = SalesInvoice */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_SalesInvoice = "SalesInvoice";
+	/** SalesModularContract = SalesModularContract */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_SalesModularContract = "SalesModularContract";
+	/** PurchaseModularContract = PurchaseModularContract */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_PurchaseModularContract = "PurchaseModularContract";
 	@Override
 	public void setModCntr_Log_DocumentType (final String ModCntr_Log_DocumentType)
 	{

@@ -29,7 +29,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler;
+import de.metas.contracts.modular.impl.SOLineForPOModularContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -74,7 +74,7 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final ModularContractLogDAO contractLogDAO;
-	private final SalesOrderLineModularContractHandler contractHandler;
+	private final SOLineForPOModularContractHandler contractHandler;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_OrderLine> request)
