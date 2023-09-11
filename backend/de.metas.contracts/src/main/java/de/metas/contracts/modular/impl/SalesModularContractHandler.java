@@ -29,6 +29,12 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.lang.SOTrx;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
@@ -36,8 +42,11 @@ import org.springframework.stereotype.Component;
 import java.util.stream.Stream;
 
 @Component
-public class OrderLineBasedModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
+public class SalesModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@Override
 	public @NonNull Class<I_C_Flatrate_Term> getType()
 	{
@@ -47,8 +56,19 @@ public class OrderLineBasedModularContractHandler implements IModularContractTyp
 	@Override
 	public boolean applies(final @NonNull I_C_Flatrate_Term flatrateTermRecord)
 	{
-		return TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType() 
-				&& flatrateTermRecord.getC_OrderLine_Term_ID() > 0;
+		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
+		{
+			return false;
+		}
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(flatrateTermRecord.getC_OrderLine_Term_ID());
+		if (orderLineId == null)
+		{
+			return false;
+		}
+
+		final OrderId orderId = OrderId.ofRepoId(orderLineBL.getOrderLineById(orderLineId).getC_Order_ID());
+		return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isSales();
 	}
 
 	@Override
