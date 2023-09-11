@@ -59,9 +59,9 @@ Feature: Modular contract log from purchase order
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_06292023_2 | module_log_product_PO   | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                       | Value                      | Classname                                                               |
-      | modCntr_type_1             | poLine_06292023_2          | poLine_06292023_2          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-      | modCntr_type_MC            | modCntr_type_MC_09072023_1 | modCntr_type_MC_09072023_1 | de.metas.contracts.modular.impl.OrderLineBasedModularContractHandler    |
+      | ModCntr_Type_ID.Identifier | Name                       | Value                      | Classname                                                                    |
+      | modCntr_type_1             | poLine_06292023_2          | poLine_06292023_2          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler      |
+      | modCntr_type_MC            | modCntr_type_MC_09072023_1 | modCntr_type_MC_09072023_1 | de.metas.contracts.modular.impl.PurchaseOrderLineBasedModularContractHandler |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_06292023_2 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
