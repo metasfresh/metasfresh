@@ -312,4 +312,13 @@ public class PPOrderDAO implements IPPOrderDAO
 				.create()
 				.listImmutable(I_PP_Order.class);
 	}
+
+	@Override
+	public Stream<I_PP_Order> stream(@NonNull final IQueryFilter<I_PP_Order> filter)
+	{
+		return queryBL.createQueryBuilder(I_PP_Order.class)
+				.filter(filter)
+				.create()
+				.iterateAndStream();
+	}
 }

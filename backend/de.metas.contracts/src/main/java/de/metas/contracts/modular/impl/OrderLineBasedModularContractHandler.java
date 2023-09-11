@@ -64,7 +64,7 @@ public class OrderLineBasedModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public void validateDocAction(final @NonNull I_C_Flatrate_Term model, final @NonNull ModelAction action)
+	public void validateAction(final @NonNull I_C_Flatrate_Term model, final @NonNull ModelAction action)
 	{
 		if (action != ModelAction.COMPLETED)
 		{

@@ -87,6 +87,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
@@ -1227,5 +1228,14 @@ public class FlatrateDAO implements IFlatrateDAO
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.filter(flatrateTermFilter);
+	}
+
+	@Override
+	public Stream<I_C_Flatrate_Term> stream(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(filter)
+				.create()
+				.iterateAndStream();
 	}
 }

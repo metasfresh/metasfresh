@@ -29,9 +29,11 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
+import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,8 +46,10 @@ public interface IModularContractLogHandler<T>
 {
 	LogAction getLogAction(@NonNull HandleLogsRequest<T> request);
 
+	BooleanWithReason doesRecordStateRequireLogCreation(@NonNull T model);
+
 	@NonNull
-	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest<T> handleLogsRequest);
+	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest<T> createLogRequest);
 
 	@NonNull
 	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest<T> handleLogsRequest, @NonNull FlatrateTermId contractId);
@@ -81,6 +85,18 @@ public interface IModularContractLogHandler<T>
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	default LogEntryDeleteRequest getDeleteRequestFor(
+			@NonNull final HandleLogsRequest<T> handleLogsRequest,
+			@NonNull final FlatrateTermId contractId)
+	{
+		return LogEntryDeleteRequest.builder()
+				.referencedModel(handleLogsRequest.getModelRef())
+				.flatrateTermId(contractId)
+				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
+				.build();
+	}
+
 	@Value
 	@Builder
 	class HandleLogsRequest<T>
@@ -106,7 +122,7 @@ public interface IModularContractLogHandler<T>
 	enum LogAction
 	{
 		CREATE,
-		REVERSE
-		//RECOMPUTE TBD
+		REVERSE,
+		RECOMPUTE
 	}
 }

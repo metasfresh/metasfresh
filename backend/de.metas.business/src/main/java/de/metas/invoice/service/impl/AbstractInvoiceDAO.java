@@ -661,4 +661,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	@Override
+	public Stream<I_C_Invoice> stream(@NonNull final IQueryFilter<I_C_Invoice> invoiceFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
+				.filter(invoiceFilter)
+				.create()
+				.iterateAndStream();
+	}
 }

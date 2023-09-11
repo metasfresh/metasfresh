@@ -73,6 +73,10 @@ Feature: Modular contract log from inventory
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
       | log_1                     | il_1                 | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
       | log_1                     | il_2                 | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus |
+      | il_1                 | M_InventoryLine | SP               |
+      | il_2                 | M_InventoryLine | SP               |
 
   @Id:S0284_200
   @Id:S0282_600
@@ -145,6 +149,11 @@ Feature: Modular contract log from inventory
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
       | log_S0282_600_1           | il_1                 | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
       | log_S0282_600_1           | il_2                 | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus |
+      | il_1                 | M_InventoryLine | SP               |
+      | il_2                 | M_InventoryLine | SP               |
+
 
   @Id:S0284_300
   @Id:S0282_700
@@ -222,3 +231,8 @@ Feature: Modular contract log from inventory
       | log_2                     | il_1                 | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | -10 | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
       | log_3                     | il_2                 | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
       | log_4                     | il_2                 | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | -10 | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
+      | il_1                 | M_InventoryLine | SP               | 2                   |
+      | il_2                 | M_InventoryLine | SP               | 2                   |

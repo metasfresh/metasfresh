@@ -32,7 +32,9 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -58,8 +60,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
 @Component
@@ -84,6 +84,17 @@ class OrderLineBasedModularContractLogsHandler implements IModularContractLogHan
 					case COMPLETED -> LogAction.CREATE;
 					default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
+	}
+
+	@Override
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_Flatrate_Term model)
+	{
+		if (!DocStatus.ofCode(model.getDocStatus()).isCompleted())
+		{
+			return BooleanWithReason.falseBecause("The C_Flatrate_Term.DocStatus is " + model.getDocStatus());
+		}
+
+		return BooleanWithReason.TRUE;
 	}
 
 	@Override

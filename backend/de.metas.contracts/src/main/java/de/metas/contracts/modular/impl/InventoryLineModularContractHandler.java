@@ -27,18 +27,26 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InventoryLine;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
+
 @Component
+@RequiredArgsConstructor
 public class InventoryLineModularContractHandler implements IModularContractTypeHandler<I_M_InventoryLine>
 {
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.ReactivateNotAllowed");
+
+	@NonNull private final ModularContractLogService contractLogService;
 
 	@NonNull
 	@Override
@@ -65,16 +73,16 @@ public class InventoryLineModularContractHandler implements IModularContractType
 		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()));
 	}
 
-	public void validateDocAction(
-			@NonNull final I_M_InventoryLine ignored,
+	public void validateAction(
+			@NonNull final I_M_InventoryLine model,
 			@NonNull final ModelAction action)
 	{
 		switch (action)
 		{
-			case COMPLETED, REVERSED, VOIDED ->
-			{
-			}
+			case COMPLETED, REVERSED, VOIDED -> {}
 			case REACTIVATED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
+			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
+																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}

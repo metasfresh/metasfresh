@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -267,4 +268,6 @@ public interface IFlatrateDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
+
+	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 }

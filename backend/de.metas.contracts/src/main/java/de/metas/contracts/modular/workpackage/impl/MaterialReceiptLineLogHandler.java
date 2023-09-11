@@ -22,54 +22,19 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.i18n.ExplainedOptional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class MaterialReceiptLineLogHandler implements IModularContractLogHandler<I_M_InOutLine>
+class MaterialReceiptLineLogHandler extends AbstractMaterialReceiptLogHandler
 {
 	@NonNull
-	private final MaterialReceiptLineHandlerHelper materialReceiptLineHandlerHelper;
-	@NonNull
 	private final MaterialReceiptLineInterimContractHandler contractHandler;
-
-	@Override
-	public LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest<I_M_InOutLine> request)
-	{
-		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
-			final @NonNull IModularContractLogHandler.CreateLogRequest<I_M_InOutLine> request)
-	{
-		return materialReceiptLineHandlerHelper.createLogEntryCreateRequest(request);
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			final @NonNull IModularContractLogHandler.HandleLogsRequest<I_M_InOutLine> request,
-			final @NonNull FlatrateTermId contractId)
-	{
-		return materialReceiptLineHandlerHelper.createLogEntryReverseRequest(request, contractId);
-	}
 
 	@Override
 	public @NonNull IModularContractTypeHandler<I_M_InOutLine> getModularContractTypeHandler()

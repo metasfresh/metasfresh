@@ -34,10 +34,13 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
@@ -67,6 +70,7 @@ class ShipmentLineLogHandler implements IModularContractLogHandler<I_M_InOutLine
 	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
 
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -80,17 +84,31 @@ class ShipmentLineLogHandler implements IModularContractLogHandler<I_M_InOutLine
 				{
 					case COMPLETED -> LogAction.CREATE;
 					case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_M_InOutLine> request)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine model)
 	{
-		final I_M_InOutLine inOutLineRecord = request.getHandleLogsRequest().getModel();
+		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(model.getM_InOut_ID()));
+
+		if (!inOutDocStatus.isCompleted())
+		{
+			return BooleanWithReason.falseBecause("The M_Inout.DocStatus is " + inOutDocStatus);
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	@Override
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_M_InOutLine> createLogRequest)
+	{
+		final I_M_InOutLine inOutLineRecord = createLogRequest.getHandleLogsRequest().getModel();
 
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(request.getContractId());
+		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(createLogRequest.getContractId());
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
 
 		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());
@@ -99,7 +117,7 @@ class ShipmentLineLogHandler implements IModularContractLogHandler<I_M_InOutLine
 		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_COMPLETED);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(request.getContractId())
+											.contractId(createLogRequest.getContractId())
 											.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
 											.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
 											.collectionPointBPartnerId(bPartnerId)
@@ -113,9 +131,9 @@ class ShipmentLineLogHandler implements IModularContractLogHandler<I_M_InOutLine
 											.quantity(quantity)
 											.amount(null)
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(), OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
-											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
+											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(msgText.translate(Env.getAD_Language()))
-											.modularContractTypeId(request.getTypeId())
+											.modularContractTypeId(createLogRequest.getTypeId())
 											.build());
 	}
 

@@ -22,17 +22,22 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -41,7 +46,7 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String localTrxName)
 	{
-		logHandler.handleLogs(getRequest());
+		logHandler.handleLogs(getRequestList());
 
 		return Result.SUCCESS;
 	}
@@ -53,24 +58,56 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 	}
 
 	@NonNull
-	private IModularContractLogHandler.HandleLogsRequest<Object> getRequest()
+	private List<IModularContractLogHandler.HandleLogsRequest<Object>> getRequestList()
 	{
-		final TableRecordReference enqueuedModel = CollectionUtils.singleElement(retrieveItems(TableRecordReference.class));
-		final ModelAction modelAction = getParameters().getParameterAsEnum(Params.MODEL_ACTION.name(), ModelAction.class)
-				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
-						.appendParametersToMessage()
-						.setParameter("wpParameterName", Params.MODEL_ACTION.name()));
+		final TableRecordReferenceSet enqueuedModels = TableRecordReferenceSet.of(retrieveItems(TableRecordReference.class));
+		enqueuedModels.assertSingleTableName();
 
-		final LogEntryContractType logEntryContractType = getParameters().getParameterAsEnum(Params.LOG_ENTRY_CONTRACT_TYPE.name(), LogEntryContractType.class)
+		final ModelAction modelAction = getModelAction();
+		final ContractTypeParameter contractTypeParameter = getLogEntryContractType();
+
+		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID());
+
+		return enqueuedModels.streamReferences()
+				.flatMap(recordReference -> {
+					final List<LogEntryContractType> contractTypes = contractTypeParameter.getContractTypesByRecordId(recordReference.getRecord_ID());
+					if (contractTypes == null || contractTypes.isEmpty())
+					{
+						throw new AdempiereException("Missing mandatory parameter for record reference=" + recordReference)
+								.appendParametersToMessage()
+								.setParameter("wpParameterName", Params.LOG_ENTRY_CONTRACT_TYPE.name());
+					}
+
+					return contractTypes.stream()
+							.map(contractType -> IModularContractLogHandler.HandleLogsRequest.builder()
+									.model(recordReference.getModel())
+									.logEntryContractType(contractType)
+									.modelAction(modelAction)
+									.workPackageId(workPackageId)
+									.build());
+				})
+				.collect(Collectors.toList());
+	}
+
+	@NonNull
+	private ContractTypeParameter getLogEntryContractType()
+	{
+		final String recordId2ContractTypesString = getParameters().getParameterAsString(Params.LOG_ENTRY_CONTRACT_TYPE.name());
+
+		return Optional
+				.ofNullable(recordId2ContractTypesString)
+				.map(recordId2ContractTypesStringParam -> JsonObjectMapperHolder.fromJson(recordId2ContractTypesStringParam, ContractTypeParameter.class))
 				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
 						.appendParametersToMessage()
 						.setParameter("wpParameterName", Params.LOG_ENTRY_CONTRACT_TYPE.name()));
+	}
 
-		return IModularContractLogHandler.HandleLogsRequest.builder()
-				.model(enqueuedModel.getModel())
-				.logEntryContractType(logEntryContractType)
-				.modelAction(modelAction)
-				.workPackageId(QueueWorkPackageId.ofRepoId(getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID()))
-				.build();
+	@NonNull
+	private ModelAction getModelAction()
+	{
+		return getParameters().getParameterAsEnum(Params.MODEL_ACTION.name(), ModelAction.class)
+				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
+						.appendParametersToMessage()
+						.setParameter("wpParameterName", Params.MODEL_ACTION.name()));
 	}
 }

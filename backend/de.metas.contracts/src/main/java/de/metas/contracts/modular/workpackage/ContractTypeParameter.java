@@ -20,22 +20,28 @@
  * #L%
  */
 
-package de.metas.contracts.modular.log;
+package de.metas.contracts.modular.workpackage;
 
-import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 @Value
 @Builder
-public class ModularContractLogQuery
+@Jacksonized
+public class ContractTypeParameter
 {
-	@Nullable TableRecordReferenceSet referenceSet;
-	@Nullable LogEntryContractType contractType;
-	@Nullable ModularContractLogEntryId entryId;
-	@Nullable FlatrateTermId flatrateTermId;
-	@Nullable Boolean processed;
+	@NonNull Map<Integer, List<LogEntryContractType>> recordId2ContractType;
+
+	@Nullable
+	public List<LogEntryContractType> getContractTypesByRecordId(final int recordId)
+	{
+		return recordId2ContractType.get(recordId);
+	}
 }

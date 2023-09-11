@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,22 +20,15 @@
  * #L%
  */
 
-package de.metas.contracts.modular.log;
+package de.metas.cucumber.stepdefs.contract;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.Builder;
-import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import de.metas.contracts.model.I_ModCntr_Log_Status;
+import de.metas.cucumber.stepdefs.StepDefData;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class ModularContractLogQuery
+public class ModCntr_Log_Status_StepDefData extends StepDefData<I_ModCntr_Log_Status>
 {
-	@Nullable TableRecordReferenceSet referenceSet;
-	@Nullable LogEntryContractType contractType;
-	@Nullable ModularContractLogEntryId entryId;
-	@Nullable FlatrateTermId flatrateTermId;
-	@Nullable Boolean processed;
+	public ModCntr_Log_Status_StepDefData()
+	{
+		super(I_ModCntr_Log_Status.class);
+	}
 }

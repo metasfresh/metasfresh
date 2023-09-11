@@ -24,6 +24,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -513,5 +514,14 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsOnConsignment, true)
 				.anyMatch();
+	}
+
+	@Override
+	public Stream<I_C_Order> streamOrders(@NonNull final IQueryFilter<I_C_Order> orderFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Order.class)
+				.filter(orderFilter)
+				.create()
+				.iterateAndStream();
 	}
 }

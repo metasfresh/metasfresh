@@ -33,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -300,10 +301,10 @@ public class InOutDAO implements IInOutDAO
 	{
 		return queryBL.createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
-						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
-						// anymore, because they are already in a shipper-transportation
-						IDocument.STATUS_InProgress,
-						IDocument.STATUS_WaitingConfirmation)
+									   IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
+									   // anymore, because they are already in a shipper-transportation
+									   IDocument.STATUS_InProgress,
+									   IDocument.STATUS_WaitingConfirmation)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -614,6 +615,15 @@ public class InOutDAO implements IInOutDAO
 	public Stream<I_M_InOutLine> stream(@NonNull final InOutLineQuery query)
 	{
 		return toSqlQuery(query).stream();
+	}
+
+	@Override
+	public Stream<I_M_InOut> stream(@NonNull final IQueryFilter<I_M_InOut> inOutFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut.class)
+				.filter(inOutFilter)
+				.create()
+				.iterateAndStream();
 	}
 
 	private IQueryBuilder<I_M_InOutLine> toSqlQuery(@NonNull final InOutLineQuery query)

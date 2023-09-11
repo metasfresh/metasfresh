@@ -11,6 +11,7 @@ import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -394,4 +395,6 @@ public interface IInvoiceBL extends ISingletonService
 	Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId);
 
 	List<I_C_InvoiceLine> getLines(InvoiceId invoiceId);
+
+	DocStatus getDocStatus(@NonNull InvoiceId invoiceId);
 }
