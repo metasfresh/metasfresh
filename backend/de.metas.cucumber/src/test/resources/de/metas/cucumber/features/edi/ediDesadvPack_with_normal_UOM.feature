@@ -1,4 +1,4 @@
-Feature: EDI_DesadvPack and EDI_DesadvPack_Item
+Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal UOM like PCE
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'

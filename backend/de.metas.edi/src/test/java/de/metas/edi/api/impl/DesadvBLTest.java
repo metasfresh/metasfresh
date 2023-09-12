@@ -17,6 +17,7 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,14 @@ class DesadvBLTest
 													   .productId(productId)
 													   .catchUOMForProduct(true)
 													   .fromToMultiplier(new BigDecimal("2")).build());
+
+		// one PCE is also one COLI; this UOM-conversion is ususally superseeded by  the respective M_HU_PI_Item_Product's capacity, but we have it also in the DB
+		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+													   .fromUomId(eachUomId)
+													   .toUomId(coliUomId)
+													   .productId(productId)
+													   .catchUOMForProduct(true)
+													   .fromToMultiplier(new BigDecimal("1")).build());
 	}
 
 	// 9 CUs per COLI and 20.5 CUs => 3 COLIs
@@ -78,26 +87,29 @@ class DesadvBLTest
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
 				.stockQty(Quantitys.create("20.5", eachUomId)) /* qtyCUsPerLUInStockUom */
-				.uomQty(Quantitys.create("4", coliUomId))
+				.uomQty(Quantitys.create("20.5", coliUomId))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
 
-		// invoke the method under test
+		// when
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("99999", eachUomId) /* qtyCUInStockUom */,
+				Quantitys.create("9", eachUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
-				new BigDecimal("9"),
 				movementQty);
 
+		// then
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+		
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU()).as("QtyCUsPerLU").isEqualByComparingTo(new BigDecimal("20.5"));
+		softly.assertThat(createEDIDesadvPackItemRequest.getQtyCu()).as("QtyCu").isEqualByComparingTo(new BigDecimal("9"));
+		softly.assertThat(createEDIDesadvPackItemRequest.getMovementQtyInStockUOM()).as("MovementQtyInStockUOM").isEqualByComparingTo(new BigDecimal("20.5"));
 
-		assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU()).isEqualByComparingTo(new BigDecimal("3"));
-		assertThat(createEDIDesadvPackItemRequest.getQtyCu()).isEqualByComparingTo(new BigDecimal("1"));
-		assertThat(createEDIDesadvPackItemRequest.getMovementQtyInStockUOM()).isEqualByComparingTo(new BigDecimal("20.5"));
+		softly.assertAll();
 	}
 
 	/**
