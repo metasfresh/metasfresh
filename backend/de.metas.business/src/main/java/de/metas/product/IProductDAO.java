@@ -6,6 +6,7 @@ import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.resource.ResourceGroupId;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -122,6 +123,8 @@ public interface IProductDAO extends ISingletonService
 	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
 
 	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
+	@NonNull UomId getProductUomId(int productId);
 
 	@Value
 	class ProductQuery

@@ -28,14 +28,21 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
+import de.metas.order.OrderId;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.shippingnotification.model.X_M_Shipping_Notification;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -108,5 +115,29 @@ public class OrderDAO extends AbstractOrderDAO
 				+ "WHERE o.IsSOTrx='Y' AND Bill_BPartner_ID=?";
 		
 		return DB.getSQLValueBDEx(ITrx.TRXNAME_None, sql, bpartnerId);
+	}
+
+	@Override
+	public Stream<I_M_Shipping_Notification> retrieveForOrder(@NonNull final OrderId orderId)
+	{
+
+		final IQuery<I_C_OrderLine> orderLinesQuery = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.create();
+
+		final IQuery<I_M_Shipping_NotificationLine> notificationLinesQuery = queryBL.createQueryBuilder(I_M_Shipping_NotificationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Shipping_NotificationLine.COLUMNNAME_C_OrderLine_ID, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID,
+									 orderLinesQuery)
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
+				.addInSubQueryFilter(I_M_Shipping_Notification.COLUMNNAME_M_Shipping_Notification_ID, I_M_Shipping_NotificationLine.COLUMNNAME_M_Shipping_Notification_ID,
+									 notificationLinesQuery)
+				.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, X_M_Shipping_Notification.DOCSTATUS_Completed, X_M_Shipping_Notification.DOCSTATUS_Closed)
+				.create()
+				.stream(I_M_Shipping_Notification.class)
+				;
 	}
 }

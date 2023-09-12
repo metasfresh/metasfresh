@@ -769,4 +769,12 @@ public class ProductDAO implements IProductDAO
 			throw new AdempiereException("Unknown valueType: " + valueType);
 		}
 	}
+
+	@NonNull
+	@Override
+	public UomId getProductUomId(int productId)
+	{
+		final I_M_Product product = load(productId, I_M_Product.class);
+		return UomId.ofRepoId(product.getC_UOM_ID());
+	}
 }

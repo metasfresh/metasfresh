@@ -49,7 +49,7 @@ public class DocTypeService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Nullable
-	public DocTypeId getInvoiceDocTypeId(
+	public DocTypeId getDocTypeId(
 			@Nullable final DocBaseType docBaseType,
 			@Nullable final String docSubType,
 			@NonNull final OrgId orgId)

@@ -31,7 +31,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.shippingnotification.ShipperNotificationRepository;
+import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -49,7 +49,7 @@ public class C_Order_Generate_Shipment_Notification extends JavaProcess implemen
 	public static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
 
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final ShipperNotificationRepository shipperNotificationRepository = SpringContextHolder.instance.getBean(ShipperNotificationRepository.class);
+	private final ShippingNotificationRepository shipperNotificationRepository = SpringContextHolder.instance.getBean(ShippingNotificationRepository.class);
 
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -81,7 +81,7 @@ public class C_Order_Generate_Shipment_Notification extends JavaProcess implemen
 	@Override
 	protected String doIt() throws Exception
 	{
-		shipperNotificationRepository.generateShippingNotificationAndPropagatePhysicalClearanceDate(OrderId.ofRepoId(getRecord_ID()), p_physicalClearanceDate);
+		// shipperNotificationRepository.generateShippingNotificationAndPropagatePhysicalClearanceDate(OrderId.ofRepoId(getRecord_ID()), p_physicalClearanceDate);
 
 		return MSG_OK;
 	}

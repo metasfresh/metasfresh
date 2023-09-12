@@ -32,10 +32,10 @@ import org.springframework.stereotype.Component;
 public class ShippingNotificationDocumentHandlerProvider implements DocumentHandlerProvider
 {
 
-	private final ShipperNotificationRepository shipperNotificationRepository;
+	private final ShippingNotificationRepository shipperNotificationRepository;
 
 	public ShippingNotificationDocumentHandlerProvider(
-			@NonNull final ShipperNotificationRepository shipperNotificationRepository)
+			@NonNull final ShippingNotificationRepository shipperNotificationRepository)
 	{
 		this.shipperNotificationRepository = shipperNotificationRepository;
 	}

@@ -22,56 +22,41 @@
 
 package de.metas.shippingnotification;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
-import de.metas.shippingnotification.model.X_M_Shipping_Notification;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Repository
-public class ShipperNotificationRepository
+public class ShippingNotificationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public static ShippingNotification fromRecord(@NonNull final I_M_Shipping_Notification record)
 	{
@@ -85,6 +70,11 @@ public class ShipperNotificationRepository
 				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
 				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.build();
+	}
+
+	public IOrderDAO getOrderDAO()
+	{
+		return orderDAO;
 	}
 
 	@NonNull
@@ -112,29 +102,6 @@ public class ShipperNotificationRepository
 		return OrderId.ofRepoId(orderId);
 	}
 
-	public Stream<I_M_Shipping_Notification> retrieveForOrder(@NonNull final OrderId orderId)
-	{
-
-		final IQuery<I_C_OrderLine> orderLinesQuery = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.create();
-
-		final IQuery<I_M_Shipping_NotificationLine> notificationLinesQuery = queryBL.createQueryBuilder(I_M_Shipping_NotificationLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_M_Shipping_NotificationLine.COLUMNNAME_C_OrderLine_ID, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID,
-									 orderLinesQuery)
-				.create();
-
-		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
-				.addInSubQueryFilter(I_M_Shipping_Notification.COLUMNNAME_M_Shipping_Notification_ID, I_M_Shipping_NotificationLine.COLUMNNAME_M_Shipping_Notification_ID,
-									 notificationLinesQuery)
-				.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, X_M_Shipping_Notification.DOCSTATUS_Completed, X_M_Shipping_Notification.DOCSTATUS_Closed)
-				.create()
-				.stream(I_M_Shipping_Notification.class)
-				;
-	}
-
 	public List<I_M_Shipping_NotificationLine> retrieveLines(@NonNull final ShippingNotificationId shippingNotificationId)
 	{
 		return queryBL.createQueryBuilder(I_M_Shipping_NotificationLine.class)
@@ -145,17 +112,21 @@ public class ShipperNotificationRepository
 
 	}
 
-	public I_M_Shipping_Notification generateShippingNotificationAndPropagatePhysicalClearanceDate(@NonNull final OrderId orderId, @NonNull  Timestamp physicalClearanceDate)
+	public I_M_Shipping_Notification createAndSaveShippingNotification(@NonNull final ShippingNotificationCreateRequest request)
 	{
+		final OrderId orderId = request.getOrderId();
+		final DocTypeId docTypeId = request.getDDocTypeId();
+		final Instant physicalClearanceDate = request.getPhysicalClearanceDate();
+
 		final I_C_Order orderRecord = orderDAO.getById(orderId);
 
 		final I_M_Shipping_Notification shippingNotificationRecord = newInstance(I_M_Shipping_Notification.class);
 		shippingNotificationRecord.setAD_Org_ID(orderRecord.getAD_Org_ID());
-		shippingNotificationRecord.setC_DocType_ID(getDocTypeId(orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID()).getRepoId());
+		shippingNotificationRecord.setC_DocType_ID(docTypeId.getRepoId());
 		shippingNotificationRecord.setC_BPartner_ID(orderRecord.getC_BPartner_ID());
 		shippingNotificationRecord.setC_BPartner_Location_ID(orderRecord.getC_BPartner_Location_ID());
 		shippingNotificationRecord.setAD_User_ID(orderRecord.getAD_User_ID());
-		shippingNotificationRecord.setPhysicalClearanceDate(physicalClearanceDate);
+		shippingNotificationRecord.setPhysicalClearanceDate(TimeUtil.asTimestamp(physicalClearanceDate));
 		shippingNotificationRecord.setC_Auction_ID(orderRecord.getC_Auction_ID());
 		shippingNotificationRecord.setM_Warehouse_ID(orderRecord.getM_Warehouse_ID());
 		shippingNotificationRecord.setM_Locator_ID(orderRecord.getM_Locator_ID());
@@ -165,92 +136,31 @@ public class ShipperNotificationRepository
 		shippingNotificationRecord.setDescription(orderRecord.getDescription());
 		save(shippingNotificationRecord);
 
-		createAndSaveBulkShippingNotificationLines(shippingNotificationRecord);
-
-		updatetPhysicalClearanceDateToOrder(shippingNotificationRecord);
-
 		return shippingNotificationRecord;
 	}
 
-	private void createAndSaveBulkShippingNotificationLines(@NonNull final I_M_Shipping_Notification shippingNotificationRecord)
+	public void createAndSaveShippingNotificationLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull I_M_Shipping_Notification shippingNotificationRecord)
 	{
-
-		trxManager.accumulateAndProcessAfterCommit(
-				"saveBulkShippingNotificationLine",
-				ImmutableSet.of(shippingNotificationRecord),
-				this::createShippingNotificationLines
-		);
-	}
-
-	private void createShippingNotificationLines(@NonNull List<I_M_Shipping_Notification> shippingNotificationRecord)
-	{
-
-		for (final I_M_Shipping_Notification record : shippingNotificationRecord)
-		{
-			final OrderId orderId = OrderId.ofRepoId(record.getC_Order_ID());
-			final Map<ShipmentScheduleId, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedulesByIds = shipmentSchedulePA.getByIds(shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-
-			final ImmutableSet<I_M_ShipmentSchedule> shipmentSchedules = ImmutableSet.copyOf(shipmentSchedulesByIds.values());
-
-			shipmentSchedules.forEach(shipmentSchedule ->
-									  {
-										  createAndSaveShippingNotificationLine(shipmentSchedule, record);
-										  updatetPhysicalClearanceDateToShipmentSchedule(shipmentSchedule, record);
-									  });
-
-		}
-	}
-
-	private void createAndSaveShippingNotificationLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull I_M_Shipping_Notification shippingNotificationRecord)
-	{
-
 		final I_M_Shipping_NotificationLine shippingNotificationLineRecord = newInstance(I_M_Shipping_NotificationLine.class, shippingNotificationRecord);
 		shippingNotificationLineRecord.setM_Shipping_Notification_ID(shippingNotificationLineRecord.getM_Shipping_Notification_ID());
 		shippingNotificationLineRecord.setM_Product_ID(shipmentSchedule.getM_Product_ID());
 		shippingNotificationLineRecord.setMovementQty(shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule));
-		shippingNotificationLineRecord.setC_UOM_ID(getProductUomId(shipmentSchedule.getM_Product_ID()).getRepoId());
+		shippingNotificationLineRecord.setC_UOM_ID(productDAO.getProductUomId(shipmentSchedule.getM_Product_ID()).getRepoId());
 		shippingNotificationLineRecord.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
 		shippingNotificationLineRecord.setC_OrderLine_ID(shipmentSchedule.getC_OrderLine_ID());
 		shippingNotificationLineRecord.setM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID());
 
-		save(shippingNotificationLineRecord);
+		saveLine(shippingNotificationLineRecord);
 	}
 
-	private void updatetPhysicalClearanceDateToShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final I_M_Shipping_Notification shippingNotification)
+	public void save(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
 	{
-		// shipmentSchedule.setPhysicalClearanceDate(shippingNotification.getPhysicalClearanceDate());
-		shipmentSchedulePA.save(shipmentSchedule);
+		InterfaceWrapperHelper.save(shippingNotificationRecord);
 	}
 
-	private void updatetPhysicalClearanceDateToOrder(@NonNull final I_M_Shipping_Notification shippingNotification)
+	public void saveLine(@NonNull I_M_Shipping_NotificationLine shippingNotificationLineRecord)
 	{
-		final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(shippingNotification.getC_Order_ID()));
-		orderRecord.setPhysicalClearanceDate(shippingNotification.getPhysicalClearanceDate());
-		orderDAO.save(orderRecord);
-	}
-
-	@NonNull
-	private UomId getProductUomId(int productId)
-	{
-		final I_M_Product product = load(productId, I_M_Product.class);
-		return UomId.ofRepoId(product.getC_UOM_ID());
-	}
-
-	@NonNull
-	private DocTypeId getDocTypeId(final int ad_client_id, final int ad_org_id)
-	{
-		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(DocBaseType.ShippingNotification)
-				.adClientId(ad_client_id)
-				.adOrgId(ad_org_id)
-				.build();
-
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
-		if (docTypeId == null)
-		{
-			throw new DocTypeNotFoundException(docTypeQuery);
-		}
-		return docTypeId;
+		InterfaceWrapperHelper.save(shippingNotificationLineRecord);
 	}
 
 }

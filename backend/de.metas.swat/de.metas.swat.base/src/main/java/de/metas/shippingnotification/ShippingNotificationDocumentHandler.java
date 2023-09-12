@@ -37,10 +37,10 @@ import java.util.List;
 
 public class ShippingNotificationDocumentHandler implements DocumentHandler
 {
-	private final ShipperNotificationRepository shipperNotificationRepository;
+	private final ShippingNotificationRepository shipperNotificationRepository;
 
 	ShippingNotificationDocumentHandler(
-			@NonNull final ShipperNotificationRepository shipperNotificationRepository)
+			@NonNull final ShippingNotificationRepository shipperNotificationRepository)
 	{
 		this.shipperNotificationRepository = shipperNotificationRepository;
 	}
@@ -91,7 +91,7 @@ public class ShippingNotificationDocumentHandler implements DocumentHandler
 		for (final I_M_Shipping_NotificationLine line : lines)
 		{
 			line.setProcessed(true);
-			InterfaceWrapperHelper.save(line);
+			shipperNotificationRepository.saveLine(line);
 		}
 
 		shippingNotification.setProcessed(true);

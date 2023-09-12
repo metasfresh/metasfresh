@@ -213,7 +213,7 @@ public class JsonConverters
 				.dateRequired(request.getDateRequired())
 				.dateCandidate(request.getDateCandidate())
 				//
-				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseType, subType, orgId))
+				.docTypeInvoiceId(docTypeService.getDocTypeId(docBaseType, subType, orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
