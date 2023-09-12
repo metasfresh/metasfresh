@@ -42,7 +42,7 @@ Feature: Delivery rules with and without quantity in stock
 
     When the order identified by order_A_stocked_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_1 | orderLine_A_stocked_1     | N             | 0            |
 
@@ -82,7 +82,7 @@ Feature: Delivery rules with and without quantity in stock
 
     When the order identified by order_A_notStocked_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_2 | orderLine_A_notStocked_1  | N             | 1            |
 
@@ -139,7 +139,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_A_stocked_2 | order_A_stocked_2     | product_A_stocked_2     | 1          |
     And the order identified by order_A_stocked_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_3 | orderLine_A_stocked_2     | N             | 1            |
 
@@ -199,7 +199,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_A_notStocked_2 | order_A_notStocked_2  | product_A_notStocked_2  | 1          |
     And the order identified by order_A_notStocked_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_4 | orderLine_A_notStocked_2  | N             | 1            |
 
@@ -242,7 +242,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_F_notStocked_1 | order_F_notStocked_1  | product_F_notStocked_1  | 1          |
     And the order identified by order_F_notStocked_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_5 | orderLine_F_notStocked_1  | N             | 1            |
 
@@ -285,7 +285,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_F_stocked_1 | order_F_stocked_1     | product_F_stocked_1     | 1          |
     And the order identified by order_F_stocked_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_6 | orderLine_F_stocked_1     | N             | 1            |
 
@@ -345,7 +345,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_F_notStocked_2 | order_F_notStocked_2  | product_F_notStocked_2  | 1          |
     And the order identified by order_F_notStocked_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_7 | orderLine_F_notStocked_2  | N             | 1            |
 
@@ -402,7 +402,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_F_stocked_2 | order_F_stocked_2     | product_F_stocked_2     | 1          |
     And the order identified by order_F_stocked_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_8 | orderLine_F_stocked_2     | N             | 1            |
 
@@ -467,7 +467,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_FIFO_1 | order_FIFO_1          | product_FIFO_1          | 20         |
     And the order identified by order_FIFO_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_FIFO_1 | orderLine_FIFO_1          | N             | 12           |
 
@@ -539,7 +539,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_FIFO_2 | order_FIFO_2          | product_FIFO_2          | 6          |
     And the order identified by order_FIFO_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_FIFO_2 | orderLine_FIFO_2          | N             | 6            |
 

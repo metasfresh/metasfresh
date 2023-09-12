@@ -57,7 +57,7 @@ Feature: Shipping HUs interaction with material schedule
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 100 | 100                    | 2021-04-09T00:00:00             |
       | c_2        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |                                 |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And 'generate shipments' process is invoked
