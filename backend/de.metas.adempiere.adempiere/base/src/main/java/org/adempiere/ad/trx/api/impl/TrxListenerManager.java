@@ -11,7 +11,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -152,20 +151,10 @@ public class TrxListenerManager implements ITrxListenerManager
 		runningWithinTrxEventTiming.set(timingInfo);
 		try
 		{
-			List<RegisterListenerRequest> listenersToExecute = listeners.hardList();
-			listeners.clear();
-
-			while(!listenersToExecute.isEmpty())
-			{
-				listenersToExecute.stream()
+			listeners.hardList().stream()
 						.filter(Objects::nonNull)
 						.filter(listener -> timingInfo.equals(listener.getTiming()))
 						.forEach(listener -> fireListener(onError, timingInfo, trx, listener));
-
-				listenersToExecute = listeners.hardList();
-				listeners.clear();
-			}
-
 		}
 		finally
 		{
