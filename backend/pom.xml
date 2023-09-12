@@ -203,6 +203,7 @@
 
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
+        <!-- <module>extensionsupport</module> -->
 
         <module>de-metas-salesorder</module>
     </modules>
