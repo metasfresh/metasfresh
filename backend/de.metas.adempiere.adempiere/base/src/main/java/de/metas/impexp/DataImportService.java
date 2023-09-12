@@ -20,8 +20,10 @@ import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -154,23 +156,26 @@ public class DataImportService
 
 	public ValidateAndActualImportRecordsResult validateAndImportRecordsNow(@NonNull final ImportRecordsRequest request)
 	{
-		final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-				.setCtx(Env.getCtx())
-				.setLoggable(Loggables.get())
-				.selectedRecords(request.getSelectionId())
-				.completeDocuments(request.isCompleteDocuments())
-				.setParameters(request.getAdditionalParameters())
-				.run();
-
-		if (request.getNotifyUserId() != null)
+		try (final IAutoCloseable ignored = MigrationScriptFileLoggerHolder.temporaryEnableMigrationScriptsLoggingIf(request.isLogMigrationScripts()))
 		{
-			notifyImportDone(result.getActualImport(), request.getNotifyUserId());
-		}
+			final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
+					.setCtx(Env.getCtx())
+					.setLoggable(Loggables.get())
+					.selectedRecords(request.getSelectionId())
+					.completeDocuments(request.isCompleteDocuments())
+					.setParameters(request.getAdditionalParameters())
+					.run();
 
-		return ValidateAndActualImportRecordsResult.builder()
-				.importRecordsValidation(result.getImportRecordsValidation())
-				.actualImport(result.getActualImport())
-				.build();
+			if (request.getNotifyUserId() != null)
+			{
+				notifyImportDone(result.getActualImport(), request.getNotifyUserId());
+			}
+
+			return ValidateAndActualImportRecordsResult.builder()
+					.importRecordsValidation(result.getImportRecordsValidation())
+					.actualImport(result.getActualImport())
+					.build();
+		}
 	}
 
 	AsyncImportRecordsResponse importRecordsAsync(@NonNull final ImportRecordsRequest request)

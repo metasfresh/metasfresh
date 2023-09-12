@@ -1,22 +1,19 @@
 package de.metas.impexp;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.api.Params;
-
 import de.metas.impexp.processing.IImportProcess;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.api.Params;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
 
 /*
  * #%L
@@ -28,12 +25,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,13 +59,16 @@ public class ImportRecordsRequest
 
 	boolean completeDocuments;
 
+	private static final String PARAM_IsLogMigrationScripts = "IsLogMigrationScripts";
+	boolean logMigrationScripts;
+
 	@NonNull
 	@Default
 	Params additionalParameters = Params.EMPTY;
 
 	public Params toParams()
 	{
-		final Map<String, Object> map = new HashMap<>();
+		final HashMap<String, Object> map = new HashMap<>();
 
 		for (String parameterName : additionalParameters.getParameterNames())
 		{
@@ -79,14 +79,15 @@ public class ImportRecordsRequest
 		map.put(IImportProcess.PARAM_Selection_ID, selectionId);
 		map.put(PARAM_NotifyUserId, notifyUserId);
 		map.put(IImportProcess.PARAM_IsDocComplete, completeDocuments);
+		map.put(PARAM_IsLogMigrationScripts, logMigrationScripts);
 
 		return Params.ofMap(map);
 	}
 
 	public static ImportRecordsRequest ofParams(@NonNull final IParams params)
 	{
-		final String importTableName = params.getParameterAsString(PARAM_ImportTableName);
-		if (Check.isBlank(importTableName))
+		final String importTableName = StringUtils.trimBlankToNull(params.getParameterAsString(PARAM_ImportTableName));
+		if (importTableName == null)
 		{
 			throw new AdempiereException("Param `" + PARAM_ImportTableName + "` not found in " + params);
 		}
@@ -102,6 +103,7 @@ public class ImportRecordsRequest
 				.selectionId(selectionId)
 				.notifyUserId(params.getParameterAsId(PARAM_NotifyUserId, UserId.class))
 				.completeDocuments(params.getParameterAsBool(IImportProcess.PARAM_IsDocComplete))
+				.logMigrationScripts(params.getParameterAsBool(PARAM_IsLogMigrationScripts))
 				.additionalParameters(Params.copyOf(params))
 				.build();
 	}

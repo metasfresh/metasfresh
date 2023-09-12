@@ -44,6 +44,7 @@ import de.metas.util.StringUtils;
 import de.metas.workflow.execution.DocWorkflowManager;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
@@ -2761,9 +2762,9 @@ public abstract class PO
 		}
 	}
 
-	private final void logMigration(final String actionType)
+	private void logMigration(final String actionType)
 	{
-		if (!Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
+		if (!MigrationScriptFileLoggerHolder.isEnabled())
 		{
 			return;
 		}

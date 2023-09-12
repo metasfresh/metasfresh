@@ -21,6 +21,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -730,7 +731,7 @@ public class MSequence extends X_AD_Sequence
 			s_log.debug("Returning 'false' because isAdempiereSys()==true for AD_Client_ID {}", AD_Client_ID);
 			return false;
 		}
-		if (Ini.getRunMode() == RunMode.BACKEND && !Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
+		if (Ini.getRunMode() == RunMode.BACKEND && !MigrationScriptFileLoggerHolder.isEnabled())
 		{
 			s_log.debug("Returning 'false' because RunMode == BACKEND");
 			return false; // task 08011: we are running on the server; we don't need central ID because we won't record SQL-scripts
@@ -750,9 +751,9 @@ public class MSequence extends X_AD_Sequence
 		}
 
 		// If LogMigrationScript flag is activated, always ask Project ID Server
-		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
+		if (MigrationScriptFileLoggerHolder.isEnabled())
 		{
-			s_log.debug("Returning 'true' because Ini {} is true", Ini.P_LOGMIGRATIONSCRIPT);
+			s_log.debug("Returning 'true' because migration scripts logging is enabled");
 			return true;
 		}
 		else

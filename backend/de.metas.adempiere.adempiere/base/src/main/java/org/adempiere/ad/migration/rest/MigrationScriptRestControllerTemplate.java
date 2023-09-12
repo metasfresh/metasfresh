@@ -96,7 +96,7 @@ public abstract class MigrationScriptRestControllerTemplate
 		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathOrNull();
 
 		return JSONMigrationScriptsInfo.builder()
-				.enabled(Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
+				.enabled(MigrationScriptFileLoggerHolder.isEnabled())
 				.migrationScriptDirectory(toString(getMigrationScriptsDirectoryPath()))
 				.currentScript(toString(currentScriptPath))
 				.scripts(getMigrationScriptFileNames())
@@ -169,8 +169,8 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
-		final boolean enabled = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+		MigrationScriptFileLoggerHolder.setEnabled(true);
+		final boolean enabled = MigrationScriptFileLoggerHolder.isEnabled();
 		if (!enabled)
 		{
 			throw new AdempiereException("Failed to enable migration scripts");
@@ -182,8 +182,8 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, false);
-		final boolean enabled = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+		MigrationScriptFileLoggerHolder.setEnabled(false);
+		final boolean enabled = MigrationScriptFileLoggerHolder.isEnabled();
 		if (enabled)
 		{
 			throw new AdempiereException("Failed to disable migration scripts");

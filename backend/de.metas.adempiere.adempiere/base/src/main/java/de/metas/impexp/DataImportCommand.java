@@ -15,6 +15,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -197,6 +198,7 @@ final class DataImportCommand
 				.selectionId(getOrCreateRecordsToImportSelectionId())
 				.notifyUserId(userId)
 				.completeDocuments(completeDocuments)
+				.logMigrationScripts(MigrationScriptFileLoggerHolder.isEnabled())
 				.additionalParameters(additionalParameters)
 				.build();
 	}

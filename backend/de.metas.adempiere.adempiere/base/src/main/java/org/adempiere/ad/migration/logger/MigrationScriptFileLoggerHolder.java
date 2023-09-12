@@ -4,11 +4,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Ini;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -35,6 +37,8 @@ import java.util.Set;
 @UtilityClass
 public class MigrationScriptFileLoggerHolder
 {
+	private static final AtomicBoolean logMigrationScripts = new AtomicBoolean(false);
+	private static final ThreadLocal<Boolean> logMigrationScriptsTemporaryEnabled = new ThreadLocal<>();
 	private static final MigrationScriptFileLogger pgMigrationScriptWriter = MigrationScriptFileLogger.of("postgresql");
 	public static final String DDL_PREFIX = "/* DDL */ ";
 
@@ -69,7 +73,31 @@ public class MigrationScriptFileLoggerHolder
 
 	public static boolean isDisabled()
 	{
-		return !Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+		return !isEnabled();
+	}
+
+	public static boolean isEnabled()
+	{
+		final Boolean temporaryEnabled = logMigrationScriptsTemporaryEnabled.get();
+		return (temporaryEnabled != null && temporaryEnabled)
+				|| logMigrationScripts.get();
+	}
+
+	public static void setEnabled(final boolean enabled)
+	{
+		logMigrationScripts.set(enabled);
+	}
+
+	public static IAutoCloseable temporaryEnableMigrationScriptsLoggingIf(final boolean condition)
+	{
+		return condition ? temporaryEnableMigrationScriptsLogging() : IAutoCloseable.NOP;
+	}
+
+	public static IAutoCloseable temporaryEnableMigrationScriptsLogging()
+	{
+		final Boolean logMigrationScriptsTemporaryEnabled_Backup = logMigrationScriptsTemporaryEnabled.get();
+		logMigrationScriptsTemporaryEnabled.set(Boolean.TRUE);
+		return () -> logMigrationScriptsTemporaryEnabled.set(logMigrationScriptsTemporaryEnabled_Backup);
 	}
 
 	@Nullable

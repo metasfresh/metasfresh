@@ -8,6 +8,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.persistence.modelgen.ModelClassGenerator;
 import org.adempiere.ad.persistence.modelgen.ModelInterfaceGenerator;
 import org.adempiere.ad.persistence.modelgen.TableAndColumnInfoRepository;
@@ -15,7 +16,6 @@ import org.adempiere.ad.persistence.modelgen.TableInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.tools.AdempiereToolsHelper;
 import org.compiere.util.DB;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -97,7 +97,7 @@ public class GenerateModel
 		AdempiereToolsHelper.getInstance().startupMinimal();
 
 		LogManager.setLevel(Level.DEBUG);
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, false); // metas: don't log migration scripts
+		MigrationScriptFileLoggerHolder.setEnabled(false); // metas: don't log migration scripts
 		log.info("Generate Model");
 		log.info("----------------------------------");
 

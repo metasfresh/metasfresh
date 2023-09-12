@@ -22,19 +22,19 @@ package org.adempiere.util.lang;
  * #L%
  */
 
-
 /**
  * Exactly the same as {@link AutoCloseable} but {@link #close()} method is not declared to throw exceptions.
- *
+ * <p>
  * The main benefit of this interface is that allows you to quickly create annonymous inner {@link AutoCloseable} instances,
  * which you can use in your try-with-resources block without having to declare an "catch" block.
  *
  * @author tsa
- *
  */
 @FunctionalInterface
 public interface IAutoCloseable extends AutoCloseable
 {
+	IAutoCloseable NOP = () -> {};
+
 	@Override
 	void close();
 }
