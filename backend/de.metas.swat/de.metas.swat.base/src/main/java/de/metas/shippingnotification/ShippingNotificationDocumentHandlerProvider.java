@@ -26,29 +26,18 @@ import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ShippingNotificationDocumentHandlerProvider implements DocumentHandlerProvider
 {
-
-	private final ShippingNotificationRepository shipperNotificationRepository;
-
-	public ShippingNotificationDocumentHandlerProvider(
-			@NonNull final ShippingNotificationRepository shipperNotificationRepository)
-	{
-		this.shipperNotificationRepository = shipperNotificationRepository;
-	}
+	private final ShippingNotificationService shipperNotificationService;
 
 	@Override
-	public String getHandledTableName()
-	{
-		return I_M_Shipping_Notification.Table_Name;
-	}
+	public String getHandledTableName() {return I_M_Shipping_Notification.Table_Name;}
 
 	@Override
-	public DocumentHandler provideForDocument(final Object model)
-	{
-		return new ShippingNotificationDocumentHandler(shipperNotificationRepository);
-	}
+	public DocumentHandler provideForDocument(@NonNull final Object model) {return new ShippingNotificationDocumentHandler(shipperNotificationService);}
 }

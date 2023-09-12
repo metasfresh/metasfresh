@@ -349,4 +349,9 @@ public interface I_M_Shipping_NotificationLine
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	// TODO
+	default void setC_Order_ID (int id){}
+	default int getC_Order_ID (){ return -1;}
+
 }

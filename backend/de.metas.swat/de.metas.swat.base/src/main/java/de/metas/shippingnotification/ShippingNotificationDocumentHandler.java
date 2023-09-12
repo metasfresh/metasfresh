@@ -27,23 +27,17 @@ import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.shipping.exception.ShipmentNotificationException;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
-import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.MPeriod;
+import org.compiere.util.Env;
 
-import java.util.List;
-
+@RequiredArgsConstructor
 public class ShippingNotificationDocumentHandler implements DocumentHandler
 {
-	private final ShippingNotificationRepository shipperNotificationRepository;
-
-	ShippingNotificationDocumentHandler(
-			@NonNull final ShippingNotificationRepository shipperNotificationRepository)
-	{
-		this.shipperNotificationRepository = shipperNotificationRepository;
-	}
+	private final ShippingNotificationService shippingNotificationService;
 
 	private static I_M_Shipping_Notification extractShippingNotification(@NonNull final DocumentTableFields docFields)
 	{
@@ -78,32 +72,30 @@ public class ShippingNotificationDocumentHandler implements DocumentHandler
 	@Override
 	public String completeIt(@NonNull final DocumentTableFields docFields)
 	{
-		final I_M_Shipping_Notification shippingNotification = extractShippingNotification(docFields);
-		shippingNotification.setDocAction(IDocument.ACTION_Reverse_Correct);
+		final I_M_Shipping_Notification shippingNotificationRecord = extractShippingNotification(docFields);
+		assertPeriodOpen(shippingNotificationRecord);
 
-		if (shippingNotification.isProcessed())
-		{
-			throw new ShipmentNotificationException("@Processed@=@Y@");
-		}
+		shippingNotificationService.updateWhileSaving(
+				shippingNotificationRecord,
+				ShippingNotification::completeIt
+		);
 
-		final List<I_M_Shipping_NotificationLine> lines = shipperNotificationRepository.retrieveLines(ShippingNotificationId.ofRepoId(shippingNotification.getM_Shipping_Notification_ID()));
-
-		for (final I_M_Shipping_NotificationLine line : lines)
-		{
-			line.setProcessed(true);
-			shipperNotificationRepository.saveLine(line);
-		}
-
-		shippingNotification.setProcessed(true);
-
+		shippingNotificationRecord.setDocAction(IDocument.ACTION_Reverse_Correct);
 		return IDocument.STATUS_Completed;
 	}
 
 	@Override
 	public void reactivateIt(@NonNull final DocumentTableFields docFields)
 	{
-		final I_M_Shipping_Notification shippingNotification = extractShippingNotification(docFields);
-		shippingNotification.setProcessed(false);
-		shippingNotification.setDocAction(IDocument.ACTION_Complete);
+		final I_M_Shipping_Notification shippingNotificationRecord = extractShippingNotification(docFields);
+		assertPeriodOpen(shippingNotificationRecord);
+		shippingNotificationRecord.setProcessed(false);
+		shippingNotificationRecord.setDocAction(IDocument.ACTION_Complete);
 	}
+
+	private static void assertPeriodOpen(final I_M_Shipping_Notification record)
+	{
+		MPeriod.testPeriodOpen(Env.getCtx(), record.getDateAcct(), record.getC_DocType_ID(), record.getAD_Org_ID());
+	}
+
 }

@@ -48,17 +48,12 @@ public class DocTypeService
 	private final IOrgDAO orgsDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	@Nullable
+	@NonNull
 	public DocTypeId getDocTypeId(
-			@Nullable final DocBaseType docBaseType,
+			@NonNull final DocBaseType docBaseType,
 			@Nullable final String docSubType,
 			@NonNull final OrgId orgId)
 	{
-		if (docBaseType == null)
-		{
-			return null;
-		}
-
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
 
 		final DocTypeQuery query = DocTypeQuery
