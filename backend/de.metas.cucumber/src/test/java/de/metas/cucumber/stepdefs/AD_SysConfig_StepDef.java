@@ -70,6 +70,7 @@ public class AD_SysConfig_StepDef
 						.appendParametersToMessage()
 						.setParameter("type:", sysconfigType);
 		}
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name); // also without this, we fire a CacheInvalidation event, but that event may not be processed in time
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
