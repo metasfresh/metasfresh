@@ -206,6 +206,33 @@ public interface I_M_Shipping_Notification
 	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_M_Shipping_Notification, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_Shipping_Notification.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

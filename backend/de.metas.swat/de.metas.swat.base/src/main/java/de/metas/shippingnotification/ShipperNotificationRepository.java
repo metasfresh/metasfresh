@@ -22,22 +22,28 @@
 
 package de.metas.shippingnotification;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.shippingnotification.model.X_M_Shipping_Notification;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,13 +51,14 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Repository;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -61,6 +68,9 @@ public class ShipperNotificationRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public static ShippingNotification fromRecord(@NonNull final I_M_Shipping_Notification record)
 	{
@@ -134,7 +144,7 @@ public class ShipperNotificationRepository
 
 	}
 
-	public I_M_Shipping_Notification generateDeliveryInstruction(@NonNull final OrderId orderId)
+	public I_M_Shipping_Notification generateShippingNotification(@NonNull final OrderId orderId)
 	{
 		final I_C_Order orderRecord = orderDAO.getById(orderId);
 
@@ -151,17 +161,61 @@ public class ShipperNotificationRepository
 		shippingNotificationRecord.setHarvesting_Year_ID(orderRecord.getHarvesting_Year_ID());
 		shippingNotificationRecord.setPOReference(orderRecord.getPOReference());
 		shippingNotificationRecord.setDescription(orderRecord.getDescription());
-
 		save(shippingNotificationRecord);
+
+		createAndSaveBulkShippingNotificationLines(shippingNotificationRecord);
 
 		return shippingNotificationRecord;
 	}
 
-	public Iterator<de.metas.I_C_Order.I_M_ShipmentSchedule> extractDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	private void createAndSaveBulkShippingNotificationLines(@NonNull final I_M_Shipping_Notification shippingNotificationRecord)
 	{
-		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.create()
-				.iterate(I_M_Delivery_Planning.class);
+
+		trxManager.accumulateAndProcessAfterCommit(
+				"saveBulkShippingNotificationLine",
+				ImmutableSet.of(shippingNotificationRecord),
+				this::createShippingNotificationLines
+		);
+	}
+
+	private void createShippingNotificationLines(@NonNull List<I_M_Shipping_Notification> shippingNotificationRecord)
+	{
+
+		for (final I_M_Shipping_Notification record : shippingNotificationRecord)
+		{
+			final OrderId orderId = OrderId.ofRepoId(record.getC_Order_ID());
+			final Map<ShipmentScheduleId, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedulesByIds = shipmentSchedulePA.getByIds(shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+
+			final ImmutableSet<I_M_ShipmentSchedule> shipmentSchedules = ImmutableSet.copyOf(shipmentSchedulesByIds.values());
+
+			shipmentSchedules.forEach(shipmentSchedule ->
+									  {
+										  createAndSaveShippingNotificationLine(shipmentSchedule, record);
+									  });
+
+		}
+	}
+
+	private void createAndSaveShippingNotificationLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull I_M_Shipping_Notification shippingNotificationRecord)
+	{
+
+		final I_M_Shipping_NotificationLine shippingNotificationLineRecord = newInstance(I_M_Shipping_NotificationLine.class, shippingNotificationRecord);
+		shippingNotificationLineRecord.setM_Shipping_Notification_ID(shippingNotificationLineRecord.getM_Shipping_Notification_ID());
+		shippingNotificationLineRecord.setM_Product_ID(shipmentSchedule.getM_Product_ID());
+		shippingNotificationLineRecord.setMovementQty(shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule));
+		shippingNotificationLineRecord.setC_UOM_ID(getProductUomId(shipmentSchedule.getM_Product_ID()).getRepoId());
+		shippingNotificationLineRecord.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
+		shippingNotificationLineRecord.setC_OrderLine_ID(shipmentSchedule.getC_OrderLine_ID());
+		shippingNotificationLineRecord.setM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID());
+
+		save(shippingNotificationLineRecord);
+	}
+
+	@NonNull
+	private UomId getProductUomId(int productId)
+	{
+		final I_M_Product product = load(productId, I_M_Product.class);
+		return UomId.ofRepoId(product.getC_UOM_ID());
 	}
 
 	@NonNull

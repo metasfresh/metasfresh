@@ -30,8 +30,10 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shippingnotification.ShipperNotificationRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
 public class C_Order_Generate_Shipment_Notification extends JavaProcess implements IProcessPrecondition
@@ -40,6 +42,7 @@ public class C_Order_Generate_Shipment_Notification extends JavaProcess implemen
 	public static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
 
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final ShipperNotificationRepository shipperNotificationRepository = SpringContextHolder.instance.getBean(ShipperNotificationRepository.class);
 
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -71,11 +74,8 @@ public class C_Order_Generate_Shipment_Notification extends JavaProcess implemen
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_C_Order order = getProcessInfo().getRecord(I_C_Order.class);
-
-		// deliveryPlanningService.generateDeliveryInstructions(selectedDeliveryPlanningsFilter);
+		shipperNotificationRepository.generateShippingNotification(OrderId.ofRepoId(getRecord_ID()));
 
 		return MSG_OK;
-
 	}
 }
