@@ -35,6 +35,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.warehouse.LocatorId;
 
@@ -42,6 +43,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @EqualsAndHashCode
@@ -63,10 +65,11 @@ public class ShippingNotification
 
 	@NonNull private final DocStatus docStatus;
 	private boolean processed;
+	@Nullable @Setter private ShippingNotificationId reversalId;
 
 	private final ArrayList<ShippingNotificationLine> lines;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private ShippingNotification(
 			@Nullable final ShippingNotificationId id,
 			@NonNull final OrgId orgId,
@@ -117,4 +120,14 @@ public class ShippingNotification
 	}
 
 	public ImmutableList<ShippingNotificationLine> getLines() {return ImmutableList.copyOf(lines);}
+
+	public ShippingNotification createReversal()
+	{
+		return toBuilder()
+				.id(null)
+				.docStatus(DocStatus.Drafted)
+				.processed(false)
+				.lines(lines.stream().map(ShippingNotificationLine::createReversal).collect(Collectors.toList()))
+				.build();
+	}
 }

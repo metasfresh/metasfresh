@@ -98,4 +98,16 @@ public class ShippingNotificationDocumentHandler implements DocumentHandler
 		MPeriod.testPeriodOpen(Env.getCtx(), record.getDateAcct(), record.getC_DocType_ID(), record.getAD_Org_ID());
 	}
 
+	@Override
+	public void reverseCorrectIt(final DocumentTableFields docFields)
+	{
+		final I_M_Shipping_Notification shippingNotificationRecord = extractShippingNotification(docFields);
+		assertPeriodOpen(shippingNotificationRecord);
+
+		shippingNotificationService.updateWhileSaving(
+				shippingNotificationRecord,
+				shippingNotificationService::reverseItNoSave
+		);
+	}
+
 }

@@ -27,6 +27,9 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -36,7 +39,6 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.impl.DocTypeService;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Services;
@@ -62,12 +64,7 @@ public class ShippingNotificationService
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-
-	public boolean isCompletedDocument(@NonNull final ShippingNotificationId shippingNotificationId)
-	{
-		return shippingNotificationRepository.getById(shippingNotificationId).getDocStatus().isCompleted();
-	}
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public void generateShippingNotificationAndPropagatePhysicalClearanceDate(
 			@NonNull final OrderId orderId,
@@ -124,4 +121,29 @@ public class ShippingNotificationService
 	{
 		shippingNotificationRepository.updateWhileSaving(record, consumer);
 	}
+
+	public void save(final ShippingNotification shippingNotification)
+	{
+		shippingNotificationRepository.save(shippingNotification);
+	}
+
+	public void completeIt(final ShippingNotification shippingNotification)
+	{
+		final I_M_Shipping_Notification shippingNotificationRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification);
+		documentBL.processEx(shippingNotificationRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	public void reverseItNoSave(final ShippingNotification shippingNotification)
+	{
+		final I_M_Shipping_Notification reversalRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification.createReversal());
+		documentBL.processEx(reversalRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		reversalRecord.setReversal_ID(shippingNotification.getId().getRepoId());
+		reversalRecord.setDocStatus(DocStatus.Reversed.getCode());
+		reversalRecord.setDocAction(IDocument.ACTION_None);
+		shippingNotificationRepository.saveRecord(reversalRecord);
+
+		shippingNotification.setReversalId(ShippingNotificationLoaderAndSaver.extractId(reversalRecord));
+	}
+
 }

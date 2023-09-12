@@ -12,7 +12,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import javax.annotation.Nullable;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class ShippingNotificationLine
 {
 	@Nullable private ShippingNotificationLineId id;
@@ -26,5 +26,10 @@ public class ShippingNotificationLine
 	void markAsSaved(@NonNull final ShippingNotificationLineId id)
 	{
 		this.id = id;
+	}
+
+	ShippingNotificationLine createReversal()
+	{
+		return toBuilder().id(null).qty(qty.negate()).build();
 	}
 }

@@ -635,4 +635,6 @@ public interface I_M_Shipping_Notification
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	default void setReversal_ID(int repoId) {};
 }

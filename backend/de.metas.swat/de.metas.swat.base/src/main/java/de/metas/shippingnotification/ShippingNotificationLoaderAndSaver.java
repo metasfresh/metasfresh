@@ -141,7 +141,7 @@ class ShippingNotificationLoaderAndSaver
 				.build();
 	}
 
-	public void save(final ShippingNotification shippingNotification)
+	public I_M_Shipping_Notification save(final ShippingNotification shippingNotification)
 	{
 		final I_M_Shipping_Notification shippingNotificationRecord = shippingNotification.getId() != null
 				? InterfaceWrapperHelper.load(shippingNotification.getId(), I_M_Shipping_Notification.class)
@@ -174,6 +174,8 @@ class ShippingNotificationLoaderAndSaver
 		}
 
 		InterfaceWrapperHelper.deleteAll(existingLineRecordsById.values());
+
+		return shippingNotificationRecord;
 	}
 
 	private static void updateRecord(@NonNull final I_M_Shipping_Notification record, @NonNull final ShippingNotification from)

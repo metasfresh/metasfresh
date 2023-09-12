@@ -27,6 +27,7 @@ import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.function.Consumer;
@@ -51,6 +52,16 @@ public class ShippingNotificationRepository
 	public void save(final ShippingNotification shippingNotification)
 	{
 		newLoaderAndSaver().save(shippingNotification);
+	}
+
+	I_M_Shipping_Notification saveAndGetRecord(final ShippingNotification shippingNotification)
+	{
+		return newLoaderAndSaver().save(shippingNotification);
+	}
+
+	void saveRecord(final I_M_Shipping_Notification record)
+	{
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	public OrderId getOrderId(@NonNull final ShippingNotificationId shippingNotificationId)
