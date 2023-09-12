@@ -29,6 +29,7 @@ import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shippingnotification.ShipperNotificationRepository;
 import de.metas.util.Services;
@@ -36,8 +37,14 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
+import java.sql.Timestamp;
+
 public class C_Order_Generate_Shipment_Notification extends JavaProcess implements IProcessPrecondition
 {
+
+	private static final String PARAM_PhysicalClearanceDate = "PhysicalClearanceDate";
+	@Param(parameterName = PARAM_PhysicalClearanceDate, mandatory = true)
+	private Timestamp p_physicalClearanceDate;
 
 	public static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
 
@@ -74,7 +81,7 @@ public class C_Order_Generate_Shipment_Notification extends JavaProcess implemen
 	@Override
 	protected String doIt() throws Exception
 	{
-		shipperNotificationRepository.generateShippingNotification(OrderId.ofRepoId(getRecord_ID()));
+		shipperNotificationRepository.generateShippingNotificationAndPropagatePhysicalClearanceDate(OrderId.ofRepoId(getRecord_ID()), p_physicalClearanceDate);
 
 		return MSG_OK;
 	}

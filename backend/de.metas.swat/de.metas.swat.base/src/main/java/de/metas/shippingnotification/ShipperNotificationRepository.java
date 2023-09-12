@@ -54,6 +54,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -144,7 +145,7 @@ public class ShipperNotificationRepository
 
 	}
 
-	public I_M_Shipping_Notification generateShippingNotification(@NonNull final OrderId orderId)
+	public I_M_Shipping_Notification generateShippingNotificationAndPropagatePhysicalClearanceDate(@NonNull final OrderId orderId, @NonNull  Timestamp physicalClearanceDate)
 	{
 		final I_C_Order orderRecord = orderDAO.getById(orderId);
 
@@ -154,6 +155,7 @@ public class ShipperNotificationRepository
 		shippingNotificationRecord.setC_BPartner_ID(orderRecord.getC_BPartner_ID());
 		shippingNotificationRecord.setC_BPartner_Location_ID(orderRecord.getC_BPartner_Location_ID());
 		shippingNotificationRecord.setAD_User_ID(orderRecord.getAD_User_ID());
+		shippingNotificationRecord.setPhysicalClearanceDate(physicalClearanceDate);
 		shippingNotificationRecord.setC_Auction_ID(orderRecord.getC_Auction_ID());
 		shippingNotificationRecord.setM_Warehouse_ID(orderRecord.getM_Warehouse_ID());
 		shippingNotificationRecord.setM_Locator_ID(orderRecord.getM_Locator_ID());
@@ -164,6 +166,8 @@ public class ShipperNotificationRepository
 		save(shippingNotificationRecord);
 
 		createAndSaveBulkShippingNotificationLines(shippingNotificationRecord);
+
+		updatetPhysicalClearanceDateToOrder(shippingNotificationRecord);
 
 		return shippingNotificationRecord;
 	}
@@ -191,6 +195,7 @@ public class ShipperNotificationRepository
 			shipmentSchedules.forEach(shipmentSchedule ->
 									  {
 										  createAndSaveShippingNotificationLine(shipmentSchedule, record);
+										  updatetPhysicalClearanceDateToShipmentSchedule(shipmentSchedule, record);
 									  });
 
 		}
@@ -209,6 +214,19 @@ public class ShipperNotificationRepository
 		shippingNotificationLineRecord.setM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID());
 
 		save(shippingNotificationLineRecord);
+	}
+
+	private void updatetPhysicalClearanceDateToShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final I_M_Shipping_Notification shippingNotification)
+	{
+		((de.metas.shippingnotification.model.I_M_ShipmentSchedule)shipmentSchedule).setPhysicalClearanceDate(shippingNotification.getPhysicalClearanceDate());
+		shipmentSchedulePA.save(shipmentSchedule);
+	}
+
+	private void updatetPhysicalClearanceDateToOrder(@NonNull final I_M_Shipping_Notification shippingNotification)
+	{
+		final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(shippingNotification.getC_Order_ID()));
+		((de.metas.shippingnotification.model.I_C_Order)orderRecord).setPhysicalClearanceDate(shippingNotification.getPhysicalClearanceDate());
+		orderDAO.save(orderRecord);
 	}
 
 	@NonNull
@@ -234,4 +252,5 @@ public class ShipperNotificationRepository
 		}
 		return docTypeId;
 	}
+
 }
