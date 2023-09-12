@@ -38,5 +38,4 @@ set -u
 COMPOSE_FILE=../docker-compose.yml
 ENV_FILE=../env-files/${BRANCH_NAME}.env
 
-# reset the database
-docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure down
+docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure start
