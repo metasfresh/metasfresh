@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -22,33 +22,28 @@
 
 package de.metas.shippingnotification;
 
-import de.metas.document.engine.DocumentHandler;
-import de.metas.document.engine.DocumentHandlerProvider;
-import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.order.OrderId;
 import lombok.NonNull;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class ShippingNotificationDocumentHandlerProvider implements DocumentHandlerProvider
+@Service
+public class ShippingNotificationService
 {
-
 	private final ShipperNotificationRepository shipperNotificationRepository;
 
-	public ShippingNotificationDocumentHandlerProvider(
+	public ShippingNotificationService(
 			@NonNull final ShipperNotificationRepository shipperNotificationRepository)
 	{
 		this.shipperNotificationRepository = shipperNotificationRepository;
 	}
 
-	@Override
-	public String getHandledTableName()
+	public boolean isCompletedDocument(@NonNull final ShippingNotificationId shippingNotificationId)
 	{
-		return I_M_Shipping_Notification.Table_Name;
+		return shipperNotificationRepository.getById(shippingNotificationId).getDocStatus().isCompleted();
 	}
 
-	@Override
-	public DocumentHandler provideForDocument(final Object model)
+	public void generateShippingNotification(@NonNull final OrderId orderId)
 	{
-		return new ShippingNotificationDocumentHandler(shipperNotificationRepository);
+
 	}
 }

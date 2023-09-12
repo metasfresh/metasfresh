@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%

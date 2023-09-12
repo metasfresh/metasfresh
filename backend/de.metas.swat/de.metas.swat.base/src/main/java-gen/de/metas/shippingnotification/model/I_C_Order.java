@@ -22,10 +22,6 @@ package de.metas.shippingnotification.model;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-
 public interface I_C_Order extends de.metas.adempiere.model.I_C_Order
 {
 	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";

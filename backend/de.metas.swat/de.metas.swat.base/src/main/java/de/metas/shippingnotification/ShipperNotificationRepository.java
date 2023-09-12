@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -23,7 +23,12 @@
 package de.metas.shippingnotification;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
@@ -32,21 +37,30 @@ import de.metas.shippingnotification.model.X_M_Shipping_Notification;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Delivery_Planning;
 import org.springframework.stereotype.Repository;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Repository
 public class ShipperNotificationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	public static ShippingNotification fromRecord(@NonNull final I_M_Shipping_Notification record)
 	{
@@ -118,5 +132,52 @@ public class ShipperNotificationRepository
 				.list(I_M_Shipping_NotificationLine.class)
 				;
 
+	}
+
+	public I_M_Shipping_Notification generateDeliveryInstruction(@NonNull final OrderId orderId)
+	{
+		final I_C_Order orderRecord = orderDAO.getById(orderId);
+
+		final I_M_Shipping_Notification shippingNotificationRecord = newInstance(I_M_Shipping_Notification.class);
+		shippingNotificationRecord.setAD_Org_ID(orderRecord.getAD_Org_ID());
+		shippingNotificationRecord.setC_DocType_ID(getDocTypeId(orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID()).getRepoId());
+		shippingNotificationRecord.setC_BPartner_ID(orderRecord.getC_BPartner_ID());
+		shippingNotificationRecord.setC_BPartner_Location_ID(orderRecord.getC_BPartner_Location_ID());
+		shippingNotificationRecord.setAD_User_ID(orderRecord.getAD_User_ID());
+		shippingNotificationRecord.setC_Auction_ID(orderRecord.getC_Auction_ID());
+		shippingNotificationRecord.setM_Warehouse_ID(orderRecord.getM_Warehouse_ID());
+		shippingNotificationRecord.setM_Locator_ID(orderRecord.getM_Locator_ID());
+		shippingNotificationRecord.setC_Harvesting_Calendar_ID(orderRecord.getC_Harvesting_Calendar_ID());
+		shippingNotificationRecord.setHarvesting_Year_ID(orderRecord.getHarvesting_Year_ID());
+		shippingNotificationRecord.setPOReference(orderRecord.getPOReference());
+		shippingNotificationRecord.setDescription(orderRecord.getDescription());
+
+		save(shippingNotificationRecord);
+
+		return shippingNotificationRecord;
+	}
+
+	public Iterator<de.metas.I_C_Order.I_M_ShipmentSchedule> extractDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
+				.create()
+				.iterate(I_M_Delivery_Planning.class);
+	}
+
+	@NonNull
+	private DocTypeId getDocTypeId(final int ad_client_id, final int ad_org_id)
+	{
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.docBaseType(DocBaseType.ShippingNotification)
+				.adClientId(ad_client_id)
+				.adOrgId(ad_org_id)
+				.build();
+
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId == null)
+		{
+			throw new DocTypeNotFoundException(docTypeQuery);
+		}
+		return docTypeId;
 	}
 }

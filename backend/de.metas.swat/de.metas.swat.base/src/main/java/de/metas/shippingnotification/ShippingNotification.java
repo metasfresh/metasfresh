@@ -1,26 +1,8 @@
-package de.metas.shippingnotification;
-
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.costing.CostElementId;
-import de.metas.costrevaluation.CostRevaluationId;
-import de.metas.document.engine.DocStatus;
-import de.metas.order.OrderId;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.WarehouseId;
-
-import java.time.Instant;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,6 +19,19 @@ import java.time.Instant;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.shippingnotification;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.time.Instant;
 
 @Value
 @Builder
