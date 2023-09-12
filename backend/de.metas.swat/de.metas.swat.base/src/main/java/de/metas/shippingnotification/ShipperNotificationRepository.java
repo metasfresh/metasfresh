@@ -218,14 +218,14 @@ public class ShipperNotificationRepository
 
 	private void updatetPhysicalClearanceDateToShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final I_M_Shipping_Notification shippingNotification)
 	{
-		((de.metas.shippingnotification.model.I_M_ShipmentSchedule)shipmentSchedule).setPhysicalClearanceDate(shippingNotification.getPhysicalClearanceDate());
+		// shipmentSchedule.setPhysicalClearanceDate(shippingNotification.getPhysicalClearanceDate());
 		shipmentSchedulePA.save(shipmentSchedule);
 	}
 
 	private void updatetPhysicalClearanceDateToOrder(@NonNull final I_M_Shipping_Notification shippingNotification)
 	{
 		final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(shippingNotification.getC_Order_ID()));
-		((de.metas.shippingnotification.model.I_C_Order)orderRecord).setPhysicalClearanceDate(shippingNotification.getPhysicalClearanceDate());
+		orderRecord.setPhysicalClearanceDate(shippingNotification.getPhysicalClearanceDate());
 		orderDAO.save(orderRecord);
 	}
 

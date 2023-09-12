@@ -3435,3 +3435,13 @@ UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-09-12 12:46:51.3
 ALTER TABLE M_Shipping_Notification ADD CONSTRAINT COrder_MShippingNotification FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- Column: C_Order.PhysicalClearanceDate
+-- 2023-09-12T10:57:30.050976400Z
+UPDATE AD_Column SET IsForceIncludeInGeneratedModel='Y',Updated=TO_TIMESTAMP('2023-09-12 13:57:30.05','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587455
+;
+
+-- Column: M_ShipmentSchedule.PhysicalClearanceDate
+-- 2023-09-12T10:57:58.609874500Z
+UPDATE AD_Column SET IsForceIncludeInGeneratedModel='Y',Updated=TO_TIMESTAMP('2023-09-12 13:57:58.609','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587456
+;
+
