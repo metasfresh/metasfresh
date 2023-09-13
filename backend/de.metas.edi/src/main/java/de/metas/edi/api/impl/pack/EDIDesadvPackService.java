@@ -506,22 +506,31 @@ public class EDIDesadvPackService
 			@NonNull final UomId packUomId,
 			@NonNull final BigDecimal movementQty)
 	{
-		// Also if the packUomId is a TU-UOM ("TU" or "COLI"), we still count the CUs as such
-		// For example if there is one TU with ten CUs then we have qtyCUPerTUinPackUOM=10, even if the UOM is COLI
-		final BigDecimal qtyCUPerTUinPackUOM = uomConversionBL
-				.convertQuantityTo(
-						qtyCUsPerTUInStockUOM,
-						UOMConversionContext.of(productId),
-						packUomId)
-				.toBigDecimal();
+		final BigDecimal qtyCUPerTUinPackUOM;
+		final BigDecimal qtyCUsPerLUinPackUOM;
+		if (uomDAO.isUOMForTUs(packUomId))
+		{
+			// If the packUomId is a TU-UOM ("TU" or "COLI"), we count the CUs as such.
+			// For example if there is one TU with ten CUs then we have qtyCUPerTUinPackUOM=10, even if the UOM is COLI.
+			qtyCUPerTUinPackUOM = qtyCUsPerTUInStockUOM.toBigDecimal();
+			qtyCUsPerLUinPackUOM = qtyCUsPerLU.getStockQty().toBigDecimal();
+		}
+		else
+		{
+			qtyCUPerTUinPackUOM = uomConversionBL
+					.convertQuantityTo(
+							qtyCUsPerTUInStockUOM,
+							UOMConversionContext.of(productId),
+							packUomId)
+					.toBigDecimal();
 
-		final BigDecimal qtyCUsPerLUinPackUOM = uomConversionBL
-				.convertQuantityTo(
-						qtyCUsPerLU.getUOMQtyNotNull(),
-						UOMConversionContext.of(productId),
-						packUomId)
-				.toBigDecimal();
-
+			qtyCUsPerLUinPackUOM = uomConversionBL
+					.convertQuantityTo(
+							qtyCUsPerLU.getUOMQtyNotNull(),
+							UOMConversionContext.of(productId),
+							packUomId)
+					.toBigDecimal();
+		}
 		createEDIDesadvPackItemRequestBuilder.movementQtyInStockUOM(movementQty);
 		createEDIDesadvPackItemRequestBuilder.qtyCu(qtyCUPerTUinPackUOM);
 		createEDIDesadvPackItemRequestBuilder.qtyCUsPerLU(qtyCUsPerLUinPackUOM);

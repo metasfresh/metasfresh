@@ -62,14 +62,6 @@ class DesadvBLTest
 													   .productId(productId)
 													   .catchUOMForProduct(true)
 													   .fromToMultiplier(new BigDecimal("2")).build());
-
-		// one PCE is also one COLI; this UOM-conversion is ususally superseeded by  the respective M_HU_PI_Item_Product's capacity, but we have it also in the DB
-		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-													   .fromUomId(eachUomId)
-													   .toUomId(coliUomId)
-													   .productId(productId)
-													   .catchUOMForProduct(true)
-													   .fromToMultiplier(new BigDecimal("1")).build());
 	}
 
 	// 9 CUs per COLI and 20.5 CUs => 3 COLIs
