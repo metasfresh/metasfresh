@@ -141,29 +141,29 @@ public class AD_Column
 		if (DisplayType.isAnyLookup(adReferenceId))
 		{
 			final MLookupInfo lookupInfo;
-			try
-			{
-				final String ctxTableName = getTableName(column);
-				lookupInfo = MLookupFactory.newInstance().getLookupInfo(
-						Integer.MAX_VALUE, // WindowNo
-						adReferenceId,
-						ctxTableName, // ctxTableName
-						column.getColumnName(), // ctxColumnName
-						ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID()),
-						column.isParent(), // IsParent,
-						AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()) //AD_Val_Rule_ID
-				);
-			}
-			catch (final Exception ex)
-			{
-				fireExceptionInvalidLookup(logger, ex);
-				return;
-			}
-
-			if (lookupInfo == null)
-			{
-				fireExceptionInvalidLookup(logger, null);
-			}
+			// try
+			// {
+			// 	final String ctxTableName = getTableName(column);
+			// 	lookupInfo = MLookupFactory.newInstance().getLookupInfo(
+			// 			Integer.MAX_VALUE, // WindowNo
+			// 			adReferenceId,
+			// 			ctxTableName, // ctxTableName
+			// 			column.getColumnName(), // ctxColumnName
+			// 			ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID()),
+			// 			column.isParent(), // IsParent,
+			// 			AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()) //AD_Val_Rule_ID
+			// 	);
+			// }
+			// catch (final Exception ex)
+			// {
+			// 	fireExceptionInvalidLookup(logger, ex);
+			// 	return;
+			// }
+			//
+			// if (lookupInfo == null)
+			// {
+			// 	fireExceptionInvalidLookup(logger, null);
+			// }
 		}
 	}
 

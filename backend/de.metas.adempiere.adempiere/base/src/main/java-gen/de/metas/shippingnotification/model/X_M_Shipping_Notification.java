@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipping_Notification extends org.compiere.model.PO implements I_M_Shipping_Notification, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2032081302L;
+	private static final long serialVersionUID = 4867001L;
 
     /** Standard Constructor */
     public X_M_Shipping_Notification (final Properties ctx, final int M_Shipping_Notification_ID, @Nullable final String trxName)
@@ -60,34 +60,6 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerAddress);
 	}
-
-	@Override
-	public org.compiere.model.I_C_Order getC_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
-	}
-
-	@Override
-	public void setC_Order_ID (final int C_Order_ID)
-	{
-		if (C_Order_ID < 1)
-			set_Value (COLUMNNAME_C_Order_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
-	}
-
-	@Override
-	public int getC_Order_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
-	}
-
 
 	@Override
 	public org.compiere.model.I_C_Auction getC_Auction()
@@ -186,6 +158,33 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	public int getC_Harvesting_Calendar_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	@Override
+	public void setC_Order_ID (final int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
+	}
+
+	@Override
+	public int getC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
 
 	@Override
@@ -442,6 +441,33 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public de.metas.shippingnotification.model.I_M_Shipping_Notification getReversal()
+	{
+		return get_ValueAsPO(COLUMNNAME_Reversal_ID, de.metas.shippingnotification.model.I_M_Shipping_Notification.class);
+	}
+
+	@Override
+	public void setReversal(final de.metas.shippingnotification.model.I_M_Shipping_Notification Reversal)
+	{
+		set_ValueFromPO(COLUMNNAME_Reversal_ID, de.metas.shippingnotification.model.I_M_Shipping_Notification.class, Reversal);
+	}
+
+	@Override
+	public void setReversal_ID (final int Reversal_ID)
+	{
+		if (Reversal_ID < 1) 
+			set_Value (COLUMNNAME_Reversal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Reversal_ID, Reversal_ID);
+	}
+
+	@Override
+	public int getReversal_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Reversal_ID);
 	}
 
 	@Override

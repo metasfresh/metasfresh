@@ -162,7 +162,7 @@ public interface I_M_Shipping_Notification
 	 * Set Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -172,7 +172,7 @@ public interface I_M_Shipping_Notification
 	 * Get Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -591,6 +591,33 @@ public interface I_M_Shipping_Notification
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Reversal ID.
+	 * ID of document reversal
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReversal_ID (int Reversal_ID);
+
+	/**
+	 * Get Reversal ID.
+	 * ID of document reversal
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReversal_ID();
+
+	@Nullable de.metas.shippingnotification.model.I_M_Shipping_Notification getReversal();
+
+	void setReversal(@Nullable de.metas.shippingnotification.model.I_M_Shipping_Notification Reversal);
+
+	ModelColumn<I_M_Shipping_Notification, de.metas.shippingnotification.model.I_M_Shipping_Notification> COLUMN_Reversal_ID = new ModelColumn<>(I_M_Shipping_Notification.class, "Reversal_ID", de.metas.shippingnotification.model.I_M_Shipping_Notification.class);
+	String COLUMNNAME_Reversal_ID = "Reversal_ID";
+
+	/**
 	 * Set ShipFromAddress.
 	 *
 	 * <br>Type: TextLong
@@ -635,6 +662,4 @@ public interface I_M_Shipping_Notification
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	default void setReversal_ID(int repoId) {};
 }
