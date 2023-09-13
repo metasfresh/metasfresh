@@ -3698,3 +3698,59 @@ UPDATE AD_Ref_List SET Value='SHN',Updated=TO_TIMESTAMP('2023-09-13 15:10:29.148
 
 update c_doctype set docbasetype='SHN' where c_doctype_id=541109;
 
+----------
+
+
+umn: M_Shipping_Notification.C_Order_ID
+-- 2023-09-13T13:32:20.915149700Z
+UPDATE AD_Column SET IsGenericZoomKeyColumn='Y', IsGenericZoomOrigin='Y',Updated=TO_TIMESTAMP('2023-09-13 16:32:20.914','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587460
+;
+
+-- Field: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> Belegstatus
+-- Column: M_Shipping_Notification.DocStatus
+-- 2023-09-13T13:47:01.610591900Z
+UPDATE AD_Field SET IsDisplayedGrid='Y',Updated=TO_TIMESTAMP('2023-09-13 16:47:01.61','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=720410
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Belegstatus
+-- Column: M_Shipping_Notification.DocStatus
+-- 2023-09-13T13:48:57.661595200Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,720410,0,547218,551131,620472,'F',TO_TIMESTAMP('2023-09-13 16:48:57.394','YYYY-MM-DD HH24:MI:SS.US'),100,'The current status of the document','The Document Status indicates the status of a document at this time.  If you want to change the document status, use the Document Action field','Y','N','Y','N','N','Belegstatus',60,0,0,TO_TIMESTAMP('2023-09-13 16:48:57.394','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Belegstatus
+-- Column: M_Shipping_Notification.DocStatus
+-- 2023-09-13T13:49:10.735143600Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2023-09-13 16:49:10.735','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620472
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Erntekalender
+-- Column: M_Shipping_Notification.C_Harvesting_Calendar_ID
+-- 2023-09-13T13:49:17.519009800Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2023-09-13 16:49:17.519','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620437
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Lager
+-- Column: M_Shipping_Notification.M_Warehouse_ID
+-- 2023-09-13T13:49:17.526820400Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2023-09-13 16:49:17.526','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620439
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Auktion
+-- Column: M_Shipping_Notification.C_Auction_ID
+-- 2023-09-13T13:49:17.535128400Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2023-09-13 16:49:17.535','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620440
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Belegstatus
+-- Column: M_Shipping_Notification.DocStatus
+-- 2023-09-13T13:49:17.542953100Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2023-09-13 16:49:17.542','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620472
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 20 -> org.Organisation
+-- Column: M_Shipping_Notification.AD_Org_ID
+-- 2023-09-13T13:49:17.550721400Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2023-09-13 16:49:17.55','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620445
+;
+

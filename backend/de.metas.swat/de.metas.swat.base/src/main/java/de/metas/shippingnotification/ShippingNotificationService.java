@@ -140,8 +140,6 @@ public class ShippingNotificationService
 	public void reverseItNoSave(final ShippingNotification shippingNotification)
 	{
 		final I_M_Shipping_Notification reversalRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification.createReversal());
-		documentBL.processEx(reversalRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-
 		reversalRecord.setReversal_ID(shippingNotification.getId().getRepoId());
 		reversalRecord.setDocStatus(DocStatus.Reversed.getCode());
 		reversalRecord.setDocAction(IDocument.ACTION_None);
