@@ -146,7 +146,5 @@ public interface IOrderDAO extends ISingletonService
 
 	boolean hasIsOnConsignmentLines(@NonNull OrderId orderId);
 
-	Stream<I_M_Shipping_Notification> retrieveForOrder(@NonNull OrderId orderId);
-
 	Stream<I_C_Order> streamOrders(@NonNull IQueryFilter<I_C_Order> orderFilter);
 }

@@ -117,27 +117,5 @@ public class OrderDAO extends AbstractOrderDAO
 		return DB.getSQLValueBDEx(ITrx.TRXNAME_None, sql, bpartnerId);
 	}
 
-	@Override
-	public Stream<I_M_Shipping_Notification> retrieveForOrder(@NonNull final OrderId orderId)
-	{
 
-		final IQuery<I_C_OrderLine> orderLinesQuery = queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.create();
-
-		final IQuery<I_M_Shipping_NotificationLine> notificationLinesQuery = queryBL.createQueryBuilder(I_M_Shipping_NotificationLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_M_Shipping_NotificationLine.COLUMNNAME_C_OrderLine_ID, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID,
-									 orderLinesQuery)
-				.create();
-
-		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
-				.addInSubQueryFilter(I_M_Shipping_Notification.COLUMNNAME_M_Shipping_Notification_ID, I_M_Shipping_NotificationLine.COLUMNNAME_M_Shipping_Notification_ID,
-									 notificationLinesQuery)
-				.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, X_M_Shipping_Notification.DOCSTATUS_Completed, X_M_Shipping_Notification.DOCSTATUS_Closed)
-				.create()
-				.stream(I_M_Shipping_Notification.class)
-				;
-	}
 }
