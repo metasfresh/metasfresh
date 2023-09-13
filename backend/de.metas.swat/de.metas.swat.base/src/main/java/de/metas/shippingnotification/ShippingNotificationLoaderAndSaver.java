@@ -56,6 +56,13 @@ class ShippingNotificationLoaderAndSaver
 		return ShippingNotificationId.ofRepoId(record.getM_Shipping_Notification_ID());
 	}
 
+	@Nullable
+	private ShippingNotificationId extractIdOrNull(final I_M_Shipping_Notification record)
+	{
+		return ShippingNotificationId.ofRepoIdOrNull(record.getM_Shipping_Notification_ID());
+	}
+
+
 	@NonNull
 	public ShippingNotification getById(@NonNull final ShippingNotificationId id)
 	{
@@ -216,8 +223,8 @@ class ShippingNotificationLoaderAndSaver
 
 	private void saveRecordIfAllowed(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
 	{
-		if (headerIdsToAvoidSaving.contains(extractId(shippingNotificationRecord)))
-		n{
+		if (headerIdsToAvoidSaving.contains(extractIdOrNull(shippingNotificationRecord)))
+		{
 			return;
 		}
 		InterfaceWrapperHelper.saveRecord(shippingNotificationRecord);
