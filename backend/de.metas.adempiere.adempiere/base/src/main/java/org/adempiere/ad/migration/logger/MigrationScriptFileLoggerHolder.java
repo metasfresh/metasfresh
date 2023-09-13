@@ -51,12 +51,35 @@ public class MigrationScriptFileLoggerHolder
 			return;
 		}
 
-		if (dontLog(sql))
+		logMigrationScript(Sql.ofSql(sql));
+	}
+
+	public static void logMigrationScript(@Nullable final Sql sql)
+	{
+		if (sql == null || isDisabled())
+		{
+			return;
+		}
+		if (dontLog(sql.getSqlWithoutParamsResolved()))
 		{
 			return;
 		}
 
-		pgMigrationScriptWriter.appendSqlStatement(Sql.ofSql(sql));
+		pgMigrationScriptWriter.appendSqlStatement(sql);
+	}
+
+	public static void logMigrationScript(@NonNull final SqlBatch sqlBatch)
+	{
+		if (isDisabled())
+		{
+			return;
+		}
+		if (dontLog(sqlBatch.getSqlCommand()))
+		{
+			return;
+		}
+
+		sqlBatch.streamSqls().forEach(pgMigrationScriptWriter::appendSqlStatement);
 	}
 
 	public static void logComment(@Nullable final String comment)
