@@ -24,6 +24,7 @@ package org.adempiere.ad.migration.logger.impl;
 
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
+import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.logging.LogManager;
 import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
 import de.metas.util.Check;
@@ -84,22 +85,23 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class MigrationLogger implements IMigrationLogger
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(MigrationLogger.class);
 
 	private final IDataConverter converter = new DefaultDataConverter();
 
 	/**
 	 * Upper case list of table names that shall be ignored when creating migration scripts and we are running in system mode
 	 */
-	private final Set<String> _tablesIgnoreSystem = new CopyOnWriteArraySet<>();
+	private final CopyOnWriteArraySet<String> _tablesIgnoreSystem = new CopyOnWriteArraySet<>();
 	private final Set<String> _tablesIgnoreSystemRO = Collections.unmodifiableSet(_tablesIgnoreSystem);
 
 	/**
 	 * Upper case list of table names that shall be ignored when creating migration scripts and we are running in client mode
 	 */
-	private final Set<String> _tablesIgnoreClient = new CopyOnWriteArraySet<>();
+	private final CopyOnWriteArraySet<String> _tablesIgnoreClient = new CopyOnWriteArraySet<>();
 	private final Set<String> _tablesIgnoreClientRO = Collections.unmodifiableSet(_tablesIgnoreClient);
 
+	@SuppressWarnings("unused")
 	public MigrationLogger()
 	{
 		initTablesIgnoreList();
@@ -206,14 +208,8 @@ public class MigrationLogger implements IMigrationLogger
 		final String tableNameUC = tableName.toUpperCase();
 		_tablesIgnoreSystem.add(tableNameUC);
 		_tablesIgnoreClient.add(tableNameUC);
-	}
 
-	@Override
-	public void removeTableFromIgnoreList(final String tableName)
-	{
-		final String tableNameUC = tableName.toUpperCase();
-		_tablesIgnoreSystem.remove(tableNameUC);
-		_tablesIgnoreClient.remove(tableNameUC);
+		logger.info("Skip migration scripts logging for: {}", tableName);
 	}
 
 	@Override
@@ -288,7 +284,7 @@ public class MigrationLogger implements IMigrationLogger
 	{
 		// ignore statistic updates
 		// TODO: metas: 02662: shall be deleted because it's handled by AD_Column.IsCalculated flag
-			if (pinfo.getTableName().equalsIgnoreCase("AD_Process") && !po.is_new() && po.is_ValueChanged("Statistic_Count"))
+		if (pinfo.getTableName().equalsIgnoreCase("AD_Process") && !po.is_new() && po.is_ValueChanged("Statistic_Count"))
 		{
 			return false;
 		}
