@@ -3578,3 +3578,98 @@ ALTER TABLE M_Shipping_Notification ADD CONSTRAINT Reversal_MShippingNotificatio
 UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2023-09-13 10:14:04.792','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587470
 ;
 
+
+-- Element: PhysicalClearanceDate
+-- 2023-09-13T07:21:23.024649500Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Datum der physischen Freigabe', PrintName='Datum der physischen Freigabe',Updated=TO_TIMESTAMP('2023-09-13 10:21:23.024','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582696 AND AD_Language='de_CH'
+;
+
+-- 2023-09-13T07:21:23.028276200Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582696,'de_CH') 
+;
+
+-- Element: PhysicalClearanceDate
+-- 2023-09-13T07:21:28.013024900Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Datum der physischen Freigabe', PrintName='Datum der physischen Freigabe',Updated=TO_TIMESTAMP('2023-09-13 10:21:28.013','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582696 AND AD_Language='de_DE'
+;
+
+-- 2023-09-13T07:21:28.014577600Z
+UPDATE AD_Element SET Name='Datum der physischen Freigabe', PrintName='Datum der physischen Freigabe' WHERE AD_Element_ID=582696
+;
+
+-- 2023-09-13T07:21:28.250586700Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582696,'de_DE') 
+;
+
+-- 2023-09-13T07:21:28.252139700Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582696,'de_DE') 
+;
+
+-- Element: PhysicalClearanceDate
+-- 2023-09-13T07:21:32.252658600Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-13 10:21:32.252','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582696 AND AD_Language='en_US'
+;
+
+-- 2023-09-13T07:21:32.255762500Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582696,'en_US') 
+;
+
+-- Process: C_Order_Generate_Shipment_Notification(de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification)
+-- 2023-09-13T07:22:30.971004600Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Lieferavis generieren',Updated=TO_TIMESTAMP('2023-09-13 10:22:30.97','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585316
+;
+
+-- Process: C_Order_Generate_Shipment_Notification(de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification)
+-- 2023-09-13T07:22:34.572569Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Lieferavis generieren',Updated=TO_TIMESTAMP('2023-09-13 10:22:34.572','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585316
+;
+
+-- 2023-09-13T07:22:34.574702200Z
+UPDATE AD_Process SET Name='Lieferavis generieren' WHERE AD_Process_ID=585316
+;
+
+-- Process: C_Order_Generate_Shipment_Notification(de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification)
+-- 2023-09-13T07:22:43.010826300Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Generate Shipping Notification',Updated=TO_TIMESTAMP('2023-09-13 10:22:43.01','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585316
+;
+
+-- Value: C_Order_Generate_Shipping_Notification
+-- Classname: de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification
+-- 2023-09-13T07:22:54.365043700Z
+UPDATE AD_Process SET Value='C_Order_Generate_Shipping_Notification',Updated=TO_TIMESTAMP('2023-09-13 10:22:54.362','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585316
+;
+
+-- Value: C_Order_Generate_Shipping_Notification
+-- Classname: de.metas.shippingnotification.process.C_Order_Generate_Shipping_Notification
+-- 2023-09-13T07:23:44.076867400Z
+UPDATE AD_Process SET Classname='de.metas.shippingnotification.process.C_Order_Generate_Shipping_Notification',Updated=TO_TIMESTAMP('2023-09-13 10:23:44.073','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585316
+;
+
+-- Value: de.metas.shippingnotification.NoHarvestingYear
+-- 2023-09-13T07:24:39.174022200Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545333,0,TO_TIMESTAMP('2023-09-13 10:24:39.061','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification','Y','There is no crop year set.','I',TO_TIMESTAMP('2023-09-13 10:24:39.061','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification.NoHarvestingYear')
+;
+
+-- 2023-09-13T07:24:39.176639400Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545333 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.shippingnotification.NoHarvestingYear
+-- 2023-09-13T07:24:51.953064800Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText=' Es ist kein Erntejahr festgelegt.',Updated=TO_TIMESTAMP('2023-09-13 10:24:51.952','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545333
+;
+
+-- Value: de.metas.shippingnotification.NoHarvestingYear
+-- 2023-09-13T07:24:57.058118700Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-13 10:24:57.057','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545333
+;
+
+-- Value: de.metas.shippingnotification.NoHarvestingYear
+-- 2023-09-13T07:25:01.701170Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText=' Es ist kein Erntejahr festgelegt.',Updated=TO_TIMESTAMP('2023-09-13 10:25:01.7','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545333
+;
+
+-- 2023-09-13T07:25:01.702210200Z
+UPDATE AD_Message SET MsgText=' Es ist kein Erntejahr festgelegt.' WHERE AD_Message_ID=545333
+;
+

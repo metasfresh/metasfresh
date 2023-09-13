@@ -40,7 +40,7 @@ import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
 
-public class C_Order_Generate_Shipment_Notification extends JavaProcess implements IProcessPrecondition
+public class C_Order_Generate_Shipping_Notification extends JavaProcess implements IProcessPrecondition
 {
 
 	public static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
