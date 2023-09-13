@@ -10,8 +10,6 @@ import lombok.NonNull;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import java.util.Properties;
-
 @Component
 public final class AsyncImportRecordsAsyncExecutor implements ImportRecordsAsyncExecutor
 {

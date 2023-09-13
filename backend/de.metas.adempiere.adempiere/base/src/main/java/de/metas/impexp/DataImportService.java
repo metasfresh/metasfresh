@@ -170,6 +170,12 @@ public class DataImportService
 					.run();
 
 			final ActualImportRecordsResult actualImport = result.getActualImport();
+			if (actualImport == null)
+			{
+				throw new AdempiereException("For some unknown reason the actual import was not performed")
+						.setParameter("importProcessResult", result)
+						.appendParametersToMessage();
+			}
 
 			if (request.getNotifyUserId() != null)
 			{
