@@ -23,11 +23,14 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 
 @Builder
-public record ModularContractSettingsQuery(@NonNull YearAndCalendarId yearAndCalendarId, @NonNull ProductId productId)
+public record ModularContractSettingsQuery(@NonNull YearAndCalendarId yearAndCalendarId,
+										   @NonNull ProductId productId,
+										   @NonNull SOTrx soTrx)
 {
 }

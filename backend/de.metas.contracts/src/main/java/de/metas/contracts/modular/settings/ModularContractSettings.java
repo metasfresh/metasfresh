@@ -24,6 +24,7 @@ package de.metas.contracts.modular.settings;
 
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -64,6 +65,9 @@ public class ModularContractSettings
 	@NonNull
 	@Singular
 	List<ModuleConfig> moduleConfigs;
+
+	@NonNull
+	SOTrx soTrx;
 
 	public Optional<ModularContractTypeId> getModularContractTypeId(@NonNull final Class<? extends IModularContractTypeHandler<?>> handlerType)
 	{
