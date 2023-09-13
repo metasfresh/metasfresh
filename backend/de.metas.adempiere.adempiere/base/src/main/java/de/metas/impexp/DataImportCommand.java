@@ -79,6 +79,7 @@ final class DataImportCommand
 	private final boolean processImportRecordsSynchronously;
 	private final boolean stopOnFirstError;
 	private final Params overrideColumnValues;
+	@Nullable private final ImportRecordsRequest.LogMigrationScriptsSpec logMigrationScriptsSpec;
 
 	//
 	// State
@@ -110,7 +111,8 @@ final class DataImportCommand
 			//
 			final boolean processImportRecordsSynchronously,
 			final boolean stopOnFirstError,
-			@Nullable final Params overrideColumnValues)
+			@Nullable final Params overrideColumnValues,
+			@Nullable final ImportRecordsRequest.LogMigrationScriptsSpec logMigrationScriptsSpec)
 	{
 		this.dataImportService = dataImportService;
 		this.dataImportRunService = dataImportRunService;
@@ -129,6 +131,7 @@ final class DataImportCommand
 		this.processImportRecordsSynchronously = processImportRecordsSynchronously;
 		this.stopOnFirstError = stopOnFirstError;
 		this.overrideColumnValues = overrideColumnValues;
+		this.logMigrationScriptsSpec = logMigrationScriptsSpec;
 	}
 
 	public DataImportResult execute()
@@ -198,7 +201,7 @@ final class DataImportCommand
 				.selectionId(getOrCreateRecordsToImportSelectionId())
 				.notifyUserId(userId)
 				.completeDocuments(completeDocuments)
-				.logMigrationScripts(MigrationScriptFileLoggerHolder.isEnabled())
+				.logMigrationScriptsSpec(logMigrationScriptsSpec)
 				.additionalParameters(additionalParameters)
 				.build();
 	}

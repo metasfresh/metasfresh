@@ -126,6 +126,8 @@ public class DataImportService
 				.processImportRecordsSynchronously(request.isProcessImportRecordsSynchronously())
 				.stopOnFirstError(request.isStopOnFirstError())
 				//
+				.logMigrationScriptsSpec(request.getLogMigrationScriptsSpec())
+				//
 				.build()
 				//
 				.execute();
@@ -167,20 +169,23 @@ public class DataImportService
 					.setParameters(request.getAdditionalParameters())
 					.run();
 
+			final ActualImportRecordsResult actualImport = result.getActualImport();
+
 			if (request.getNotifyUserId() != null)
 			{
-				notifyImportDone(result.getActualImport(), request.getNotifyUserId());
+				notifyImportDone(actualImport, request.getNotifyUserId());
 			}
 
-			final Path migrationScript = MigrationScriptFileLoggerHolder.getCurrentScriptPathIfPresent().orElse(null);
-			if (migrationScript != null)
+			final Path sqlMigrationScript = MigrationScriptFileLoggerHolder.getCurrentScriptPathIfPresent().orElse(null);
+			if (sqlMigrationScript != null)
 			{
-				Loggables.get().addLog("Wrote migration script: {}", migrationScript);
+				Loggables.get().addLog("Wrote migration script: {}", sqlMigrationScript);
 			}
 
 			return ValidateAndActualImportRecordsResult.builder()
 					.importRecordsValidation(result.getImportRecordsValidation())
-					.actualImport(result.getActualImport())
+					.actualImport(actualImport)
+					.sqlMigrationScript(sqlMigrationScript)
 					.build();
 		}
 	}

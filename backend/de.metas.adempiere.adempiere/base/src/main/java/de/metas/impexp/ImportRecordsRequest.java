@@ -11,6 +11,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.api.Params;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -46,25 +47,19 @@ import java.util.HashMap;
 public class ImportRecordsRequest
 {
 	private static final String PARAM_ImportTableName = "ImportTableName";
-	@NonNull
-	String importTableName;
+	@NonNull String importTableName;
 
-	@NonNull
-	PInstanceId selectionId;
+	@NonNull PInstanceId selectionId;
 
 	private static final String PARAM_NotifyUserId = "NotifyUserId";
 
-	@Nullable
-	UserId notifyUserId;
+	@Nullable UserId notifyUserId;
 
 	boolean completeDocuments;
 
-	private static final String PARAM_IsLogMigrationScripts = "IsLogMigrationScripts";
-	boolean logMigrationScripts;
+	@Nullable LogMigrationScriptsSpec logMigrationScriptsSpec;
 
-	@NonNull
-	@Default
-	Params additionalParameters = Params.EMPTY;
+	@NonNull @Default Params additionalParameters = Params.EMPTY;
 
 	public Params toParams()
 	{
@@ -79,7 +74,10 @@ public class ImportRecordsRequest
 		map.put(IImportProcess.PARAM_Selection_ID, selectionId);
 		map.put(PARAM_NotifyUserId, notifyUserId);
 		map.put(IImportProcess.PARAM_IsDocComplete, completeDocuments);
-		map.put(PARAM_IsLogMigrationScripts, logMigrationScripts);
+		if (logMigrationScriptsSpec != null)
+		{
+			logMigrationScriptsSpec.appendToMap(map);
+		}
 
 		return Params.ofMap(map);
 	}
@@ -103,8 +101,49 @@ public class ImportRecordsRequest
 				.selectionId(selectionId)
 				.notifyUserId(params.getParameterAsId(PARAM_NotifyUserId, UserId.class))
 				.completeDocuments(params.getParameterAsBool(IImportProcess.PARAM_IsDocComplete))
-				.logMigrationScripts(params.getParameterAsBool(PARAM_IsLogMigrationScripts))
+				.logMigrationScriptsSpec(LogMigrationScriptsSpec.fromParams(params))
 				.additionalParameters(Params.copyOf(params))
 				.build();
+	}
+
+	public boolean isLogMigrationScripts() {return logMigrationScriptsSpec != null && logMigrationScriptsSpec.isLogMigrationScripts();}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	public static class LogMigrationScriptsSpec
+	{
+		private static final String PARAM_IsLogMigrationScripts = "IsLogMigrationScripts";
+		boolean logMigrationScripts;
+
+		private static final String PARAM_AttachMigrationScriptsFileTo_TableName = "AttachMigrationScriptsFileTo#TableName";
+		private static final String PARAM_AttachMigrationScriptsFileTo_Record_ID = "AttachMigrationScriptsFileTo#Record_ID";
+		@Nullable TableRecordReference attachMigrationScriptsFileTo;
+
+		private void appendToMap(@NonNull final HashMap<String, Object> map)
+		{
+			map.put(PARAM_IsLogMigrationScripts, logMigrationScripts);
+			if (attachMigrationScriptsFileTo != null)
+			{
+				map.put(PARAM_AttachMigrationScriptsFileTo_TableName, attachMigrationScriptsFileTo.getTableName());
+				map.put(PARAM_AttachMigrationScriptsFileTo_Record_ID, attachMigrationScriptsFileTo.getRecord_ID());
+			}
+		}
+
+		private static LogMigrationScriptsSpec fromParams(@NonNull final IParams params)
+		{
+			return LogMigrationScriptsSpec.builder()
+					.logMigrationScripts(params.getParameterAsBool(PARAM_IsLogMigrationScripts))
+					.attachMigrationScriptsFileTo(TableRecordReference.ofNullable(
+							params.getParameterAsString(PARAM_AttachMigrationScriptsFileTo_TableName),
+							params.getParameterAsInt(PARAM_AttachMigrationScriptsFileTo_Record_ID, -1)
+					))
+					.build();
+
+		}
+
 	}
 }

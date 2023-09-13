@@ -1,13 +1,17 @@
 package org.adempiere.ad.migration.logger;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
@@ -39,6 +43,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @UtilityClass
 public class MigrationScriptFileLoggerHolder
 {
+	private static final Logger logger = LogManager.getLogger(MigrationScriptFileLoggerHolder.class);
+
 	private static final AtomicBoolean logMigrationScripts = new AtomicBoolean(false);
 	private static final ThreadLocal<MigrationScriptFileLogger> temporaryMigrationScriptWriterHolder = new ThreadLocal<>();
 	private static final MigrationScriptFileLogger _pgMigrationScriptWriter = MigrationScriptFileLogger.newForPostgresql();
@@ -120,6 +126,7 @@ public class MigrationScriptFileLoggerHolder
 	public static IAutoCloseable temporaryEnabledLoggingToNewFile()
 	{
 		final MigrationScriptFileLogger migrationScriptFileLoggerNew = MigrationScriptFileLogger.newForPostgresql();
+		migrationScriptFileLoggerNew.setWatcher(Loggables.getLoggableOrLogger(logger, Level.DEBUG));
 		final MigrationScriptFileLogger migrationScriptFileLoggerOld = temporaryMigrationScriptWriterHolder.get();
 		temporaryMigrationScriptWriterHolder.set(migrationScriptFileLoggerNew);
 		return () -> {

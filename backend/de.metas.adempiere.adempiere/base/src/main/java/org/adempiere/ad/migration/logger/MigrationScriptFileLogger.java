@@ -3,7 +3,9 @@ package org.adempiere.ad.migration.logger;
 import com.google.common.base.MoreObjects;
 import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -59,6 +61,7 @@ class MigrationScriptFileLogger
 	}
 
 	private static final Logger logger = LogManager.getLogger(MigrationScriptFileLogger.class);
+	@NonNull @Setter private ILoggable watcher = Loggables.console();
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
 	private static final DateTimeFormatter FORMATTER_ScriptFilenameTimestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -67,7 +70,7 @@ class MigrationScriptFileLogger
 	@Nullable private static Path _migrationScriptsDirectory;
 
 	private static final String COLLECTOR_TRXPROPERTYNAME = MigrationScriptFileLogger.class.getName() + ".collectorFactory";
-	private final TrxOnCommitCollectorFactory<StringBuilder, Sql> collectorFactory = new TrxOnCommitCollectorFactory<StringBuilder, Sql>()
+	private final TrxOnCommitCollectorFactory<StringBuilder, Sql> collectorFactory = new TrxOnCommitCollectorFactory<>()
 	{
 
 		@Override
@@ -113,13 +116,14 @@ class MigrationScriptFileLogger
 				return;
 			}
 
-			System.out.println("\n");
-			System.out.println("---------------------------------------------------------------------------");
-			System.out.println("Discarding following SQL statements, due to transaction rollback:\n");
-			System.out.println(sqlStatements);
-			System.out.println("---------------------------------------------------------------------------");
-			System.out.println("\n");
-			System.out.flush();
+			watcher.addLog("\n"
+					+ "---------------------------------------------------------------------------"
+					+ "Discarding following SQL statements, due to transaction rollback:\n"
+					+ sqlStatements
+					+ "---------------------------------------------------------------------------"
+					+ "\n"
+			);
+			watcher.flush();
 		}
 	};
 
@@ -158,7 +162,7 @@ class MigrationScriptFileLogger
 		if (_path == null || !Files.exists(_path))
 		{
 			final Path path = createPath(dbType);
-			System.out.println("Using scripts path: " + path);
+			watcher.addLog("Using scripts path: " + path);
 
 			try
 			{
@@ -227,8 +231,7 @@ class MigrationScriptFileLogger
 		try
 		{
 			final Path path = getCreateFilePath();
-			final byte[] bytes = sqlStatements.getBytes(CHARSET);
-			Files.write(path, bytes, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+			Files.writeString(path, sqlStatements, CHARSET, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		}
 		catch (final IOException ex)
 		{
@@ -244,7 +247,7 @@ class MigrationScriptFileLogger
 	 */
 	public synchronized void close()
 	{
-		System.out.println("Closed migration script: " + _path);
+		watcher.addLog("Closed migration script: " + _path);
 		_path = null;
 	}
 }
