@@ -3489,3 +3489,42 @@ INSERT INTO t_alter_column values('m_shipping_notificationline','C_Order_ID','NU
 INSERT INTO t_alter_column values('m_shipping_notificationline','C_Order_ID',null,'NOT NULL',null)
 ;
 
+
+
+-- Value: C_Order_Generate_Shipment_Notification
+-- Classname: de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification
+-- 2023-09-13T06:40:33.182011500Z
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585316,'Y','de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification','N',TO_TIMESTAMP('2023-09-13 09:40:32.979','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'Generate Shipment Notification','json','N','N','xls','Java',TO_TIMESTAMP('2023-09-13 09:40:32.979','YYYY-MM-DD HH24:MI:SS.US'),100,'C_Order_Generate_Shipment_Notification')
+;
+
+-- 2023-09-13T06:40:33.185664100Z
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_ID=585316 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
+
+-- Process: C_Order_Generate_Shipment_Notification(de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification)
+-- ParameterName: PhysicalClearanceDate
+-- 2023-09-13T06:41:03.155103Z
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,582696,0,585316,542699,15,'PhysicalClearanceDate',TO_TIMESTAMP('2023-09-13 09:41:03.001','YYYY-MM-DD HH24:MI:SS.US'),100,'@#DATE@','de.metas.shippingnotification',0,'Y','N','Y','N','Y','N','Physical Clearance Date',10,TO_TIMESTAMP('2023-09-13 09:41:03.001','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-09-13T06:41:03.157293900Z
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=542699 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+-- 2023-09-13T06:41:03.159912100Z
+/* DDL */  select update_Process_Para_Translation_From_AD_Element(582696) 
+;
+
+-- Process: C_Order_Generate_Shipment_Notification(de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification)
+-- ParameterName: PhysicalClearanceDate
+-- 2023-09-13T06:41:09.309492300Z
+UPDATE AD_Process_Para SET DefaultValue='@#Date@',Updated=TO_TIMESTAMP('2023-09-13 09:41:09.308','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542699
+;
+
+-- Process: C_Order_Generate_Shipment_Notification(de.metas.shippingnotification.process.C_Order_Generate_Shipment_Notification)
+-- Table: C_Order
+-- EntityType: de.metas.shippingnotification
+-- 2023-09-13T06:41:48.544261700Z
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585316,259,541422,TO_TIMESTAMP('2023-09-13 09:41:48.411','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification','Y',TO_TIMESTAMP('2023-09-13 09:41:48.411','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N')
+;
+
