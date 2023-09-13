@@ -60,7 +60,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -111,7 +111,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -168,7 +168,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -224,7 +224,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -292,7 +292,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -363,7 +363,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -434,7 +434,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -517,7 +517,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -603,7 +603,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -689,7 +689,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -783,7 +783,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -869,7 +869,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -955,7 +955,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -1038,7 +1038,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -1123,7 +1123,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -1209,7 +1209,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -1277,7 +1277,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -1348,7 +1348,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -1419,7 +1419,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:
@@ -1487,7 +1487,7 @@ Feature: Packing material invoice candidates: shipments
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And after not more than 30s, validate shipment schedules:

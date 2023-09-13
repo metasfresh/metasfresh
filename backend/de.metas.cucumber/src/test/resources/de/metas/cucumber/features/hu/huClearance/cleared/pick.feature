@@ -71,7 +71,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
 
     And the order identified by order_1 is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -109,7 +109,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
 
     And the order identified by order_1 is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_2      | ol_1                      | N             |
 

@@ -37,7 +37,7 @@ Feature: credit limit
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And metasfresh contains C_BPartner_CreditLimit:

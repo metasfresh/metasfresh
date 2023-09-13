@@ -116,7 +116,7 @@ Feature: Shipment schedule export rest-api
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
     And validate M_ShipmentSchedule:
@@ -209,7 +209,7 @@ Feature: Shipment schedule export rest-api
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
     And validate M_ShipmentSchedule:
@@ -284,7 +284,7 @@ Feature: Shipment schedule export rest-api
       | C_Order_ID.Identifier | DocStatus |
       | order_1               | CO        |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
     And validate M_ShipmentSchedule:

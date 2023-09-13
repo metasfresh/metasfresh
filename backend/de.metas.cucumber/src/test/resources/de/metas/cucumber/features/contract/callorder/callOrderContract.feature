@@ -109,7 +109,7 @@ Feature: Call order contract
       | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | callOrderLine_1           | N             |
     When 'generate shipments' process is invoked
@@ -159,7 +159,7 @@ Feature: Call order contract
       | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |
       | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_2 | callOrderLine_1           | N             |
     When 'generate shipments' process is invoked
@@ -389,7 +389,7 @@ Feature: Call order contract
       | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | orderDetail_order_1             | PCE               | callOrder_po              | callOrderLine_po              | 8              |
 
-    And after not more than 60s, M_ReceiptSchedule are found:
+    And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | callOrder_po          | callOrderLine_po          | bp_callOrderPO           | bp_callOrderPO_Location           | call_order_product_PO   | 8          | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs

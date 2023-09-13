@@ -92,7 +92,7 @@ Feature: Locked HUs can not be picked
 
     And the order identified by order_1 is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -125,7 +125,7 @@ Feature: Locked HUs can not be picked
 
     And the order identified by order_1 is completed
 
-    When after not more than 60s, M_ShipmentSchedules are found:
+    When after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_2      | ol_1                      | N             |
 
@@ -153,7 +153,7 @@ Feature: Locked HUs can not be picked
 
     And the order identified by order_1 is completed
 
-    And after not more than 60s, M_ShipmentSchedules are found:
+    And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_3      | ol_1                      | N             |
 
