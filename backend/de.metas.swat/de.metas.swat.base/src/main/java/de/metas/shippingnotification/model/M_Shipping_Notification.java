@@ -22,10 +22,6 @@
 
 package de.metas.shippingnotification.model;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.shippingnotification.ShippingNotificationService;
@@ -33,7 +29,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -49,21 +44,12 @@ public class M_Shipping_Notification
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave_updateRenderedAddressesAndCapturedLocations(@NonNull final I_M_Shipping_Notification shippingNotificationRecord)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(shippingNotificationRecord.getC_BPartner_ID());
-		final RenderedAddressAndCapturedLocation bpartnerAddress = documentLocationBL.
-				computeRenderedAddress(DocumentLocation.builder()
-											   .bpartnerId(bpartnerId)
-											   .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, shippingNotificationRecord.getC_BPartner_Location_ID()))
-											   .contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, shippingNotificationRecord.getAD_User_ID()))
-											   .build()
-				);
-
 		shippingNotificationService.updateWhileSaving(
 				shippingNotificationRecord,
 				shippingNotification -> {
-					shippingNotification.updateBPAddress(bpartnerAddress.getRenderedAddress());
+					final RenderedAddressAndCapturedLocation renderedLocation = documentLocationBL.computeRenderedAddress(shippingNotification.getLocation());
+					shippingNotification.updateBPAddress(renderedLocation.getRenderedAddress());
 				}
 		);
-
 	}
 }

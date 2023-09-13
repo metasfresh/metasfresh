@@ -24,10 +24,12 @@ package de.metas.shippingnotification;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.DocumentLocation;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.exception.ShipmentNotificationException;
@@ -54,7 +56,7 @@ public class ShippingNotification
 	@NonNull private final OrgId orgId;
 	@NonNull private final DocTypeId docTypeId;
 	@NonNull private final BPartnerLocationId bpartnerAndLocationId;
-	@NonNull private final BPartnerContactId contactId;
+	@Nullable private final BPartnerContactId contactId;
 	private final int auctionId;
 	@NonNull private final LocatorId locatorId;
 	@NonNull private final OrderId orderId;
@@ -105,6 +107,17 @@ public class ShippingNotification
 		this.lines = lines != null ? new ArrayList<>(lines) : new ArrayList<>();
 	}
 
+	public BPartnerId getBPartnerId() {return bpartnerAndLocationId.getBpartnerId();}
+
+	public DocumentLocation getLocation()
+	{
+		return DocumentLocation.builder()
+				.bpartnerId(bpartnerAndLocationId.getBpartnerId())
+				.bpartnerLocationId(bpartnerAndLocationId)
+				.contactId(contactId)
+				.build();
+	}
+
 	public void completeIt()
 	{
 		if (processed)
@@ -115,7 +128,7 @@ public class ShippingNotification
 		this.processed = true;
 	}
 
-	public void updateBPAddress(@NonNull final String bpaddress)
+	public void updateBPAddress(@Nullable final String bpaddress)
 	{
 		this.bpaddress = bpaddress;
 	}

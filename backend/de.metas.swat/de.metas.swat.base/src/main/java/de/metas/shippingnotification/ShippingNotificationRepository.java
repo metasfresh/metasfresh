@@ -73,10 +73,6 @@ public class ShippingNotificationRepository
 			@NonNull final I_M_Shipping_Notification record,
 			@NonNull final Consumer<ShippingNotification> consumer)
 	{
-		final ShippingNotificationId id = ShippingNotificationLoaderAndSaver.extractId(record);
-
-		@NonNull final ShippingNotificationLoaderAndSaver saver = newLoaderAndSaver();
-		saver.addToCacheAndAvoidSaving(record);
-		saver.updateById(id, consumer);
+		newLoaderAndSaver().updateWhileSaving(record, consumer);
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.shippingnotification;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
@@ -61,7 +62,6 @@ class ShippingNotificationLoaderAndSaver
 	{
 		return ShippingNotificationId.ofRepoIdOrNull(record.getM_Shipping_Notification_ID());
 	}
-
 
 	@NonNull
 	public ShippingNotification getById(@NonNull final ShippingNotificationId id)
@@ -223,7 +223,8 @@ class ShippingNotificationLoaderAndSaver
 
 	private void saveRecordIfAllowed(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
 	{
-		if (headerIdsToAvoidSaving.contains(extractIdOrNull(shippingNotificationRecord)))
+		final ShippingNotificationId id = extractIdOrNull(shippingNotificationRecord);
+		if (id != null && headerIdsToAvoidSaving.contains(id))
 		{
 			return;
 		}
@@ -241,4 +242,27 @@ class ShippingNotificationLoaderAndSaver
 		consumer.accept(shippingNotification);
 		save(shippingNotification);
 	}
+
+	public void updateWhileSaving(
+			@NonNull final I_M_Shipping_Notification record,
+			@NonNull final Consumer<ShippingNotification> consumer)
+	{
+		final ShippingNotificationId id = extractIdOrNull(record);
+		if (id == null)
+		{
+			final ShippingNotification shippingNotification = fromRecord(record, ImmutableList.of());
+			consumer.accept(shippingNotification);
+			if (!shippingNotification.getLines().isEmpty())
+			{
+				throw new AdempiereException("Adding lines to a new shipper notification which is not allowed to be saved is allowed");
+			}
+			saveRecordIfAllowed(record);
+		}
+		else
+		{
+			addToCacheAndAvoidSaving(record);
+			updateById(id, consumer);
+		}
+	}
+
 }
