@@ -91,7 +91,7 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathOrNull();
+		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathIfPresent().orElse(null);
 
 		return JSONMigrationScriptsInfo.builder()
 				.enabled(MigrationScriptFileLoggerHolder.isEnabled())
@@ -132,12 +132,7 @@ public abstract class MigrationScriptRestControllerTemplate
 
 	private Path getCurrentScriptPath()
 	{
-		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathOrNull();
-		if (currentScriptPath == null)
-		{
-			throw new AdempiereException("No current script file found");
-		}
-		return currentScriptPath;
+		return MigrationScriptFileLoggerHolder.getCurrentScriptPath();
 	}
 
 	private List<String> getMigrationScriptFileNames()

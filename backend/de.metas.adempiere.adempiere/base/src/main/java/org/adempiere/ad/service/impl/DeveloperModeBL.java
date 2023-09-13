@@ -84,7 +84,7 @@ public class DeveloperModeBL implements IDeveloperModeBL
 
 		DB.saveConstraints();
 		try (final IAutoCloseable ignored = Env.switchContext(sysCtx);
-				final IAutoCloseable ignored1 = MigrationScriptFileLoggerHolder.temporaryEnableMigrationScriptsLogging())
+				final IAutoCloseable ignored1 = MigrationScriptFileLoggerHolder.temporaryEnabledLoggingToNewFile())
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 			DB.getConstraints().incMaxTrx(1);

@@ -5,11 +5,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
@@ -38,8 +40,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MigrationScriptFileLoggerHolder
 {
 	private static final AtomicBoolean logMigrationScripts = new AtomicBoolean(false);
-	private static final ThreadLocal<Boolean> logMigrationScriptsTemporaryEnabled = new ThreadLocal<>();
-	private static final MigrationScriptFileLogger pgMigrationScriptWriter = MigrationScriptFileLogger.of("postgresql");
+	private static final ThreadLocal<MigrationScriptFileLogger> temporaryMigrationScriptWriterHolder = new ThreadLocal<>();
+	private static final MigrationScriptFileLogger _pgMigrationScriptWriter = MigrationScriptFileLogger.newForPostgresql();
 	public static final String DDL_PREFIX = "/* DDL */ ";
 
 	public static void logMigrationScript(@Nullable final String sql)
@@ -65,7 +67,7 @@ public class MigrationScriptFileLoggerHolder
 			return;
 		}
 
-		pgMigrationScriptWriter.appendSqlStatement(sql);
+		getWriter().appendSqlStatement(sql);
 	}
 
 	public static void logMigrationScript(@NonNull final SqlBatch sqlBatch)
@@ -79,7 +81,7 @@ public class MigrationScriptFileLoggerHolder
 			return;
 		}
 
-		sqlBatch.streamSqls().forEach(pgMigrationScriptWriter::appendSqlStatement);
+		getWriter().appendSqlStatements(sqlBatch);
 	}
 
 	public static void logComment(@Nullable final String comment)
@@ -91,7 +93,7 @@ public class MigrationScriptFileLoggerHolder
 			return;
 		}
 
-		pgMigrationScriptWriter.appendSqlStatement(Sql.ofComment(comment));
+		getWriter().appendSqlStatement(Sql.ofComment(comment));
 	}
 
 	public static boolean isDisabled()
@@ -101,9 +103,8 @@ public class MigrationScriptFileLoggerHolder
 
 	public static boolean isEnabled()
 	{
-		final Boolean temporaryEnabled = logMigrationScriptsTemporaryEnabled.get();
-		return (temporaryEnabled != null && temporaryEnabled)
-				|| logMigrationScripts.get();
+		return logMigrationScripts.get()
+				|| temporaryMigrationScriptWriterHolder.get() != null;
 	}
 
 	public static void setEnabled(final boolean enabled)
@@ -111,27 +112,43 @@ public class MigrationScriptFileLoggerHolder
 		logMigrationScripts.set(enabled);
 	}
 
-	public static IAutoCloseable temporaryEnableMigrationScriptsLoggingIf(final boolean condition)
+	public static IAutoCloseable temporaryEnabledLoggingToNewFileIf(final boolean condition)
 	{
-		return condition ? temporaryEnableMigrationScriptsLogging() : IAutoCloseable.NOP;
+		return condition ? temporaryEnabledLoggingToNewFile() : IAutoCloseable.NOP;
 	}
 
-	public static IAutoCloseable temporaryEnableMigrationScriptsLogging()
+	public static IAutoCloseable temporaryEnabledLoggingToNewFile()
 	{
-		final Boolean logMigrationScriptsTemporaryEnabled_Backup = logMigrationScriptsTemporaryEnabled.get();
-		logMigrationScriptsTemporaryEnabled.set(Boolean.TRUE);
-		return () -> logMigrationScriptsTemporaryEnabled.set(logMigrationScriptsTemporaryEnabled_Backup);
+		final MigrationScriptFileLogger migrationScriptFileLoggerNew = MigrationScriptFileLogger.newForPostgresql();
+		final MigrationScriptFileLogger migrationScriptFileLoggerOld = temporaryMigrationScriptWriterHolder.get();
+		temporaryMigrationScriptWriterHolder.set(migrationScriptFileLoggerNew);
+		return () -> {
+			temporaryMigrationScriptWriterHolder.set(migrationScriptFileLoggerOld);
+			migrationScriptFileLoggerNew.close();
+		};
 	}
 
-	@Nullable
-	public static Path getCurrentScriptPathOrNull()
+	private MigrationScriptFileLogger getWriter()
 	{
-		return pgMigrationScriptWriter.getFilePathOrNull();
+		final MigrationScriptFileLogger temporaryLogger = temporaryMigrationScriptWriterHolder.get();
+		return temporaryLogger != null ? temporaryLogger : _pgMigrationScriptWriter;
+	}
+
+	public static Optional<Path> getCurrentScriptPathIfPresent()
+	{
+		return getWriter().getFilePathIfPresent();
+	}
+
+	@NonNull
+	public static Path getCurrentScriptPath()
+	{
+		return getCurrentScriptPathIfPresent()
+				.orElseThrow(() -> new AdempiereException("No current script file found"));
 	}
 
 	public static void closeMigrationScriptFiles()
 	{
-		pgMigrationScriptWriter.close();
+		getWriter().close();
 	}
 
 	public static void setMigrationScriptDirectory(@NonNull final Path path)

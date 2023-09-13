@@ -29,6 +29,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 /*
@@ -156,7 +157,7 @@ public class DataImportService
 
 	public ValidateAndActualImportRecordsResult validateAndImportRecordsNow(@NonNull final ImportRecordsRequest request)
 	{
-		try (final IAutoCloseable ignored = MigrationScriptFileLoggerHolder.temporaryEnableMigrationScriptsLoggingIf(request.isLogMigrationScripts()))
+		try (final IAutoCloseable ignored = MigrationScriptFileLoggerHolder.temporaryEnabledLoggingToNewFileIf(request.isLogMigrationScripts()))
 		{
 			final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
 					.setCtx(Env.getCtx())
@@ -169,6 +170,12 @@ public class DataImportService
 			if (request.getNotifyUserId() != null)
 			{
 				notifyImportDone(result.getActualImport(), request.getNotifyUserId());
+			}
+
+			final Path migrationScript = MigrationScriptFileLoggerHolder.getCurrentScriptPathIfPresent().orElse(null);
+			if (migrationScript != null)
+			{
+				Loggables.get().addLog("Wrote migration script: {}", migrationScript);
 			}
 
 			return ValidateAndActualImportRecordsResult.builder()

@@ -2,6 +2,7 @@ package org.adempiere.ad.migration.logger;
 
 import com.google.common.base.MoreObjects;
 import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /*
  * #%L
@@ -48,17 +50,15 @@ import java.time.format.DateTimeFormatter;
  * SQL migration script file logger.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 class MigrationScriptFileLogger
 {
-	public static MigrationScriptFileLogger of(final String dbType)
+	public static MigrationScriptFileLogger newForPostgresql()
 	{
-		return new MigrationScriptFileLogger(dbType);
+		return new MigrationScriptFileLogger("postgresql");
 	}
 
 	private static final Logger logger = LogManager.getLogger(MigrationScriptFileLogger.class);
-
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
 	private static final DateTimeFormatter FORMATTER_ScriptFilenameTimestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -160,10 +160,13 @@ class MigrationScriptFileLogger
 			final Path path = createPath(dbType);
 			System.out.println("Using scripts path: " + path);
 
-			//
-			// Make sure the directories exist
 			try
 			{
+				final String fileHeader = "-- Run mode: " + Ini.getRunMode() + "\n\n";
+				Files.writeString(path, fileHeader, CHARSET, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
+				//
+				// Make sure the directories exist
 				Files.createDirectories(path.getParent());
 			}
 			catch (final IOException ex)
@@ -176,11 +179,10 @@ class MigrationScriptFileLogger
 		return _path;
 	}
 
+	public final Optional<Path> getFilePathIfPresent() {return Optional.ofNullable(getFilePathOrNull());}
+
 	@Nullable
-	public final synchronized Path getFilePathOrNull()
-	{
-		return _path;
-	}
+	private synchronized Path getFilePathOrNull() {return _path;}
 
 	public static Path getMigrationScriptDirectory()
 	{
@@ -210,6 +212,11 @@ class MigrationScriptFileLogger
 		collectorFactory.collect(sqlStatement);
 	}
 
+	public synchronized void appendSqlStatements(@NonNull final SqlBatch sqlBatch)
+	{
+		sqlBatch.streamSqls().forEach(collectorFactory::collect);
+	}
+
 	private synchronized void appendNow(final String sqlStatements)
 	{
 		if (sqlStatements == null || sqlStatements.isEmpty())
@@ -225,7 +232,7 @@ class MigrationScriptFileLogger
 		}
 		catch (final IOException ex)
 		{
-			logger.error("Failed writting to {}:\n {}", this, sqlStatements, ex);
+			logger.error("Failed writing to {}:\n {}", this, sqlStatements, ex);
 			close(); // better to close the file ... so, next time a new one will be created
 		}
 	}
