@@ -24,8 +24,7 @@
 
 **/de.metas.elasticsearch/data/
 
-
-
+docker-builds/compose/db-data/
 
 de.metas.migration.scanner.impl.GloballyOrderedScannerDecorator_sorted_scripts.txt
 serverRoot/application.properties
