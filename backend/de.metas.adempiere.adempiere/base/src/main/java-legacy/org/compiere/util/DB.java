@@ -2479,7 +2479,7 @@ public class DB
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
 		if (MigrationScriptFileLoggerHolder.isEnabled()
-				&& Services.get(IMigrationLogger.class).isLogTableName(TableName))
+				&& Services.get(IMigrationLogger.class).isLogTableName(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
 		{
 			log.debug("Returning 'false' for table {} because log migration scripts is enabled and this table is supposed to be logged", TableName);
 			return false;

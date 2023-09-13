@@ -1,14 +1,15 @@
 package org.adempiere.ad.migration.logger;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
@@ -146,7 +147,7 @@ public class MigrationScriptFileLoggerHolder
 
 		//
 		// Check that INSERT/UPDATE/DELETE statements are about our ignored tables
-		final Set<String> exceptionTablesUC = Services.get(IMigrationLogger.class).getTablesToIgnoreUC();
+		final ImmutableSet<String> exceptionTablesUC = Services.get(IMigrationLogger.class).getTablesToIgnoreUC(Env.getClientIdOrSystem());
 		for (final String tableNameUC : exceptionTablesUC)
 		{
 			if (uppStmt.startsWith("INSERT INTO " + tableNameUC + " "))

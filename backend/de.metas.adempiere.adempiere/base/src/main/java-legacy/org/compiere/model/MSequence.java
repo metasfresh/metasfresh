@@ -26,6 +26,7 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere.RunMode;
@@ -604,7 +605,7 @@ public class MSequence extends X_AD_Sequence
 		}
 	}
 
-	private static boolean isExceptionCentralized(String tableName)
+	private static boolean isExceptionCentralized(String tableName, final ClientId clientId)
 	{
 		String[] exceptionTables = new String[] {
 				"AD_ACCESSLOG",
@@ -655,7 +656,7 @@ public class MSequence extends X_AD_Sequence
 		}
 
 		// If MigrationLogger is ignoring it, for sure we don't need a Centralized ID
-		if (Services.get(IMigrationLogger.class).getTablesToIgnoreUC().contains(tableName.toUpperCase()))
+		if (!Services.get(IMigrationLogger.class).isLogTableName(tableName, clientId))
 		{
 			return true;
 		}
@@ -708,7 +709,7 @@ public class MSequence extends X_AD_Sequence
 		}
 
 		// Check if is an exception
-		if (TableName != null && isExceptionCentralized(TableName))
+		if (TableName != null && isExceptionCentralized(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
 		{
 			s_log.debug("Returning 'false' because TableName {} is excluded from getting centralized IDs", TableName);
 			return false;
@@ -744,7 +745,7 @@ public class MSequence extends X_AD_Sequence
 			return false;
 		}
 		// Check if is an exception
-		if (TableName != null && isExceptionCentralized(TableName))
+		if (TableName != null && isExceptionCentralized(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
 		{
 			s_log.debug("Returning 'false' because TableName {} is excluded from getting centralized IDs", TableName);
 			return false;

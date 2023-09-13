@@ -148,7 +148,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		if (tableNames != null && !tableNames.isEmpty())
 		{
 			final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-			tableNames.forEach(migrationLogger::addTableToIgnoreList);
+			migrationLogger.addTablesToIgnoreList(tableNames);
 		}
 	}
 
