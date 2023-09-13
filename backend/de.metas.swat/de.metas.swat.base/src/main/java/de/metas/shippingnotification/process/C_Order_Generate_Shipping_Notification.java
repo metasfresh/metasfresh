@@ -24,6 +24,8 @@ package de.metas.shippingnotification.process;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
@@ -39,14 +41,18 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
+import java.util.Collection;
 
 public class C_Order_Generate_Shipping_Notification extends JavaProcess implements IProcessPrecondition
 {
 
 	private static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
+	private static final AdMessageKey MSG_M_Shipment_Notification_NoShipmentSchedule = AdMessageKey.of("de.metas.shippingnotification.NoShipmentSchedule");
 	private static final String PARAM_PhysicalClearanceDate = "PhysicalClearanceDate";
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ShippingNotificationService shippingNotificationService = SpringContextHolder.instance.getBean(ShippingNotificationService.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
 	@Param(parameterName = PARAM_PhysicalClearanceDate, mandatory = true)
 	private Timestamp p_physicalClearanceDate;
 
@@ -72,6 +78,11 @@ public class C_Order_Generate_Shipping_Notification extends JavaProcess implemen
 		if (order.getHarvesting_Year_ID() <= 0)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Shipment_Notification_NoHarvestingYear));
+		}
+
+		if (shipmentSchedulePA.getByIds(shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId), I_M_ShipmentSchedule.class).isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_M_Shipment_Notification_NoShipmentSchedule));
 		}
 
 		return ProcessPreconditionsResolution.accept();

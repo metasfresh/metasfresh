@@ -3754,3 +3754,62 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2023-09-13 16:49:17.55','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620445
 ;
 
+----
+
+
+-- Value: de.metas.shippingnotification.NoShipmentSchedule
+-- 2023-09-13T14:33:20.423243Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545334,0,TO_TIMESTAMP('2023-09-13 17:33:20.285','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification','Y','There is no shipment disposition.','I',TO_TIMESTAMP('2023-09-13 17:33:20.285','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification.NoShipmentSchedule')
+;
+
+-- 2023-09-13T14:33:20.427908700Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545334 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.shippingnotification.NoShipmentSchedule
+-- 2023-09-13T14:33:27.186320Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Es gibt keine Versanddisposition.',Updated=TO_TIMESTAMP('2023-09-13 17:33:27.185','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545334
+;
+
+-- Value: de.metas.shippingnotification.NoShipmentSchedule
+-- 2023-09-13T14:33:30.301544100Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-13 17:33:30.301','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545334
+;
+
+-- Value: de.metas.shippingnotification.NoShipmentSchedule
+-- 2023-09-13T14:33:35.466833800Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Es gibt keine Versanddisposition.',Updated=TO_TIMESTAMP('2023-09-13 17:33:35.466','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545334
+;
+
+-- 2023-09-13T14:33:35.467885500Z
+UPDATE AD_Message SET MsgText='Es gibt keine Versanddisposition.' WHERE AD_Message_ID=545334
+;
+
+-- Value: de.metas.shippingnotification.CompletedShippingNotifications
+-- 2023-09-13T14:35:03.119022100Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545335,0,TO_TIMESTAMP('2023-09-13 17:35:03.01','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification','Y','The order has completed Shipping Notifications.','E',TO_TIMESTAMP('2023-09-13 17:35:03.01','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.shippingnotification.CompletedShippingNotifications')
+;
+
+-- 2023-09-13T14:35:03.120577Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545335 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.shippingnotification.CompletedShippingNotifications
+-- 2023-09-13T14:35:11.683640400Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Die Bestellung wurde von Lieferavis abgeschlossen.',Updated=TO_TIMESTAMP('2023-09-13 17:35:11.683','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545335
+;
+
+-- 2023-09-13T14:35:11.684678800Z
+UPDATE AD_Message SET MsgText='Die Bestellung wurde von Lieferavis abgeschlossen.' WHERE AD_Message_ID=545335
+;
+
+-- Value: de.metas.shippingnotification.CompletedShippingNotifications
+-- 2023-09-13T14:35:17.689927600Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-13 17:35:17.689','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545335
+;
+
+-- Value: de.metas.shippingnotification.CompletedShippingNotifications
+-- 2023-09-13T14:35:20.036346500Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Die Bestellung wurde von Lieferavis abgeschlossen.',Updated=TO_TIMESTAMP('2023-09-13 17:35:20.035','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545335
+;
+

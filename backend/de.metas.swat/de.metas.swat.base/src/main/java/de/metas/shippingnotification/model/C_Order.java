@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 public class C_Order
 {
 
-	private static final AdMessageKey MSG_M_Shipment_Notification_CompletedNotifications = AdMessageKey.of("de.metas.shippingnotification.CompletedShippingNotificaitons");
+	private static final AdMessageKey MSG_M_Shipment_Notification_CompletedNotifications = AdMessageKey.of("de.metas.shippingnotification.CompletedShippingNotifications");
 
 	private final ShippingNotificationService shippingNotificationService;
 
