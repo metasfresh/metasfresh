@@ -66,6 +66,8 @@ public class ShippingNotificationService
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
+	private static final String REVERSE_INDICATOR = "^";
+
 	public void generateShippingNotificationAndPropagatePhysicalClearanceDate(
 			@NonNull final OrderId orderId,
 			@NonNull final Instant physicalClearanceDate)
@@ -141,6 +143,7 @@ public class ShippingNotificationService
 	{
 		final I_M_Shipping_Notification reversalRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification.createReversal());
 		reversalRecord.setReversal_ID(shippingNotification.getId().getRepoId());
+		reversalRecord.setDocumentNo(reversalRecord.getDocumentNo() + REVERSE_INDICATOR);
 		reversalRecord.setDocStatus(DocStatus.Reversed.getCode());
 		reversalRecord.setDocAction(IDocument.ACTION_None);
 		shippingNotificationRepository.saveRecord(reversalRecord);
