@@ -95,6 +95,8 @@ public class ShippingNotificationService
 
 		shippingNotificationRepository.save(shippingNotification);
 
+		completeIt(shippingNotification);
+
 		shipmentSchedules.forEach(shipmentSchedule -> {
 			shipmentSchedule.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
 			shipmentSchedulePA.save(shipmentSchedule);

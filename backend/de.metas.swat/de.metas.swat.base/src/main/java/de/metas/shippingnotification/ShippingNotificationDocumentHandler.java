@@ -87,10 +87,7 @@ public class ShippingNotificationDocumentHandler implements DocumentHandler
 	@Override
 	public void reactivateIt(@NonNull final DocumentTableFields docFields)
 	{
-		final I_M_Shipping_Notification shippingNotificationRecord = extractShippingNotification(docFields);
-		assertPeriodOpen(shippingNotificationRecord);
-		shippingNotificationRecord.setProcessed(false);
-		shippingNotificationRecord.setDocAction(IDocument.ACTION_Complete);
+		throw new UnsupportedOperationException("The action reactivateIt is not supported!");
 	}
 
 	private static void assertPeriodOpen(final I_M_Shipping_Notification record)

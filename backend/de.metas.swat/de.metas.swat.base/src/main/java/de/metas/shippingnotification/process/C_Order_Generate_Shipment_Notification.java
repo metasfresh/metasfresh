@@ -31,25 +31,24 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.shippingnotification.ShippingNotificationRepository;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
 
 public class C_Order_Generate_Shipment_Notification extends JavaProcess implements IProcessPrecondition
 {
 
+	public static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
 	private static final String PARAM_PhysicalClearanceDate = "PhysicalClearanceDate";
+	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final ShippingNotificationService shippingNotificationService = SpringContextHolder.instance.getBean(ShippingNotificationService.class);
 	@Param(parameterName = PARAM_PhysicalClearanceDate, mandatory = true)
 	private Timestamp p_physicalClearanceDate;
-
-	public static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
-
-	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final ShippingNotificationRepository shipperNotificationRepository = SpringContextHolder.instance.getBean(ShippingNotificationRepository.class);
 
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -81,7 +80,8 @@ public class C_Order_Generate_Shipment_Notification extends JavaProcess implemen
 	@Override
 	protected String doIt() throws Exception
 	{
-		// shipperNotificationRepository.generateShippingNotificationAndPropagatePhysicalClearanceDate(OrderId.ofRepoId(getRecord_ID()), p_physicalClearanceDate);
+		final OrderId orderId = OrderId.ofRepoId(getRecord_ID());
+		shippingNotificationService.generateShippingNotificationAndPropagatePhysicalClearanceDate(orderId, TimeUtil.asInstant(p_physicalClearanceDate));
 
 		return MSG_OK;
 	}
