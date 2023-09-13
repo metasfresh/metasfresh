@@ -35,7 +35,9 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
@@ -78,8 +80,22 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 				{
 					case COMPLETED -> LogAction.CREATE;
 					case REVERSED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
+	}
+
+	@Override
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InventoryLine model)
+	{
+		final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(model.getM_Inventory_ID()));
+
+		if (!inventoryDocStatus.isCompleted())
+		{
+			return BooleanWithReason.falseBecause("The M_Inventory.DocStatus is " + inventoryDocStatus);
+		}
+
+		return BooleanWithReason.TRUE;
 	}
 
 	@Override

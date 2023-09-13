@@ -19,6 +19,7 @@ import de.metas.inout.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -243,13 +245,26 @@ public class InOutDAO implements IInOutDAO
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineId)
-				// .filterByClientId()
 				.addOnlyActiveRecordsFilter();
 		queryBuilder.orderBy()
 				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
 
 		return queryBuilder.create()
 				.list(clazz);
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveInterimInvoiceableInOuts(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut.class)
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsInterimInvoiceable, true)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderAndLineId.getOrderId())
+				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderAndLineId.getOrderLineId())
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID)
+				.list();
 	}
 
 	@Override
@@ -286,10 +301,10 @@ public class InOutDAO implements IInOutDAO
 	{
 		return queryBL.createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
-						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
-						// anymore, because they are already in a shipper-transportation
-						IDocument.STATUS_InProgress,
-						IDocument.STATUS_WaitingConfirmation)
+									   IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
+									   // anymore, because they are already in a shipper-transportation
+									   IDocument.STATUS_InProgress,
+									   IDocument.STATUS_WaitingConfirmation)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -306,7 +321,6 @@ public class InOutDAO implements IInOutDAO
 				.orderBy()
 				.addColumn(I_M_InOutLine.COLUMNNAME_Line)
 				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).endOrderBy();
-
 	}
 
 	@Override
@@ -601,6 +615,15 @@ public class InOutDAO implements IInOutDAO
 	public Stream<I_M_InOutLine> stream(@NonNull final InOutLineQuery query)
 	{
 		return toSqlQuery(query).stream();
+	}
+
+	@Override
+	public Stream<I_M_InOut> stream(@NonNull final IQueryFilter<I_M_InOut> inOutFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut.class)
+				.filter(inOutFilter)
+				.create()
+				.iterateAndStream();
 	}
 
 	private IQueryBuilder<I_M_InOutLine> toSqlQuery(@NonNull final InOutLineQuery query)

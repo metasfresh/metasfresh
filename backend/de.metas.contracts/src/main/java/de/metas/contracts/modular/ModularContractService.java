@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -50,6 +51,13 @@ public class ModularContractService
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull
 	private final ProcessModularLogsEnqueuer processLogsEnqueuer;
+
+	public <T> void invokeWithModelForAllContractTypes(@NonNull final T model, @NonNull final ModelAction action)
+	{
+		ImmutableSet.copyOf(LogEntryContractType.values())
+				.forEach(contractType -> modularContractHandlerFactory.getApplicableHandlersFor(model, contractType)
+						.forEach(handler -> invokeWithModel(handler, model, action, contractType)));
+	}
 
 	public <T> void invokeWithModel(@NonNull final T model, @NonNull final ModelAction action, @NonNull final LogEntryContractType logEntryContractType)
 	{
@@ -120,7 +128,7 @@ public class ModularContractService
 			@NonNull final FlatrateTermId flatrateTermId,
 			@NonNull final LogEntryContractType logEntryContractType)
 	{
-		handler.validateDocAction(model, action);
+		handler.validateAction(model, action);
 
 		processLogsEnqueuer.enqueueAfterCommit(TableRecordReference.of(model), action, logEntryContractType);
 
@@ -133,11 +141,6 @@ public class ModularContractService
 			@NonNull final ModelAction action,
 			@NonNull final FlatrateTermId flatrateTermId)
 	{
-		switch (action) //FIXME
-		{
-			case VOIDED -> handler.cancelLinkedContractsIfAllowed(model, flatrateTermId);
-		}
-
-		handler.handleAction(model, action, this);
+		handler.handleAction(model, action, flatrateTermId, this);
 	}
 }

@@ -1,20 +1,21 @@
 package de.metas.inventory.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
-
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -40,6 +41,8 @@ import lombok.NonNull;
 
 public class InventoryDAO implements IInventoryDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
 	{
@@ -99,4 +102,12 @@ public class InventoryDAO implements IInventoryDAO
 		saveRecord(inventoryLine);
 	}
 
+	@Override
+	public Stream<I_M_Inventory> stream(@NonNull final IQueryFilter<I_M_Inventory> inventoryFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Inventory.class)
+				.filter(inventoryFilter)
+				.create()
+				.iterateAndStream();
+	}
 }

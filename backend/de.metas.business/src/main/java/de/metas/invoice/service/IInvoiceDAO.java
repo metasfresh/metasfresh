@@ -189,4 +189,6 @@ public interface IInvoiceDAO extends ISingletonService
 	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
 
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
+
+	Stream<I_C_Invoice> stream(@NonNull IQueryFilter<I_C_Invoice> invoiceFilter);
 }

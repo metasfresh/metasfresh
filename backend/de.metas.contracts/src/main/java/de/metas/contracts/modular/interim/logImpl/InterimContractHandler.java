@@ -30,6 +30,7 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineQuery;
@@ -37,15 +38,22 @@ import de.metas.inout.InOutQuery;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
+
 @Component
+@RequiredArgsConstructor
 public class InterimContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+
+	@NonNull private final ModularContractLogService contractLogService;
 
 	@Override
 	public @NonNull Class<I_C_Flatrate_Term> getType()
@@ -72,17 +80,21 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 	}
 
 	@Override
-	public void validateDocAction(final @NonNull I_C_Flatrate_Term model, final @NonNull ModelAction action)
+	public void validateAction(final @NonNull I_C_Flatrate_Term model, final @NonNull ModelAction action)
 	{
-		if (action != ModelAction.COMPLETED)
+		switch (action)
 		{
-			throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			case COMPLETED -> {}
+			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
+																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 
 	public void handleAction(
 			@NonNull final I_C_Flatrate_Term interimContract,
 			@NonNull final ModelAction modelAction,
+			@NonNull final FlatrateTermId contractId,
 			@NonNull final ModularContractService contractService)
 	{
 		if (modelAction != ModelAction.COMPLETED)

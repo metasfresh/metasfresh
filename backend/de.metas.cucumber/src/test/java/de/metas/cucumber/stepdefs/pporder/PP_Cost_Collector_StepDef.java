@@ -80,14 +80,9 @@ public class PP_Cost_Collector_StepDef
 			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorTable.get(ppCostCollectorIdentifier);
 			assertThat(ppCostCollector).isNotNull();
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
-
 			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_MovementQty);
 			final String status = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocStatus);
 
-			assertThat(ppCostCollector.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 			assertThat(ppCostCollector.getMovementQty()).isEqualTo(movementQty);
 			assertThat(ppCostCollector.getDocStatus()).isEqualTo(status);
 		}
@@ -98,10 +93,16 @@ public class PP_Cost_Collector_StepDef
 	{
 		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Product product = productTable.get(productIdentifier);
+		assertThat(product).isNotNull();
+
 		final String status = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocStatus);
 
 		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_M_Product_ID, ppOrder.getM_Product_ID())
 				.addEqualsFilter(COLUMNNAME_DocStatus, status)
 				.create()
 				.firstOnlyOptional(I_PP_Cost_Collector.class);

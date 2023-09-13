@@ -24,5 +24,5 @@ package de.metas.contracts.modular;
 
 public enum ModelAction
 {
-	COMPLETED, REVERSED, REACTIVATED, VOIDED
+	COMPLETED, REVERSED, REACTIVATED, VOIDED, RECREATE_LOGS
 }

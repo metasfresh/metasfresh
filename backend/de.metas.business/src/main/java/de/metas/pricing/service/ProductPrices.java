@@ -12,6 +12,7 @@ import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UomId;
@@ -96,7 +97,7 @@ public class ProductPrices
 			return false;
 		}
 
-		return newMainProductPriceQuery(plv, productId)
+		return newMainProductPriceQuery(plv, productId, null)
 				.matches();
 	}
 
@@ -116,8 +117,9 @@ public class ProductPrices
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		final I_M_PriceList_Version priceListVersion = priceListsRepo.getPriceListVersionByIdInTrx(priceListVersionId);
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(productPrice.getC_TaxCategory_ID());
 
-		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(priceListVersion, productId);
+		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(priceListVersion, productId, taxCategoryId);
 
 		final boolean productPriceIsMainPrice = allMainPrices.stream()
 				.anyMatch(mainPrice -> mainPrice.getM_ProductPrice_ID() == productPrice.getM_ProductPrice_ID());
@@ -165,23 +167,28 @@ public class ProductPrices
 	@Nullable
 	public static I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
 	{
-		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plv, productId);
+		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plv, productId, null);
 		return getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
 	}
 
 	private static List<I_M_ProductPrice> retrieveAllMainPrices(
 			@NonNull final I_M_PriceList_Version plv,
-			@NonNull final ProductId productId)
+			@NonNull final ProductId productId,
+			@Nullable final TaxCategoryId taxCategoryId)
 	{
-		return newMainProductPriceQuery(plv, productId)
+		return newMainProductPriceQuery(plv, productId, taxCategoryId)
 				.list();
 	}
 
 	@NonNull
-	private static ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final ProductId productId)
+	private static ProductPriceQuery newMainProductPriceQuery(
+			@NonNull final I_M_PriceList_Version plv,
+			@NonNull final ProductId productId,
+			@Nullable final TaxCategoryId taxCategoryId)
 	{
 		return newQuery(plv)
 				.setProductId(productId)
+				.setTaxCategoryId(taxCategoryId)
 				.noAttributePricing()
 				.onlyValidPrices(true)
 				//
@@ -345,5 +352,15 @@ public class ProductPrices
 		save(pp);
 
 		return pp;
+	}
+
+	@Nullable
+	public static I_M_ProductPrice retrieveMainProductPriceOrNull(
+			@NonNull final I_M_PriceList_Version plv,
+			@NonNull final ProductId productId,
+			@Nullable final TaxCategoryId taxCategoryId)
+	{
+		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plv, productId, taxCategoryId);
+		return getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
 	}
 }

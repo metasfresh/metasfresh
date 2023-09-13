@@ -105,4 +105,16 @@ public class C_Flatrate_Term
 
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
 	}
+
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void onModularContractComplete(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
+		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
+		{
+			return;
+		}
+
+		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.MODULAR_CONTRACT);
+	}
 }

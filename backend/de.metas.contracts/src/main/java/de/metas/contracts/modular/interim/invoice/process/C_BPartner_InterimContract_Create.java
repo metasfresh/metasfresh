@@ -29,7 +29,6 @@ import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContract;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractId;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
-import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -54,7 +53,6 @@ public class C_BPartner_InterimContract_Create extends JavaProcess implements IP
 	@Param(mandatory = true, parameterName = "DateTo")
 	private Timestamp p_DateTo;
 
-	private final IInterimInvoiceFlatrateTermDAO interimInvoiceFlatrateTermDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
