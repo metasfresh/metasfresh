@@ -26,6 +26,7 @@ import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
+import org.compiere.model.I_C_DataImport_Run;
 import org.compiere.model.I_I_Asset;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_BPartner_BlockStatus;
@@ -124,6 +125,7 @@ public class TableNamesSkipList
 			"AD_MIGRATIONDATA",
 
 			// Don't log import tables
+			I_C_DataImport_Run.Table_Name,
 			I_I_Asset.Table_Name,
 			I_I_BPartner.Table_Name,
 			I_I_BPartner_BlockStatus.Table_Name,
