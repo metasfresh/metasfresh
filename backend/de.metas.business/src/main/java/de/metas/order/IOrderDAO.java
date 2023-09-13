@@ -3,7 +3,6 @@ package de.metas.order;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;

@@ -33,6 +33,8 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.exception.ShipmentNotificationException;
+import de.metas.util.lang.SeqNo;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -44,6 +46,7 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,25 +55,39 @@ import java.util.stream.Collectors;
 @ToString
 public class ShippingNotification
 {
-	@Nullable private ShippingNotificationId id;
-	@NonNull private final OrgId orgId;
-	@NonNull private final DocTypeId docTypeId;
-	@NonNull private final BPartnerLocationId bpartnerAndLocationId;
-	@Nullable private final BPartnerContactId contactId;
+	@NonNull
+	private final OrgId orgId;
+	@NonNull
+	private final DocTypeId docTypeId;
+	@NonNull
+	private final BPartnerLocationId bpartnerAndLocationId;
+	@Nullable
+	private final BPartnerContactId contactId;
 	private final int auctionId;
-	@NonNull private final LocatorId locatorId;
-	@NonNull private final OrderId orderId;
-	@NonNull private final Instant physicalClearanceDate;
-	@NonNull private final YearAndCalendarId harvestringYearId;
-	@Nullable private final String poReference;
-	@Nullable private final String description;
-
-	@NonNull private final DocStatus docStatus;
-	private boolean processed;
-	@Nullable @Setter private ShippingNotificationId reversalId;
-	@Nullable @Setter private String bpaddress;
-
+	@NonNull
+	private final LocatorId locatorId;
+	@NonNull
+	private final OrderId orderId;
+	@NonNull
+	private final Instant physicalClearanceDate;
+	@NonNull
+	private final YearAndCalendarId harvestringYearId;
+	@Nullable
+	private final String poReference;
+	@Nullable
+	private final String description;
+	@NonNull
+	private final DocStatus docStatus;
 	private final ArrayList<ShippingNotificationLine> lines;
+	@Nullable
+	private ShippingNotificationId id;
+	private boolean processed;
+	@Nullable
+	@Setter
+	private ShippingNotificationId reversalId;
+	@Nullable
+	@Setter
+	private String bpaddress;
 
 	@Builder(toBuilder = true)
 	private ShippingNotification(
@@ -105,9 +122,14 @@ public class ShippingNotification
 		this.docStatus = docStatus;
 		this.processed = processed;
 		this.lines = lines != null ? new ArrayList<>(lines) : new ArrayList<>();
+
+		renumberLines();
 	}
 
-	public BPartnerId getBPartnerId() {return bpartnerAndLocationId.getBpartnerId();}
+	public BPartnerId getBPartnerId()
+	{
+		return bpartnerAndLocationId.getBpartnerId();
+	}
 
 	public DocumentLocation getLocation()
 	{
@@ -138,7 +160,10 @@ public class ShippingNotification
 		this.id = id;
 	}
 
-	public ImmutableList<ShippingNotificationLine> getLines() {return ImmutableList.copyOf(lines);}
+	public ImmutableList<ShippingNotificationLine> getLines()
+	{
+		return ImmutableList.copyOf(lines);
+	}
 
 	public ShippingNotification createReversal()
 	{
@@ -148,5 +173,14 @@ public class ShippingNotification
 				.processed(false)
 				.lines(lines.stream().map(ShippingNotificationLine::createReversal).collect(Collectors.toList()))
 				.build();
+	}
+
+	private void renumberLines()
+	{
+		SeqNoProvider lineNoProvider = SeqNoProvider.ofInt(10);
+		for (final ShippingNotificationLine line : lines)
+		{
+			line.setLine(lineNoProvider.getAndIncrement());
+		}
 	}
 }

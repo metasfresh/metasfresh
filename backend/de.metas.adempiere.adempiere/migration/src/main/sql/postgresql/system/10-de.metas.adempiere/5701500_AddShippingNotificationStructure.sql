@@ -3673,3 +3673,20 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText=' Es ist kein Erntejahr fest
 UPDATE AD_Message SET MsgText=' Es ist kein Erntejahr festgelegt.' WHERE AD_Message_ID=545333
 ;
 
+-- Column: M_Shipping_Notification.M_Locator_ID
+-- 2023-09-13T08:05:04.642277900Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-09-13 11:05:04.642','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587391
+;
+
+-- Column: M_Shipping_Notification.M_Locator_ID
+-- 2023-09-13T08:05:07.074074300Z
+UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-09-13 11:05:07.074','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587391
+;
+
+-- 2023-09-13T08:05:08.428120Z
+INSERT INTO t_alter_column values('m_shipping_notification','M_Locator_ID','NUMERIC(10)',null,null)
+;
+
+
+update c_doctype set docbasetype='SN' where c_doctype_id=541109;
+

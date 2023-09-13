@@ -81,6 +81,10 @@ public class C_Order_Generate_Shipping_Notification extends JavaProcess implemen
 	protected String doIt() throws Exception
 	{
 		final OrderId orderId = OrderId.ofRepoId(getRecord_ID());
+		// reverse notifications if exists
+		shippingNotificationService.reverseIfExistsShippingNotifications(orderId);
+
+		// generate new one
 		shippingNotificationService.generateShippingNotificationAndPropagatePhysicalClearanceDate(orderId, TimeUtil.asInstant(p_physicalClearanceDate));
 
 		return MSG_OK;

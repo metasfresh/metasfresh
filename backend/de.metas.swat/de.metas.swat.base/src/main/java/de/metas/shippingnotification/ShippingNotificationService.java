@@ -150,4 +150,10 @@ public class ShippingNotificationService
 		shippingNotification.setReversalId(ShippingNotificationLoaderAndSaver.extractId(reversalRecord));
 	}
 
+	public void reverseIfExistsShippingNotifications(@NonNull final OrderId orderId)
+	{
+		shippingNotificationRepository.getByOrderId(orderId)
+				.forEach(this::reverseItNoSave);
+	}
+
 }

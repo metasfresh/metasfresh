@@ -24,18 +24,16 @@ package de.metas.shippingnotification;
 
 import de.metas.order.OrderId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
-import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.shippingnotification.model.X_M_Shipping_Notification;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 @Repository
 public class ShippingNotificationRepository
@@ -81,13 +79,15 @@ public class ShippingNotificationRepository
 		newLoaderAndSaver().updateWhileSaving(record, consumer);
 	}
 
-	public Stream<I_M_Shipping_Notification> retrieveForOrder(@NonNull final OrderId orderId)
+	public List<ShippingNotification> getByOrderId(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
 				.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, X_M_Shipping_Notification.DOCSTATUS_Completed, X_M_Shipping_Notification.DOCSTATUS_Closed)
-				.addEqualsFilter(I_M_Shipping_Notification.COLUMNNAME_C_Order_ID,orderId)
+				.addEqualsFilter(I_M_Shipping_Notification.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.stream(I_M_Shipping_Notification.class)
+				.map(shippingNotification -> getById(ShippingNotificationId.ofRepoId(shippingNotification.getM_Shipping_Notification_ID())))
+				.collect(Collectors.toList())
 				;
 	}
 }

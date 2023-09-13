@@ -1,6 +1,7 @@
 package de.metas.shippingnotification;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.gljournal_sap.SAPGLJournalLine;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
@@ -17,6 +18,8 @@ import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.SeqNo;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -29,6 +32,7 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -145,6 +149,7 @@ class ShippingNotificationLoaderAndSaver
 				.qty(Quantitys.create(record.getMovementQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.orderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
+				.line(SeqNo.ofInt(record.getLine()))
 				.build();
 	}
 
@@ -220,6 +225,8 @@ class ShippingNotificationLoaderAndSaver
 		record.setM_ShipmentSchedule_ID(fromLine.getShipmentScheduleId().getRepoId());
 		record.setC_Order_ID(fromLine.getOrderAndLineId().getOrderRepoId());
 		record.setC_OrderLine_ID(fromLine.getOrderAndLineId().getOrderLineRepoId());
+		record.setM_Shipping_Notification_ID(fromHeader.getId().getRepoId());
+		record.setLine(fromLine.getLine().toInt());
 	}
 
 	private void saveRecordIfAllowed(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
@@ -265,5 +272,4 @@ class ShippingNotificationLoaderAndSaver
 			updateById(id, consumer);
 		}
 	}
-
 }
