@@ -48,6 +48,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -56,6 +57,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -323,5 +325,18 @@ public class ModularContractLogDAO
 					I_ModCntr_Log.Table_Name,
 					sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
 		}
+	}
+
+	@NonNull
+	public Iterator<I_ModCntr_Log> getLogsIteratorOrderedByRecordRef(@NonNull final IQueryFilter<I_ModCntr_Log> filter)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.filter(filter)
+				.orderBy()
+				.addColumn(I_ModCntr_Log.COLUMNNAME_AD_Table_ID)
+				.addColumn(I_ModCntr_Log.COLUMNNAME_Record_ID)
+				.endOrderBy()
+				.create()
+				.iterate(I_ModCntr_Log.class);
 	}
 }

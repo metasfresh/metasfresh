@@ -24,6 +24,7 @@ package de.metas.contracts.modular.log;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.inout.IInOutDAO;
@@ -37,6 +38,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -48,6 +50,8 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
+
+import java.util.Iterator;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +68,32 @@ public class LogsRecomputationService
 
 	@NonNull
 	private final ModularContractService modularContractService;
+
+	@NonNull
+	private final ModularContractLogDAO modularContractLogDAO;
+
+	public void recomputeLogs(@NonNull final IQueryFilter<I_ModCntr_Log> filter)
+	{
+		final Iterator<I_ModCntr_Log> logsIterator = modularContractLogDAO.getLogsIteratorOrderedByRecordRef(filter);
+
+		TableRecordReference currentRecordReference = null;
+		while (logsIterator.hasNext())
+		{
+			final I_ModCntr_Log logEntry = logsIterator.next();
+			final TableRecordReference logRecordRef = TableRecordReference.of(logEntry.getAD_Table_ID(), logEntry.getRecord_ID());
+
+			if (currentRecordReference == null)
+			{
+				currentRecordReference = TableRecordReference.of(logEntry.getAD_Table_ID(), logEntry.getRecord_ID());
+			}
+
+			if (!logRecordRef.equals(currentRecordReference) || !logsIterator.hasNext())
+			{
+				recomputeForRecord(currentRecordReference);
+				currentRecordReference = logRecordRef;
+			}
+		}
+	}
 
 	public void recomputeForInvoice(@NonNull final IQueryFilter<I_C_Invoice> filter)
 	{
@@ -164,8 +194,18 @@ public class LogsRecomputationService
 	{
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> ppCostCollectorDAO
-				.getReceiptsByOrderId(ppOrderId)
+				.getByOrderId(ppOrderId)
 				.forEach(ppCostCollector -> modularContractService.invokeWithModelForAllContractTypes(ppCostCollector,
 																									  ModelAction.RECREATE_LOGS)));
+	}
+
+	private void recomputeForRecord(@NonNull final TableRecordReference tableRecordReference)
+	{
+		switch (tableRecordReference.getTableName())
+		{
+			case I_PP_Order.Table_Name -> recomputeForPPOrder(tableRecordReference.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
+			default -> trxManager.runInNewTrx(() -> modularContractService
+					.invokeWithModelForAllContractTypes(tableRecordReference.getModel(), ModelAction.RECREATE_LOGS));
+		}
 	}
 }
