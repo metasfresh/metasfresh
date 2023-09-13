@@ -22,18 +22,14 @@
 
 package de.metas.shippingnotification;
 
-import de.metas.order.OrderId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
-import de.metas.shippingnotification.model.X_M_Shipping_Notification;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @Repository
 public class ShippingNotificationRepository
@@ -67,11 +63,6 @@ public class ShippingNotificationRepository
 		InterfaceWrapperHelper.saveRecord(record);
 	}
 
-	public OrderId getOrderId(@NonNull final ShippingNotificationId shippingNotificationId)
-	{
-		return getById(shippingNotificationId).getOrderId();
-	}
-
 	public void updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
 			@NonNull final Consumer<ShippingNotification> consumer)
@@ -79,25 +70,13 @@ public class ShippingNotificationRepository
 		newLoaderAndSaver().updateWhileSaving(record, consumer);
 	}
 
-	public List<ShippingNotification> getByOrderId(@NonNull final OrderId orderId)
+	public boolean anyMatch(final ShippingNotificationQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
-				.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, X_M_Shipping_Notification.DOCSTATUS_Completed, X_M_Shipping_Notification.DOCSTATUS_Closed)
-				.addEqualsFilter(I_M_Shipping_Notification.COLUMNNAME_C_Order_ID, orderId)
-				.create()
-				.stream(I_M_Shipping_Notification.class)
-				.map(shippingNotification -> getById(ShippingNotificationId.ofRepoId(shippingNotification.getM_Shipping_Notification_ID())))
-				.collect(Collectors.toList())
-				;
+		return newLoaderAndSaver().anyMatch(query);
 	}
 
-	public boolean hasCompletedOrClosedShippingNotifications(@NonNull final OrderId orderId)
+	public void updateByQuery(@NonNull final ShippingNotificationQuery query, @NonNull final Consumer<ShippingNotification> consumer)
 	{
-		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
-				.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, X_M_Shipping_Notification.DOCSTATUS_Completed, X_M_Shipping_Notification.DOCSTATUS_Closed)
-				.addEqualsFilter(I_M_Shipping_Notification.COLUMNNAME_C_Order_ID, orderId)
-				.create()
-				.anyMatch()
-				;
+		newLoaderAndSaver().updateByQuery(query, consumer);
 	}
 }

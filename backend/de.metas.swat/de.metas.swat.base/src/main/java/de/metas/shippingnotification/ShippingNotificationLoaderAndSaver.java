@@ -1,10 +1,11 @@
 package de.metas.shippingnotification;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.gljournal_sap.SAPGLJournalLine;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.ShipmentScheduleId;
@@ -18,8 +19,8 @@ import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.SeqNo;
-import de.metas.util.lang.SeqNoProvider;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,11 +33,12 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -76,6 +78,31 @@ class ShippingNotificationLoaderAndSaver
 	}
 
 	@NonNull
+	public List<ShippingNotification> getByIds(@NonNull final Set<ShippingNotificationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Map<ShippingNotificationId, I_M_Shipping_Notification> headerRecordsById = getHeaderRecordsByIds(ids);
+		final Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> lineRecordsById = getLineRecords(ids);
+
+		return ids.stream()
+				.map(id -> {
+					final I_M_Shipping_Notification headerRecord = headerRecordsById.get(id);
+					if (headerRecord == null)
+					{
+						throw new AdempiereException("No shipping notificatin found for " + id);
+					}
+
+					final List<I_M_Shipping_NotificationLine> lineRecords = CoalesceUtil.coalesceNotNull(lineRecordsById.get(id), ImmutableList.of());
+					return fromRecord(headerRecord, lineRecords);
+				})
+				.collect(Collectors.toList());
+	}
+
+	@NonNull
 	private I_M_Shipping_Notification getHeaderRecordById(@NonNull final ShippingNotificationId id)
 	{
 		return getHeaderRecordByIdIfExists(id).orElseThrow(() -> new AdempiereException("No Shipping Notification found for " + id));
@@ -95,6 +122,19 @@ class ShippingNotificationLoaderAndSaver
 				.firstOnly(I_M_Shipping_Notification.class);
 	}
 
+	private Map<ShippingNotificationId, I_M_Shipping_Notification> getHeaderRecordsByIds(@NonNull final Set<ShippingNotificationId> ids)
+	{
+		return CollectionUtils.getAllOrLoadReturningMap(this.headersById, ids, this::retrieveHeaderRecordsByIds);
+	}
+
+	private Map<ShippingNotificationId, I_M_Shipping_Notification> retrieveHeaderRecordsByIds(@NonNull final Set<ShippingNotificationId> ids)
+	{
+		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
+				.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_M_Shipping_Notification_ID, ids)
+				.create()
+				.map(ShippingNotificationLoaderAndSaver::extractId);
+	}
+
 	public ArrayList<I_M_Shipping_NotificationLine> getLineRecords(@NonNull final ShippingNotificationId id)
 	{
 		return linesByHeaderId.computeIfAbsent(id, this::retrieveLineRecords);
@@ -102,17 +142,33 @@ class ShippingNotificationLoaderAndSaver
 
 	private ArrayList<I_M_Shipping_NotificationLine> retrieveLineRecords(final @NonNull ShippingNotificationId id)
 	{
-		return queryLinesByHeaderId(id)
+		return queryLinesByHeaderIds(ImmutableSet.of(id))
 				.create()
 				.stream()
 				.collect(Collectors.toCollection(ArrayList::new));
-
 	}
 
-	private IQueryBuilder<I_M_Shipping_NotificationLine> queryLinesByHeaderId(final @NonNull ShippingNotificationId id)
+	public Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> getLineRecords(@NonNull final Set<ShippingNotificationId> ids)
+	{
+		return CollectionUtils.getAllOrLoadReturningMap(linesByHeaderId, ids, this::retrieveLineRecords);
+	}
+
+	private Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> retrieveLineRecords(final @NonNull Set<ShippingNotificationId> ids)
+	{
+		final HashMap<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> result = new HashMap<>();
+		queryLinesByHeaderIds(ids)
+				.create()
+				.forEach(lineRecord -> {
+					final ShippingNotificationId shippingNotificationId = ShippingNotificationId.ofRepoId(lineRecord.getM_Shipping_Notification_ID());
+					result.computeIfAbsent(shippingNotificationId, id -> new ArrayList<>()).add(lineRecord);
+				});
+		return result;
+	}
+
+	private IQueryBuilder<I_M_Shipping_NotificationLine> queryLinesByHeaderIds(final @NonNull Set<ShippingNotificationId> ids)
 	{
 		return queryBL.createQueryBuilder(I_M_Shipping_NotificationLine.class)
-				.addInArrayFilter(I_M_Shipping_NotificationLine.COLUMNNAME_M_Shipping_Notification_ID, id);
+				.addInArrayFilter(I_M_Shipping_NotificationLine.COLUMNNAME_M_Shipping_Notification_ID, ids);
 	}
 
 	private static ShippingNotification fromRecord(
@@ -156,16 +212,14 @@ class ShippingNotificationLoaderAndSaver
 	public I_M_Shipping_Notification save(final ShippingNotification shippingNotification)
 	{
 		final I_M_Shipping_Notification shippingNotificationRecord = shippingNotification.getId() != null
-				? InterfaceWrapperHelper.load(shippingNotification.getId(), I_M_Shipping_Notification.class)
+				? getHeaderRecordById(shippingNotification.getId())
 				: InterfaceWrapperHelper.newInstance(I_M_Shipping_Notification.class);
 
 		updateRecord(shippingNotificationRecord, shippingNotification);
 		saveRecordIfAllowed(shippingNotificationRecord);
 		shippingNotification.markAsSaved(ShippingNotificationId.ofRepoId(shippingNotificationRecord.getM_Shipping_Notification_ID()));
 
-		final HashMap<ShippingNotificationLineId, I_M_Shipping_NotificationLine> existingLineRecordsById = queryBL.createQueryBuilder(I_M_Shipping_NotificationLine.class)
-				.addEqualsFilter(I_M_Shipping_NotificationLine.COLUMNNAME_M_Shipping_Notification_ID, shippingNotification.getId())
-				.create()
+		final HashMap<ShippingNotificationLineId, I_M_Shipping_NotificationLine> existingLineRecordsById = getLineRecords(shippingNotification.getId())
 				.stream()
 				.collect(GuavaCollectors.toHashMapByKey(lineRecord -> ShippingNotificationLineId.ofRepoId(lineRecord.getM_Shipping_NotificationLine_ID())));
 
@@ -251,6 +305,16 @@ class ShippingNotificationLoaderAndSaver
 		save(shippingNotification);
 	}
 
+	public void updateByQuery(@NonNull final ShippingNotificationQuery query, @NonNull final Consumer<ShippingNotification> consumer)
+	{
+		final ImmutableSet<ShippingNotificationId> shippingNotificationIds = toSqlQuery(query).create().listIds(ShippingNotificationId::ofRepoId);
+		getByIds(shippingNotificationIds)
+				.forEach(shippingNotification -> {
+					consumer.accept(shippingNotification);
+					save(shippingNotification);
+				});
+	}
+
 	public void updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
 			@NonNull final Consumer<ShippingNotification> consumer)
@@ -271,5 +335,27 @@ class ShippingNotificationLoaderAndSaver
 			addToCacheAndAvoidSaving(record);
 			updateById(id, consumer);
 		}
+	}
+
+	public IQueryBuilder<I_M_Shipping_Notification> toSqlQuery(final ShippingNotificationQuery query)
+	{
+		final IQueryBuilder<I_M_Shipping_Notification> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_Shipping_Notification.class);
+
+		if (query.getOnlyDocStatuses() != null && !query.getOnlyDocStatuses().isEmpty())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, query.getOnlyDocStatuses());
+		}
+
+		if (query.getOrderId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_M_Shipping_Notification.COLUMNNAME_C_Order_ID, query.getOrderId());
+		}
+
+		return sqlQueryBuilder;
+	}
+
+	public boolean anyMatch(@NonNull final ShippingNotificationQuery query)
+	{
+		return toSqlQuery(query).anyMatch();
 	}
 }

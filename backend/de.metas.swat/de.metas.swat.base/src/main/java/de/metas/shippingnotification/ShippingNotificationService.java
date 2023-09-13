@@ -153,13 +153,14 @@ public class ShippingNotificationService
 
 	public void reverseIfExistsShippingNotifications(@NonNull final OrderId orderId)
 	{
-		shippingNotificationRepository.getByOrderId(orderId)
-				.forEach(this::reverseItNoSave);
+		shippingNotificationRepository.updateByQuery(
+				ShippingNotificationQuery.completedOrClosedByOrderId(orderId),
+				this::reverseItNoSave);
 	}
 
 	public boolean hasCompletedOrClosedShippingNotifications(@NonNull final OrderId orderId)
 	{
-		return shippingNotificationRepository.hasCompletedOrClosedShippingNotifications(orderId);
+		return shippingNotificationRepository.anyMatch(ShippingNotificationQuery.completedOrClosedByOrderId(orderId));
 	}
 
 }
