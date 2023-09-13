@@ -42,7 +42,7 @@ public class M_Shipping_Notification
 	private final IDocumentLocationBL documentLocationBL;
 	private final ShippingNotificationService shippingNotificationService;
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_ID,
 					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_Location_ID,

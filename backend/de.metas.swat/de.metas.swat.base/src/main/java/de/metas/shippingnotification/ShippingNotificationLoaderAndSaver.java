@@ -116,11 +116,11 @@ class ShippingNotificationLoaderAndSaver
 			@NonNull final List<I_M_Shipping_NotificationLine> lineRecords)
 	{
 		return ShippingNotification.builder()
-				.id(ShippingNotificationId.ofRepoId(record.getM_Shipping_Notification_ID()))
+				.id(ShippingNotificationId.ofRepoIdOrNull(record.getM_Shipping_Notification_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
-				.contactId(BPartnerContactId.ofRepoId(record.getC_BPartner_ID(), record.getAD_User_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getAD_User_ID()))
 				.auctionId(record.getC_Auction_ID())
 				.locatorId(LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
@@ -197,6 +197,7 @@ class ShippingNotificationLoaderAndSaver
 		record.setM_Locator_ID(from.getLocatorId().getRepoId());
 		record.setC_Order_ID(from.getOrderId().getRepoId());
 		record.setPhysicalClearanceDate(Timestamp.from(from.getPhysicalClearanceDate()));
+		record.setDateAcct(Timestamp.from(from.getPhysicalClearanceDate()));
 		record.setHarvesting_Year_ID(from.getHarvestringYearId().yearId().getRepoId());
 		record.setC_Harvesting_Calendar_ID(from.getHarvestringYearId().calendarId().getRepoId());
 		record.setPOReference(from.getPoReference());
