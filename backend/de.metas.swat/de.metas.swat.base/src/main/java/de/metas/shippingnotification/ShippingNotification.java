@@ -66,6 +66,7 @@ public class ShippingNotification
 	@NonNull private final DocStatus docStatus;
 	private boolean processed;
 	@Nullable @Setter private ShippingNotificationId reversalId;
+	@Nullable @Setter private String bpaddress;
 
 	private final ArrayList<ShippingNotificationLine> lines;
 
@@ -75,7 +76,7 @@ public class ShippingNotification
 			@NonNull final OrgId orgId,
 			@NonNull final DocTypeId docTypeId,
 			@NonNull final BPartnerLocationId bpartnerAndLocationId,
-			@NonNull final BPartnerContactId contactId,
+			@Nullable final BPartnerContactId contactId,
 			final int auctionId,
 			@NonNull final LocatorId locatorId,
 			@NonNull final OrderId orderId,
@@ -112,6 +113,11 @@ public class ShippingNotification
 		}
 
 		this.processed = true;
+	}
+
+	public void updateBPAddress(@NonNull final String bpaddress)
+	{
+		this.bpaddress = bpaddress;
 	}
 
 	void markAsSaved(@NonNull final ShippingNotificationId id)

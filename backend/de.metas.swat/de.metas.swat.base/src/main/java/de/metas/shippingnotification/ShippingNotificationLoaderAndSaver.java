@@ -184,7 +184,7 @@ class ShippingNotificationLoaderAndSaver
 		record.setC_DocType_ID(from.getDocTypeId().getRepoId());
 		record.setC_BPartner_ID(from.getBpartnerAndLocationId().getBpartnerId().getRepoId());
 		record.setC_BPartner_Location_ID(from.getBpartnerAndLocationId().getRepoId());
-		record.setAD_User_ID(from.getContactId().getRepoId());
+		record.setAD_User_ID(from.getContactId() != null ? from.getContactId().getRepoId() : -1);
 		record.setC_Auction_ID(from.getAuctionId());
 		record.setM_Warehouse_ID(from.getLocatorId().getWarehouseId().getRepoId());
 		record.setM_Locator_ID(from.getLocatorId().getRepoId());
@@ -196,6 +196,7 @@ class ShippingNotificationLoaderAndSaver
 		record.setDescription(from.getDescription());
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.isProcessed());
+		record.setBPartnerAddress(from.getBpaddress());
 	}
 
 	private static void updateRecord(
@@ -216,7 +217,7 @@ class ShippingNotificationLoaderAndSaver
 	private void saveRecordIfAllowed(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
 	{
 		if (headerIdsToAvoidSaving.contains(extractId(shippingNotificationRecord)))
-		{
+		n{
 			return;
 		}
 		InterfaceWrapperHelper.saveRecord(shippingNotificationRecord);
