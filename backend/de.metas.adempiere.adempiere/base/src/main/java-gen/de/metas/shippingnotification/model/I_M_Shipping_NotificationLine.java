@@ -82,7 +82,7 @@ public interface I_M_Shipping_NotificationLine
 	 * Set Orderline.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_OrderLine_ID (int C_OrderLine_ID);
@@ -91,7 +91,7 @@ public interface I_M_Shipping_NotificationLine
 	 * Get Orderline.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_OrderLine_ID();
@@ -268,7 +268,7 @@ public interface I_M_Shipping_NotificationLine
 	 * Set Shipment Candidate.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
@@ -277,7 +277,7 @@ public interface I_M_Shipping_NotificationLine
 	 * Get Shipment Candidate.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_ShipmentSchedule_ID();
