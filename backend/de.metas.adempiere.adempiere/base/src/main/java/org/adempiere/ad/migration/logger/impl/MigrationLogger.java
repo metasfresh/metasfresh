@@ -67,6 +67,30 @@ import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
+import org.compiere.model.I_I_Asset;
+import org.compiere.model.I_I_BPartner;
+import org.compiere.model.I_I_BPartner_BlockStatus;
+import org.compiere.model.I_I_BPartner_GlobalID;
+import org.compiere.model.I_I_Campaign_Price;
+import org.compiere.model.I_I_Conversion_Rate;
+import org.compiere.model.I_I_DeliveryPlanning;
+import org.compiere.model.I_I_DeliveryPlanning_Data;
+import org.compiere.model.I_I_DiscountSchema;
+import org.compiere.model.I_I_ElementValue;
+import org.compiere.model.I_I_FAJournal;
+import org.compiere.model.I_I_GLJournal;
+import org.compiere.model.I_I_InOutLineConfirm;
+import org.compiere.model.I_I_Inventory;
+import org.compiere.model.I_I_Invoice;
+import org.compiere.model.I_I_Order;
+import org.compiere.model.I_I_Payment;
+import org.compiere.model.I_I_Postal;
+import org.compiere.model.I_I_PriceList;
+import org.compiere.model.I_I_Product;
+import org.compiere.model.I_I_Replenish;
+import org.compiere.model.I_I_ReportLine;
+import org.compiere.model.I_I_Request;
+import org.compiere.model.I_I_User;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -162,6 +186,33 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_MIGRATION",
 				"AD_MIGRATIONSTEP",
 				"AD_MIGRATIONDATA",
+
+				// Don't log import tables
+				I_I_Asset.Table_Name.toUpperCase(),
+				I_I_BPartner.Table_Name.toUpperCase(),
+				I_I_BPartner_BlockStatus.Table_Name.toUpperCase(),
+				I_I_BPartner_GlobalID.Table_Name.toUpperCase(),
+				I_I_Campaign_Price.Table_Name.toUpperCase(),
+				I_I_Conversion_Rate.Table_Name.toUpperCase(),
+				I_I_DataEntry_Record.Table_Name.toUpperCase(),
+				I_I_DeliveryPlanning.Table_Name.toUpperCase(),
+				I_I_DeliveryPlanning_Data.Table_Name.toUpperCase(),
+				I_I_DiscountSchema.Table_Name.toUpperCase(),
+				I_I_ElementValue.Table_Name.toUpperCase(),
+				I_I_FAJournal.Table_Name.toUpperCase(),
+				I_I_GLJournal.Table_Name.toUpperCase(),
+				I_I_InOutLineConfirm.Table_Name.toUpperCase(),
+				I_I_Inventory.Table_Name.toUpperCase(),
+				I_I_Invoice.Table_Name.toUpperCase(),
+				I_I_Order.Table_Name.toUpperCase(),
+				I_I_Payment.Table_Name.toUpperCase(),
+				I_I_Postal.Table_Name.toUpperCase(),
+				I_I_PriceList.Table_Name.toUpperCase(),
+				I_I_Product.Table_Name.toUpperCase(),
+				I_I_Replenish.Table_Name.toUpperCase(),
+				I_I_ReportLine.Table_Name.toUpperCase(),
+				I_I_Request.Table_Name.toUpperCase(),
+				I_I_User.Table_Name.toUpperCase(),
 
 				// Don't log AD_Sequence because these will be created automatically (at least for Table_ID)
 				// NOTE: while this is applying for XML migrations, we need this to be logged in SQL migrations
