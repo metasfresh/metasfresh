@@ -3813,3 +3813,46 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-13 17:3
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Die Bestellung wurde von Lieferavis abgeschlossen.',Updated=TO_TIMESTAMP('2023-09-13 17:35:20.035','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545335
 ;
 
+-----
+
+
+-- Field: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> Auftrag
+-- Column: M_Shipping_Notification.C_Order_ID
+-- 2023-09-13T14:49:51.988241800Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587460,720483,0,547218,0,TO_TIMESTAMP('2023-09-13 17:49:51.776','YYYY-MM-DD HH24:MI:SS.US'),100,'Auftrag',0,'de.metas.shippingnotification','The Order is a control document.  The  Order is complete when the quantity ordered is the same as the quantity shipped and invoiced.  When you cloase an order, unshipped (backordered) quantities are cancelled.',0,'Y','Y','Y','N','N','N','N','N','N','Auftrag',0,100,0,1,1,TO_TIMESTAMP('2023-09-13 17:49:51.776','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-09-13T14:49:51.993433700Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=720483 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2023-09-13T14:49:51.995508700Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(558) 
+;
+
+-- 2023-09-13T14:49:52.017759200Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=720483
+;
+
+-- 2023-09-13T14:49:52.020063Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(720483)
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Auftrag
+-- Column: M_Shipping_Notification.C_Order_ID
+-- 2023-09-13T14:50:04.166469700Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,720483,0,547218,551131,620473,'F',TO_TIMESTAMP('2023-09-13 17:50:04.02','YYYY-MM-DD HH24:MI:SS.US'),100,'Auftrag','The Order is a control document.  The  Order is complete when the quantity ordered is the same as the quantity shipped and invoiced.  When you cloase an order, unshipped (backordered) quantities are cancelled.','Y','N','N','N','N','N','N',0,'Auftrag',70,0,0,TO_TIMESTAMP('2023-09-13 17:50:04.02','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 10 -> default.Auftrag
+-- Column: M_Shipping_Notification.C_Order_ID
+-- 2023-09-13T14:50:15.008818200Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2023-09-13 17:50:15.008','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620473
+;
+
+-- UI Element: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification(547218,de.metas.shippingnotification) -> main -> 20 -> org.Organisation
+-- Column: M_Shipping_Notification.AD_Org_ID
+-- 2023-09-13T14:50:15.020535600Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2023-09-13 17:50:15.02','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620445
+;
+
