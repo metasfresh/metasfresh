@@ -6,6 +6,10 @@ services:
     image: ${mfregistry:-metasfresh}/metas-db:$mfversion-preloaded
     ports:
       - "15432:5432"
+    environment:      
+      # run the database on the initial data
+      # so we can later commit it again to create postcucumber images without doubling the image size
+      - PGDATA=/var/lib/postgresql/initdata
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 5s
