@@ -100,7 +100,7 @@ public class M_HU_PI_Version_StepDef
 			piVersion.setIsCurrent(isCurrent);
 			piVersion.setIsActive(active);
 
-			final String huPackagingCodeIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_PI_Version.COLUMNNAME_M_HU_PackagingCode_ID);
+			final String huPackagingCodeIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_PI_Version.COLUMNNAME_M_HU_PackagingCode_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(huPackagingCodeIdentifier))
 			{
 				final int huPackagingCodeId = DataTableUtil.nullToken2Null(huPackagingCodeIdentifier) == null

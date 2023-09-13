@@ -823,14 +823,13 @@ public class MOrderLine extends X_C_OrderLine
 			setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		}
 		// Product
-		// else don't set the productprice here; it will be set via model-validators
-		// {
-		// 	// Set Price if Actual = 0
-		// 	if (getPriceList().signum() == 0)
-		// 	{
-		// 		setPrice();
-		// 	}
-		// }
+		{
+			// Set Price if Actual = 0
+			if (getPriceList().signum() == 0)
+			{
+				setPrice();
+			}
+		}
 
 		// metas: Not allowed to save without (Product or Charge) and qty > 0
 		if (getM_Product_ID() <= 0 && getC_Charge_ID() <= 0 && getQtyEntered().intValue() > 0)

@@ -192,6 +192,12 @@ public class C_OrderLine_StepDef
 				orderLine.setQtyEnteredTU(qtyEnteredTU);
 			}
 
+			final BigDecimal qtyItemCapacity = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_QtyItemCapacity);
+			if (qtyItemCapacity != null)
+			{
+				orderLine.setQtyItemCapacity(qtyItemCapacity);
+			}
+
 			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(warehouseIdentifier))
 			{
@@ -212,10 +218,6 @@ public class C_OrderLine_StepDef
 				assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
 				orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
 			}
-
-			// We need to call this to make sure that C_OrderLine.QtyItemCapacity is set.
-			// We call with changedColumnName = null because we get the changed values from the object.
-			huOrderBL.updateOrderLine(orderLine, null);
 
 			saveRecord(orderLine);
 
