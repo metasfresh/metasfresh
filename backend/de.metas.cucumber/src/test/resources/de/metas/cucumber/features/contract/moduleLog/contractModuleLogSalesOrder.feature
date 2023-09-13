@@ -108,7 +108,7 @@ Feature: Modular contract log from sales order
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract             | modCntr_type_SO_for_PO         | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract             | modCntr_type_SO_for_PO         | false         | SalesOrder                   | year_2023                         | false       |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus |
       | soLine_1             | C_OrderLine | SP               |
       | soLine_2             | C_OrderLine | SP               |
@@ -116,14 +116,14 @@ Feature: Modular contract log from sales order
     And recompute modular logs for record:
       | TableName | Record_ID.Identifier |
       | C_Order   | so_order             |
+    And after not more than 30s, validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
+      | soLine_1             | C_OrderLine | SP               | 2                   |
+      | soLine_2             | C_OrderLine | SP               | 2                   |
     Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_OrderLine | moduleLogContract             | modCntr_type_SO_for_PO         | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_2                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_OrderLine | moduleLogContract             | modCntr_type_SO_for_PO         | false         | SalesOrder                   | year_2023                         | false       |
-    And validate ModCntr_Log_Statuses:
-      | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
-      | soLine_1             | C_OrderLine | SP               | 2                   |
-      | soLine_2             | C_OrderLine | SP               | 2                   |
 
   @Id:S0298_200
   @from:cucumber
@@ -195,7 +195,7 @@ Feature: Modular contract log from sales order
       | soLog_3                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | -10 | C_OrderLine | moduleLogContract             | modCntr_type_SO_for_PO         | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_4                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_200 | bp_moduleLogPO                      | bp_moduleLogPO                  | -5  | C_OrderLine | moduleLogContract             | modCntr_type_SO_for_PO         | false         | SalesOrder                   | year_2023                         | false       |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
       | soLine_1             | C_OrderLine | SP               | 2                   |
       | soLine_2             | C_OrderLine | SP               | 2                   |
@@ -203,14 +203,14 @@ Feature: Modular contract log from sales order
     And recompute modular logs for record:
       | TableName | Record_ID.Identifier |
       | C_Order   | so_order             |
+    And after not more than 30s, validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
+      | soLine_1             | C_OrderLine | SP               | 3                   |
+      | soLine_1             | C_OrderLine | SP               | 3                   |
     Then after not more than 30s, no ModCntr_Logs are found:
       | Record_ID.Identifier | TableName   |
       | soLine_1             | C_OrderLine |
       | soLine_2             | C_OrderLine |
-    And validate ModCntr_Log_Statuses:
-      | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
-      | soLine_1             | C_OrderLine | SP               | 3                   |
-      | soLine_1             | C_OrderLine | SP               | 3                   |
 
 
   @Id:S0298_300
@@ -311,7 +311,7 @@ Feature: Modular contract log from sales order
       | soLog_5                   | soLine_1             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 12  | C_OrderLine | moduleLogContract             | modCntr_type_SO_for_PO         | false         | SalesOrder                   | year_2023                         | false       |
       | soLog_6                   | soLine_2             | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_300 | bp_moduleLogPO                      | bp_moduleLogPO                  | 7   | C_OrderLine | moduleLogContract             | modCntr_type_SO_for_PO         | false         | SalesOrder                   | year_2023                         | false       |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
       | soLine_1             | C_OrderLine | SP               | 3                   |
       | soLine_2             | C_OrderLine | SP               | 3                   |
@@ -393,12 +393,12 @@ Feature: Modular contract log from sales order
     And recompute modular logs for record:
       | TableName       | Record_ID.Identifier |
       | C_Flatrate_Term | moduleLogContract    |
+    And after not more than 30s, validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
+      | moduleLogContract    | C_Flatrate_Term | SP               | 2                   |
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | soLog_1                   | moduleLogContract    | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogSO                      | bp_moduleLogSO                  | 10  | C_Flatrate_Term | moduleLogContract             | modCntr_type_MC                | false         | SalesModularContract         | year_2023                         | true        |
-    And validate ModCntr_Log_Statuses:
-      | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
-      | moduleLogContract    | C_Flatrate_Term | SP               | 2                   |
 
 
   @Id:S0298_600

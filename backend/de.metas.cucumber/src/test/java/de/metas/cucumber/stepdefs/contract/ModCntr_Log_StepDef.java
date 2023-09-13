@@ -328,6 +328,9 @@ public class ModCntr_Log_StepDef
 			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
 			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
 			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
+			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
+			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
+			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);

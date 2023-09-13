@@ -96,7 +96,7 @@ Feature: Modular contract log from purchase order
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
       | poLog_1                   | moduleLogContract_1  | ModularContract | cp_bp                                      | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_MC                | false         | PurchaseModularContract      |                            | PCE                   |            | year                              |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName       | ProcessingStatus |
       | po_orderLine         | C_OrderLine     | SP               |
       | moduleLogContract_1  | C_Flatrate_Term | SP               |
@@ -111,14 +111,14 @@ Feature: Modular contract log from purchase order
       | TableName       | Record_ID.Identifier |
       | C_Order         | po_order             |
       | C_Flatrate_Term | moduleLogContract_1  |
+    And after not more than 30s, validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
+      | po_orderLine         | C_OrderLine     | SP               | 2                   |
+      | moduleLogContract_1  | C_Flatrate_Term | SP               | 2                   |
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
       | poLog_1                   | moduleLogContract_1  | ModularContract | cp_bp                                      | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_MC                | false         | PurchaseModularContract      |                            | PCE                   |            | year                              |
-    And validate ModCntr_Log_Statuses:
-      | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
-      | po_orderLine         | C_OrderLine     | SP               | 2                   |
-      | moduleLogContract_1  | C_Flatrate_Term | SP               | 2                   |
 
 
   @Id:S0282_200
@@ -176,7 +176,7 @@ Feature: Modular contract log from purchase order
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus |
       | po_orderLine         | C_OrderLine | SP               |
 
@@ -198,7 +198,7 @@ Feature: Modular contract log from purchase order
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000  | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
       | log_2                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | -1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | -2000      | year                              |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
       | po_orderLine         | C_OrderLine | SP               | 2                   |
 
@@ -207,12 +207,12 @@ Feature: Modular contract log from purchase order
     And recompute modular logs for record:
       | TableName | Record_ID.Identifier |
       | C_Order   | po_order             |
+    And after not more than 30s, validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
+      | po_orderLine         | C_OrderLine | SP               | 3                   |
     Then after not more than 30s, no ModCntr_Logs are found:
       | Record_ID.Identifier | TableName   |
       | po_orderLine         | C_OrderLine |
-    And validate ModCntr_Log_Statuses:
-      | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
-      | po_orderLine         | C_OrderLine | SP               | 3                   |
 
 
   @Id:S0282_300
@@ -268,7 +268,7 @@ Feature: Modular contract log from purchase order
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
       | log_1                     | po_orderLine         | ModularContract | bp_moduleLogPO                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogPO                      | bp_moduleLogPO                  | 1000 | C_OrderLine | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year                              |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus |
       | po_orderLine         | C_OrderLine | SP               |
 
@@ -426,7 +426,7 @@ Feature: Modular contract log from purchase order
       | log_5                     | shipmentLine_1       | ModularContract | bp_moduleLogMR                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogMR                      | bp_moduleLogMR                  | -1000 | M_InOutLine | moduleLogContract_1           | modCntr_type_2                 | false         | MaterialReceipt              |                            | PCE                   |            | year                              |
       | log_6                     | shipmentLine_1       | ModularContract | bp_moduleLogMR                             | warehouseStd                  | module_log_product_PO   | bp_moduleLogMR                      | bp_moduleLogMR                  | -1000 | M_InOutLine | moduleLogContract_1           | modCntr_type_2                 | false         | MaterialReceipt              |                            | PCE                   |            | year                              |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
       | po_orderLine_1       | C_OrderLine | SP               |                     |
       | po_orderLine_2       | C_OrderLine | SP               |                     |

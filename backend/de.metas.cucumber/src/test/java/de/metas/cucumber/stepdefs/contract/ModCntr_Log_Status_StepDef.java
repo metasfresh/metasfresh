@@ -27,7 +27,9 @@ import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Log_Status;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.ScenarioLifeCycleStepDef;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
@@ -71,20 +73,31 @@ public class ModCntr_Log_Status_StepDef
 	private final PP_Cost_Collector_StepDefData costCollectorTable;
 	private final ScenarioLifeCycleStepDef scenarioLifeCycleStepDef;
 
-	@And("validate ModCntr_Log_Statuses:")
-	public void validateModCntr_Log_Statuses(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s, validate ModCntr_Log_Statuses:$")
+	public void validateModCntr_Log_Statuses(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			final List<I_ModCntr_Log_Status> modCntrLogStatuses = fetchModCntrLogStatusList(row);
 
-			final Integer noOfLogStatuses = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.noOfLogStatuses"))
-					.orElse(1);
+			final ItemProvider<List<I_ModCntr_Log_Status>> locateStatuses = () -> {
+				final List<I_ModCntr_Log_Status> modCntrLogStatuses = fetchModCntrLogStatusList(row);
 
-			assertThat(modCntrLogStatuses.size())
-					.withFailMessage(() -> buildMessageWitAllLogStatuses(row))
-					.isEqualTo(noOfLogStatuses);
+				final Integer noOfLogStatuses = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.noOfLogStatuses"))
+						.orElse(1);
+
+				if (modCntrLogStatuses.size() == noOfLogStatuses)
+				{
+					return ItemProvider.ProviderResult.resultWasFound(modCntrLogStatuses);
+				}
+
+				return ItemProvider.ProviderResult.resultWasNotFound(buildMessageWitAllLogStatuses(row));
+			};
+
+			StepDefUtil.tryAndWaitForItem(timeoutSec,
+										  500,
+										  locateStatuses,
+										  () -> buildMessageWitAllLogStatuses(row));
 		}
 	}
 
