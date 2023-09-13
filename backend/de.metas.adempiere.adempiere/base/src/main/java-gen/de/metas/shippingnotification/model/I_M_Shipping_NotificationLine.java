@@ -52,10 +52,37 @@ public interface I_M_Shipping_NotificationLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Orderline.
+	 * Set Sales order.
+	 * Order
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_M_Shipping_NotificationLine, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_Shipping_NotificationLine.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set Orderline.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_OrderLine_ID (int C_OrderLine_ID);
@@ -64,14 +91,14 @@ public interface I_M_Shipping_NotificationLine
 	 * Get Orderline.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_OrderLine_ID();
 
-	org.compiere.model.I_C_OrderLine getC_OrderLine();
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine();
 
-	void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
+	void setC_OrderLine(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine);
 
 	ModelColumn<I_M_Shipping_NotificationLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_Shipping_NotificationLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
@@ -241,7 +268,7 @@ public interface I_M_Shipping_NotificationLine
 	 * Set Shipment Candidate.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
@@ -250,7 +277,7 @@ public interface I_M_Shipping_NotificationLine
 	 * Get Shipment Candidate.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_ShipmentSchedule_ID();
@@ -349,9 +376,4 @@ public interface I_M_Shipping_NotificationLine
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	// TODO
-	default void setC_Order_ID (int id){}
-	default int getC_Order_ID (){ return -1;}
-
 }

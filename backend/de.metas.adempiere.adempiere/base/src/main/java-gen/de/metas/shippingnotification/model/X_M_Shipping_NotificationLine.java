@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipping_NotificationLine extends org.compiere.model.PO implements I_M_Shipping_NotificationLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1351481387L;
+	private static final long serialVersionUID = -698240775L;
 
     /** Standard Constructor */
     public X_M_Shipping_NotificationLine (final Properties ctx, final int M_Shipping_NotificationLine_ID, @Nullable final String trxName)
@@ -33,6 +33,33 @@ public class X_M_Shipping_NotificationLine extends org.compiere.model.PO impleme
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	@Override
+	public void setC_Order_ID (final int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
+	}
+
+	@Override
+	public int getC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
 
 	@Override
@@ -175,9 +202,9 @@ public class X_M_Shipping_NotificationLine extends org.compiere.model.PO impleme
 	public void setM_Shipping_Notification_ID (final int M_Shipping_Notification_ID)
 	{
 		if (M_Shipping_Notification_ID < 1) 
-			set_Value (COLUMNNAME_M_Shipping_Notification_ID, null);
+			set_ValueNoCheck (COLUMNNAME_M_Shipping_Notification_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Shipping_Notification_ID, M_Shipping_Notification_ID);
+			set_ValueNoCheck (COLUMNNAME_M_Shipping_Notification_ID, M_Shipping_Notification_ID);
 	}
 
 	@Override
