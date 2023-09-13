@@ -5,7 +5,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Ini;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
@@ -109,6 +108,16 @@ public class MigrationScriptFileLoggerHolder
 	public static void closeMigrationScriptFiles()
 	{
 		pgMigrationScriptWriter.close();
+	}
+
+	public static void setMigrationScriptDirectory(@NonNull final Path path)
+	{
+		MigrationScriptFileLogger.setMigrationScriptDirectory(path);
+	}
+
+	public static Path getMigrationScriptDirectory()
+	{
+		return MigrationScriptFileLogger.getMigrationScriptDirectory();
 	}
 
 	private static boolean dontLog(@NonNull final String statement)

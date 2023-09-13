@@ -27,11 +27,9 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -76,7 +74,7 @@ public abstract class MigrationScriptRestControllerTemplate
 		try
 		{
 			final Path migrationScriptsDirectory = Files.createTempDirectory(tempDirectoryPrefix + "_migration_scripts_" + LocalDate.now() + "_");
-			MigrationScriptFileLogger.setMigrationScriptDirectory(migrationScriptsDirectory);
+			MigrationScriptFileLoggerHolder.setMigrationScriptDirectory(migrationScriptsDirectory);
 		}
 		catch (final IOException ex)
 		{
@@ -161,7 +159,7 @@ public abstract class MigrationScriptRestControllerTemplate
 
 	private Path getMigrationScriptsDirectoryPath()
 	{
-		return MigrationScriptFileLogger.getMigrationScriptDirectory();
+		return MigrationScriptFileLoggerHolder.getMigrationScriptDirectory();
 	}
 
 	@GetMapping("/enableIt")

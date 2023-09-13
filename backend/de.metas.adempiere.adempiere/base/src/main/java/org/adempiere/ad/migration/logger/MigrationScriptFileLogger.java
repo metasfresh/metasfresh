@@ -50,7 +50,7 @@ import java.time.format.DateTimeFormatter;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class MigrationScriptFileLogger
+class MigrationScriptFileLogger
 {
 	public static MigrationScriptFileLogger of(final String dbType)
 	{

@@ -25,7 +25,6 @@ import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PLAFEditorPanel;
@@ -225,7 +224,7 @@ public final class Preference extends CDialog
 		adempiereSys.setText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", true));
 		adempiereSys.setToolTipText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", false));
 		logMigrationScript.setText(msgBL.getMsg(Env.getCtx(), "LogMigrationScript", true));
-		logMigrationScript.setToolTipText(MigrationScriptFileLogger.getMigrationScriptDirectory().toString());
+		logMigrationScript.setToolTipText(MigrationScriptFileLoggerHolder.getMigrationScriptDirectory().toString());
 		printPreview.setText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", true));
 		printPreview.setToolTipText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", false));
 		validateConnectionOnStartup.setText(msgBL.getMsg(Env.getCtx(), "ValidateConnectionOnStartup", true));
