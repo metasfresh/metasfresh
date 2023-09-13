@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Auction extends org.compiere.model.PO implements I_C_Auction, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 980561213L;
+	private static final long serialVersionUID = 164921611L;
 
     /** Standard Constructor */
     public X_C_Auction (final Properties ctx, final int C_Auction_ID, @Nullable final String trxName)
@@ -125,17 +125,5 @@ public class X_C_Auction extends org.compiere.model.PO implements I_C_Auction, o
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
-	}
-
-	@Override
-	public void setValue (final java.lang.String Value)
-	{
-		set_ValueNoCheck (COLUMNNAME_Value, Value);
-	}
-
-	@Override
-	public java.lang.String getValue() 
-	{
-		return get_ValueAsString(COLUMNNAME_Value);
 	}
 }

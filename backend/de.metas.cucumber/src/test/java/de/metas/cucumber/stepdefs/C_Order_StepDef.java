@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.auction.C_Auction_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
@@ -50,6 +51,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
@@ -71,6 +73,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Auction;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
@@ -102,7 +105,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -147,6 +150,7 @@ public class C_Order_StepDef
 	private final M_InOut_StepDefData inoutTable;
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
+	private final C_Auction_StepDefData auctionStepDefData;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -161,7 +165,8 @@ public class C_Order_StepDef
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
 			@NonNull final M_InOut_StepDefData inoutTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
-			@NonNull final C_Year_StepDefData yearTable)
+			@NonNull final C_Year_StepDefData yearTable,
+			@NonNull final C_Auction_StepDefData auctionStepDefData)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
@@ -176,6 +181,7 @@ public class C_Order_StepDef
 		this.inoutTable = inoutTable;
 		this.calendarTable = calendarTable;
 		this.yearTable = yearTable;
+		this.auctionStepDefData = auctionStepDefData;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -899,6 +905,12 @@ public class C_Order_StepDef
 			softly.assertThat(order.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 		}
 
+		final String auctionIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_C_Auction_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(sectionCodeIdentifier))
+		{
+			final I_C_Auction auction = auctionStepDefData.get(auctionIdentifier);
+			softly.assertThat(order.getC_Auction_ID()).isEqualTo(auction.getC_Auction_ID());
+		}
 		softly.assertAll();
 	}
 

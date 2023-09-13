@@ -236,27 +236,4 @@ public interface I_C_Auction
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Search Key.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setValue (java.lang.String Value);
-
-	/**
-	 * Get Search Key.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getValue();
-
-	ModelColumn<I_C_Auction, Object> COLUMN_Value = new ModelColumn<>(I_C_Auction.class, "Value", null);
-	String COLUMNNAME_Value = "Value";
 }
