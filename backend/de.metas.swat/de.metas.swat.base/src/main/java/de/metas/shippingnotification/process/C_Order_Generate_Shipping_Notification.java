@@ -43,7 +43,7 @@ import java.sql.Timestamp;
 public class C_Order_Generate_Shipping_Notification extends JavaProcess implements IProcessPrecondition
 {
 
-	public static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
+	private static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
 	private static final String PARAM_PhysicalClearanceDate = "PhysicalClearanceDate";
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ShippingNotificationService shippingNotificationService = SpringContextHolder.instance.getBean(ShippingNotificationService.class);

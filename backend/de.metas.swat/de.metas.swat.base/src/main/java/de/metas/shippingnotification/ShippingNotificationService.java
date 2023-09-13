@@ -154,4 +154,9 @@ public class ShippingNotificationService
 				.forEach(this::reverseItNoSave);
 	}
 
+	public boolean hasCompletedOrClosedShippingNotifications(@NonNull final OrderId orderId)
+	{
+		return shippingNotificationRepository.hasCompletedOrClosedShippingNotifications(orderId);
+	}
+
 }

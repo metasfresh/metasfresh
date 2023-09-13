@@ -90,4 +90,14 @@ public class ShippingNotificationRepository
 				.collect(Collectors.toList())
 				;
 	}
+
+	public boolean hasCompletedOrClosedShippingNotifications(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
+				.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, X_M_Shipping_Notification.DOCSTATUS_Completed, X_M_Shipping_Notification.DOCSTATUS_Closed)
+				.addEqualsFilter(I_M_Shipping_Notification.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.anyMatch()
+				;
+	}
 }
