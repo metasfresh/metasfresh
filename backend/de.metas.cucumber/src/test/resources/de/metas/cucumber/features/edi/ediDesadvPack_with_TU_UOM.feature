@@ -249,7 +249,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference         | OPT.C_PaymentTerm_ID | deliveryRule |
       | o_1_S0317_020 | true    | endcustomer_1_S0317_020  | 2021-04-17  | po_ref_mock_S0317_020_2 | 1000012              | F            |
 
-    # Setting UOM=COLI; since the M_HU_PI_Item_Product_ID has a capacity of 10, we'll expect 40CUs to be shipped
+    # Setting UOM=COLI; since the M_HU_PI_Item_Product_ID has a capacity of 10, we'll expect 100CUs to be shipped
     # Note that both UOM and QtyItemCapacity can'T be set in the UOM. They are both coming from C_OLCand, where the QtyItemCapacity may be taken from M_HU_PI_Item_Product_ID
     # It's not ideal that we need to set it explicitly here, but otherwise we run into different problems with model-interceptors and MOrderLine.beforeSafe().
     And metasfresh contains C_OrderLines:
