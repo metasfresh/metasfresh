@@ -823,6 +823,7 @@ public class MOrderLine extends X_C_OrderLine
 			setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		}
 		// Product
+		else
 		{
 			// Set Price if Actual = 0
 			if (getPriceList().signum() == 0)
