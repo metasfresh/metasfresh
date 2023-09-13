@@ -3688,5 +3688,13 @@ INSERT INTO t_alter_column values('m_shipping_notification','M_Locator_ID','NUME
 ;
 
 
-update c_doctype set docbasetype='SN' where c_doctype_id=541109;
+-- Reference: C_DocType DocBaseType
+-- Value: SHN
+-- ValueName: Shipping notification
+-- 2023-09-13T12:10:29.148660900Z
+UPDATE AD_Ref_List SET Value='SHN',Updated=TO_TIMESTAMP('2023-09-13 15:10:29.148','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Ref_List_ID=543548
+;
+
+
+update c_doctype set docbasetype='SHN' where c_doctype_id=541109;
 

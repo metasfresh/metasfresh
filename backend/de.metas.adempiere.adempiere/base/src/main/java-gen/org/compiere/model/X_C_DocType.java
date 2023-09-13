@@ -305,7 +305,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	/** ModularOrder = MMO */
 	public static final String DOCBASETYPE_ModularOrder = "MMO";
 	/** Shipping notification = SN */
-	public static final String DOCBASETYPE_ShippingNotification = "SN";
+	public static final String DOCBASETYPE_ShippingNotification = "SHN";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
