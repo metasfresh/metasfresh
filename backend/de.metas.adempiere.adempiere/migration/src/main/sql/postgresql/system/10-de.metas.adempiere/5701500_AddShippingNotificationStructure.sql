@@ -3701,7 +3701,7 @@ update c_doctype set docbasetype='SHN' where c_doctype_id=541109;
 ----------
 
 
-umn: M_Shipping_Notification.C_Order_ID
+-- column: M_Shipping_Notification.C_Order_ID
 -- 2023-09-13T13:32:20.915149700Z
 UPDATE AD_Column SET IsGenericZoomKeyColumn='Y', IsGenericZoomOrigin='Y',Updated=TO_TIMESTAMP('2023-09-13 16:32:20.914','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587460
 ;
