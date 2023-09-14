@@ -3856,3 +3856,17 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2023-09-13 17:50:15.02','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=620445
 ;
 
+
+-- Column: M_Shipping_Notification.BPartnerAddress
+-- 2023-09-14T05:53:52.375084800Z
+UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-09-14 08:53:52.374','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587388
+;
+
+-- 2023-09-14T05:53:53.616420800Z
+INSERT INTO t_alter_column values('m_shipping_notification','BPartnerAddress','TEXT',null,null)
+;
+
+-- 2023-09-14T05:53:53.619272700Z
+INSERT INTO t_alter_column values('m_shipping_notification','BPartnerAddress',null,'NULL',null)
+;
+
