@@ -22,8 +22,6 @@
 
 package de.metas.shippingnotification;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -34,7 +32,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.impl.DocTypeService;
@@ -59,20 +57,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ShippingNotificationService
 {
+	private static final String REVERSE_INDICATOR = "^";
 	private final ShippingNotificationRepository shippingNotificationRepository;
 	private final DocTypeService docTypeService;
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-
-	private static final String REVERSE_INDICATOR = "^";
 
 	public void generateShippingNotificationAndPropagatePhysicalClearanceDate(
 			@NonNull final OrderId orderId,
 			@NonNull final Instant physicalClearanceDate)
 	{
-		final I_C_Order orderRecord = orderDAO.getById(orderId);
+		final I_C_Order orderRecord = orderBL.getById(orderId);
 		final OrgId orgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
 		final DocTypeId docTypeId = docTypeService.getDocTypeId(DocBaseType.ShippingNotification, null, orgId);
 
@@ -82,13 +79,13 @@ public class ShippingNotificationService
 		final ShippingNotification shippingNotification = ShippingNotification.builder()
 				.orgId(orgId)
 				.docTypeId(docTypeId)
-				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID()))
-				.contactId(BPartnerContactId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID(), orderRecord.getAD_User_ID()))
+				.bpartnerAndLocationId(orderBL.getShipToLocationId(orderRecord).getBpartnerLocationId())
+				.contactId(orderBL.getShipToContactId(orderRecord).orElse(null))
 				.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.auctionId(orderRecord.getC_Auction_ID())
 				.physicalClearanceDate(physicalClearanceDate)
 				.locatorId(LocatorId.ofRepoId(orderRecord.getM_Warehouse_ID(), orderRecord.getM_Locator_ID()))
-				.harvestringYearId(YearAndCalendarId.ofRepoId(orderRecord.getHarvesting_Year_ID(), orderRecord.getC_Harvesting_Calendar_ID()))
+				.harvestingYearId(YearAndCalendarId.ofRepoId(orderRecord.getHarvesting_Year_ID(), orderRecord.getC_Harvesting_Calendar_ID()))
 				.poReference(orderRecord.getPOReference())
 				.description(orderRecord.getDescription())
 				.docStatus(DocStatus.Drafted)
@@ -107,7 +104,7 @@ public class ShippingNotificationService
 		});
 
 		orderRecord.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
-		orderDAO.save(orderRecord);
+		orderBL.save(orderRecord);
 	}
 
 	public ShippingNotificationLine toShippingNotificationLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -142,13 +139,14 @@ public class ShippingNotificationService
 	public void reverseItNoSave(final ShippingNotification shippingNotification)
 	{
 		final I_M_Shipping_Notification reversalRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification.createReversal());
-		reversalRecord.setReversal_ID(shippingNotification.getId().getRepoId());
+		reversalRecord.setReversal_ID(shippingNotification.getIdNotNull().getRepoId());
 		reversalRecord.setDocumentNo(reversalRecord.getDocumentNo() + REVERSE_INDICATOR);
 		reversalRecord.setDocStatus(DocStatus.Reversed.getCode());
 		reversalRecord.setDocAction(IDocument.ACTION_None);
 		shippingNotificationRepository.saveRecord(reversalRecord);
 
 		shippingNotification.setReversalId(ShippingNotificationLoaderAndSaver.extractId(reversalRecord));
+		shippingNotification.setDocStatus(DocStatus.Reversed);
 	}
 
 	public void reverseIfExistsShippingNotifications(@NonNull final OrderId orderId)

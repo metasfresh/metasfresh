@@ -23,6 +23,7 @@
 package de.metas.shippingnotification;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -30,9 +31,11 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.exception.ShipmentNotificationException;
+import de.metas.util.Check;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -69,13 +72,14 @@ public class ShippingNotification
 	@NonNull
 	private final Instant physicalClearanceDate;
 	@NonNull
-	private final YearAndCalendarId harvestringYearId;
+	private final YearAndCalendarId harvestingYearId;
 	@Nullable
 	private final String poReference;
 	@Nullable
 	private final String description;
 	@NonNull
-	private final DocStatus docStatus;
+	@Setter
+	private DocStatus docStatus;
 	private final ArrayList<ShippingNotificationLine> lines;
 	@Nullable
 	private ShippingNotificationId id;
@@ -98,7 +102,7 @@ public class ShippingNotification
 			@NonNull final LocatorId locatorId,
 			@NonNull final OrderId orderId,
 			@NonNull final Instant physicalClearanceDate,
-			@NonNull final YearAndCalendarId harvestringYearId,
+			@NonNull final YearAndCalendarId harvestingYearId,
 			@Nullable final String poReference,
 			@Nullable final String description,
 			@NonNull final DocStatus docStatus,
@@ -114,7 +118,7 @@ public class ShippingNotification
 		this.locatorId = locatorId;
 		this.orderId = orderId;
 		this.physicalClearanceDate = physicalClearanceDate;
-		this.harvestringYearId = harvestringYearId;
+		this.harvestingYearId = harvestingYearId;
 		this.poReference = poReference;
 		this.description = description;
 		this.docStatus = docStatus;
@@ -123,6 +127,8 @@ public class ShippingNotification
 
 		renumberLines();
 	}
+
+	public ShippingNotificationId getIdNotNull() {return Check.assumeNotNull(id, "Shipment notification is expected to be saved at this point: {}", this);}
 
 	public BPartnerId getBPartnerId()
 	{
@@ -180,5 +186,12 @@ public class ShippingNotification
 		{
 			line.setLine(lineNoProvider.getAndIncrement());
 		}
+	}
+
+	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
+	{
+		return lines.stream()
+				.map(ShippingNotificationLine::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
