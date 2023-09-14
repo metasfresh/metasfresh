@@ -3875,3 +3875,45 @@ INSERT INTO t_alter_column values('m_shipping_notification','BPartnerAddress',nu
 UPDATE AD_Column SET IsCalculated='Y',Updated=TO_TIMESTAMP('2023-09-14 09:00:46.687','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587455
 ;
 
+
+-- Column: C_Order.PhysicalClearanceDate
+-- 2023-09-14T07:26:09.887182400Z
+UPDATE AD_Column SET IsUpdateable='N',Updated=TO_TIMESTAMP('2023-09-14 10:26:09.886','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587455
+;
+
+-- Tab: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification
+-- Table: M_Shipping_Notification
+-- 2023-09-14T07:27:41.142295400Z
+UPDATE AD_Tab SET IsReadOnly='N',Updated=TO_TIMESTAMP('2023-09-14 10:27:41.141','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547218
+;
+
+-- Tab: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification
+-- Table: M_Shipping_Notification
+-- 2023-09-14T07:27:43.124233800Z
+UPDATE AD_Tab SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-09-14 10:27:43.123','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547218
+;
+
+-- Tab: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification Line
+-- Table: M_Shipping_NotificationLine
+-- 2023-09-14T07:27:46.268934500Z
+UPDATE AD_Tab SET IsReadOnly='N',Updated=TO_TIMESTAMP('2023-09-14 10:27:46.268','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547219
+;
+
+-- Tab: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification Line
+-- Table: M_Shipping_NotificationLine
+-- 2023-09-14T07:27:48.723537400Z
+UPDATE AD_Tab SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-09-14 10:27:48.723','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547219
+;
+
+-- Tab: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification Line
+-- Table: M_Shipping_NotificationLine
+-- 2023-09-14T07:27:53.796201Z
+UPDATE AD_Tab SET IsGenericZoomTarget='Y',Updated=TO_TIMESTAMP('2023-09-14 10:27:53.795','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547219
+;
+
+-- Tab: Lieferavis(541734,de.metas.shippingnotification) -> Shipping Notification
+-- Table: M_Shipping_Notification
+-- 2023-09-14T07:27:57.300723Z
+UPDATE AD_Tab SET IsGenericZoomTarget='Y',Updated=TO_TIMESTAMP('2023-09-14 10:27:57.3','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547218
+;
+
