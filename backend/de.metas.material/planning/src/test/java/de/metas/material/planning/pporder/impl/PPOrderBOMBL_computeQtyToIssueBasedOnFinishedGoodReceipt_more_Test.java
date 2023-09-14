@@ -45,7 +45,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 {
 	private UOMTestHelper helper;
 
-	private final PPOrderBOMBL ppOrderBOMBL = new PPOrderBOMBL();
+	private PPOrderBOMBL ppOrderBOMBL;
 
 	//
 	// Master data
@@ -59,6 +59,8 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 		AdempiereTestHelper.get().init();
 
 		POJOWrapper.setDefaultStrictValues(false);
+
+		ppOrderBOMBL = new PPOrderBOMBL(); // need to init this *after* we entered unit test mode, because of the IService it uses.
 
 		// NOTE: after this, model validators will be also registered
 		helper = new UOMTestHelper(Env.getCtx());
