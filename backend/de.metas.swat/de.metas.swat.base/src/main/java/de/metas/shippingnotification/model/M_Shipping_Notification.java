@@ -68,7 +68,7 @@ public class M_Shipping_Notification
 		);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void afterVoid(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
 	{
 		final ShippingNotification shippingNotification = shippingNotificationRepository.getByRecord(shippingNotificationRecord);
