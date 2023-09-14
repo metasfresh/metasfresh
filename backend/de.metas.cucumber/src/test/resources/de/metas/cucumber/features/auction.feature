@@ -36,9 +36,9 @@ Feature: Auction
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName | OPT.Name     |
       | bpLocation_2 | 1234567890123 | customer_bp_40_02        | location_2                   | true         | true         | locationBPName   | locationName |
     And metasfresh contains C_Auction:
-      | Identifier | Name     |
-      | Auction_1  | Auction1 |
-      | Auction_2  | Auction1 |
+      | Identifier | Name     | Date       |
+      | Auction_1  | Auction1 | 2022-01-20 |
+      | Auction_2  | Auction1 | 2022-01-20 |
 
   Scenario: 2 OLCAnds are created with same C_Auction_ID, resulting in single Order->IC->Invoice. C_Auction_ID is pushed through all these entities.
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code

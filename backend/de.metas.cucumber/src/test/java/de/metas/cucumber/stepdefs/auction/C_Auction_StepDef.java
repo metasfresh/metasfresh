@@ -64,8 +64,8 @@ public class C_Auction_StepDef
 
 			Assertions.assertThat(auction).isNotNull();
 
-
 			auction.setName(name);
+			auction.setDate(DataTableUtil.extractDateTimestampForColumnName(row, I_C_Auction.COLUMNNAME_Date));
 
 			InterfaceWrapperHelper.saveRecord(auction);
 
