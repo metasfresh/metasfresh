@@ -34,7 +34,7 @@ Feature: Auction
       | location_2               | DE          | addr 22      | 456        | locationCity_2 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName | OPT.Name     |
-      | bpLocation_2 | 1234567890123 | customer_bp_40_02        | location_2                   | true         | true         | locationBPName   | locationName |
+      | bpLocation_2 | 1234567890142 | customer_bp_40_02        | location_2                   | true         | true         | locationBPName   | locationName |
     And metasfresh contains C_Auction:
       | Identifier | Name     | Date       |
       | Auction_1  | Auction1 | 2022-01-20 |
@@ -52,8 +52,8 @@ Feature: Auction
       "externalLineId": 142421,
       "dataSource": "int-Shopware",
       "bpartner": {
-          "bpartnerIdentifier": "gln-1234567890123",
-          "bpartnerLocationIdentifier": "gln-1234567890123"
+          "bpartnerIdentifier": "gln-1234567890142",
+          "bpartnerLocationIdentifier": "gln-1234567890142"
       },
       "dateRequired": "2022-02-10",
       "dateOrdered": "2022-02-02",
@@ -78,8 +78,8 @@ Feature: Auction
       "externalLineId": 142422,
       "dataSource": "int-Shopware",
       "bpartner": {
-          "bpartnerIdentifier": "gln-1234567890123",
-          "bpartnerLocationIdentifier": "gln-1234567890123"
+          "bpartnerIdentifier": "gln-1234567890142",
+          "bpartnerLocationIdentifier": "gln-1234567890142"
       },
       "dateRequired": "2022-02-10",
       "dateOrdered": "2022-02-02",
@@ -148,8 +148,8 @@ Feature: Auction
       "externalLineId": 142431,
       "dataSource": "int-Shopware",
       "bpartner": {
-          "bpartnerIdentifier": "gln-1234567890123",
-          "bpartnerLocationIdentifier": "gln-1234567890123"
+          "bpartnerIdentifier": "gln-1234567890142",
+          "bpartnerLocationIdentifier": "gln-1234567890142"
       },
       "dateRequired": "2022-02-10",
       "dateOrdered": "2022-02-02",
@@ -174,8 +174,8 @@ Feature: Auction
       "externalLineId": 142432,
       "dataSource": "int-Shopware",
       "bpartner": {
-          "bpartnerIdentifier": "gln-1234567890123",
-          "bpartnerLocationIdentifier": "gln-1234567890123"
+          "bpartnerIdentifier": "gln-1234567890142",
+          "bpartnerLocationIdentifier": "gln-1234567890142"
       },
       "dateRequired": "2022-02-10",
       "dateOrdered": "2022-02-02",
