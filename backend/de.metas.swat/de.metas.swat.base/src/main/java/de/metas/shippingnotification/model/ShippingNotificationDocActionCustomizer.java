@@ -4,13 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.document.engine.IDocument;
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.util.Services;
 import org.springframework.stereotype.Component;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /*
  * #%L
@@ -46,28 +40,17 @@ public class ShippingNotificationDocActionCustomizer implements IDocActionOption
 	@Override
 	public void customizeValidActions(final DocActionOptionsContext optionsCtx)
 	{
-		final Set<String> docActions = new LinkedHashSet<>();
+		optionsCtx.setDocActions(suggestDocActions(optionsCtx.getDocStatus()));
+	}
 
-		final String docStatus = optionsCtx.getDocStatus();
-		if (IDocument.STATUS_Drafted.equals(docStatus))
+	private static ImmutableSet<String> suggestDocActions(final String docStatus)
+	{
+		return switch (docStatus)
 		{
-			// remove the void option when Drafted
-			docActions.remove(IDocument.ACTION_Void);
-		}
-		// Complete .. CO
-		else if (IDocument.STATUS_Completed.equals(docStatus))
-		{
-			docActions.add(IDocument.ACTION_Reverse_Correct);
-		}
-		else if (IDocument.STATUS_Closed.equals(docStatus)
-				|| IDocument.STATUS_Reversed.equals(docStatus))
-		{
-			optionsCtx.setDocActions(ImmutableSet.of());
-			return;
-		}
-		//
-		// Correct options
-		optionsCtx.setDocActions(ImmutableSet.copyOf(docActions));
+			case IDocument.STATUS_Drafted -> ImmutableSet.of(IDocument.ACTION_Complete);
+			case IDocument.STATUS_Completed -> ImmutableSet.of(IDocument.ACTION_Reverse_Correct);
+			default -> ImmutableSet.of();
+		};
 	}
 
 }
