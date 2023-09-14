@@ -1,6 +1,7 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -35,8 +36,8 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
-import de.metas.quantity.Quantitys;
 import de.metas.project.ProjectId;
+import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
@@ -150,6 +151,7 @@ public class JsonConverters
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 
 		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
+		final AuctionId auctionId = masterdataProvider.getAuctionId(request);
 
 		final UomId uomId;
 		if (!Check.isBlank(request.getUomCode()))
@@ -262,6 +264,7 @@ public class JsonConverters
 				.email(request.getEmail())
 				.phone(request.getPhone())
 				.sectionCodeId(sectionCodeId)
+				.auctionId(auctionId)
 				;
 	}
 
@@ -391,6 +394,7 @@ public class JsonConverters
 				.description(olCand.unbox().getDescription())
 				.line(olCand.getLine())
 				.sectionCodeId(JsonMetasfreshId.ofOrNull(SectionCodeId.toRepoId(olCand.getSectionCodeId())))
+				.auctionId(JsonMetasfreshId.ofOrNull(AuctionId.toRepoId(olCand.getAuctionId())))
 				.build();
 	}
 

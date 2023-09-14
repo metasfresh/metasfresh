@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocTypeId;
@@ -185,6 +186,7 @@ public class InvoiceCandidate
 	private final boolean isInterimInvoice;
 	private final ILCandHandlerId handlerId;
 	private final boolean isManual;
+	private final AuctionId auctionId;
 
 	@Builder
 	private InvoiceCandidate(
@@ -223,7 +225,8 @@ public class InvoiceCandidate
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
 			final boolean isInterimInvoice,
 			@NonNull final ILCandHandlerId handlerId,
-			final boolean isManual)
+			final boolean isManual,
+			@Nullable final AuctionId auctionId)
 	{
 		this.orgId = orgId;
 		this.id = id;
@@ -261,6 +264,7 @@ public class InvoiceCandidate
 		this.isInterimInvoice = isInterimInvoice;
 		this.handlerId = handlerId;
 		this.isManual = isManual;
+		this.auctionId = auctionId;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(
