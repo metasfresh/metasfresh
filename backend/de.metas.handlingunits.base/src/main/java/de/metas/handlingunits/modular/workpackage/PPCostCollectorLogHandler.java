@@ -34,7 +34,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.PPOrderLogDetail;
+import de.metas.contracts.modular.log.LogSubEntryId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.handlingunits.modular.impl.PPCostCollectorModularContractHandler;
@@ -88,11 +88,11 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_PP_Cost_Collector> request)
 	{
 		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		{
+			case COMPLETED -> LogAction.CREATE;
+			case RECREATE_LOGS -> LogAction.RECOMPUTE;
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+		};
 	}
 
 	@Override
@@ -138,26 +138,24 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 		}
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(contractId)
-											.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
-											.productId(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()))
-											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
-											.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
-											.documentType(LogEntryDocumentType.PRODUCTION)
-											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.PURCHASE)
-											.quantity(modCntrLogQty)
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(ppCostCollector.getMovementDate(),
-																						   OrgId.ofRepoId(ppCostCollector.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
-											.year(modularContractSettings.getYearAndCalendarId().yearId())
-											.description(description)
-											.modularContractTypeId(createLogRequest.getTypeId())
-											.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID()))
-											.logDetail(PPOrderLogDetail.builder()
-															   .costCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID()))
-															   .build())
-											.build());
+				.contractId(contractId)
+				.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
+				.subEntryId(LogSubEntryId.ofCostCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID())))
+				.productId(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()))
+				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
+				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
+				.documentType(LogEntryDocumentType.PRODUCTION)
+				.contractType(LogEntryContractType.MODULAR_CONTRACT)
+				.soTrx(SOTrx.PURCHASE)
+				.quantity(modCntrLogQty)
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(ppCostCollector.getMovementDate(),
+						OrgId.ofRepoId(ppCostCollector.getAD_Org_ID()),
+						orgDAO::getTimeZone))
+				.year(modularContractSettings.getYearAndCalendarId().yearId())
+				.description(description)
+				.modularContractTypeId(createLogRequest.getTypeId())
+				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID()))
+				.build());
 	}
 
 	@Override
@@ -182,11 +180,9 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 
 		return LogEntryDeleteRequest.builder()
 				.referencedModel(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
+				.subEntryId(LogSubEntryId.ofCostCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID())))
 				.flatrateTermId(contractId)
 				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
-				.logDetail(PPOrderLogDetail.builder()
-								   .costCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID()))
-								   .build())
 				.build();
 	}
 }

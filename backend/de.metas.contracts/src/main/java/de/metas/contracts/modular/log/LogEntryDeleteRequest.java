@@ -32,8 +32,8 @@ import javax.annotation.Nullable;
 @Builder
 public record LogEntryDeleteRequest(
 		@NonNull TableRecordReference referencedModel,
+		@Nullable LogSubEntryId subEntryId,
 		@NonNull FlatrateTermId flatrateTermId,
-		@NonNull LogEntryContractType logEntryContractType,
-		@Nullable ILogDetail logDetail)
+		@NonNull LogEntryContractType logEntryContractType)
 {
 }

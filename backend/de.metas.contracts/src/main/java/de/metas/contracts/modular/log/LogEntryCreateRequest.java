@@ -37,6 +37,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
 
@@ -50,8 +51,8 @@ public class LogEntryCreateRequest
 	@Nullable
 	ProductId productId;
 
-	@NonNull
-	TableRecordReference referencedRecord;
+	@NonNull TableRecordReference referencedRecord;
+	@Nullable LogSubEntryId subEntryId;
 
 	@Nullable
 	BPartnerId collectionPointBPartnerId;
@@ -98,7 +99,4 @@ public class LogEntryCreateRequest
 
 	@Builder.Default
 	boolean isBillable = true;
-
-	@Nullable
-	ILogDetail logDetail;
 }
