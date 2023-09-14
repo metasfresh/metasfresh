@@ -237,7 +237,7 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocTypeShipment_ID = "C_DocTypeShipment_ID";
 
 	/**
-	 * Set Notification text for doc status "Complete".
+	 * Set Notification text for doc status "Completed".
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -246,7 +246,7 @@ public interface I_C_DocType
 	void setCompletedNotification_BoilerPlate_ID (int CompletedNotification_BoilerPlate_ID);
 
 	/**
-	 * Get Notification text for doc status "Complete".
+	 * Get Notification text for doc status "Completed".
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -914435328L;
+	private static final long serialVersionUID = -851997226L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -79,14 +79,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
 	{
-		if (C_DocTypeDifference_ID < 1)
+		if (C_DocTypeDifference_ID < 1) 
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
 	}
 
 	@Override
-	public int getC_DocTypeDifference_ID()
+	public int getC_DocTypeDifference_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
 	}
@@ -94,14 +94,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0)
+		if (C_DocType_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID()
+	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
@@ -109,14 +109,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocTypeInvoice_ID (final int C_DocTypeInvoice_ID)
 	{
-		if (C_DocTypeInvoice_ID < 1)
+		if (C_DocTypeInvoice_ID < 1) 
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, C_DocTypeInvoice_ID);
 	}
 
 	@Override
-	public int getC_DocTypeInvoice_ID()
+	public int getC_DocTypeInvoice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeInvoice_ID);
 	}
@@ -136,46 +136,16 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_Invoicing_Pool_ID (final int C_DocType_Invoicing_Pool_ID)
 	{
-		if (C_DocType_Invoicing_Pool_ID < 1)
+		if (C_DocType_Invoicing_Pool_ID < 1) 
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, C_DocType_Invoicing_Pool_ID);
 	}
 
 	@Override
-	public int getC_DocType_Invoicing_Pool_ID()
+	public int getC_DocType_Invoicing_Pool_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
-	}
-
-	@Override
-	public void setC_DocTypeDifference_ID (final int C_DocTypeDifference_ID)
-	{
-		if (C_DocTypeDifference_ID < 1)
-			set_Value (COLUMNNAME_C_DocTypeDifference_ID, null);
-		else
-			set_Value (COLUMNNAME_C_DocTypeDifference_ID, C_DocTypeDifference_ID);
-	}
-
-	@Override
-	public int getC_DocTypeDifference_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_DocTypeDifference_ID);
-	}
-
-	@Override
-	public void setC_DocTypeInvoice_ID (final int C_DocTypeInvoice_ID)
-	{
-		if (C_DocTypeInvoice_ID < 1) 
-			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_DocTypeInvoice_ID, C_DocTypeInvoice_ID);
-	}
-
-	@Override
-	public int getC_DocTypeInvoice_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_DocTypeInvoice_ID);
 	}
 
 	@Override
@@ -211,14 +181,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setCompletedNotification_BoilerPlate_ID (final int CompletedNotification_BoilerPlate_ID)
 	{
-		if (CompletedNotification_BoilerPlate_ID < 1)
+		if (CompletedNotification_BoilerPlate_ID < 1) 
 			set_Value (COLUMNNAME_CompletedNotification_BoilerPlate_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_CompletedNotification_BoilerPlate_ID, CompletedNotification_BoilerPlate_ID);
 	}
 
 	@Override
-	public int getCompletedNotification_BoilerPlate_ID()
+	public int getCompletedNotification_BoilerPlate_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_CompletedNotification_BoilerPlate_ID);
 	}
@@ -349,7 +319,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	/** ModularOrder = MMO */
 	public static final String DOCBASETYPE_ModularOrder = "MMO";
-	/** Shipping notification = SN */
+	/** Shipping notification = SHN */
 	public static final String DOCBASETYPE_ShippingNotification = "SHN";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
@@ -579,7 +549,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 0)
+		if (GL_Category_ID < 0) 
 			set_Value (COLUMNNAME_GL_Category_ID, null);
 		else 
 			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
@@ -682,7 +652,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public boolean isExcludeFromCommision()
+	public boolean isExcludeFromCommision() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromCommision);
 	}

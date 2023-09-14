@@ -402,6 +402,4 @@ public interface IInvoiceBL extends ISingletonService
 	Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId);
 
 	boolean hasInvoicesWithForexContracts(OrderId orderId, Set<ForexContractId> contractIds);
-
-	DocStatus getDocStatus(@NonNull InvoiceId invoiceId);
 }
