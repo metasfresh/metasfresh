@@ -35,6 +35,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.exception.ShipmentNotificationException;
+import de.metas.util.Check;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -126,6 +127,8 @@ public class ShippingNotification
 
 		renumberLines();
 	}
+
+	public ShippingNotificationId getIdNotNull() {return Check.assumeNotNull(id, "Shipment notification is expected to be saved at this point: {}", this);}
 
 	public BPartnerId getBPartnerId()
 	{

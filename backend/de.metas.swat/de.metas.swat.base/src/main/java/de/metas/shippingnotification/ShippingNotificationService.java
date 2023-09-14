@@ -22,8 +22,6 @@
 
 package de.metas.shippingnotification;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -34,7 +32,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.impl.DocTypeService;
@@ -63,7 +61,7 @@ public class ShippingNotificationService
 	private final ShippingNotificationRepository shippingNotificationRepository;
 	private final DocTypeService docTypeService;
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
@@ -71,7 +69,7 @@ public class ShippingNotificationService
 			@NonNull final OrderId orderId,
 			@NonNull final Instant physicalClearanceDate)
 	{
-		final I_C_Order orderRecord = orderDAO.getById(orderId);
+		final I_C_Order orderRecord = orderBL.getById(orderId);
 		final OrgId orgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
 		final DocTypeId docTypeId = docTypeService.getDocTypeId(DocBaseType.ShippingNotification, null, orgId);
 
@@ -81,8 +79,8 @@ public class ShippingNotificationService
 		final ShippingNotification shippingNotification = ShippingNotification.builder()
 				.orgId(orgId)
 				.docTypeId(docTypeId)
-				.bpartnerAndLocationId(getBPartnerLocationId(orderRecord))
-				.contactId(getBPartnerContactId(orderRecord))
+				.bpartnerAndLocationId(orderBL.getShipToLocationId(orderRecord).getBpartnerLocationId())
+				.contactId(orderBL.getShipToContactId(orderRecord).orElse(null))
 				.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.auctionId(orderRecord.getC_Auction_ID())
 				.physicalClearanceDate(physicalClearanceDate)
@@ -92,8 +90,8 @@ public class ShippingNotificationService
 				.description(orderRecord.getDescription())
 				.docStatus(DocStatus.Drafted)
 				.lines(shipmentSchedules.stream()
-							   .map(this::toShippingNotificationLine)
-							   .collect(Collectors.toList()))
+						.map(this::toShippingNotificationLine)
+						.collect(Collectors.toList()))
 				.build();
 
 		shippingNotificationRepository.save(shippingNotification);
@@ -106,32 +104,7 @@ public class ShippingNotificationService
 		});
 
 		orderRecord.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
-		orderDAO.save(orderRecord);
-	}
-
-	private BPartnerLocationId getBPartnerLocationId(@NonNull final I_C_Order orderRecord)
-	{
-		if (orderRecord.isDropShip())
-		{
-			return BPartnerLocationId.ofRepoId(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID());
-		}
-		else
-		{
-			return BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID());
-		}
-	}
-
-
-	private BPartnerContactId getBPartnerContactId(@NonNull final I_C_Order orderRecord)
-	{
-		if (orderRecord.isDropShip())
-		{
-			return BPartnerContactId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_User_ID());
-		}
-		else
-		{
-			return BPartnerContactId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID(), orderRecord.getAD_User_ID());
-		}
+		orderBL.save(orderRecord);
 	}
 
 	public ShippingNotificationLine toShippingNotificationLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -166,7 +139,7 @@ public class ShippingNotificationService
 	public void reverseItNoSave(final ShippingNotification shippingNotification)
 	{
 		final I_M_Shipping_Notification reversalRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification.createReversal());
-		reversalRecord.setReversal_ID(shippingNotification.getId().getRepoId());
+		reversalRecord.setReversal_ID(shippingNotification.getIdNotNull().getRepoId());
 		reversalRecord.setDocumentNo(reversalRecord.getDocumentNo() + REVERSE_INDICATOR);
 		reversalRecord.setDocStatus(DocStatus.Reversed.getCode());
 		reversalRecord.setDocAction(IDocument.ACTION_None);
