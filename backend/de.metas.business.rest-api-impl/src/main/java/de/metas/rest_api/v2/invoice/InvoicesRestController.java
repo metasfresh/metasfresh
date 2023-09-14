@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.invoice;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.auction.AuctionService;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -45,11 +46,11 @@ import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
+import de.metas.rest_api.v2.invoice.review.JsonInvoiceReviewService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CloseInvoiceCandidatesService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CreateInvoiceCandidatesService;
 import de.metas.rest_api.v2.invoicecandidates.impl.EnqueueForInvoicingService;
-import de.metas.rest_api.v2.invoice.review.JsonInvoiceReviewService;
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.sectionCode.SectionCodeService;
 import de.metas.security.permissions2.PermissionServiceFactories;
@@ -93,6 +94,7 @@ public class InvoicesRestController
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final SectionCodeService sectionCodeService;
+	private final AuctionService auctionService;
 
 	private final JsonInvoiceReviewService jsonInvoiceReviewService;
 
@@ -106,6 +108,7 @@ public class InvoicesRestController
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final AuctionService auctionService,
 			@NonNull final JsonInvoiceReviewService jsonInvoiceReviewService)
 	{
 		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
@@ -117,6 +120,7 @@ public class InvoicesRestController
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.sectionCodeService = sectionCodeService;
+		this.auctionService = auctionService;
 		this.jsonInvoiceReviewService = jsonInvoiceReviewService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
@@ -299,6 +303,7 @@ public class InvoicesRestController
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
 					.sectionCodeService(sectionCodeService)
+					.auctionService(auctionService)
 					.build();
 
 			final ManualInvoice invoice = jsonInvoiceService.createInvoice(request, masterdataProvider);

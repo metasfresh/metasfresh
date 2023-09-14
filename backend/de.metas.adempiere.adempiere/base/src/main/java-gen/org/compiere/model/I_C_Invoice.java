@@ -221,6 +221,31 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Auction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Auction_ID (int C_Auction_ID);
+
+	/**
+	 * Get Auction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Auction_ID();
+
+	@Nullable org.compiere.model.I_C_Auction getC_Auction();
+
+	void setC_Auction(@Nullable org.compiere.model.I_C_Auction C_Auction);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Auction> COLUMN_C_Auction_ID = new ModelColumn<>(I_C_Invoice.class, "C_Auction_ID", org.compiere.model.I_C_Auction.class);
+	String COLUMNNAME_C_Auction_ID = "C_Auction_ID";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -516,6 +541,29 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_ForeignExchangeContract_ID = "C_ForeignExchangeContract_ID";
 
 	/**
+	 * Set Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
 	 * Set Harvesting Calendar.
 	 *
 	 * <br>Type: Search
@@ -539,30 +587,6 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_Invoice.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
 	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
-
-
-	/**
-	 * Set Charge amount.
-	 * Charge Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
-
-	/**
-	 * Get Charge amount.
-	 * Charge Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getChargeAmt();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
-	String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Incoterms.
@@ -843,6 +867,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Create From ....
+	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -852,6 +877,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Create From ....
+	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1019,6 +1045,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1028,6 +1055,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1175,7 +1203,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set SAP PayT ID.
+	 * Set External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1184,7 +1212,7 @@ public interface I_C_Invoice
 	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
-	 * Get SAP PayT ID.
+	 * Get External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1349,7 +1377,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Incoterm Location.
-	 * Location to be specified for commercial clause
+	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1359,7 +1387,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Incoterm Location.
-	 * Location to be specified for commercial clause
+	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1372,7 +1400,6 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Additional Text for Invoice.
-	 * If several invoice candidates are aggregated, add text to only one of them.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1382,7 +1409,6 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Additional Text for Invoice.
-	 * If several invoice candidates are aggregated, add text to only one of them.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1665,7 +1691,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Print local currency VAT.
-	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1675,7 +1701,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Print local currency VAT.
-	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1900,7 +1926,7 @@ public interface I_C_Invoice
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1910,7 +1936,7 @@ public interface I_C_Invoice
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
