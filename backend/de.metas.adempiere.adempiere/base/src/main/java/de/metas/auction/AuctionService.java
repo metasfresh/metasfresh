@@ -41,7 +41,7 @@ public class AuctionService
 	}
 
 	@Nullable
-	public Auction getByIdOrNull(@NonNull final AuctionId auctionId)
+	public Auction getByIdOrNull(@Nullable final AuctionId auctionId)
 	{
 		return auctionRepository.getByIdOrNull(auctionId);
 	}
