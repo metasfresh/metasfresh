@@ -52,6 +52,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -65,6 +66,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -123,6 +126,15 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered)
 				.translate(Language.getBaseAD_Language());
 
+		final ProductPrice priceActual = Optional.of(invoiceLine)
+				.filter(line -> line.getPriceActual() != null && line.getC_UOM_ID() > 0 && invoice.getC_Currency_ID() > 0)
+				.map(line -> ProductPrice.builder()
+						.uomId(UomId.ofRepoId(line.getC_UOM_ID()))
+						.productId(productId)
+						.money(Money.of(line.getPriceActual(), CurrencyId.ofRepoId(invoice.getC_Currency_ID())))
+						.build())
+				.orElse(null);
+		
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
 						.referencedRecord(TableRecordReference.of(I_C_InvoiceLine.Table_Name, invoiceLine.getC_InvoiceLine_ID()))
@@ -142,6 +154,8 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 						.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 						.description(description)
 						.modularContractTypeId(createLogRequest.getTypeId())
+						.configId(createLogRequest.getConfigId())
+						.priceActual(priceActual)
 						.build()
 		);
 	}

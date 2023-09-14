@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogsRecomputationService;
@@ -127,7 +128,9 @@ public class ModCntr_Log_StepDef
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	@NonNull
 	private final ScenarioLifeCycleStepDef scenarioLifeCycleStepDef;
-
+	@NonNull
+	private final ModCntr_Module_StepDefData modCntrModuleTable;
+	
 	@NonNull
 	private final C_Invoice_StepDefData invoiceTable;
 	@NonNull
@@ -308,6 +311,42 @@ public class ModCntr_Log_StepDef
 		if (isSoTrx != null)
 		{
 			softly.assertThat(modCntrLogRecord.isSOTrx()).as(I_ModCntr_Log.COLUMNNAME_Processed).isEqualTo(isSoTrx);
+		}
+
+		final String modCntrModuleIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(modCntrModuleIdentifier))
+		{
+			final I_ModCntr_Module modCntrModuleRecord = modCntrModuleTable.get(modCntrModuleIdentifier);
+			softly.assertThat(modCntrLogRecord.getModCntr_Module_ID()).as(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID).isEqualTo(modCntrModuleRecord.getModCntr_Module_ID());
+		}
+
+		final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_PriceActual);
+		if (priceActual != null)
+		{
+			softly.assertThat(modCntrLogRecord.getPriceActual()).as(I_ModCntr_Log.COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual);
+		}
+		else
+		{
+			final String nullPriceActual = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_PriceActual);
+			if (Check.isNotBlank(nullPriceActual) && DataTableUtil.nullToken2Null(nullPriceActual) == null)
+			{
+				softly.assertThat(modCntrLogRecord.getPriceActual()).as(I_ModCntr_Log.COLUMNNAME_PriceActual).isEqualByComparingTo(BigDecimal.ZERO);
+			}
+		}
+
+		final String priceUOMCode = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName());
+		if (Check.isNotBlank(priceUOMCode))
+		{
+			final String nullablePriceUOMCode = DataTableUtil.nullToken2Null(priceUOMCode);
+			if (nullablePriceUOMCode == null)
+			{
+				softly.assertThat(modCntrLogRecord.getPrice_UOM_ID()).as(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName()).isEqualByComparingTo(0);
+			}
+			else
+			{
+				final UomId priceUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(priceUOMCode));
+				softly.assertThat(modCntrLogRecord.getPrice_UOM_ID()).as(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName()).isEqualTo(priceUOMId.getRepoId());
+			}
 		}
 
 		softly.assertAll();

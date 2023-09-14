@@ -26,23 +26,25 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
-@Builder
 public class LogEntryCreateRequest
 {
 	@Nullable
@@ -51,8 +53,11 @@ public class LogEntryCreateRequest
 	@Nullable
 	ProductId productId;
 
-	@NonNull TableRecordReference referencedRecord;
-	@Nullable LogSubEntryId subEntryId;
+	@NonNull
+	TableRecordReference referencedRecord;
+
+	@Nullable
+	LogSubEntryId subEntryId;
 
 	@Nullable
 	BPartnerId collectionPointBPartnerId;
@@ -68,7 +73,7 @@ public class LogEntryCreateRequest
 
 	@NonNull
 	LogEntryDocumentType documentType;
-	
+
 	@NonNull
 	LogEntryContractType contractType;
 
@@ -97,6 +102,71 @@ public class LogEntryCreateRequest
 	@Nullable
 	ModularContractTypeId modularContractTypeId;
 
-	@Builder.Default
-	boolean isBillable = true;
+	@NonNull
+	ModuleConfigId configId;
+
+	@Nullable
+	ProductPrice priceActual;
+
+	boolean isBillable;
+
+	@Builder
+	public LogEntryCreateRequest(
+			@Nullable final FlatrateTermId contractId,
+			@Nullable final ProductId productId,
+			@NonNull final TableRecordReference referencedRecord,
+			@Nullable final LogSubEntryId subEntryId,
+			@Nullable final BPartnerId collectionPointBPartnerId,
+			@Nullable final BPartnerId producerBPartnerId,
+			@Nullable final BPartnerId invoicingBPartnerId,
+			@Nullable final WarehouseId warehouseId,
+			@NonNull final LogEntryDocumentType documentType,
+			@NonNull final LogEntryContractType contractType,
+			@NonNull final SOTrx soTrx,
+			final boolean processed,
+			@Nullable final Quantity quantity,
+			@Nullable final Money amount,
+			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final InvoiceCandidateId invoiceCandidateId,
+			@NonNull final YearId year,
+			@Nullable final String description,
+			@Nullable final ModularContractTypeId modularContractTypeId,
+			@NonNull final ModuleConfigId configId,
+			@Nullable final ProductPrice priceActual,
+			@Nullable final Boolean isBillable)
+	{
+		if (amount != null && priceActual != null)
+		{
+			amount.assertCurrencyId(priceActual.getCurrencyId());
+		}
+
+		if (priceActual != null)
+		{
+			Check.assume(priceActual.getProductId().equals(productId), "Products must match!");
+		}
+
+		this.contractId = contractId;
+		this.productId = productId;
+		this.referencedRecord = referencedRecord;
+		this.subEntryId = subEntryId;
+		this.collectionPointBPartnerId = collectionPointBPartnerId;
+		this.producerBPartnerId = producerBPartnerId;
+		this.invoicingBPartnerId = invoicingBPartnerId;
+		this.warehouseId = warehouseId;
+		this.documentType = documentType;
+		this.contractType = contractType;
+		this.soTrx = soTrx;
+		this.processed = processed;
+		this.quantity = quantity;
+		this.amount = amount;
+		this.transactionDate = transactionDate;
+		this.invoiceCandidateId = invoiceCandidateId;
+		this.year = year;
+		this.description = description;
+		this.modularContractTypeId = modularContractTypeId;
+		this.configId = configId;
+		this.priceActual = priceActual;
+		this.isBillable = Optional.ofNullable(isBillable)
+				.orElse(true);
+	}
 }

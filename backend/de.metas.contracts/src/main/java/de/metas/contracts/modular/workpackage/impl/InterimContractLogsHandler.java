@@ -42,12 +42,16 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -116,9 +120,19 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, modularContractLogEntry.getQuantity())
 				.translate(Language.getBaseAD_Language());
 
+		final ProductId productId = ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID());
+		final ProductPrice priceActual = Optional.of(flatrateTermRecord)
+				.filter(flatrateTerm -> flatrateTerm.getPriceActual() != null && flatrateTerm.getC_UOM_ID() > 0 && flatrateTerm.getC_Currency_ID() > 0)
+				.map(flatrateTerm -> ProductPrice.builder()
+						.uomId(UomId.ofRepoId(flatrateTerm.getC_UOM_ID()))
+						.productId(productId)
+						.money(Money.of(flatrateTerm.getPriceActual(), CurrencyId.ofRepoId(flatrateTerm.getC_Currency_ID())))
+						.build())
+				.orElse(null);
+		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(modularContractId)
-											.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
+											.productId(productId)
 											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, createLogRequest.getContractId()))
 											.producerBPartnerId(modularContractLogEntry.getProducerBPartnerId())
 											.invoicingBPartnerId(modularContractLogEntry.getInvoicingBPartnerId())
@@ -136,6 +150,8 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 											.year(modularContractLogEntry.getYear())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
+											.priceActual(priceActual)
 											.build());
 	}
 

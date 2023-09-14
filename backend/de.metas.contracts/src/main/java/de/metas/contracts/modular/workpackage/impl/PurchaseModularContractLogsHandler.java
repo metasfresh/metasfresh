@@ -39,6 +39,8 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -46,6 +48,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -59,6 +62,8 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
@@ -121,6 +126,15 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
 
+		final ProductPrice priceActual = Optional.of(modularContractRecord)
+				.filter(flatrateTerm -> flatrateTerm.getPriceActual() != null && flatrateTerm.getC_UOM_ID() > 0 && flatrateTerm.getC_Currency_ID() > 0)
+				.map(flatrateTerm -> ProductPrice.builder()
+						.uomId(UomId.ofRepoId(flatrateTerm.getC_UOM_ID()))
+						.productId(productId)
+						.money(Money.of(flatrateTerm.getPriceActual(), CurrencyId.ofRepoId(flatrateTerm.getC_Currency_ID())))
+						.build())
+				.orElse(null);
+		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
 											.productId(productId)
@@ -140,6 +154,8 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
+											.configId(request.getConfigId())
+											.priceActual(priceActual)
 											.build());
 	}
 

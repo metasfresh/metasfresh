@@ -134,6 +134,7 @@ class ShipmentLineLogHandler implements IModularContractLogHandler<I_M_InOutLine
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(msgText.translate(Env.getAD_Language()))
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
 											.build());
 	}
 

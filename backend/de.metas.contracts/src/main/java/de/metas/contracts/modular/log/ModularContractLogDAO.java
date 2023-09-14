@@ -29,7 +29,9 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
@@ -40,6 +42,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
@@ -58,6 +61,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -105,19 +109,19 @@ public class ModularContractLogDAO
 			log.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
 		}
 
-		final Money amount = request.getAmount();
-		if (amount != null)
-		{
-			log.setAmount(amount.toBigDecimal());
-			log.setC_Currency_ID(amount.getCurrencyId().getRepoId());
-		}
+		Optional.ofNullable(request.getAmount())
+				.ifPresentOrElse(amount -> {
+									 log.setAmount(amount.toBigDecimal());
+									 log.setC_Currency_ID(amount.getCurrencyId().getRepoId());
+								 },
+								 () -> log.setAmount(null));
 
-		final Quantity quantity = request.getQuantity();
-		if (quantity != null)
-		{
-			log.setQty(quantity.toBigDecimal());
-			log.setC_UOM_ID(quantity.getUomId().getRepoId());
-		}
+		Optional.ofNullable(request.getQuantity())
+				.ifPresentOrElse(quantity -> {
+									 log.setQty(quantity.toBigDecimal());
+									 log.setC_UOM_ID(quantity.getUomId().getRepoId());
+								 },
+								 () -> log.setQty(null));
 
 		log.setHarvesting_Year_ID(YearId.toRepoId(request.getYear()));
 		log.setDescription(request.getDescription());
@@ -128,6 +132,16 @@ public class ModularContractLogDAO
 			InterfaceWrapperHelper.setValue(log, request.getSubEntryId().getColumnName(), request.getSubEntryId().getId().getRepoId());
 		}
 
+		Optional.ofNullable(request.getPriceActual())
+				.ifPresentOrElse(priceActual -> {
+									 log.setPriceActual(priceActual.toBigDecimal());
+									 log.setPrice_UOM_ID(priceActual.getUomId().getRepoId());
+									 log.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
+								 },
+								 () -> log.setPriceActual(null));
+
+		log.setModCntr_Module_ID(request.getConfigId().getRepoId());
+
 		save(log);
 
 		return ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
@@ -136,6 +150,21 @@ public class ModularContractLogDAO
 	@NonNull
 	private ModularContractLogEntry fromRecord(@NonNull final I_ModCntr_Log record)
 	{
+		final ModuleConfigId moduleConfigId = Optional.of(record.getModCntr_Module_ID())
+				.filter(moduleId -> moduleId > 0)
+				.map(moduleId -> InterfaceWrapperHelper.load(record.getModCntr_Module_ID(), I_ModCntr_Module.class))
+				.map(modCntrModuleRecord -> ModuleConfigId.ofRepoId(modCntrModuleRecord.getModCntr_Settings_ID(), modCntrModuleRecord.getModCntr_Module_ID()))
+				.orElse(null);
+
+		final ProductPrice priceActual = Optional.of(record)
+				.filter(log -> log.getPriceActual() != null && log.getC_UOM_ID() > 0 && log.getC_Currency_ID() > 0 && log.getM_Product_ID() > 0)
+				.map(log -> ProductPrice.builder()
+						.uomId(UomId.ofRepoId(log.getC_UOM_ID()))
+						.productId(ProductId.ofRepoId(log.getM_Product_ID()))
+						.money(Money.of(log.getPriceActual(), CurrencyId.ofRepoId(log.getC_Currency_ID())))
+						.build())
+				.orElse(null);
+
 		return ModularContractLogEntry.builder()
 				.id(ModularContractLogEntryId.ofRepoId(record.getModCntr_Log_ID()))
 				.contractId(FlatrateTermId.ofRepoIdOrNull(record.getC_Flatrate_Term_ID()))
@@ -154,6 +183,9 @@ public class ModularContractLogDAO
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
+				.contractTypeId(ModularContractTypeId.ofRepoIdOrNull(record.getModCntr_Type_ID()))
+				.configId(moduleConfigId)
+				.priceActual(priceActual)
 				.build();
 	}
 
@@ -181,7 +213,7 @@ public class ModularContractLogDAO
 			reversedLog.setQty(reversedLog.getQty().negate());
 		}
 
-		if (reversedLog.getAmount() != null)
+		if (reversedLog.getAmount() != null && !BigDecimal.ZERO.equals(reversedLog.getAmount()))
 		{
 			reversedLog.setAmount(reversedLog.getAmount().negate());
 		}
