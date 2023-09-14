@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,23 +20,33 @@
  * #L%
  */
 
-package de.metas.contracts.modular.log.process;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.contracts.modular.log.LogsRecomputationService;
-import de.metas.process.JavaProcess;
-import de.metas.process.RunOutOfTrx;
-import org.compiere.SpringContextHolder;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
+import lombok.NonNull;
 
-public class RecomputeLogRecords extends JavaProcess
+import java.time.Instant;
+
+public class ScenarioLifeCycleStepDef
 {
-	private final LogsRecomputationService logsRecomputationService = SpringContextHolder.instance.getBean(LogsRecomputationService.class);
+	private Instant scenarioStartTime;
 
-	@Override
-	@RunOutOfTrx
-	protected String doIt() throws Exception
+	@Before
+	public void beforeEachScenario()
 	{
-		logsRecomputationService.recomputeLogs(getProcessInfo().getQueryFilterOrElseFalse());
+		this.scenarioStartTime = Instant.now();
+	}
 
-		return MSG_OK;
+	@After
+	public void afterEachScenario()
+	{
+		this.scenarioStartTime = null;
+	}
+
+	@NonNull
+	public Instant getScenarioStartTimeOr(@NonNull final Instant fallback)
+	{
+		return scenarioStartTime != null ? scenarioStartTime : fallback;
 	}
 }

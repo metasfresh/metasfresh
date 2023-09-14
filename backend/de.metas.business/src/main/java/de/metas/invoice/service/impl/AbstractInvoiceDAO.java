@@ -663,9 +663,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Stream<I_C_Invoice> stream(@NonNull final IQueryFilter<I_C_Invoice> invoiceFilter)
+	public Stream<org.compiere.model.I_C_Invoice> stream(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter)
 	{
-		return queryBL.createQueryBuilder(I_C_Invoice.class)
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
 				.filter(invoiceFilter)
 				.create()
 				.iterateAndStream();

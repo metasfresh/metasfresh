@@ -22,28 +22,32 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.log.LogsRecomputationService;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.ScenarioLifeCycleStepDef;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
+import de.metas.cucumber.stepdefs.inventory.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -53,79 +57,85 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.eevolution.model.I_PP_Order;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.cucumber.stepdefs.StepDefUtil.writeRowAsString;
 import static org.assertj.core.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class ModCntr_Log_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final LogsRecomputationService recomputeLogsService = SpringContextHolder.instance.getBean(LogsRecomputationService.class);
 
+	@NonNull
 	private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull
 	private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull
 	private final M_Product_StepDefData productTable;
+	@NonNull
 	private final ModCntr_Log_StepDefData modCntrLogTable;
+	@NonNull
 	private final C_Flatrate_Term_StepDefData flatrateTermTable;
+	@NonNull
 	private final C_Invoice_Candidate_StepDefData invoiceCandidateTable;
+	@NonNull
 	private final ModCntr_Type_StepDefData modCntrTypeTable;
+	@NonNull
 	private final C_Year_StepDefData yearTable;
+	@NonNull
 	private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull
 	private final M_InventoryLine_StepDefData inventoryLineTable;
 
+	@NonNull
 	private final M_InOutLine_StepDefData inOutLineTable;
+	@NonNull
 	private final PP_Order_StepDefData manufacturingOrderTable;
+	@NonNull
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
+	@NonNull
+	private final ScenarioLifeCycleStepDef scenarioLifeCycleStepDef;
 
-	public ModCntr_Log_StepDef(
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final ModCntr_Log_StepDefData modCntrLogTable,
-			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable,
-			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandidateTable,
-			@NonNull final ModCntr_Type_StepDefData modCntrTypeTable,
-			@NonNull final C_Year_StepDefData yearTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
-			@NonNull final M_InOutLine_StepDefData inOutLineTable,
-			@NonNull final PP_Order_StepDefData manufacturingOrderTable,
-			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable)
-	{
-		this.bpartnerTable = bpartnerTable;
-		this.warehouseTable = warehouseTable;
-		this.productTable = productTable;
-		this.modCntrLogTable = modCntrLogTable;
-		this.flatrateTermTable = flatrateTermTable;
-		this.invoiceCandidateTable = invoiceCandidateTable;
-		this.modCntrTypeTable = modCntrTypeTable;
-		this.yearTable = yearTable;
-		this.orderLineTable = orderLineTable;
-		this.inventoryLineTable = inventoryLineTable;
-		this.inOutLineTable = inOutLineTable;
-		this.manufacturingOrderTable = manufacturingOrderTable;
-		this.invoiceLineTable = invoiceLineTable;
-	}
+	@NonNull
+	private final C_Invoice_StepDefData invoiceTable;
+	@NonNull
+	private final C_Order_StepDefData orderTable;
+	@NonNull
+	private final M_Inventory_StepDefData inventoryTable;
+	@NonNull
+	private final M_InOut_StepDefData inOutTable;
 
 	@And("^after not more than (.*)s, ModCntr_Logs are found:$")
 	public void validateModCntr_Logs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
@@ -134,6 +144,28 @@ public class ModCntr_Log_StepDef
 		for (final Map<String, String> row : tableRows)
 		{
 			validateModCntr_Log(timeoutSec, row);
+		}
+	}
+
+	@And("recompute modular logs for record:")
+	public void recomputeLogsForRecord(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			recomputeLogsForRecord(row);
+		}
+	}
+
+	@And("^after not more than (.*)s, no ModCntr_Logs are found:$")
+	public void noModCntr_Logs_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		Thread.sleep(timeoutSec);
+
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			validateNoModCntr_LogFound(row);
 		}
 	}
 
@@ -175,7 +207,7 @@ public class ModCntr_Log_StepDef
 				.create()
 				.firstOnlyOptional()
 				.map(ItemProvider.ProviderResult::resultWasFound)
-				.orElse(ItemProvider.ProviderResult.resultWasNotFound("No logs found for criteria!"));
+				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound(buildMessageWitAllLogs(tableRow)));
 
 		final I_ModCntr_Log modCntrLogRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateLog);
 
@@ -284,44 +316,6 @@ public class ModCntr_Log_StepDef
 		modCntrLogTable.putOrReplace(modCntrLogIdentifier, modCntrLogRecord);
 	}
 
-	@NonNull
-	private String getLogContextForWarehouseId(@NonNull final FlatrateTermId flatrateTermId)
-	{
-		final Stream<I_ModCntr_Log> logsFoundForFlatrateTermId = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
-				.create()
-				.iterateAndStream();
-
-		final StringBuilder messageBuilder = new StringBuilder("\n");
-		logsFoundForFlatrateTermId
-				.forEach(log ->
-								 messageBuilder.append(" -> ModCntr_Log_ID: ")
-										 .append(log.getModCntr_Log_ID())
-										 .append(" M_Product_ID: ")
-										 .append(log.getM_Product_ID())
-										 .append(" CollectionPoint_BPartner_ID: ")
-										 .append(log.getCollectionPoint_BPartner_ID())
-										 .append(" Producer_BPartner_ID: ")
-										 .append(log.getProducer_BPartner_ID())
-										 .append(" Bill_BPartner_ID: ")
-										 .append(log.getBill_BPartner_ID())
-										 .append("\n"));
-
-		return "Current ModCntr_Logs available for C_Flatrate_Term_ID:\n\n" + messageBuilder;
-	}
-
-	@And("^after not more than (.*)s, no ModCntr_Logs are found:$")
-	public void noModCntr_Logs_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
-	{
-		Thread.sleep(timeoutSec);
-
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			validateNoModCntr_LogFound(row);
-		}
-	}
-
 	private void validateNoModCntr_LogFound(@NonNull final Map<String, String> tableRow)
 	{
 		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
@@ -334,6 +328,9 @@ public class ModCntr_Log_StepDef
 			case I_C_OrderLine.Table_Name -> recordId = orderLineTable.get(recordIdentifier).getC_OrderLine_ID();
 			case I_M_InOutLine.Table_Name -> recordId = inOutLineTable.get(recordIdentifier).getM_InOutLine_ID();
 			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
+			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
+			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
+			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);
@@ -347,5 +344,84 @@ public class ModCntr_Log_StepDef
 				.firstOnlyOrNull(I_ModCntr_Log.class);
 
 		assertThat(modCntrLogRecord).isNull();
+	}
+
+	@NonNull
+	private String buildMessageWitAllLogs(@NonNull final Map<String, String> row)
+	{
+		final StringBuilder messageBuilder = new StringBuilder("No logs found for row: " + writeRowAsString(row) + "! See currently created messages:");
+
+		queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addCompareFilter(I_ModCntr_Log.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER_OR_EQUAL, scenarioLifeCycleStepDef.getScenarioStartTimeOr(Instant.ofEpochMilli(0)))
+				.create()
+				.forEach(logRecord -> messageBuilder
+						.append("\n")
+						.append(I_ModCntr_Log.COLUMNNAME_Record_ID).append("=").append(logRecord.getRecord_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_AD_Table_ID).append("=").append(logRecord.getAD_Table_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID).append("=").append(logRecord.getC_Flatrate_Term_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_Qty).append("=").append(logRecord.getQty()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_C_UOM_ID).append("=").append(logRecord.getC_UOM_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_M_Product_ID).append("=").append(logRecord.getM_Product_ID()).append(", ")
+						.append(I_ModCntr_Log.COLUMNNAME_Processed).append("=").append(logRecord.isProcessed()).append(";")
+				);
+
+		return messageBuilder.toString();
+	}
+
+	private void recomputeLogsForRecord(@NonNull final Map<String, String> tableRow)
+	{
+		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
+		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		switch (tableName)
+		{
+			case I_C_Order.Table_Name ->
+			{
+				final IQueryFilter<I_C_Order> filter = queryBL.createCompositeQueryFilter(I_C_Order.class)
+						.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderTable.get(recordIdentifier).getC_Order_ID());
+
+				recomputeLogsService.recomputeForOrder(filter);
+			}
+			case I_M_Inventory.Table_Name ->
+			{
+				final IQueryFilter<I_M_Inventory> filter = queryBL.createCompositeQueryFilter(I_M_Inventory.class)
+						.addEqualsFilter(I_M_Inventory.COLUMNNAME_M_Inventory_ID, inventoryTable.get(recordIdentifier).getM_Inventory_ID());
+
+				recomputeLogsService.recomputeForInventory(filter);
+
+			}
+			case I_M_InOut.Table_Name ->
+			{
+				final IQueryFilter<I_M_InOut> filter = queryBL.createCompositeQueryFilter(I_M_InOut.class)
+						.addEqualsFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, inOutTable.get(recordIdentifier).getM_InOut_ID());
+
+				recomputeLogsService.recomputeForInOut(filter);
+			}
+			case I_PP_Order.Table_Name ->
+			{
+				final IQueryFilter<I_PP_Order> filter = queryBL.createCompositeQueryFilter(I_PP_Order.class)
+						.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID());
+
+				recomputeLogsService.recomputeForPPOrder(filter);
+			}
+			case I_C_Invoice.Table_Name ->
+			{
+				final IQueryFilter<I_C_Invoice> filter = queryBL.createCompositeQueryFilter(I_C_Invoice.class)
+						.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, invoiceTable.get(recordIdentifier).getC_Invoice_ID());
+
+				recomputeLogsService.recomputeForInvoice(filter);
+			}
+			case I_C_Flatrate_Term.Table_Name ->
+			{
+				final IQueryFilter<I_C_Flatrate_Term> filter = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+						.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID());
+
+				recomputeLogsService.recomputeForFlatrate(filter);
+			}
+			default -> throw new AdempiereException("Unsupported TableName!")
+					.appendParametersToMessage()
+					.setParameter("TableName", tableName);
+		}
+
 	}
 }

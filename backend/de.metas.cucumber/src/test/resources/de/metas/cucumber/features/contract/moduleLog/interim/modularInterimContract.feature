@@ -183,7 +183,7 @@ Feature: Interim contract for bpartner
       | log_7                     | mr_line_2            | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_3           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
       | log_8                     | mr_line_2            | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName       | ProcessingStatus |
       | po_orderLine_1       | C_OrderLine     | SP               |
       | po_orderLine_2       | C_OrderLine     | SP               |
@@ -191,6 +191,19 @@ Feature: Interim contract for bpartner
       | mr_line_2            | M_InOutLine     | SP               |
       | moduleLogContract_2  | C_Flatrate_Term | SP               |
       | moduleLogContract_4  | C_Flatrate_Term | SP               |
+
+    And recompute modular logs for record:
+      | TableName       | Record_ID.Identifier |
+      | C_Flatrate_Term | moduleLogContract_2  |
+      | C_Flatrate_Term | moduleLogContract_4  |
+    And after not more than 30s, validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
+      | moduleLogContract_2  | C_Flatrate_Term | SP               | 2                   |
+      | moduleLogContract_4  | C_Flatrate_Term | SP               | 2                   |
+    And after not more than 30s, ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
+      | log_2                     | moduleLogContract_2  | Interim      | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 2000       | year_2022                         |
+      | log_4                     | moduleLogContract_4  | Interim      | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_Flatrate_Term | moduleLogContract_3           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 1000       | year_2022                         |
 
     And load C_DocType:
       | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.DocSubType | OPT.IsDefault |
@@ -333,7 +346,7 @@ Feature: Interim contract for bpartner
       | log_7                     | shipmentLine_1       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_3           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
       | log_8                     | shipmentLine_2       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
 
-    And validate ModCntr_Log_Statuses:
+    And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
       | po_orderLine_1       | C_OrderLine     | SP               |                     |
       | po_orderLine_2       | C_OrderLine     | SP               |                     |

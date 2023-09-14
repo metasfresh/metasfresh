@@ -48,7 +48,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
@@ -56,6 +58,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -120,6 +123,11 @@ public class ModularContractLogDAO
 		log.setDescription(request.getDescription());
 		log.setModCntr_Type_ID(ModularContractTypeId.toRepoId(request.getModularContractTypeId()));
 
+		if (request.getSubEntryId() != null)
+		{
+			InterfaceWrapperHelper.setValue(log, request.getSubEntryId().getColumnName(), request.getSubEntryId().getId().getRepoId());
+		}
+
 		save(log);
 
 		return ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
@@ -153,11 +161,11 @@ public class ModularContractLogDAO
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
 		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
-														.entryId(request.id())
-														.flatrateTermId(request.flatrateTermId())
-														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-														.contractType(request.logEntryContractType())
-														.build())
+				.entryId(request.id())
+				.flatrateTermId(request.flatrateTermId())
+				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
+				.contractType(request.logEntryContractType())
+				.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
 		if (oldLog.isProcessed())
@@ -219,13 +227,18 @@ public class ModularContractLogDAO
 
 	public void delete(@NonNull final LogEntryDeleteRequest request)
 	{
-		queryBL.createQueryBuilder(I_ModCntr_Log.class)
+		final IQueryBuilder<I_ModCntr_Log> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, request.referencedModel().getAD_Table_ID())
 				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, request.referencedModel().getRecord_ID())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, request.flatrateTermId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType())
-				.create()
-				.delete(true);
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType());
+
+		if (request.subEntryId() != null)
+		{
+			queryBuilder.addEqualsFilter(request.subEntryId().getColumnName(), request.subEntryId().getId());
+		}
+
+		queryBuilder.create().delete(true);
 	}
 
 	private IQueryBuilder<I_ModCntr_Log> toSqlQuery(@NonNull final ModularContractLogQuery query)
@@ -323,5 +336,17 @@ public class ModularContractLogDAO
 					I_ModCntr_Log.Table_Name,
 					sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
 		}
+	}
+
+	@NonNull
+	public Iterator<I_ModCntr_Log> getLogsIteratorOrderedByRecordRef(@NonNull final IQueryFilter<I_ModCntr_Log> filter)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.filter(filter)
+				.orderBy(I_ModCntr_Log.COLUMNNAME_AD_Table_ID)
+				.orderBy(I_ModCntr_Log.COLUMNNAME_Record_ID)
+				.create()
+				//dev-note: we need a guaranteed iterator as at least in one of the usages we delete log entries while the iteration is ongoing
+				.iterateWithGuaranteedIterator(I_ModCntr_Log.class);
 	}
 }
