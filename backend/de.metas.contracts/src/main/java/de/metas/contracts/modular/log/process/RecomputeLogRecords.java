@@ -22,80 +22,21 @@
 
 package de.metas.contracts.modular.log.process;
 
-import de.metas.contracts.model.I_ModCntr_Log;
-import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.LogsRecomputationService;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
-
-import java.util.Iterator;
 
 public class RecomputeLogRecords extends JavaProcess
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
-
-	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
+	private final LogsRecomputationService logsRecomputationService = SpringContextHolder.instance.getBean(LogsRecomputationService.class);
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final Iterator<I_ModCntr_Log> logsIterator = queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
-				.orderBy()
-				.addColumn(I_ModCntr_Log.COLUMNNAME_AD_Table_ID)
-				.addColumn(I_ModCntr_Log.COLUMNNAME_Record_ID)
-				.endOrderBy()
-				.create()
-				.iterate(I_ModCntr_Log.class);
-
-		TableRecordReference currentRecordReference = null;
-		while (logsIterator.hasNext())
-		{
-			final I_ModCntr_Log logEntry = logsIterator.next();
-			final TableRecordReference logRecordRef = TableRecordReference.of(logEntry.getAD_Table_ID(), logEntry.getRecord_ID());
-
-			if (currentRecordReference == null)
-			{
-				currentRecordReference = TableRecordReference.of(logEntry.getAD_Table_ID(), logEntry.getRecord_ID());
-			}
-
-			if (!logRecordRef.equals(currentRecordReference) || !logsIterator.hasNext())
-			{
-				recomputeForRecord(currentRecordReference);
-				currentRecordReference = logRecordRef;
-			}
-		}
+		logsRecomputationService.recomputeLogs(getProcessInfo().getQueryFilterOrElseFalse());
 
 		return MSG_OK;
-	}
-
-	private void recomputeForRecord(@NonNull final TableRecordReference tableRecordReference)
-	{
-		switch (tableRecordReference.getTableName())
-		{
-			case I_PP_Order.Table_Name -> recomputeForPPOrder(tableRecordReference);
-			default -> trxManager.runInNewTrx(() -> modularContractService
-					.invokeWithModelForAllContractTypes(tableRecordReference.getModel(), ModelAction.RECREATE_LOGS));
-		}
-	}
-
-	private void recomputeForPPOrder(@NonNull final TableRecordReference tableRecordReference)
-	{
-		trxManager.runInNewTrx(() -> ppCostCollectorDAO
-				.getReceiptsByOrderId(tableRecordReference.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId))
-				.forEach(ppCostCollector -> modularContractService.invokeWithModelForAllContractTypes(ppCostCollector,
-																									  ModelAction.RECREATE_LOGS)));
 	}
 }

@@ -29,6 +29,7 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -36,16 +37,23 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
+
 @Component
+@RequiredArgsConstructor
 public class SalesModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+	@NonNull private final ModularContractLogService contractLogService;
 
 	@Override
 	public @NonNull Class<I_C_Flatrate_Term> getType()
@@ -86,9 +94,12 @@ public class SalesModularContractHandler implements IModularContractTypeHandler<
 	@Override
 	public void validateAction(final @NonNull I_C_Flatrate_Term model, final @NonNull ModelAction action)
 	{
-		if (action != ModelAction.COMPLETED)
+		switch (action)
 		{
-			throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			case COMPLETED -> {}
+			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
+																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 }

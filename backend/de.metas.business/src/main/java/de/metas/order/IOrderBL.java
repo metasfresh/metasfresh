@@ -90,6 +90,8 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
+	Optional<BPartnerContactId> getShipToContactId(I_C_Order order);
+
 	/**
 	 * @return the order's bill location <b>OR</b> falls back to the "general" contact ({@code C_Order.C_BParter_Location_ID}).
 	 */

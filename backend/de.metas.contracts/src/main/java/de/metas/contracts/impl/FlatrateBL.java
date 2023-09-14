@@ -2425,8 +2425,9 @@ public class FlatrateBL implements IFlatrateBL
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
 		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
 		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
-				.yearAndCalendarId(yearAndCalendarId)
-				.productId(productId)
+															   .yearAndCalendarId(yearAndCalendarId)
+															   .productId(productId)
+															   .soTrx(SOTrx.ofBooleanNotNull(settings.isSOTrx()))
 				.build()))
 		{
 			throw new AdempiereException(MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS);

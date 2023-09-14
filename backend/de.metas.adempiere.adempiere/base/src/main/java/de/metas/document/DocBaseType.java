@@ -45,6 +45,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	GehaltsrechnungAngestellter(X_C_DocType.DOCBASETYPE_GehaltsrechnungAngestellter),
 	InterneRechnungLieferant(X_C_DocType.DOCBASETYPE_InterneRechnungLieferant),
 	ShipperTransportation(X_C_DocType.DOCBASETYPE_ShipperTransportation),
+	ShippingNotification(X_C_DocType.DOCBASETYPE_ShippingNotification),
 	CustomerContract(X_C_DocType.DOCBASETYPE_CustomerContract),
 	DunningDoc(X_C_DocType.DOCBASETYPE_DunningDoc),
 	ShipmentDeclaration(X_C_DocType.DOCBASETYPE_ShipmentDeclaration),

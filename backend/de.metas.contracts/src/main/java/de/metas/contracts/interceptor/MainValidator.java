@@ -22,6 +22,7 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.Contracts_Constants;
@@ -67,6 +68,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
+import java.util.Set;
+
 public class MainValidator extends AbstractModuleInterceptor
 {
 
@@ -111,6 +114,12 @@ public class MainValidator extends AbstractModuleInterceptor
 		this.callOrderContractService = callOrderContractService;
 		this.adReferenceService = adReferenceService;
 		this.glCategoryRepository = glCategoryRepository;
+	}
+
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(I_I_Flatrate_Term.Table_Name);
 	}
 
 	@Override
@@ -161,7 +170,6 @@ public class MainValidator extends AbstractModuleInterceptor
 		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());
 
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
-
 
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
 		registerInOutLinesWithMissingInvoiceCandidateFilter();

@@ -88,7 +88,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
 	 */
 	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
-
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
 	 * <p>
@@ -104,7 +103,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
 			//
-			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
+			// manufacture-to-order - look at scheds for whose order lines actual HUs were created
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM PP_Order ppo"
 			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID"
@@ -667,4 +666,5 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, OrderId.class);
 		return ImmutableSet.copyOf(orderIds);
 	}
+
 }

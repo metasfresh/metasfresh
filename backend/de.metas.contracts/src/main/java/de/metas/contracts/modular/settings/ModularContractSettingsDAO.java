@@ -34,6 +34,7 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
@@ -117,7 +118,8 @@ public class ModularContractSettingsDAO
 				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Year_ID(), settingsRecord.getC_Calendar_ID()))
 				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(settingsRecord.getM_PricingSystem_ID()))
 				.productId(ProductId.ofRepoId(settingsRecord.getM_Product_ID()))
-				.name(settingsRecord.getName());
+				.name(settingsRecord.getName())
+				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()));
 
 		for (final I_ModCntr_Module moduleRecord : moduleRecords)
 		{
@@ -159,6 +161,7 @@ public class ModularContractSettingsDAO
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, query.productId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.soTrx().toBoolean())
 				.anyMatch();
 	}
 

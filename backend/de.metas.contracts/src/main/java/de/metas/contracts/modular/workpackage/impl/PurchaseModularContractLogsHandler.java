@@ -82,6 +82,7 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 		return switch (request.getModelAction())
 				{
 					case COMPLETED -> LogAction.CREATE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
 					default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
 	}

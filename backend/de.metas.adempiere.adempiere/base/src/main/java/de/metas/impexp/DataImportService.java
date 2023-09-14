@@ -20,13 +20,16 @@ import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 /*
@@ -123,6 +126,8 @@ public class DataImportService
 				.processImportRecordsSynchronously(request.isProcessImportRecordsSynchronously())
 				.stopOnFirstError(request.isStopOnFirstError())
 				//
+				.logMigrationScriptsSpec(request.getLogMigrationScriptsSpec())
+				//
 				.build()
 				//
 				.execute();
@@ -154,23 +159,41 @@ public class DataImportService
 
 	public ValidateAndActualImportRecordsResult validateAndImportRecordsNow(@NonNull final ImportRecordsRequest request)
 	{
-		final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-				.setCtx(Env.getCtx())
-				.setLoggable(Loggables.get())
-				.selectedRecords(request.getSelectionId())
-				.completeDocuments(request.isCompleteDocuments())
-				.setParameters(request.getAdditionalParameters())
-				.run();
-
-		if (request.getNotifyUserId() != null)
+		try (final IAutoCloseable ignored = MigrationScriptFileLoggerHolder.temporaryEnabledLoggingToNewFileIf(request.isLogMigrationScripts()))
 		{
-			notifyImportDone(result.getActualImport(), request.getNotifyUserId());
-		}
+			final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
+					.setCtx(Env.getCtx())
+					.setLoggable(Loggables.get())
+					.selectedRecords(request.getSelectionId())
+					.completeDocuments(request.isCompleteDocuments())
+					.setParameters(request.getAdditionalParameters())
+					.run();
 
-		return ValidateAndActualImportRecordsResult.builder()
-				.importRecordsValidation(result.getImportRecordsValidation())
-				.actualImport(result.getActualImport())
-				.build();
+			final ActualImportRecordsResult actualImport = result.getActualImport();
+			if (actualImport == null)
+			{
+				throw new AdempiereException("For some unknown reason the actual import was not performed")
+						.setParameter("importProcessResult", result)
+						.appendParametersToMessage();
+			}
+
+			if (request.getNotifyUserId() != null)
+			{
+				notifyImportDone(actualImport, request.getNotifyUserId());
+			}
+
+			final Path sqlMigrationScript = MigrationScriptFileLoggerHolder.getCurrentScriptPathIfPresent().orElse(null);
+			if (sqlMigrationScript != null)
+			{
+				Loggables.get().addLog("Wrote migration script: {}", sqlMigrationScript);
+			}
+
+			return ValidateAndActualImportRecordsResult.builder()
+					.importRecordsValidation(result.getImportRecordsValidation())
+					.actualImport(actualImport)
+					.sqlMigrationScript(sqlMigrationScript)
+					.build();
+		}
 	}
 
 	AsyncImportRecordsResponse importRecordsAsync(@NonNull final ImportRecordsRequest request)
