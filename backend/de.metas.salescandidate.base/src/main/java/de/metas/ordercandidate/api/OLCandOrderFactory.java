@@ -321,16 +321,12 @@ class OLCandOrderFactory
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
 		order.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(candidateOfGroup)));
-		final AuctionId auctionId = candidateOfGroup.getAuctionId();
-		if (auctionId != null)
+		final Auction auction = auctionService.getByIdOrNull(candidateOfGroup.getAuctionId());
+		if (auction != null)
 		{
-			order.setC_Auction_ID(AuctionId.toRepoId(auctionId));
-			final Auction auction = auctionService.getByIdOrNull(auctionId);
-			if (auction != null)
-			{
-				order.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(auction.harvestingCalendarId()));
-				order.setHarvesting_Year_ID(YearId.toRepoId(auction.harvestingYearId()));
-			}
+			order.setC_Auction_ID(AuctionId.toRepoId(auction.auctionId()));
+			order.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(auction.harvestingCalendarId()));
+			order.setHarvesting_Year_ID(YearId.toRepoId(auction.harvestingYearId()));
 		}
 
 		save(order);
