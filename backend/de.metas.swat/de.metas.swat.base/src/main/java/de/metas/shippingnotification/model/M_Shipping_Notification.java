@@ -25,7 +25,7 @@ package de.metas.shippingnotification.model;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderBL;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.ShippingNotificationService;
@@ -48,8 +48,7 @@ public class M_Shipping_Notification
 	private final IDocumentLocationBL documentLocationBL;
 	private final ShippingNotificationService shippingNotificationService;
 	private final ShippingNotificationRepository shippingNotificationRepository;
-
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
@@ -74,9 +73,9 @@ public class M_Shipping_Notification
 	{
 		final ShippingNotification shippingNotification = shippingNotificationRepository.getByRecord(shippingNotificationRecord);
 
-		final I_C_Order orderRecord = orderDAO.getById(shippingNotification.getOrderId());
+		final I_C_Order orderRecord = orderBL.getById(shippingNotification.getOrderId());
 		orderRecord.setPhysicalClearanceDate(null);
-		orderDAO.save(orderRecord);
+		orderBL.save(orderRecord);
 
 		shipmentSchedulePA.getByIds(shippingNotification.getShipmentScheduleIds())
 				.values()
