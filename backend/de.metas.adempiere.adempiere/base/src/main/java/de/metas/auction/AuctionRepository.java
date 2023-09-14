@@ -50,8 +50,12 @@ public class AuctionRepository
 	}
 
 	@Nullable
-	public Auction getByIdOrNull(@NonNull final AuctionId auctionId)
+	public Auction getByIdOrNull(@Nullable final AuctionId auctionId)
 	{
+		if (auctionId == null)
+		{
+			return null;
+		}
 		final I_C_Auction auction = InterfaceWrapperHelper.load(auctionId.getRepoId(), I_C_Auction.class);
 		if (auction == null)
 		{
