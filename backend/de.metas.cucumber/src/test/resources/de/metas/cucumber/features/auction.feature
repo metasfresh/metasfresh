@@ -40,6 +40,7 @@ Feature: Auction
       | Auction_1  | Auction1 | 2022-01-20 |
       | Auction_2  | Auction2 | 2022-01-20 |
 
+  @Id:S0318_100
   Scenario: 2 OLCAnds are created with same C_Auction_ID, resulting in single Order->IC->Invoice. C_Auction_ID is pushed through all these entities.
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
