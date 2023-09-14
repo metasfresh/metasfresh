@@ -1,15 +1,14 @@
 package de.metas.adempiere.tools;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.persistence.modelgen.ADRefListGenerator;
 import org.adempiere.ad.persistence.modelgen.ListInfo;
 import org.adempiere.ad.persistence.modelgen.TableAndColumnInfoRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.tools.AdempiereToolsHelper;
-import org.compiere.util.Ini;
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
 
 /*
  * #%L
@@ -47,7 +46,7 @@ public class AD_Ref_List_GenerateJavaConstants
 		// Start ADempiere
 		AdempiereToolsHelper.getInstance().startupMinimal();
 		LogManager.setLevel(Level.DEBUG);
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, false); // metas: don't log migration scripts
+		MigrationScriptFileLoggerHolder.setEnabled(false); // metas: don't log migration scripts
 
 		final TableAndColumnInfoRepository repository = new TableAndColumnInfoRepository();
 

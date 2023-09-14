@@ -22,55 +22,59 @@
 
 package org.adempiere.ad.migration.logger;
 
+import de.metas.dao.sql.SqlParamsInliner;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Map;
 
-@EqualsAndHashCode
-final class Sql
+@EqualsAndHashCode(exclude = "_sqlWithInlinedParams")
+public final class Sql
 {
-	private final String sql;
+	@NonNull private final String sqlCommand;
+	@NonNull private final SqlParams sqlParams;
+	private final Instant timestamp = Instant.now();
+	private final boolean appendTimestampToFinalSql;
+
+	private transient String _sqlWithInlinedParams = null; // lazy
+
+	private static final SqlParamsInliner sqlParamsInliner = SqlParamsInliner.builder().failOnError(true).build();
 
 	public static Sql ofSql(@NonNull final String sql)
 	{
-		return ofSql(sql, null);
+		return new Sql(sql, null, true);
 	}
 
-	public static Sql ofSql(
-			@NonNull final String sql,
-			@Nullable final String comments)
+	public static Sql ofSql(@NonNull final String sql, @Nullable Map<Integer, Object> sqlParamsMap)
 	{
-		final StringBuilder finalSql = new StringBuilder();
+		return new Sql(sql, SqlParams.ofMap(sqlParamsMap), true);
+	}
 
-		// Add provided comments
-		final String sqlComment = toSqlComment(comments);
-		if (sqlComment != null)
-		{
-			finalSql.append("\n").append(sqlComment);
-		}
-
-		finalSql.append("-- ").append(Instant.now()).append("\n");
-		finalSql.append(sql).append("\n;\n\n");
-
-		return new Sql(finalSql.toString());
+	public static Sql ofSql(@NonNull final String sql, @Nullable SqlParams sqlParamsMap)
+	{
+		return new Sql(sql, sqlParamsMap, true);
 	}
 
 	public static Sql ofComment(@NonNull final String comment)
 	{
-		final String sqlComment = toSqlComment(comment);
-		return sqlComment != null ? new Sql(sqlComment) : new Sql("-- ");
+		String sqlComment = toSqlCommentLine(comment);
+		if (sqlComment.isEmpty())
+		{
+			sqlComment = "-- ";
+		}
+
+		return new Sql(sqlComment, null, false);
 	}
 
-	@Nullable
-	private static String toSqlComment(@Nullable final String comment)
+	private static String toSqlCommentLine(@Nullable final String comment)
 	{
 		final String commentNorm = StringUtils.trimBlankToNull(comment);
 		if (commentNorm == null)
 		{
-			return null;
+			return "";
 		}
 		return "-- "
 				+ commentNorm
@@ -79,20 +83,47 @@ final class Sql
 				+ "\n";
 	}
 
-	Sql(final String sql)
+	private Sql(
+			@NonNull final String sql,
+			@Nullable final SqlParams sqlParams,
+			final boolean appendTimestampToFinalSql)
 	{
-		this.sql = sql;
+		this.sqlCommand = sql;
+		this.sqlParams = sqlParams != null ? sqlParams : SqlParams.EMPTY;
+		this.appendTimestampToFinalSql = appendTimestampToFinalSql;
 	}
 
 	@Override
 	@Deprecated
-	public String toString()
-	{
-		return toSql();
-	}
+	public String toString() {return toSql();}
+
+	public String getSqlWithoutParamsResolved() {return sqlCommand;}
 
 	public String toSql()
 	{
-		return sql;
+		String sqlWithInlinedParams = this._sqlWithInlinedParams;
+		if (sqlWithInlinedParams == null)
+		{
+			sqlWithInlinedParams = this._sqlWithInlinedParams = buildFinalSql();
+		}
+		return sqlWithInlinedParams;
+	}
+
+	private String buildFinalSql()
+	{
+		final StringBuilder finalSql = new StringBuilder();
+
+		if (appendTimestampToFinalSql)
+		{
+			finalSql.append(toSqlCommentLine(timestamp.toString()));
+		}
+
+		final String sqlWithParams = !sqlParams.isEmpty()
+				? sqlParamsInliner.inline(sqlCommand, sqlParams.toList())
+				: sqlCommand;
+		finalSql.append(sqlWithParams).append("\n;\n\n");
+
+		return finalSql.toString();
+
 	}
 }

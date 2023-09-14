@@ -126,15 +126,9 @@ class ModularContractSettingsDAOTest
 		}
 
 		@Override
-		public void validateDocAction(final @NonNull Object model, final @NonNull ModelAction action)
+		public void validateAction(final @NonNull Object model, final @NonNull ModelAction action)
 		{
 			return;
-		}
-
-		@Override
-		public void cancelLinkedContractsIfAllowed(final @NonNull Object model, final @NonNull FlatrateTermId flatrateTermId)
-		{
-			return; //dev-note:do nothing
 		}
 
 		@Override
@@ -150,9 +144,6 @@ class ModularContractSettingsDAOTest
 		}
 
 		@Override
-		public void createContractIfRequired(final @NonNull Object model)
-		{
-			return; //dev-note:do nothing
-		}
+		public void createContractIfRequired(final @NonNull Object model) {}
 	}
 }

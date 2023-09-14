@@ -42,6 +42,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
@@ -2467,10 +2468,10 @@ public class DB
 
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
-		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
-				&& Services.get(IMigrationLogger.class).isLogTableName(TableName))
+		if (MigrationScriptFileLoggerHolder.isEnabled()
+				&& Services.get(IMigrationLogger.class).isLogTableName(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
 		{
-			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", TableName, Ini.P_LOGMIGRATIONSCRIPT);
+			log.debug("Returning 'false' for table {} because log migration scripts is enabled and this table is supposed to be logged", TableName);
 			return false;
 		}
 

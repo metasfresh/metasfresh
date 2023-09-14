@@ -36,7 +36,9 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -86,16 +88,30 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 				{
 					case COMPLETED -> LogAction.CREATE;
 					case REVERSED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_InvoiceLine> request)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_InvoiceLine model)
 	{
-		final I_C_InvoiceLine invoiceLine = request.getHandleLogsRequest().getModel();
+		final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(model.getC_Invoice_ID()));
 
-		final I_C_Flatrate_Term contract = flatrateBL.getById(request.getContractId());
+		if (!invoiceDocStatus.isCompleted())
+		{
+			return BooleanWithReason.falseBecause("The C_Invoice.DocStatus is " + invoiceDocStatus);
+		}
+
+		return BooleanWithReason.TRUE;
+	}
+
+	@Override
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_InvoiceLine> createLogRequest)
+	{
+		final I_C_InvoiceLine invoiceLine = createLogRequest.getHandleLogsRequest().getModel();
+
+		final I_C_Flatrate_Term contract = flatrateBL.getById(createLogRequest.getContractId());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
 
 		final Quantity qtyEntered = extractQtyEntered(invoiceLine);
@@ -110,7 +126,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
 						.referencedRecord(TableRecordReference.of(I_C_InvoiceLine.Table_Name, invoiceLine.getC_InvoiceLine_ID()))
-						.contractId(request.getContractId())
+						.contractId(createLogRequest.getContractId())
 						.collectionPointBPartnerId(bpartnerId)
 						.producerBPartnerId(bpartnerId)
 						.invoicingBPartnerId(bpartnerId)
@@ -123,9 +139,9 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 						.quantity(qtyEntered)
 						.amount(amount)
 						.transactionDate(LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(), OrgId.ofRepoId(invoiceLine.getAD_Org_ID()), orgDAO::getTimeZone))
-						.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
+						.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 						.description(description)
-						.modularContractTypeId(request.getTypeId())
+						.modularContractTypeId(createLogRequest.getTypeId())
 						.build()
 		);
 	}

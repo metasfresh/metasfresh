@@ -1,10 +1,10 @@
 package de.metas.util;
 
+import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -32,17 +32,12 @@ import javax.annotation.Nullable;
  * Holds the {@link ILoggable} instance of current thread.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 final class ThreadLocalLoggableHolder
 {
 	/**
 	 * Temporary set the current thread level loggable to given one.
-	 *
 	 * The method is designed to be used in try-with-resources block, so the previous thread level loggable will be restored when the returned closeable will be closed.
-	 *
-	 * @param loggable
-	 * @return
 	 */
 	/* package */ IAutoCloseable temporarySetLoggable(@NonNull final ILoggable loggable)
 	{
@@ -74,10 +69,12 @@ final class ThreadLocalLoggableHolder
 	@NonNull
 	/* package */ ILoggable getLoggable()
 	{
-		return getLoggableOr(Loggables.nop());
+		return Objects.requireNonNull(getLoggableOr(Loggables.nop()));
 	}
 
-	/** @return current thread's {@link ILoggable} instance or <code>defaultLoggable</code> if there was no thread level {@link ILoggable} */
+	/**
+	 * @return current thread's {@link ILoggable} instance or <code>defaultLoggable</code> if there was no thread level {@link ILoggable}
+	 */
 	@Nullable
 	/* package */ ILoggable getLoggableOr(@Nullable final ILoggable defaultLoggable)
 	{
@@ -87,9 +84,8 @@ final class ThreadLocalLoggableHolder
 
 	/**
 	 * Holds the {@link ILoggable} instance of current thread
-	 *
 	 */
-	public static final transient ThreadLocalLoggableHolder instance = new ThreadLocalLoggableHolder();
+	public static final ThreadLocalLoggableHolder instance = new ThreadLocalLoggableHolder();
 
 	private final ThreadLocal<ILoggable> loggableRef = new ThreadLocal<>();
 

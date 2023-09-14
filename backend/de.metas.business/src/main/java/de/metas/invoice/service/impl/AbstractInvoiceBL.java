@@ -2051,4 +2051,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.map(ForexContractRef::getForexContractId)
 				.anyMatch(contractIds::contains);
 	}
+
+	@Override
+	public DocStatus getDocStatus(@NonNull final InvoiceId invoiceId)
+	{
+		return DocStatus.ofCode(invoiceDAO.getByIdInTrx(invoiceId).getDocStatus());
+	}
 }

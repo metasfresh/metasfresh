@@ -1,5 +1,6 @@
 package de.metas.acct;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
 import de.metas.acct.aggregation.IFactAcctLogBL;
@@ -37,7 +38,6 @@ import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
@@ -61,6 +61,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Accounting module activator
@@ -134,13 +135,18 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		{
 			logger.info("Skip setting up accounting service because profile {} is not active", Profiles.PROFILE_AccountingService);
 		}
+	}
 
-		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-		migrationLogger.addTableToIgnoreList(I_Fact_Acct.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Log.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Summary.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_Fact_Acct_EndingBalance.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_I_ElementValue.Table_Name);
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(
+				I_Fact_Acct.Table_Name,
+				I_Fact_Acct_Log.Table_Name,
+				I_Fact_Acct_Summary.Table_Name,
+				I_Fact_Acct_EndingBalance.Table_Name,
+				I_I_ElementValue.Table_Name
+		);
 	}
 
 	@Override

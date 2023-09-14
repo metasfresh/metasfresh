@@ -25,10 +25,14 @@ package de.metas.handlingunits.modular.impl;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -38,10 +42,16 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
+
 @Component
+@RequiredArgsConstructor
 public class PPCostCollectorModularContractHandler implements IModularContractTypeHandler<I_PP_Cost_Collector>
 {
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+
+	@NonNull
+	private final ModularContractLogService contractLogService;
 
 	@Override
 	@NonNull
@@ -75,14 +85,22 @@ public class PPCostCollectorModularContractHandler implements IModularContractTy
 	}
 
 	@Override
-	public void validateDocAction(@NonNull final I_PP_Cost_Collector ppCostCollector, @NonNull final ModelAction action)
+	public void validateAction(@NonNull final I_PP_Cost_Collector ppCostCollector, @NonNull final ModelAction action)
 	{
-		if (action != ModelAction.COMPLETED)
+		switch (action)
 		{
-			throw new AdempiereException("Unsupported model action!")
-					.appendParametersToMessage()
-					.setParameter("Action", action)
-					.setParameter("PP_Cost_Collector_ID", ppCostCollector.getPP_Cost_Collector_ID());
+			case COMPLETED ->
+			{
+			}
+			case RECREATE_LOGS ->
+			{
+				final TableRecordReference ppOrderReference = TableRecordReference.of(I_PP_Order.Table_Name,
+																					  PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID()));
+
+				contractLogService.throwErrorIfProcessedLogsExistForRecord(ppOrderReference,
+																		   MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
+			}
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 }

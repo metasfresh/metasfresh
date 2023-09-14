@@ -2023,6 +2023,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setPhysicalClearanceDate (final @Nullable java.sql.Timestamp PhysicalClearanceDate)
+	{
+		set_Value (COLUMNNAME_PhysicalClearanceDate, PhysicalClearanceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getPhysicalClearanceDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PhysicalClearanceDate);
+	}
+
+	@Override
 	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);

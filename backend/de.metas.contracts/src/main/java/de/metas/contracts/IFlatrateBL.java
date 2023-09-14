@@ -35,6 +35,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
@@ -53,6 +54,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 
@@ -245,4 +247,7 @@ public interface IFlatrateBL extends ISingletonService
 	boolean isExtendableContract(I_C_Flatrate_Term contract);
 
 	Stream<I_C_Flatrate_Term> streamModularFlatrateTermsByQuery(ModularFlatrateTermQuery modularFlatrateTermQuery);
+
+	@NonNull
+	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
 }

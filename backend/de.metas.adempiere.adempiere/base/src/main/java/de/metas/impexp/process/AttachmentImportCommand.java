@@ -28,6 +28,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
+import de.metas.impexp.ImportRecordsRequest;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
@@ -48,35 +49,28 @@ public class AttachmentImportCommand
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final transient DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
 
-	@NonNull
-	private final AttachmentEntryId attachmentEntryId;
-	@NonNull
-	private final DataImportConfigId dataImportConfigId;
-	@Default
-	private final ClientId clientId = Env.getClientId();
-	@Default
-	private final OrgId orgId = Env.getOrgId();
-	@Default
-	private final UserId userId = Env.getLoggedUserId();
-
-	@Default
-	private final IParams additionalParameters = IParams.NULL;
-
-	@Nullable
-	private final Params overrideColumnValues;
+	@NonNull private final AttachmentEntryId attachmentEntryId;
+	@NonNull private final DataImportConfigId dataImportConfigId;
+	@Default private final ClientId clientId = Env.getClientId();
+	@Default private final OrgId orgId = Env.getOrgId();
+	@Default private final UserId userId = Env.getLoggedUserId();
+	@Nullable private final ImportRecordsRequest.LogMigrationScriptsSpec logMigrationScriptsSpec;
+	@Default private final IParams additionalParameters = IParams.NULL;
+	@Nullable private final Params overrideColumnValues;
 
 	public DataImportResult execute()
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(attachmentEntryId);
 
 		return dataImportService.importDataFromResource(DataImportRequest.builder()
-																.data(data)
-																.dataImportConfigId(dataImportConfigId)
-																.clientId(clientId)
-																.orgId(orgId)
-																.userId(userId)
-																.additionalParameters(additionalParameters)
-																.overrideColumnValues(overrideColumnValues)
-																.build());
+				.data(data)
+				.dataImportConfigId(dataImportConfigId)
+				.clientId(clientId)
+				.orgId(orgId)
+				.userId(userId)
+				.additionalParameters(additionalParameters)
+				.overrideColumnValues(overrideColumnValues)
+				.logMigrationScriptsSpec(logMigrationScriptsSpec)
+				.build());
 	}
 }

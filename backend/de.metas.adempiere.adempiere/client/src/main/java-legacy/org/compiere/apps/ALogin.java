@@ -32,6 +32,7 @@ import de.metas.security.RoleId;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.MetasFreshTheme;
@@ -777,7 +778,7 @@ public final class ALogin extends CDialog
 
 		// Reference check
 		Ini.setProperty(Ini.P_ADEMPIERESYS, "Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, "Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
+		MigrationScriptFileLoggerHolder.setEnabled("Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
 
 		//
 		// Authenticate and get roles

@@ -44,7 +44,7 @@ Feature: Modular contract log for sales invoice
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                | Value               | Classname                                                               |
       | modCntr_type_PO            | modCntr_type_PO     | modCntr_type_PO     | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-      | modCntr_type_SO            | modCntr_type_SO     | modCntr_type_SO     | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler    |
+      | modCntr_type_SO            | modCntr_type_SO     | modCntr_type_SO     | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler    |
       | modCntr_type_SHIP          | modCntr_type_SHIP   | modCntr_type_SHIP   | de.metas.contracts.modular.impl.ShipmentLineModularContractHandler      |
       | modCntr_type_INV_SO        | modCntr_type_INV_SO | modCntr_type_INV_SO | de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler  |
 
@@ -184,6 +184,15 @@ Feature: Modular contract log for sales invoice
       | shipLog_2                 | shipLine_2           | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | M_InOutLine   | moduleLogContract             | modCntr_type_SHIP              | false         | Shipment                     | year_2023                         | false       |
       | ilLog_1                   | il_1                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 8   | C_InvoiceLine | moduleLogContract             | modCntr_type_INV_SO            | false         | SalesInvoice                 | year_2023                         | false       |
       | ilLog_2                   | il_2                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 3   | C_InvoiceLine | moduleLogContract             | modCntr_type_INV_SO            | false         | SalesInvoice                 | year_2023                         | false       |
+
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName     | ProcessingStatus |
+      | soLine_1             | C_OrderLine   | SP               |
+      | soLine_2             | C_OrderLine   | SP               |
+      | shipLine_1           | M_InOutLine   | SP               |
+      | shipLine_2           | M_InOutLine   | SP               |
+      | il_1                 | C_InvoiceLine | SP               |
+      | il_2                 | C_InvoiceLine | SP               |
 
     And update C_Aggregation:
       | C_Aggregation_ID.Identifier | OPT.IsDefault |
@@ -340,6 +349,15 @@ Feature: Modular contract log for sales invoice
       | ilLog_3                   | il_1                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | -8  | C_InvoiceLine | moduleLogContract             | modCntr_type_INV_SO            | false         | SalesInvoice                 | year_2023                         | false       |
       | ilLog_4                   | il_2                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | -3  | C_InvoiceLine | moduleLogContract             | modCntr_type_INV_SO            | false         | SalesInvoice                 | year_2023                         | false       |
 
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName     | ProcessingStatus | OPT.noOfLogStatuses |
+      | soLine_1             | C_OrderLine   | SP               |                     |
+      | soLine_2             | C_OrderLine   | SP               |                     |
+      | shipLine_1           | M_InOutLine   | SP               |                     |
+      | shipLine_2           | M_InOutLine   | SP               |                     |
+      | il_1                 | C_InvoiceLine | SP               | 2                   |
+      | il_2                 | C_InvoiceLine | SP               | 2                   |
+
     And update C_Aggregation:
       | C_Aggregation_ID.Identifier | OPT.IsDefault |
       | harvestingAgg               | N             |
@@ -415,6 +433,11 @@ Feature: Modular contract log for sales invoice
       | shipLine_1           | M_InOutLine |
       | shipLine_2           | M_InOutLine |
 
+    And after not more than 30s, no ModCntr_Log_Statuses are found:
+      | Record_ID.Identifier | TableName   |
+      | shipLine_1           | M_InOutLine |
+      | shipLine_2           | M_InOutLine |
+
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | soLine_1                  | 10           |
@@ -440,6 +463,11 @@ Feature: Modular contract log for sales invoice
       | il_2                        | invoice_1               | modularContract_prod    | 5           | true      |
 
     And after not more than 30s, no ModCntr_Logs are found:
+      | Record_ID.Identifier | TableName     |
+      | il_1                 | C_InvoiceLine |
+      | il_2                 | C_InvoiceLine |
+
+    And after not more than 30s, no ModCntr_Log_Statuses are found:
       | Record_ID.Identifier | TableName     |
       | il_1                 | C_InvoiceLine |
       | il_2                 | C_InvoiceLine |

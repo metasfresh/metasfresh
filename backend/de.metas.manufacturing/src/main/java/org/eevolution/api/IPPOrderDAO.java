@@ -67,4 +67,6 @@ public interface IPPOrderDAO extends ISingletonService
 	ImmutableList<I_PP_Order> getByProductBOMId(ProductBOMId productBOMId);
 
 	Stream<I_PP_Order> streamDraftedPPOrdersFor(@NonNull ProductBOMVersionsId bomVersionsId);
+
+	Stream<I_PP_Order> stream(@NonNull IQueryFilter<I_PP_Order> filter);
 }

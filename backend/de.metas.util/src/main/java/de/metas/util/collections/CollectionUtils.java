@@ -495,6 +495,46 @@ public final class CollectionUtils
 		return values;
 	}
 
+	public static <K, V> Map<K, V> getAllOrLoadReturningMap(
+			@NonNull final Map<K, V> map,
+			@NonNull final Collection<K> keys,
+			@NonNull final Function<Set<K>, Map<K, V>> valuesLoader)
+	{
+		if (keys.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		//
+		// Fetch from cache what's available
+		final HashMap<K, V> result = new HashMap<>(keys.size());
+		final Set<K> keysToLoad = new HashSet<>();
+		for (final K key : ImmutableSet.copyOf(keys))
+		{
+			final V value = map.get(key);
+			if (value == null)
+			{
+				keysToLoad.add(key);
+			}
+			else
+			{
+				result.put(key, value);
+			}
+		}
+
+		//
+		// Load the missing keys if any
+		if (!keysToLoad.isEmpty())
+		{
+			final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
+			map.putAll(valuesLoaded); // add loaded values to cache
+			result.putAll(valuesLoaded); // add loaded values to the map we will return
+		}
+
+		//
+		return result;
+	}
+
 	public static <K, V> LinkedHashMap<K, V> uniqueLinkedHashMap(
 			@NonNull final Stream<V> stream,
 			@NonNull final Function<? super V, ? extends K> keyFunction)

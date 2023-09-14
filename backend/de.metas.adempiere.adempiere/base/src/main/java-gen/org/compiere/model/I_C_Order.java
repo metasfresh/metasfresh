@@ -2745,6 +2745,28 @@ public interface I_C_Order
 	String COLUMNNAME_Pay_Location_ID = "Pay_Location_ID";
 
 	/**
+	 * Set Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhysicalClearanceDate (@Nullable java.sql.Timestamp PhysicalClearanceDate);
+
+	/**
+	 * Get Physical Clearance Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPhysicalClearanceDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_PhysicalClearanceDate = new ModelColumn<>(I_C_Order.class, "PhysicalClearanceDate", null);
+	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
+
+
+	/**
 	 * Set Payment Rule.
 	 * How you pay the invoice
 	 *

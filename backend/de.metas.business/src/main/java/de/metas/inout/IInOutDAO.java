@@ -15,6 +15,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -155,4 +156,6 @@ public interface IInOutDAO extends ISingletonService
 	Optional<OrderId> getOrderIdForLineId(@NonNull InOutLineId inoutLineId);
 
 	Stream<I_M_InOutLine> stream(@NonNull InOutLineQuery query);
+
+	Stream<I_M_InOut> stream(@NonNull IQueryFilter<I_M_InOut> inOutFilter);
 }

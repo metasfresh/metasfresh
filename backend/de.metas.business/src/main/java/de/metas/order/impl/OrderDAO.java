@@ -28,14 +28,21 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
+import de.metas.order.OrderId;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.shippingnotification.model.X_M_Shipping_Notification;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -109,4 +116,6 @@ public class OrderDAO extends AbstractOrderDAO
 		
 		return DB.getSQLValueBDEx(ITrx.TRXNAME_None, sql, bpartnerId);
 	}
+
+
 }

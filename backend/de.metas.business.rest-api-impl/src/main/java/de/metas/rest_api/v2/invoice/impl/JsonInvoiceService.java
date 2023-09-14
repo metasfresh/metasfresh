@@ -677,7 +677,7 @@ public class JsonInvoiceService
 			@NonNull final JsonDocTypeInfo invoiceDocType,
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final DocTypeId docTypeId = docTypeService.getInvoiceDocTypeId(
+		final DocTypeId docTypeId = docTypeService.getDocTypeId(
 				DocBaseType.ofCode(invoiceDocType.getDocBaseType()),
 				invoiceDocType.getDocSubType(),
 				clientAndOrgId.getOrgId());

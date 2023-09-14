@@ -946,6 +946,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setPhysicalClearanceDate (final @Nullable java.sql.Timestamp PhysicalClearanceDate)
+	{
+		set_Value (COLUMNNAME_PhysicalClearanceDate, PhysicalClearanceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getPhysicalClearanceDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PhysicalClearanceDate);
+	}
+
+	@Override
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);

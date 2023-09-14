@@ -76,8 +76,9 @@ Feature: Interim contract for bpartner
   - validate interim and modular contract log created
   - after receipt validate interim and modular receiptLine Log created
 
-    Given metasfresh contains C_BPartners:
-      | Identifier   | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
+    Given set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
+    And metasfresh contains C_BPartners:
+      | Identifier   | Name                       | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
       | bp_interimPO | bp_interimPO_08022023 | Y            | N              | interimPS                     | 1000002                    |
 
     And metasfresh contains C_BPartner_Locations:
@@ -154,6 +155,15 @@ Feature: Interim contract for bpartner
       | log_6                     | shipmentLine_1       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_2           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
       | log_7                     | shipmentLine_2       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_3           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
       | log_8                     | shipmentLine_2       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
+
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus |
+      | po_orderLine_1       | C_OrderLine     | SP               |
+      | po_orderLine_2       | C_OrderLine     | SP               |
+      | shipmentLine_1       | M_InOutLine     | SP               |
+      | shipmentLine_2       | M_InOutLine     | SP               |
+      | moduleLogContract_2  | C_Flatrate_Term | SP               |
+      | moduleLogContract_4  | C_Flatrate_Term | SP               |
 
 
   @Id:S0306_200
@@ -261,6 +271,15 @@ Feature: Interim contract for bpartner
       | log_6                     | moduleLogContract_4  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_Flatrate_Term | moduleLogContract_2           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 1000       | year_2022                         |
       | log_7                     | shipmentLine_1       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_3           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
       | log_8                     | shipmentLine_2       | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
+
+    And validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
+      | po_orderLine_1       | C_OrderLine     | SP               |                     |
+      | po_orderLine_2       | C_OrderLine     | SP               |                     |
+      | shipmentLine_1       | M_InOutLine     | SP               | 2                   |
+      | shipmentLine_2       | M_InOutLine     | SP               | 2                   |
+      | moduleLogContract_3  | C_Flatrate_Term | SP               |                     |
+      | moduleLogContract_4  | C_Flatrate_Term | SP               |                     |
 
     When create interim contract for modular contract with error
       | C_Flatrate_Term_ID.Identifier | DateFrom   | DateTo     | errorCode                                                        |

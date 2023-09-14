@@ -774,4 +774,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		return null;
 	}
+
+	@Override
+	public Stream<I_C_Invoice> stream(@NonNull final IQueryFilter<I_C_Invoice> invoiceFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
+				.filter(invoiceFilter)
+				.create()
+				.iterateAndStream();
+	}
 }

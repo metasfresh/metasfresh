@@ -2,6 +2,7 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -12,7 +13,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -107,7 +107,7 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
-	
+
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);

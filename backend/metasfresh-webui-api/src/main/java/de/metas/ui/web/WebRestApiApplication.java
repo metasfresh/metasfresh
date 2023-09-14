@@ -142,9 +142,11 @@ public class WebRestApiApplication
 		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
 
 		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-		migrationLogger.addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_T_WEBUI_ViewSelectionLine.Table_Name);
-		migrationLogger.addTableToIgnoreList(I_T_WEBUI_ViewSelection_ToDelete.Table_Name);
+		migrationLogger.addTablesToIgnoreList(
+				I_T_WEBUI_ViewSelection.Table_Name,
+				I_T_WEBUI_ViewSelectionLine.Table_Name,
+				I_T_WEBUI_ViewSelection_ToDelete.Table_Name
+		);
 
 		return Env.getSingleAdempiereInstance(applicationContext);
 	}

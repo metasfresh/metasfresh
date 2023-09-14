@@ -22,24 +22,25 @@ package org.adempiere.ad.modelvalidator;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.compiere.model.I_AD_Client;
-
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.compiere.model.I_AD_Client;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * To be extended by module/project main interceptors.
- *
+ * <p>
  * This interceptor shall be used only for:
  * <ul>
  * <li>module configuration
@@ -48,7 +49,6 @@ import lombok.NonNull;
  * Note that module interceptors can also be registered in the "the normal ways" like any other model interceptor. For example via {@link IModelValidationEngine#addModelValidator(Object, I_AD_Client)}.
  *
  * @author tsa
- *
  */
 public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 {
@@ -64,9 +64,10 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		registerCallouts(Services.get(IProgramaticCalloutProvider.class));
 		setupCaching(Services.get(IModelCacheService.class));
 		setupEventBus();
+		setupMigrationScriptsLogger();
 		onAfterInit();
 	}
-	
+
 	/**
 	 * Called by {@link #onInit(IModelValidationEngine, I_AD_Client)} right before anything else.
 	 */
@@ -85,8 +86,6 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 
 	/**
 	 * Called onInit to setup module table caching
-	 *
-	 * @param cachingService
 	 */
 	protected void setupCaching(final IModelCacheService cachingService)
 	{
@@ -121,7 +120,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		// nothing on this level
 	}
 
-	private final void setupEventBus()
+	private void setupEventBus()
 	{
 		final List<Topic> userNotificationsTopics = getAvailableUserNotificationsTopics();
 		if (userNotificationsTopics != null && !userNotificationsTopics.isEmpty())
@@ -135,11 +134,25 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 
 	}
 
-	/** @return available user notifications topics to listen */
+	/**
+	 * @return available user notifications topics to listen
+	 */
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
 		return ImmutableList.of();
 	}
+
+	private void setupMigrationScriptsLogger()
+	{
+		final Set<String> tableNames = getTableNamesToSkipOnMigrationScriptsLogging();
+		if (tableNames != null && !tableNames.isEmpty())
+		{
+			final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+			migrationLogger.addTablesToIgnoreList(tableNames);
+		}
+	}
+
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging() {return ImmutableSet.of();}
 
 	@Override
 	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
@@ -147,16 +160,20 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		// nothing
 	}
 
-	/** Does nothing. Module interceptors are not allowed to intercept models or documents */
+	/**
+	 * Does nothing. Module interceptors are not allowed to intercept models or documents
+	 */
 	@Override
-	public final void onModelChange(final Object model, final ModelChangeType changeType) throws Exception
+	public final void onModelChange(final Object model, final ModelChangeType changeType)
 	{
 		// nothing
 	}
 
-	/** Does nothing. Module interceptors are not allowed to intercept models or documents */
+	/**
+	 * Does nothing. Module interceptors are not allowed to intercept models or documents
+	 */
 	@Override
-	public final void onDocValidate(final Object model, final DocTimingType timing) throws Exception
+	public final void onDocValidate(final Object model, final DocTimingType timing)
 	{
 		// nothing
 	}

@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
@@ -29,9 +30,12 @@ import de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.service.ISysConfigBL;
@@ -43,20 +47,16 @@ import static de.metas.contracts.modular.ModelAction.COMPLETED;
 
 @Interceptor(I_C_Flatrate_Term.class)
 @Component
+@RequiredArgsConstructor
 public class C_Flatrate_Term
 {
 	private final BPartnerInterimContractService bPartnerInterimContractService;
 	private final ModularContractService modularContractService;
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
-
-	public C_Flatrate_Term(@NonNull final BPartnerInterimContractService bPartnerInterimContractService, final ModularContractService modularContractService)
-	{
-		this.bPartnerInterimContractService = bPartnerInterimContractService;
-		this.modularContractService = modularContractService;
-	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createInterimContractIfNeeded(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
@@ -68,6 +68,12 @@ public class C_Flatrate_Term
 
 		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType()
 				|| !bPartnerInterimContractService.isBpartnerInterimInvoice(flatrateTermRecord))
+		{
+			return;
+		}
+
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
+		if (settings.getSoTrx().isSales())
 		{
 			return;
 		}
@@ -104,5 +110,17 @@ public class C_Flatrate_Term
 		}
 
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
+	}
+
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void onModularContractComplete(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
+		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
+		{
+			return;
+		}
+
+		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.MODULAR_CONTRACT);
 	}
 }
