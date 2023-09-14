@@ -292,13 +292,13 @@ import java.sql.Statement;
 	}
 
 	@Override
-	public final void clearBatch() throws SQLException
+	public void clearBatch() throws SQLException
 	{
 		getStatementImpl().clearBatch();
 	}
 
 	@Override
-	public final int[] executeBatch() throws SQLException
+	public int[] executeBatch() throws SQLException
 	{
 		return getStatementImpl().executeBatch();
 	}

@@ -1,14 +1,22 @@
 package org.adempiere.ad.migration.logger;
 
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.compiere.util.Ini;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
-import java.util.Set;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -35,7 +43,11 @@ import java.util.Set;
 @UtilityClass
 public class MigrationScriptFileLoggerHolder
 {
-	private static final MigrationScriptFileLogger pgMigrationScriptWriter = MigrationScriptFileLogger.of("postgresql");
+	private static final Logger logger = LogManager.getLogger(MigrationScriptFileLoggerHolder.class);
+
+	private static final AtomicBoolean logMigrationScripts = new AtomicBoolean(false);
+	private static final ThreadLocal<MigrationScriptFileLogger> temporaryMigrationScriptWriterHolder = new ThreadLocal<>();
+	private static final MigrationScriptFileLogger _pgMigrationScriptWriter = MigrationScriptFileLogger.newForPostgresql();
 	public static final String DDL_PREFIX = "/* DDL */ ";
 
 	public static void logMigrationScript(@Nullable final String sql)
@@ -47,12 +59,35 @@ public class MigrationScriptFileLoggerHolder
 			return;
 		}
 
-		if (dontLog(sql))
+		logMigrationScript(Sql.ofSql(sql));
+	}
+
+	public static void logMigrationScript(@Nullable final Sql sql)
+	{
+		if (sql == null || isDisabled())
+		{
+			return;
+		}
+		if (dontLog(sql.getSqlWithoutParamsResolved()))
 		{
 			return;
 		}
 
-		pgMigrationScriptWriter.appendSqlStatement(Sql.ofSql(sql));
+		getWriter().appendSqlStatement(sql);
+	}
+
+	public static void logMigrationScript(@NonNull final SqlBatch sqlBatch)
+	{
+		if (isDisabled())
+		{
+			return;
+		}
+		if (dontLog(sqlBatch.getSqlCommand()))
+		{
+			return;
+		}
+
+		getWriter().appendSqlStatements(sqlBatch);
 	}
 
 	public static void logComment(@Nullable final String comment)
@@ -64,23 +99,73 @@ public class MigrationScriptFileLoggerHolder
 			return;
 		}
 
-		pgMigrationScriptWriter.appendSqlStatement(Sql.ofComment(comment));
+		getWriter().appendSqlStatement(Sql.ofComment(comment));
 	}
 
 	public static boolean isDisabled()
 	{
-		return !Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+		return !isEnabled();
 	}
 
-	@Nullable
-	public static Path getCurrentScriptPathOrNull()
+	public static boolean isEnabled()
 	{
-		return pgMigrationScriptWriter.getFilePathOrNull();
+		return logMigrationScripts.get()
+				|| temporaryMigrationScriptWriterHolder.get() != null;
+	}
+
+	public static void setEnabled(final boolean enabled)
+	{
+		logMigrationScripts.set(enabled);
+	}
+
+	public static IAutoCloseable temporaryEnabledLoggingToNewFileIf(final boolean condition)
+	{
+		return condition ? temporaryEnabledLoggingToNewFile() : IAutoCloseable.NOP;
+	}
+
+	public static IAutoCloseable temporaryEnabledLoggingToNewFile()
+	{
+		final MigrationScriptFileLogger migrationScriptFileLoggerNew = MigrationScriptFileLogger.newForPostgresql();
+		migrationScriptFileLoggerNew.setWatcher(Loggables.getLoggableOrLogger(logger, Level.DEBUG));
+		final MigrationScriptFileLogger migrationScriptFileLoggerOld = temporaryMigrationScriptWriterHolder.get();
+		temporaryMigrationScriptWriterHolder.set(migrationScriptFileLoggerNew);
+		return () -> {
+			temporaryMigrationScriptWriterHolder.set(migrationScriptFileLoggerOld);
+			migrationScriptFileLoggerNew.close();
+		};
+	}
+
+	private MigrationScriptFileLogger getWriter()
+	{
+		final MigrationScriptFileLogger temporaryLogger = temporaryMigrationScriptWriterHolder.get();
+		return temporaryLogger != null ? temporaryLogger : _pgMigrationScriptWriter;
+	}
+
+	public static Optional<Path> getCurrentScriptPathIfPresent()
+	{
+		return getWriter().getFilePathIfPresent();
+	}
+
+	@NonNull
+	public static Path getCurrentScriptPath()
+	{
+		return getCurrentScriptPathIfPresent()
+				.orElseThrow(() -> new AdempiereException("No current script file found"));
 	}
 
 	public static void closeMigrationScriptFiles()
 	{
-		pgMigrationScriptWriter.close();
+		getWriter().close();
+	}
+
+	public static void setMigrationScriptDirectory(@NonNull final Path path)
+	{
+		MigrationScriptFileLogger.setMigrationScriptDirectory(path);
+	}
+
+	public static Path getMigrationScriptDirectory()
+	{
+		return MigrationScriptFileLogger.getMigrationScriptDirectory();
 	}
 
 	private static boolean dontLog(@NonNull final String statement)
@@ -109,7 +194,7 @@ public class MigrationScriptFileLoggerHolder
 
 		//
 		// Check that INSERT/UPDATE/DELETE statements are about our ignored tables
-		final Set<String> exceptionTablesUC = Services.get(IMigrationLogger.class).getTablesToIgnoreUC();
+		final ImmutableSet<String> exceptionTablesUC = Services.get(IMigrationLogger.class).getTablesToIgnoreUC(Env.getClientIdOrSystem());
 		for (final String tableNameUC : exceptionTablesUC)
 		{
 			if (uppStmt.startsWith("INSERT INTO " + tableNameUC + " "))

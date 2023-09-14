@@ -22,6 +22,7 @@ package de.metas.banking.model.validator;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.impexp.BankStatementImportProcess;
@@ -44,14 +45,21 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_BankStatement;
 
+import java.util.Set;
+
 /**
  * Banking module activator
  *
  * @author ts
- *
  */
 public class Banking extends AbstractModuleInterceptor
 {
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(I_I_BankStatement.Table_Name, I_I_Datev_Payment.Table_Name);
+	}
+
 	@Override
 	protected void onAfterInit()
 	{

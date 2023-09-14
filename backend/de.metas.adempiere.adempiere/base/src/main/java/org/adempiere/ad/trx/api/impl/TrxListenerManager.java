@@ -152,9 +152,9 @@ public class TrxListenerManager implements ITrxListenerManager
 		try
 		{
 			listeners.hardList().stream()
-					.filter(Objects::nonNull)
-					.filter(listener -> timingInfo.equals(listener.getTiming()))
-					.forEach(listener -> fireListener(onError, timingInfo, trx, listener));
+						.filter(Objects::nonNull)
+						.filter(listener -> timingInfo.equals(listener.getTiming()))
+						.forEach(listener -> fireListener(onError, timingInfo, trx, listener));
 		}
 		finally
 		{

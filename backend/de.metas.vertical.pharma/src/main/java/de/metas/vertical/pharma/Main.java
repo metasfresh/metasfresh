@@ -1,8 +1,6 @@
 package de.metas.vertical.pharma;
 
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.impexp.bpartner.IFABPartnerImportProcess;
 import de.metas.impexp.bpartner.PharmaImportPartnerInterceptor;
 import de.metas.impexp.processing.IImportProcessFactory;
@@ -15,6 +13,10 @@ import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_I_Product;
 import de.metas.vertical.pharma.pricing.PharmaPriceLimitRule;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -42,7 +44,6 @@ import de.metas.vertical.pharma.pricing.PharmaPriceLimitRule;
  * Module activator
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class Main extends AbstractModuleInterceptor
 {
@@ -59,5 +60,11 @@ public class Main extends AbstractModuleInterceptor
 	{
 		engine.addImportInterceptor(I_I_BPartner.Table_Name, PharmaImportPartnerInterceptor.instance);
 		engine.addImportInterceptor(I_I_Product.Table_Name, PharmaImportProductInterceptor.instance);
+	}
+
+	@Override
+	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
+	{
+		return ImmutableSet.of(I_I_Pharma_BPartner.Table_Name, I_I_Pharma_Product.Table_Name);
 	}
 }

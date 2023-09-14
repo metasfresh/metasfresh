@@ -81,9 +81,8 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return (TableRecordReference)model;
 		}
-		else if (model instanceof ITableRecordReference)
+		else if (model instanceof final ITableRecordReference recordRef)
 		{
-			final ITableRecordReference recordRef = (ITableRecordReference)model;
 			return new TableRecordReference(recordRef.getTableName(), recordRef.getRecord_ID());
 		}
 		else
@@ -180,7 +179,7 @@ public final class TableRecordReference implements ITableRecordReference
 
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
-		if (!adTableId.isPresent() || !recordId.isPresent())
+		if (adTableId.isEmpty() || recordId.isEmpty())
 		{
 			return null;
 		}
@@ -206,25 +205,17 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(tableName, recordId);
 	}
 
+	@Nullable
+	public static TableRecordReference ofNullable(@Nullable String tableName, final int recordId)
+	{
+		return tableName != null && !Check.isBlank(tableName) && recordId >= 0
+				? of(tableName, recordId)
+				: null;
+	}
+
 	public static TableRecordReference of(@NonNull final String tableName, @NonNull final RepoIdAware recordId)
 	{
 		return new TableRecordReference(tableName, recordId.getRepoId());
-	}
-
-	/**
-	 * @return immutable list of {@link TableRecordReference}s
-	 */
-	public static List<TableRecordReference> ofRecordIds(final String tableName, final List<Integer> recordIds)
-	{
-		if (recordIds == null || recordIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return recordIds
-				.stream()
-				.map(modelId -> of(tableName, modelId))
-				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@Nullable
@@ -357,9 +348,8 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return true;
 		}
-		else if (obj instanceof TableRecordReference)
+		else if (obj instanceof final TableRecordReference other)
 		{
-			final TableRecordReference other = (TableRecordReference)obj;
 			return Objects.equals(this.tableName, other.tableName)
 					&& this.recordId == other.recordId;
 		}
@@ -528,11 +518,5 @@ public final class TableRecordReference implements ITableRecordReference
 				.stream()
 				.map(ref -> ref.getModel(modelClass))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public boolean isOfType(@NonNull final Class<?> modelClass)
-	{
-		final String modelTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
-		return modelTableName != null && modelTableName.equals(getTableName());
 	}
 }

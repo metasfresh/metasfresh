@@ -1192,6 +1192,11 @@ public final class Env
 		return ClientId.ofRepoId(getAD_Client_ID());
 	}
 
+	public static ClientId getClientIdOrSystem()
+	{
+		return ClientId.ofRepoIdOrSystem(getAD_Client_ID());
+	}
+
 	public static void setClientId(@NonNull final Properties ctx, @NonNull final ClientId clientId)
 	{
 		setContext(ctx, CTXNAME_AD_Client_ID, clientId.getRepoId());
