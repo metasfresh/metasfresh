@@ -343,11 +343,10 @@ public class ModularContractLogDAO
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.filter(filter)
-				.orderBy()
-				.addColumn(I_ModCntr_Log.COLUMNNAME_AD_Table_ID)
-				.addColumn(I_ModCntr_Log.COLUMNNAME_Record_ID)
-				.endOrderBy()
+				.orderBy(I_ModCntr_Log.COLUMNNAME_AD_Table_ID)
+				.orderBy(I_ModCntr_Log.COLUMNNAME_Record_ID)
 				.create()
-				.iterate(I_ModCntr_Log.class);
+				//dev-note: we need a guaranteed iterator as at least in one of the usages we delete log entries while the iteration is ongoing
+				.iterateWithGuaranteedIterator(I_ModCntr_Log.class);
 	}
 }

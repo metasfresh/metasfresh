@@ -146,6 +146,8 @@ public class LogsRecomputationService
 
 	private void recomputeForInvoice(@NonNull final InvoiceId invoiceId)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> invoiceDAO
 				.retrieveLines(invoiceId)
@@ -154,6 +156,8 @@ public class LogsRecomputationService
 
 	private void recomputeForInOut(@NonNull final I_M_InOut inOut)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> inOutDAO
 				.retrieveAllLines(inOut)
@@ -162,6 +166,8 @@ public class LogsRecomputationService
 
 	private void recomputeForOrder(@NonNull final I_C_Order order)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> orderDAO
 				.retrieveOrderLines(order)
@@ -170,6 +176,8 @@ public class LogsRecomputationService
 
 	private void recomputeForFlatrate(@NonNull final I_C_Flatrate_Term term)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> modularContractService
 				.invokeWithModelForAllContractTypes(term, ModelAction.RECREATE_LOGS));
@@ -177,6 +185,8 @@ public class LogsRecomputationService
 
 	private void recomputeForInventory(@NonNull final InventoryId inventoryId)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> inventoryDAO
 				.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
@@ -185,6 +195,8 @@ public class LogsRecomputationService
 
 	private void recomputeForCostCollector(@NonNull final I_PP_Cost_Collector costCollector)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> modularContractService
 				.invokeWithModelForAllContractTypes(costCollector, ModelAction.RECREATE_LOGS));
@@ -192,6 +204,8 @@ public class LogsRecomputationService
 
 	private void recomputeForPPOrder(@NonNull final PPOrderId ppOrderId)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> ppCostCollectorDAO
 				.getByOrderId(ppOrderId)
@@ -201,6 +215,8 @@ public class LogsRecomputationService
 
 	private void recomputeForRecord(@NonNull final TableRecordReference tableRecordReference)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
 		switch (tableRecordReference.getTableName())
 		{
 			case I_PP_Order.Table_Name -> recomputeForPPOrder(tableRecordReference.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
