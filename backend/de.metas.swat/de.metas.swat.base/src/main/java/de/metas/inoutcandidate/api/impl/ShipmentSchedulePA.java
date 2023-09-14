@@ -45,7 +45,6 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
-import de.metas.shippingnotification.ShippingNotification;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -665,18 +664,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.create()
 				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, OrderId.class);
 		return ImmutableSet.copyOf(orderIds);
-	}
-
-	@Override
-	public List<I_M_ShipmentSchedule> retrieveForShipmentNotification(@NonNull final ShippingNotification shippingNotification)
-	{
-		final List<I_M_ShipmentSchedule> scheds = new ArrayList<>();
-		shippingNotification.getLines()
-				.forEach(line -> {
-					final I_M_ShipmentSchedule sched = getById(line.getShipmentScheduleId());
-					scheds.add(sched);
-				});
-		return scheds;
 	}
 
 }

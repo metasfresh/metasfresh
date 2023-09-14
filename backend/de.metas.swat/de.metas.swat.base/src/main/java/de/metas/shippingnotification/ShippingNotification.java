@@ -23,6 +23,7 @@
 package de.metas.shippingnotification;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -30,6 +31,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.exception.ShipmentNotificationException;
@@ -40,7 +42,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.With;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
@@ -182,5 +183,12 @@ public class ShippingNotification
 		{
 			line.setLine(lineNoProvider.getAndIncrement());
 		}
+	}
+
+	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
+	{
+		return lines.stream()
+				.map(ShippingNotificationLine::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

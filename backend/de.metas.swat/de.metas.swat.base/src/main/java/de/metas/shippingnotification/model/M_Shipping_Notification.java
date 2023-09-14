@@ -26,9 +26,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
 import de.metas.shippingnotification.ShippingNotification;
-import de.metas.shippingnotification.ShippingNotificationId;
 import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.util.Services;
@@ -40,8 +38,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.sql.Timestamp;
 
 @Interceptor(I_M_Shipping_Notification.class)
 @Component
@@ -56,7 +52,7 @@ public class M_Shipping_Notification
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
-@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_ID,
 					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_Location_ID,
@@ -76,15 +72,17 @@ public class M_Shipping_Notification
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
 	public void afterVoid(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
 	{
-		final ShippingNotification shippingNotification = shippingNotificationRepository.getById(ShippingNotificationId.ofRepoId(shippingNotificationRecord.getM_Shipping_Notification_ID()));
+		final ShippingNotification shippingNotification = shippingNotificationRepository.getByRecord(shippingNotificationRecord);
 
 		final I_C_Order orderRecord = orderDAO.getById(shippingNotification.getOrderId());
-		orderRecord.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
+		orderRecord.setPhysicalClearanceDate(null);
 		orderDAO.save(orderRecord);
 
-		shipmentSchedulePA.retrieveForShipmentNotification(shippingNotification).forEach(shipmentSchedule -> {
-			shipmentSchedule.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
-			shipmentSchedulePA.save(shipmentSchedule);
-		});
+		shipmentSchedulePA.getByIds(shippingNotification.getShipmentScheduleIds())
+				.values()
+				.forEach(shipmentSchedule -> {
+					shipmentSchedule.setPhysicalClearanceDate(null);
+					shipmentSchedulePA.save(shipmentSchedule);
+				});
 	}
 }

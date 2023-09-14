@@ -11,7 +11,6 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
-import de.metas.shippingnotification.ShippingNotification;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -122,6 +121,4 @@ public interface IShipmentSchedulePA extends ISingletonService
 	ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(OrderId orderId);
 
 	ImmutableSet<OrderId> getOrderIds(IQueryFilter<? extends I_M_ShipmentSchedule> filter);
-
-	List<I_M_ShipmentSchedule> retrieveForShipmentNotification(@NonNull ShippingNotification shippingNotification);
 }
