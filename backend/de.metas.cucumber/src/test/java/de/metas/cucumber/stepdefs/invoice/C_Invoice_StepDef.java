@@ -689,7 +689,7 @@ public class C_Invoice_StepDef
 			}
 		}
 		final String auctionIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Auction_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (de.metas.common.util.Check.isNotBlank(sectionCodeIdentifier))
+		if (de.metas.common.util.Check.isNotBlank(auctionIdentifier))
 		{
 			final I_C_Auction auction = auctionStepDefData.get(auctionIdentifier);
 			softly.assertThat(invoice.getC_Auction_ID()).isEqualTo(auction.getC_Auction_ID());

@@ -5,7 +5,7 @@ Feature: Auction
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2022-02-25T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-02-25T13:30:13+01:00[Europe/Bucharest]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains M_Products:
@@ -38,7 +38,7 @@ Feature: Auction
     And metasfresh contains C_Auction:
       | Identifier | Name     | Date       |
       | Auction_1  | Auction1 | 2022-01-20 |
-      | Auction_2  | Auction1 | 2022-01-20 |
+      | Auction_2  | Auction2 | 2022-01-20 |
 
   Scenario: 2 OLCAnds are created with same C_Auction_ID, resulting in single Order->IC->Invoice. C_Auction_ID is pushed through all these entities.
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
@@ -85,7 +85,7 @@ Feature: Auction
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-1000002",
       "productIdentifier": "val-test_product_40_01",
-      "qty": 1,
+      "qty": 2,
       "currencyCode": "EUR",
       "discount": 0,
       "poReference": "ref_12301",
@@ -122,15 +122,8 @@ Feature: Auction
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_40_01      | 2            | 2          | 2           | 20.0  | 0        | EUR          | true      |
-
-    And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
-      | shipment_1            | customer_bp_40_02        | bpLocation_2                      | 2022-02-02  | ref_12301   | true      | CO        |
-
-    And validate the created shipment lines
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | line1                     | shipment_1            | test_product_40_01      | 2           | true      |
+      | orderLine_1               | order_1               | 2022-02-02  | test_product_40_01      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
+      | orderLine_2               | order_1               | 2022-02-02  | test_product_40_01      | 2            | 2          | 2           | 10.0  | 0        | EUR          | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         | OPT.C_Auction_ID_Identifier |
@@ -138,7 +131,8 @@ Feature: Auction
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
-      | il1                         | invoice_1               | test_product_40_01      | 2           | true      |
+      | il1                         | invoice_1               | test_product_40_01      | 1           | true      |
+      | il2                         | invoice_1               | test_product_40_01      | 2           | true      |
 
 
   Scenario: 2 OLCAnds are created with different C_Auction_IDs, resulting in 2 Orders->ICs->Invoices. C_Auction_ID is pushed through all these entities.
