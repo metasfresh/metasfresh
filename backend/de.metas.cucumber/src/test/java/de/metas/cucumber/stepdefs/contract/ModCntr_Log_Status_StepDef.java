@@ -91,7 +91,7 @@ public class ModCntr_Log_Status_StepDef
 					return ItemProvider.ProviderResult.resultWasFound(modCntrLogStatuses);
 				}
 
-				return ItemProvider.ProviderResult.resultWasNotFound(buildMessageWitAllLogStatuses(row));
+				return ItemProvider.ProviderResult.resultWasNotFound("Found " + modCntrLogStatuses.size() + " records for criteria!");
 			};
 
 			StepDefUtil.tryAndWaitForItem(timeoutSec,
@@ -178,7 +178,7 @@ public class ModCntr_Log_Status_StepDef
 	@NonNull
 	private String buildMessageWitAllLogStatuses(@NonNull final Map<String, String> row)
 	{
-		final StringBuilder messageBuilder = new StringBuilder("No log statuses found for row: " + writeRowAsString(row) + "! See currently created message statuses:");
+		final StringBuilder messageBuilder = new StringBuilder("Row: " + writeRowAsString(row) + "! See currently created message statuses:");
 
 		queryBL.createQueryBuilder(I_ModCntr_Log_Status.class)
 				.addCompareFilter(I_ModCntr_Log_Status.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER_OR_EQUAL, scenarioLifeCycleStepDef.getScenarioStartTimeOr(Instant.ofEpochMilli(0)))

@@ -34,6 +34,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.PPOrderLogDetail;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.handlingunits.modular.impl.PPCostCollectorModularContractHandler;
@@ -59,6 +60,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -152,6 +154,9 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID()))
+											.logDetail(PPOrderLogDetail.builder()
+															   .costCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID()))
+															   .build())
 											.build());
 	}
 
@@ -179,6 +184,9 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 				.referencedModel(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
 				.flatrateTermId(contractId)
 				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
+				.logDetail(PPOrderLogDetail.builder()
+								   .costCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID()))
+								   .build())
 				.build();
 	}
 }

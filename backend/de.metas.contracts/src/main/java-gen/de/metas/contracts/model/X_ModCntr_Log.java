@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1586168036L;
+	private static final long serialVersionUID = -1934756832L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -181,7 +181,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public String getContractType() 
+	public String getContractType()
 	{
 		return get_ValueAsString(COLUMNNAME_ContractType);
 	}
@@ -205,7 +205,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public String getDescription() 
+	public String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -335,7 +335,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public String getModCntr_Log_DocumentType() 
+	public String getModCntr_Log_DocumentType()
 	{
 		return get_ValueAsString(COLUMNNAME_ModCntr_Log_DocumentType);
 	}
@@ -380,6 +380,33 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getModCntr_Type_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Type_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class);
+	}
+
+	@Override
+	public void setPP_Cost_Collector(final org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class, PP_Cost_Collector);
+	}
+
+	@Override
+	public void setPP_Cost_Collector_ID (final int PP_Cost_Collector_ID)
+	{
+		if (PP_Cost_Collector_ID < 1) 
+			set_Value (COLUMNNAME_PP_Cost_Collector_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Cost_Collector_ID, PP_Cost_Collector_ID);
+	}
+
+	@Override
+	public int getPP_Cost_Collector_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Cost_Collector_ID);
 	}
 
 	@Override

@@ -375,8 +375,8 @@ Feature: Modular contract log for sales invoice
       | C_Invoice | invoice_1            |
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName     | ProcessingStatus | OPT.noOfLogStatuses |
-      | il_1                 | C_InvoiceLine | SP               | 2                   |
-      | il_2                 | C_InvoiceLine | SP               | 2                   |
+      | il_1                 | C_InvoiceLine | SP               | 3                   |
+      | il_2                 | C_InvoiceLine | SP               | 3                   |
     Then after not more than 30s, no ModCntr_Logs are found:
       | Record_ID.Identifier | TableName     |
       | il_1                 | C_InvoiceLine |

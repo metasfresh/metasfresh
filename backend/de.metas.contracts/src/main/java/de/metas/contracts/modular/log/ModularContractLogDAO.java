@@ -122,6 +122,11 @@ public class ModularContractLogDAO
 		log.setDescription(request.getDescription());
 		log.setModCntr_Type_ID(ModularContractTypeId.toRepoId(request.getModularContractTypeId()));
 
+		if (request.getLogDetail() != null)
+		{
+			request.getLogDetail().setToLog(log);
+		}
+
 		save(log);
 
 		return ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
@@ -221,13 +226,18 @@ public class ModularContractLogDAO
 
 	public void delete(@NonNull final LogEntryDeleteRequest request)
 	{
-		queryBL.createQueryBuilder(I_ModCntr_Log.class)
+		final IQueryBuilder<I_ModCntr_Log> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, request.referencedModel().getAD_Table_ID())
 				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, request.referencedModel().getRecord_ID())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, request.flatrateTermId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType())
-				.create()
-				.delete(true);
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType());
+
+		if (request.logDetail() != null)
+		{
+			request.logDetail().setToLogQuery(queryBuilder);
+		}
+
+		queryBuilder.create().delete(true);
 	}
 
 	private IQueryBuilder<I_ModCntr_Log> toSqlQuery(@NonNull final ModularContractLogQuery query)

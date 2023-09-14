@@ -22,18 +22,29 @@
 
 package de.metas.contracts.modular.log;
 
-import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_ModCntr_Log;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.eevolution.api.PPCostCollectorId;
 
-import javax.annotation.Nullable;
-
+@Value
 @Builder
-public record LogEntryDeleteRequest(
-		@NonNull TableRecordReference referencedModel,
-		@NonNull FlatrateTermId flatrateTermId,
-		@NonNull LogEntryContractType logEntryContractType,
-		@Nullable ILogDetail logDetail)
+public class PPOrderLogDetail implements ILogDetail
 {
+	@NonNull
+	PPCostCollectorId costCollectorId;
+
+	@Override
+	public void setToLog(@NonNull final I_ModCntr_Log log)
+	{
+		log.setPP_Cost_Collector_ID(costCollectorId.getRepoId());
+	}
+
+	@Override
+	public void setToLogQuery(@NonNull final IQueryBuilder<I_ModCntr_Log> logQuery)
+	{
+		logQuery.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_PP_Cost_Collector_ID, costCollectorId);
+	}
 }

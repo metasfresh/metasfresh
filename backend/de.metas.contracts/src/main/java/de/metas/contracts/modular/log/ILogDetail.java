@@ -22,18 +22,13 @@
 
 package de.metas.contracts.modular.log;
 
-import de.metas.contracts.FlatrateTermId;
-import lombok.Builder;
+import de.metas.contracts.model.I_ModCntr_Log;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.ad.dao.IQueryBuilder;
 
-import javax.annotation.Nullable;
-
-@Builder
-public record LogEntryDeleteRequest(
-		@NonNull TableRecordReference referencedModel,
-		@NonNull FlatrateTermId flatrateTermId,
-		@NonNull LogEntryContractType logEntryContractType,
-		@Nullable ILogDetail logDetail)
+public interface ILogDetail
 {
+	void setToLog(@NonNull I_ModCntr_Log log);
+
+	void setToLogQuery(@NonNull IQueryBuilder<I_ModCntr_Log> logQuery);
 }

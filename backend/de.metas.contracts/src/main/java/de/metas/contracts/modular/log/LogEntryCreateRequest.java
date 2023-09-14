@@ -98,4 +98,7 @@ public class LogEntryCreateRequest
 
 	@Builder.Default
 	boolean isBillable = true;
+
+	@Nullable
+	ILogDetail logDetail;
 }
