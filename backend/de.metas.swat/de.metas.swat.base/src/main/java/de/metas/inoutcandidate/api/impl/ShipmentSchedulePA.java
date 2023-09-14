@@ -82,6 +82,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOf
 public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
 	 */
@@ -142,12 +144,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			//
 			// Order Line
 			+ "\n   " + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private static OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
-	}
 
 	@Override
 	public I_M_ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
@@ -281,6 +277,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		}
 
 		return createOlAndScheds(shipmentSchedules);
+	}
+
+	private static OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
 
 	private List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
