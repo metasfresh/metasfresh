@@ -31,6 +31,7 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.lang.SOTrx;
@@ -41,12 +42,15 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
@@ -55,8 +59,8 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	@NonNull
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModularContractLogService contractLogService;
 
 	@NonNull
 	@Override
@@ -94,7 +98,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 
 	@Override
 	public void validateAction(
-			@NonNull final I_C_OrderLine ignored,
+			@NonNull final I_C_OrderLine orderLine,
 			@NonNull final ModelAction action)
 	{
 		switch (action)
@@ -104,6 +108,8 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 			}
 			case VOIDED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 			case REACTIVATED, REVERSED -> throw new AdempiereException(ModularContract_Constants.MSG_REACTIVATE_NOT_ALLOWED);
+			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(orderLine),
+																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}

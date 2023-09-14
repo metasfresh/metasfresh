@@ -27,6 +27,9 @@ import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Log_Status;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
+import de.metas.cucumber.stepdefs.ScenarioLifeCycleStepDef;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
@@ -36,7 +39,9 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Table;
@@ -45,56 +50,54 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.cucumber.stepdefs.StepDefUtil.writeRowAsString;
 import static org.assertj.core.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class ModCntr_Log_Status_StepDef
 {
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final ModCntr_Log_Status_StepDefData modCntrLogStatusTable;
 	private final C_Flatrate_Term_StepDefData flatrateTermTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_InventoryLine_StepDefData inventoryLineTable;
 	private final M_InOutLine_StepDefData inOutLineTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final PP_Cost_Collector_StepDefData costCollectorTable;
+	private final ScenarioLifeCycleStepDef scenarioLifeCycleStepDef;
 
-	public ModCntr_Log_Status_StepDef(
-			@NonNull final ModCntr_Log_Status_StepDefData modCntrLogStatusTable,
-			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
-			@NonNull final M_InOutLine_StepDefData inOutLineTable,
-			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
-			@NonNull final PP_Cost_Collector_StepDefData costCollectorTable)
-	{
-		this.modCntrLogStatusTable = modCntrLogStatusTable;
-		this.flatrateTermTable = flatrateTermTable;
-		this.orderLineTable = orderLineTable;
-		this.inventoryLineTable = inventoryLineTable;
-		this.inOutLineTable = inOutLineTable;
-		this.invoiceLineTable = invoiceLineTable;
-		this.costCollectorTable = costCollectorTable;
-	}
-
-	@And("validate ModCntr_Log_Statuses:")
-	public void validateModCntr_Log_Statuses(@NonNull final DataTable dataTable) throws InterruptedException
+	@And("^after not more than (.*)s, validate ModCntr_Log_Statuses:$")
+	public void validateModCntr_Log_Statuses(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			final List<I_ModCntr_Log_Status> modCntrLogStatuses = fetchModCntrLogStatusList(row);
 
-			final Integer noOfLogStatuses = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.noOfLogStatuses"))
-					.orElse(1);
+			final ItemProvider<List<I_ModCntr_Log_Status>> locateStatuses = () -> {
+				final List<I_ModCntr_Log_Status> modCntrLogStatuses = fetchModCntrLogStatusList(row);
 
-			assertThat(modCntrLogStatuses.size()).isEqualTo(noOfLogStatuses);
+				final Integer noOfLogStatuses = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.noOfLogStatuses"))
+						.orElse(1);
+
+				if (modCntrLogStatuses.size() == noOfLogStatuses)
+				{
+					return ItemProvider.ProviderResult.resultWasFound(modCntrLogStatuses);
+				}
+
+				return ItemProvider.ProviderResult.resultWasNotFound("Found " + modCntrLogStatuses.size() + " records for criteria!");
+			};
+
+			StepDefUtil.tryAndWaitForItem(timeoutSec,
+										  500,
+										  locateStatuses,
+										  () -> buildMessageWitAllLogStatuses(row));
 		}
 	}
 
@@ -163,12 +166,31 @@ public class ModCntr_Log_Status_StepDef
 					case I_C_OrderLine.Table_Name -> orderLineTable.get(stepDefDataIdentifier).getC_OrderLine_ID();
 					case I_M_InventoryLine.Table_Name -> inventoryLineTable.get(stepDefDataIdentifier).getM_InventoryLine_ID();
 					case I_M_InOutLine.Table_Name -> inOutLineTable.get(stepDefDataIdentifier).getM_InOutLine_ID();
-					case I_PP_Cost_Collector.Table_Name -> costCollectorTable.get(stepDefDataIdentifier).getPP_Order_ID();
+					case I_PP_Cost_Collector.Table_Name -> costCollectorTable.get(stepDefDataIdentifier).getPP_Cost_Collector_ID();
 					case I_C_InvoiceLine.Table_Name -> invoiceLineTable.get(stepDefDataIdentifier).getC_InvoiceLine_ID();
 					case I_C_Flatrate_Term.Table_Name -> flatrateTermTable.get(stepDefDataIdentifier).getC_Flatrate_Term_ID();
 					default -> throw new AdempiereException("Unsupported TableName !")
 							.appendParametersToMessage()
 							.setParameter("TableName", tableName);
 				};
+	}
+
+	@NonNull
+	private String buildMessageWitAllLogStatuses(@NonNull final Map<String, String> row)
+	{
+		final StringBuilder messageBuilder = new StringBuilder("Row: " + writeRowAsString(row) + "! See currently created message statuses:");
+
+		queryBL.createQueryBuilder(I_ModCntr_Log_Status.class)
+				.addCompareFilter(I_ModCntr_Log_Status.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER_OR_EQUAL, scenarioLifeCycleStepDef.getScenarioStartTimeOr(Instant.ofEpochMilli(0)))
+				.create()
+				.forEach(logRecord -> messageBuilder
+						.append("\n")
+						.append(I_ModCntr_Log_Status.COLUMNNAME_Record_ID).append("=").append(logRecord.getRecord_ID()).append(", ")
+						.append(I_ModCntr_Log_Status.COLUMNNAME_AD_Table_ID).append("=").append(logRecord.getAD_Table_ID()).append(", ")
+						.append(I_ModCntr_Log_Status.COLUMNNAME_ProcessingStatus).append("=").append(logRecord.getProcessingStatus()).append(", ")
+						.append(I_ModCntr_Log_Status.COLUMNNAME_AD_Issue_ID).append("=").append(logRecord.getAD_Issue_ID()).append(";")
+				);
+
+		return messageBuilder.toString();
 	}
 }
