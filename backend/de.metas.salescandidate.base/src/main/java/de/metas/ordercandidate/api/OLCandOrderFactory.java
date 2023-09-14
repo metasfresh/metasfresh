@@ -328,8 +328,8 @@ class OLCandOrderFactory
 			final Auction auction = auctionService.getByIdOrNull(auctionId);
 			if (auction != null)
 			{
-				order.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(auction.getHarvestingCalendarId()));
-				order.setHarvesting_Year_ID(YearId.toRepoId(auction.getHarvestingYearId()));
+				order.setC_Harvesting_Calendar_ID(CalendarId.toRepoId(auction.harvestingCalendarId()));
+				order.setHarvesting_Year_ID(YearId.toRepoId(auction.harvestingYearId()));
 			}
 		}
 

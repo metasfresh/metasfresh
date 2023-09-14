@@ -26,15 +26,13 @@ import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Value
 @Builder
-public class Auction
+public record Auction(
+		@NonNull AuctionId auctionId,
+		@Nullable YearId harvestingYearId,
+		@Nullable CalendarId harvestingCalendarId)
 {
-	@NonNull AuctionId auctionId;
-	@Nullable YearId harvestingYearId;
-	@Nullable CalendarId harvestingCalendarId;
 }
