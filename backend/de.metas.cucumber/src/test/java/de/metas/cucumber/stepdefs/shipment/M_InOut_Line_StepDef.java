@@ -369,6 +369,8 @@ public class M_InOut_Line_StepDef
 				softly.assertThat(shipmentLine.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
 			}
 		}
+
+		softly.assertAll();
 	}
 
 	@Given("^delete M_InOutLine identified by (.*) is expecting error$")
