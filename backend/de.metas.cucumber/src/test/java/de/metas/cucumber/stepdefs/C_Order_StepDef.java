@@ -906,7 +906,7 @@ public class C_Order_StepDef
 		}
 
 		final String auctionIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_C_Auction_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(sectionCodeIdentifier))
+		if (Check.isNotBlank(auctionIdentifier))
 		{
 			final I_C_Auction auction = auctionStepDefData.get(auctionIdentifier);
 			softly.assertThat(order.getC_Auction_ID()).isEqualTo(auction.getC_Auction_ID());
