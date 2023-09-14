@@ -72,7 +72,7 @@ public class ShippingNotification
 	@NonNull
 	private final Instant physicalClearanceDate;
 	@NonNull
-	private final YearAndCalendarId harvestringYearId;
+	private final YearAndCalendarId harvestingYearId;
 	@Nullable
 	private final String poReference;
 	@Nullable
@@ -102,7 +102,7 @@ public class ShippingNotification
 			@NonNull final LocatorId locatorId,
 			@NonNull final OrderId orderId,
 			@NonNull final Instant physicalClearanceDate,
-			@NonNull final YearAndCalendarId harvestringYearId,
+			@NonNull final YearAndCalendarId harvestingYearId,
 			@Nullable final String poReference,
 			@Nullable final String description,
 			@NonNull final DocStatus docStatus,
@@ -118,7 +118,7 @@ public class ShippingNotification
 		this.locatorId = locatorId;
 		this.orderId = orderId;
 		this.physicalClearanceDate = physicalClearanceDate;
-		this.harvestringYearId = harvestringYearId;
+		this.harvestingYearId = harvestingYearId;
 		this.poReference = poReference;
 		this.description = description;
 		this.docStatus = docStatus;

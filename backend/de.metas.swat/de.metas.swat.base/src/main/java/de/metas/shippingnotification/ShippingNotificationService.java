@@ -85,7 +85,7 @@ public class ShippingNotificationService
 				.auctionId(orderRecord.getC_Auction_ID())
 				.physicalClearanceDate(physicalClearanceDate)
 				.locatorId(LocatorId.ofRepoId(orderRecord.getM_Warehouse_ID(), orderRecord.getM_Locator_ID()))
-				.harvestringYearId(YearAndCalendarId.ofRepoId(orderRecord.getHarvesting_Year_ID(), orderRecord.getC_Harvesting_Calendar_ID()))
+				.harvestingYearId(YearAndCalendarId.ofRepoId(orderRecord.getHarvesting_Year_ID(), orderRecord.getC_Harvesting_Calendar_ID()))
 				.poReference(orderRecord.getPOReference())
 				.description(orderRecord.getDescription())
 				.docStatus(DocStatus.Drafted)
