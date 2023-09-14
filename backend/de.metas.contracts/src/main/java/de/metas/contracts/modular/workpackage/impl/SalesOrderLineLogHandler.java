@@ -125,6 +125,7 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 
 		final String description = msgBL.getMsg(MSG_ON_COMPLETE_DESCRIPTION, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
 
+		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 		final ProductPrice priceActual = Optional.of(orderLine)
 				.filter(line -> line.getPriceActual() != null && line.getC_UOM_ID() > 0 && line.getC_Currency_ID() > 0)
 				.map(line -> ProductPrice.builder()
@@ -153,6 +154,7 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.amount(amount)
 											.configId(createLogRequest.getConfigId())
 											.priceActual(priceActual)
 											.build());
