@@ -46,7 +46,7 @@ public class ShippingNotificationDocActionCustomizer implements IDocActionOption
 	@Override
 	public void customizeValidActions(final DocActionOptionsContext optionsCtx)
 	{
-		final Set<String> docActions = new LinkedHashSet<>(optionsCtx.getDocActions());
+		final Set<String> docActions = new LinkedHashSet<>();
 
 		final String docStatus = optionsCtx.getDocStatus();
 		if (IDocument.STATUS_Drafted.equals(docStatus))

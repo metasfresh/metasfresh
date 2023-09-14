@@ -24,14 +24,24 @@ package de.metas.shippingnotification.model;
 
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.shippingnotification.ShippingNotification;
+import de.metas.shippingnotification.ShippingNotificationId;
+import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.ShippingNotificationService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.sql.Timestamp;
 
 @Interceptor(I_M_Shipping_Notification.class)
 @Component
@@ -41,8 +51,12 @@ public class M_Shipping_Notification
 
 	private final IDocumentLocationBL documentLocationBL;
 	private final ShippingNotificationService shippingNotificationService;
+	private final ShippingNotificationRepository shippingNotificationRepository;
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
+@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_ID,
 					I_M_Shipping_Notification.COLUMNNAME_C_BPartner_Location_ID,
@@ -57,5 +71,20 @@ public class M_Shipping_Notification
 					shippingNotification.updateBPAddress(renderedLocation.getRenderedAddress());
 				}
 		);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
+	public void afterVoid(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
+	{
+		final ShippingNotification shippingNotification = shippingNotificationRepository.getById(ShippingNotificationId.ofRepoId(shippingNotificationRecord.getM_Shipping_Notification_ID()));
+
+		final I_C_Order orderRecord = orderDAO.getById(shippingNotification.getOrderId());
+		orderRecord.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
+		orderDAO.save(orderRecord);
+
+		shipmentSchedulePA.retrieveForShipmentNotification(shippingNotification).forEach(shipmentSchedule -> {
+			shipmentSchedule.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
+			shipmentSchedulePA.save(shipmentSchedule);
+		});
 	}
 }

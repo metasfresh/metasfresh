@@ -40,6 +40,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.With;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
@@ -75,7 +76,8 @@ public class ShippingNotification
 	@Nullable
 	private final String description;
 	@NonNull
-	private final DocStatus docStatus;
+	@Setter
+	private DocStatus docStatus;
 	private final ArrayList<ShippingNotificationLine> lines;
 	@Nullable
 	private ShippingNotificationId id;

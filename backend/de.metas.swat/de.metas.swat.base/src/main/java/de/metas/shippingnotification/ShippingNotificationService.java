@@ -59,14 +59,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ShippingNotificationService
 {
+	private static final String REVERSE_INDICATOR = "^";
 	private final ShippingNotificationRepository shippingNotificationRepository;
 	private final DocTypeService docTypeService;
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-
-	private static final String REVERSE_INDICATOR = "^";
 
 	public void generateShippingNotificationAndPropagatePhysicalClearanceDate(
 			@NonNull final OrderId orderId,
@@ -82,8 +81,8 @@ public class ShippingNotificationService
 		final ShippingNotification shippingNotification = ShippingNotification.builder()
 				.orgId(orgId)
 				.docTypeId(docTypeId)
-				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID()))
-				.contactId(BPartnerContactId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID(), orderRecord.getAD_User_ID()))
+				.bpartnerAndLocationId(getBPartnerLocationId(orderRecord))
+				.contactId(getBPartnerContactId(orderRecord))
 				.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.auctionId(orderRecord.getC_Auction_ID())
 				.physicalClearanceDate(physicalClearanceDate)
@@ -93,8 +92,8 @@ public class ShippingNotificationService
 				.description(orderRecord.getDescription())
 				.docStatus(DocStatus.Drafted)
 				.lines(shipmentSchedules.stream()
-						.map(this::toShippingNotificationLine)
-						.collect(Collectors.toList()))
+							   .map(this::toShippingNotificationLine)
+							   .collect(Collectors.toList()))
 				.build();
 
 		shippingNotificationRepository.save(shippingNotification);
@@ -108,6 +107,31 @@ public class ShippingNotificationService
 
 		orderRecord.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
 		orderDAO.save(orderRecord);
+	}
+
+	private BPartnerLocationId getBPartnerLocationId(@NonNull final I_C_Order orderRecord)
+	{
+		if (orderRecord.isDropShip())
+		{
+			return BPartnerLocationId.ofRepoId(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID());
+		}
+		else
+		{
+			return BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID());
+		}
+	}
+
+
+	private BPartnerContactId getBPartnerContactId(@NonNull final I_C_Order orderRecord)
+	{
+		if (orderRecord.isDropShip())
+		{
+			return BPartnerContactId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_User_ID());
+		}
+		else
+		{
+			return BPartnerContactId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID(), orderRecord.getAD_User_ID());
+		}
 	}
 
 	public ShippingNotificationLine toShippingNotificationLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -149,6 +173,7 @@ public class ShippingNotificationService
 		shippingNotificationRepository.saveRecord(reversalRecord);
 
 		shippingNotification.setReversalId(ShippingNotificationLoaderAndSaver.extractId(reversalRecord));
+		shippingNotification.setDocStatus(DocStatus.Reversed);
 	}
 
 	public void reverseIfExistsShippingNotifications(@NonNull final OrderId orderId)
