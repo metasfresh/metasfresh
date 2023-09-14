@@ -213,6 +213,12 @@ public class M_InOut_StepDef
 				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
 				assertThat(shipment.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 			}
+
+			final Boolean isInterimInvoiceable = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_InOut.COLUMNNAME_IsInterimInvoiceable);
+			if (isInterimInvoiceable != null)
+			{
+				assertThat(shipment.isInterimInvoiceable()).isEqualTo(isInterimInvoiceable);
+			}
 		}
 	}
 
