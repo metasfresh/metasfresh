@@ -307,16 +307,15 @@ public class M_InOut_Line_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-
 		if (Check.isNotBlank(x12de355Code))
 		{
 			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-			assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+			softly.assertThat(shipmentLine.getC_UOM_ID()).as("C_UOM_ID").isEqualTo(uomId.getRepoId());
 		}
 
-		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
-		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
-		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
+		softly.assertThat(shipmentLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
+		softly.assertThat(shipmentLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementqty);
+		softly.assertThat(shipmentLine.isProcessed()).as("Processed").isEqualTo(processed);
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
@@ -332,7 +331,7 @@ public class M_InOut_Line_StepDef
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_QtyEntered);
 		if (qtyEntered != null)
 		{
-			assertThat(shipmentLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+			softly.assertThat(shipmentLine.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered);
 		}
 
 		final String flatrateTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -343,6 +342,8 @@ public class M_InOut_Line_StepDef
 		}
 
 		validateShipmentLine_HarvestingCalendarAndYear(shipmentLine, row, softly);
+
+		softly.assertAll();
 	}
 
 	private void validateShipmentLine_HarvestingCalendarAndYear(final @NonNull I_M_InOutLine shipmentLine, final @NonNull Map<String, String> row, final SoftAssertions softly)
