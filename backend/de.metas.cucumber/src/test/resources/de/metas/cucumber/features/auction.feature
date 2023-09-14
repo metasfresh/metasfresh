@@ -135,6 +135,7 @@ Feature: Auction
       | il2                         | invoice_1               | test_product_40_01      | 2           | true      |
 
 
+@ignore # because the header aggregation by C_Auction_ID is not enabled.
   Scenario: 2 OLCAnds are created with different C_Auction_IDs, resulting in 2 Orders->ICs->Invoices. C_Auction_ID is pushed through all these entities.
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """

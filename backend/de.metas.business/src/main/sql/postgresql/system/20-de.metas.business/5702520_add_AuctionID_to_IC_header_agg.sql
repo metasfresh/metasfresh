@@ -1,9 +1,5 @@
--- 2023-09-13T11:26:40.034781Z
-UPDATE C_Aggregation SET IsDefault='N',Updated=TO_TIMESTAMP('2023-09-13 14:26:40.03','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_Aggregation_ID=540015
-;
-
 -- 2023-09-13T11:27:20.095161400Z
-INSERT INTO C_Aggregation (AD_Client_ID,AD_Org_ID,AD_Table_ID,C_Aggregation_ID,Created,CreatedBy,EntityType,IsActive,IsDefault,IsDefaultPO,IsDefaultSO,Name,Updated,UpdatedBy) VALUES (1000000,1000000,540270,540016,TO_TIMESTAMP('2023-09-13 14:27:20.093','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.invoicecandidate','Y','Y','N','N','invoicing-agg-per-auction',TO_TIMESTAMP('2023-09-13 14:27:20.093','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO C_Aggregation (AD_Client_ID,AD_Org_ID,AD_Table_ID,C_Aggregation_ID,Created,CreatedBy,EntityType,IsActive,IsDefault,IsDefaultPO,IsDefaultSO,Name,Updated,UpdatedBy) VALUES (1000000,1000000,540270,540016,TO_TIMESTAMP('2023-09-13 14:27:20.093','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.invoicecandidate','Y','N','N','N','invoicing-agg-per-auction',TO_TIMESTAMP('2023-09-13 14:27:20.093','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2023-09-13T11:27:22.328387300Z
