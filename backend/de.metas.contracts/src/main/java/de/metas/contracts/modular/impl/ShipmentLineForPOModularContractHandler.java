@@ -58,7 +58,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class ShipmentLineModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
+public class ShipmentLineForPOModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

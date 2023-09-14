@@ -28,7 +28,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.impl.ShipmentLineModularContractHandler;
+import de.metas.contracts.modular.impl.ShipmentLineForPOModularContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -64,7 +64,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class ShipmentLineLogHandler implements IModularContractLogHandler<I_M_InOutLine>
+class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOutLine>
 {
 	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
 	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
@@ -75,7 +75,7 @@ class ShipmentLineLogHandler implements IModularContractLogHandler<I_M_InOutLine
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final ShipmentLineModularContractHandler contractHandler;
+	private final ShipmentLineForPOModularContractHandler contractHandler;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_InOutLine> request)
