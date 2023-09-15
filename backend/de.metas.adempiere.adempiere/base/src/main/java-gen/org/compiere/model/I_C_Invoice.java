@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice
  *  @author metasfresh (generated) 
@@ -221,28 +220,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
-
-	/**
-	 * Get Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_BankAccount_ID();
-
-	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
-
-	/**
 	 * Set Auction.
 	 *
 	 * <br>Type: TableDir
@@ -351,6 +328,28 @@ public interface I_C_Invoice
 	int getC_BPartner_SalesRep_ID();
 
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+
+	/**
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_BankAccount_ID();
+
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Campaign.
@@ -2356,7 +2355,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
-	 * Set Assignment.
+	 * Set UserElementString1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2365,7 +2364,7 @@ public interface I_C_Invoice
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get Assignment.
+	 * Get UserElementString1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2377,7 +2376,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set Ship-from.
+	 * Set UserElementString2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2386,7 +2385,7 @@ public interface I_C_Invoice
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get Ship-from.
+	 * Get UserElementString2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2398,7 +2397,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
 
 	/**
-	 * Set Ship-to.
+	 * Set UserElementString3.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2407,7 +2406,7 @@ public interface I_C_Invoice
 	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
-	 * Get Ship-to.
+	 * Get UserElementString3.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

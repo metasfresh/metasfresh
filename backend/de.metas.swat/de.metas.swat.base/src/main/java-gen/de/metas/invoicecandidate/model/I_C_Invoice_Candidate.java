@@ -1,15 +1,14 @@
 package de.metas.invoicecandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Invoice_Candidate
+public interface I_C_Invoice_Candidate 
 {
 
 	String Table_Name = "C_Invoice_Candidate";
