@@ -44,6 +44,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -59,6 +60,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
@@ -77,6 +79,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
 	private final ModularContractLogDAO contractLogDAO;
 	private final SalesInvoiceLineModularContractHandler contractHandler;
@@ -109,7 +112,8 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_InvoiceLine> createLogRequest)
 	{
-		final I_C_InvoiceLine invoiceLine = createLogRequest.getHandleLogsRequest().getModel();
+		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper
+				.create(createLogRequest.getHandleLogsRequest().getModel(), de.metas.adempiere.model.I_C_InvoiceLine.class);
 
 		final I_C_Flatrate_Term contract = flatrateBL.getById(createLogRequest.getContractId());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
@@ -142,6 +146,8 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 						.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 						.description(description)
 						.modularContractTypeId(createLogRequest.getTypeId())
+						.configId(createLogRequest.getConfigId())
+						.priceActual(invoiceLineBL.getPriceActual(invoiceLine))
 						.build()
 		);
 	}

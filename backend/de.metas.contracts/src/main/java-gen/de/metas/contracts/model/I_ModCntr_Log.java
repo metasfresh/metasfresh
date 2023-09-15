@@ -496,6 +496,31 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
 
 	/**
+	 * Set Modules.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Module_ID (int ModCntr_Module_ID);
+
+	/**
+	 * Get Modules.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Module_ID();
+
+	@Nullable I_ModCntr_Module getModCntr_Module();
+
+	void setModCntr_Module(@Nullable I_ModCntr_Module ModCntr_Module);
+
+	ModelColumn<I_ModCntr_Log, I_ModCntr_Module> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Module_ID", I_ModCntr_Module.class);
+	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
+
+	/**
 	 * Set Contract Module Type.
 	 *
 	 * <br>Type: Search
@@ -519,6 +544,47 @@ public interface I_ModCntr_Log
 
 	ModelColumn<I_ModCntr_Log, I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Type_ID", I_ModCntr_Type.class);
 	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
+
+	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
+
+	/**
+	 * Set Price Actual.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceActual (@Nullable BigDecimal PriceActual);
+
+	/**
+	 * Get Price Actual.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceActual();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_PriceActual = new ModelColumn<>(I_ModCntr_Log.class, "PriceActual", null);
+	String COLUMNNAME_PriceActual = "PriceActual";
 
 	/**
 	 * Set Manufacturing Cost Collector.

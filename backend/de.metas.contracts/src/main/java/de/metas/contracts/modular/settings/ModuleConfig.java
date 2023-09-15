@@ -32,6 +32,8 @@ import lombok.Value;
 @Builder
 public class ModuleConfig
 {
+	@NonNull ModuleConfigId id;
+
 	@NonNull SeqNo seqNo;
 
 	@NonNull String name;
