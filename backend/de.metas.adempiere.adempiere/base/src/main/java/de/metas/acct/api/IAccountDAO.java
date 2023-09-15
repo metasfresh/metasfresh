@@ -2,6 +2,7 @@ package de.metas.acct.api;
 
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
@@ -49,6 +50,8 @@ public interface IAccountDAO extends ISingletonService
 	List<I_C_ValidCombination> getByElementTypes(@NonNull Set<AcctSchemaElementType> elementTypes, int value);
 
 	List<I_C_ValidCombination> getByAcctSchemaId(@NonNull AcctSchemaId acctSchemaId);
+
+	List<I_C_ValidCombination> getByClientId(@NonNull ClientId clientId);
 
 	@NonNull
 	AccountId getOrCreate(@NonNull AccountDimension dimension);

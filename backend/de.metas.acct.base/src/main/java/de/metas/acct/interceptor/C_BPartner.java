@@ -23,9 +23,9 @@
 package de.metas.acct.interceptor;
 
 import ch.qos.logback.classic.Level;
+import de.metas.acct.accounts.ValidCombinationService;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.common.util.EmptyUtil;
@@ -34,6 +34,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
@@ -44,13 +45,14 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_BPartner.class)
 @Component
+@RequiredArgsConstructor
 public class C_BPartner
 {
 	private final static Logger logger = LogManager.getLogger(C_BPartner.class);
 
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
-	private final IAccountBL accountBL = Services.get(IAccountBL.class);
+	private final ValidCombinationService validCombinationService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Value, I_C_BPartner.COLUMNNAME_AD_Org_ID })
@@ -82,6 +84,6 @@ public class C_BPartner
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Value, I_C_BPartner.COLUMNNAME_Name })
 	public void updateValidCombinations(final I_C_BPartner record)
 	{
-		accountBL.updateValueDescriptionByElementType(AcctSchemaElementType.BPartner, record.getC_BPartner_ID());
+		validCombinationService.updateValueDescriptionByElementType(AcctSchemaElementType.BPartner, record.getC_BPartner_ID());
 	}
 }

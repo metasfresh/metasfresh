@@ -18,6 +18,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_ValidCombination;
@@ -126,6 +127,14 @@ public class AccountDAO implements IAccountDAO
 	{
 		return newQueryBuilder()
 				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.list();
+	}
+
+	@Override
+	public List<I_C_ValidCombination> getByClientId(@NonNull final ClientId clientId)
+	{
+		return newQueryBuilder()
+				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_AD_Client_ID, clientId)
 				.list();
 	}
 

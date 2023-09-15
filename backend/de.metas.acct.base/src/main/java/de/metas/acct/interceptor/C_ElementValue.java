@@ -23,17 +23,17 @@ package de.metas.acct.interceptor;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.acct.accounts.ValidCombinationService;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.ChartOfAccountsId;
-import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueRepository;
 import de.metas.organization.OrgId;
 import de.metas.treenode.TreeNodeService;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -46,23 +46,14 @@ import org.compiere.model.ModelValidator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Interceptor(I_C_ElementValue.class)
+@RequiredArgsConstructor
 public class C_ElementValue
 {
 	private final IAcctSchemaDAO acctSchemasRepo;
-	private final IAccountBL accountBL;
+	private final ValidCombinationService validCombinationService;
 	private final TreeNodeService treeNodeService;
 
 	private static final AtomicBoolean updateTreeNodeDisabled = new AtomicBoolean(false);
-
-	public C_ElementValue(
-			@NonNull final IAcctSchemaDAO acctSchemasRepo,
-			@NonNull final IAccountBL accountBL,
-			@NonNull final TreeNodeService treeNodeService)
-	{
-		this.acctSchemasRepo = acctSchemasRepo;
-		this.accountBL = accountBL;
-		this.treeNodeService = treeNodeService;
-	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_ElementValue elementValue)
@@ -86,7 +77,7 @@ public class C_ElementValue
 		if (changeType.isChange()
 				&& InterfaceWrapperHelper.isValueChanged(elementValue, I_C_ElementValue.COLUMNNAME_Value, I_C_ElementValue.COLUMNNAME_Name))
 		{
-			accountBL.updateValueDescriptionByElementType(AcctSchemaElementType.Account, elementValue.getC_ElementValue_ID());
+			validCombinationService.updateValueDescriptionByElementType(AcctSchemaElementType.Account, elementValue.getC_ElementValue_ID());
 		}
 	}
 
@@ -107,7 +98,7 @@ public class C_ElementValue
 		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(elementValue.getC_Element_ID());
 		for (final AcctSchema acctSchema : acctSchemasRepo.getByChartOfAccountsId(chartOfAccountsId))
 		{
-			accountBL.createIfMissing(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
+			validCombinationService.createIfMissing(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
 		}
 	}
 

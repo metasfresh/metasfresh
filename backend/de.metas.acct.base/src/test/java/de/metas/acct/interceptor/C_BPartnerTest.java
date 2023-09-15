@@ -23,6 +23,7 @@
 package de.metas.acct.interceptor;
 
 import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.accounts.ValidCombinationService;
 import de.metas.acct.api.AcctSchemaId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -106,7 +107,7 @@ public class C_BPartnerTest
 	private void testBpartnerValueChange(final BpartnerValueToDebtorCreditorIds tuple)
 	{
 		bpartner.setValue(tuple.getValue());
-		new C_BPartner().beforeSave(bpartner);
+		new C_BPartner(new ValidCombinationService()).beforeSave(bpartner);
 		Assertions.assertThat(bpartner.getDebtorId()).isEqualTo(tuple.getDebtorId());
 		Assertions.assertThat(bpartner.getCreditorId()).isEqualTo(tuple.getCreditorId());
 	}

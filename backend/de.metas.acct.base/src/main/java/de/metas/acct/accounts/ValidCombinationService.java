@@ -1,4 +1,4 @@
-package de.metas.acct.api.impl;
+package de.metas.acct.accounts;
 
 /*
  * #%L
@@ -28,7 +28,6 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.logging.LogManager;
@@ -38,6 +37,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -51,34 +51,38 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_SectionCode;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
-public class AccountBL implements IAccountBL
+@Service
+public class ValidCombinationService
 {
-	private static final Logger log = LogManager.getLogger(AccountBL.class);
+	private static final Logger log = LogManager.getLogger(ValidCombinationService.class);
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private static final String SEGMENT_COMBINATION_NA = "_";
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
 
-	@Override
 	public void updateValueDescriptionByElementType(@NonNull AcctSchemaElementType elementType, int value)
 	{
 		updateValueDescriptionByElementTypes(ImmutableSet.of(elementType), value);
 	}
 
-	@Override
 	public void updateValueDescriptionByElementTypes(@NonNull Set<AcctSchemaElementType> elementTypes, int value)
 	{
 		accountDAO.getByElementTypes(elementTypes, value).forEach(this::updateValueDescriptionAndSave);
 	}
 
-	@Override
 	public void updateValueDescriptionByAcctSchemaId(@NonNull AcctSchemaId acctSchemaId)
 	{
 		accountDAO.getByAcctSchemaId(acctSchemaId).forEach(this::updateValueDescriptionAndSave);
+	}
+
+	public void updateValueDescriptionByClientId(@NonNull ClientId clientId)
+	{
+		accountDAO.getByClientId(clientId).forEach(this::updateValueDescriptionAndSave);
 	}
 
 	private void updateValueDescriptionAndSave(final I_C_ValidCombination account)
@@ -87,7 +91,6 @@ public class AccountBL implements IAccountBL
 		accountDAO.save(account);
 	}
 
-	@Override
 	public void updateValueDescription(final I_C_ValidCombination account)
 	{
 		final StringBuilder combination = new StringBuilder();
@@ -358,7 +361,6 @@ public class AccountBL implements IAccountBL
 		}
 	}    // setValueDescription
 
-	@Override
 	public void validate(@NonNull final I_C_ValidCombination account)
 	{
 		// Validate Sub-Account
@@ -372,7 +374,6 @@ public class AccountBL implements IAccountBL
 		}
 	}
 
-	@Override
 	public void createIfMissing(@NonNull final AccountDimension dimension)
 	{
 		accountDAO.getOrCreate(dimension);

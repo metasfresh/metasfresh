@@ -2,9 +2,9 @@ package de.metas.acct;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
+import de.metas.acct.accounts.ValidCombinationService;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
 import de.metas.acct.aggregation.IFactAcctLogBL;
-import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.ProductActivityProvider;
@@ -34,6 +34,7 @@ import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -64,6 +65,7 @@ import java.util.Set;
  * Accounting module activator
  */
 @Component
+@RequiredArgsConstructor
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
 	private static final Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
@@ -74,7 +76,6 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	private final IAccountBL accountBL = Services.get(IAccountBL.class);
 	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
 
 	private final ICostElementRepository costElementRepo;
@@ -82,20 +83,9 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ProductActivityProvider productActivityProvider;
 
 	private final ICurrentCostsRepository currentCostsRepository;
+	private final ValidCombinationService validCombinationService;
 
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
-
-	public AcctModuleInterceptor(
-			@NonNull final ICostElementRepository costElementRepo,
-			@NonNull final TreeNodeService treeNodeService,
-			@NonNull final ProductActivityProvider productActivityProvider,
-			@NonNull final ICurrentCostsRepository currentCostsRepository)
-	{
-		this.costElementRepo = costElementRepo;
-		this.treeNodeService = treeNodeService;
-		this.productActivityProvider = productActivityProvider;
-		this.currentCostsRepository = currentCostsRepository;
-	}
 
 	@Override
 	protected void onAfterInit()
@@ -148,11 +138,11 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema(costElementRepo, currentCostsRepository));
 		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_GL());
 		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Default());
-		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Element());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Element(validCombinationService));
 
 		engine.addModelValidator(new de.metas.acct.interceptor.C_BP_BankAccount()); // 08354
-		engine.addModelValidator(new de.metas.acct.interceptor.C_ElementValue(acctSchemaDAO, accountBL, treeNodeService));
-		engine.addModelValidator(new de.metas.acct.interceptor.C_ValidCombination(accountBL));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_ElementValue(acctSchemaDAO, validCombinationService, treeNodeService));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_ValidCombination(validCombinationService));
 
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_Journal(importProcessFactory));
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalLine());

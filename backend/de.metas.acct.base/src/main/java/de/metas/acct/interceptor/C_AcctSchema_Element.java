@@ -1,10 +1,10 @@
 package de.metas.acct.interceptor;
 
+import de.metas.acct.accounts.ValidCombinationService;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountBL;
 import de.metas.organization.OrgId;
-import de.metas.util.Services;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -52,9 +52,10 @@ import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_SeqNo;
  */
 
 @Interceptor(I_C_AcctSchema_Element.class)
+@RequiredArgsConstructor
 public class C_AcctSchema_Element
 {
-	private final IAccountBL accountBL = Services.get(IAccountBL.class);
+	private final ValidCombinationService validCombinationService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_AcctSchema_Element record)
@@ -183,7 +184,7 @@ public class C_AcctSchema_Element
 		// Re-sequence
 		if (InterfaceWrapperHelper.isNew(element) || InterfaceWrapperHelper.isValueChanged(element, COLUMNNAME_SeqNo))
 		{
-			accountBL.updateValueDescriptionByAcctSchemaId(AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID()));
+			validCombinationService.updateValueDescriptionByAcctSchemaId(AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID()));
 		}
 	}    // afterSave
 
@@ -192,7 +193,7 @@ public class C_AcctSchema_Element
 	 */
 	private void updateData(final AcctSchemaElementType elementType, final int id, final I_C_AcctSchema_Element elementRecord)
 	{
-		accountBL.updateValueDescriptionByElementType(elementType, id);
+		validCombinationService.updateValueDescriptionByElementType(elementType, id);
 
 		final String columnName = elementType.getColumnName();
 		//
@@ -222,6 +223,6 @@ public class C_AcctSchema_Element
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(final I_C_AcctSchema_Element element)
 	{
-		accountBL.updateValueDescriptionByAcctSchemaId(AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID()));
+		validCombinationService.updateValueDescriptionByAcctSchemaId(AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID()));
 	}
 }
