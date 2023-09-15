@@ -87,15 +87,14 @@ public class AccountDAO implements IAccountDAO
 	}
 
 	@Override
-	public @NonNull MAccount getById(final Properties ctx, @NonNull final AccountId accountId)
+	public @NonNull MAccount getById(@NonNull final AccountId accountId)
 	{
-		return getById(ctx, accountId.getRepoId());
+		return getById(Env.getCtx(), accountId.getRepoId());
 	}
 
-	@Override
-	public MAccount retrieveAccount(final Properties ctx, final AccountDimension dimension)
+	private MAccount retrieveAccount(final AccountDimension dimension)
 	{
-		final IQueryBuilder<I_C_ValidCombination> queryBuilder = queryBL.createQueryBuilder(I_C_ValidCombination.class, ctx, ITrx.TRXNAME_None)
+		final IQueryBuilder<I_C_ValidCombination> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_ValidCombination.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, dimension.getAcctSchemaId());
 
@@ -154,7 +153,7 @@ public class AccountDAO implements IAccountDAO
 	public MAccount getOrCreateAccount(@NonNull final AccountDimension dimension)
 	{
 		// Existing
-		final MAccount existingAccount = retrieveAccount(Env.getCtx(), dimension);
+		final MAccount existingAccount = retrieveAccount(dimension);
 		if (existingAccount != null)
 		{
 			return existingAccount;

@@ -59,7 +59,5 @@ public interface IAccountBL extends ISingletonService
 	 */
 	void validate(I_C_ValidCombination account);
 
-	AccountDimension createAccountDimension(I_C_ElementValue ev, AcctSchemaId acctSchemaId);
-
 	AccountId getOrCreate(@NonNull AccountDimension dimension);
 }

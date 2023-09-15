@@ -3,9 +3,8 @@ package de.metas.acct.gljournal;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountBL;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
@@ -38,10 +37,9 @@ import java.math.BigDecimal;
  * #L%
  */
 
+@SuppressWarnings("UnusedReturnValue")
 public class GL_JournalLine_Builder
 {
-	private final transient IAccountBL accountBL = Services.get(IAccountBL.class);
-
 	private final I_GL_JournalLine glJournalLine;
 	private final GL_Journal_Builder glJournalBuilder;
 
@@ -75,6 +73,7 @@ public class GL_JournalLine_Builder
 		return glJournalLine;
 	}
 
+	@SuppressWarnings("unused")
 	public GL_Journal_Builder endLine()
 	{
 		return glJournalBuilder;
@@ -131,10 +130,15 @@ public class GL_JournalLine_Builder
 		return this;
 	}
 
-	private final I_C_ValidCombination createValidCombination(final I_C_ElementValue ev)
+	private I_C_ValidCombination createValidCombination(final I_C_ElementValue ev)
 	{
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getGL_Journal().getC_AcctSchema_ID());
-		final AccountDimension dim = accountBL.createAccountDimension(ev, acctSchemaId);
-		return MAccount.get(dim);
+		return MAccount.get(
+				AccountDimension.builder()
+						.setAD_Client_ID(ev.getAD_Client_ID())
+						.setAD_Org_ID(OrgId.ANY.getRepoId())
+						.setC_ElementValue_ID(ev.getC_ElementValue_ID())
+						.setAcctSchemaId(AcctSchemaId.ofRepoId(getGL_Journal().getC_AcctSchema_ID()))
+						.build());
 	}
+
 }

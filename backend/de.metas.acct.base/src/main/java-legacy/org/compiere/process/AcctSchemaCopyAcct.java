@@ -175,7 +175,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		final int AD_Client_ID = targetAS.getAD_Client_ID();
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(targetAS.getC_AcctSchema_ID());
 
-		final MAccount sourceAccount = accountsRepo.getById(getCtx(), sourceAccountId);
+		final MAccount sourceAccount = accountsRepo.getById(sourceAccountId);
 
 		//
 		int AD_Org_ID = 0;

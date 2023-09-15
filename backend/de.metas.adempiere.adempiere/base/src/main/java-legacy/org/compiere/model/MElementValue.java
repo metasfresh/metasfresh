@@ -16,12 +16,11 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.acct.api.AcctSchemaElementType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -39,7 +38,7 @@ public class MElementValue extends X_C_ElementValue
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 4765839867934329276L;
+	@Serial private static final long serialVersionUID = 4765839867934329276L;
 
 	public MElementValue(Properties ctx, int C_ElementValue_ID, String trxName)
 	{

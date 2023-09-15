@@ -360,30 +360,17 @@ public class AccountBL implements IAccountBL
 	}    // setValueDescription
 
 	@Override
-	public void validate(final I_C_ValidCombination account)
+	public void validate(@NonNull final I_C_ValidCombination account)
 	{
-		Check.assumeNotNull(account, "account not null");
-
 		// Validate Sub-Account
 		if (account.getC_SubAcct_ID() > 0)
 		{
 			I_C_SubAcct sa = account.getC_SubAcct();
-			if (sa.getC_ElementValue_ID() != account.getAccount_ID())
+			if (sa != null && sa.getC_ElementValue_ID() != account.getAccount_ID())
 			{
 				throw new AdempiereException("C_SubAcct.C_ElementValue_ID=" + sa.getC_ElementValue_ID() + "<>Account_ID=" + account.getAccount_ID());
 			}
 		}
-	}
-
-	@Override
-	public AccountDimension createAccountDimension(final I_C_ElementValue ev, final AcctSchemaId acctSchemaId)
-	{
-		return AccountDimension.builder()
-				.setAD_Client_ID(ev.getAD_Client_ID())
-				.setAD_Org_ID(OrgId.ANY.getRepoId())
-				.setC_ElementValue_ID(ev.getC_ElementValue_ID())
-				.setAcctSchemaId(acctSchemaId)
-				.build();
 	}
 
 	@Override

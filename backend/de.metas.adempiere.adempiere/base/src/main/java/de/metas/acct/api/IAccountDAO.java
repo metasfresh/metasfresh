@@ -42,16 +42,7 @@ public interface IAccountDAO extends ISingletonService
 	}
 
 	@NonNull
-	MAccount getById(Properties ctx, AccountId accountId);
-
-	@NonNull
-	default MAccount getById(@NonNull final AccountId accountId)
-	{
-		return getById(Env.getCtx(), accountId);
-	}
-
-	@Nullable
-	MAccount retrieveAccount(Properties ctx, AccountDimension dimension);
+	MAccount getById(AccountId accountId);
 
 	@NonNull
 	AccountId getOrCreate(@NonNull AccountDimension dimension);
