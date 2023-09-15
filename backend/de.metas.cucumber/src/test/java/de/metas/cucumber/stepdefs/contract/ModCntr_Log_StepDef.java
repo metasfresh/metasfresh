@@ -136,7 +136,7 @@ public class ModCntr_Log_StepDef
 	private final ScenarioLifeCycleStepDef scenarioLifeCycleStepDef;
 	@NonNull
 	private final ModCntr_Module_StepDefData modCntrModuleTable;
-	
+
 	@NonNull
 	private final C_Invoice_StepDefData invoiceTable;
 	@NonNull
