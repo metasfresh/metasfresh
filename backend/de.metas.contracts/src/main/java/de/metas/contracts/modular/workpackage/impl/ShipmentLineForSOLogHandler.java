@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
@@ -33,13 +34,14 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -56,37 +58,41 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
+import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOutLine>
 {
-	private static final AdMessageKey MSG_INFO_SHIPMENT_SO_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentSOCompleted");
-	private static final AdMessageKey MSG_INFO_SHIPMENT_SO_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentSOReversed");
+	private static final AdMessageKey MSG_INFO_SHIPMENT_SO_COMPLETED = AdMessageKey.of("de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnComplete.Description");
+	private static final AdMessageKey MSG_INFO_SHIPMENT_SO_REVERSED = AdMessageKey.of("de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnReverse.Description");
 
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
+	private final ModularContractLogDAO contractLogDAO;
 	private final ShipmentLineForSOModularContractHandler contractHandler;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_InOutLine> request)
 	{
 		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		{
+			case COMPLETED -> LogAction.CREATE;
+			case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
+			case RECREATE_LOGS -> LogAction.RECOMPUTE;
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+		};
 	}
 
 	@Override
@@ -113,26 +119,30 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 
 		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());
 		final Quantity quantity = Quantitys.create(inOutLineRecord.getMovementQty(), uomId);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID());
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
-		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_SO_COMPLETED);
+		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+
+		final String description = msgBL.getMsg(MSG_INFO_SHIPMENT_SO_COMPLETED, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
 											.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-											.collectionPointBPartnerId(bPartnerId)
+											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouse.getC_BPartner_ID()))
 											.producerBPartnerId(bPartnerId)
 											.invoicingBPartnerId(bPartnerId)
 											.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
 											.documentType(LogEntryDocumentType.SHIPMENT)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.PURCHASE)
+											.soTrx(SOTrx.SALES)
 											.processed(false)
 											.quantity(quantity)
 											.amount(null)
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(), OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
-											.description(msgText.translate(Env.getAD_Language()))
+											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.build());
 	}
@@ -142,12 +152,21 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 			@NonNull final HandleLogsRequest<I_M_InOutLine> handleLogsRequest,
 			@NonNull final FlatrateTermId contractId)
 	{
-		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_SO_REVERSED);
+		final I_M_InOutLine inOutLineRecord = handleLogsRequest.getModel();
+
+		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
+
+		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
+																						 .flatrateTermId(contractId)
+																						 .referenceSet(TableRecordReferenceSet.of(inOutLineRef))
+																						 .build());
+
+		final String description = msgBL.getMsg(MSG_INFO_SHIPMENT_SO_REVERSED, ImmutableList.of(String.valueOf(inOutLineRecord.getM_Product_ID()), quantity.toString()));
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))
 											.flatrateTermId(contractId)
-											.description(msgText.translate(Env.getAD_Language()))
+											.description(description)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 											.build());
 	}
