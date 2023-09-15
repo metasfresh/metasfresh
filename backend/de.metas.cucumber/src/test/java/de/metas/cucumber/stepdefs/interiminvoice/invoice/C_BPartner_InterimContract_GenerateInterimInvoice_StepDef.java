@@ -83,11 +83,11 @@ public class C_BPartner_InterimContract_GenerateInterimInvoice_StepDef
 			final BPartnerInterimContract bPartnerInterimContract = bPartnerInterimContractService.getById(BPartnerInterimContractId.ofRepoId(bPartnerInterimContractRecord.getC_BPartner_InterimContract_ID()));
 
 			final Set<InvoiceCandidateId> generatedICIds = interimInvoiceCandidateService.createInterimInvoiceCandidatesFor(flatrateTermRecord, bPartnerInterimContract);
-			handleGeneratedICs(generatedICIds, row);
+			associateGeneratedIds(generatedICIds, row);
 		}
 	}
 
-	private void handleGeneratedICs(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds, @NonNull final Map<String, String> row)
+	private void associateGeneratedIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds, @NonNull final Map<String, String> row)
 	{
 		final String icsIdentifiersString = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isBlank(icsIdentifiersString))

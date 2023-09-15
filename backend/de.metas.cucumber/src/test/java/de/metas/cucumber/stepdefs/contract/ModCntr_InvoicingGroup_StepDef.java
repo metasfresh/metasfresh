@@ -114,7 +114,7 @@ public class ModCntr_InvoicingGroup_StepDef
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(row, I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom);
 		final Timestamp validTo = DataTableUtil.extractDateTimestampForColumnName(row, I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo);
 
-		final I_ModCntr_InvoicingGroup modCntrInvoicingGroupRecord = CoalesceUtil.coalesceSuppliers(
+		final I_ModCntr_InvoicingGroup modCntrInvoicingGroupRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup.class)
 						.addEqualsFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_Group_Product_ID, productRecord.getM_Product_ID())
 						.addEqualsFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_Name, name)

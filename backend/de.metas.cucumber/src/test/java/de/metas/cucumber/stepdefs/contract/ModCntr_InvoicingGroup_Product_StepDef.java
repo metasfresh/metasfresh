@@ -110,7 +110,7 @@ public class ModCntr_InvoicingGroup_Product_StepDef
 
 	private void createModCntrInvoicingGroupProduct(@NonNull final Map<String, String> row)
 	{
-		final I_ModCntr_InvoicingGroup_Product modCntrInvoicingGroupProductRecord = CoalesceUtil.coalesceSuppliers(
+		final I_ModCntr_InvoicingGroup_Product modCntrInvoicingGroupProductRecord = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> createLookupQuery(row)
 						.create()
 						.firstOnlyOrNull(I_ModCntr_InvoicingGroup_Product.class),
