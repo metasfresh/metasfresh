@@ -156,6 +156,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_L
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceActual;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Processed;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered;
@@ -825,6 +826,25 @@ public class C_Invoice_Candidate_StepDef
 				{
 					final I_C_Aggregation aggregationRecord = aggregationTable.get(aggregationIdentifier);
 					softly.assertThat(updatedInvoiceCandidate.getHeaderAggregationKeyBuilder_ID()).as("HeaderAggregationKeyBuilder_ID").isEqualTo(aggregationRecord.getC_Aggregation_ID());
+				}
+
+				final Boolean soTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsSOTrx);
+				if (soTrx != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.isSOTrx()).as("IsSOTrx").isEqualTo(soTrx);
+				}
+
+				final Boolean isInterimInvoice = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsInterimInvoice);
+				if (isInterimInvoice != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.isInterimInvoice()).as("IsInterimInvoice").isEqualTo(isInterimInvoice);
+				}
+
+				final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_PriceActual);
+
+				if (priceActual != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.getPriceActual()).as(COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual);
 				}
 
 				softly.assertAll();
