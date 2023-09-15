@@ -425,8 +425,6 @@ public final class AggregationEngine
 	{
 		try
 		{
-			final BPartnerLocationAndCaptureId billBPLocationId = getBillLocationId(icRecord);
-
 			invoiceHeader.setC_Async_Batch_ID(icRecord.getC_Async_Batch_ID());
 			invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
 			invoiceHeader.setBillTo(getBillTo(icRecord));
@@ -564,6 +562,7 @@ public final class AggregationEngine
 			invoiceHeader.setC_Harvesting_Calendar_ID(icRecord.getC_Harvesting_Calendar_ID());
 			invoiceHeader.setHarvesting_Year_ID(icRecord.getHarvesting_Year_ID());
 			invoiceHeader.setM_Warehouse_ID(icRecord.getM_Warehouse_ID());
+			invoiceHeader.setAuctionId(icRecord.getC_Auction_ID());
 		}
 		catch (final RuntimeException rte)
 		{

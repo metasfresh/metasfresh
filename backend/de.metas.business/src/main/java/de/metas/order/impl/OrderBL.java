@@ -84,7 +84,6 @@ import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
-import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -884,21 +883,24 @@ public class OrderBL implements IOrderBL
 	@Override
 	public org.compiere.model.I_AD_User getShipToUser(final I_C_Order order)
 	{
-		final UserId contactId;
+		return getShipToContactId(order)
+				.map(contactId -> userDAO.getById(contactId.getUserId()))
+				.orElse(null);
+	}
+
+	@Override
+	public Optional<BPartnerContactId> getShipToContactId(final I_C_Order order)
+	{
 		if (order.isDropShip())
 		{
-			// check for isDropShip to avoid returning a "stale" dropship-partner
-			final UserId dropShipUserId = UserId.ofRepoIdOrNull(order.getDropShip_User_ID());
-			contactId = dropShipUserId != null ? dropShipUserId : UserId.ofRepoIdOrNull(order.getAD_User_ID());
+			final BPartnerContactId dropShipContactId = BPartnerContactId.ofRepoIdOrNull(order.getDropShip_BPartner_ID(), order.getDropShip_User_ID());
+			return Optional.ofNullable(dropShipContactId);
 		}
 		else
 		{
-			contactId = UserId.ofRepoIdOrNull(order.getAD_User_ID());
+			final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
+			return Optional.ofNullable(contactId);
 		}
-
-		return contactId != null
-				? userDAO.getById(contactId)
-				: null;
 	}
 
 	@NonNull

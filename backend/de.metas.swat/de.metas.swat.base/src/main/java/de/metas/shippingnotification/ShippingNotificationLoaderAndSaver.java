@@ -185,7 +185,7 @@ class ShippingNotificationLoaderAndSaver
 				.locatorId(LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.physicalClearanceDate(record.getPhysicalClearanceDate().toInstant())
-				.harvestringYearId(YearAndCalendarId.ofRepoId(record.getHarvesting_Year_ID(), record.getC_Harvesting_Calendar_ID()))
+				.harvestingYearId(YearAndCalendarId.ofRepoId(record.getHarvesting_Year_ID(), record.getC_Harvesting_Calendar_ID()))
 				.poReference(StringUtils.trimBlankToNull(record.getPOReference()))
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.docStatus(DocStatus.ofCode(record.getDocStatus()))
@@ -257,8 +257,8 @@ class ShippingNotificationLoaderAndSaver
 		record.setC_Order_ID(from.getOrderId().getRepoId());
 		record.setPhysicalClearanceDate(Timestamp.from(from.getPhysicalClearanceDate()));
 		record.setDateAcct(Timestamp.from(from.getPhysicalClearanceDate()));
-		record.setHarvesting_Year_ID(from.getHarvestringYearId().yearId().getRepoId());
-		record.setC_Harvesting_Calendar_ID(from.getHarvestringYearId().calendarId().getRepoId());
+		record.setHarvesting_Year_ID(from.getHarvestingYearId().yearId().getRepoId());
+		record.setC_Harvesting_Calendar_ID(from.getHarvestingYearId().calendarId().getRepoId());
 		record.setPOReference(from.getPoReference());
 		record.setDescription(from.getDescription());
 		record.setDocStatus(from.getDocStatus().getCode());

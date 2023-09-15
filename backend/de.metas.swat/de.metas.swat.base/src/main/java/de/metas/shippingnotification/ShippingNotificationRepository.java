@@ -43,6 +43,14 @@ public class ShippingNotificationRepository
 	}
 
 	@NonNull
+	public ShippingNotification getByRecord(@NonNull final I_M_Shipping_Notification record)
+	{
+		final ShippingNotificationLoaderAndSaver loader = newLoaderAndSaver();
+		loader.addToCacheAndAvoidSaving(record);
+		return loader.getById(ShippingNotificationId.ofRepoId(record.getM_Shipping_Notification_ID()));
+	}
+
+	@NonNull
 	private ShippingNotificationLoaderAndSaver newLoaderAndSaver()
 	{
 		return new ShippingNotificationLoaderAndSaver(queryBL);

@@ -27,9 +27,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import javax.annotation.Nullable;
+
 @Builder
 public record LogEntryDeleteRequest(
 		@NonNull TableRecordReference referencedModel,
+		@Nullable LogSubEntryId subEntryId,
 		@NonNull FlatrateTermId flatrateTermId,
 		@NonNull LogEntryContractType logEntryContractType)
 {

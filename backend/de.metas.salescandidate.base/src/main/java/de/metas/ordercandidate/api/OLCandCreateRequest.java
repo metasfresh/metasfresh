@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import de.metas.async.AsyncBatchId;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.common.util.CoalesceUtil;
@@ -139,6 +140,7 @@ public class OLCandCreateRequest
 	String phone;
 
 	SectionCodeId sectionCodeId;
+	AuctionId auctionId;
 
 	@Builder
 	private OLCandCreateRequest(
@@ -192,7 +194,8 @@ public class OLCandCreateRequest
 			@Nullable final String bpartnerName,
 			@Nullable final String email,
 			@Nullable final String phone,
-			@Nullable final SectionCodeId sectionCodeId)
+			@Nullable final SectionCodeId sectionCodeId,
+			@Nullable final AuctionId auctionId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -261,5 +264,6 @@ public class OLCandCreateRequest
 		this.phone = phone;
 
 		this.sectionCodeId = sectionCodeId;
+		this.auctionId = auctionId;
 	}
 }

@@ -206,5 +206,5 @@ public interface IInvoiceDAO extends ISingletonService
 	@Nullable
 	I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
 
-	Stream<I_C_Invoice> stream(@NonNull IQueryFilter<I_C_Invoice> invoiceFilter);
+	Stream<org.compiere.model.I_C_Invoice> stream(@NonNull IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter);
 }

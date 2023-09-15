@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.auction.AuctionId;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -119,6 +120,8 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_PaymentInstruction_ID;
 
+	private int auctionId;
+
 	private int C_Harvesting_Calendar_ID = REPO_ID_UNSET_VALUE;
 	private int Harvesting_Year_ID = REPO_ID_UNSET_VALUE;
 	private int M_Warehouse_ID = REPO_ID_UNSET_VALUE;
@@ -200,6 +203,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setCalendarId(CalendarId.ofRepoIdOrNull(getC_Harvesting_Calendar_ID()));
 		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
 		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
+		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
 
 		return invoiceHeader;
 	}
@@ -747,6 +751,15 @@ public class InvoiceHeaderImplBuilder
 		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
 	}
 
+	private int getAuctionId()
+	{
+		return auctionId;
+	}
+
+	public void setAuctionId(final int auctionId)
+	{
+		this.auctionId = checkOverrideID("C_Auction_ID", this.auctionId, auctionId);
+	}
 
 	public int getC_Harvesting_Calendar_ID()
 	{

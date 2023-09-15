@@ -2,6 +2,7 @@ package de.metas.ordercandidate.api;
 
 import com.google.common.base.MoreObjects;
 import de.metas.async.AsyncBatchId;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -159,6 +160,8 @@ public final class OLCand implements IProductPriceAware
 
 	@Getter
 	private final SectionCodeId sectionCodeId;
+	@Getter
+	private final AuctionId auctionId;
 
 	@Builder
 	private OLCand(
@@ -187,13 +190,15 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final String email,
 			@Nullable final AdIssueId adIssueId,
 			@Nullable final String headerAggregationKey,
-			@Nullable final SectionCodeId sectionCodeId)
+			@Nullable final SectionCodeId sectionCodeId,
+			@Nullable final AuctionId auctionId)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
 		this.olCandRecord = olCandRecord;
 
 		this.dateDoc = TimeUtil.asLocalDate(olCandRecord.getDateOrdered());
+		this.auctionId = auctionId;
 
 		this.bpartnerInfo = olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord);
 		this.billBPartnerInfo = olCandEffectiveValuesBL.getBillToPartnerInfo(olCandRecord);

@@ -184,12 +184,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setProductDescription(orderLine.getProductDescription());
 
-		if (orderLine.getPriceEntered().compareTo(orderLine.getPriceStd()) == 0)
-		{
-			icRecord.setBase_Commission_Points_Per_Price_UOM(orderLine.getBase_Commission_Points_Per_Price_UOM());
-			icRecord.setTraded_Commission_Percent(orderLine.getTraded_Commission_Percent());
-		}
-
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
 		setBPartnerData(icRecord, orderLine);
@@ -271,6 +265,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setInvoiceAdditionalText(order.getInvoiceAdditionalText());
 		icRecord.setIsNotShowOriginCountry(order.isNotShowOriginCountry());
 		icRecord.setC_PaymentInstruction_ID(order.getC_PaymentInstruction_ID());
+		icRecord.setC_Auction_ID(order.getC_Auction_ID());
 
 		setHarvestingDetails(icRecord, order);
 		setWarehouseId(icRecord, order);

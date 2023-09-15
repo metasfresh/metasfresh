@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -320,6 +321,7 @@ public class OLCandRepository
 		}
 
 		olCandPO.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getSectionCodeId()));
+		olCandPO.setC_Auction_ID(AuctionId.toRepoId(request.getAuctionId()));
 
 		saveRecord(olCandWithIssuesInterface);
 

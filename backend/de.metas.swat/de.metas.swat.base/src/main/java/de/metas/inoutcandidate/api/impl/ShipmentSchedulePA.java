@@ -88,7 +88,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
 	 */
 	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
-
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
 	 * <p>
@@ -667,4 +666,5 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, OrderId.class);
 		return ImmutableSet.copyOf(orderIds);
 	}
+
 }

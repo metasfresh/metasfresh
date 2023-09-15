@@ -287,6 +287,12 @@ public interface IQuery<T>
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
 
+	default <ET extends T> Iterator<ET> iterateWithGuaranteedIterator(final Class<ET> clazz) throws DBException
+	{
+		setOption(IQuery.OPTION_GuaranteedIteratorRequired, true);
+		return iterate(clazz);
+	}
+
 	default <ID extends RepoIdAware> Iterator<ID> iterateIds(@NonNull final IntFunction<ID> idMapper) throws DBException
 	{
 		// TODO: implement an efficient solution and not this workaround
