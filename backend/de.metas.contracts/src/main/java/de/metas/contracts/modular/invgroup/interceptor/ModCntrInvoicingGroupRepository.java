@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.invgroup.interceptor;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupProductId;
 import de.metas.i18n.AdMessageKey;
@@ -38,7 +39,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -86,8 +86,8 @@ public class ModCntrInvoicingGroupRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_M_Product_ID, productId)
 				.andCollect(I_ModCntr_InvoicingGroup_Product.COLUMN_ModCntr_InvoicingGroup_ID)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, Operator.LESS, Instant.now())
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, Operator.GREATER, Instant.now())
+				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, SystemTime.asInstant())
+				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, Operator.GREATER, SystemTime.asInstant())
 				.create()
 				.firstOnlyOptional()
 				.map(group -> ProductId.ofRepoId(group.getGroup_Product_ID()));
