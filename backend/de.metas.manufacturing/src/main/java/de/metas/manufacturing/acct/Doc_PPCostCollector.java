@@ -95,7 +95,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		return getModel(I_PP_Cost_Collector.class);
 	}
 
-	private CostCollectorType getCostCollectorType()
+	protected CostCollectorType getCostCollectorType()
 	{
 		return CostCollectorType.ofCode(getPP_Cost_Collector().getCostCollectorType());
 	}
