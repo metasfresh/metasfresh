@@ -5,6 +5,7 @@ Feature: Modular contract log - Recompute
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
 
+  @S0319
   @from:cucumber
   Scenario: Try to recompute an already processed log -> expect error message
     Given metasfresh contains M_PricingSystems
