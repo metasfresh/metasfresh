@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
@@ -42,16 +43,12 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +66,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final ModularContractLogService modularContractLogService;
 	private final InterimContractHandler contractHandler;
@@ -119,20 +117,10 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 		final String productName = productBL.getProductValueAndName(modularContractLogEntry.getProductId());
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, modularContractLogEntry.getQuantity())
 				.translate(Language.getBaseAD_Language());
-
-		final ProductId productId = ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID());
-		final ProductPrice priceActual = Optional.of(flatrateTermRecord)
-				.filter(flatrateTerm -> flatrateTerm.getPriceActual() != null && flatrateTerm.getC_UOM_ID() > 0 && flatrateTerm.getC_Currency_ID() > 0)
-				.map(flatrateTerm -> ProductPrice.builder()
-						.uomId(UomId.ofRepoId(flatrateTerm.getC_UOM_ID()))
-						.productId(productId)
-						.money(Money.of(flatrateTerm.getPriceActual(), CurrencyId.ofRepoId(flatrateTerm.getC_Currency_ID())))
-						.build())
-				.orElse(null);
 		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(modularContractId)
-											.productId(productId)
+											.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
 											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, createLogRequest.getContractId()))
 											.producerBPartnerId(modularContractLogEntry.getProducerBPartnerId())
 											.invoicingBPartnerId(modularContractLogEntry.getInvoicingBPartnerId())
@@ -151,7 +139,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
-											.priceActual(priceActual)
+											.priceActual(flatrateBL.extractPriceActual(flatrateTermRecord))
 											.build());
 	}
 

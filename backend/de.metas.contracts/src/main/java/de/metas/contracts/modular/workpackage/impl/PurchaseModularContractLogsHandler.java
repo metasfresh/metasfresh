@@ -24,6 +24,7 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.impl.PurchaseModularContractHandler;
@@ -39,8 +40,6 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -48,7 +47,6 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -63,8 +61,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
 @Component
@@ -77,6 +73,7 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final PurchaseModularContractHandler contractHandler;
 
@@ -126,15 +123,6 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
 
-		final ProductPrice priceActual = Optional.of(modularContractRecord)
-				.filter(flatrateTerm -> flatrateTerm.getPriceActual() != null && flatrateTerm.getC_UOM_ID() > 0 && flatrateTerm.getC_Currency_ID() > 0)
-				.map(flatrateTerm -> ProductPrice.builder()
-						.uomId(UomId.ofRepoId(flatrateTerm.getC_UOM_ID()))
-						.productId(productId)
-						.money(Money.of(flatrateTerm.getPriceActual(), CurrencyId.ofRepoId(flatrateTerm.getC_Currency_ID())))
-						.build())
-				.orElse(null);
-		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
 											.productId(productId)
@@ -155,7 +143,7 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
 											.configId(request.getConfigId())
-											.priceActual(priceActual)
+											.priceActual(flatrateBL.extractPriceActual(modularContractRecord))
 											.build());
 	}
 

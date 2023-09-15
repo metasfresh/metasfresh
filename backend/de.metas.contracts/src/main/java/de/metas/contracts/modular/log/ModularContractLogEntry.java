@@ -25,8 +25,6 @@ package de.metas.contracts.modular.log;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -100,11 +98,6 @@ public class ModularContractLogEntry
 
 	@Nullable String description;
 
-	@Nullable ModularContractTypeId contractTypeId;
-
-	@Nullable
-	ModuleConfigId configId;
-
 	@Nullable
 	ProductPrice priceActual;
 
@@ -130,8 +123,6 @@ public class ModularContractLogEntry
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
-			@Nullable final ModularContractTypeId contractTypeId,
-			@Nullable final ModuleConfigId configId,
 			@Nullable final ProductPrice priceActual,
 			final boolean isBillable)
 	{
@@ -142,7 +133,7 @@ public class ModularContractLogEntry
 
 		if (priceActual != null)
 		{
-			Check.assume(priceActual.getProductId().equals(productId), "Products must match!");
+			Check.assumeEquals(priceActual.getProductId(), productId);
 		}
 
 		this.id = id;
@@ -163,8 +154,6 @@ public class ModularContractLogEntry
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;
-		this.contractTypeId = contractTypeId;
-		this.configId = configId;
 		this.priceActual = priceActual;
 		this.isBillable = isBillable;
 	}

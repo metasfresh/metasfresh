@@ -44,6 +44,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -52,7 +53,6 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -60,14 +60,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -80,6 +79,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
 	private final ModularContractLogDAO contractLogDAO;
 	private final SalesInvoiceLineModularContractHandler contractHandler;
@@ -112,7 +112,8 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_InvoiceLine> createLogRequest)
 	{
-		final I_C_InvoiceLine invoiceLine = createLogRequest.getHandleLogsRequest().getModel();
+		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper
+				.create(createLogRequest.getHandleLogsRequest().getModel(), de.metas.adempiere.model.I_C_InvoiceLine.class);
 
 		final I_C_Flatrate_Term contract = flatrateBL.getById(createLogRequest.getContractId());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
@@ -126,15 +127,6 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered)
 				.translate(Language.getBaseAD_Language());
 
-		final ProductPrice priceActual = Optional.of(invoiceLine)
-				.filter(line -> line.getPriceActual() != null && line.getC_UOM_ID() > 0 && invoice.getC_Currency_ID() > 0)
-				.map(line -> ProductPrice.builder()
-						.uomId(UomId.ofRepoId(line.getC_UOM_ID()))
-						.productId(productId)
-						.money(Money.of(line.getPriceActual(), CurrencyId.ofRepoId(invoice.getC_Currency_ID())))
-						.build())
-				.orElse(null);
-		
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
 						.referencedRecord(TableRecordReference.of(I_C_InvoiceLine.Table_Name, invoiceLine.getC_InvoiceLine_ID()))
@@ -155,7 +147,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 						.description(description)
 						.modularContractTypeId(createLogRequest.getTypeId())
 						.configId(createLogRequest.getConfigId())
-						.priceActual(priceActual)
+						.priceActual(invoiceLineBL.getPriceActual(invoiceLine))
 						.build()
 		);
 	}

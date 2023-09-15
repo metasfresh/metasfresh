@@ -142,7 +142,7 @@ public class LogEntryCreateRequest
 
 		if (priceActual != null)
 		{
-			Check.assume(priceActual.getProductId().equals(productId), "Products must match!");
+			Check.assumeEquals(priceActual.getProductId(), productId);
 		}
 
 		this.contractId = contractId;
@@ -166,7 +166,24 @@ public class LogEntryCreateRequest
 		this.modularContractTypeId = modularContractTypeId;
 		this.configId = configId;
 		this.priceActual = priceActual;
-		this.isBillable = Optional.ofNullable(isBillable)
-				.orElse(true);
+		this.isBillable = isBillable != null ? isBillable : true;
+	}
+
+	@NonNull
+	public Optional<Money> getAmount()
+	{
+		return Optional.ofNullable(amount);
+	}
+
+	@NonNull
+	public Optional<Quantity> getQuantity()
+	{
+		return Optional.ofNullable(quantity);
+	}
+
+	@NonNull
+	public Optional<ProductPrice> getPriceActual()
+	{
+		return Optional.ofNullable(priceActual);
 	}
 }

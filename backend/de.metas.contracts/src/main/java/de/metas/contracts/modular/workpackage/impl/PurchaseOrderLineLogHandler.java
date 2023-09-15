@@ -39,12 +39,12 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -59,8 +59,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 @Component
 @RequiredArgsConstructor
 class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLine>
@@ -68,6 +66,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	private final PurchaseOrderLineModularContractHandler contractHandler;
 
@@ -106,20 +105,10 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(orderLine.getQtyEntered(), uomId);
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
-
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final ProductPrice priceActual = Optional.of(orderLine)
-				.filter(line -> line.getPriceActual() != null && line.getC_UOM_ID() > 0 && line.getC_Currency_ID() > 0)
-				.map(line -> ProductPrice.builder()
-						.uomId(UomId.ofRepoId(line.getC_UOM_ID()))
-						.productId(productId)
-						.money(Money.of(line.getPriceActual(), CurrencyId.ofRepoId(line.getC_Currency_ID())))
-						.build())
-				.orElse(null);
 		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
-											.productId(productId)
+											.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 											.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 											.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
@@ -138,7 +127,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 											.description(null)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
-											.priceActual(priceActual)
+											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.build());
 	}
 
