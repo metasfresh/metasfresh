@@ -95,7 +95,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		return getModel(I_PP_Cost_Collector.class);
 	}
 
-	private CostCollectorType getCostCollectorType()
+	protected CostCollectorType getCostCollectorType()
 	{
 		return CostCollectorType.ofCode(getPP_Cost_Collector().getCostCollectorType());
 	}
@@ -192,7 +192,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		dr.setM_Locator_ID(docLine.getM_Locator_ID());
 
 		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.getValue());
-		cr.setQty(qty.negate());
+		cr.setQty(qty);
 		cr.addDescription(description);
 		cr.setC_Project_ID(docLine.getC_Project_ID());
 		cr.setC_Activity_ID(docLine.getActivityId());
@@ -282,9 +282,6 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
-
-
-
 			if (fact != null)
 			{
 				facts.add(fact);
