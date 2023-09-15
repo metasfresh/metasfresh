@@ -228,6 +228,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setC_UOM_ID(modularContract.getC_UOM_ID());
 		flatrateTermRecord.setDeliveryRule(modularContract.getDeliveryRule());
 		flatrateTermRecord.setDeliveryViaRule(modularContract.getDeliveryViaRule());
+		flatrateTermRecord.setC_Currency_ID(modularContract.getC_Currency_ID());
 
 		flatrateBL.save(flatrateTermRecord);
 

@@ -24,6 +24,7 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.impl.SalesModularContractHandler;
@@ -72,6 +73,7 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final SalesModularContractHandler contractHandler;
 
@@ -140,6 +142,8 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_
 											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
+											.configId(request.getConfigId())
+											.priceActual(flatrateBL.extractPriceActual(modularContractRecord))
 											.build());
 	}
 

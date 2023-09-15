@@ -78,6 +78,7 @@ public class ModularContractSettingsDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@NonNull
 	public ModularContractSettings getByFlatrateTermId(@NonNull final FlatrateTermId contractId)
 	{
 		final ModularContractSettings modularContractSettings = getByFlatrateTermIdOrNull(contractId);
@@ -112,8 +113,9 @@ public class ModularContractSettingsDAO
 			@NonNull final List<I_ModCntr_Module> moduleRecords)
 	{
 
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(settingsRecord.getModCntr_Settings_ID());
 		final ModularContractSettings.ModularContractSettingsBuilder result = ModularContractSettings.builder()
-				.id(ModularContractSettingsId.ofRepoId(settingsRecord.getModCntr_Settings_ID()))
+				.id(modularContractSettingsId)
 				.orgId(OrgId.ofRepoId(settingsRecord.getAD_Org_ID()))
 				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Year_ID(), settingsRecord.getC_Calendar_ID()))
 				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(settingsRecord.getM_PricingSystem_ID()))
@@ -126,16 +128,17 @@ public class ModularContractSettingsDAO
 			final I_ModCntr_Type modCntrType = moduleRecord.getModCntr_Type();
 
 			final ModuleConfig moduleConfig = ModuleConfig.builder()
+					.id(ModuleConfigId.ofRepoId(modularContractSettingsId, moduleRecord.getModCntr_Module_ID()))
 					.name(moduleRecord.getName())
 					.productId(ProductId.ofRepoId(moduleRecord.getM_Product_ID()))
 					.seqNo(SeqNo.ofInt(moduleRecord.getSeqNo()))
 					.invoicingGroup(moduleRecord.getInvoicingGroup())
 					.modularContractType(ModularContractType.builder()
-							.id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
-							.value(modCntrType.getValue())
-							.name(modCntrType.getName())
-							.className(modCntrType.getClassname())
-							.build())
+												 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
+												 .value(modCntrType.getValue())
+												 .name(modCntrType.getName())
+												 .className(modCntrType.getClassname())
+												 .build())
 					.build();
 
 			result.moduleConfig(moduleConfig);

@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
@@ -65,6 +66,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final ModularContractLogService modularContractLogService;
 	private final InterimContractHandler contractHandler;
@@ -115,7 +117,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 		final String productName = productBL.getProductValueAndName(modularContractLogEntry.getProductId());
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, modularContractLogEntry.getQuantity())
 				.translate(Language.getBaseAD_Language());
-
+		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(modularContractId)
 											.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
@@ -136,6 +138,8 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 											.year(modularContractLogEntry.getYear())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
+											.priceActual(flatrateBL.extractPriceActual(flatrateTermRecord))
 											.build());
 	}
 

@@ -25,13 +25,14 @@ package de.metas.contracts.modular.log;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,7 +45,6 @@ import javax.annotation.Nullable;
  * Add further properties as needed.
  */
 @Value
-@Builder
 public class ModularContractLogEntry
 {
 	@NonNull
@@ -98,7 +98,63 @@ public class ModularContractLogEntry
 
 	@Nullable String description;
 
-	@Nullable ModularContractTypeId contractTypeId;
-	
+	@Nullable
+	ProductPrice priceActual;
+
 	boolean isBillable;
+
+	@Builder
+	public ModularContractLogEntry(
+			@NonNull final ModularContractLogEntryId id,
+			@NonNull final LogEntryContractType contractType,
+			@Nullable final FlatrateTermId contractId,
+			@Nullable final ProductId productId,
+			@NonNull final TableRecordReference referencedRecord,
+			@Nullable final BPartnerId collectionPointBPartnerId,
+			@Nullable final BPartnerId producerBPartnerId,
+			@Nullable final BPartnerId invoicingBPartnerId,
+			@Nullable final WarehouseId warehouseId,
+			@NonNull final LogEntryDocumentType documentType,
+			@NonNull final SOTrx soTrx,
+			final boolean processed,
+			@Nullable final Quantity quantity,
+			@Nullable final Money amount,
+			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final InvoiceCandidateId invoiceCandidateId,
+			@NonNull final YearId year,
+			@Nullable final String description,
+			@Nullable final ProductPrice priceActual,
+			final boolean isBillable)
+	{
+		if (amount != null && priceActual != null)
+		{
+			amount.assertCurrencyId(priceActual.getCurrencyId());
+		}
+
+		if (priceActual != null)
+		{
+			Check.assumeEquals(priceActual.getProductId(), productId);
+		}
+
+		this.id = id;
+		this.contractType = contractType;
+		this.contractId = contractId;
+		this.productId = productId;
+		this.referencedRecord = referencedRecord;
+		this.collectionPointBPartnerId = collectionPointBPartnerId;
+		this.producerBPartnerId = producerBPartnerId;
+		this.invoicingBPartnerId = invoicingBPartnerId;
+		this.warehouseId = warehouseId;
+		this.documentType = documentType;
+		this.soTrx = soTrx;
+		this.processed = processed;
+		this.quantity = quantity;
+		this.amount = amount;
+		this.transactionDate = transactionDate;
+		this.invoiceCandidateId = invoiceCandidateId;
+		this.year = year;
+		this.description = description;
+		this.priceActual = priceActual;
+		this.isBillable = isBillable;
+	}
 }

@@ -33,6 +33,7 @@ import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import lombok.Builder;
@@ -115,6 +116,7 @@ public interface IModularContractLogHandler<T>
 	{
 		@NonNull HandleLogsRequest<T> handleLogsRequest;
 		@NonNull ModularContractSettings modularContractSettings;
+		@NonNull ModuleConfigId configId;
 		@NonNull ModularContractTypeId typeId;
 		@NonNull FlatrateTermId contractId;
 	}

@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogsRecomputationService;
@@ -48,6 +49,8 @@ import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -63,6 +66,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Table;
@@ -78,6 +83,7 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 
 import java.math.BigDecimal;
@@ -96,6 +102,7 @@ public class ModCntr_Log_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final LogsRecomputationService recomputeLogsService = SpringContextHolder.instance.getBean(LogsRecomputationService.class);
 
 	@NonNull
@@ -127,7 +134,9 @@ public class ModCntr_Log_StepDef
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	@NonNull
 	private final ScenarioLifeCycleStepDef scenarioLifeCycleStepDef;
-
+	@NonNull
+	private final ModCntr_Module_StepDefData modCntrModuleTable;
+	
 	@NonNull
 	private final C_Invoice_StepDefData invoiceTable;
 	@NonNull
@@ -157,6 +166,30 @@ public class ModCntr_Log_StepDef
 		}
 	}
 
+	@And("recompute modular log for record expecting error")
+	public void recomputeLogsForRecordExpectingError(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		assertThat(tableRows.size())
+				.as("Expecting only one row!")
+				.isEqualTo(1);
+
+		final Map<String, String> row = tableRows.get(0);
+
+		try
+		{
+			recomputeLogsForRecord(row);
+
+			Assertions.fail("Expecting error to be thrown");
+		}
+		catch (final Exception e)
+		{
+			final String messageKey = DataTableUtil.extractStringForColumnName(row, "ErrorMessage");
+
+			Assertions.assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(messageKey)));
+		}
+	}
+
 	@And("^after not more than (.*)s, no ModCntr_Logs are found:$")
 	public void noModCntr_Logs_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -166,6 +199,26 @@ public class ModCntr_Log_StepDef
 		for (final Map<String, String> row : tableRows)
 		{
 			validateNoModCntr_LogFound(row);
+		}
+	}
+
+	@And("update ModCntr_Logs:")
+	public void update_ModCntr_Logs(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			final String logIdentifier = DataTableUtil.extractStringForColumnName(row, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_ModCntr_Log log = modCntrLogTable.get(logIdentifier);
+
+			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_ModCntr_Log.COLUMNNAME_Processed);
+
+			if (processed != null)
+			{
+				log.setProcessed(processed);
+			}
+
+			InterfaceWrapperHelper.saveRecord(log);
 		}
 	}
 
@@ -308,6 +361,42 @@ public class ModCntr_Log_StepDef
 		if (isSoTrx != null)
 		{
 			softly.assertThat(modCntrLogRecord.isSOTrx()).as(I_ModCntr_Log.COLUMNNAME_Processed).isEqualTo(isSoTrx);
+		}
+
+		final String modCntrModuleIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(modCntrModuleIdentifier))
+		{
+			final I_ModCntr_Module modCntrModuleRecord = modCntrModuleTable.get(modCntrModuleIdentifier);
+			softly.assertThat(modCntrLogRecord.getModCntr_Module_ID()).as(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID).isEqualTo(modCntrModuleRecord.getModCntr_Module_ID());
+		}
+
+		final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_PriceActual);
+		if (priceActual != null)
+		{
+			softly.assertThat(modCntrLogRecord.getPriceActual()).as(I_ModCntr_Log.COLUMNNAME_PriceActual).isEqualByComparingTo(priceActual);
+		}
+		else
+		{
+			final String nullPriceActual = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_PriceActual);
+			if (Check.isNotBlank(nullPriceActual) && DataTableUtil.nullToken2Null(nullPriceActual) == null)
+			{
+				softly.assertThat(modCntrLogRecord.getPriceActual()).as(I_ModCntr_Log.COLUMNNAME_PriceActual).isEqualByComparingTo(BigDecimal.ZERO);
+			}
+		}
+
+		final String priceUOMCode = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName());
+		if (Check.isNotBlank(priceUOMCode))
+		{
+			final String nullablePriceUOMCode = DataTableUtil.nullToken2Null(priceUOMCode);
+			if (nullablePriceUOMCode == null)
+			{
+				softly.assertThat(modCntrLogRecord.getPrice_UOM_ID()).as(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName()).isEqualByComparingTo(0);
+			}
+			else
+			{
+				final UomId priceUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(priceUOMCode));
+				softly.assertThat(modCntrLogRecord.getPrice_UOM_ID()).as(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName()).isEqualTo(priceUOMId.getRepoId());
+			}
 		}
 
 		softly.assertAll();
