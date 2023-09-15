@@ -48,13 +48,6 @@ public interface IAccountBL extends ISingletonService
 	void setValueDescription(I_C_ValidCombination account);
 
 	/**
-	 * Create a new {@link IAccountDimensionValidator} for given accounting schema.
-	 *
-	 * @return accounting dimension validator
-	 */
-	IAccountDimensionValidator createAccountDimensionValidator(AcctSchema acctSchema);
-
-	/**
 	 * Validate account
 	 */
 	void validate(I_C_ValidCombination account);

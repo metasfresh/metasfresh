@@ -30,7 +30,6 @@ import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
-import de.metas.acct.api.IAccountDimensionValidator;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -67,12 +66,6 @@ public class AccountBL implements IAccountBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private static final String SEGMENT_COMBINATION_NA = "_";
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
-
-	@Override
-	public IAccountDimensionValidator createAccountDimensionValidator(final AcctSchema acctSchema)
-	{
-		return new AccountDimensionValidator(acctSchema);
-	}
 
 	@Override
 	public void updateValueDescription(final Properties ctx, final String whereClause, final String trxName)
