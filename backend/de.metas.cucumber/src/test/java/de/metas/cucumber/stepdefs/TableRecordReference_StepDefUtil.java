@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,13 +36,16 @@ public class TableRecordReference_StepDefUtil
 
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_InOutLine_StepDefData inoutLineTable;
+	private final C_Flatrate_Term_StepDefData contractTable;
 
 	public TableRecordReference_StepDefUtil(
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_InOutLine_StepDefData inoutLineTable)
+			@NonNull final M_InOutLine_StepDefData inoutLineTable,
+			@NonNull final C_Flatrate_Term_StepDefData contractTable)
 	{
 		this.orderLineTable = orderLineTable;
 		this.inoutLineTable = inoutLineTable;
+		this.contractTable = contractTable;
 	}
 
 	@NonNull
@@ -54,6 +59,9 @@ public class TableRecordReference_StepDefUtil
 			case I_M_InOutLine.Table_Name:
 				final I_M_InOutLine inOutLine = inoutLineTable.get(identifier);
 				return TableRecordReference.of(tableName, inOutLine.getM_InOutLine_ID());
+			case I_C_Flatrate_Term.Table_Name:
+				final I_C_Flatrate_Term flatrateTerm = contractTable.get(identifier);
+				return TableRecordReference.of(tableName, flatrateTerm.getC_Flatrate_Term_ID());
 			default:
 				throw new AdempiereException("Table name: " + tableName + " not supported!");
 		}
