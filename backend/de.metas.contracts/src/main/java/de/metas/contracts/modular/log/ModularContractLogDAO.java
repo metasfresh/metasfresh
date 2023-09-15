@@ -59,6 +59,8 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -147,15 +149,6 @@ public class ModularContractLogDAO
 	@NonNull
 	private ModularContractLogEntry fromRecord(@NonNull final I_ModCntr_Log record)
 	{
-		final ProductPrice priceActual = Optional.of(record)
-				.filter(log -> log.getPriceActual() != null && log.getC_UOM_ID() > 0 && log.getC_Currency_ID() > 0 && log.getM_Product_ID() > 0)
-				.map(log -> ProductPrice.builder()
-						.uomId(UomId.ofRepoId(log.getC_UOM_ID()))
-						.productId(ProductId.ofRepoId(log.getM_Product_ID()))
-						.money(Money.of(log.getPriceActual(), CurrencyId.ofRepoId(log.getC_Currency_ID())))
-						.build())
-				.orElse(null);
-
 		return ModularContractLogEntry.builder()
 				.id(ModularContractLogEntryId.ofRepoId(record.getModCntr_Log_ID()))
 				.contractId(FlatrateTermId.ofRepoIdOrNull(record.getC_Flatrate_Term_ID()))
@@ -174,7 +167,7 @@ public class ModularContractLogDAO
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
-				.priceActual(priceActual)
+				.priceActual(extractPriceActual(record))
 				.build();
 	}
 
@@ -369,5 +362,28 @@ public class ModularContractLogDAO
 				.create()
 				//dev-note: we need a guaranteed iterator as at least in one of the usages we delete log entries while the iteration is ongoing
 				.iterateWithGuaranteedIterator(I_ModCntr_Log.class);
+	}
+
+	@Nullable
+	private static ProductPrice extractPriceActual(@NonNull final I_ModCntr_Log record)
+	{
+		final BigDecimal priceActual = record.getPriceActual();
+		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
+
+		if (priceActual == null
+				|| uomId == null
+				|| currencyId == null
+				|| productId == null)
+		{
+			return null;
+		}
+
+		return ProductPrice.builder()
+				.uomId(uomId)
+				.productId(productId)
+				.money(Money.of(priceActual, currencyId))
+				.build();
 	}
 }
