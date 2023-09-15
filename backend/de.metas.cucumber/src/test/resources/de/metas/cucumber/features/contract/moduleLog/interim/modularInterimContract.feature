@@ -84,7 +84,7 @@ Feature: Interim contract and interim invoice for bpartner
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name           | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
-      | invoicingGroup                       | invoicingGroup | module_log_product_PO_base  | 2022-02-20 | 2022-03-10 |
+      | invoicingGroup                       | invoicingGroup | module_log_product_PO_base  | 2022-02-10 | 2022-02-25 |
     And metasfresh contains ModCntr_InvoicingGroup_Product:
       | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
       | invoicingGroup_p1                            | invoicingGroup                       | module_log_product_PO_1 |
@@ -111,8 +111,8 @@ Feature: Interim contract and interim invoice for bpartner
 
     Given set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
 
-    # Set the date outside of ModCntr_InvoicingGroup interval
-    And metasfresh has date and time 2022-02-10T13:30:13+01:00[Europe/Berlin]
+    # Set the date at the end of ModCntr_InvoicingGroup interval
+    And metasfresh has date and time 2022-02-25T13:30:13+01:00[Europe/Berlin]
 
     And metasfresh contains C_BPartners:
       | Identifier   | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
@@ -344,7 +344,7 @@ Feature: Interim contract and interim invoice for bpartner
       | log_3                     | shipmentLine_1       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine | moduleLogContract_1           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
       | log_4                     | shipmentLine_2       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine | moduleLogContract_2           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
 
-    When invoke "C_BPartner_InterimContract_Create" process:
+    When create interim contract for modular contract
       | C_Flatrate_Term_ID.Identifier | DateFrom   | DateTo     |
       | moduleLogContract_1           | 2022-03-01 | 2022-03-31 |
       | moduleLogContract_2           | 2022-03-01 | 2022-03-31 |
@@ -379,7 +379,7 @@ Feature: Interim contract and interim invoice for bpartner
       | moduleLogContract_3  | C_Flatrate_Term | SP               |                     |
       | moduleLogContract_4  | C_Flatrate_Term | SP               |                     |
 
-    When invoke "C_BPartner_InterimContract_Create" process for modular contract with error
+    When create interim contract for modular contract with error
       | C_Flatrate_Term_ID.Identifier | DateFrom   | DateTo     | errorCode                                                        |
       | moduleLogContract_1           | 2022-01-01 | 2022-03-31 | de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm |
 
@@ -398,7 +398,9 @@ Feature: Interim contract and interim invoice for bpartner
   - validate invoice candidate and interim invoice are generated
   - validate the invoiced product is the one configured on `invoicingGroup`, but the price is inherited from the original product
 
-    Given set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
+  # Set the date at the start of ModCntr_InvoicingGroup interval
+    Given metasfresh has date and time 2022-02-10T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
 
     And metasfresh contains C_BPartners:
       | Identifier   | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
@@ -418,7 +420,7 @@ Feature: Interim contract and interim invoice for bpartner
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                  |
-      | po_order_1 | false   | bp_interimPO             | 2022-02-21  | POO             | poModuleLogContract_ref_09142023 |
+      | po_order_1 | false   | bp_interimPO             | 2022-02-09  | POO             | poModuleLogContract_ref_09142023 |
 
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
@@ -464,8 +466,8 @@ Feature: Interim contract and interim invoice for bpartner
       | hu_16082023_2      | receiptSchedule_PO_16082023_2   | material_receipt_2    |
     Then validate the created material receipt
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus | OPT.IsInterimInvoiceable |
-      | material_receipt_1    | bp_interimPO             | bp_interimPO_Location             | 2022-02-21  | true      | CO        | true                     |
-      | material_receipt_2    | bp_interimPO             | bp_interimPO_Location             | 2022-02-21  | true      | CO        | true                     |
+      | material_receipt_1    | bp_interimPO             | bp_interimPO_Location             | 2022-02-09  | true      | CO        | true                     |
+      | material_receipt_2    | bp_interimPO             | bp_interimPO_Location             | 2022-02-09  | true      | CO        | true                     |
     And validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
       | mr_line_1                 | material_receipt_1    | module_log_product_PO_1 | 100         | true      | po_orderLine_1                | moduleLogContract_1               |
@@ -544,10 +546,10 @@ Feature: Interim contract and interim invoice for bpartner
       | Identifier                   | Value                                                     |
       | productAlreadyInAnotherGroup | de.metas.contracts.modular.invgroup.ProductInAnotherGroup |
 
-    # overlapping with the existing ModCntr_InvoicingGroup 2022-02-20 / 2022-03-10
+    # overlapping with the existing ModCntr_InvoicingGroup ValidFrom:2022-02-10 / ValidTo:2022-02-25
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |
-      | invoicingGroup_base022022            | invoicingGroup_base022022 | module_log_product_base_022022 | 2022-02-25 | 2022-03-25 |
+      | invoicingGroup_base022022            | invoicingGroup_base022022 | module_log_product_base_022022 | 2022-02-24 | 2022-03-24 |
     And the ModCntr_InvoicingGroup_Product is added expecting error:
       | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier | OPT.AD_Message_ID.Identifier |
       | invoicingGroup_base022022_1                  | invoicingGroup_base022022            | module_log_product_PO_1 | productAlreadyInAnotherGroup |
@@ -570,7 +572,7 @@ Feature: Interim contract and interim invoice for bpartner
       | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
       | invoicingGroup_base032022_1                  | invoicingGroup_base032022            | module_log_product_PO_1 |
 
-    # overlapping with the existing ModCntr_InvoicingGroup 2022-02-20 / 2022-03-10
+    # overlapping with the existing ModCntr_InvoicingGroup ValidFrom:2022-02-10 / ValidTo:2022-02-25
     And the ModCntr_InvoicingGroup is updated expecting error:
       | ModCntr_InvoicingGroup_ID.Identifier | ValidFrom  | OPT.AD_Message_ID.Identifier |
-      | invoicingGroup_base032022            | 2022-03-01 | productAlreadyInAnotherGroup |
+      | invoicingGroup_base032022            | 2022-02-20 | productAlreadyInAnotherGroup |

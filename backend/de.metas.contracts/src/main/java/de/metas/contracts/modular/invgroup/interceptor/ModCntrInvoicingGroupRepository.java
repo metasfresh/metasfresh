@@ -86,7 +86,7 @@ public class ModCntrInvoicingGroupRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_M_Product_ID, productId)
 				.andCollect(I_ModCntr_InvoicingGroup_Product.COLUMN_ModCntr_InvoicingGroup_ID)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, Operator.LESS, SystemTime.asInstant())
+				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, SystemTime.asInstant())
 				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, Operator.GREATER, SystemTime.asInstant())
 				.create()
 				.firstOnlyOptional()

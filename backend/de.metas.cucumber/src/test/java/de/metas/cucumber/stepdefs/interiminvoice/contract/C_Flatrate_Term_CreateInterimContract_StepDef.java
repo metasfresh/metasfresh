@@ -50,8 +50,8 @@ public class C_Flatrate_Term_CreateInterimContract_StepDef
 		this.flatrateTermTable = flatrateTermTable;
 	}
 
-	@And("invoke \"C_BPartner_InterimContract_Create\" process:")
-	public void invokeC_BPartner_InterimContract_Create_process(@NonNull final DataTable dataTable)
+	@And("create interim contract for modular contract")
+	public void create_interim_contract(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -66,8 +66,8 @@ public class C_Flatrate_Term_CreateInterimContract_StepDef
 		}
 	}
 
-	@And("invoke \"C_BPartner_InterimContract_Create\" process for modular contract with error")
-	public void invokeC_BPartner_InterimContract_Create_process_with_error(@NonNull final DataTable dataTable)
+	@And("create interim contract for modular contract with error")
+	public void create_interim_contract_with_error(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
