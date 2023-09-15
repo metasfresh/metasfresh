@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -138,6 +139,7 @@ public class InvoiceCandidateRepository
 			icRecord.setIsInterimInvoice(ic.isInterimInvoice());
 			icRecord.setC_ILCandHandler_ID(ic.getHandlerId().getRepoId());
 			icRecord.setIsManual(ic.isManual());
+			icRecord.setC_Auction_ID(AuctionId.toRepoId(ic.getAuctionId()));
 		}
 		else
 		{
@@ -340,7 +342,7 @@ public class InvoiceCandidateRepository
 		candidate.isInterimInvoice(icRecord.isInterimInvoice());
 		candidate.handlerId(ILCandHandlerId.ofRepoId(icRecord.getC_ILCandHandler_ID()));
 		candidate.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(icRecord.getHarvesting_Year_ID(), icRecord.getC_Harvesting_Calendar_ID()));
-
+		candidate.auctionId(AuctionId.ofRepoIdOrNull(icRecord.getC_Auction_ID()));
 		return candidate.build();
 	}
 

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1809894834L;
+	private static final long serialVersionUID = -1156654742L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -150,6 +150,33 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Auction getC_Auction()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class);
+	}
+
+	@Override
+	public void setC_Auction(final org.compiere.model.I_C_Auction C_Auction)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class, C_Auction);
+	}
+
+	@Override
+	public void setC_Auction_ID (final int C_Auction_ID)
+	{
+		if (C_Auction_ID < 1) 
+			set_Value (COLUMNNAME_C_Auction_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Auction_ID, C_Auction_ID);
+	}
+
+	@Override
+	public int getC_Auction_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Auction_ID);
 	}
 
 	@Override
@@ -408,6 +435,19 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_Calendar getC_Harvesting_Calendar()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class);
@@ -432,19 +472,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_Harvesting_Calendar_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
-	}
-
-	@Override
-	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1179,7 +1206,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		return get_ValueAsBoolean(COLUMNNAME_IsPrinted);
 	}
 
-	/**
+	/** 
 	 * IsPrintLocalCurrencyInfo AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -1195,7 +1222,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getIsPrintLocalCurrencyInfo()
+	public java.lang.String getIsPrintLocalCurrencyInfo() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsPrintLocalCurrencyInfo);
 	}
@@ -1612,7 +1639,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString1()
+	public java.lang.String getUserElementString1() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString1);
 	}
@@ -1624,7 +1651,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString2()
+	public java.lang.String getUserElementString2() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString2);
 	}
@@ -1636,7 +1663,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString3()
+	public java.lang.String getUserElementString3() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString3);
 	}
@@ -1648,7 +1675,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString4()
+	public java.lang.String getUserElementString4() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString4);
 	}
@@ -1660,7 +1687,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString5()
+	public java.lang.String getUserElementString5() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString5);
 	}
@@ -1672,7 +1699,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString6()
+	public java.lang.String getUserElementString6() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString6);
 	}
@@ -1684,7 +1711,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public java.lang.String getUserElementString7()
+	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}

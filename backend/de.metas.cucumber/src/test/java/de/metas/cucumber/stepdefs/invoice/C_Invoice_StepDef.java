@@ -42,6 +42,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.auction.C_Auction_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -93,6 +94,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_Auction;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
@@ -129,7 +131,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
@@ -184,6 +186,7 @@ public class C_Invoice_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
+	private final C_Auction_StepDefData auctionStepDefData;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -201,7 +204,8 @@ public class C_Invoice_StepDef
 			@NonNull final TestContext testContext,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
-			@NonNull final C_Year_StepDefData yearTable)
+			@NonNull final C_Year_StepDefData yearTable,
+			@NonNull final C_Auction_StepDefData auctionStepDefData)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
@@ -219,6 +223,7 @@ public class C_Invoice_StepDef
 		this.warehouseTable = warehouseTable;
 		this.calendarTable = calendarTable;
 		this.yearTable = yearTable;
+		this.auctionStepDefData = auctionStepDefData;
 	}
 
 	@And("validate created invoices")
@@ -682,6 +687,12 @@ public class C_Invoice_StepDef
 				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
 				softly.assertThat(invoice.getHarvesting_Year_ID()).as("Harvesting_Year_ID").isEqualTo(harvestingYearRecord.getC_Year_ID());
 			}
+		}
+		final String auctionIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Auction_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (de.metas.common.util.Check.isNotBlank(auctionIdentifier))
+		{
+			final I_C_Auction auction = auctionStepDefData.get(auctionIdentifier);
+			softly.assertThat(invoice.getC_Auction_ID()).isEqualTo(auction.getC_Auction_ID());
 		}
 
 		softly.assertAll();

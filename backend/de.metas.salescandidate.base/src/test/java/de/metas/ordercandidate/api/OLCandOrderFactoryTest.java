@@ -22,6 +22,8 @@
 
 package de.metas.ordercandidate.api;
 
+import de.metas.auction.AuctionRepository;
+import de.metas.auction.AuctionService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -78,6 +80,8 @@ class OLCandOrderFactoryTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		SpringContextHolder.registerJUnitBean(new AuctionService(new AuctionRepository()));
+
 
 		SpringContextHolder.registerJUnitBean(new OrderGroupRepository(
 				new GroupCompensationLineCreateRequestFactory(),
