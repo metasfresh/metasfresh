@@ -1,5 +1,5 @@
 @Id:S0306
-Feature: Interim contract for bpartner
+Feature: Interim contract and interim invoice for bpartner
 
   Background:
     Given infrastructure and metasfresh are running
@@ -83,6 +83,14 @@ Feature: Interim contract for bpartner
       | modCntr_module_7             | 30    | moduleTest_08022023_7 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_3             |
       | modCntr_module_8             | 40    | moduleTest_08022023_8 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_4             |
 
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name           | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
+      | invoicingGroup                       | invoicingGroup | module_log_product_PO_base  | 2022-02-20 | 2022-03-10 |
+    And metasfresh contains ModCntr_InvoicingGroup_Product:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
+      | invoicingGroup_p1                            | invoicingGroup                       | module_log_product_PO_1 |
+      | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
+
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
       | moduleLogConditions_PO_1            | moduleLogConditions_po_08022023_1      | ModularContract | interimPS                         | Ca                       | modCntr_settings_1                 |
@@ -92,15 +100,21 @@ Feature: Interim contract for bpartner
 
   @Id:S0306_100
   @Id:S0314_100
-  Scenario: Given the user configures `C_BPartner_InterimContract`, when a purchase modular is completed, validate that interim contract is created automatically and interim contract logs
+  Scenario: purchase modular and interim contract (automatically) + logs are created, with C_BPartner_InterimContract
+  - given there is a configured `ModCntr_InvoicingGroup`
+  - the user adds a purchase order prior to the dates when the `invoicingGroup` is applicable
   - validate `C_BPartner_InterimContract` are generated
   - validate interim and modular contract created (interim automatically because of sysconfig)
   - validate interim and modular contract log created
   - after receipt validate interim and modular receiptLine Log created
   - then invoke `Generate Interim Invoice` process
-  - validate invoice candidate and interim invoice are generated
+  - validate invoice candidate and interim invoice are generated for the actual products that were added on purchase order line
 
     Given set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
+
+    # Set the date outside of ModCntr_InvoicingGroup interval
+    And metasfresh has date and time 2022-02-10T13:30:13+01:00[Europe/Berlin]
+
     And metasfresh contains C_BPartners:
       | Identifier   | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
       | bp_interimPO | bp_interimPO_08022023 | Y            | N              | interimPS                     | 1000002                    |
@@ -236,6 +250,17 @@ Feature: Interim contract for bpartner
       | akonto_il_1                 | akonto_invoice_1        | module_log_product_PO_1 | 100         | true      |
       | akonto_il_2                 | akonto_invoice_2        | module_log_product_PO_2 | 50          | true      |
 
+    And after not more than 30s, ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier |
+      | log_1                     | po_orderLine_1       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year_2022                         |                                       |
+      | log_2                     | moduleLogContract_2  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 2000       | year_2022                         |                                       |
+      | log_3                     | po_orderLine_2       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_OrderLine     | moduleLogContract_3           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year_2022                         |                                       |
+      | log_4                     | moduleLogContract_4  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_Flatrate_Term | moduleLogContract_3           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 1000       | year_2022                         |                                       |
+      | log_5                     | mr_line_1            | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_1           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |                                       |
+      | log_6                     | mr_line_1            | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_2           | modCntr_type_4                 | true          | MaterialReceipt              |                            | PCE                   |            | year_2022                         | invoiceCand_1                         |
+      | log_7                     | mr_line_2            | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_3           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |                                       |
+      | log_8                     | mr_line_2            | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | true          | MaterialReceipt              |                            | PCE                   |            | year_2022                         | invoiceCand_2                         |
+
 
   @Id:S0306_200
   Scenario: purchase modular and interim contract (manually) + logs are created, with C_BPartner_InterimContract
@@ -360,4 +385,152 @@ Feature: Interim contract for bpartner
       | moduleLogContract_1           | 2022-01-01 | 2022-03-31 | de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm |
 
     And set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
+
+
+  @Id:S0314_200
+  Scenario: purchase modular with interim contract and interim invoice
+  - given there is a configured `ModCntr_InvoicingGroup`
+  - the user adds a purchase order and the `invoicingGroup` is applicable
+  - validate `C_BPartner_InterimContract` are generated
+  - validate interim and modular contract created (interim automatically because of sysconfig)
+  - validate interim and modular contract log created
+  - after receipt validate interim and modular receiptLine Log created
+  - then invoke `Generate Interim Invoice` process
+  - validate invoice candidate and interim invoice are generated
+  - validate the invoiced product is the one configured on `invoicingGroup`, but the price is inherited from the original product
+
+    Given set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
+
+    And metasfresh contains C_BPartners:
+      | Identifier   | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
+      | bp_interimPO | bp_interimPO_09142023 | Y            | N              | interimPS                     | 1000002                    |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier            | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bp_interimPO_Location | 0914202312346 | bp_interimPO             | true                | true                |
+
+    When invoke "C_BPartner_InterimContract_Upsert" process:
+      | C_BPartner_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | IsInterimContract |
+      | bp_interimPO             | harvesting_calendar                 | year_2022                     | true              |
+
+    Then metasfresh contains C_BPartner_InterimContract:
+      | C_BPartner_InterimContract_ID.Identifier | C_BPartner_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | IsInterimContract |
+      | bp_interimContractSettings_1             | bp_interimPO             | harvesting_calendar                 | year_2022                     | true              |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                  |
+      | po_order_1 | false   | bp_interimPO             | 2022-02-21  | POO             | poModuleLogContract_ref_09142023 |
+
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
+      | po_orderLine_1 | po_order_1            | module_log_product_PO_1 | 1000       | moduleLogConditions_PO_1                |
+      | po_orderLine_2 | po_order_1            | module_log_product_PO_2 | 500        | moduleLogConditions_PO_2                |
+
+    When the order identified by po_order_1 is completed
+
+    And retrieve C_Flatrate_Term within 60s:
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
+      | moduleLogContract_1           | moduleLogConditions_PO_1            | module_log_product_PO_1 | po_order_1                     | po_orderLine_1                     |
+      | moduleLogContract_2           | moduleLogConditions_interim_1       | module_log_product_PO_1 | po_order_1                     | po_orderLine_1                     |
+      | moduleLogContract_3           | moduleLogConditions_PO_2            | module_log_product_PO_2 | po_order_1                     | po_orderLine_2                     |
+      | moduleLogContract_4           | moduleLogConditions_interim_2       | module_log_product_PO_2 | po_order_1                     | po_orderLine_2                     |
+
+    And validate created C_Flatrate_Term:
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.ContractStatus | OPT.DocStatus |
+      | moduleLogContract_1           | moduleLogConditions_PO_1            | bp_interimPO                | module_log_product_PO_1 | po_orderLine_1                     | po_order_1                     | PCE                   | 1000                  | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
+      | moduleLogContract_2           | moduleLogConditions_interim_1       | bp_interimPO                | module_log_product_PO_1 | po_orderLine_1                     | po_order_1                     | PCE                   | 1000                  | 2.00            | interimPS                         | InterimContract     | Wa                 | CO            |
+      | moduleLogContract_3           | moduleLogConditions_PO_2            | bp_interimPO                | module_log_product_PO_2 | po_orderLine_2                     | po_order_1                     | PCE                   | 500                   | 2.00            | interimPS                         | ModularContract     | Wa                 | CO            |
+      | moduleLogContract_4           | moduleLogConditions_interim_2       | bp_interimPO                | module_log_product_PO_2 | po_orderLine_2                     | po_order_1                     | PCE                   | 500                   | 2.00            | interimPS                         | InterimContract     | Wa                 | CO            |
+
+    And after not more than 30s, ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
+      | log_1                     | po_orderLine_1       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year_2022                         |
+      | log_2                     | moduleLogContract_2  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 2000       | year_2022                         |
+      | log_3                     | po_orderLine_2       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_OrderLine     | moduleLogContract_3           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year_2022                         |
+      | log_4                     | moduleLogContract_4  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_Flatrate_Term | moduleLogContract_3           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 1000       | year_2022                         |
+
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | receiptSchedule_PO_16082023_1   | po_order_1            | po_orderLine_1            | bp_interimPO             | bp_interimPO_Location             | module_log_product_PO_1 | 1000       | warehouseStd              |
+      | receiptSchedule_PO_16082023_2   | po_order_1            | po_orderLine_2            | bp_interimPO             | bp_interimPO_Location             | module_log_product_PO_2 | 500        | warehouseStd              |
+
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_16082023_1               | hu_16082023_1      | receiptSchedule_PO_16082023_1   | N               | 1     | N               | 1     | N               | 100   | huItemPurchaseProduct_1            | huPackingLU                  |
+      | huLuTuConfig_16082023_2               | hu_16082023_2      | receiptSchedule_PO_16082023_2   | N               | 1     | N               | 1     | N               | 50    | huItemPurchaseProduct_2            | huPackingLU                  |
+
+    When create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu_16082023_1      | receiptSchedule_PO_16082023_1   | material_receipt_1    |
+      | hu_16082023_2      | receiptSchedule_PO_16082023_2   | material_receipt_2    |
+    Then validate the created material receipt
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus | OPT.IsInterimInvoiceable |
+      | material_receipt_1    | bp_interimPO             | bp_interimPO_Location             | 2022-02-21  | true      | CO        | true                     |
+      | material_receipt_2    | bp_interimPO             | bp_interimPO_Location             | 2022-02-21  | true      | CO        | true                     |
+    And validate the created material receipt lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier | OPT.C_Flatrate_Term_ID.Identifier |
+      | mr_line_1                 | material_receipt_1    | module_log_product_PO_1 | 100         | true      | po_orderLine_1                | moduleLogContract_1               |
+      | mr_line_2                 | material_receipt_2    | module_log_product_PO_2 | 50          | true      | po_orderLine_2                | moduleLogContract_3               |
+
+    And after not more than 30s, ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier |
+      | log_1                     | po_orderLine_1       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year_2022                         |
+      | log_2                     | moduleLogContract_2  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 2000       | year_2022                         |
+      | log_3                     | po_orderLine_2       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_OrderLine     | moduleLogContract_3           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year_2022                         |
+      | log_4                     | moduleLogContract_4  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_Flatrate_Term | moduleLogContract_3           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 1000       | year_2022                         |
+      | log_5                     | mr_line_1            | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_1           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
+      | log_6                     | mr_line_1            | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_2           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
+      | log_7                     | mr_line_2            | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_3           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
+      | log_8                     | mr_line_2            | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |
+
+    And after not more than 30s, validate ModCntr_Log_Statuses:
+      | Record_ID.Identifier | TableName       | ProcessingStatus |
+      | po_orderLine_1       | C_OrderLine     | SP               |
+      | po_orderLine_2       | C_OrderLine     | SP               |
+      | mr_line_1            | M_InOutLine     | SP               |
+      | mr_line_2            | M_InOutLine     | SP               |
+      | moduleLogContract_2  | C_Flatrate_Term | SP               |
+      | moduleLogContract_4  | C_Flatrate_Term | SP               |
+
+    And load C_DocType:
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.DocSubType | OPT.IsDefault |
+      | AkontorechnungDocType   | API             | DP             | false         |
+
+    # C_BPartner_InterimContract_GenerateInterimInvoice process
+    When invoke "createInterimInvoiceCandidatesFor" function:
+      | C_BPartner_InterimContract_ID.Identifier | C_Flatrate_Term_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier |
+      | bp_interimContractSettings_1             | moduleLogContract_2           | invoiceCand_1                         |
+      | bp_interimContractSettings_1             | moduleLogContract_4           | invoiceCand_2                         |
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCand_1                     |
+      | invoiceCand_2                     |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | invoiceCand_1                     | akonto_invoice_1        |
+      | invoiceCand_2                     | akonto_invoice_2        |
+
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.PriceActual | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.InvoiceRule | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.TableName   | OPT.Record_ID.Identifier | OPT.Processed | OPT.IsInterimInvoice | OPT.IsSOTrx |
+      | invoiceCand_1                     | 0            | 100            | 100              | 100             | module_log_product_PO_base  | 2.00            | bp_interimPO                    | bp_interimPO_Location           | AkontorechnungDocType       | I               | harvesting_calendar                     | year_2022                         | C_Flatrate_Term | moduleLogContract_2      | true          | true                 | false       |
+      | invoiceCand_2                     | 0            | 50             | 50               | 50              | module_log_product_PO_base  | 2.00            | bp_interimPO                    | bp_interimPO_Location           | AkontorechnungDocType       | I               | harvesting_calendar                     | year_2022                         | C_Flatrate_Term | moduleLogContract_4      | true          | true                 | false       |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
+      | akonto_invoice_1        | bp_interimPO             | bp_interimPO_Location             | 1000002     | true      | CO        | harvesting_calendar                     | year_2022                         |
+      | akonto_invoice_2        | bp_interimPO             | bp_interimPO_Location             | 1000002     | true      | CO        | harvesting_calendar                     | year_2022                         |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier    | QtyInvoiced | Processed |
+      | akonto_il_1                 | akonto_invoice_1        | module_log_product_PO_base | 100         | true      |
+      | akonto_il_2                 | akonto_invoice_2        | module_log_product_PO_base | 50          | true      |
+
+    And after not more than 30s, ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty  | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier |
+      | log_1                     | po_orderLine_1       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_OrderLine     | moduleLogContract_1           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 2000       | year_2022                         |                                       |
+      | log_2                     | moduleLogContract_2  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 1000 | C_Flatrate_Term | moduleLogContract_1           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 2000       | year_2022                         |                                       |
+      | log_3                     | po_orderLine_2       | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_OrderLine     | moduleLogContract_3           | modCntr_type_1                 | false         | PurchaseOrder                | EUR                        | PCE                   | 1000       | year_2022                         |                                       |
+      | log_4                     | moduleLogContract_4  | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 500  | C_Flatrate_Term | moduleLogContract_3           | modCntr_type_2                 | false         | ContractPrefinancing         | EUR                        | PCE                   | 1000       | year_2022                         |                                       |
+      | log_5                     | mr_line_1            | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_1           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |                                       |
+      | log_6                     | mr_line_1            | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_1 | bp_interimPO                        | bp_interimPO                    | 100  | M_InOutLine     | moduleLogContract_2           | modCntr_type_4                 | true          | MaterialReceipt              |                            | PCE                   |            | year_2022                         | invoiceCand_1                         |
+      | log_7                     | mr_line_2            | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_3           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |                                       |
+      | log_8                     | mr_line_2            | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | true          | MaterialReceipt              |                            | PCE                   |            | year_2022                         | invoiceCand_2                         |
 
