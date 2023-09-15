@@ -1,4 +1,5 @@
 @Id:S0306
+@Id:S0314
 Feature: Interim contract and interim invoice for bpartner
 
   Background:
@@ -64,14 +65,12 @@ Feature: Interim contract and interim invoice for bpartner
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_08022023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
       | modCntr_settings_2             | testSettings_08022023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
-
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                         | Value                        | Classname                                                                            |
       | modCntr_type_1             | poLine_08022023              | poLine_08022023              | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler              |
       | modCntr_type_2             | interim_08022023             | interim_08022023             | de.metas.contracts.modular.interim.logImpl.InterimContractHandler                    |
       | modCntr_type_3             | receiptLine_modular_08022023 | receiptLine_modular_08022023 | de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler            |
       | modCntr_type_4             | receiptLine_interim_08022023 | receiptLine_interim_08022023 | de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler |
-
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_08022023_1 | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_1             |
@@ -534,3 +533,44 @@ Feature: Interim contract and interim invoice for bpartner
       | log_7                     | mr_line_2            | ModularContract | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_3           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         |                                       |
       | log_8                     | mr_line_2            | Interim         | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine     | moduleLogContract_4           | modCntr_type_4                 | true          | MaterialReceipt              |                            | PCE                   |            | year_2022                         | invoiceCand_2                         |
 
+
+  @Id:S0314_300
+  Scenario: Validate when adding a new `Invoicing group product` an error is thrown, if it overlaps with an existing one for the same product
+    Given metasfresh contains M_Products:
+      | Identifier                     | Name                           |
+      | module_log_product_base_022022 | module_log_product_base_022022 |
+
+    And load AD_Message:
+      | Identifier                   | Value                                                     |
+      | productAlreadyInAnotherGroup | de.metas.contracts.modular.invgroup.ProductInAnotherGroup |
+
+    # overlapping with the existing ModCntr_InvoicingGroup 2022-02-20 / 2022-03-10
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |
+      | invoicingGroup_base022022            | invoicingGroup_base022022 | module_log_product_base_022022 | 2022-02-25 | 2022-03-25 |
+    And the ModCntr_InvoicingGroup_Product is added expecting error:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier | OPT.AD_Message_ID.Identifier |
+      | invoicingGroup_base022022_1                  | invoicingGroup_base022022            | module_log_product_PO_1 | productAlreadyInAnotherGroup |
+      | invoicingGroup_base022022_2                  | invoicingGroup_base022022            | module_log_product_PO_2 | productAlreadyInAnotherGroup |
+
+  @Id:S0314_400
+  Scenario: Validate when changing the dates for an `Invoicing group` an error is thrown, if the period overlaps with an existing one for the same product
+    Given metasfresh contains M_Products:
+      | Identifier                     | Name                           |
+      | module_log_product_base_032022 | module_log_product_base_032022 |
+
+    And load AD_Message:
+      | Identifier                   | Value                                                     |
+      | productAlreadyInAnotherGroup | de.metas.contracts.modular.invgroup.ProductInAnotherGroup |
+
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |
+      | invoicingGroup_base032022            | invoicingGroup_base032022 | module_log_product_base_032022 | 2022-03-15 | 2022-03-30 |
+    And metasfresh contains ModCntr_InvoicingGroup_Product:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
+      | invoicingGroup_base032022_1                  | invoicingGroup_base032022            | module_log_product_PO_1 |
+
+    # overlapping with the existing ModCntr_InvoicingGroup 2022-02-20 / 2022-03-10
+    And the ModCntr_InvoicingGroup is updated expecting error:
+      | ModCntr_InvoicingGroup_ID.Identifier | ValidFrom  | OPT.AD_Message_ID.Identifier |
+      | invoicingGroup_base032022            | 2022-03-01 | productAlreadyInAnotherGroup |
