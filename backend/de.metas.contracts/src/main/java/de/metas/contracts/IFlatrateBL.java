@@ -38,6 +38,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductPrice;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,6 +51,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -250,4 +252,7 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
+
+	@Nullable
+	ProductPrice extractPriceActual(@NonNull I_C_Flatrate_Term contract);
 }

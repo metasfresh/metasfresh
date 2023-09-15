@@ -40,6 +40,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
@@ -58,6 +59,8 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -105,19 +108,19 @@ public class ModularContractLogDAO
 			log.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
 		}
 
-		final Money amount = request.getAmount();
-		if (amount != null)
-		{
-			log.setAmount(amount.toBigDecimal());
-			log.setC_Currency_ID(amount.getCurrencyId().getRepoId());
-		}
+		request.getAmount()
+				.ifPresentOrElse(amount -> {
+									 log.setAmount(amount.toBigDecimal());
+									 log.setC_Currency_ID(amount.getCurrencyId().getRepoId());
+								 },
+								 () -> log.setAmount(null));
 
-		final Quantity quantity = request.getQuantity();
-		if (quantity != null)
-		{
-			log.setQty(quantity.toBigDecimal());
-			log.setC_UOM_ID(quantity.getUomId().getRepoId());
-		}
+		request.getQuantity()
+				.ifPresentOrElse(quantity -> {
+									 log.setQty(quantity.toBigDecimal());
+									 log.setC_UOM_ID(quantity.getUomId().getRepoId());
+								 },
+								 () -> log.setQty(null));
 
 		log.setHarvesting_Year_ID(YearId.toRepoId(request.getYear()));
 		log.setDescription(request.getDescription());
@@ -127,6 +130,16 @@ public class ModularContractLogDAO
 		{
 			InterfaceWrapperHelper.setValue(log, request.getSubEntryId().getColumnName(), request.getSubEntryId().getId().getRepoId());
 		}
+
+		request.getPriceActual()
+				.ifPresentOrElse(priceActual -> {
+									 log.setPriceActual(priceActual.toBigDecimal());
+									 log.setPrice_UOM_ID(priceActual.getUomId().getRepoId());
+									 log.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
+								 },
+								 () -> log.setPriceActual(null));
+
+		log.setModCntr_Module_ID(request.getConfigId().getRepoId());
 
 		save(log);
 
@@ -154,6 +167,7 @@ public class ModularContractLogDAO
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
+				.priceActual(extractPriceActual(record))
 				.build();
 	}
 
@@ -161,11 +175,11 @@ public class ModularContractLogDAO
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
 		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
-				.entryId(request.id())
-				.flatrateTermId(request.flatrateTermId())
-				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-				.contractType(request.logEntryContractType())
-				.build())
+														.entryId(request.id())
+														.flatrateTermId(request.flatrateTermId())
+														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
+														.contractType(request.logEntryContractType())
+														.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
 		if (oldLog.isProcessed())
@@ -181,7 +195,7 @@ public class ModularContractLogDAO
 			reversedLog.setQty(reversedLog.getQty().negate());
 		}
 
-		if (reversedLog.getAmount() != null)
+		if (reversedLog.getAmount() != null && reversedLog.getAmount().signum() != 0)
 		{
 			reversedLog.setAmount(reversedLog.getAmount().negate());
 		}
@@ -348,5 +362,28 @@ public class ModularContractLogDAO
 				.create()
 				//dev-note: we need a guaranteed iterator as at least in one of the usages we delete log entries while the iteration is ongoing
 				.iterateWithGuaranteedIterator(I_ModCntr_Log.class);
+	}
+
+	@Nullable
+	private static ProductPrice extractPriceActual(@NonNull final I_ModCntr_Log record)
+	{
+		final BigDecimal priceActual = record.getPriceActual();
+		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
+
+		if (priceActual == null
+				|| uomId == null
+				|| currencyId == null
+				|| productId == null)
+		{
+			return null;
+		}
+
+		return ProductPrice.builder()
+				.uomId(uomId)
+				.productId(productId)
+				.money(Money.of(priceActual, currencyId))
+				.build();
 	}
 }

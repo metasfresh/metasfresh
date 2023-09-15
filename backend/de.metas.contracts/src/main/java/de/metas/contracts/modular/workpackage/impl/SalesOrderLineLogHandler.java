@@ -43,7 +43,10 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
@@ -74,6 +77,7 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	private final ModularContractLogDAO contractLogDAO;
 	private final SOLineForPOModularContractHandler contractHandler;
@@ -120,6 +124,8 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 
 		final String description = msgBL.getMsg(MSG_ON_COMPLETE_DESCRIPTION, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
 
+		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 											.contractId(createLogRequest.getContractId())
@@ -139,6 +145,9 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.amount(amount)
+											.configId(createLogRequest.getConfigId())
+											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.build());
 	}
 
