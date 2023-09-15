@@ -2,11 +2,13 @@ package de.metas.acct.api;
 
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -44,8 +46,14 @@ public interface IAccountDAO extends ISingletonService
 	@NonNull
 	MAccount getById(AccountId accountId);
 
+	List<I_C_ValidCombination> getByElementTypes(@NonNull Set<AcctSchemaElementType> elementTypes, int value);
+
+	List<I_C_ValidCombination> getByAcctSchemaId(@NonNull AcctSchemaId acctSchemaId);
+
 	@NonNull
 	AccountId getOrCreate(@NonNull AccountDimension dimension);
 
 	@NonNull MAccount getOrCreateAccount(@NonNull AccountDimension dimension);
+
+	void save(I_C_ValidCombination record);
 }

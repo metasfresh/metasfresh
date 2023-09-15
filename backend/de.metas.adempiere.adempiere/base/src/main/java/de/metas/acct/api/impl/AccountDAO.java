@@ -1,8 +1,10 @@
 package de.metas.acct.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.cache.annotation.CacheCtx;
@@ -10,6 +12,7 @@ import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -21,8 +24,10 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -92,9 +97,41 @@ public class AccountDAO implements IAccountDAO
 		return getById(Env.getCtx(), accountId.getRepoId());
 	}
 
+	private IQueryBuilder<I_C_ValidCombination> newQueryBuilder()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_C_ValidCombination.class);
+	}
+
+	@Override
+	public List<I_C_ValidCombination> getByElementTypes(@NonNull final Set<AcctSchemaElementType> elementTypes, final int value)
+	{
+		if (elementTypes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBuilder<I_C_ValidCombination> queryBuilder = newQueryBuilder();
+		final ICompositeQueryFilter<I_C_ValidCombination> elementTypesFilter = queryBuilder.addCompositeQueryFilter()
+				.setJoinOr();
+		for (final AcctSchemaElementType elementType : elementTypes)
+		{
+			elementTypesFilter.addEqualsFilter(elementType.getColumnName(), value);
+		}
+
+		return queryBuilder.list();
+	}
+
+	@Override
+	public List<I_C_ValidCombination> getByAcctSchemaId(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return newQueryBuilder()
+				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.list();
+	}
+
 	private MAccount retrieveAccount(final AccountDimension dimension)
 	{
-		final IQueryBuilder<I_C_ValidCombination> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_ValidCombination.class)
+		final IQueryBuilder<I_C_ValidCombination> queryBuilder = newQueryBuilder()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, dimension.getAcctSchemaId());
 
@@ -188,8 +225,14 @@ public class AccountDAO implements IAccountDAO
 		newAccount.setUserElementString7(dimension.getUserElementString7());
 		newAccount.setC_Harvesting_Calendar_ID(dimension.getC_Harvesting_Calendar_ID());
 		newAccount.setHarvesting_Year_ID(dimension.getHarvesting_Year_ID());
-		InterfaceWrapperHelper.save(newAccount);
+		save(newAccount);
 
 		return newAccount;
+	}
+
+	@Override
+	public void save(final I_C_ValidCombination record)
+	{
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 }

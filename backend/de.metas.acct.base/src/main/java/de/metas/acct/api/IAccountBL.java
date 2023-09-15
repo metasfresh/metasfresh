@@ -24,12 +24,9 @@ package de.metas.acct.api;
 
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
-import org.compiere.util.Env;
 
-import java.util.Properties;
+import java.util.Set;
 
 /**
  * Business logic used to manipulate accounts (i.e. {@link I_C_ValidCombination}s)
@@ -38,19 +35,21 @@ import java.util.Properties;
  */
 public interface IAccountBL extends ISingletonService
 {
-	default void updateValueDescription(String whereClause) {updateValueDescription(Env.getCtx(), whereClause, ITrx.TRXNAME_ThreadInherited);}
+	void updateValueDescriptionByElementType(@NonNull AcctSchemaElementType elementType, int value);
 
-	void updateValueDescription(Properties ctx, String whereClause, String trxName);
+	void updateValueDescriptionByElementTypes(@NonNull Set<AcctSchemaElementType> elementTypes, int value);
+
+	void updateValueDescriptionByAcctSchemaId(@NonNull AcctSchemaId acctSchemaId);
 
 	/**
 	 * Build and set {@link I_C_ValidCombination#COLUMNNAME_Combination}, {@link I_C_ValidCombination#COLUMNNAME_Description} and {@link I_C_ValidCombination#COLUMNNAME_IsFullyQualified}.
 	 */
-	void setValueDescription(I_C_ValidCombination account);
+	void updateValueDescription(I_C_ValidCombination account);
 
 	/**
 	 * Validate account
 	 */
 	void validate(I_C_ValidCombination account);
 
-	AccountId getOrCreate(@NonNull AccountDimension dimension);
+	void createIfMissing(@NonNull AccountDimension dimension);
 }

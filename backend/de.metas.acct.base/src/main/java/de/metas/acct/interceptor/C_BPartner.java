@@ -24,6 +24,7 @@ package de.metas.acct.interceptor;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -37,7 +38,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -82,6 +82,6 @@ public class C_BPartner
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Value, I_C_BPartner.COLUMNNAME_Name })
 	public void updateValidCombinations(final I_C_BPartner record)
 	{
-		accountBL.updateValueDescription(I_C_ValidCombination.COLUMNNAME_C_BPartner_ID + "=" + record.getC_BPartner_ID());
+		accountBL.updateValueDescriptionByElementType(AcctSchemaElementType.BPartner, record.getC_BPartner_ID());
 	}
 }

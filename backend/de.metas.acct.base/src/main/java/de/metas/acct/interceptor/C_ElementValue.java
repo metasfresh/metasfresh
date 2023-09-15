@@ -25,6 +25,7 @@ package de.metas.acct.interceptor;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -40,7 +41,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.ModelValidator;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -86,7 +86,7 @@ public class C_ElementValue
 		if (changeType.isChange()
 				&& InterfaceWrapperHelper.isValueChanged(elementValue, I_C_ElementValue.COLUMNNAME_Value, I_C_ElementValue.COLUMNNAME_Name))
 		{
-			accountBL.updateValueDescription(I_C_ValidCombination.COLUMNNAME_Account_ID + "=" + elementValue.getC_ElementValue_ID());
+			accountBL.updateValueDescriptionByElementType(AcctSchemaElementType.Account, elementValue.getC_ElementValue_ID());
 		}
 	}
 
@@ -107,7 +107,7 @@ public class C_ElementValue
 		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(elementValue.getC_Element_ID());
 		for (final AcctSchema acctSchema : acctSchemasRepo.getByChartOfAccountsId(chartOfAccountsId))
 		{
-			accountBL.getOrCreate(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
+			accountBL.createIfMissing(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
 		}
 	}
 

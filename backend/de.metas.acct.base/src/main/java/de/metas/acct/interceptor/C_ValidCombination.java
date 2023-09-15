@@ -21,7 +21,7 @@ public class C_ValidCombination
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_ValidCombination account)
 	{
-		accountBL.setValueDescription(account);
+		accountBL.updateValueDescription(account);
 		accountBL.validate(account);
 	}
 }

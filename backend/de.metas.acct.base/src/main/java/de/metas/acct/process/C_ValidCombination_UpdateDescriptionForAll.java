@@ -37,7 +37,7 @@ import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 
 /**
- * Calls {@link IAccountBL#setValueDescription(I_C_ValidCombination)} for all accounts defined in the system.
+ * Calls {@link IAccountBL#updateValueDescription(I_C_ValidCombination)} for all accounts defined in the system.
  * 
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/07546_Name_of_validcombination_%28104158977931%29
@@ -101,7 +101,7 @@ public class C_ValidCombination_UpdateDescriptionForAll extends JavaProcess
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 			
-			accountBL.setValueDescription(account);
+			accountBL.updateValueDescription(account);
 			InterfaceWrapperHelper.save(account);
 			return true;
 		}

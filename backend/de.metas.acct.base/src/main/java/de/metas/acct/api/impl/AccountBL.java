@@ -22,8 +22,8 @@ package de.metas.acct.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -38,7 +38,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -51,12 +50,9 @@ import org.compiere.model.I_C_SubAcct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_SectionCode;
-import org.compiere.model.MAccount;
-import org.compiere.model.Query;
 import org.slf4j.Logger;
 
-import java.util.List;
-import java.util.Properties;
+import java.util.Set;
 
 public class AccountBL implements IAccountBL
 {
@@ -68,21 +64,31 @@ public class AccountBL implements IAccountBL
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
 
 	@Override
-	public void updateValueDescription(final Properties ctx, final String whereClause, final String trxName)
+	public void updateValueDescriptionByElementType(@NonNull AcctSchemaElementType elementType, int value)
 	{
-		final List<I_C_ValidCombination> accounts = new Query(ctx, I_C_ValidCombination.Table_Name, whereClause, trxName)
-				.setOrderBy(MAccount.COLUMNNAME_C_ValidCombination_ID)
-				.list(I_C_ValidCombination.class);
-
-		for (final I_C_ValidCombination account : accounts)
-		{
-			setValueDescription(account);
-			InterfaceWrapperHelper.save(account);
-		}
-	}    // updateValueDescription
+		updateValueDescriptionByElementTypes(ImmutableSet.of(elementType), value);
+	}
 
 	@Override
-	public void setValueDescription(final I_C_ValidCombination account)
+	public void updateValueDescriptionByElementTypes(@NonNull Set<AcctSchemaElementType> elementTypes, int value)
+	{
+		accountDAO.getByElementTypes(elementTypes, value).forEach(this::updateValueDescriptionAndSave);
+	}
+
+	@Override
+	public void updateValueDescriptionByAcctSchemaId(@NonNull AcctSchemaId acctSchemaId)
+	{
+		accountDAO.getByAcctSchemaId(acctSchemaId).forEach(this::updateValueDescriptionAndSave);
+	}
+
+	private void updateValueDescriptionAndSave(final I_C_ValidCombination account)
+	{
+		updateValueDescription(account);
+		accountDAO.save(account);
+	}
+
+	@Override
+	public void updateValueDescription(final I_C_ValidCombination account)
 	{
 		final StringBuilder combination = new StringBuilder();
 		final StringBuilder description = new StringBuilder();
@@ -367,9 +373,9 @@ public class AccountBL implements IAccountBL
 	}
 
 	@Override
-	public AccountId getOrCreate(@NonNull final AccountDimension dimension)
+	public void createIfMissing(@NonNull final AccountDimension dimension)
 	{
-		return accountDAO.getOrCreate(dimension);
+		accountDAO.getOrCreate(dimension);
 	}
 
 }

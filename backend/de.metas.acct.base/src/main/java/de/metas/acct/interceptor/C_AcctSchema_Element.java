@@ -1,6 +1,7 @@
 package de.metas.acct.interceptor;
 
 import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountBL;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -155,57 +156,55 @@ public class C_AcctSchema_Element
 			final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(element.getElementType());
 			if (AcctSchemaElementType.Activity.equals(elementType))
 			{
-				updateData(COLUMNNAME_C_Activity_ID, element.getC_Activity_ID(), element);
+				updateData(elementType, element.getC_Activity_ID(), element);
 			}
 			else if (AcctSchemaElementType.BPartner.equals(elementType))
 			{
-				updateData(COLUMNNAME_C_BPartner_ID, element.getC_BPartner_ID(), element);
+				updateData(elementType, element.getC_BPartner_ID(), element);
 			}
 			else if (AcctSchemaElementType.Product.equals(elementType))
 			{
-				updateData(COLUMNNAME_M_Product_ID, element.getM_Product_ID(), element);
+				updateData(elementType, element.getM_Product_ID(), element);
 			}
 			else if (AcctSchemaElementType.Project.equals(elementType))
 			{
-				updateData(COLUMNNAME_C_Project_ID, element.getC_Project_ID(), element);
+				updateData(elementType, element.getC_Project_ID(), element);
 			}
 			else if (AcctSchemaElementType.SalesOrder.equals(elementType))
 			{
-				updateData(COLUMNNAME_C_OrderSO_ID, element.getC_OrderSO_ID(), element);
+				updateData(elementType, element.getC_OrderSO_ID(), element);
 			}
 			else if (AcctSchemaElementType.SectionCode.equals(elementType))
 			{
-				updateData(COLUMNNAME_M_SectionCode_ID, element.getM_SectionCode_ID(), element);
+				updateData(elementType, element.getM_SectionCode_ID(), element);
 			}
 		}
 
 		// Re-sequence
 		if (InterfaceWrapperHelper.isNew(element) || InterfaceWrapperHelper.isValueChanged(element, COLUMNNAME_SeqNo))
 		{
-			accountBL.updateValueDescription("AD_Client_ID=" + element.getAD_Client_ID());
+			accountBL.updateValueDescriptionByAcctSchemaId(AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID()));
 		}
 	}    // afterSave
 
 	/**
 	 * Update ValidCombination and Fact with mandatory value
-	 *
-	 * @param element element
-	 * @param id      new default
 	 */
-	private void updateData(final String element, final int id, final I_C_AcctSchema_Element elementRecord)
+	private void updateData(final AcctSchemaElementType elementType, final int id, final I_C_AcctSchema_Element elementRecord)
 	{
-		accountBL.updateValueDescription(element + "=" + id);
+		accountBL.updateValueDescriptionByElementType(elementType, id);
 
+		final String columnName = elementType.getColumnName();
 		//
 		{
 			final int clientId = elementRecord.getAD_Client_ID();
-			final String sql = "UPDATE C_ValidCombination SET " + element + "=? WHERE " + element + " IS NULL AND AD_Client_ID=?";
+			final String sql = "UPDATE C_ValidCombination SET " + columnName + "=? WHERE " + columnName + " IS NULL AND AD_Client_ID=?";
 			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { id, clientId }, ITrx.TRXNAME_ThreadInherited);
 		}
 		//
 		{
 			final int acctSchemaId = elementRecord.getC_AcctSchema_ID();
-			final String sql = "UPDATE Fact_Acct SET " + element + "=? WHERE " + element + " IS NULL AND C_AcctSchema_ID=?";
+			final String sql = "UPDATE Fact_Acct SET " + columnName + "=? WHERE " + columnName + " IS NULL AND C_AcctSchema_ID=?";
 			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { id, acctSchemaId }, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
@@ -223,6 +222,6 @@ public class C_AcctSchema_Element
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(final I_C_AcctSchema_Element element)
 	{
-		accountBL.updateValueDescription("AD_Client_ID=" + element.getAD_Client_ID());
+		accountBL.updateValueDescriptionByAcctSchemaId(AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID()));
 	}
 }
