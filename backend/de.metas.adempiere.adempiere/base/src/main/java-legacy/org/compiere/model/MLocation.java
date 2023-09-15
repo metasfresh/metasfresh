@@ -16,22 +16,19 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  *	Location (Address)
@@ -636,28 +633,7 @@ public class MLocation extends X_C_Location
 		}
 
 		return true;
-	}	//	beforeSave
-
-	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return success
-	 */
-	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
-	{
-		//	Value/Name change in Account
-		if (!newRecord
-			&& ("Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + AcctSchemaElementType.LocationFrom.getCode())) 
-				|| "Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + AcctSchemaElementType.LocationTo.getCode())))
-			&& (is_ValueChanged("Postal") || is_ValueChanged("City"))
-			)
-			MAccount.updateValueDescription(getCtx(),
-				"(C_LocFrom_ID=" + getC_Location_ID()
-				+ " OR C_LocTo_ID=" + getC_Location_ID() + ")", get_TrxName());
-		return success;
-	}	//	afterSave
+	}
 
 	@Override
 	public void setC_City_ID(int C_City_ID)

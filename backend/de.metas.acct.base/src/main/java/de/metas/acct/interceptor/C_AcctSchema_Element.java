@@ -1,7 +1,9 @@
 package de.metas.acct.interceptor;
 
 import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.IAccountBL;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -9,10 +11,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema_Element;
-import org.compiere.model.MAccount;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Activity_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_BPartner_ID;
@@ -53,6 +53,8 @@ import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_SeqNo;
 @Interceptor(I_C_AcctSchema_Element.class)
 public class C_AcctSchema_Element
 {
+	private final IAccountBL accountBL = Services.get(IAccountBL.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_AcctSchema_Element record)
 	{
@@ -117,11 +119,11 @@ public class C_AcctSchema_Element
 			{
 				errorField = COLUMNNAME_C_SalesRegion_ID;
 			}
-			else if(AcctSchemaElementType.SalesOrder.equals(elementType) && record.getC_OrderSO_ID() <= 0)
+			else if (AcctSchemaElementType.SalesOrder.equals(elementType) && record.getC_OrderSO_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_OrderSO_ID;
 			}
-			else if(AcctSchemaElementType.SectionCode.equals(elementType) && record.getM_SectionCode_ID() <= 0)
+			else if (AcctSchemaElementType.SectionCode.equals(elementType) && record.getM_SectionCode_ID() <= 0)
 			{
 				errorField = COLUMNNAME_M_SectionCode_ID;
 			}
@@ -138,7 +140,7 @@ public class C_AcctSchema_Element
 			throw new FillMandatoryException(I_C_AcctSchema_Element.COLUMNNAME_AD_Column_ID);
 		}
 
-		if(AcctSchemaElementType.Account.equals(elementType) && record.getC_Element_ID() <= 0)
+		if (AcctSchemaElementType.Account.equals(elementType) && record.getC_Element_ID() <= 0)
 		{
 			throw new FillMandatoryException(I_C_AcctSchema_Element.COLUMNNAME_C_Element_ID);
 		}
@@ -180,19 +182,19 @@ public class C_AcctSchema_Element
 		// Re-sequence
 		if (InterfaceWrapperHelper.isNew(element) || InterfaceWrapperHelper.isValueChanged(element, COLUMNNAME_SeqNo))
 		{
-			MAccount.updateValueDescription(Env.getCtx(), "AD_Client_ID=" + element.getAD_Client_ID(), ITrx.TRXNAME_ThreadInherited);
+			accountBL.updateValueDescription("AD_Client_ID=" + element.getAD_Client_ID());
 		}
-	}	// afterSave
+	}    // afterSave
 
 	/**
 	 * Update ValidCombination and Fact with mandatory value
 	 *
 	 * @param element element
-	 * @param id new default
+	 * @param id      new default
 	 */
 	private void updateData(final String element, final int id, final I_C_AcctSchema_Element elementRecord)
 	{
-		MAccount.updateValueDescription(Env.getCtx(), element + "=" + id, ITrx.TRXNAME_ThreadInherited);
+		accountBL.updateValueDescription(element + "=" + id);
 
 		//
 		{
@@ -221,6 +223,6 @@ public class C_AcctSchema_Element
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(final I_C_AcctSchema_Element element)
 	{
-		MAccount.updateValueDescription(Env.getCtx(), "AD_Client_ID=" + element.getAD_Client_ID(), ITrx.TRXNAME_ThreadInherited);
+		accountBL.updateValueDescription("AD_Client_ID=" + element.getAD_Client_ID());
 	}
 }

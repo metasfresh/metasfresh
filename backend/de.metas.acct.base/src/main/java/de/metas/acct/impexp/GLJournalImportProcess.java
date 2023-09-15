@@ -25,13 +25,11 @@
  */
 package de.metas.acct.impexp;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Properties;
-
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,16 +46,17 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.logging.LogManager;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- *
- * Import {@link I_I_GLJournal} records to {@link I_GLJournal}.
+ * <p>
+ * Import {@link I_I_GLJournal} records to {@link I_GL_Journal}.
  */
 public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJournal>
 {
@@ -119,8 +118,8 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			sql.append(" DateAcct = COALESCE (DateAcct,").append(DB.TO_DATE(m_DateAcct)).append("),");
 		}
 		sql.append(" Updated = COALESCE (Updated, now()) "
-				+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL")
-		.append(selection.toSqlWhereClause());
+						+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL")
+				.append(selection.toSqlWhereClause());
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Client/DocOrg/Default=" + no);
 
@@ -573,7 +572,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 
 		// Accounted Amounts (Only if No Error)
 		sql = new StringBuffer("UPDATE I_GLJournal "
-				+ "SET AmtAcctDr = ROUND(AmtSourceDr * CurrencyRate, 2) "	// HARDCODED rounding
+				+ "SET AmtAcctDr = ROUND(AmtSourceDr * CurrencyRate, 2) "    // HARDCODED rounding
 				+ "WHERE AmtAcctDr IS NULL OR AmtAcctDr=0"
 				+ " AND I_IsImported='N'")
 				.append(selection.toSqlWhereClause());
@@ -668,8 +667,8 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 
 	@Override
 	protected ImportRecordResult importRecord(@NonNull IMutable<Object> state,
-			@NonNull I_I_GLJournal importRecord,
-			final boolean isInsertOnly) throws Exception
+											  @NonNull I_I_GLJournal importRecord,
+											  final boolean isInsertOnly) throws Exception
 	{
 
 		GLJournalImportContext context = (GLJournalImportContext)state.getValue();
@@ -679,7 +678,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			state.setValue(context);
 		}
 
-		if(context.journal != null	&& !importRecord.isCreateNewJournal() && isInsertOnly)
+		if (context.journal != null && !importRecord.isCreateNewJournal() && isInsertOnly)
 		{
 			// do not update
 			return ImportRecordResult.Nothing;
@@ -705,7 +704,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				|| context.journal.getC_AcctSchema_ID() != importRecord.getC_AcctSchema_ID()
 				|| !context.BatchDocumentNo.equals(impBatchDocumentNo))
 		{
-			context.BatchDocumentNo = impBatchDocumentNo;	// cannot compare real DocumentNo
+			context.BatchDocumentNo = impBatchDocumentNo;    // cannot compare real DocumentNo
 			context.batch = new MJournalBatch(ctx, 0, null);
 			context.batch.setClientOrg(importRecord.getAD_Client_ID(), importRecord.getAD_OrgDoc_ID());
 			if (importRecord.getBatchDocumentNo() != null && importRecord.getBatchDocumentNo().length() > 0)
@@ -754,7 +753,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				|| context.journal.getC_Currency_ID() != importRecord.getC_Currency_ID()
 				|| !impDateAcct.equals(context.DateAcct))
 		{
-			context.JournalDocumentNo = impJournalDocumentNo;	// cannot compare real DocumentNo
+			context.JournalDocumentNo = impJournalDocumentNo;    // cannot compare real DocumentNo
 			context.DateAcct = impDateAcct;
 			context.journal = new MJournal(ctx, 0, trxName);
 			context.journal.setGL_JournalBatch_ID(context.batch.getGL_JournalBatch_ID());
@@ -781,7 +780,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			//
 			context.journal.setCurrency(importRecord.getC_Currency_ID(), importRecord.getC_ConversionType_ID(), importRecord.getCurrencyRate());
 			//
-			context.journal.setDateAcct(importRecord.getDateAcct());		// sets Period if not defined
+			context.journal.setDateAcct(importRecord.getDateAcct());        // sets Period if not defined
 			context.journal.setDateDoc(importRecord.getDateAcct());
 			//
 			try
@@ -805,49 +804,23 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		line.setLine(importRecord.getLine());
 		line.setAmtSourceCr(importRecord.getAmtSourceCr());
 		line.setAmtSourceDr(importRecord.getAmtSourceDr());
-		line.setAmtAcct(importRecord.getAmtAcctDr(), importRecord.getAmtAcctCr());	// only if not 0
+		line.setAmtAcct(importRecord.getAmtAcctDr(), importRecord.getAmtAcctCr());    // only if not 0
 		line.setDateAcct(importRecord.getDateAcct());
 		//
 		// Set/Get Account Combination
 		if (importRecord.getC_ValidCombinationFrom_ID() == 0)
 		{
 			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountFrom_ID());
-			final MAccount acct = MAccount.get(getCtx(), acctDim);
-			if (acct != null && acct.get_ID() == 0)
-			{
-				acct.save();
-			}
-			if (acct == null || acct.get_ID() == 0)
-			{
-				importRecord.setI_ErrorMsg("ERROR creating Account");
-				importRecord.setI_IsImported(false);
-				InterfaceWrapperHelper.save(importRecord);
-			}
-			else
-			{
-				importRecord.setC_ValidCombinationFrom_ID(acct.get_ID());
-			}
+			final MAccount acct = MAccount.get(acctDim);
+			importRecord.setC_ValidCombinationFrom_ID(acct.getC_ValidCombination_ID());
 		}
 
 		// Set/Get Account Combination
-		if (importRecord.getC_ValidCombinationTo_ID() == 0)
+		if (importRecord.getC_ValidCombinationTo_ID() <= 0)
 		{
 			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountTo_ID());
-			final MAccount acct = MAccount.get(getCtx(), acctDim);
-			if (acct != null && acct.get_ID() == 0)
-			{
-				acct.save();
-			}
-			if (acct == null || acct.get_ID() == 0)
-			{
-				importRecord.setI_ErrorMsg("ERROR creating Account");
-				importRecord.setI_IsImported(false);
-				InterfaceWrapperHelper.save(importRecord);
-			}
-			else
-			{
-				importRecord.setC_ValidCombinationTo_ID(acct.get_ID());
-			}
+			final MAccount acct = MAccount.get(acctDim);
+			importRecord.setC_ValidCombinationTo_ID(acct.getC_ValidCombination_ID());
 		}
 		//
 		line.setAccount_DR_ID(importRecord.getC_ValidCombinationFrom_ID());

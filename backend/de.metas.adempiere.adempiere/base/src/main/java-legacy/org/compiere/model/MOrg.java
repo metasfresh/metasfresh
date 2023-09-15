@@ -16,18 +16,16 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.util.Services;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.DB;
+
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *	Organization Model
@@ -131,17 +129,6 @@ public class MOrg extends X_AD_Org
 
 			//	TreeNode
 			// insert_Tree(MTree_Base.TREETYPE_Organization);
-		}
-		//	Value/Name change
-		if (!newRecord && (is_ValueChanged("Value") || is_ValueChanged("Name")))
-		{
-			MAccount.updateValueDescription(getCtx(), "AD_Org_ID=" + getAD_Org_ID(), get_TrxName());
-
-			final String elementOrgTrx = Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx;
-			if ("Y".equals(Env.getContext(getCtx(), elementOrgTrx)))
-			{
-				MAccount.updateValueDescription(getCtx(), "AD_OrgTrx_ID=" + getAD_Org_ID(), get_TrxName());
-			}
 		}
 
 		return true;

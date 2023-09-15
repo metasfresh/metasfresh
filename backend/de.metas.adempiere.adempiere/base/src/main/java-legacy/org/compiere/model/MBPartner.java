@@ -705,14 +705,6 @@ public class MBPartner extends X_C_BPartner
 							  null);
 		}
 
-		// Value/Name change
-		if (success && !newRecord
-				&& (is_ValueChanged("Value") || is_ValueChanged("Name")))
-		{
-			MAccount.updateValueDescription(getCtx(), "C_BPartner_ID="
-					+ getC_BPartner_ID(), get_TrxName());
-		}
-
 		return success;
 	} // afterSave
 

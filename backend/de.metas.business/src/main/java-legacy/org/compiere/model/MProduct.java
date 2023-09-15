@@ -218,12 +218,6 @@ public class MProduct extends X_M_Product
 			return success;
 		}
 
-		// Value/Name change in Account
-		if (!newRecord && (is_ValueChanged("Value") || is_ValueChanged("Name")))
-		{
-			MAccount.updateValueDescription(getCtx(), "M_Product_ID=" + getM_Product_ID(), get_TrxName());
-		}
-
 		// Name/Description Change in Asset MAsset.setValueNameDescription
 		if (!newRecord && (is_ValueChanged("Name") || is_ValueChanged("Description")))
 		{

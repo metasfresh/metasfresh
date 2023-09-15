@@ -2,7 +2,7 @@ package de.metas.acct.impexp;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.ChartOfAccountsId;
-import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.interceptor.C_ElementValue;
 import de.metas.elementvalue.ChartOfAccountsRepository;
@@ -76,7 +76,7 @@ public class AccountImportProcess_Test
 		this.elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 		this.testHelper = new AccountImportTestHelper(chartOfAccountsService, elementValueService, elementValueRepository, treeNodeService, treeNodeRepository);
 
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), Services.get(IAccountDAO.class), treeNodeService)
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), Services.get(IAccountBL.class), treeNodeService)
 		{
 			@Override
 			protected void createValidCombinationIfNeeded(final I_C_ElementValue elementValue)

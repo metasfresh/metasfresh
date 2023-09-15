@@ -23,11 +23,13 @@ package de.metas.acct.api.impl;
  */
 
 import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAccountDimensionValidator;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.logging.LogManager;
@@ -35,7 +37,9 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -48,11 +52,17 @@ import org.compiere.model.I_C_SubAcct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_SectionCode;
+import org.compiere.model.MAccount;
+import org.compiere.model.Query;
 import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Properties;
 
 public class AccountBL implements IAccountBL
 {
 	private static final Logger log = LogManager.getLogger(AccountBL.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private static final String SEGMENT_COMBINATION_NA = "_";
@@ -63,6 +73,20 @@ public class AccountBL implements IAccountBL
 	{
 		return new AccountDimensionValidator(acctSchema);
 	}
+
+	@Override
+	public void updateValueDescription(final Properties ctx, final String whereClause, final String trxName)
+	{
+		final List<I_C_ValidCombination> accounts = new Query(ctx, I_C_ValidCombination.Table_Name, whereClause, trxName)
+				.setOrderBy(MAccount.COLUMNNAME_C_ValidCombination_ID)
+				.list(I_C_ValidCombination.class);
+
+		for (final I_C_ValidCombination account : accounts)
+		{
+			setValueDescription(account);
+			InterfaceWrapperHelper.save(account);
+		}
+	}    // updateValueDescription
 
 	@Override
 	public void setValueDescription(final I_C_ValidCombination account)
@@ -84,7 +108,7 @@ public class AccountBL implements IAccountBL
 				continue;
 			}
 
-			String segmentCombination = SEGMENT_COMBINATION_NA;		// not defined
+			String segmentCombination = SEGMENT_COMBINATION_NA;        // not defined
 			String segmentDescription = SEGMENT_DESCRIPTION_NA;
 
 			final AcctSchemaElementType elementType = element.getElementType();
@@ -333,7 +357,7 @@ public class AccountBL implements IAccountBL
 		{
 			account.setIsFullyQualified(fullyQualified);
 		}
-	}	// setValueDescription
+	}    // setValueDescription
 
 	@Override
 	public void validate(final I_C_ValidCombination account)
@@ -360,6 +384,12 @@ public class AccountBL implements IAccountBL
 				.setC_ElementValue_ID(ev.getC_ElementValue_ID())
 				.setAcctSchemaId(acctSchemaId)
 				.build();
+	}
+
+	@Override
+	public AccountId getOrCreate(@NonNull final AccountDimension dimension)
+	{
+		return accountDAO.getOrCreate(dimension);
 	}
 
 }

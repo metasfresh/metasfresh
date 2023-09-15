@@ -21,6 +21,7 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 
+import java.io.Serial;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,7 +41,7 @@ public class MProject extends X_C_Project
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1781787100948563589L;
+	@Serial private static final long serialVersionUID = -1781787100948563589L;
 
 	public MProject(final Properties ctx, final int C_Project_ID, final String trxName)
 	{
@@ -164,37 +165,33 @@ public class MProject extends X_C_Project
 	 */
 	private MProjectPhase[] getPhases()
 	{
-		final ArrayList<MProjectPhase> list = new ArrayList<>();
 		final String sql = "SELECT * FROM C_ProjectPhase WHERE C_Project_ID=? ORDER BY SeqNo";
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			pstmt.setInt(1, getC_Project_ID());
-			final ResultSet rs = pstmt.executeQuery();
+
+			rs = pstmt.executeQuery();
+			final ArrayList<MProjectPhase> list = new ArrayList<>();
 			while (rs.next())
+			{
 				list.add(new MProjectPhase(getCtx(), rs, get_TrxName()));
-			rs.close();
-			pstmt.close();
-			pstmt = null;
+			}
+
+			final MProjectPhase[] retValue = new MProjectPhase[list.size()];
+			list.toArray(retValue);
+			return retValue;
 		}
 		catch (final SQLException ex)
 		{
-			log.error(sql, ex);
+			throw new DBException(ex, sql);
 		}
-		try
+		finally
 		{
-			if (pstmt != null)
-				pstmt.close();
+			DB.close(rs, pstmt);
 		}
-		catch (final SQLException ex1)
-		{
-		}
-		pstmt = null;
-		//
-		final MProjectPhase[] retValue = new MProjectPhase[list.size()];
-		list.toArray(retValue);
-		return retValue;
 	}    //	getPhases
 
 	/**************************************************************************
@@ -321,13 +318,6 @@ public class MProject extends X_C_Project
 		if (newRecord && success)
 		{
 			insert_Accounting("C_Project_Acct", "C_AcctSchema_Default", null);
-		}
-
-		//	Value/Name change
-		if (success && !newRecord
-				&& (is_ValueChanged("Value") || is_ValueChanged("Name")))
-		{
-			MAccount.updateValueDescription(getCtx(), "C_Project_ID=" + getC_Project_ID(), get_TrxName());
 		}
 
 		return success;

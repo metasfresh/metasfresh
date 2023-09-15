@@ -48,8 +48,12 @@ import java.util.Properties;
 
 public class AccountDAO implements IAccountDAO
 {
-	/** Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name */
-	private static final Map<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String> builder()
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name
+	 */
+	private static final ImmutableMap<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String>builder()
 			.put(AcctSegmentType.Client, I_C_ValidCombination.COLUMNNAME_AD_Client_ID)
 			.put(AcctSegmentType.Organization, I_C_ValidCombination.COLUMNNAME_AD_Org_ID)
 			.put(AcctSegmentType.Account, I_C_ValidCombination.COLUMNNAME_Account_ID)
@@ -91,7 +95,6 @@ public class AccountDAO implements IAccountDAO
 	@Override
 	public MAccount retrieveAccount(final Properties ctx, final AccountDimension dimension)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_ValidCombination> queryBuilder = queryBL.createQueryBuilder(I_C_ValidCombination.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, dimension.getAcctSchemaId());
@@ -103,7 +106,7 @@ public class AccountDAO implements IAccountDAO
 
 			final Object value = dimension.getSegmentValue(segmentType);
 
-			if(value instanceof String)
+			if (value instanceof String)
 			{
 				queryBuilder.addEqualsFilter(columnName, String.valueOf(value));
 			}
@@ -142,41 +145,52 @@ public class AccountDAO implements IAccountDAO
 	@NonNull
 	public AccountId getOrCreate(@NonNull final AccountDimension dimension)
 	{
+		@NonNull final MAccount account = getOrCreateAccount(dimension);
+		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
+	}
+
+	@Override
+	@NonNull
+	public MAccount getOrCreateAccount(@NonNull final AccountDimension dimension)
+	{
 		// Existing
 		final MAccount existingAccount = retrieveAccount(Env.getCtx(), dimension);
 		if (existingAccount != null)
 		{
-			return AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID());
+			return existingAccount;
 		}
 
-		final MAccount vc = InterfaceWrapperHelper.newInstanceOutOfTrx(MAccount.class);
-		vc.setAD_Org_ID(dimension.getAD_Org_ID());
-		vc.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
-		vc.setAccount_ID(dimension.getC_ElementValue_ID());
-		vc.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
-		vc.setM_Product_ID(dimension.getM_Product_ID());
-		vc.setC_BPartner_ID(dimension.getC_BPartner_ID());
-		vc.setAD_OrgTrx_ID(dimension.getAD_OrgTrx_ID());
-		vc.setC_LocFrom_ID(dimension.getC_LocFrom_ID());
-		vc.setC_LocTo_ID(dimension.getC_LocTo_ID());
-		vc.setC_SalesRegion_ID(dimension.getC_SalesRegion_ID());
-		vc.setC_Project_ID(dimension.getC_Project_ID());
-		vc.setC_Campaign_ID(dimension.getC_Campaign_ID());
-		vc.setC_Activity_ID(dimension.getC_Activity_ID());
-		vc.setUser1_ID(dimension.getUser1_ID());
-		vc.setUser2_ID(dimension.getUser2_ID());
-		vc.setUserElement1_ID(dimension.getUserElement1_ID());
-		vc.setUserElement2_ID(dimension.getUserElement2_ID());
-		vc.setUserElementString1(dimension.getUserElementString1());
-		vc.setUserElementString2(dimension.getUserElementString2());
-		vc.setUserElementString3(dimension.getUserElementString3());
-		vc.setUserElementString4(dimension.getUserElementString4());
-		vc.setUserElementString5(dimension.getUserElementString5());
-		vc.setUserElementString6(dimension.getUserElementString6());
-		vc.setUserElementString7(dimension.getUserElementString7());
-		InterfaceWrapperHelper.save(vc);
+		final MAccount newAccount = InterfaceWrapperHelper.newInstanceOutOfTrx(MAccount.class);
+		//newAccount.setClientOrg(dimension.getAD_Client_ID(), dimension.getAD_Org_ID());
+		newAccount.setAD_Org_ID(dimension.getAD_Org_ID());
+		newAccount.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
+		newAccount.setAccount_ID(dimension.getC_ElementValue_ID());
+		// -- Optional Accounting fields
+		newAccount.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
+		newAccount.setM_Product_ID(dimension.getM_Product_ID());
+		newAccount.setC_BPartner_ID(dimension.getC_BPartner_ID());
+		newAccount.setAD_OrgTrx_ID(dimension.getAD_OrgTrx_ID());
+		newAccount.setC_LocFrom_ID(dimension.getC_LocFrom_ID());
+		newAccount.setC_LocTo_ID(dimension.getC_LocTo_ID());
+		newAccount.setC_SalesRegion_ID(dimension.getC_SalesRegion_ID());
+		newAccount.setC_Project_ID(dimension.getC_Project_ID());
+		newAccount.setC_Campaign_ID(dimension.getC_Campaign_ID());
+		newAccount.setC_Activity_ID(dimension.getC_Activity_ID());
+		newAccount.setUser1_ID(dimension.getUser1_ID());
+		newAccount.setUser2_ID(dimension.getUser2_ID());
+		newAccount.setUserElement1_ID(dimension.getUserElement1_ID());
+		newAccount.setUserElement2_ID(dimension.getUserElement2_ID());
+		newAccount.setUserElementString1(dimension.getUserElementString1());
+		newAccount.setUserElementString2(dimension.getUserElementString2());
+		newAccount.setUserElementString3(dimension.getUserElementString3());
+		newAccount.setUserElementString4(dimension.getUserElementString4());
+		newAccount.setUserElementString5(dimension.getUserElementString5());
+		newAccount.setUserElementString6(dimension.getUserElementString6());
+		newAccount.setUserElementString7(dimension.getUserElementString7());
+		newAccount.setC_Harvesting_Calendar_ID(dimension.getC_Harvesting_Calendar_ID());
+		newAccount.setHarvesting_Year_ID(dimension.getHarvesting_Year_ID());
+		InterfaceWrapperHelper.save(newAccount);
 
-		return AccountId.ofRepoId(vc.getC_ValidCombination_ID());
-	}	// get
-
+		return newAccount;
+	}
 }

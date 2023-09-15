@@ -26,25 +26,19 @@ import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
-
-import java.util.Properties;
 
 public class FactAcctBL implements IFactAcctBL
 {
 
 	@Override
-	public Account getAccount(final I_Fact_Acct factAcct)
+	public Account getAccount(@NonNull final I_Fact_Acct factAcct)
 	{
-		Check.assumeNotNull(factAcct, "factAcct not null");
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(factAcct);
 		final AccountDimension accountDimension = createAccountDimension(factAcct);
-		return Account.of(AccountId.ofRepoId(MAccount.get(ctx, accountDimension).getC_ValidCombination_ID()), factAcct.getAccountConceptualName());
+		return Account.of(AccountId.ofRepoId(MAccount.get(accountDimension).getC_ValidCombination_ID()), factAcct.getAccountConceptualName());
 	}
 
 	@Override

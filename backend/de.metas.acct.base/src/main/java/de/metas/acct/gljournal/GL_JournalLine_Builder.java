@@ -1,8 +1,11 @@
 package de.metas.acct.gljournal;
 
-import java.math.BigDecimal;
-import java.util.Properties;
-
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
@@ -11,12 +14,7 @@ import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.X_GL_JournalLine;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -135,9 +133,8 @@ public class GL_JournalLine_Builder
 
 	private final I_C_ValidCombination createValidCombination(final I_C_ElementValue ev)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ev);
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getGL_Journal().getC_AcctSchema_ID());
 		final AccountDimension dim = accountBL.createAccountDimension(ev, acctSchemaId);
-		return MAccount.get(ctx, dim);
+		return MAccount.get(dim);
 	}
 }

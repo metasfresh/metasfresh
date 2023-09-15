@@ -18,16 +18,12 @@ package org.compiere.model;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -46,11 +42,10 @@ public class MAccount extends X_C_ValidCombination
 	 * Get existing Account or create it
 	 *
 	 * @return account or null
-	 * @deprecated Use {@link #get(Properties, AccountDimension)} instead
+	 * @deprecated Use {@link #get(AccountDimension)} instead
 	 */
 	@Deprecated
-	public static MAccount get(Properties ctx,
-							   int AD_Client_ID,
+	public static MAccount get(int AD_Client_ID,
 							   int AD_Org_ID,
 							   AcctSchemaId acctSchemaId,
 							   int Account_ID,
@@ -98,83 +93,21 @@ public class MAccount extends X_C_ValidCombination
 				.setHarvesting_Year_ID(Harvesting_Year_ID)
 
 				.build();
-		return get(ctx, dim);
+		return get(dim);
 	}    // get
 
 	/**
 	 * Get existing Account or create it.
 	 *
-	 * @param ctx       context
 	 * @param dimension accounting dimension
 	 * @return existing account or a newly created one; never returns null
 	 */
-	public static MAccount get(final Properties ctx, final AccountDimension dimension)
+	public static MAccount get(final AccountDimension dimension)
 	{
 		// services
 		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-
-		// Existing
-		final MAccount existingAccount = accountDAO.retrieveAccount(ctx, dimension);
-		if (existingAccount != null)
-		{
-			return existingAccount;
-		}
-
-		// New
-		final MAccount newAccount = new MAccount(ctx, 0, ITrx.TRXNAME_None);
-		newAccount.setClientOrg(dimension.getAD_Client_ID(), dimension.getAD_Org_ID());
-		newAccount.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
-		newAccount.setAccount_ID(dimension.getC_ElementValue_ID());
-		// -- Optional Accounting fields
-		newAccount.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
-		newAccount.setM_Product_ID(dimension.getM_Product_ID());
-		newAccount.setC_BPartner_ID(dimension.getC_BPartner_ID());
-		newAccount.setAD_OrgTrx_ID(dimension.getAD_OrgTrx_ID());
-		newAccount.setC_LocFrom_ID(dimension.getC_LocFrom_ID());
-		newAccount.setC_LocTo_ID(dimension.getC_LocTo_ID());
-		newAccount.setC_SalesRegion_ID(dimension.getC_SalesRegion_ID());
-		newAccount.setC_Project_ID(dimension.getC_Project_ID());
-		newAccount.setC_Campaign_ID(dimension.getC_Campaign_ID());
-		newAccount.setC_Activity_ID(dimension.getC_Activity_ID());
-		newAccount.setUser1_ID(dimension.getUser1_ID());
-		newAccount.setUser2_ID(dimension.getUser2_ID());
-		newAccount.setUserElement1_ID(dimension.getUserElement1_ID());
-		newAccount.setUserElement2_ID(dimension.getUserElement2_ID());
-		newAccount.setUserElementString1(dimension.getUserElementString1());
-		newAccount.setUserElementString2(dimension.getUserElementString2());
-		newAccount.setUserElementString3(dimension.getUserElementString3());
-		newAccount.setUserElementString4(dimension.getUserElementString4());
-		newAccount.setUserElementString5(dimension.getUserElementString5());
-		newAccount.setUserElementString6(dimension.getUserElementString6());
-		newAccount.setUserElementString7(dimension.getUserElementString7());
-		newAccount.setC_Harvesting_Calendar_ID(dimension.getC_Harvesting_Calendar_ID());
-		newAccount.setHarvesting_Year_ID(dimension.getHarvesting_Year_ID());
-		InterfaceWrapperHelper.save(newAccount);
-		logger.debug("New: {}", newAccount);
-		return newAccount;
-	}    // get
-
-	/**
-	 * Update Value/Description after change of account element value/description.
-	 *
-	 * @param ctx         context
-	 * @param whereClause where clause
-	 * @param trxName     transaction
-	 */
-	public static void updateValueDescription(final Properties ctx, final String whereClause, final String trxName)
-	{
-		final List<I_C_ValidCombination> accounts = new Query(ctx, I_C_ValidCombination.Table_Name, whereClause, trxName)
-				.setOrderBy(MAccount.COLUMNNAME_C_ValidCombination_ID)
-				.list(I_C_ValidCombination.class);
-
-		final IAccountBL accountBL = Services.get(IAccountBL.class);
-
-		for (final I_C_ValidCombination account : accounts)
-		{
-			accountBL.setValueDescription(account);
-			InterfaceWrapperHelper.save(account);
-		}
-	}    // updateValueDescription
+		return accountDAO.getOrCreateAccount(dimension);
+	}
 
 	private static final Logger logger = LogManager.getLogger(MAccount.class);
 

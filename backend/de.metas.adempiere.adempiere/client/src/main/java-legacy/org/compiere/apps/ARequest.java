@@ -27,6 +27,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Campaign;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -35,7 +36,6 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
-import org.compiere.model.MCampaign;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRMA;
@@ -163,7 +163,7 @@ public class ARequest implements ActionListener
 		{
 			m_where.append(" OR C_Project_ID=").append(m_Record_ID);
 		}
-		else if (m_AD_Table_ID == MCampaign.Table_ID)
+		else if (m_AD_Table_ID == I_C_Campaign.Table_ID)
 		{
 			m_where.append(" OR C_Campaign_ID=").append(m_Record_ID);
 		}
@@ -305,7 +305,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue("M_RMA_ID", new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == MCampaign.Table_ID)
+			else if (m_AD_Table_ID == I_C_Campaign.Table_ID)
 			{
 				tab.setValue("C_Campaign_ID", new Integer(m_Record_ID));
 			}

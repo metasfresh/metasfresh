@@ -24,6 +24,7 @@ package de.metas.acct.interceptor;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.common.util.EmptyUtil;
@@ -36,6 +37,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -48,6 +50,7 @@ public class C_BPartner
 
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final IAccountBL accountBL = Services.get(IAccountBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Value, I_C_BPartner.COLUMNNAME_AD_Org_ID })
@@ -56,7 +59,7 @@ public class C_BPartner
 		final ClientId clientId = ClientId.ofRepoId(bpartner.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoIdOrAny(bpartner.getAD_Org_ID());
 
-		if(EmptyUtil.isBlank(bpartner.getValue()))
+		if (EmptyUtil.isBlank(bpartner.getValue()))
 		{
 			// we need a value for the debitor and creditor IDs; 
 			// if we don't set it here, then org.compiere.model.PO#saveNew would set it anyways
@@ -64,7 +67,7 @@ public class C_BPartner
 			bpartner.setValue(value);
 			logger.debug("On-the-fly created C_BPartner.Value={}", value);
 		}
-		
+
 		final AcctSchema as = acctSchemaDAO.getByClientAndOrgOrNull(clientId, orgId);
 		if (as == null)
 		{
@@ -74,5 +77,11 @@ public class C_BPartner
 			return;
 		}
 		acctSchemaBL.updateDebitorCreditorIds(as, bpartner);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Value, I_C_BPartner.COLUMNNAME_Name })
+	public void updateValidCombinations(final I_C_BPartner record)
+	{
+		accountBL.updateValueDescription(I_C_ValidCombination.COLUMNNAME_C_BPartner_ID + "=" + record.getC_BPartner_ID());
 	}
 }

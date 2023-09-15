@@ -5,7 +5,6 @@ import de.metas.Profiles;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
 import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.api.IAccountBL;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.ProductActivityProvider;
@@ -76,7 +75,6 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAccountBL accountBL = Services.get(IAccountBL.class);
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
 
 	private final ICostElementRepository costElementRepo;
@@ -153,7 +151,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Element());
 
 		engine.addModelValidator(new de.metas.acct.interceptor.C_BP_BankAccount()); // 08354
-		engine.addModelValidator(new de.metas.acct.interceptor.C_ElementValue(acctSchemaDAO, accountDAO, treeNodeService));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_ElementValue(acctSchemaDAO, accountBL, treeNodeService));
 		engine.addModelValidator(new de.metas.acct.interceptor.C_ValidCombination(accountBL));
 
 		engine.addModelValidator(new de.metas.acct.interceptor.GL_Journal(importProcessFactory));

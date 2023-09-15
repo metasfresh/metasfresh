@@ -289,7 +289,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			}
 		}
 
-		final MAccount account = MAccount.get(getCtx(), AD_Client_ID, AD_Org_ID,
+		final MAccount account = MAccount.get(AD_Client_ID, AD_Org_ID,
 				acctSchemaId, Account_ID, C_SubAcct_ID,
 				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
 				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,

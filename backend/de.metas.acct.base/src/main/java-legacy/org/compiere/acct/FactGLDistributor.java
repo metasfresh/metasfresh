@@ -19,7 +19,6 @@ import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.MAccount;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -217,7 +216,7 @@ import java.util.Properties;
 		final DocLine<?> docLine = baseLine.getDocLine();
 
 		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
-		final MAccount account = MAccount.get(Env.getCtx(), accountDimension);
+		final MAccount account = MAccount.get(accountDimension);
 
 		final FactLine factLine = new FactLine(baseLine.getServices(), baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
 
