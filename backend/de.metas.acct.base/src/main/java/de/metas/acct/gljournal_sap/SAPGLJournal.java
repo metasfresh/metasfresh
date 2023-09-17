@@ -38,23 +38,49 @@ import java.util.function.Supplier;
 @Builder
 public class SAPGLJournal
 {
-	@NonNull @Getter private final SAPGLJournalId id;
-	@NonNull @Getter private final SAPGLJournalCurrencyConversionCtx conversionCtx;
+	@NonNull
+	@Getter
+	private final SAPGLJournalId id;
+	@NonNull
+	@Getter
+	private final SAPGLJournalCurrencyConversionCtx conversionCtx;
 
-	@NonNull @Getter private final DocTypeId docTypeId;
+	@NonNull
+	@Getter
+	private final DocTypeId docTypeId;
 
-	@NonNull @Getter private final AcctSchemaId acctSchemaId;
-	@NonNull @Getter private final PostingType postingType;
-	@NonNull @Getter @With private final DocStatus docStatus;
-	@NonNull private final ArrayList<SAPGLJournalLine> lines;
+	@NonNull
+	@Getter
+	private final AcctSchemaId acctSchemaId;
+	@NonNull
+	@Getter
+	private final PostingType postingType;
+	@NonNull
+	@Getter
+	@With
+	private final DocStatus docStatus;
+	@NonNull
+	private final ArrayList<SAPGLJournalLine> lines;
 
-	@NonNull @Getter private Money totalAcctDR;
-	@NonNull @Getter private Money totalAcctCR;
+	@NonNull
+	@Getter
+	private Money totalAcctDR;
+	@NonNull
+	@Getter
+	private Money totalAcctCR;
 
-	@NonNull @Getter private final OrgId orgId;
-	@NonNull @Getter private final Dimension dimension;
-	@NonNull @Getter private final String description;
-	@NonNull @Getter private final GLCategoryId glCategoryId;
+	@NonNull
+	@Getter
+	private final OrgId orgId;
+	@NonNull
+	@Getter
+	private final Dimension dimension;
+	@NonNull
+	@Getter
+	private final String description;
+	@NonNull
+	@Getter
+	private final GLCategoryId glCategoryId;
 
 	public void updateLineAcctAmounts(@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -96,7 +122,10 @@ public class SAPGLJournal
 		}
 	}
 
-	public ImmutableList<SAPGLJournalLine> getLines() {return ImmutableList.copyOf(lines);}
+	public ImmutableList<SAPGLJournalLine> getLines()
+	{
+		return ImmutableList.copyOf(lines);
+	}
 
 	public void assertHasLines()
 	{
@@ -131,6 +160,7 @@ public class SAPGLJournal
 								   ? request.getDimension()
 								   : request.getDimension().withSectionCodeId(dimension.getSectionCodeId()))
 				.determineTaxBaseSAP(request.isDetermineTaxBaseSAP())
+				.isTaxIncluded(request.isTaxIncluded())
 				.build();
 		lines.add(line);
 
@@ -179,9 +209,35 @@ public class SAPGLJournal
 			}
 			else if (line.isBaseTaxLine())
 			{
-				final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
-				it.add(taxLine);
-				hasChanges = true;
+				if (line.isTaxIncluded())
+				{
+					// calculate
+					final Money taxBaseAmt = taxProvider.calculateTaxBaseAmt(line.getAmount(), line.getTaxId());
+					final Money taxBaseAmtAcct = currencyConverter.convertToAcctCurrency(taxBaseAmt, conversionCtx);
+
+					// update baseAmt
+					line.toBuilder()
+							.isTaxIncluded(false)
+							.amount(taxBaseAmt)
+							.amountAcct(taxBaseAmtAcct)
+							.build();
+
+					it.add(line);
+					hasChanges = true;
+
+					// generate tax line
+					final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
+
+					it.add(taxLine);
+					hasChanges = true;
+				}
+				else
+				{
+					final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
+					it.add(taxLine);
+					hasChanges = true;
+				}
+
 			}
 		}
 
@@ -201,13 +257,7 @@ public class SAPGLJournal
 		final PostingSign taxPostingSign = baseLine.getPostingSign();
 		final Account taxAccount = taxProvider.getTaxAccount(taxId, acctSchemaId, taxPostingSign);
 
-		//
-		// calculate baseAmt from GrossAmt
-		final Money taxBaseAmt = taxProvider.calculateTaxBaseAmt(baseLine.getAmount(), taxId);
-		final Money taxBaseAmtAcct = currencyConverter.convertToAcctCurrency(taxBaseAmt, conversionCtx);
-
-		// calculate  taxAmt for the generated line
-		final Money taxAmt = taxProvider.calculateTaxAmt(taxBaseAmt, taxId);
+		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
 		return SAPGLJournalLine.builder()
