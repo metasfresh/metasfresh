@@ -84,26 +84,53 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 	{
 		return createDescriptorBuilder(documentTypeId, detailId)
 				.setIsSOTrx(soTrx)
+
+				// PostingSign
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_PostingSign, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.List)
 						.setLookupDescriptorProvider(getPostingSignLookup())
 						.setWidgetSize(WidgetSize.Small))
+
+				// GL_Account_ID
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_GL_Account_ID, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name))
 						.setWidgetSize(WidgetSize.Large))
+
+				// Amount
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_Amount, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Amount))
+
+				// C_Activity_ID
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_C_Activity_ID, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Activity.Table_Name)))
+
+				// M_SectionCode_ID
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_M_SectionCode_ID, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_M_SectionCode.Table_Name)))
+
+				// C_Tax_ID
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_C_Tax_ID, layoutConfig)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Tax.Table_Name)))
+
+				// IsTaxIncluded
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_IsTaxIncluded, layoutConfig)
+						.setWidgetType(DocumentFieldWidgetType.YesNo))
+				//
 				.build();
+	}
+
+
+	private LookupDescriptorProvider getIsTaxIncludedLookup()
+	{
+		final ReferenceId isTaxIncludedReferenceId = Check.assumeNotNull(
+				POInfo.getPOInfoNotNull(I_SAP_GLJournalLine.Table_Name).getColumnReferenceValueId(I_SAP_GLJournalLine.COLUMNNAME_IsTaxIncluded),
+				"AD_ReferenceValue_ID for SAP_GLJournalLine.IsTaxIncluded shall be set");
+
+		return lookupDescriptorProviders.listByAD_Reference_Value_ID(isTaxIncludedReferenceId);
 	}
 
 	private LookupDescriptorProvider getPostingSignLookup()
