@@ -123,16 +123,6 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 				.build();
 	}
 
-
-	private LookupDescriptorProvider getIsTaxIncludedLookup()
-	{
-		final ReferenceId isTaxIncludedReferenceId = Check.assumeNotNull(
-				POInfo.getPOInfoNotNull(I_SAP_GLJournalLine.Table_Name).getColumnReferenceValueId(I_SAP_GLJournalLine.COLUMNNAME_IsTaxIncluded),
-				"AD_ReferenceValue_ID for SAP_GLJournalLine.IsTaxIncluded shall be set");
-
-		return lookupDescriptorProviders.listByAD_Reference_Value_ID(isTaxIncludedReferenceId);
-	}
-
 	private LookupDescriptorProvider getPostingSignLookup()
 	{
 		final ReferenceId postingSignReferenceId = Check.assumeNotNull(
