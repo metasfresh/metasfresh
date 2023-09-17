@@ -38,49 +38,23 @@ import java.util.function.Supplier;
 @Builder
 public class SAPGLJournal
 {
-	@NonNull
-	@Getter
-	private final SAPGLJournalId id;
-	@NonNull
-	@Getter
-	private final SAPGLJournalCurrencyConversionCtx conversionCtx;
+	@NonNull @Getter private final SAPGLJournalId id;
+	@NonNull @Getter private final SAPGLJournalCurrencyConversionCtx conversionCtx;
 
-	@NonNull
-	@Getter
-	private final DocTypeId docTypeId;
+	@NonNull @Getter private final DocTypeId docTypeId;
 
-	@NonNull
-	@Getter
-	private final AcctSchemaId acctSchemaId;
-	@NonNull
-	@Getter
-	private final PostingType postingType;
-	@NonNull
-	@Getter
-	@With
-	private final DocStatus docStatus;
-	@NonNull
-	private final ArrayList<SAPGLJournalLine> lines;
+	@NonNull @Getter private final AcctSchemaId acctSchemaId;
+	@NonNull @Getter private final PostingType postingType;
+	@NonNull @Getter @With private final DocStatus docStatus;
+	@NonNull private final ArrayList<SAPGLJournalLine> lines;
 
-	@NonNull
-	@Getter
-	private Money totalAcctDR;
-	@NonNull
-	@Getter
-	private Money totalAcctCR;
+	@NonNull @Getter private Money totalAcctDR;
+	@NonNull @Getter private Money totalAcctCR;
 
-	@NonNull
-	@Getter
-	private final OrgId orgId;
-	@NonNull
-	@Getter
-	private final Dimension dimension;
-	@NonNull
-	@Getter
-	private final String description;
-	@NonNull
-	@Getter
-	private final GLCategoryId glCategoryId;
+	@NonNull @Getter private final OrgId orgId;
+	@NonNull @Getter private final Dimension dimension;
+	@NonNull @Getter private final String description;
+	@NonNull @Getter private final GLCategoryId glCategoryId;
 
 	public void updateLineAcctAmounts(@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -209,35 +183,9 @@ public class SAPGLJournal
 			}
 			else if (line.isBaseTaxLine())
 			{
-				if (line.isTaxIncluded())
-				{
-					// calculate
-					final Money taxBaseAmt = taxProvider.calculateTaxBaseAmt(line.getAmount(), line.getTaxId());
-					final Money taxBaseAmtAcct = currencyConverter.convertToAcctCurrency(taxBaseAmt, conversionCtx);
-
-					// update baseAmt
-					line.toBuilder()
-							.isTaxIncluded(false)
-							.amount(taxBaseAmt)
-							.amountAcct(taxBaseAmtAcct)
-							.build();
-
-					it.add(line);
-					hasChanges = true;
-
-					// generate tax line
-					final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
-
-					it.add(taxLine);
-					hasChanges = true;
-				}
-				else
-				{
-					final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
-					it.add(taxLine);
-					hasChanges = true;
-				}
-
+				final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
+				it.add(taxLine);
+				hasChanges = true;
 			}
 		}
 
