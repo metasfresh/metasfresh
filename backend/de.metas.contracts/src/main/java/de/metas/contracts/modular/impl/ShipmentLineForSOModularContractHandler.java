@@ -30,7 +30,6 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
@@ -59,7 +58,6 @@ public class ShipmentLineForSOModularContractHandler implements IModularContract
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull private final ModularContractLogService contractLogService;
 
 	@Override
