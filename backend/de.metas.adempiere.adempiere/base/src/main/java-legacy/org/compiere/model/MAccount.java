@@ -17,7 +17,6 @@
 package org.compiere.model;
 
 import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -35,73 +34,16 @@ import java.util.Properties;
  * @author Teo Sarca, www.arhipac.ro
  * <li>FR [ 2694043 ] Query. first/firstOnly usage best practice
  */
+@Deprecated
 public class MAccount extends X_C_ValidCombination
 {
-
-	/**
-	 * Get existing Account or create it
-	 *
-	 * @return account or null
-	 * @deprecated Use {@link #get(AccountDimension)} instead
-	 */
-	@Deprecated
-	public static MAccount get(int AD_Client_ID,
-							   int AD_Org_ID,
-							   AcctSchemaId acctSchemaId,
-							   int Account_ID,
-							   int C_SubAcct_ID,
-							   int M_Product_ID,
-							   int C_BPartner_ID,
-							   int AD_OrgTrx_ID,
-							   int C_LocFrom_ID,
-							   int C_LocTo_ID,
-							   int C_SalesRegion_ID,
-							   int C_Project_ID,
-							   int C_Campaign_ID,
-							   int C_Activity_ID,
-							   int User1_ID,
-							   int User2_ID,
-							   int UserElement1_ID,
-							   int UserElement2_ID,
-							   int C_OrderSO_ID,
-							   int C_Harvesting_Calendar_ID,
-			                   int Harvesting_Year_ID,
-							   int M_SectionCode_ID)
-	{
-		final AccountDimension dim = AccountDimension.builder()
-				.setAcctSchemaId(acctSchemaId)
-				.setAD_Client_ID(AD_Client_ID)
-				.setAD_Org_ID(AD_Org_ID)
-				.setC_ElementValue_ID(Account_ID)
-				.setC_SubAcct_ID(C_SubAcct_ID)
-				.setM_Product_ID(M_Product_ID)
-				.setC_BPartner_ID(C_BPartner_ID)
-				.setAD_OrgTrx_ID(AD_OrgTrx_ID)
-				.setC_LocFrom_ID(C_LocFrom_ID)
-				.setC_LocTo_ID(C_LocTo_ID)
-				.setC_SalesRegion_ID(C_SalesRegion_ID)
-				.setC_Project_ID(C_Project_ID)
-				.setC_Campaign_ID(C_Campaign_ID)
-				.setC_Activity_ID(C_Activity_ID)
-				.setUser1_ID(User1_ID)
-				.setUser2_ID(User2_ID)
-				.setUserElement1_ID(UserElement1_ID)
-				.setUserElement2_ID(UserElement2_ID)
-				.setSalesOrderId(C_OrderSO_ID)
-				.setM_SectionCode_ID(M_SectionCode_ID)
-				.setC_Harvesting_Calendar_ID(C_Harvesting_Calendar_ID)
-				.setHarvesting_Year_ID(Harvesting_Year_ID)
-
-				.build();
-		return get(dim);
-	}    // get
-
 	/**
 	 * Get existing Account or create it.
 	 *
 	 * @param dimension accounting dimension
 	 * @return existing account or a newly created one; never returns null
 	 */
+	@Deprecated
 	public static MAccount get(final AccountDimension dimension)
 	{
 		// services

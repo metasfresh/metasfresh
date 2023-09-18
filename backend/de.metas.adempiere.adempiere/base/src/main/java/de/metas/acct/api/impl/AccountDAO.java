@@ -188,7 +188,7 @@ public class AccountDAO implements IAccountDAO
 
 	@Override
 	@NonNull
-	public AccountId getOrCreate(@NonNull final AccountDimension dimension)
+	public AccountId getOrCreateAccountId(@NonNull final AccountDimension dimension)
 	{
 		@NonNull final MAccount account = getOrCreateAccount(dimension);
 		return AccountId.ofRepoId(account.getC_ValidCombination_ID());

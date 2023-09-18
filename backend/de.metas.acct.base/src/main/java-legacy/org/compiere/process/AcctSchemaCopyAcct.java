@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -196,8 +197,8 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int UserElement2_ID = 0;
 		OrderId C_OrderSO_ID = null;
 		int M_SectionCode_ID = 0;
-		int C_Harvesting_Calendar_ID=0;
-		int Harvesting_Year_ID=0;
+		int C_Harvesting_Calendar_ID = 0;
+		int Harvesting_Year_ID = 0;
 		//
 		// Active Elements
 		for (final AcctSchemaElement ase : targetElements)
@@ -289,18 +290,32 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			}
 		}
 
-		final MAccount account = MAccount.get(AD_Client_ID, AD_Org_ID,
-				acctSchemaId, Account_ID, C_SubAcct_ID,
-				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
-				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
-				C_Project_ID, C_Campaign_ID, C_Activity_ID,
-				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID,
-				OrderId.toRepoId(C_OrderSO_ID),
-				C_Harvesting_Calendar_ID, Harvesting_Year_ID,
-				M_SectionCode_ID);
-
-		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
-	}    // createAccount
+		return accountsRepo.getOrCreateAccountId(
+				AccountDimension.builder()
+						.setAcctSchemaId(acctSchemaId)
+						.setAD_Client_ID(AD_Client_ID)
+						.setAD_Org_ID(AD_Org_ID)
+						.setC_ElementValue_ID(Account_ID)
+						.setC_SubAcct_ID(C_SubAcct_ID)
+						.setM_Product_ID(M_Product_ID)
+						.setC_BPartner_ID(C_BPartner_ID)
+						.setAD_OrgTrx_ID(AD_OrgTrx_ID)
+						.setC_LocFrom_ID(C_LocFrom_ID)
+						.setC_LocTo_ID(C_LocTo_ID)
+						.setC_SalesRegion_ID(C_SalesRegion_ID)
+						.setC_Project_ID(C_Project_ID)
+						.setC_Campaign_ID(C_Campaign_ID)
+						.setC_Activity_ID(C_Activity_ID)
+						.setUser1_ID(User1_ID)
+						.setUser2_ID(User2_ID)
+						.setUserElement1_ID(UserElement1_ID)
+						.setUserElement2_ID(UserElement2_ID)
+						.setSalesOrderId(OrderId.toRepoId(C_OrderSO_ID))
+						.setM_SectionCode_ID(M_SectionCode_ID)
+						.setC_Harvesting_Calendar_ID(C_Harvesting_Calendar_ID)
+						.setHarvesting_Year_ID(Harvesting_Year_ID)
+						.build());
+	}
 
 	public List<AccountInfo> getAccountInfos(final Object acctAwareModel)
 	{

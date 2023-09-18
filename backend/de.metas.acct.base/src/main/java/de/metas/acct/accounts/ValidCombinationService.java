@@ -376,7 +376,7 @@ public class ValidCombinationService
 
 	public void createIfMissing(@NonNull final AccountDimension dimension)
 	{
-		accountDAO.getOrCreate(dimension);
+		accountDAO.getOrCreateAccountId(dimension);
 	}
 
 }

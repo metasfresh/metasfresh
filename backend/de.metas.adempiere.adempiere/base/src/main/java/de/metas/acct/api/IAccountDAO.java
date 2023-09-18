@@ -54,7 +54,7 @@ public interface IAccountDAO extends ISingletonService
 	List<I_C_ValidCombination> getByClientId(@NonNull ClientId clientId);
 
 	@NonNull
-	AccountId getOrCreate(@NonNull AccountDimension dimension);
+	AccountId getOrCreateAccountId(@NonNull AccountDimension dimension);
 
 	@NonNull MAccount getOrCreateAccount(@NonNull AccountDimension dimension);
 
