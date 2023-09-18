@@ -186,6 +186,19 @@ public class SAPGLJournal
 				final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
 				it.add(taxLine);
 				hasChanges = true;
+
+				//
+				// once tax line is generated,
+				// calculate line's base tax amount & reset IsTaxIncluded to N
+				if(line.isTaxIncluded())
+				{
+					final Money taxBaseAmt = taxProvider.calculateTaxBaseAmt(line.getAmount(), line.getTaxId());
+					final Money taxBaseAcct = currencyConverter.convertToAcctCurrency(taxBaseAmt, conversionCtx);
+
+					line.setAmount(taxBaseAmt);
+					line.setAmountAcct(taxBaseAcct);
+					line.setTaxIncluded(false);
+				}
 			}
 		}
 
@@ -205,7 +218,7 @@ public class SAPGLJournal
 		final PostingSign taxPostingSign = baseLine.getPostingSign();
 		final Account taxAccount = taxProvider.getTaxAccount(taxId, acctSchemaId, taxPostingSign);
 
-		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
+		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId, baseLine.isTaxIncluded());
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
 		return SAPGLJournalLine.builder()
@@ -218,6 +231,7 @@ public class SAPGLJournal
 				.taxId(taxId)
 				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())
+				.isTaxIncluded(false) // tax can't be included for generated tax lines
 				.build();
 	}
 
