@@ -97,6 +97,8 @@ public class AccountImportProcess_Test
 	@Test
 	public void simpleTreeStructure()
 	{
+		AccountImportTestHelper.createAcctSchemaInfos();
+
 		final AccountImportTestHelper.ImportRecordBuilder importRecordTemplate = AccountImportTestHelper.importRecord()
 				.chartOfAccountsName("Import Account")
 				.accountType("A")
