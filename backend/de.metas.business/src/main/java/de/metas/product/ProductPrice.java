@@ -4,7 +4,6 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -98,9 +97,10 @@ public class ProductPrice
 	@NonNull
 	public Money computeAmount(@NonNull final Quantity quantity)
 	{
-		Check.assumeEquals(quantity.getUomId(), uomId);
+		final BigDecimal amount = quantity
+				.toBigDecimalAssumingUOM(uomId)
+				.multiply(money.toBigDecimal());
 
-		final BigDecimal amount = quantity.toBigDecimal().multiply(money.toBigDecimal());
 		return Money.of(amount, money.getCurrencyId());
 	}
 }

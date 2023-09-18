@@ -125,9 +125,9 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
 		final ProductPrice priceActual = flatrateBL.extractPriceActual(modularContractRecord);
-		final Money amount = quantity == null || priceActual == null
-				? null
-				: priceActual.computeAmount(quantity);
+		final Money amount = quantity != null && priceActual != null
+				? priceActual.computeAmount(quantity)
+				: null;
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
