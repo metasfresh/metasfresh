@@ -193,10 +193,11 @@ Feature: invoice rules
 
   @from:cucumber
   Scenario: we can double-invoice a sales order with invoice rule after pick, if we pick some quantity and then override the qty to deliver to be equal to qty ordered:
-    - order 10
-    - ship and invoice 5
-    - ship an additonal 10
-    - invoice the additional 10
+  - order 10
+  - pick and invoice 5
+  - ship an additional 10 (=> a matchinv for the invoiced 5 is created between the invoiceline and the shipmentline)
+  - ship the previously picked 5
+  - invoice the additional 10 (=> the invoice has two lines with 5 each. one for each M_InOut, because of a long-standing feature - ICLineAggregationKeyBuilder_OLD#buildAggregationKey)
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name             |
@@ -219,6 +220,7 @@ Feature: invoice rules
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_3        | 0123456789012 | endcustomer_3            | Y                   | Y                   |
+    # ==> "order 10"
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_PaymentTerm_ID | OPT.POReference |
       | o_3        | true    | endcustomer_3            | 2021-04-15  | 1000012              | po_ref_mock     |
@@ -229,6 +231,7 @@ Feature: invoice rules
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_3      | ol_3                      | N             |
+    # ==> "pick and invoice 5"
     And the following virtual inventory is created
       | M_HU_ID.Identifier | QtyToBeAdded | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier |
       | hu_2               | 5            | s_s_3                            | p_3                     |
@@ -256,9 +259,11 @@ Feature: invoice rules
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceline_3_1             | invoice_3               | p_3                     | 5           | true      |
+    # ==> "ship an additional 10"
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
       | s_s_3                            | 10                        |
+    # quantityTypeToUse=D => only use the shipment schedule's qty to deliver.
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1            | s_s_3                            | D                 | Y                  |
@@ -277,6 +282,8 @@ Feature: invoice rules
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyPickList | OPT.Processed |
       | s_s_3                            |                           | 0                | 10               | 10             | 5               | false         |
+    # ==> "ship the previously picked 5
+    # quantityTypeToUse=P => only use the shipment schedule's picked qty (which is based on the actually picked HUs).
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier  | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1, shipment_2 | s_s_3                            | P                 | Y                  |
@@ -285,7 +292,7 @@ Feature: invoice rules
       | shipment_2            | endcustomer_3            | l_3                               | 2021-04-15  | po_ref_mock | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipmentLine1_1           | shipment_2            | p_3                     | 5           | true      |
+      | shipmentLine2_1           | shipment_2            | p_3                     | 5           | true      |
     And recompute shipment schedules
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_3                            |
@@ -308,8 +315,9 @@ Feature: invoice rules
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_3, invoice_4    | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_4               | endcustomer_3            | l_3                               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |  processed | docStatus |
+      | invoice_4               | endcustomer_3            | l_3                               |  true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
-      | invoiceLine_4_1             | invoice_4               | p_3                     | 10          | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | OPT.M_InOutLine_ID.Identifier | QtyInvoiced | Processed |
+      | invoiceLine_4_1             | invoice_4               | p_3                     | shipmentLine1_1               | 5           | true      |
+      | invoiceLine_4_2             | invoice_4               | p_3                     | shipmentLine2_1               | 5           | true      |

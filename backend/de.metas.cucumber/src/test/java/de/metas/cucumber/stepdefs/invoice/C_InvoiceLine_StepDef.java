@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.invoice;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.common.util.Check;
+import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -34,6 +35,7 @@ import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -43,6 +45,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Activity;
@@ -53,6 +56,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
@@ -84,6 +88,7 @@ public class C_InvoiceLine_StepDef
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
+	private final M_InOutLine_StepDefData inOutLineTable;
 	private final M_Product_StepDefData productTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Tax_StepDefData taxTable;
@@ -95,6 +100,7 @@ public class C_InvoiceLine_StepDef
 	public C_InvoiceLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
+			@NonNull final M_InOutLine_StepDefData inOutLineTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Tax_StepDefData taxTable,
@@ -105,6 +111,7 @@ public class C_InvoiceLine_StepDef
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
+		this.inOutLineTable = inOutLineTable;
 		this.productTable = productTable;
 		this.taxTable = taxTable;
 		this.taxCategoryTable = taxCategoryTable;
@@ -141,11 +148,21 @@ public class C_InvoiceLine_StepDef
 
 			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
 
-			//dev-note: we assume the tests are not using the same product and qty on different lines
-			final I_C_InvoiceLine invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+			//dev-note: we assume the tests are generally not using the same product and qty on different lines...
+			final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced);
+
+			// ...or if they do, they have different inoutlines
+			final String inoutLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(inoutLineIdentifier))
+			{
+				final I_M_InOutLine inOutLineRecord = inOutLineTable.get(inoutLineIdentifier);
+				queryBuilder.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inOutLineRecord.getM_InOutLine_ID());
+			}
+
+			final I_C_InvoiceLine invoiceLineRecord = queryBuilder
 					.create()
 					.firstOnlyNotNull(I_C_InvoiceLine.class);
 
