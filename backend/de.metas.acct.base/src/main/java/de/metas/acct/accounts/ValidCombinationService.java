@@ -158,9 +158,18 @@ public class ValidCombinationService
 		}
 	}
 
-	public void createIfMissing(@NonNull final AccountDimension dimension)
+	public void scheduleCreateIfMissing(@NonNull final AccountDimension dimension)
 	{
-		accountDAO.getOrCreateAccountId(dimension);
+		trxManager.accumulateAndProcessAfterCommit(
+				ValidCombinationService.class.getSimpleName() + "#scheduleCreateIfMissing",
+				ImmutableSet.of(dimension),
+				this::createIfMissingNow
+		);
+	}
+
+	private void createIfMissingNow(@NonNull final List<AccountDimension> dimensions)
+	{
+		dimensions.forEach(accountDAO::getOrCreateAccountId);
 	}
 
 }

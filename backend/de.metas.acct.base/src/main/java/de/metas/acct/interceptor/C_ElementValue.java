@@ -99,7 +99,7 @@ public class C_ElementValue
 		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(elementValue.getC_Element_ID());
 		for (final AcctSchema acctSchema : acctSchemasRepo.getByChartOfAccountsId(chartOfAccountsId))
 		{
-			validCombinationService.createIfMissing(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
+			validCombinationService.scheduleCreateIfMissing(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
 		}
 	}
 
