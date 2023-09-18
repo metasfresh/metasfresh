@@ -30,7 +30,7 @@ public class SAPGLJournalLine
 
 	@NonNull @Getter private final Account account;
 	@NonNull @Getter private final PostingSign postingSign;
-	@NonNull @Getter private final Money amount;
+	@NonNull @Getter @Setter private Money amount;
 	@NonNull @Getter @Setter private Money amountAcct;
 
 	@Nullable @Getter private final TaxId taxId;
