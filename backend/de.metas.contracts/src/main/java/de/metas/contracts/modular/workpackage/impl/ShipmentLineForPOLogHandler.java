@@ -33,6 +33,8 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
@@ -56,6 +58,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -75,6 +78,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+	private final ModularContractLogDAO contractLogDAO;
 	private final ShipmentLineForPOModularContractHandler contractHandler;
 
 	@Override
@@ -90,9 +94,9 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine model)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
-		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(model.getM_InOut_ID()));
+		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
 		if (!inOutDocStatus.isCompleted())
 		{
@@ -109,6 +113,18 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(createLogRequest.getContractId());
+
+		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.referenceSet(TableRecordReferenceSet.of(inOutLineRef))
+				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
+				.build();
+
+		if (contractLogDAO.anyMatch(query))
+		{
+			return ExplainedOptional.emptyBecause("Contract Log already created for " + inOutLineRef);
+		}
+
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
 
 		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());

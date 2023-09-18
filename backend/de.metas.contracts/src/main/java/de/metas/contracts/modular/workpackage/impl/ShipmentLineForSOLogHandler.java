@@ -96,9 +96,9 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine model)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
-		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(model.getM_InOut_ID()));
+		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
 		if (!inOutDocStatus.isCompleted())
 		{
@@ -115,6 +115,18 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(createLogRequest.getContractId());
+
+		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.referenceSet(TableRecordReferenceSet.of(inOutLineRef))
+				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
+				.build();
+
+		if (contractLogDAO.anyMatch(query))
+		{
+			return ExplainedOptional.emptyBecause("Contract Log already created for " + inOutLineRef);
+		}
+
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
 
 		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());
