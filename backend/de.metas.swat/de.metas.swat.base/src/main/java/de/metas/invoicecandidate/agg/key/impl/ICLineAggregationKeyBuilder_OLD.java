@@ -46,7 +46,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuilder<I_C_Invoice_Candidate>
 {
-	public static final transient ICLineAggregationKeyBuilder_OLD instance = new ICLineAggregationKeyBuilder_OLD();
+	public static final ICLineAggregationKeyBuilder_OLD instance = new ICLineAggregationKeyBuilder_OLD();
 
 	private static final List<String> columnNames = ImmutableList.<String> builder()
 			.add(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_Agg_ID)
@@ -190,9 +190,6 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 	/**
 	 * Creates a {@link NumberFormat} instance to be used to format amounts, using Bill BPartner's locale and invoice candidate currency.
-	 *
-	 * @param ic
-	 * @return
 	 */
 	private NumberFormat createCurrencyNumberFormat(final I_C_Invoice_Candidate ic)
 	{
