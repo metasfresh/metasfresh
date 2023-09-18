@@ -121,7 +121,6 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 											  final boolean isInsertOnly)
 	{
 		final ChartOfAccountsId chartOfAccountsId = chartOfAccountsImportHelper.importChartOfAccounts(importRecord);
-		chartOfAccountsImportHelper.setChartOfAccountsToDefaultSchemaElement(chartOfAccountsId);
 
 		final ElementValueId existingElementValueId = ElementValueId.ofRepoIdOrNull(importRecord.getC_ElementValue_ID());
 		if (existingElementValueId != null && isInsertOnly)

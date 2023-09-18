@@ -63,12 +63,13 @@ class ChartOfAccountsImportHelper
 		return chartOfAccountsName;
 	}
 
-	public ChartOfAccountsId importChartOfAccounts(@NonNull final I_I_ElementValue importRecord)
+	public void importChartOfAccounts(@NonNull final I_I_ElementValue importRecord)
 	{
 		ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoIdOrNull(importRecord.getC_Element_ID());
 		if (chartOfAccountsId != null)
 		{
-			return chartOfAccountsId;
+			// NOTE: if chart of accounts ID is set, accept it as it is, don't change it (i.e. don't update the name)
+			return;
 		}
 
 		// Try searching by ID
@@ -91,10 +92,11 @@ class ChartOfAccountsImportHelper
 		importRecord.setC_Element_ID(chartOfAccountsId.getRepoId());
 		InterfaceWrapperHelper.save(importRecord);
 
-		return chartOfAccountsId;
+		setChartOfAccountsToDefaultSchemaElement(chartOfAccountsId);
+
 	}
 
-	public void setChartOfAccountsToDefaultSchemaElement(@NonNull final ChartOfAccountsId chartOfAccountsId)
+	private void setChartOfAccountsToDefaultSchemaElement(@NonNull final ChartOfAccountsId chartOfAccountsId)
 	{
 		final AcctSchemaId primaryAcctSchemaId = acctSchemasRepo.getPrimaryAcctSchemaId(ClientId.METASFRESH);
 		final AcctSchema acctSchema = acctSchemasRepo.getById(primaryAcctSchemaId);
