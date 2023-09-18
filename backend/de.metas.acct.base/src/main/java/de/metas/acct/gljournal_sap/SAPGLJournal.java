@@ -96,10 +96,7 @@ public class SAPGLJournal
 		}
 	}
 
-	public ImmutableList<SAPGLJournalLine> getLines()
-	{
-		return ImmutableList.copyOf(lines);
-	}
+	public ImmutableList<SAPGLJournalLine> getLines() {return ImmutableList.copyOf(lines);}
 
 	public void assertHasLines()
 	{

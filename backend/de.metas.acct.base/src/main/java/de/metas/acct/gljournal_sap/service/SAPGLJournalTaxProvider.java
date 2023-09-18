@@ -49,7 +49,19 @@ public class SAPGLJournalTaxProvider
 				.orElseThrow(() -> new AdempiereException("No account found for " + taxId + ", " + acctSchemaId + ", " + taxAcctType));
 	}
 
+
 	public Money calculateTaxAmt(
+			@NonNull final Money lineAmt,
+			@NonNull final TaxId taxId,
+			@NonNull final boolean isTaxIncluded)
+	{
+		return isTaxIncluded
+				? calculateTaxAmt(calculateTaxBaseAmt(lineAmt, taxId), taxId) // lineAmt is a GrossAmt
+				: calculateTaxAmt(lineAmt, taxId);
+
+	}
+
+	private Money calculateTaxAmt(
 			@NonNull final Money baseAmt,
 			@NonNull final TaxId taxId)
 	{
@@ -73,14 +85,4 @@ public class SAPGLJournalTaxProvider
 		return Money.of(taxAmtBD, currencyId);
 	}
 
-	public Money calculateTaxAmt(
-			@NonNull final Money lineAmt,
-			@NonNull final TaxId taxId,
-			@NonNull final boolean isTaxIncluded)
-	{
-		return isTaxIncluded
-				? calculateTaxAmt(calculateTaxBaseAmt(lineAmt, taxId), taxId) // lineAmt is a GrossAmt
-				: calculateTaxAmt(lineAmt, taxId);
-
-	}
 }
