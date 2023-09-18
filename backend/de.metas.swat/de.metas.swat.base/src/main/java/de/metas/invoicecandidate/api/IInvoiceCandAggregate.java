@@ -1,15 +1,15 @@
 package de.metas.invoicecandidate.api;
 
-import java.util.Collection;
-import java.util.List;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.quantity.StockQtyAndUOMQty;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * This interface declares an n:m relation between {@link I_C_Invoice_Candidate}s and {@link IInvoiceLineRW}s.
- *
+ *⚡ also consultet with teo. we'd like to leave it that way.
  * Note that we can expect the system to create one in an invoice run invoice either one <code>C_InvoiceLine</code> for every {@link IInvoiceLineRW} contained in a given aggregate instance or, in case
  * of an error, creating none of them and marking all affected invoice validates ass erroneous.
  *
@@ -22,8 +22,6 @@ public interface IInvoiceCandAggregate
 	Collection<I_C_Invoice_Candidate> getAllCands();
 
 	/**
-	 *
-	 * @param il
 	 * @return source invoice candidates for the given 'il'
 	 */
 	List<I_C_Invoice_Candidate> getCandsFor(IInvoiceLineRW il);
@@ -32,7 +30,6 @@ public interface IInvoiceCandAggregate
 
 	/**
 	 *
-	 * @param ic
 	 * @return all lines that have the given 'ic' as source invoice candidate
 	 * @throws IllegalArgumentException if no {@link IInvoiceLineRW} were matched for given <code>ic</code>
 	 */
@@ -40,7 +37,6 @@ public interface IInvoiceCandAggregate
 
 	/**
 	 *
-	 * @param ic
 	 * @return all lines that have the given 'ic' as source invoice candidate; empty list is returned if no <code>ic</code> is matched
 	 */
 	List<IInvoiceLineRW> getLinesForOrEmpty(I_C_Invoice_Candidate ic);
@@ -73,15 +69,14 @@ public interface IInvoiceCandAggregate
 	 *
 	 * @return <code>true</code> if association was created; <code>false</code> if association was not created because already exists
 	 * @see #isAssociated(I_C_Invoice_Candidate, IInvoiceLineRW)
-	 * @see #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)
+	 * @see #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW, StockQtyAndUOMQty) 
 	 */
 	boolean addAssociationIfNotExists(I_C_Invoice_Candidate ic, IInvoiceLineRW il, StockQtyAndUOMQty qtyAllocatedToAdd);
 
 	/**
 	 * @return <code>true</code> isf the given <code>ic</code> was already associated with the given <code>il</code>
 	 *
-	 * @see #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)
-	 * @see #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW, BigDecimal)F
+	 * @see #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW, StockQtyAndUOMQty) 
 	 */
 	boolean isAssociated(I_C_Invoice_Candidate ic, IInvoiceLineRW il);
 
@@ -89,7 +84,7 @@ public interface IInvoiceCandAggregate
 
 	/**
 	 * Update IC to IL allocated quantity by adding <code>qtyAllocatedToAdd</code>.
-	 *
+	 * <p>
 	 * This method assumes an IC-IL association already exists and we are just adjusting the quantity which was allocated.
 	 */
 	void addAllocatedQty(I_C_Invoice_Candidate ic, IInvoiceLineRW il, StockQtyAndUOMQty qtyAllocatedToAdd);
