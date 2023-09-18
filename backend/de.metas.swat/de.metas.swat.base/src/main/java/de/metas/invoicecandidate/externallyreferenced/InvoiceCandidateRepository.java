@@ -70,6 +70,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -77,6 +78,7 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -140,6 +142,10 @@ public class InvoiceCandidateRepository
 			icRecord.setC_ILCandHandler_ID(ic.getHandlerId().getRepoId());
 			icRecord.setIsManual(ic.isManual());
 			icRecord.setC_Auction_ID(AuctionId.toRepoId(ic.getAuctionId()));
+			if (ic.flatrateTermId != null)
+			{
+				icRecord.setC_Flatrate_Term_ID(ic.flatrateTermId.getRepoId());
+			}
 		}
 		else
 		{
@@ -286,7 +292,7 @@ public class InvoiceCandidateRepository
 		candidate.billPartnerInfo(bpartnerInfo);
 
 		final ZoneId orgTZ = orgDAO.getTimeZone(orgId);
-		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered(), orgTZ));
+		candidate.dateOrdered(Objects.requireNonNull(TimeUtil.asLocalDate(icRecord.getDateOrdered(), orgTZ)));
 		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced(), orgTZ));
 
 		candidate.invoiceRule(InvoiceRule.ofCode(icRecord.getInvoiceRule()))
@@ -304,7 +310,7 @@ public class InvoiceCandidateRepository
 		final ProductPrice priceEnteredOverride = invoiceCandBL.getPriceEnteredOverride(icRecord).orElse(null);
 		candidate.priceEnteredOverride(priceEnteredOverride);
 
-		candidate.discount(Percent.ofNullable(icRecord.getDiscount()))
+		candidate.discount(Percent.of(icRecord.getDiscount()))
 				.discountOverride(Percent.ofNullable(icRecord.getDiscount_Override()));
 
 		candidate.priceActual(invoiceCandBL.getPriceActual(icRecord));
@@ -381,6 +387,7 @@ public class InvoiceCandidateRepository
 		return invoiceDetailEntity;
 	}
 
+	@Nullable
 	private Timestamp getDate(@NonNull final InvoiceDetailItem invoiceDetailItem)
 	{
 		if (invoiceDetailItem.getDate() != null)
