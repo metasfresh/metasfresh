@@ -33,8 +33,8 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+@Builder
 @Getter
-@EqualsAndHashCode
 @ToString
 public class AcctSchemaElement
 {
@@ -54,34 +54,6 @@ public class AcctSchemaElement
 	AcctSchemaElementId id;
 	@Setter
 	@Nullable ChartOfAccountsId chartOfAccountsId;
-
-	@Builder
-	public AcctSchemaElement(@NonNull final AcctSchemaElementType elementType,
-			@NonNull final String name,
-			final int seqNo,
-			final int defaultValue,
-			final ChartOfAccountsId chartOfAccountsId,
-			@NonNull final String displayColumnName,
-			final boolean mandatory,
-			final boolean displayedInEditor,
-			final boolean balanced,
-			final AcctSchemaElementId id,
-			final AcctSchemaId acctSchemaId,
-			final OrgId OrgId)
-	{
-		this.elementType = elementType;
-		this.name = name;
-		this.seqNo = seqNo;
-		this.defaultValue = defaultValue;
-		this.chartOfAccountsId = chartOfAccountsId;
-		this.displayColumnName = displayColumnName;
-		this.mandatory = mandatory;
-		this.displayedInEditor = displayedInEditor;
-		this.balanced = balanced;
-		this.id = id;
-		this.acctSchemaId = acctSchemaId;
-		this.OrgId = OrgId;
-	}
 
 	public String getColumnName()
 	{
