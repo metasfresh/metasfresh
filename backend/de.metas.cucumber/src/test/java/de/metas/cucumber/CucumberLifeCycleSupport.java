@@ -59,7 +59,7 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		eventPublisher.registerHandlerFor(TestRunFinished.class, teardown);
 	}
 
-	private void beforeAll()
+	public static void beforeAll()
 	{
 		final InfrastructureSupport infrastructureSupport = new InfrastructureSupport();
 		infrastructureSupport.start();

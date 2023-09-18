@@ -74,7 +74,7 @@ public class C_Commission_Fact_StepDef
 
 		final List<I_C_Commission_Fact> commissionFacts = queryBL.createQueryBuilder(I_C_Commission_Fact.class)
 				.addEqualsFilter(COLUMNNAME_C_Commission_Share_ID, commissionShare.getC_Commission_Share_ID())
-				.orderByDescending(COLUMNNAME_Updated)
+				.orderByDescending(I_C_Commission_Fact.COLUMNNAME_C_Commission_Fact_ID)
 				.create()
 				.list();
 

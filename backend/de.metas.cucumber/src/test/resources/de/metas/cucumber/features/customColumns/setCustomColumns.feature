@@ -2,6 +2,7 @@
 Feature: Setting customColumns via SetCustomColumns method
 
   Background:
+    Given infrastructure and metasfresh are running
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value                     | OPT.IsActive |
       | ps_1       | PricingSystemName | PricingPricingSystemValue | true         |
@@ -48,6 +49,8 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | TimeSlotStart | true                      |
       | S_ResourceType | TimeSlotEnd   | true                      |
       | S_ResourceType | ChargeableQty | true                      |
+
+    And the metasfresh cache is reset
 
     When set custom columns for C_Order:
       | C_Order_ID.Identifier | OPT.BPartnerName | OPT.IsDropShip | OPT.DateOrdered | OPT.DatePromised         | OPT.Volume | OPT.EMail |
