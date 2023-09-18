@@ -201,7 +201,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		}
 		else
 		{
-			record = load(acctSchemaElement.getId().getRepoId(), I_C_AcctSchema_Element.class);
+			record = load(acctSchemaElement.getId(), I_C_AcctSchema_Element.class);
 		}
 		final ChartOfAccountsId chartOfAccountsId = acctSchemaElement.getChartOfAccountsId();
 

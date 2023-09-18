@@ -1,5 +1,7 @@
 package de.metas.acct.api.impl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -34,9 +36,10 @@ public class AcctSchemaElementId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	private AcctSchemaElementId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_AcctSchema_Element ");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_AcctSchema_Element_ID");
 	}
 
 	public static AcctSchemaElementId ofRepoId(final int repoId)
@@ -61,6 +64,7 @@ public class AcctSchemaElementId implements RepoIdAware
 	}
 
 	@Override
+	@JsonValue
 	public int getRepoId()
 	{
 		return repoId;
