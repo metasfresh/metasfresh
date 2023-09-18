@@ -52,16 +52,6 @@ class ChartOfAccountsImportHelper
 		this.chartOfAccountsService = chartOfAccountsService;
 	}
 
-	@NonNull
-	private static String extractChartOfAccountsNameNotNull(final @NonNull I_I_ElementValue importRecord)
-	{
-		final String chartOfAccountsName = StringUtils.trimBlankToNull(importRecord.getElementName());
-		if (chartOfAccountsName == null)
-		{
-			throw new FillMandatoryException(I_I_ElementValue.COLUMNNAME_ElementName);
-		}
-		return chartOfAccountsName;
-	}
 
 	public ChartOfAccountsId importChartOfAccounts(@NonNull final I_I_ElementValue importRecord)
 	{
@@ -95,6 +85,17 @@ class ChartOfAccountsImportHelper
 
 		return chartOfAccountsId;
 
+	}
+
+	@NonNull
+	private static String extractChartOfAccountsNameNotNull(final @NonNull I_I_ElementValue importRecord)
+	{
+		final String chartOfAccountsName = StringUtils.trimBlankToNull(importRecord.getElementName());
+		if (chartOfAccountsName == null)
+		{
+			throw new FillMandatoryException(I_I_ElementValue.COLUMNNAME_ElementName);
+		}
+		return chartOfAccountsName;
 	}
 
 	public void setChartOfAccountsToDefaultSchemaElement(@NonNull final ChartOfAccountsId chartOfAccountsId)
