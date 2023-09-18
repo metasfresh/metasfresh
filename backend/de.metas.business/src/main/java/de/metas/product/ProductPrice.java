@@ -1,18 +1,19 @@
 package de.metas.product;
 
-import java.math.BigDecimal;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -92,5 +93,14 @@ public class ProductPrice
 	public <T> T transform(@NonNull final Function<ProductPrice, T> mapper)
 	{
 		return mapper.apply(this);
+	}
+
+	@NonNull
+	public Money computeAmount(@NonNull final Quantity quantity)
+	{
+		Check.assumeEquals(quantity.getUomId(), uomId);
+
+		final BigDecimal amount = quantity.toBigDecimal().multiply(money.toBigDecimal());
+		return Money.of(amount, money.getCurrencyId());
 	}
 }

@@ -40,6 +40,7 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -47,6 +48,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -122,6 +124,10 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 				.translate(Language.getBaseAD_Language());
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
+		final ProductPrice priceActual = flatrateBL.extractPriceActual(modularContractRecord);
+		final Money amount = quantity == null || priceActual == null
+				? null
+				: priceActual.computeAmount(quantity);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
@@ -143,7 +149,8 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
 											.configId(request.getConfigId())
-											.priceActual(flatrateBL.extractPriceActual(modularContractRecord))
+											.priceActual(priceActual)
+											.amount(amount)
 											.build());
 	}
 
