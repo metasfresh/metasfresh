@@ -3,6 +3,7 @@ package org.adempiere.ad.wrapper;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -229,7 +230,7 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 	}
 
 	@Override
-	public <T> T getDynAttribute(final Object model, final String attributeName)
+	public <T> T getDynAttribute(final @NonNull Object model, final String attributeName)
 	{
 		final T value = GridTabWrapper.getWrapper(model).getDynAttribute(attributeName);
 		return value;

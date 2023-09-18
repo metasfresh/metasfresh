@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 
 /**
  * Implementors are responsible for the "type" specific handling of given <code>model</code>s,
- * depending one whether under the hood they are actually {@link org.compiere.model.PO}'s or {@link org.compiere.model.GridTab}s.
+ * depending on one whether under the hood they are actually {@link org.compiere.model.PO}'s or {@link org.compiere.model.GridTab}s.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -60,16 +60,13 @@ public interface IInterfaceWrapperHelper
 	Properties getCtx(final Object model, final boolean useClientOrgFromModel);
 
 	/**
-	 * @param model
-	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without logging a warning.
+	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handled (no PO, GridTab etc.), then just return {@link ITrx#TRXNAME_None} without logging a warning.
 	 * @return trxName
 	 */
 	String getTrxName(final Object model, final boolean ignoreIfNotHandled);
 
 	/**
-	 * @param model
-	 * @param trxName
-	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
+	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc.), then don't throw an exception,
 	 * @throws AdempiereException if the given model is not handled and ignoreIfNotHandled is <code>false</code>.
 	 */
 	default void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
@@ -91,13 +88,11 @@ public interface IInterfaceWrapperHelper
 	 * <li>model is not supported
 	 * </ul>
 	 *
-	 * @param model
 	 * @return table name or null
 	 */
 	String getModelTableNameOrNull(Object model);
 
 	/**
-	 * @param model
 	 * @return true if model is a new record (not yet saved in database)
 	 */
 	boolean isNew(Object model);

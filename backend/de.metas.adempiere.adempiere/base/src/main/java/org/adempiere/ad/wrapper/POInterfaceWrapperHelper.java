@@ -219,10 +219,9 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 
 	@Nullable
 	@Override
-	public <T> T getDynAttribute(final Object model, final String attributeName)
+	public <T> T getDynAttribute(final @NonNull Object model, final String attributeName)
 	{
-		final T value = POWrapper.getDynAttribute(model, attributeName);
-		return value;
+		return POWrapper.getDynAttribute(model, attributeName);
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package org.adempiere.ad.wrapper;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.PO;
@@ -185,10 +186,9 @@ public class POJOInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	}
 
 	@Override
-	public <T> T getDynAttribute(final Object model, final String attributeName)
+	public <T> T getDynAttribute(final @NonNull Object model, final String attributeName)
 	{
-		final T value = POJOWrapper.getDynAttribute(model, attributeName);
-		return value;
+		return POJOWrapper.getDynAttribute(model, attributeName);
 	}
 
 	@Override
