@@ -5,6 +5,7 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -265,6 +266,12 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	public <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
 	{
 		return getHelperThatCanHandle(model).computeDynAttributeIfAbsent(model, attributeName, supplier);
+	}
+
+	@Override
+	public IAutoCloseable temporarySetDynAttribute(final @NonNull Object model, final @NonNull String attributeName, @Nullable final Object value)
+	{
+		return getHelperThatCanHandle(model).temporarySetDynAttribute(model, attributeName, value);
 	}
 
 	@Override

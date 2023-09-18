@@ -3,6 +3,7 @@ package org.adempiere.ad.wrapper;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.PO;
 import org.compiere.util.Evaluatee;
 
@@ -32,12 +33,12 @@ import java.util.function.Supplier;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
  * Implementors are responsible for the "type" specific handling of given <code>model</code>s,
  * depending one whether under the hood they are actually {@link org.compiere.model.PO}'s or {@link org.compiere.model.GridTab}s.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IInterfaceWrapperHelper
 {
@@ -59,20 +60,16 @@ public interface IInterfaceWrapperHelper
 	Properties getCtx(final Object model, final boolean useClientOrgFromModel);
 
 	/**
-	 *
 	 * @param model
 	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without logging a warning.
-	 *
 	 * @return trxName
 	 */
 	String getTrxName(final Object model, final boolean ignoreIfNotHandled);
 
 	/**
-	 *
 	 * @param model
 	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
-	 *
 	 * @throws AdempiereException if the given model is not handled and ignoreIfNotHandled is <code>false</code>.
 	 */
 	default void setTrxName(final Object model, final String trxName, final boolean ignoreIfNotHandled)
@@ -87,7 +84,7 @@ public interface IInterfaceWrapperHelper
 
 	/**
 	 * Get TableName of wrapped model.
-	 *
+	 * <p>
 	 * This method returns null when:
 	 * <ul>
 	 * <li>model is null
@@ -106,14 +103,14 @@ public interface IInterfaceWrapperHelper
 	boolean isNew(Object model);
 
 	<T> T getValue(final Object model,
-			final String columnName,
-			final boolean throwExIfColumnNotFound,
-			final boolean useOverrideColumnIfAvailable);
+				   final String columnName,
+				   final boolean throwExIfColumnNotFound,
+				   final boolean useOverrideColumnIfAvailable);
 
 	boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound);
 
 	boolean isValueChanged(Object model, String columnName);
-	
+
 	/**
 	 * @return true if any of given column names where changed
 	 */
@@ -125,7 +122,7 @@ public interface IInterfaceWrapperHelper
 	 * @return <code>true</code> if columnName's value is <code>null</code>
 	 */
 	boolean isNull(Object model, String columnName);
-	
+
 	@Nullable
 	<T> T getDynAttribute(@NonNull final Object model, final String attributeName);
 
@@ -135,7 +132,7 @@ public interface IInterfaceWrapperHelper
 	default <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
 	{
 		T value = getDynAttribute(model, attributeName);
-		if(value == null)
+		if (value == null)
 		{
 			value = supplier.get();
 			setDynAttribute(model, attributeName, value);
@@ -143,6 +140,11 @@ public interface IInterfaceWrapperHelper
 		return value;
 	}
 
+	default IAutoCloseable temporarySetDynAttribute(@NonNull final Object model, @NonNull final String attributeName, @Nullable final Object value)
+	{
+		final Object valueOld = setDynAttribute(model, attributeName, value);
+		return () -> setDynAttribute(model, attributeName, valueOld);
+	}
 
 	<T extends PO> T getPO(final Object model, final boolean strict);
 

@@ -5,6 +5,7 @@ import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.PO;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -233,6 +234,12 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	public <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
 	{
 		return POWrapper.computeDynAttributeIfAbsent(model, attributeName, supplier);
+	}
+
+	@Override
+	public IAutoCloseable temporarySetDynAttribute(final @NonNull Object model, final @NonNull String attributeName, @Nullable final Object value)
+	{
+		return POWrapper.temporarySetDynAttribute(model, attributeName, value);
 	}
 
 	@Override

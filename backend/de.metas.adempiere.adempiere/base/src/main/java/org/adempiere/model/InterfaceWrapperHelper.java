@@ -60,6 +60,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -1397,6 +1398,13 @@ public class InterfaceWrapperHelper
 	{
 		return helpers.computeDynAttributeIfAbsent(model, attributeName, supplier);
 	}
+
+	@NonNull
+	public IAutoCloseable temporarySetDynAttribute(@NonNull final Object model, @NonNull final String attributeName, @Nullable final Object value)
+	{
+		return helpers.temporarySetDynAttribute(model, attributeName, value);
+	}
+
 
 	/**
 	 * Check if given <code>model</code> can be casted to <code>interfaceClass</code>. NOTE: by casted we mean using create(...) methods.

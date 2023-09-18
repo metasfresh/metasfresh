@@ -60,6 +60,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -5043,6 +5044,13 @@ public abstract class PO
 		//noinspection unchecked
 		return (T)m_dynAttrs.computeIfAbsent(name, k->supplier.get());
 	}
+
+	public IAutoCloseable temporarySetDynAttribute(final @NonNull String attributeName, @Nullable final Object value)
+	{
+		final Object valueOld = setDynAttribute(attributeName, value);
+		return () -> setDynAttribute(attributeName, valueOld);
+	}
+
 
 
 	/**

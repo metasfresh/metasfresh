@@ -29,6 +29,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.ad.wrapper.POModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.proxy.ProxyMethodsCache;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -935,6 +936,12 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		return getStrictPO(model).computeDynAttributeIfAbsent(attributeName, supplier);
 	}
+
+	public static IAutoCloseable temporarySetDynAttribute(final @NonNull Object model, final @NonNull String attributeName, @Nullable final Object value)
+	{
+		return getStrictPO(model).temporarySetDynAttribute(attributeName, value);
+	}
+
 
 	public static boolean hasModelColumnName(final Object model, final String columnName)
 	{
