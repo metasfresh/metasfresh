@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.ValidCombinationQuery;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -15,10 +15,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_ValidCombination;
@@ -79,7 +79,6 @@ public class AccountDAO implements IAccountDAO
 			.put(AcctSegmentType.UserElement2, I_C_ValidCombination.COLUMNNAME_UserElement2_ID)
 			.build();
 
-	@Override
 	@Cached(cacheName = MAccount.Table_Name)
 	public @NonNull MAccount getById(@CacheCtx final Properties ctx, final int validCombinationId)
 	{
@@ -104,38 +103,38 @@ public class AccountDAO implements IAccountDAO
 	}
 
 	@Override
-	public List<I_C_ValidCombination> getByElementTypes(@NonNull final Set<AcctSchemaElementType> elementTypes, final int value)
+	public List<I_C_ValidCombination> getByMultiQuery(final @NonNull Set<ValidCombinationQuery> multiQuery)
 	{
-		if (elementTypes.isEmpty())
+		if (multiQuery.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final IQueryBuilder<I_C_ValidCombination> queryBuilder = newQueryBuilder();
-		final ICompositeQueryFilter<I_C_ValidCombination> elementTypesFilter = queryBuilder.addCompositeQueryFilter()
+		final IQueryBuilder<I_C_ValidCombination> queryBuilder = queryBL.createQueryBuilder(I_C_ValidCombination.class);
+
+		final ICompositeQueryFilter<I_C_ValidCombination> filter = queryBuilder.addCompositeQueryFilter()
 				.setJoinOr();
-		for (final AcctSchemaElementType elementType : elementTypes)
-		{
-			elementTypesFilter.addEqualsFilter(elementType.getColumnName(), value);
-		}
+		multiQuery.forEach(query -> filter.addFilter(toSqlFilter(query)));
 
 		return queryBuilder.list();
 	}
 
-	@Override
-	public List<I_C_ValidCombination> getByAcctSchemaId(@NonNull final AcctSchemaId acctSchemaId)
+	private IQueryFilter<I_C_ValidCombination> toSqlFilter(final ValidCombinationQuery query)
 	{
-		return newQueryBuilder()
-				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
-				.list();
-	}
-
-	@Override
-	public List<I_C_ValidCombination> getByClientId(@NonNull final ClientId clientId)
-	{
-		return newQueryBuilder()
-				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_AD_Client_ID, clientId)
-				.list();
+		final ICompositeQueryFilter<I_C_ValidCombination> sqlFilter = queryBL.createCompositeQueryFilter(I_C_ValidCombination.class);
+		if (query.clientId() != null)
+		{
+			sqlFilter.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_AD_Client_ID, query.clientId());
+		}
+		if (query.acctSchemaId() != null)
+		{
+			sqlFilter.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, query.acctSchemaId());
+		}
+		if (query.elementTypeAndValue() != null)
+		{
+			sqlFilter.addEqualsFilter(query.elementTypeAndValue().type().getColumnName(), query.elementTypeAndValue().value());
+		}
+		return sqlFilter;
 	}
 
 	private MAccount retrieveAccount(final AccountDimension dimension)
@@ -190,7 +189,7 @@ public class AccountDAO implements IAccountDAO
 	@NonNull
 	public AccountId getOrCreateAccountId(@NonNull final AccountDimension dimension)
 	{
-		@NonNull final MAccount account = getOrCreateAccount(dimension);
+		@NonNull final I_C_ValidCombination account = getOrCreateAccount(dimension);
 		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
 	}
 

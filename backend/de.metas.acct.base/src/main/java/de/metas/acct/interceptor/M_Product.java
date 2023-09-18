@@ -2,6 +2,7 @@ package de.metas.acct.interceptor;
 
 import de.metas.acct.accounts.ValidCombinationService;
 import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.ValidCombinationQuery;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -19,6 +20,6 @@ public class M_Product
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_M_Product.COLUMNNAME_Value, I_M_Product.COLUMNNAME_Name })
 	public void updateValidCombinations(final I_M_Product record)
 	{
-		validCombinationService.updateValueDescriptionByElementType(AcctSchemaElementType.Product, record.getM_Product_ID());
+		validCombinationService.scheduleUpdateDescriptionAfterCommit(ValidCombinationQuery.ofElementTypeAndValue(AcctSchemaElementType.Product, record.getM_Product_ID()));
 	}
 }

@@ -20,16 +20,16 @@
  * #L%
  */
 
-/**
- *
- */
 package de.metas.acct.impexp;
 
 import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,7 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_I_GLJournal;
-import org.compiere.model.MAccount;
 import org.compiere.model.MJournal;
 import org.compiere.model.MJournalBatch;
 import org.compiere.model.MJournalLine;
@@ -61,6 +60,7 @@ import java.util.Properties;
 public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJournal>
 {
 	private static final Logger log = LogManager.getLogger(GLJournalImportProcess.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	private int m_AD_Client_ID = -1;
 	private int m_AD_Org_ID = -1;
@@ -811,16 +811,16 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		if (importRecord.getC_ValidCombinationFrom_ID() == 0)
 		{
 			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountFrom_ID());
-			final MAccount acct = MAccount.get(acctDim);
-			importRecord.setC_ValidCombinationFrom_ID(acct.getC_ValidCombination_ID());
+			final AccountId acctId = accountDAO.getOrCreateAccountId(acctDim);
+			importRecord.setC_ValidCombinationFrom_ID(acctId.getRepoId());
 		}
 
 		// Set/Get Account Combination
 		if (importRecord.getC_ValidCombinationTo_ID() <= 0)
 		{
 			final AccountDimension acctDim = newAccountDimension(importRecord, importRecord.getAccountTo_ID());
-			final MAccount acct = MAccount.get(acctDim);
-			importRecord.setC_ValidCombinationTo_ID(acct.getC_ValidCombination_ID());
+			final AccountId acctId = accountDAO.getOrCreateAccountId(acctDim);
+			importRecord.setC_ValidCombinationTo_ID(acctId.getRepoId());
 		}
 		//
 		line.setAccount_DR_ID(importRecord.getC_ValidCombinationFrom_ID());

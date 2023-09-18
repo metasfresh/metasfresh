@@ -4,6 +4,7 @@ import de.metas.acct.GLCategoryId;
 import de.metas.acct.GLCategoryRepository;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
+import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
@@ -136,7 +137,6 @@ public class AcctDocRequiredServicesFacade
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
-	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
 	private final AccountProviderFactory accountProviderFactory;
@@ -232,6 +232,12 @@ public class AcctDocRequiredServicesFacade
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
 		return accountDAO.getById(accountId);
+	}
+
+	@NonNull
+	public AccountId getOrCreateAccountId(@NonNull final AccountDimension accountDimension)
+	{
+		return accountDAO.getOrCreateAccountId(accountDimension);
 	}
 
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)

@@ -2,13 +2,10 @@ package de.metas.acct.api;
 
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
-import org.compiere.util.Env;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 /*
@@ -36,22 +33,9 @@ import java.util.Set;
 public interface IAccountDAO extends ISingletonService
 {
 	@NonNull
-	MAccount getById(Properties ctx, int validCombinationId);
-
-	@NonNull
-	default MAccount getById(final int validCombinationId)
-	{
-		return getById(Env.getCtx(), validCombinationId);
-	}
-
-	@NonNull
 	MAccount getById(AccountId accountId);
 
-	List<I_C_ValidCombination> getByElementTypes(@NonNull Set<AcctSchemaElementType> elementTypes, int value);
-
-	List<I_C_ValidCombination> getByAcctSchemaId(@NonNull AcctSchemaId acctSchemaId);
-
-	List<I_C_ValidCombination> getByClientId(@NonNull ClientId clientId);
+	List<I_C_ValidCombination> getByMultiQuery(@NonNull Set<ValidCombinationQuery> multiQuery);
 
 	@NonNull
 	AccountId getOrCreateAccountId(@NonNull AccountDimension dimension);

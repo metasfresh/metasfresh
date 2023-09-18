@@ -9,6 +9,7 @@ import de.metas.elementvalue.ChartOfAccountsRepository;
 import de.metas.elementvalue.ChartOfAccountsService;
 import de.metas.elementvalue.ElementValueRepository;
 import de.metas.elementvalue.ElementValueService;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.treenode.TreeNodeRepository;
@@ -75,8 +76,8 @@ public class AccountImportProcess_Test
 		final ElementValueRepository elementValueRepository = new ElementValueRepository();
 		this.elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 		this.testHelper = new AccountImportTestHelper(chartOfAccountsService, elementValueService, elementValueRepository, treeNodeService, treeNodeRepository);
-
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), new ValidCombinationService(), treeNodeService)
+		final ValidCombinationService validCombinationService = new ValidCombinationService(this.elementValueService, PlainEventBusFactory.newInstance());
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), validCombinationService, treeNodeService)
 		{
 			@Override
 			protected void createValidCombinationIfNeeded(final I_C_ElementValue elementValue)

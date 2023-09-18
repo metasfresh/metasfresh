@@ -26,6 +26,7 @@ import de.metas.acct.accounts.ValidCombinationService;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.interceptor.C_ElementValue;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.organization.OrgId;
 import de.metas.treenode.TreeNode;
 import de.metas.treenode.TreeNodeRepository;
@@ -70,7 +71,10 @@ public class C_ElementValueTest
 		ElementValueService elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		final ValidCombinationService validCombinationService = new ValidCombinationService();
+		final ValidCombinationService validCombinationService = new ValidCombinationService(
+				ElementValueService.newInstanceForUnitTesting(),
+				PlainEventBusFactory.newInstance()
+		);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, validCombinationService, treeNodeService));
 
 		this.elementValueService = elementValueService;

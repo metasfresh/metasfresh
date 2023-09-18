@@ -2,6 +2,7 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.gldistribution.GLDistributionBuilder;
 import de.metas.acct.gldistribution.GLDistributionResult;
@@ -66,6 +67,7 @@ import java.util.Properties;
 	private static final Logger logger = LogManager.getLogger(FactGLDistributor.class);
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 	private final transient IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	private FactGLDistributor()
 	{
@@ -216,7 +218,7 @@ import java.util.Properties;
 		final DocLine<?> docLine = baseLine.getDocLine();
 
 		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
-		final MAccount account = MAccount.get(accountDimension);
+		final MAccount account = accountDAO.getOrCreateAccount(accountDimension);
 
 		final FactLine factLine = new FactLine(baseLine.getServices(), baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
 
@@ -231,10 +233,10 @@ import java.util.Properties;
 		// Update accounting dimensions
 
 		factLine.updateFromDimension(AccountDimension.builder()
-											 .applyOverrides(accountDimension)
-											 .clearC_AcctSchema_ID()
-											 .clearSegmentValue(AcctSegmentType.Account)
-											 .build());
+				.applyOverrides(accountDimension)
+				.clearC_AcctSchema_ID()
+				.clearSegmentValue(AcctSegmentType.Account)
+				.build());
 
 		// Amount
 		setAmountToFactLine(glDistributionLine, factLine);

@@ -26,10 +26,11 @@ import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.MAccount;
 
 public class FactAcctBL implements IFactAcctBL
 {
@@ -37,8 +38,11 @@ public class FactAcctBL implements IFactAcctBL
 	@Override
 	public Account getAccount(@NonNull final I_Fact_Acct factAcct)
 	{
+		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+
 		final AccountDimension accountDimension = createAccountDimension(factAcct);
-		return Account.of(AccountId.ofRepoId(MAccount.get(accountDimension).getC_ValidCombination_ID()), factAcct.getAccountConceptualName());
+		final AccountId accountId = accountDAO.getOrCreateAccountId(accountDimension);
+		return Account.of(accountId, factAcct.getAccountConceptualName());
 	}
 
 	@Override

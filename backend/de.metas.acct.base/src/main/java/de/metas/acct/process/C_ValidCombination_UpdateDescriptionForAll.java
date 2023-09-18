@@ -23,6 +23,7 @@ package de.metas.acct.process;
  */
 
 import de.metas.acct.accounts.ValidCombinationService;
+import de.metas.acct.api.ValidCombinationQuery;
 import de.metas.process.JavaProcess;
 import org.compiere.SpringContextHolder;
 
@@ -33,7 +34,7 @@ public class C_ValidCombination_UpdateDescriptionForAll extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		validCombinationService.updateValueDescriptionByClientId(getClientId());
+		validCombinationService.updateValidCombinationDescriptionNow(ValidCombinationQuery.ofClientId(getClientId()));
 		return MSG_OK;
 	}
 }

@@ -29,6 +29,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.ValidCombinationQuery;
 import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueRepository;
 import de.metas.organization.OrgId;
@@ -77,7 +78,7 @@ public class C_ElementValue
 		if (changeType.isChange()
 				&& InterfaceWrapperHelper.isValueChanged(elementValue, I_C_ElementValue.COLUMNNAME_Value, I_C_ElementValue.COLUMNNAME_Name))
 		{
-			validCombinationService.updateValueDescriptionByElementType(AcctSchemaElementType.Account, elementValue.getC_ElementValue_ID());
+			validCombinationService.scheduleUpdateDescriptionAfterCommit(ValidCombinationQuery.ofElementTypeAndValue(AcctSchemaElementType.Account, elementValue.getC_ElementValue_ID()));
 		}
 	}
 

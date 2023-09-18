@@ -28,11 +28,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.interceptor.C_ElementValue;
+import de.metas.treenode.TreeNodeRepository;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_ElementValue;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +58,18 @@ public class ElementValueService
 	{
 		this.elementValueRepository = elementValueRepository;
 		this.treeNodeService = treeNodeService;
+	}
+
+	public static ElementValueService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ElementValueService(
+				new ElementValueRepository(),
+				new TreeNodeService(
+						new TreeNodeRepository(),
+						new ChartOfAccountsService(new ChartOfAccountsRepository())
+				)
+		);
 	}
 
 	public ElementValue getById(@NonNull final ElementValueId id)

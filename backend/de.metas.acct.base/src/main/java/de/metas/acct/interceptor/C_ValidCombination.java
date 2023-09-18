@@ -16,7 +16,10 @@ public class C_ValidCombination
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_ValidCombination account)
 	{
-		validCombinationService.validate(account);
-		validCombinationService.updateValueDescription(account);
+		if (!ValidCombinationService.isAvoidUpdatingValueDescriptionOnSave(account))
+		{
+			validCombinationService.validate(account);
+			validCombinationService.updateValueDescription(account);
+		}
 	}
 }

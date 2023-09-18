@@ -24,342 +24,126 @@ package de.metas.acct.accounts;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaElement;
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.logging.LogManager;
+import de.metas.acct.api.ValidCombinationQuery;
+import de.metas.elementvalue.ElementValueService;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Campaign;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_SalesRegion;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_SubAcct;
 import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_SectionCode;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class ValidCombinationService
 {
-	private static final Logger log = LogManager.getLogger(ValidCombinationService.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private static final String SEGMENT_COMBINATION_NA = "_";
-	private static final String SEGMENT_DESCRIPTION_NA = "_";
+	private final ElementValueService elementValueService;
+	private final IEventBusFactory eventBusFactory;
 
-	public void updateValueDescriptionByElementType(@NonNull AcctSchemaElementType elementType, int value)
+	private static final Topic EVENTBUS_TOPIC = Topic.local("de.metas.acct.accounts.ValidCombinationService.events");
+	private static final String DYNATTR_AvoidUpdateDescriptionOnSave = "AvoidUpdateDescriptionOnSave";
+
+	@PostConstruct
+	public void postConstruct()
 	{
-		updateValueDescriptionByElementTypes(ImmutableSet.of(elementType), value);
+		eventBusFactory.getEventBus(EVENTBUS_TOPIC).subscribeOn(ValidCombinationUpdateEvent.class, this::updateValidCombinationDescriptionNow);
 	}
 
-	public void updateValueDescriptionByElementTypes(@NonNull Set<AcctSchemaElementType> elementTypes, int value)
+	public static ValidCombinationService newInstanceForUnitTesting()
 	{
-		accountDAO.getByElementTypes(elementTypes, value).forEach(this::updateValueDescriptionAndSave);
+		Adempiere.assertUnitTestMode();
+		return new ValidCombinationService(ElementValueService.newInstanceForUnitTesting(), PlainEventBusFactory.newInstance());
 	}
 
-	public void updateValueDescriptionByAcctSchemaId(@NonNull AcctSchemaId acctSchemaId)
+	public void scheduleUpdateDescriptionAfterCommit(final ValidCombinationQuery query)
 	{
-		accountDAO.getByAcctSchemaId(acctSchemaId).forEach(this::updateValueDescriptionAndSave);
+		scheduleUpdateDescriptionAfterCommit(ImmutableSet.of(query));
 	}
 
-	public void updateValueDescriptionByClientId(@NonNull ClientId clientId)
+	public void scheduleUpdateDescriptionAfterCommit(final Collection<ValidCombinationQuery> queries)
 	{
-		accountDAO.getByClientId(clientId).forEach(this::updateValueDescriptionAndSave);
-	}
-
-	private void updateValueDescriptionAndSave(final I_C_ValidCombination account)
-	{
-		updateValueDescription(account);
-		accountDAO.save(account);
+		trxManager.accumulateAndProcessAfterCommit(
+				ValidCombinationService.class.getSimpleName() + "#scheduleUpdateDescriptionAfterCommit",
+				ImmutableSet.copyOf(queries),
+				this::postUpdateValidCombinationDescriptionEvent
+		);
 	}
 
 	public void updateValueDescription(final I_C_ValidCombination account)
 	{
-		final StringBuilder combination = new StringBuilder();
-		final StringBuilder description = new StringBuilder();
-		boolean fullyQualified = true;
+		newValidCombinationDescriptionUpdater().update(account);
+	}
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(account.getC_AcctSchema_ID());
-		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
-		final String separator = acctSchema.getValidCombinationOptions().getSeparator();
+	public static boolean isAvoidUpdatingValueDescriptionOnSave(final I_C_ValidCombination account)
+	{
+		return StringUtils.toBoolean(InterfaceWrapperHelper.getDynAttribute(account, DYNATTR_AvoidUpdateDescriptionOnSave));
+	}
 
-		//
-		for (final AcctSchemaElement element : acctSchema.getSchemaElements())
+	private ValidCombinationDescriptionUpdater newValidCombinationDescriptionUpdater()
+	{
+		return new ValidCombinationDescriptionUpdater(acctSchemaDAO, orgDAO, elementValueService);
+	}
+
+	private void postUpdateValidCombinationDescriptionEvent(final List<ValidCombinationQuery> queriesList)
+	{
+		if (queriesList.isEmpty())
 		{
-			// Skip those elements which are not displayed in editor (07546)
-			if (!element.isDisplayedInEditor())
-			{
-				continue;
-			}
-
-			String segmentCombination = SEGMENT_COMBINATION_NA;        // not defined
-			String segmentDescription = SEGMENT_DESCRIPTION_NA;
-
-			final AcctSchemaElementType elementType = element.getElementType();
-			Check.assumeNotNull(elementType, "elementType not null"); // shall not happen
-
-			if (AcctSchemaElementType.Organization.equals(elementType))
-			{
-				final OrgId orgId = OrgId.ofRepoIdOrAny(account.getAD_Org_ID());
-				if (orgId.isRegular())
-				{
-					final I_AD_Org org = orgDAO.getById(orgId);
-					segmentCombination = org.getValue();
-					segmentDescription = org.getName();
-				}
-				else
-				{
-					segmentCombination = "*";
-					segmentDescription = "*";
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.Account.equals(elementType))
-			{
-				if (account.getAccount_ID() > 0)
-				{
-					final I_C_ElementValue elementValue = account.getAccount();
-					segmentCombination = elementValue.getValue();
-					segmentDescription = elementValue.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Account");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.SubAccount.equals(elementType))
-			{
-				if (account.getC_SubAcct_ID() > 0)
-				{
-					final I_C_SubAcct sa = account.getC_SubAcct();
-					segmentCombination = sa.getValue();
-					segmentDescription = sa.getName();
-				}
-			}
-			else if (AcctSchemaElementType.Product.equals(elementType))
-			{
-				if (account.getM_Product_ID() > 0)
-				{
-					final I_M_Product product = account.getM_Product();
-					segmentCombination = product.getValue();
-					segmentDescription = product.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Product");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.BPartner.equals(elementType))
-			{
-				if (account.getC_BPartner_ID() > 0)
-				{
-					I_C_BPartner partner = account.getC_BPartner();
-					segmentCombination = partner.getValue();
-					segmentDescription = partner.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Business Partner");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.OrgTrx.equals(elementType))
-			{
-				if (account.getAD_OrgTrx_ID() > 0)
-				{
-					I_AD_Org org = account.getAD_OrgTrx();
-					segmentCombination = org.getValue();
-					segmentDescription = org.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Trx Org");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.LocationFrom.equals(elementType))
-			{
-				if (account.getC_LocFrom_ID() > 0)
-				{
-					final I_C_Location loc = account.getC_LocFrom();
-					segmentCombination = loc.getPostal();
-					segmentDescription = loc.getCity();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Location From");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.LocationTo.equals(elementType))
-			{
-				if (account.getC_LocTo_ID() > 0)
-				{
-					final I_C_Location loc = account.getC_LocTo();
-					segmentCombination = loc.getPostal();
-					segmentDescription = loc.getCity();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Location To");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.SalesRegion.equals(elementType))
-			{
-				if (account.getC_SalesRegion_ID() > 0)
-				{
-					final I_C_SalesRegion loc = account.getC_SalesRegion();
-					segmentCombination = loc.getValue();
-					segmentDescription = loc.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: SalesRegion");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.Project.equals(elementType))
-			{
-				if (account.getC_Project_ID() > 0)
-				{
-					// final I_C_Project project = account.getC_Project();
-					// segmentCombination = project.getValue();
-					// segmentDescription = project.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Project");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.Campaign.equals(elementType))
-			{
-				if (account.getC_Campaign_ID() > 0)
-				{
-					final I_C_Campaign campaign = account.getC_Campaign();
-					segmentCombination = campaign.getValue();
-					segmentDescription = campaign.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Campaign");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.Activity.equals(elementType))
-			{
-				if (account.getC_Activity_ID() > 0)
-				{
-					final I_C_Activity act = account.getC_Activity();
-					segmentCombination = act.getValue();
-					segmentDescription = act.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: Campaign");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.SalesOrder.equals(elementType))
-			{
-				if (account.getC_OrderSO_ID() > 0)
-				{
-					final I_C_Order order = account.getC_OrderSO();
-					segmentCombination = order.getDocumentNo();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: C_Order_ID");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.SectionCode.equals(elementType))
-			{
-				if (account.getM_SectionCode_ID() > 0)
-				{
-					final I_M_SectionCode sectionCode = account.getM_SectionCode();
-					segmentCombination = sectionCode.getValue();
-					segmentDescription = sectionCode.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: C_Order_ID");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.UserList1.equals(elementType))
-			{
-				if (account.getUser1_ID() > 0)
-				{
-					final I_C_ElementValue ev = account.getUser1();
-					segmentCombination = ev.getValue();
-					segmentDescription = ev.getName();
-				}
-			}
-			else if (AcctSchemaElementType.UserList2.equals(elementType))
-			{
-				if (account.getUser2_ID() > 0)
-				{
-					final I_C_ElementValue ev = account.getUser2();
-					segmentCombination = ev.getValue();
-					segmentDescription = ev.getName();
-				}
-			}
-			// TODO: implement
-			// else if (AcctSchemaElementType.UserElement1.equals(elementType))
-			// {
-			// 	// if (acct.getUserElement1_ID() > 0)
-			// 	// {
-			// 	// }
-			// }
-			// else if (AcctSchemaElementType.UserElement2.equals(elementType))
-			// {
-			// 	// if (acct.getUserElement2_ID() > 0)
-			// 	// {
-			// 	// }
-			// }
-
-			//
-			// Append segment combination and description
-			if (combination.length() > 0)
-			{
-				combination.append(separator);
-				description.append(separator);
-			}
-			combination.append(segmentCombination);
-			description.append(segmentDescription);
+			return;
 		}
 
-		//
-		// Set Values
-		account.setCombination(combination.toString());
-		account.setDescription(description.toString());
-		if (fullyQualified != account.isFullyQualified())
+		eventBusFactory.getEventBus(EVENTBUS_TOPIC)
+				.enqueueObject(ValidCombinationUpdateEvent.builder()
+						.multiQuery(ImmutableSet.copyOf(queriesList))
+						.build());
+	}
+
+	private void updateValidCombinationDescriptionNow(final ValidCombinationUpdateEvent event)
+	{
+		final Set<ValidCombinationQuery> multiQuery = event.getMultiQuery();
+		if (multiQuery.isEmpty())
 		{
-			account.setIsFullyQualified(fullyQualified);
+			return;
 		}
-	}    // setValueDescription
+
+		final ValidCombinationDescriptionUpdater updater = newValidCombinationDescriptionUpdater();
+
+		accountDAO.getByMultiQuery(multiQuery)
+				.forEach(account -> {
+					updater.update(account);
+					try (IAutoCloseable ignored = InterfaceWrapperHelper.temporarySetDynAttribute(account, DYNATTR_AvoidUpdateDescriptionOnSave, true))
+					{
+						accountDAO.save(account);
+					}
+				});
+	}
+
+	public void updateValidCombinationDescriptionNow(final ValidCombinationQuery query)
+	{
+		updateValidCombinationDescriptionNow(ValidCombinationUpdateEvent.builder()
+				.multiQuery(ImmutableSet.of(query))
+				.build());
+	}
 
 	public void validate(@NonNull final I_C_ValidCombination account)
 	{

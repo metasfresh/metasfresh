@@ -38,7 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.model.MAccount;
+import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.POInfo;
 
 import javax.annotation.Nullable;
@@ -176,7 +176,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		final int AD_Client_ID = targetAS.getAD_Client_ID();
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(targetAS.getC_AcctSchema_ID());
 
-		final MAccount sourceAccount = accountsRepo.getById(sourceAccountId);
+		final I_C_ValidCombination sourceAccount = accountsRepo.getById(sourceAccountId);
 
 		//
 		int AD_Org_ID = 0;

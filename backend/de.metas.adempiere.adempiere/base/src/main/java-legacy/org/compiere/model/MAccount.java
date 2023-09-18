@@ -16,10 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.logging.LogManager;
-import de.metas.util.Services;
 import org.slf4j.Logger;
 
 import java.sql.ResultSet;
@@ -37,20 +34,6 @@ import java.util.Properties;
 @Deprecated
 public class MAccount extends X_C_ValidCombination
 {
-	/**
-	 * Get existing Account or create it.
-	 *
-	 * @param dimension accounting dimension
-	 * @return existing account or a newly created one; never returns null
-	 */
-	@Deprecated
-	public static MAccount get(final AccountDimension dimension)
-	{
-		// services
-		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-		return accountDAO.getOrCreateAccount(dimension);
-	}
-
 	private static final Logger logger = LogManager.getLogger(MAccount.class);
 
 	public MAccount(Properties ctx, int C_ValidCombination_ID, String trxName)

@@ -107,7 +107,7 @@ public class C_BPartnerTest
 	private void testBpartnerValueChange(final BpartnerValueToDebtorCreditorIds tuple)
 	{
 		bpartner.setValue(tuple.getValue());
-		new C_BPartner(new ValidCombinationService()).beforeSave(bpartner);
+		new C_BPartner(ValidCombinationService.newInstanceForUnitTesting()).beforeSave(bpartner);
 		Assertions.assertThat(bpartner.getDebtorId()).isEqualTo(tuple.getDebtorId());
 		Assertions.assertThat(bpartner.getCreditorId()).isEqualTo(tuple.getCreditorId());
 	}

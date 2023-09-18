@@ -3,6 +3,7 @@ package de.metas.acct.interceptor;
 import de.metas.acct.accounts.ValidCombinationService;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.ValidCombinationQuery;
 import de.metas.organization.OrgId;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -184,7 +185,8 @@ public class C_AcctSchema_Element
 		// Re-sequence
 		if (InterfaceWrapperHelper.isNew(element) || InterfaceWrapperHelper.isValueChanged(element, COLUMNNAME_SeqNo))
 		{
-			validCombinationService.updateValueDescriptionByAcctSchemaId(AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID()));
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID());
+			validCombinationService.scheduleUpdateDescriptionAfterCommit(ValidCombinationQuery.ofAcctSchemaId(acctSchemaId));
 		}
 	}    // afterSave
 
@@ -193,7 +195,7 @@ public class C_AcctSchema_Element
 	 */
 	private void updateData(final AcctSchemaElementType elementType, final int id, final I_C_AcctSchema_Element elementRecord)
 	{
-		validCombinationService.updateValueDescriptionByElementType(elementType, id);
+		validCombinationService.scheduleUpdateDescriptionAfterCommit(ValidCombinationQuery.ofElementTypeAndValue(elementType, id));
 
 		final String columnName = elementType.getColumnName();
 		//
@@ -223,6 +225,7 @@ public class C_AcctSchema_Element
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(final I_C_AcctSchema_Element element)
 	{
-		validCombinationService.updateValueDescriptionByAcctSchemaId(AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID()));
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(element.getC_AcctSchema_ID());
+		validCombinationService.scheduleUpdateDescriptionAfterCommit(ValidCombinationQuery.ofAcctSchemaId(acctSchemaId));
 	}
 }

@@ -1310,8 +1310,7 @@ public final class FactLine extends X_Fact_Acct
 			final AccountDimension accountDimension)
 	{
 		// get VC for P_Revenue (from Product)
-		final MAccount revenue = MAccount.get(accountDimension);
-		final AccountId productRevenueAcctId = AccountId.ofRepoId(revenue.getC_ValidCombination_ID());
+		final AccountId productRevenueAcctId = getServices().getOrCreateAccountId(accountDimension);
 
 		// get Unearned Revenue Acct from BPartner Group
 		AccountId unearnedRevenueAcctId = null;

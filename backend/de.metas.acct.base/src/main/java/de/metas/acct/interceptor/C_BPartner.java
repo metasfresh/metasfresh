@@ -28,6 +28,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.ValidCombinationQuery;
 import de.metas.common.util.EmptyUtil;
 import de.metas.document.sequence.SequenceUtil;
 import de.metas.logging.LogManager;
@@ -84,6 +85,6 @@ public class C_BPartner
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Value, I_C_BPartner.COLUMNNAME_Name })
 	public void updateValidCombinations(final I_C_BPartner record)
 	{
-		validCombinationService.updateValueDescriptionByElementType(AcctSchemaElementType.BPartner, record.getC_BPartner_ID());
+		validCombinationService.scheduleUpdateDescriptionAfterCommit(ValidCombinationQuery.ofElementTypeAndValue(AcctSchemaElementType.BPartner, record.getC_BPartner_ID()));
 	}
 }
