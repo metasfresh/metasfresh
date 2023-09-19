@@ -28,8 +28,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
@@ -59,7 +59,7 @@ public class ShippingNotificationService
 {
 	private final ShippingNotificationRepository shippingNotificationRepository;
 	private final DocTypeService docTypeService;
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -75,7 +75,7 @@ public class ShippingNotificationService
 		final I_C_Order salesOrderRecord = orderBL.getById(salesOrderId);
 		final OrgId orgId = OrgId.ofRepoId(salesOrderRecord.getAD_Org_ID());
 
-		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentSchedulePA.retrieveScheduleIdsByOrderId(salesOrderId), I_M_ShipmentSchedule.class).values();
+		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentScheduleBL.getByOrderId(salesOrderId);
 
 		final ShippingNotification shippingNotification = ShippingNotification.builder()
 				.orgId(orgId)
