@@ -219,7 +219,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 						.referencedModel(invoiceLineRef)
 						.flatrateTermId(contractId)
 						.description(description)
-						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+						.logEntryContractType(LogEntryContractType.INTERIM)
 						.build()
 		);
 	}
