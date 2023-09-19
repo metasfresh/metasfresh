@@ -49,6 +49,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 
+import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -197,4 +199,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
 
 	ImmutableSet<OrderId> getOrderIds(@NonNull IQueryFilter<? extends I_M_ShipmentSchedule> filter);
+
+	void setPhysicalClearanceDate(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable Instant physicalClearanceDate);
 }

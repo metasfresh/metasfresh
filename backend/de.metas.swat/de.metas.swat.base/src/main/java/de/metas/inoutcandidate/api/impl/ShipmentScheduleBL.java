@@ -90,7 +90,9 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -974,5 +976,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public ImmutableSet<OrderId> getOrderIds(@NonNull final IQueryFilter<? extends I_M_ShipmentSchedule> filter)
 	{
 		return shipmentSchedulePA.getOrderIds(filter);
+	}
+
+	@Override
+	public void setPhysicalClearanceDate(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable final Instant physicalClearanceDate)
+	{
+		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values();
+		shipmentSchedules.forEach(shipmentSchedule -> {
+			shipmentSchedule.setPhysicalClearanceDate(physicalClearanceDate != null ? Timestamp.from(physicalClearanceDate) : null);
+			shipmentSchedulePA.save(shipmentSchedule);
+		});
 	}
 }
