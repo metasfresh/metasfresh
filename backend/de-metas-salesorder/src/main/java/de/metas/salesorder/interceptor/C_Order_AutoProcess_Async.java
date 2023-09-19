@@ -49,7 +49,7 @@ public class C_Order_AutoProcess_Async
 {
 	private static final Logger logger = LogManager.getLogger(C_Order_AutoProcess_Async.class);
 
-	private final static String SYS_Config_AUTO_SHIP_AND_INVOICE = "AUTO_SHIP_AND_INVOICE";
+	public final static String SYS_Config_AUTO_SHIP_AND_INVOICE = "AUTO_SHIP_AND_INVOICE";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
