@@ -69,6 +69,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -113,8 +114,9 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_InvoiceLine invoiceLineRecord)
+	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_C_InvoiceLine> createLogRequest)
 	{
+		@NonNull final I_C_InvoiceLine invoiceLineRecord = createLogRequest.getHandleLogsRequest().getModel();
 		final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID()));
 		if (!invoiceDocStatus.isCompleted())
 		{
