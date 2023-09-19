@@ -35,7 +35,8 @@ import org.junit.runner.RunWith;
 				"html:target/cucumber.html",
 				"json:target/cucumber.json" /* this json-output is needed for the Jenkins plugin that's supposed to publish it */,
 				"junit:target/cucumber-junit.xml" /* thx to https://stackoverflow.com/a/52676659/1012103 */,
-				"message:target/cucumber.message"
+				"message:target/cucumber.message",
+				"de.metas.cucumber.CucumberLifeCycleSupport"
 		})
 public class RunCucumberTest
 {
