@@ -17,7 +17,6 @@ import de.metas.shippingnotification.ShippingNotificationLine;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
@@ -26,14 +25,17 @@ import org.compiere.acct.FactLine;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class Doc_ShippingNotification extends Doc<DocLine<?>>
+class Doc_ShippingNotification extends Doc<DocLine<?>>
 {
-	private final ShippingNotificationService shippingNotificationService = SpringContextHolder.instance.getBean(ShippingNotificationService.class);
+	private final ShippingNotificationService shippingNotificationService;
 	private ShippingNotification shippingNotification;
 
-	public Doc_ShippingNotification(final @NonNull AcctDocContext ctx)
+	Doc_ShippingNotification(
+			@NonNull final ShippingNotificationService shippingNotificationService,
+			@NonNull final AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.ShippingNotification);
+		this.shippingNotificationService = shippingNotificationService;
 	}
 
 	@Override

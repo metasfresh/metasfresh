@@ -41,7 +41,6 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
-import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
@@ -72,7 +71,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
-	final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	final IInOutBL inOutBL;
 	private final MatchInvoiceService matchInvoiceService;
 	private final OrderCostService orderCostService;
 
@@ -82,9 +81,12 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private InOutId m_reversalId = null;
 	private DocStatus m_docStatus = DocStatus.Unknown;
 
-	public Doc_InOut(final AcctDocContext ctx)
+	public Doc_InOut(
+			final IInOutBL inOutBL,
+			final AcctDocContext ctx)
 	{
 		super(ctx);
+		this.inOutBL = inOutBL;
 		this.matchInvoiceService = services.getMatchInvoiceService();
 		this.orderCostService = services.getOrderCostService();
 	}
