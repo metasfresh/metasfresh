@@ -36,6 +36,9 @@ import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.apache.camel.spi.PropertiesComponent;
 import org.springframework.stereotype.Component;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_AUDIT_TRAIL;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNAL_SYSTEM_VALUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
@@ -89,7 +92,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemRequest.class))
 				.process(this::processExternalSystemRequest)
-				.log("routing request to route ${header." + HEADER_TARGET_ROUTE + "}; MessageId=${in.messageId}")
+				.log("routing request to route ${header." + HEADER_TARGET_ROUTE + "}; MessageId=${id}")
 				.process(this::logRequestRouted)
 				.toD("direct:${header." + HEADER_TARGET_ROUTE + "}", false)
 				.process(this::logInvocationDone);
