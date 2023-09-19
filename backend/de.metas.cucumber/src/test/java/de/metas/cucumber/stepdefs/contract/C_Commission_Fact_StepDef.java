@@ -102,6 +102,7 @@ public class C_Commission_Fact_StepDef
 				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getByIdOutOfTrx(invoiceCandidateId);
 
 				invoiceCandTable.putOrReplace(settlementIdentifier, invoiceCandidate);
+
 			}
 		}
 	}
