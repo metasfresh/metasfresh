@@ -51,8 +51,6 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -129,7 +127,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 	{
 		final I_M_InOutLine inOutLineRecord = createLogRequest.getHandleLogsRequest().getModel();
 
-		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(createLogRequest.getContractId());
 
 		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
@@ -145,8 +143,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
 
-		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());
-		final Quantity quantity = Quantitys.create(inOutLineRecord.getMovementQty(), uomId);
+		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID());
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
