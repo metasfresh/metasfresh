@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -80,11 +79,11 @@ class ShippingNotificationLoaderAndSaver
 	}
 
 	@NonNull
-	public List<ShippingNotification> getByIds(@NonNull final Set<ShippingNotificationId> ids)
+	public ShippingNotificationCollection getByIds(@NonNull final Set<ShippingNotificationId> ids)
 	{
 		if (ids.isEmpty())
 		{
-			return ImmutableList.of();
+			return ShippingNotificationCollection.EMPTY;
 		}
 
 		final Map<ShippingNotificationId, I_M_Shipping_Notification> headerRecordsById = getHeaderRecordsByIds(ids);
@@ -101,11 +100,17 @@ class ShippingNotificationLoaderAndSaver
 					final List<I_M_Shipping_NotificationLine> lineRecords = CoalesceUtil.coalesceNotNull(lineRecordsById.get(id), ImmutableList.of());
 					return fromRecord(headerRecord, lineRecords);
 				})
-				.collect(Collectors.toList());
+				.collect(ShippingNotificationCollection.collect());
+	}
+
+	public ShippingNotificationCollection getByQuery(@NonNull final ShippingNotificationQuery query)
+	{
+		final ImmutableSet<ShippingNotificationId> shippingNotificationIds = toSqlQuery(query).create().listIds(ShippingNotificationId::ofRepoId);
+		return getByIds(shippingNotificationIds);
 	}
 
 	@NonNull
-	private I_M_Shipping_Notification getHeaderRecordById(@NonNull final ShippingNotificationId id)
+	public I_M_Shipping_Notification getHeaderRecordById(@NonNull final ShippingNotificationId id)
 	{
 		return getHeaderRecordByIdIfExists(id).orElseThrow(() -> new AdempiereException("No Shipping Notification found for " + id));
 	}
@@ -317,23 +322,6 @@ class ShippingNotificationLoaderAndSaver
 		InterfaceWrapperHelper.save(shippingNotificationLineRecord);
 	}
 
-	public void updateById(@NonNull final ShippingNotificationId id, @NonNull final Consumer<ShippingNotification> consumer)
-	{
-		final ShippingNotification shippingNotification = getById(id);
-		consumer.accept(shippingNotification);
-		save(shippingNotification);
-	}
-
-	public void updateByQuery(@NonNull final ShippingNotificationQuery query, @NonNull final Consumer<ShippingNotification> consumer)
-	{
-		final ImmutableSet<ShippingNotificationId> shippingNotificationIds = toSqlQuery(query).create().listIds(ShippingNotificationId::ofRepoId);
-		getByIds(shippingNotificationIds)
-				.forEach(shippingNotification -> {
-					consumer.accept(shippingNotification);
-					save(shippingNotification);
-				});
-	}
-
 	public <R> R updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
 			@NonNull final Function<ShippingNotification, R> consumer)
@@ -370,9 +358,9 @@ class ShippingNotificationLoaderAndSaver
 			sqlQueryBuilder.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_DocStatus, query.getOnlyDocStatuses());
 		}
 
-		if (query.getOrderId() != null)
+		if (query.getOrderIds() != null && !query.getOrderIds().isEmpty())
 		{
-			sqlQueryBuilder.addEqualsFilter(I_M_Shipping_Notification.COLUMNNAME_C_Order_ID, query.getOrderId());
+			sqlQueryBuilder.addInArrayFilter(I_M_Shipping_Notification.COLUMNNAME_C_Order_ID, query.getOrderIds());
 		}
 
 		return sqlQueryBuilder;

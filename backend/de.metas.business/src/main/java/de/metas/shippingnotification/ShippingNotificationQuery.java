@@ -9,13 +9,14 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+ import java.util.Set;
 
 @Value
 @Builder
 public class ShippingNotificationQuery
 {
 	@Nullable @Singular ImmutableSet<DocStatus> onlyDocStatuses;
-	@Nullable OrderId orderId;
+	@Nullable @Singular Set<OrderId> orderIds;
 
 	public static ShippingNotificationQuery completedOrClosedByOrderId(@NonNull final OrderId orderId)
 	{

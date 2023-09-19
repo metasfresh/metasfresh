@@ -26,12 +26,10 @@ import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 @Repository
@@ -53,9 +51,19 @@ public class ShippingNotificationRepository
 		return loader.getById(ShippingNotificationId.ofRepoId(record.getM_Shipping_Notification_ID()));
 	}
 
+	public I_M_Shipping_Notification getRecordById(@NonNull final ShippingNotificationId id)
+	{
+		return newLoaderAndSaver().getHeaderRecordById(id);
+	}
+
 	public Collection<I_M_Shipping_Notification> getRecordsByIds(final Set<ShippingNotificationId> shippingNotificationIds)
 	{
 		return newLoaderAndSaver().getHeaderRecordsByIds(shippingNotificationIds).values();
+	}
+
+	public ShippingNotificationCollection getByQuery(@NonNull final ShippingNotificationQuery query)
+	{
+		return newLoaderAndSaver().getByQuery(query);
 	}
 
 	@NonNull
@@ -87,9 +95,4 @@ public class ShippingNotificationRepository
 	}
 
 	public Set<ShippingNotificationId> listIds(final ShippingNotificationQuery query) {return newLoaderAndSaver().listIds(query);}
-
-	public void updateByQuery(@NonNull final ShippingNotificationQuery query, @NonNull final Consumer<ShippingNotification> consumer)
-	{
-		newLoaderAndSaver().updateByQuery(query, consumer);
-	}
 }

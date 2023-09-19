@@ -47,7 +47,11 @@ public class ShippingNotificationService
 
 	private static final AdMessageKey MSG_M_Shipment_Notification_CompletedNotifications = AdMessageKey.of("de.metas.shippingnotification.CompletedShippingNotifications");
 
+	public ShippingNotificationCollection getByQuery(@NonNull final ShippingNotificationQuery query) {return shippingNotificationRepository.getByQuery(query);}
+
 	public ShippingNotification getByRecord(@NonNull final I_M_Shipping_Notification record) {return shippingNotificationRepository.getByRecord(record);}
+
+	public I_M_Shipping_Notification getRecordById(@NonNull final ShippingNotificationId id) {return shippingNotificationRepository.getRecordById(id);}
 
 	public void updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
