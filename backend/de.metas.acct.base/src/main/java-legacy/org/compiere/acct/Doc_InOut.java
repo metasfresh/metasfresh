@@ -31,6 +31,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -46,7 +47,6 @@ import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MInOut;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -79,8 +79,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
-	private int m_Reversal_ID = 0;
-	private String m_DocStatus = "";
+	private InOutId m_reversalId = null;
+	private DocStatus m_docStatus = DocStatus.Unknown;
 
 	public Doc_InOut(final AcctDocContext ctx)
 	{
@@ -95,8 +95,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		setNoCurrency();
 		final I_M_InOut inout = getModel(I_M_InOut.class);
 		setDateDoc(inout.getMovementDate());
-		m_Reversal_ID = inout.getReversal_ID();// store original (voided/reversed) document
-		m_DocStatus = inout.getDocStatus();
+		m_reversalId = InOutId.ofRepoIdOrNull(inout.getReversal_ID());// store original (voided/reversed) document
+		m_docStatus = DocStatus.ofNullableCodeOrUnknown(inout.getDocStatus());
 		setDocLines(loadLines(inout));
 	}
 
@@ -369,8 +369,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(costElement.isMaterialElement()
-									? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
-									: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
+						? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
+						: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
 				.setAmt(null, roundToStdPrecision(costs))
 				.setQty(line.getQty().negate()) // (-) Qty
 				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
@@ -421,10 +421,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		{
 			throw newPostingException().setDetailMessage("DR not created: " + line);
 		}
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
+		if (m_docStatus.isReversed() && m_reversalId != null && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!dr.updateReverseLine(getTableId(I_M_InOut.class), m_reversalId.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -445,10 +445,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		{
 			throw newPostingException().setDetailMessage("CR not created: " + line);
 		}
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
+		if (m_docStatus.isReversed() && m_reversalId != null && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!cr.updateReverseLine(getTableId(I_M_InOut.class), m_reversalId.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
