@@ -2,8 +2,7 @@
 Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
   Background:
-    Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-03-22T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 

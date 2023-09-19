@@ -2,8 +2,7 @@
 Feature: Handling unit data export audit
 
   Background:
-    Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the export audit data is reset
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
 

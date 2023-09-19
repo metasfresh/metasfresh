@@ -1,9 +1,7 @@
 Feature: Validate external reference is sent to RabbitMQ
 
   Background:
-    Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
+    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   Scenario: Export external reference and c_bpartner when created by RabbitMQ.SubjectCreatedByUserGroup_ID
     Given metasfresh contains AD_UserGroup:
@@ -20,6 +18,8 @@ Feature: Validate external reference is sent to RabbitMQ
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue                       | OPT.IsSyncExternalReferencesToRabbitMQ | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.IsSyncBPartnersToRabbitMQ | OPT.SubjectCreatedByUserGroup_ID.Identifier |
       | config_1                            | RabbitMQ | syncExternalReferenceExportRabbitMQUpdate | true                                   | true                                 | true                          | userGroup_externalRef                       |
       | config_noAutoSync                   | RabbitMQ | autoExportRabbitMQExternalRef             | true                                   |                                      | false                         |                                             |
+
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """

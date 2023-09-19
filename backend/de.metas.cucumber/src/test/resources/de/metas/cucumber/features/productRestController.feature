@@ -2,8 +2,7 @@
 Feature:product get/create/update using metasfresh api
 
   Background:
-    Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And remove external reference if exists:
       | ExternalSystem | ExternalReference | Type     |
       | ALBERTA        | 345               | Product  |

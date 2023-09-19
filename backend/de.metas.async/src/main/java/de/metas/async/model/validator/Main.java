@@ -65,7 +65,6 @@ public class Main extends AbstractModuleInterceptor
 	private static final Logger logger = LogManager.getLogger(Main.class);
 
 	public static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
-	public static final String SYSCONFIG_DEBOUNCER_DELAY_MILLIS = "de.metas.externalsystem.debouncer.delayInMillis";
 
 	private static final int THREE_MINUTES = 3 * 60 * 1000;
 
