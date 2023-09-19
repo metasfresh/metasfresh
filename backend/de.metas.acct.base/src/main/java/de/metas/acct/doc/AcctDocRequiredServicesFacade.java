@@ -290,6 +290,11 @@ public class AcctDocRequiredServicesFacade
 		return productBL.isStocked(product);
 	}
 
+	public boolean isProductStocked(final ProductId productId)
+	{
+		return productBL.isStocked(productId);
+	}
+
 	public I_C_UOM getProductStockingUOM(final ProductId productId)
 	{
 		return productBL.getStockUOM(productId);
