@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shipping_notification/report" uuid="ec3faad0-0045-4c5b-8fdb-e7ca318251a7">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="63"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -25,20 +25,42 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT 	*
-FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $P{ad_language} )
+FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Root( $P{RECORD_ID}, $P{ad_language} )
 ;]]>
 	</queryString>
-	<field name="ad_user_id" class="java.math.BigDecimal"/>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="m_inout_id" class="java.math.BigDecimal"/>
-	<field name="docstatus" class="java.lang.String"/>
-	<field name="c_bpartner_id" class="java.math.BigDecimal"/>
-	<field name="c_bpartner_location_id" class="java.math.BigDecimal"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="ad_language" class="java.lang.String"/>
-	<field name="ishidepackingmaterialinshipmentprint" class="java.lang.String"/>
-	<field name="email" class="java.lang.String"/>
-	<field name="displayhu" class="java.lang.String"/>
+	<field name="ad_user_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_user_id"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="m_shipping_notification_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="m_shipping_notification_id"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+	</field>
+	<field name="c_bpartner_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_id"/>
+	</field>
+	<field name="c_bpartner_location_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_location_id"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="ad_language" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="ad_language"/>
+	</field>
+	<field name="ishidepackingmaterialinshipmentprint" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="ishidepackingmaterialinshipmentprint"/>
+	</field>
+	<field name="email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="email"/>
+	</field>
+	<field name="issourcesupplycert" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="issourcesupplycert"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
@@ -72,10 +94,10 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_description.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/shipping_notification/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-5" x="56" y="153" width="255" height="127" uuid="a2587194-6faf-4a16-9753-2a9f77935d45">
+				<reportElement key="subreport-5" x="40" y="153" width="255" height="127" uuid="a2587194-6faf-4a16-9753-2a9f77935d45">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -94,7 +116,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="340" y="155" width="210" height="127" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c">
+				<reportElement key="subreport-8" x="335" y="155" width="210" height="127" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -150,7 +172,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_page_header.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/shipping_notification/report_page_header.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</pageHeader>
@@ -160,9 +182,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 	<detail>
 		<band height="12" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735">
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735"/>
 				<subreportParameter name="m_inout_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -170,86 +190,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Root( $P{RECORD_ID}, $
 					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_details.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="f573bfb7-df5e-4958-9cd5-87e0253bd64d">
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
-				</reportElement>
-				<subreportParameter name="m_inout_id">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="displayhu">
-					<subreportParameterExpression><![CDATA[$F{displayhu}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_details_v2.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
-		<band height="24">
-			<printWhenExpression><![CDATA[new Boolean($F{ishidepackingmaterialinshipmentprint}.equals( "N" ) && $F{displayhu}.equals( "Y" ))]]></printWhenExpression>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735">
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<subreportParameter name="m_inout_id">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_details_hu.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="f370c428-37d2-4b86-97ef-fe7de0b98210">
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
-				</reportElement>
-				<subreportParameter name="m_inout_id">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_details_hu_v2.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
-		<band height="36">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="24" width="595" height="12" uuid="8ec4ce73-64c9-452c-9abf-13e5efedb735"/>
-				<subreportParameter name="ad_org_id">
-					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$F{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="displayhu">
-					<subreportParameterExpression><![CDATA[$F{displayhu}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_details_hu_bal.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
-		<band height="36">
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="24" width="595" height="12" uuid="70efd6fe-c7ab-4a76-a94b-122af08d2676">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-				</reportElement>
-				<subreportParameter name="m_inout_id">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/inout/report_details_footer.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/shipping_notification/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

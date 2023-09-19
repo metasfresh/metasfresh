@@ -52,35 +52,35 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details( $P{
 	<pageHeader>
 		<band height="12" splitType="Stretch">
 			<textField>
-				<reportElement key="textField-19" x="413" y="0" width="47" height="12" forecolor="#000000" uuid="31559d9f-ad00-493b-85aa-c40248c81609"/>
+				<reportElement key="textField-19" x="462" y="0" width="47" height="12" forecolor="#000000" uuid="31559d9f-ad00-493b-85aa-c40248c81609"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="463" y="0" width="40" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718"/>
+				<reportElement key="textField-20" x="512" y="0" width="40" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-13" x="260" y="0" width="153" height="12" forecolor="#000000" uuid="c2a20384-4f83-4956-8de0-647e2b2f9d11"/>
+				<reportElement key="textField-13" x="265" y="0" width="197" height="12" forecolor="#000000" uuid="c2a20384-4f83-4956-8de0-647e2b2f9d11"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="129" y="0" width="130" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
+				<reportElement key="textField-16" x="134" y="0" width="130" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="0" width="22" height="12" uuid="f6e90c84-e9b9-4fd3-8476-0209e1f9724a">
+				<reportElement x="42" y="0" width="22" height="12" uuid="f6e90c84-e9b9-4fd3-8476-0209e1f9724a">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -90,7 +90,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details( $P{
 				<textFieldExpression><![CDATA[$R{Position}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="59" y="0" width="70" height="12" forecolor="#000000" uuid="f451703a-d0d2-4293-baab-e4c2b79080d7"/>
+				<reportElement key="textField-16" x="64" y="0" width="70" height="12" forecolor="#000000" uuid="f451703a-d0d2-4293-baab-e4c2b79080d7"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
@@ -101,7 +101,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details( $P{
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-20" x="463" y="0" width="40" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="512" y="0" width="40" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -114,7 +114,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details( $P{
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="260" y="0" width="153" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>
+				<reportElement key="textField-13" x="265" y="0" width="197" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -127,7 +127,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details( $P{
 				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="129" y="0" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
+				<reportElement key="textField-24" mode="Transparent" x="134" y="0" width="130" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -140,7 +140,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details( $P{
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="413" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
+				<reportElement key="textField-33" mode="Transparent" x="462" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -154,7 +154,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details( $P{
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="9c0f2b5a-9de7-4552-9811-f7f6d4cae3de"/>
+				<reportElement key="textField-24" mode="Transparent" x="64" y="0" width="70" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="9c0f2b5a-9de7-4552-9811-f7f6d4cae3de"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -167,7 +167,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Details( $P{
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="0" width="22" height="12" uuid="b5c3ca6e-ce55-409c-b681-fdb68c3a5c2c">
+				<reportElement x="42" y="0" width="22" height="12" uuid="b5c3ca6e-ce55-409c-b681-fdb68c3a5c2c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
