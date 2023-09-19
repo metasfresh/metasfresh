@@ -71,6 +71,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 {
 	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
 	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
+	private static final String language = Env.getADLanguageOrBaseLanguage();
 
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -85,12 +86,12 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_InOutLine> request)
 	{
 		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		{
+			case COMPLETED -> LogAction.CREATE;
+			case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
+			case RECREATE_LOGS -> LogAction.RECOMPUTE;
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+		};
 	}
 
 	@Override
@@ -132,7 +133,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());
 		final Quantity quantity = Quantitys.create(inOutLineRecord.getMovementQty(), uomId);
 
-		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_COMPLETED);
+		final String description = msgBL.getMsg(language, MSG_INFO_SHIPMENT_COMPLETED);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
@@ -150,7 +151,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 											.amount(null)
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(), OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
-											.description(msgText.translate(Env.getAD_Language()))
+											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.build());
 	}
@@ -160,12 +161,12 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 			@NonNull final HandleLogsRequest<I_M_InOutLine> handleLogsRequest,
 			@NonNull final FlatrateTermId contractId)
 	{
-		final ITranslatableString msgText = msgBL.getTranslatableMsgText(MSG_INFO_SHIPMENT_REVERSED);
+		final String description = msgBL.getMsg(language, MSG_INFO_SHIPMENT_REVERSED);
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))
 											.flatrateTermId(contractId)
-											.description(msgText.translate(Env.getAD_Language()))
+											.description(description)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 											.build());
 	}

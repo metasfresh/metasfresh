@@ -64,6 +64,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -72,6 +73,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 {
 	private static final AdMessageKey MSG_INFO_SHIPMENT_SO_COMPLETED = AdMessageKey.of("de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_INFO_SHIPMENT_SO_REVERSED = AdMessageKey.of("de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnReverse.Description");
+	private static final String language = Env.getADLanguageOrBaseLanguage();
 
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -150,7 +152,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
-		final String description = msgBL.getMsg(MSG_INFO_SHIPMENT_SO_COMPLETED, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
+		final String description = msgBL.getMsg(language, MSG_INFO_SHIPMENT_SO_COMPLETED, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
@@ -159,7 +161,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouse.getC_BPartner_ID()))
 											.producerBPartnerId(bPartnerId)
 											.invoicingBPartnerId(bPartnerId)
-											.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
+											.warehouseId(warehouseId)
 											.documentType(LogEntryDocumentType.SHIPMENT)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.SALES)
@@ -187,7 +189,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 																						 .referenceSet(TableRecordReferenceSet.of(inOutLineRef))
 																						 .build());
 
-		final String description = msgBL.getMsg(MSG_INFO_SHIPMENT_SO_REVERSED, ImmutableList.of(String.valueOf(inOutLineRecord.getM_Product_ID()), quantity.toString()));
+		final String description = msgBL.getMsg(language, MSG_INFO_SHIPMENT_SO_REVERSED, ImmutableList.of(String.valueOf(inOutLineRecord.getM_Product_ID()), quantity.toString()));
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))
