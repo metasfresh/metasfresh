@@ -78,7 +78,6 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -142,9 +141,9 @@ public class InvoiceCandidateRepository
 			icRecord.setC_ILCandHandler_ID(ic.getHandlerId().getRepoId());
 			icRecord.setIsManual(ic.isManual());
 			icRecord.setC_Auction_ID(AuctionId.toRepoId(ic.getAuctionId()));
-			if (ic.flatrateTermId != null)
+			if (ic.getFlatrateTermId() != null)
 			{
-				icRecord.setC_Flatrate_Term_ID(ic.flatrateTermId.getRepoId());
+				icRecord.setC_Flatrate_Term_ID(ic.getFlatrateTermId().getRepoId());
 			}
 		}
 		else
@@ -292,7 +291,7 @@ public class InvoiceCandidateRepository
 		candidate.billPartnerInfo(bpartnerInfo);
 
 		final ZoneId orgTZ = orgDAO.getTimeZone(orgId);
-		candidate.dateOrdered(Objects.requireNonNull(TimeUtil.asLocalDate(icRecord.getDateOrdered(), orgTZ)));
+		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered(), orgTZ));
 		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced(), orgTZ));
 
 		candidate.invoiceRule(InvoiceRule.ofCode(icRecord.getInvoiceRule()))
@@ -382,13 +381,13 @@ public class InvoiceCandidateRepository
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
 		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
 		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
-		invoiceDetailEntity.setDate(getDate(invoiceDetailItem));
+		invoiceDetailEntity.setDate(getDateOrNull(invoiceDetailItem));
 
 		return invoiceDetailEntity;
 	}
 
 	@Nullable
-	private Timestamp getDate(@NonNull final InvoiceDetailItem invoiceDetailItem)
+	private Timestamp getDateOrNull(@NonNull final InvoiceDetailItem invoiceDetailItem)
 	{
 		if (invoiceDetailItem.getDate() != null)
 		{

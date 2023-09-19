@@ -120,6 +120,7 @@ public class InvoiceCandidate
 
 	private final SOTrx soTrx;
 
+	@Nullable
 	private LocalDate dateOrdered;
 
 	@Nullable
@@ -188,7 +189,7 @@ public class InvoiceCandidate
 	private final AuctionId auctionId;
 
 	@Nullable
-	FlatrateTermId flatrateTermId;
+	private final FlatrateTermId flatrateTermId;
 
 	@Builder
 	private InvoiceCandidate(
@@ -202,7 +203,7 @@ public class InvoiceCandidate
 			@NonNull final InvoiceRule invoiceRule,
 			@Nullable final InvoiceRule invoiceRuleOverride,
 			@NonNull final SOTrx soTrx,
-			@NonNull final LocalDate dateOrdered,
+			@Nullable final LocalDate dateOrdered,
 			@Nullable final LocalDate presetDateInvoiced,
 			@NonNull final StockQtyAndUOMQty qtyOrdered,
 			@NonNull final StockQtyAndUOMQty qtyDelivered,
