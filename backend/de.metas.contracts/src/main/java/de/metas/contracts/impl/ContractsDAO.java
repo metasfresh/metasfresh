@@ -7,7 +7,6 @@ import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -28,7 +27,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_C_InterimInvoice_FlatrateTerm;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -210,25 +208,6 @@ public class ContractsDAO implements IContractsDAO
 	public <T extends I_C_Flatrate_Conditions> T getConditionsById(@NonNull final ConditionsId conditionsId, @NonNull final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.load(conditionsId, modelClass);
-	}
-
-	@Override
-	public IQuery<I_C_Flatrate_Term> createInterimInvoiceSearchCriteria(@Nullable final I_C_Flatrate_Term flatrateTerm)
-	{
-		final IQuery<I_C_InterimInvoice_FlatrateTerm> interimInvoiceFlatrateTermQuery = queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Interim_Invoice_Candidate_ID, null)
-				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Invoice_Candidate_Withholding_ID, null)
-				.create();
-
-		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = createBaseTermWithMissingCandidateQueryBuilder(X_C_Flatrate_Term.TYPE_CONDITIONS_InterimInvoice, true /* ignoreDateFilters */);
-		if (flatrateTerm != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTerm.getC_Flatrate_Term_ID());
-		}
-		return queryBuilder
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Flatrate_Term_ID, interimInvoiceFlatrateTermQuery)
-				.create();
 	}
 
 }
