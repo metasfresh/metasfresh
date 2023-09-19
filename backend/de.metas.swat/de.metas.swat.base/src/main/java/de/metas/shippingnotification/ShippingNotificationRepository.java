@@ -29,7 +29,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Repository
 public class ShippingNotificationRepository
@@ -48,6 +51,11 @@ public class ShippingNotificationRepository
 		final ShippingNotificationLoaderAndSaver loader = newLoaderAndSaver();
 		loader.addToCacheAndAvoidSaving(record);
 		return loader.getById(ShippingNotificationId.ofRepoId(record.getM_Shipping_Notification_ID()));
+	}
+
+	public Collection<I_M_Shipping_Notification> getRecordsByIds(final Set<ShippingNotificationId> shippingNotificationIds)
+	{
+		return newLoaderAndSaver().getHeaderRecordsByIds(shippingNotificationIds).values();
 	}
 
 	@NonNull
@@ -71,17 +79,19 @@ public class ShippingNotificationRepository
 		InterfaceWrapperHelper.saveRecord(record);
 	}
 
-	public void updateWhileSaving(
+	public <R> R updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
-			@NonNull final Consumer<ShippingNotification> consumer)
+			@NonNull final Function<ShippingNotification, R> consumer)
 	{
-		newLoaderAndSaver().updateWhileSaving(record, consumer);
+		return newLoaderAndSaver().updateWhileSaving(record, consumer);
 	}
 
 	public boolean anyMatch(final ShippingNotificationQuery query)
 	{
 		return newLoaderAndSaver().anyMatch(query);
 	}
+
+	public Set<ShippingNotificationId> listIds(final ShippingNotificationQuery query) {return newLoaderAndSaver().listIds(query);}
 
 	public void updateByQuery(@NonNull final ShippingNotificationQuery query, @NonNull final Consumer<ShippingNotification> consumer)
 	{

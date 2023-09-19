@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipping_NotificationLine extends org.compiere.model.PO implements I_M_Shipping_NotificationLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -698240775L;
+	private static final long serialVersionUID = 685350379L;
 
     /** Standard Constructor */
     public X_M_Shipping_NotificationLine (final Properties ctx, final int M_Shipping_NotificationLine_ID, @Nullable final String trxName)
@@ -238,5 +238,32 @@ public class X_M_Shipping_NotificationLine extends org.compiere.model.PO impleme
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public de.metas.shippingnotification.model.I_M_Shipping_NotificationLine getReversal()
+	{
+		return get_ValueAsPO(COLUMNNAME_Reversal_ID, de.metas.shippingnotification.model.I_M_Shipping_NotificationLine.class);
+	}
+
+	@Override
+	public void setReversal(final de.metas.shippingnotification.model.I_M_Shipping_NotificationLine Reversal)
+	{
+		set_ValueFromPO(COLUMNNAME_Reversal_ID, de.metas.shippingnotification.model.I_M_Shipping_NotificationLine.class, Reversal);
+	}
+
+	@Override
+	public void setReversal_ID (final int Reversal_ID)
+	{
+		if (Reversal_ID < 1) 
+			set_Value (COLUMNNAME_Reversal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Reversal_ID, Reversal_ID);
+	}
+
+	@Override
+	public int getReversal_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Reversal_ID);
 	}
 }

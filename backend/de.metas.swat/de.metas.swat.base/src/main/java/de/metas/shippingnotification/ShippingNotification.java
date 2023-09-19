@@ -29,7 +29,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocTypeId;
+import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
@@ -56,76 +58,70 @@ import java.util.stream.Collectors;
 @ToString
 public class ShippingNotification
 {
-	@NonNull
-	private final OrgId orgId;
-	@NonNull
-	private final DocTypeId docTypeId;
-	@NonNull
-	private final BPartnerLocationId bpartnerAndLocationId;
-	@Nullable
-	private final BPartnerContactId contactId;
+	@Nullable private ShippingNotificationId id;
+
+	@NonNull private final OrgId orgId;
+	@NonNull private final DocTypeId docTypeId;
+	@Nullable @Setter private String documentNo;
+	@NonNull private final BPartnerLocationId bpartnerAndLocationId;
+	@Nullable private final BPartnerContactId contactId;
 	private final int auctionId;
-	@NonNull
-	private final LocatorId locatorId;
-	@NonNull
-	private final OrderId orderId;
-	@NonNull
-	private final Instant physicalClearanceDate;
-	@NonNull
-	private final YearAndCalendarId harvestingYearId;
-	@Nullable
-	private final String poReference;
-	@Nullable
-	private final String description;
-	@NonNull
-	@Setter
-	private DocStatus docStatus;
-	private final ArrayList<ShippingNotificationLine> lines;
-	@Nullable
-	private ShippingNotificationId id;
+	@NonNull private final LocatorId locatorId;
+	@NonNull private final OrderId salesOrderId;
+	@NonNull private final Instant dateAcct;
+	@NonNull private final Instant physicalClearanceDate;
+	@NonNull private final YearAndCalendarId harvestingYearId;
+	@Nullable private final String poReference;
+	@Nullable private final String description;
+	@NonNull @Setter private DocStatus docStatus;
+	@Nullable private String docAction;
+	@NonNull private final ArrayList<ShippingNotificationLine> lines;
 	private boolean processed;
-	@Nullable
-	@Setter
-	private ShippingNotificationId reversalId;
-	@Nullable
-	@Setter
-	private String bpaddress;
+	@Nullable @Setter private ShippingNotificationId reversalId;
+	@Nullable private String bpaddress;
+
+	private static final String REVERSE_INDICATOR = "^";
 
 	@Builder(toBuilder = true)
 	private ShippingNotification(
 			@Nullable final ShippingNotificationId id,
 			@NonNull final OrgId orgId,
 			@NonNull final DocTypeId docTypeId,
+			@Nullable final String documentNo,
 			@NonNull final BPartnerLocationId bpartnerAndLocationId,
 			@Nullable final BPartnerContactId contactId,
 			final int auctionId,
 			@NonNull final LocatorId locatorId,
-			@NonNull final OrderId orderId,
-			@NonNull final Instant physicalClearanceDate,
+			@NonNull final OrderId salesOrderId,
+			final @NonNull Instant dateAcct, @NonNull final Instant physicalClearanceDate,
 			@NonNull final YearAndCalendarId harvestingYearId,
 			@Nullable final String poReference,
 			@Nullable final String description,
 			@NonNull final DocStatus docStatus,
+			@Nullable final String docAction,
 			final boolean processed,
+			@Nullable ShippingNotificationId reversalId,
 			@Nullable final List<ShippingNotificationLine> lines)
 	{
 		this.id = id;
 		this.orgId = orgId;
 		this.docTypeId = docTypeId;
+		this.documentNo = documentNo;
 		this.bpartnerAndLocationId = bpartnerAndLocationId;
 		this.contactId = contactId;
 		this.auctionId = auctionId;
 		this.locatorId = locatorId;
-		this.orderId = orderId;
+		this.salesOrderId = salesOrderId;
+		this.dateAcct = dateAcct;
 		this.physicalClearanceDate = physicalClearanceDate;
 		this.harvestingYearId = harvestingYearId;
 		this.poReference = poReference;
 		this.description = description;
 		this.docStatus = docStatus;
+		this.docAction = docAction;
 		this.processed = processed;
+		this.reversalId = reversalId;
 		this.lines = lines != null ? new ArrayList<>(lines) : new ArrayList<>();
-
-		renumberLines();
 	}
 
 	public ShippingNotificationId getIdNotNull() {return Check.assumeNotNull(id, "Shipment notification is expected to be saved at this point: {}", this);}
@@ -152,6 +148,17 @@ public class ShippingNotification
 		}
 
 		this.processed = true;
+
+		if (isReversal())
+		{
+			this.docStatus = DocStatus.Reversed;
+			this.docAction = IDocument.ACTION_None;
+		}
+		else
+		{
+			this.docStatus = DocStatus.Completed;
+			this.docAction = IDocument.ACTION_Reverse_Correct;
+		}
 	}
 
 	public void updateBPAddress(@Nullable final String bpaddress)
@@ -173,19 +180,19 @@ public class ShippingNotification
 	{
 		return toBuilder()
 				.id(null)
+				.reversalId(getIdNotNull())
+				.documentNo(documentNo != null ? documentNo + REVERSE_INDICATOR : null)
 				.docStatus(DocStatus.Drafted)
+				.docAction(IDocument.ACTION_Complete)
 				.processed(false)
 				.lines(lines.stream().map(ShippingNotificationLine::createReversal).collect(Collectors.toList()))
 				.build();
 	}
 
-	private void renumberLines()
+	public void renumberLines()
 	{
-		SeqNoProvider lineNoProvider = SeqNoProvider.ofInt(10);
-		for (final ShippingNotificationLine line : lines)
-		{
-			line.setLine(lineNoProvider.getAndIncrement());
-		}
+		final SeqNoProvider lineNoProvider = SeqNoProvider.ofInt(10);
+		lines.forEach(line -> line.setLine(lineNoProvider.getAndIncrement()));
 	}
 
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
@@ -194,4 +201,15 @@ public class ShippingNotification
 				.map(ShippingNotificationLine::getShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
+	public boolean isReversal() {return reversalId != null && id != null && id.getRepoId() > reversalId.getRepoId();}
+
+	public Dimension getDimension()
+	{
+		return Dimension.builder()
+				.salesOrderId(salesOrderId)
+				.harvestingYearAndCalendarId(harvestingYearId)
+				.build();
+	}
+
 }

@@ -23,7 +23,6 @@
 package de.metas.shippingnotification.model;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;
 import de.metas.shippingnotification.ShippingNotificationService;
 import lombok.NonNull;
@@ -35,6 +34,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Interceptor(I_C_Order.class)
 @Component
 @RequiredArgsConstructor
@@ -44,21 +45,28 @@ public class C_Order
 
 	private final ShippingNotificationService shippingNotificationService;
 
+	private static Optional<OrderId> getSalesOrderId(@NonNull final I_C_Order order)
+	{
+		return order.isSOTrx() ? OrderId.optionalOfRepoId(order.getC_Order_ID()) : Optional.empty();
+	}
+
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
 	public void afterVoid(@NonNull final I_C_Order order)
 	{
-		shippingNotificationService.reverseIfExistsShippingNotifications(OrderId.ofRepoId(order.getC_Order_ID()));
+		getSalesOrderId(order).ifPresent(shippingNotificationService::reverseBySalesOrderId);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void beforeReactivate(@NonNull final I_C_Order order)
 	{
-		final boolean hasCompletedNotifications = shippingNotificationService.hasCompletedOrClosedShippingNotifications(OrderId.ofRepoId(order.getC_Order_ID()));
-		if (hasCompletedNotifications)
+		getSalesOrderId(order).ifPresent(this::assertNoCompletedNorClosedShippingNotifications);
+	}
+
+	private void assertNoCompletedNorClosedShippingNotifications(final OrderId salesOrderId)
+	{
+		if (shippingNotificationService.hasCompletedOrClosedShippingNotifications(salesOrderId))
 		{
-			throw new AdempiereException(TranslatableStrings.builder()
-												 .appendADMessage(MSG_M_Shipment_Notification_CompletedNotifications)
-												 .build());
+			throw new AdempiereException(MSG_M_Shipment_Notification_CompletedNotifications);
 		}
 	}
 }

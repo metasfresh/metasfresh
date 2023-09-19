@@ -33,6 +33,7 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -122,7 +124,7 @@ class ShippingNotificationLoaderAndSaver
 				.firstOnly(I_M_Shipping_Notification.class);
 	}
 
-	private Map<ShippingNotificationId, I_M_Shipping_Notification> getHeaderRecordsByIds(@NonNull final Set<ShippingNotificationId> ids)
+	public Map<ShippingNotificationId, I_M_Shipping_Notification> getHeaderRecordsByIds(@NonNull final Set<ShippingNotificationId> ids)
 	{
 		return CollectionUtils.getAllOrLoadReturningMap(this.headersById, ids, this::retrieveHeaderRecordsByIds);
 	}
@@ -143,6 +145,9 @@ class ShippingNotificationLoaderAndSaver
 	private ArrayList<I_M_Shipping_NotificationLine> retrieveLineRecords(final @NonNull ShippingNotificationId id)
 	{
 		return queryLinesByHeaderIds(ImmutableSet.of(id))
+				.orderBy(I_M_Shipping_NotificationLine.COLUMNNAME_M_Shipping_Notification_ID)
+				.orderBy(I_M_Shipping_NotificationLine.COLUMNNAME_Line)
+				.orderBy(I_M_Shipping_NotificationLine.COLUMNNAME_M_Shipping_NotificationLine_ID)
 				.create()
 				.stream()
 				.collect(Collectors.toCollection(ArrayList::new));
@@ -179,19 +184,24 @@ class ShippingNotificationLoaderAndSaver
 				.id(ShippingNotificationId.ofRepoIdOrNull(record.getM_Shipping_Notification_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
+				.documentNo(record.getDocumentNo())
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
 				.contactId(BPartnerContactId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getAD_User_ID()))
 				.auctionId(record.getC_Auction_ID())
 				.locatorId(LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
-				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.dateAcct(record.getDateAcct().toInstant())
 				.physicalClearanceDate(record.getPhysicalClearanceDate().toInstant())
 				.harvestingYearId(YearAndCalendarId.ofRepoId(record.getHarvesting_Year_ID(), record.getC_Harvesting_Calendar_ID()))
 				.poReference(StringUtils.trimBlankToNull(record.getPOReference()))
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.docStatus(DocStatus.ofCode(record.getDocStatus()))
+				.docAction(record.getDocAction())
 				.processed(record.isProcessed())
+				.reversalId(ShippingNotificationId.ofRepoIdOrNull(record.getReversal_ID()))
 				.lines(lineRecords.stream()
 						.map(ShippingNotificationLoaderAndSaver::fromRecord)
+						.sorted(Comparator.comparing(ShippingNotificationLine::getLine))
 						.collect(Collectors.toList()))
 				.build();
 	}
@@ -204,8 +214,9 @@ class ShippingNotificationLoaderAndSaver
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.qty(Quantitys.create(record.getMovementQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
-				.orderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.line(SeqNo.ofInt(record.getLine()))
+				.reversalLineId(ShippingNotificationLineId.ofRepoIdOrNull(record.getReversal_ID()))
 				.build();
 	}
 
@@ -218,6 +229,7 @@ class ShippingNotificationLoaderAndSaver
 		updateRecord(shippingNotificationRecord, shippingNotification);
 		saveRecordIfAllowed(shippingNotificationRecord);
 		shippingNotification.markAsSaved(ShippingNotificationId.ofRepoId(shippingNotificationRecord.getM_Shipping_Notification_ID()));
+		shippingNotification.setDocumentNo(shippingNotificationRecord.getDocumentNo());
 
 		final HashMap<ShippingNotificationLineId, I_M_Shipping_NotificationLine> existingLineRecordsById = getLineRecords(shippingNotification.getId())
 				.stream()
@@ -248,13 +260,15 @@ class ShippingNotificationLoaderAndSaver
 	{
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
 		record.setC_DocType_ID(from.getDocTypeId().getRepoId());
+		record.setDocumentNo(from.getDocumentNo());
 		record.setC_BPartner_ID(from.getBpartnerAndLocationId().getBpartnerId().getRepoId());
 		record.setC_BPartner_Location_ID(from.getBpartnerAndLocationId().getRepoId());
 		record.setAD_User_ID(from.getContactId() != null ? from.getContactId().getRepoId() : -1);
 		record.setC_Auction_ID(from.getAuctionId());
 		record.setM_Warehouse_ID(from.getLocatorId().getWarehouseId().getRepoId());
 		record.setM_Locator_ID(from.getLocatorId().getRepoId());
-		record.setC_Order_ID(from.getOrderId().getRepoId());
+		record.setC_Order_ID(from.getSalesOrderId().getRepoId());
+		record.setDateAcct(Timestamp.from(from.getDateAcct()));
 		record.setPhysicalClearanceDate(Timestamp.from(from.getPhysicalClearanceDate()));
 		record.setDateAcct(Timestamp.from(from.getPhysicalClearanceDate()));
 		record.setHarvesting_Year_ID(from.getHarvestingYearId().yearId().getRepoId());
@@ -262,7 +276,9 @@ class ShippingNotificationLoaderAndSaver
 		record.setPOReference(from.getPoReference());
 		record.setDescription(from.getDescription());
 		record.setDocStatus(from.getDocStatus().getCode());
+		record.setDocAction(from.getDocAction());
 		record.setProcessed(from.isProcessed());
+		record.setReversal_ID(ShippingNotificationId.toRepoId(from.getReversalId()));
 		record.setBPartnerAddress(from.getBpaddress());
 	}
 
@@ -271,16 +287,19 @@ class ShippingNotificationLoaderAndSaver
 			@NonNull final ShippingNotificationLine fromLine,
 			@NonNull final ShippingNotification fromHeader)
 	{
+		record.setM_Shipping_Notification_ID(fromHeader.getIdNotNull().getRepoId());
 		record.setProcessed(fromHeader.isProcessed());
+
+		record.setReversal_ID(ShippingNotificationLineId.toRepoId(fromLine.getReversalLineId()));
+
+		record.setLine(fromLine.getLine().toInt());
 		record.setM_Product_ID(fromLine.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(fromLine.getAsiId().getRepoId());
 		record.setMovementQty(fromLine.getQty().toBigDecimal());
 		record.setC_UOM_ID(fromLine.getQty().getUomId().getRepoId());
 		record.setM_ShipmentSchedule_ID(fromLine.getShipmentScheduleId().getRepoId());
-		record.setC_Order_ID(fromLine.getOrderAndLineId().getOrderRepoId());
-		record.setC_OrderLine_ID(fromLine.getOrderAndLineId().getOrderLineRepoId());
-		record.setM_Shipping_Notification_ID(fromHeader.getId().getRepoId());
-		record.setLine(fromLine.getLine().toInt());
+		record.setC_Order_ID(fromLine.getSalesOrderAndLineId().getOrderRepoId());
+		record.setC_OrderLine_ID(fromLine.getSalesOrderAndLineId().getOrderLineRepoId());
 	}
 
 	private void saveRecordIfAllowed(@NonNull I_M_Shipping_Notification shippingNotificationRecord)
@@ -315,15 +334,16 @@ class ShippingNotificationLoaderAndSaver
 				});
 	}
 
-	public void updateWhileSaving(
+	public <R> R updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
-			@NonNull final Consumer<ShippingNotification> consumer)
+			@NonNull final Function<ShippingNotification, R> consumer)
 	{
+		final R retValue;
 		final ShippingNotificationId id = extractIdOrNull(record);
 		if (id == null)
 		{
 			final ShippingNotification shippingNotification = fromRecord(record, ImmutableList.of());
-			consumer.accept(shippingNotification);
+			retValue = consumer.apply(shippingNotification);
 			if (!shippingNotification.getLines().isEmpty())
 			{
 				throw new AdempiereException("Adding lines to a new shipper notification which is not allowed to be saved is allowed");
@@ -333,8 +353,12 @@ class ShippingNotificationLoaderAndSaver
 		else
 		{
 			addToCacheAndAvoidSaving(record);
-			updateById(id, consumer);
+			final ShippingNotification shippingNotification = getById(id);
+			retValue = consumer.apply(shippingNotification);
+			save(shippingNotification);
 		}
+
+		return retValue;
 	}
 
 	public IQueryBuilder<I_M_Shipping_Notification> toSqlQuery(final ShippingNotificationQuery query)
@@ -358,4 +382,6 @@ class ShippingNotificationLoaderAndSaver
 	{
 		return toSqlQuery(query).anyMatch();
 	}
+
+	public ImmutableSet<ShippingNotificationId> listIds(@NonNull final ShippingNotificationQuery query) {return toSqlQuery(query).create().listIds(ShippingNotificationId::ofRepoId);}
 }

@@ -24,7 +24,6 @@ package de.metas.shippingnotification;
 
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -47,17 +46,17 @@ import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ShippingNotificationService
 {
-	private static final String REVERSE_INDICATOR = "^";
 	private final ShippingNotificationRepository shippingNotificationRepository;
 	private final DocTypeService docTypeService;
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -65,46 +64,42 @@ public class ShippingNotificationService
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
+	public ShippingNotification getByRecord(@NonNull final I_M_Shipping_Notification record) {return shippingNotificationRepository.getByRecord(record);}
+
 	public void generateShippingNotificationAndPropagatePhysicalClearanceDate(
-			@NonNull final OrderId orderId,
+			@NonNull final OrderId salesOrderId,
 			@NonNull final Instant physicalClearanceDate)
 	{
-		final I_C_Order orderRecord = orderBL.getById(orderId);
-		final OrgId orgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
-		final DocTypeId docTypeId = docTypeService.getDocTypeId(DocBaseType.ShippingNotification, null, orgId);
+		reverseBySalesOrderId(salesOrderId);
 
-		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId), I_M_ShipmentSchedule.class)
-				.values();
+		final I_C_Order salesOrderRecord = orderBL.getById(salesOrderId);
+		final OrgId orgId = OrgId.ofRepoId(salesOrderRecord.getAD_Org_ID());
+
+		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentSchedulePA.retrieveScheduleIdsByOrderId(salesOrderId), I_M_ShipmentSchedule.class).values();
 
 		final ShippingNotification shippingNotification = ShippingNotification.builder()
 				.orgId(orgId)
-				.docTypeId(docTypeId)
-				.bpartnerAndLocationId(orderBL.getShipToLocationId(orderRecord).getBpartnerLocationId())
-				.contactId(orderBL.getShipToContactId(orderRecord).orElse(null))
-				.orderId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
-				.auctionId(orderRecord.getC_Auction_ID())
+				.docTypeId(docTypeService.getDocTypeId(DocBaseType.ShippingNotification, null, orgId))
+				.bpartnerAndLocationId(orderBL.getShipToLocationId(salesOrderRecord).getBpartnerLocationId())
+				.contactId(orderBL.getShipToContactId(salesOrderRecord).orElse(null))
+				.salesOrderId(OrderId.ofRepoId(salesOrderRecord.getC_Order_ID()))
+				.auctionId(salesOrderRecord.getC_Auction_ID())
+				.dateAcct(physicalClearanceDate)
 				.physicalClearanceDate(physicalClearanceDate)
-				.locatorId(LocatorId.ofRepoId(orderRecord.getM_Warehouse_ID(), orderRecord.getM_Locator_ID()))
-				.harvestingYearId(YearAndCalendarId.ofRepoId(orderRecord.getHarvesting_Year_ID(), orderRecord.getC_Harvesting_Calendar_ID()))
-				.poReference(orderRecord.getPOReference())
-				.description(orderRecord.getDescription())
+				.locatorId(LocatorId.ofRepoId(salesOrderRecord.getM_Warehouse_ID(), salesOrderRecord.getM_Locator_ID()))
+				.harvestingYearId(YearAndCalendarId.ofRepoId(salesOrderRecord.getHarvesting_Year_ID(), salesOrderRecord.getC_Harvesting_Calendar_ID()))
+				.poReference(salesOrderRecord.getPOReference())
+				.description(salesOrderRecord.getDescription())
 				.docStatus(DocStatus.Drafted)
-				.lines(shipmentSchedules.stream()
-						.map(this::toShippingNotificationLine)
-						.collect(Collectors.toList()))
+				.docAction(IDocument.ACTION_Complete)
+				.lines(shipmentSchedules.stream().map(this::toShippingNotificationLine).collect(Collectors.toList()))
 				.build();
+
+		shippingNotification.renumberLines();
 
 		shippingNotificationRepository.save(shippingNotification);
 
 		completeIt(shippingNotification);
-
-		shipmentSchedules.forEach(shipmentSchedule -> {
-			shipmentSchedule.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
-			shipmentSchedulePA.save(shipmentSchedule);
-		});
-
-		orderRecord.setPhysicalClearanceDate(Timestamp.from(shippingNotification.getPhysicalClearanceDate()));
-		orderBL.save(orderRecord);
 	}
 
 	public ShippingNotificationLine toShippingNotificationLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -114,7 +109,7 @@ public class ShippingNotificationService
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID()))
 				.qty(shipmentScheduleEffectiveBL.getQtyToDeliver(shipmentSchedule))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
-				.orderAndLineId(OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID()))
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID()))
 				.build();
 	}
 
@@ -122,7 +117,17 @@ public class ShippingNotificationService
 			@NonNull final I_M_Shipping_Notification record,
 			@NonNull final Consumer<ShippingNotification> consumer)
 	{
-		shippingNotificationRepository.updateWhileSaving(record, consumer);
+		shippingNotificationRepository.updateWhileSaving(record, shippingNotification -> {
+			consumer.accept(shippingNotification);
+			return null;
+		});
+	}
+
+	public <R> R updateWhileSaving(
+			@NonNull final I_M_Shipping_Notification record,
+			@NonNull final Function<ShippingNotification, R> consumer)
+	{
+		return shippingNotificationRepository.updateWhileSaving(record, consumer);
 	}
 
 	public void save(final ShippingNotification shippingNotification)
@@ -133,27 +138,24 @@ public class ShippingNotificationService
 	public void completeIt(final ShippingNotification shippingNotification)
 	{
 		final I_M_Shipping_Notification shippingNotificationRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification);
-		documentBL.processEx(shippingNotificationRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		documentBL.processEx(shippingNotificationRecord, IDocument.ACTION_Complete, null);
 	}
 
-	public void reverseItNoSave(final ShippingNotification shippingNotification)
+	public void reverseBySalesOrderId(@NonNull final OrderId orderId)
 	{
-		final I_M_Shipping_Notification reversalRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification.createReversal());
-		reversalRecord.setReversal_ID(shippingNotification.getIdNotNull().getRepoId());
-		reversalRecord.setDocumentNo(reversalRecord.getDocumentNo() + REVERSE_INDICATOR);
-		reversalRecord.setDocStatus(DocStatus.Reversed.getCode());
-		reversalRecord.setDocAction(IDocument.ACTION_None);
-		shippingNotificationRepository.saveRecord(reversalRecord);
-
-		shippingNotification.setReversalId(ShippingNotificationLoaderAndSaver.extractId(reversalRecord));
-		shippingNotification.setDocStatus(DocStatus.Reversed);
+		final Set<ShippingNotificationId> shippingNotificationIds = shippingNotificationRepository.listIds(ShippingNotificationQuery.completedOrClosedByOrderId(orderId));
+		reverseByIds(shippingNotificationIds);
 	}
 
-	public void reverseIfExistsShippingNotifications(@NonNull final OrderId orderId)
+	public void reverseByIds(final Set<ShippingNotificationId> shippingNotificationIds)
 	{
-		shippingNotificationRepository.updateByQuery(
-				ShippingNotificationQuery.completedOrClosedByOrderId(orderId),
-				this::reverseItNoSave);
+		shippingNotificationRepository.getRecordsByIds(shippingNotificationIds)
+				.forEach(this::reverseByRecord);
+	}
+
+	private void reverseByRecord(final I_M_Shipping_Notification record)
+	{
+		documentBL.processEx(record, IDocument.ACTION_Reverse_Correct, null);
 	}
 
 	public boolean hasCompletedOrClosedShippingNotifications(@NonNull final OrderId orderId)

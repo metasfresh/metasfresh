@@ -22,10 +22,10 @@
 
 package de.metas.shippingnotification.process;
 
+import de.metas.calendar.standard.YearId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
@@ -38,10 +38,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.TimeUtil;
 
-import java.sql.Timestamp;
-import java.util.Collection;
+import java.time.Instant;
 
 public class C_Order_Generate_Shipping_Notification extends JavaProcess implements IProcessPrecondition
 {
@@ -54,7 +52,7 @@ public class C_Order_Generate_Shipping_Notification extends JavaProcess implemen
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	@Param(parameterName = PARAM_PhysicalClearanceDate, mandatory = true)
-	private Timestamp p_physicalClearanceDate;
+	private Instant p_physicalClearanceDate;
 
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -68,19 +66,19 @@ public class C_Order_Generate_Shipping_Notification extends JavaProcess implemen
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final OrderId orderId = context.getSingleSelectedRecordId(OrderId.class);
-		final I_C_Order order = orderDAO.getById(orderId);
-		if (!DocStatus.ofNullableCodeOrUnknown(order.getDocStatus()).isCompleted())
+		final OrderId salesOrderId = context.getSingleSelectedRecordId(OrderId.class);
+		final I_C_Order salesOrder = orderDAO.getById(salesOrderId);
+		if (!DocStatus.ofNullableCodeOrUnknown(salesOrder.getDocStatus()).isCompleted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed orders");
 		}
 
-		if (order.getHarvesting_Year_ID() <= 0)
+		if (YearId.ofRepoIdOrNull(salesOrder.getHarvesting_Year_ID()) == null)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Shipment_Notification_NoHarvestingYear));
 		}
 
-		if (shipmentSchedulePA.getByIds(shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId), I_M_ShipmentSchedule.class).isEmpty())
+		if (!shipmentSchedulePA.anyMatchByOrderId(salesOrderId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_M_Shipment_Notification_NoShipmentSchedule));
 		}
@@ -89,14 +87,11 @@ public class C_Order_Generate_Shipping_Notification extends JavaProcess implemen
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final OrderId orderId = OrderId.ofRepoId(getRecord_ID());
-		// reverse notifications if exists
-		shippingNotificationService.reverseIfExistsShippingNotifications(orderId);
+		final OrderId salesOrderId = OrderId.ofRepoId(getRecord_ID());
 
-		// generate new one
-		shippingNotificationService.generateShippingNotificationAndPropagatePhysicalClearanceDate(orderId, TimeUtil.asInstant(p_physicalClearanceDate));
+		shippingNotificationService.generateShippingNotificationAndPropagatePhysicalClearanceDate(salesOrderId, p_physicalClearanceDate);
 
 		return MSG_OK;
 	}
