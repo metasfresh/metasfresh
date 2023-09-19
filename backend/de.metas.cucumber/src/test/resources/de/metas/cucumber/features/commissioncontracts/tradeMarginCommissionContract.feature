@@ -5,8 +5,7 @@ Feature: Trade margin commission contract
   I have a trade margin contract, when order is processed commission points and commission deed are computed accordingly
 
   Background:
-    Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
