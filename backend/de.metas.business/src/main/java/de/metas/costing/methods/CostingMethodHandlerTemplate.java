@@ -50,6 +50,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchInv)
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchPO)
+			.add(CostingDocumentRef.TABLE_NAME_M_Shipping_NotificationLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_InOutLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_InventoryLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_MovementLine)
@@ -161,6 +162,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				return createCostForMatchInvoice_NonMaterialCosts(request);
 			}
 		}
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_Shipping_NotificationLine))
+		{
+			return createCostForShippingNotification(request);
+		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InOutLine))
 		{
 			final Boolean outboundTrx = documentRef.getOutboundTrx();
@@ -225,6 +230,11 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	{
 		// nothing on this level
 		return null;
+	}
+
+	protected CostDetailCreateResult createCostForShippingNotification(final CostDetailCreateRequest request)
+	{
+		return createOutboundCostDefaultImpl(request);
 	}
 
 	protected CostDetailCreateResult createCostForMaterialShipment(final CostDetailCreateRequest request)

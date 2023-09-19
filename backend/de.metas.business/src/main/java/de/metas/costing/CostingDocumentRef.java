@@ -6,6 +6,8 @@ import de.metas.inventory.InventoryLineId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.order.MatchPOId;
 import de.metas.project.ProjectIssueId;
+import de.metas.shippingnotification.ShippingNotificationLineId;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -56,6 +58,7 @@ public class CostingDocumentRef
 {
 	public static final String TABLE_NAME_M_MatchPO = I_M_MatchPO.Table_Name;
 	public static final String TABLE_NAME_M_MatchInv = I_M_MatchInv.Table_Name;
+	public static final String TABLE_NAME_M_Shipping_NotificationLine = I_M_Shipping_NotificationLine.Table_Name;
 	public static final String TABLE_NAME_M_InOutLine = I_M_InOutLine.Table_Name;
 	public static final String TABLE_NAME_M_InventoryLine = I_M_InventoryLine.Table_Name;
 	public static final String TABLE_NAME_M_MovementLine = I_M_MovementLine.Table_Name;
@@ -91,6 +94,11 @@ public class CostingDocumentRef
 	public static CostingDocumentRef ofShipmentLineId(final int inOutLineId)
 	{
 		return new CostingDocumentRef(TABLE_NAME_M_InOutLine, InOutLineId.ofRepoId(inOutLineId), I_M_CostDetail.COLUMNNAME_M_InOutLine_ID, true);
+	}
+
+	public static CostingDocumentRef ofShippingNotificationLineId(@NonNull final ShippingNotificationLineId shippingNotificationLineId)
+	{
+		return new CostingDocumentRef(TABLE_NAME_M_Shipping_NotificationLine, shippingNotificationLineId, I_M_CostDetail.COLUMNNAME_M_Shipping_NotificationLine_ID, true);
 	}
 
 	public static CostingDocumentRef ofInventoryLineId(final int inventoryLineId)
