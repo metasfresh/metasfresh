@@ -24,11 +24,13 @@ package de.metas.shippingnotification;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -39,8 +41,11 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class ShippingNotificationService
 {
+	// services
 	private final ShippingNotificationRepository shippingNotificationRepository;
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+	private static final AdMessageKey MSG_M_Shipment_Notification_CompletedNotifications = AdMessageKey.of("de.metas.shippingnotification.CompletedShippingNotifications");
 
 	public ShippingNotification getByRecord(@NonNull final I_M_Shipping_Notification record) {return shippingNotificationRepository.getByRecord(record);}
 
@@ -89,8 +94,11 @@ public class ShippingNotificationService
 		documentBL.processEx(record, IDocument.ACTION_Reverse_Correct);
 	}
 
-	public boolean hasCompletedOrClosedShippingNotifications(@NonNull final OrderId orderId)
+	public void assertNoCompletedNorClosedShippingNotifications(final OrderId salesOrderId)
 	{
-		return shippingNotificationRepository.anyMatch(ShippingNotificationQuery.completedOrClosedByOrderId(orderId));
+		if (shippingNotificationRepository.anyMatch(ShippingNotificationQuery.completedOrClosedByOrderId(salesOrderId)))
+		{
+			throw new AdempiereException(MSG_M_Shipment_Notification_CompletedNotifications);
+		}
 	}
 }
