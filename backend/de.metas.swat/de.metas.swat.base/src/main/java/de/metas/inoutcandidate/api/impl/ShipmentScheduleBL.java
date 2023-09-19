@@ -32,12 +32,13 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.impl.DocTypeService;
@@ -47,7 +48,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
@@ -184,7 +184,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
 	@Override
@@ -652,15 +653,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public boolean isCatchWeight(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-
-		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
-		if (orderLineId <= 0)
+		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentScheduleRecord.getC_Order_ID(), shipmentScheduleRecord.getC_OrderLine_ID());
+		if (orderLineId == null)
 		{
 			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
 			return true;
 		}
 
-		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId);
+		final I_C_OrderLine orderLineRecord = orderBL.getLineById(orderLineId);
 
 		final String invoicableQtyBasedOn = orderLineRecord.getInvoicableQtyBasedOn();
 
@@ -983,12 +983,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public ShippingNotificationFromShipmentScheduleProducer newShippingNotificationProducer()
 	{
-		return ShippingNotificationFromShipmentScheduleProducer.builder()
-				.shippingNotificationService(SpringContextHolder.instance.getBean(ShippingNotificationService.class))
-				.shipmentScheduleBL(this)
-				.orderBL(Services.get(IOrderBL.class))
-				.docTypeService(SpringContextHolder.instance.getBean(DocTypeService.class))
-				.build();
+		return new ShippingNotificationFromShipmentScheduleProducer(
+				SpringContextHolder.instance.getBean(ShippingNotificationService.class),
+				this,
+				orderBL,
+				SpringContextHolder.instance.getBean(DocTypeService.class),
+				SpringContextHolder.instance.getBean(IDocumentLocationBL.class)
+		);
 	}
 
 	@Override

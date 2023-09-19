@@ -4,6 +4,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -18,8 +19,8 @@ import de.metas.product.ProductId;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationLine;
 import de.metas.shippingnotification.ShippingNotificationService;
-import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_Order;
@@ -29,7 +30,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Builder
+@RequiredArgsConstructor
 public class ShippingNotificationFromShipmentScheduleProducer
 {
 	private static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
@@ -39,6 +40,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IOrderBL orderBL;
 	private final DocTypeService docTypeService;
+	private final IDocumentLocationBL documentLocationBL;
 
 	public ProcessPreconditionsResolution checkCanCreateShippingNotification(@NonNull final OrderId salesOrderId)
 	{
@@ -91,6 +93,7 @@ public class ShippingNotificationFromShipmentScheduleProducer
 				.lines(shipmentSchedules.stream().map(this::toShippingNotificationLine).collect(Collectors.toList()))
 				.build();
 
+		shippingNotification.updateBPAddress(documentLocationBL::computeRenderedAddressString);
 		shippingNotification.renumberLines();
 
 		shippingNotificationService.completeIt(shippingNotification);

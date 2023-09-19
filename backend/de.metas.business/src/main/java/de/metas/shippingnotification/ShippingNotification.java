@@ -51,6 +51,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
@@ -161,9 +162,13 @@ public class ShippingNotification
 		}
 	}
 
-	public void updateBPAddress(@Nullable final String bpaddress)
+	public void updateBPAddress(@NonNull final Function<DocumentLocation, String> addressRenderer)
 	{
-		this.bpaddress = bpaddress;
+		this.bpaddress = addressRenderer.apply(DocumentLocation.builder()
+				.bpartnerId(bpartnerAndLocationId.getBpartnerId())
+				.bpartnerLocationId(bpartnerAndLocationId)
+				.contactId(contactId)
+				.build());
 	}
 
 	void markAsSaved(@NonNull final ShippingNotificationId id)

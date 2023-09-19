@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shippingnotification.model;
+package de.metas.shippingnotification.interceptor;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;

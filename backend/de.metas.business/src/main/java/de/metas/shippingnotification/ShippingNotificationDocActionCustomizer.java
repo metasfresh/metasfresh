@@ -1,9 +1,10 @@
-package de.metas.shippingnotification.model;
+package de.metas.shippingnotification;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.document.engine.IDocument;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import org.springframework.stereotype.Component;
 
 /*
