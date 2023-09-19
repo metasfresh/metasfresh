@@ -2,9 +2,6 @@ package de.metas.acct.doc;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.acct.doc.AcctDocRequiredServicesFacade;
-import de.metas.acct.doc.IAcctDocProvider;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.util.Services;
