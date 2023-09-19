@@ -162,6 +162,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull OrderId orderId);
 
+	boolean anyMatchByOrderId(OrderId salesOrderId);
+
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
 
 	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule schedule);
@@ -202,6 +204,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
 
 	ImmutableSet<OrderId> getOrderIds(@NonNull IQueryFilter<? extends I_M_ShipmentSchedule> filter);
+
+	ShippingNotificationFromShipmentScheduleProducer newShippingNotificationProducer();
 
 	void setPhysicalClearanceDate(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable Instant physicalClearanceDate);
 }

@@ -24,17 +24,13 @@ package de.metas.shippingnotification;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.impl.DocTypeService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -44,29 +40,9 @@ import java.util.function.Function;
 public class ShippingNotificationService
 {
 	private final ShippingNotificationRepository shippingNotificationRepository;
-	private final DocTypeService docTypeService;
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public ShippingNotification getByRecord(@NonNull final I_M_Shipping_Notification record) {return shippingNotificationRepository.getByRecord(record);}
-
-	public void generateShippingNotificationAndPropagatePhysicalClearanceDate(
-			@NonNull final OrderId salesOrderId,
-			@NonNull final Instant physicalClearanceDate)
-	{
-		ShippingNotificationFromShipmentScheduleProducer.builder()
-				.shippingNotificationService(this)
-				.shipmentScheduleBL(shipmentScheduleBL)
-				.orderBL(orderBL)
-				.docTypeService(docTypeService)
-				//
-				.salesOrderId(salesOrderId)
-				.physicalClearanceDate(physicalClearanceDate)
-				//
-				.build()
-				.execute();
-	}
 
 	public void updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,

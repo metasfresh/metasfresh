@@ -1,18 +1,22 @@
-package de.metas.shippingnotification;
+package de.metas.inoutcandidate.api;
 
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.impl.DocTypeService;
 import de.metas.organization.OrgId;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
+import de.metas.shippingnotification.ShippingNotification;
+import de.metas.shippingnotification.ShippingNotificationLine;
+import de.metas.shippingnotification.ShippingNotificationService;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -21,20 +25,45 @@ import org.compiere.model.I_C_Order;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Builder
-class ShippingNotificationFromShipmentScheduleProducer
+public class ShippingNotificationFromShipmentScheduleProducer
 {
+	private static final AdMessageKey MSG_M_Shipment_Notification_NoHarvestingYear = AdMessageKey.of("de.metas.shippingnotification.NoHarvestingYear");
+	private static final AdMessageKey MSG_M_Shipment_Notification_NoShipmentSchedule = AdMessageKey.of("de.metas.shippingnotification.NoShipmentSchedule");
+
 	private final ShippingNotificationService shippingNotificationService;
 	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IOrderBL orderBL;
 	private final DocTypeService docTypeService;
 
-	@NonNull final OrderId salesOrderId;
-	@NonNull final Instant physicalClearanceDate;
+	public ProcessPreconditionsResolution checkCanCreateShippingNotification(@NonNull final OrderId salesOrderId)
+	{
+		final I_C_Order salesOrder = orderBL.getById(salesOrderId);
+		if (!DocStatus.ofNullableCodeOrUnknown(salesOrder.getDocStatus()).isCompleted())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed orders");
+		}
 
-	public void execute()
+		final YearAndCalendarId harvestingYearId = extractHarvestingYearId(salesOrder).orElse(null);
+		if (harvestingYearId == null)
+		{
+			return ProcessPreconditionsResolution.reject(MSG_M_Shipment_Notification_NoHarvestingYear);
+		}
+
+		if (!shipmentScheduleBL.anyMatchByOrderId(salesOrderId))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_M_Shipment_Notification_NoShipmentSchedule);
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	public void createShippingNotification(
+			@NonNull final OrderId salesOrderId,
+			@NonNull final Instant physicalClearanceDate)
 	{
 		shippingNotificationService.reverseBySalesOrderId(salesOrderId);
 
@@ -53,7 +82,7 @@ class ShippingNotificationFromShipmentScheduleProducer
 				.dateAcct(physicalClearanceDate)
 				.physicalClearanceDate(physicalClearanceDate)
 				.locatorId(LocatorId.ofRepoId(salesOrderRecord.getM_Warehouse_ID(), salesOrderRecord.getM_Locator_ID()))
-				.harvestingYearId(YearAndCalendarId.ofRepoId(salesOrderRecord.getHarvesting_Year_ID(), salesOrderRecord.getC_Harvesting_Calendar_ID()))
+				.harvestingYearId(extractHarvestingYearId(salesOrderRecord).orElseThrow())
 				.poReference(salesOrderRecord.getPOReference())
 				.description(salesOrderRecord.getDescription())
 				.docStatus(DocStatus.Drafted)
@@ -64,6 +93,12 @@ class ShippingNotificationFromShipmentScheduleProducer
 		shippingNotification.renumberLines();
 
 		shippingNotificationService.completeIt(shippingNotification);
+	}
+
+	@NonNull
+	private static Optional<YearAndCalendarId> extractHarvestingYearId(final I_C_Order salesOrderRecord)
+	{
+		return Optional.ofNullable(YearAndCalendarId.ofRepoIdOrNull(salesOrderRecord.getHarvesting_Year_ID(), salesOrderRecord.getC_Harvesting_Calendar_ID()));
 	}
 
 	private ShippingNotificationLine toShippingNotificationLine(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

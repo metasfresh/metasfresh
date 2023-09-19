@@ -40,12 +40,15 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.impl.DocTypeService;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.inoutcandidate.api.ShippingNotificationFromShipmentScheduleProducer;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -533,6 +536,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+	public boolean anyMatchByOrderId(@NonNull final OrderId orderId)
+	{
+		return shipmentSchedulePA.anyMatchByOrderId(orderId);
+	}
+
+	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		return scheduleEffectiveBL.getBPartnerId(schedule);
@@ -969,6 +978,17 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public ImmutableSet<OrderId> getOrderIds(@NonNull final IQueryFilter<? extends I_M_ShipmentSchedule> filter)
 	{
 		return shipmentSchedulePA.getOrderIds(filter);
+	}
+
+	@Override
+	public ShippingNotificationFromShipmentScheduleProducer newShippingNotificationProducer()
+	{
+		return ShippingNotificationFromShipmentScheduleProducer.builder()
+				.shippingNotificationService(SpringContextHolder.instance.getBean(ShippingNotificationService.class))
+				.shipmentScheduleBL(this)
+				.orderBL(Services.get(IOrderBL.class))
+				.docTypeService(SpringContextHolder.instance.getBean(DocTypeService.class))
+				.build();
 	}
 
 	@Override
