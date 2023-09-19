@@ -29,7 +29,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
@@ -61,7 +60,6 @@ public class ShippingNotificationService
 	private final DocTypeService docTypeService;
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public ShippingNotification getByRecord(@NonNull final I_M_Shipping_Notification record) {return shippingNotificationRepository.getByRecord(record);}
@@ -107,7 +105,7 @@ public class ShippingNotificationService
 		return ShippingNotificationLine.builder()
 				.productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID()))
-				.qty(shipmentScheduleEffectiveBL.getQtyToDeliver(shipmentSchedule))
+				.qty(shipmentScheduleBL.getQtyToDeliver(shipmentSchedule))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID()))
 				.build();
@@ -138,7 +136,7 @@ public class ShippingNotificationService
 	public void completeIt(final ShippingNotification shippingNotification)
 	{
 		final I_M_Shipping_Notification shippingNotificationRecord = shippingNotificationRepository.saveAndGetRecord(shippingNotification);
-		documentBL.processEx(shippingNotificationRecord, IDocument.ACTION_Complete, null);
+		documentBL.processEx(shippingNotificationRecord, IDocument.ACTION_Complete);
 	}
 
 	public void reverseBySalesOrderId(@NonNull final OrderId orderId)
@@ -155,7 +153,7 @@ public class ShippingNotificationService
 
 	private void reverseByRecord(final I_M_Shipping_Notification record)
 	{
-		documentBL.processEx(record, IDocument.ACTION_Reverse_Correct, null);
+		documentBL.processEx(record, IDocument.ACTION_Reverse_Correct);
 	}
 
 	public boolean hasCompletedOrClosedShippingNotifications(@NonNull final OrderId orderId)
