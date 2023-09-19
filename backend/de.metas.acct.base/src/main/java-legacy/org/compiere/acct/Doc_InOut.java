@@ -38,9 +38,13 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
+import de.metas.shippingnotification.ShippingNotificationCollection;
+import de.metas.shippingnotification.ShippingNotificationQuery;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
@@ -51,6 +55,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -71,22 +76,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
-	final IInOutBL inOutBL;
-	private final MatchInvoiceService matchInvoiceService;
-	private final OrderCostService orderCostService;
-
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
+
+	@NonNull final IInOutBL inOutBL;
+	@NonNull final IOrderBL orderBL;
+	@NonNull final ShippingNotificationService shippingNotificationService;
+	@NonNull private final MatchInvoiceService matchInvoiceService;
+	@NonNull private final OrderCostService orderCostService;
 
 	private InOutId m_reversalId = null;
 	private DocStatus m_docStatus = DocStatus.Unknown;
 
 	public Doc_InOut(
-			final IInOutBL inOutBL,
-			final AcctDocContext ctx)
+			@NonNull final IInOutBL inOutBL,
+			@NonNull final IOrderBL orderBL,
+			@NonNull final ShippingNotificationService shippingNotificationService,
+			@NonNull final AcctDocContext ctx)
 	{
 		super(ctx);
 		this.inOutBL = inOutBL;
+		this.orderBL = orderBL;
+		this.shippingNotificationService = shippingNotificationService;
 		this.matchInvoiceService = services.getMatchInvoiceService();
 		this.orderCostService = services.getOrderCostService();
 	}
@@ -108,8 +119,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				orderCostService.getByInOutId(InOutId.ofRepoId(inout.getM_InOut_ID())),
 				InOutCost::getInoutAndLineId);
 
+		final List<I_M_InOutLine> inoutLines = inOutBL.getLines(inout);
+		final ShippingNotificationCollection shippingNotifications = inout.isSOTrx()
+				? getShippingNotifications(inoutLines)
+				: ShippingNotificationCollection.EMPTY;
+
 		final List<DocLine_InOut> docLines = new ArrayList<>();
-		for (final I_M_InOutLine inoutLine : inOutBL.getLines(inout))
+		for (final I_M_InOutLine inoutLine : inoutLines)
 		{
 			if (inoutLine.isDescription()
 					|| inoutLine.getM_Product_ID() <= 0
@@ -118,11 +134,14 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				continue;
 			}
 
-			final DocLine_InOut docLine = DocLine_InOut.builder()
-					.doc(this)
-					.inoutLine(inoutLine)
-					.inoutCosts(inoutCostsByInOutLineId.get(InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID())))
-					.build();
+			final ImmutableList<InOutCost> inoutCosts = inoutCostsByInOutLineId.get(InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()));
+
+			final DocLine_InOut docLine = new DocLine_InOut(
+					this,
+					inoutLine,
+					inoutCosts,
+					shippingNotifications
+			);
 			if (inOutBL.isReversal(inoutLine))
 			{
 				// NOTE: to be consistent with current logic
@@ -137,16 +156,29 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		return docLines;
-	}    // loadLines
+	}
+
+	private ShippingNotificationCollection getShippingNotifications(final List<I_M_InOutLine> inoutLines)
+	{
+		final ImmutableSet<OrderId> orderIds = extractOrderIds(inoutLines);
+		if (orderIds.isEmpty())
+		{
+			return ShippingNotificationCollection.EMPTY;
+		}
+
+		return shippingNotificationService.getByQuery(ShippingNotificationQuery.completedOrClosedByOrderIds(orderIds));
+	}
+
+	private static ImmutableSet<OrderId> extractOrderIds(final List<I_M_InOutLine> inoutLines)
+	{
+		return inoutLines.stream().map(inoutLine -> OrderId.ofRepoIdOrNull(inoutLine.getC_Order_ID())).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
+	}
 
 	/**
 	 * @return zero (always balanced)
 	 */
 	@Override
-	protected BigDecimal getBalance()
-	{
-		return BigDecimal.ZERO;
-	}
+	protected BigDecimal getBalance() {return BigDecimal.ZERO;}
 
 	/**
 	 * Create Facts (the accounting logic) for MMS, MMR.

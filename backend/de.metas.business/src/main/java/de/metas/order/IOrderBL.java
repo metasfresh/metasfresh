@@ -49,6 +49,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
+import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -328,4 +329,6 @@ public interface IOrderBL extends ISingletonService
 	void deleteLineById(final OrderAndLineId orderAndLineId);
 
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
+
+	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
 }

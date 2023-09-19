@@ -1,6 +1,11 @@
 package de.metas.shippingnotification;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.order.OrderAndLineId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -8,6 +13,7 @@ import lombok.ToString;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.Collector;
 
 @EqualsAndHashCode
@@ -37,4 +43,17 @@ public final class ShippingNotificationCollection implements Iterable<ShippingNo
 	@NonNull
 	@Override
 	public Iterator<ShippingNotification> iterator() {return list.iterator();}
+
+	public Quantity sumQtyByOrderLineId(
+			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final UomId targetUomId,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		return list.stream()
+				.map(shippingNotification -> shippingNotification.getLineBySalesOrderLineId(salesOrderAndLineId).orElse(null))
+				.filter(Objects::nonNull)
+				.map(line -> uomConverter.convertQuantityTo(line.getQty(), line.getProductId(), targetUomId))
+				.reduce(Quantity::add)
+				.orElseGet(() -> Quantitys.createZero(targetUomId));
+	}
 }

@@ -15,24 +15,25 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
+import de.metas.shippingnotification.ShippingNotificationCollection;
 import de.metas.util.collections.CollectionUtils;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.DB;
+import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -56,25 +57,29 @@ import java.util.Objects;
  * #L%
  */
 
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
-	@Getter
-	@NonNull private final ImmutableList<InOutCost> inoutCosts;
+	@NonNull private final IOrderBL orderBL;
+
+	@NonNull @Getter private final ImmutableList<InOutCost> inoutCosts;
+	private final ShippingNotificationCollection shippingNotifications;
 
 	/**
 	 * Outside Processing
 	 */
-	private Integer ppCostCollectorId = null; // lazy
+	private Optional<PPCostCollectorId> ppCostCollectorId = null; // lazy
 
-	@Builder
-	private DocLine_InOut(
+	DocLine_InOut(
+			@NonNull final Doc_InOut doc,
 			@NonNull final I_M_InOutLine inoutLine,
 			@NonNull final List<InOutCost> inoutCosts,
-			@NonNull final Doc_InOut doc)
+			@NonNull final ShippingNotificationCollection shippingNotifications)
 	{
 		super(InterfaceWrapperHelper.getPO(inoutLine), doc);
-
+		this.orderBL = doc.orderBL;
 		this.inoutCosts = ImmutableList.copyOf(inoutCosts);
+		this.shippingNotifications = shippingNotifications;
 
 		final Quantity qty = doc.inOutBL.getMovementQty(inoutLine);
 		setQty(qty, doc.isSOTrx());
@@ -85,31 +90,25 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		return InOutLineId.ofRepoId(get_ID());
 	}
 
-	private int getPP_Cost_Collector_ID()
+	private Optional<PPCostCollectorId> getPP_Cost_Collector_ID()
 	{
+		Optional<PPCostCollectorId> ppCostCollectorId = this.ppCostCollectorId;
 		if (ppCostCollectorId == null)
 		{
-			ppCostCollectorId = retrievePPCostCollectorId();
+			ppCostCollectorId = this.ppCostCollectorId = getOrderLineId().flatMap(orderBL::getPPCostCollectorId);
 		}
 		return ppCostCollectorId;
 	}
 
-	private int retrievePPCostCollectorId()
+	private Optional<OrderAndLineId> getOrderAndLineId()
 	{
-		final OrderLineId orderLineId = getOrderLineId();
-		if (orderLineId != null)
-		{
-			final String sql = "SELECT " + I_C_OrderLine.COLUMNNAME_PP_Cost_Collector_ID
-					+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
-			return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId);
-		}
-
-		return 0;
+		final I_M_InOutLine inOutLine = getInOutLine();
+		return OrderAndLineId.optionalOfRepoIds(inOutLine.getC_Order_ID(), inOutLine.getC_OrderLine_ID());
 	}
 
-	public final I_C_OrderLine getOrderLineOrNull()
+	private Optional<I_C_OrderLine> getOrderLine()
 	{
-		return getInOutLine().getC_OrderLine();
+		return getOrderAndLineId().map(orderBL::getLineById);
 	}
 
 	private I_M_InOutLine getInOutLine()
@@ -122,10 +121,9 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	 */
 	public final OrgId getOrderOrgId()
 	{
-		final I_C_OrderLine orderLine = getOrderLineOrNull();
-		return orderLine != null
-				? OrgId.ofRepoId(orderLine.getAD_Org_ID())
-				: getOrgId();
+		return getOrderLine()
+				.map(orderLine -> OrgId.ofRepoId(orderLine.getAD_Org_ID()))
+				.orElseGet(this::getOrgId);
 	}
 
 	@NonNull
@@ -136,7 +134,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			return getAccount(ProductAcctType.P_Asset_Acct, as);
 		}
 		// if the line is an Outside Processing then DR WIP
-		else if (getPP_Cost_Collector_ID() > 0)
+		else if (getPP_Cost_Collector_ID().isPresent())
 		{
 			return getAccount(ProductAcctType.P_WIP_Acct, as);
 		}
@@ -270,13 +268,13 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	public BPartnerLocationId getBPartnerLocationId(@NonNull final CostElementId costElementId)
 	{
 		final BPartnerLocationId bpartnerLocationId = getDoc().getBPartnerLocationId();
-		if(bpartnerLocationId == null)
+		if (bpartnerLocationId == null)
 		{
 			return null;
 		}
 
 		final BPartnerId bpartnerId = getBPartnerId(costElementId);
-		if(BPartnerId.equals(bpartnerLocationId.getBpartnerId(), bpartnerId))
+		if (BPartnerId.equals(bpartnerLocationId.getBpartnerId(), bpartnerId))
 		{
 			return bpartnerLocationId;
 		}
@@ -284,6 +282,15 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		{
 			return null;
 		}
+	}
+
+	private Quantity getQtyInShippingNotification()
+	{
+		final Quantity movementQty = getQty();
+
+		return getOrderAndLineId()
+				.map(orderLineId -> shippingNotifications.sumQtyByOrderLineId(orderLineId, movementQty.getUomId(), services.getUomConverter()))
+				.orElseGet(movementQty::toZero);
 	}
 
 }

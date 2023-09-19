@@ -64,13 +64,16 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -111,6 +114,7 @@ import java.util.Optional;
  */
 
 @Service
+@RequiredArgsConstructor
 public class AcctDocRequiredServicesFacade
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -128,6 +132,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	@Getter private final QuantityUOMConverter uomConverter = Services.get(IUOMConversionBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -151,28 +156,6 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICostingService costingService;
 	private final DimensionService dimensionService;
-
-	public AcctDocRequiredServicesFacade(
-			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService,
-			@NonNull final GLCategoryRepository glCategoryRepository,
-			@NonNull final BankAccountService bankAccountService,
-			@NonNull final ICostingService costingService,
-			@NonNull final AccountProviderFactory accountProviderFactory,
-			@NonNull final InvoiceAcctRepository invoiceAcctRepository,
-			@NonNull final MatchInvoiceService matchInvoiceService,
-			@NonNull final OrderCostService orderCostService,
-			@NonNull final DimensionService dimensionService)
-	{
-		this.modelCacheInvalidationService = modelCacheInvalidationService;
-		this.glCategoryRepository = glCategoryRepository;
-		this.bankAccountService = bankAccountService;
-		this.costingService = costingService;
-		this.accountProviderFactory = accountProviderFactory;
-		this.invoiceAcctRepository = invoiceAcctRepository;
-		this.matchInvoiceService = matchInvoiceService;
-		this.orderCostService = orderCostService;
-		this.dimensionService = dimensionService;
-	}
 
 	public void fireBeforePostEvent(@NonNull final PO po)
 	{

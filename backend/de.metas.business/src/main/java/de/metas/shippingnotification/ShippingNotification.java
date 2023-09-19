@@ -34,10 +34,12 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.exception.ShipmentNotificationException;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -51,6 +53,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -215,6 +218,11 @@ public class ShippingNotification
 				.salesOrderId(salesOrderId)
 				.harvestingYearAndCalendarId(harvestingYearId)
 				.build();
+	}
+
+	public Optional<ShippingNotificationLine> getLineBySalesOrderLineId(@NonNull final OrderAndLineId salesOrderAndLineId)
+	{
+		return CollectionUtils.singleElementOrEmptyIfNotFound(lines, line -> OrderAndLineId.equals(line.getSalesOrderAndLineId(), salesOrderAndLineId));
 	}
 
 }
