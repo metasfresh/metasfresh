@@ -46,7 +46,7 @@ public interface IModularContractLogHandler<T>
 {
 	LogAction getLogAction(@NonNull HandleLogsRequest<T> request);
 
-	BooleanWithReason doesRecordStateRequireLogCreation(@NonNull T model);
+	BooleanWithReason doesRecordRequireLogCreation(@NonNull CreateLogRequest<T> createLogRequest);
 
 	@NonNull
 	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest<T> createLogRequest);

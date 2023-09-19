@@ -57,6 +57,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
@@ -88,8 +89,9 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_Flatrate_Term model)
+	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_C_Flatrate_Term> createLogRequest)
 	{
+		final I_C_Flatrate_Term model = createLogRequest.getHandleLogsRequest().getModel();
 		if (!DocStatus.ofCode(model.getDocStatus()).isCompleted())
 		{
 			return BooleanWithReason.falseBecause("The C_Flatrate_Term.DocStatus is " + model.getDocStatus());

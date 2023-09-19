@@ -58,6 +58,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPCostCollectorId;
@@ -96,8 +97,9 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_PP_Cost_Collector model)
+	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_PP_Cost_Collector> createLogRequest)
 	{
+		final I_PP_Cost_Collector model = createLogRequest.getHandleLogsRequest().getModel();
 		if (!model.isProcessed())
 		{
 			return BooleanWithReason.falseBecause("The PP_Cost_Collector.Processed is false");

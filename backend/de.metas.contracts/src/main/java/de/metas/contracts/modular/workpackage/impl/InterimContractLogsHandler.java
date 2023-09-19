@@ -53,6 +53,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_InventoryLine;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -81,8 +82,9 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_Flatrate_Term model)
+	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_C_Flatrate_Term> createLogRequest)
 	{
+		final I_C_Flatrate_Term model = createLogRequest.getHandleLogsRequest().getModel();
 		if (!DocStatus.ofCode(model.getDocStatus()).isCompleted())
 		{
 			return BooleanWithReason.falseBecause("The C_Flatrate_Term.DocStatus is " + model.getDocStatus());

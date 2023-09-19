@@ -83,8 +83,9 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine model)
+	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_M_InOutLine> createLogRequest)
 	{
+		final I_M_InOutLine model = createLogRequest.getHandleLogsRequest().getModel();
 		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(model.getM_InOut_ID()));
 
 		if (!inOutDocStatus.isCompleted())
