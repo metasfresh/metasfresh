@@ -74,7 +74,7 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
 
@@ -94,6 +94,6 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 		costRevaluationService.createDetails(costRevaluationId);
 
 		costRevaluation.setDocAction(IDocument.ACTION_None);
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}
 }

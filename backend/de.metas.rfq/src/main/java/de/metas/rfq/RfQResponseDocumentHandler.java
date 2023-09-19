@@ -1,5 +1,6 @@
 package de.metas.rfq;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -87,7 +88,7 @@ class RfQResponseDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_C_RfQResponse rfqResponse = extractRfQResponse(docFields);
 		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
@@ -113,7 +114,7 @@ class RfQResponseDocumentHandler implements DocumentHandler
 		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfqResponse);
 
-		return X_C_RfQResponse.DOCSTATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	private void validateBeforeComplete(final I_C_RfQResponse rfqResponse, final List<I_C_RfQResponseLine> rfqResponseLines)
@@ -192,7 +193,7 @@ class RfQResponseDocumentHandler implements DocumentHandler
 		return false;
 	}
 
-	private final void updateRfQResponseLinesStatus(final I_C_RfQResponse rfqResponse)
+	private void updateRfQResponseLinesStatus(final I_C_RfQResponse rfqResponse)
 	{
 		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
 		updateRfQResponseLinesStatus(rfqResponse, rfqResponseLines);

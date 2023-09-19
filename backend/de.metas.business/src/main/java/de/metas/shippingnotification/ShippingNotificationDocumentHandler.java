@@ -96,7 +96,7 @@ public class ShippingNotificationDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(@NonNull final DocumentTableFields docFields)
+	public DocStatus completeIt(@NonNull final DocumentTableFields docFields)
 	{
 		return updateWhileSaving(docFields, shippingNotification -> {
 					assertPeriodOpen(shippingNotification);
@@ -108,7 +108,7 @@ public class ShippingNotificationDocumentHandler implements DocumentHandler
 						fireAfterComplete(shippingNotification);
 					}
 
-					return shippingNotification.getDocStatus().getCode();
+					return shippingNotification.getDocStatus();
 				}
 		);
 	}

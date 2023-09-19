@@ -1,5 +1,6 @@
 package de.metas.rfq;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -84,7 +85,7 @@ class RfQDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_C_RfQ rfq = extractRfQ(docFields);
 
@@ -137,7 +138,7 @@ class RfQDocumentHandler implements DocumentHandler
 		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfq);
 
-		return rfq.getDocStatus();
+		return DocStatus.ofCode(rfq.getDocStatus());
 	}
 
 	@Override

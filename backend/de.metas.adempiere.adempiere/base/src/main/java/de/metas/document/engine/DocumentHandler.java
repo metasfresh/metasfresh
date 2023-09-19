@@ -64,9 +64,9 @@ public interface DocumentHandler
 	/**
 	 * @return the resulting document status
 	 */
-	default String prepareIt(DocumentTableFields docFields)
+	default DocStatus prepareIt(DocumentTableFields docFields)
 	{
-		return IDocument.STATUS_InProgress;
+		return DocStatus.InProgress;
 	}
 
 	default void approveIt(DocumentTableFields docFields)
@@ -77,7 +77,7 @@ public interface DocumentHandler
 	/**
 	 * @return the resulting document status
 	 */
-	String completeIt(DocumentTableFields docFields);
+	DocStatus completeIt(DocumentTableFields docFields);
 
 	default void rejectIt(DocumentTableFields docFields)
 	{

@@ -1,5 +1,6 @@
 package de.metas.mforecast;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -64,11 +65,11 @@ class ForecastDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_M_Forecast forecast = extractForecast(docFields);
 		forecast.setDocAction(IDocument.ACTION_None);
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	@Override
