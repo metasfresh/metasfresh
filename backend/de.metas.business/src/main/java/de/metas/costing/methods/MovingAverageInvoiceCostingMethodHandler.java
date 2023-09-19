@@ -368,31 +368,31 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final boolean isReversal = isReversal(matchInv.getInvoiceId());
+		final InvoiceId invoiceId = matchInv.getInvoiceId();
+		final boolean isReversal = invoiceBL.isReversal(invoiceId);
 
 		final Quantity receiptQty = request.getQty().negateIf(isReversal); // i.e. qty matched
 		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
 		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
-
 		final CostAmount costAdjustmentAmt;
 		final CostAmount alreadyShippedAmt;
 
 		final Quantity qtyStillInStock = currentCost.getCurrentQty().min(receiptQty);
-		if(amtDifference.isZero())
+		if (amtDifference.isZero())
 		{
 			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
 			alreadyShippedAmt = CostAmount.zero(currentCost.getCurrencyId());
 		}
-		else if(receiptQty.isZero())
+		else if (receiptQty.isZero())
 		{
 			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
 			alreadyShippedAmt = amtDifference;
 		}
-		else if(receiptQty.equalsIgnoreSource(qtyStillInStock))
+		else if (receiptQty.equalsIgnoreSource(qtyStillInStock))
 		{
-			costAdjustmentAmt  = amtDifference;
+			costAdjustmentAmt = amtDifference;
 			alreadyShippedAmt = CostAmount.zero(currentCost.getCurrencyId());
 		}
 		else
@@ -449,11 +449,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		{
 			throw new AdempiereException("Unknown type: " + type);
 		}
-	}
-
-	private boolean isReversal(final InvoiceId invoiceId)
-	{
-		return invoiceBL.isReversal(invoiceBL.getById(invoiceId));
 	}
 
 	@Override
