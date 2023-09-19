@@ -74,11 +74,6 @@ public class ShippingNotificationRepository
 		return newLoaderAndSaver().save(shippingNotification);
 	}
 
-	void saveRecord(final I_M_Shipping_Notification record)
-	{
-		InterfaceWrapperHelper.saveRecord(record);
-	}
-
 	public <R> R updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
 			@NonNull final Function<ShippingNotification, R> consumer)

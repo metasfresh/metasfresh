@@ -79,7 +79,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(DocumentEngine.class);
+	private static final Logger logger = LogManager.getLogger(DocumentEngine.class);
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 	private final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);

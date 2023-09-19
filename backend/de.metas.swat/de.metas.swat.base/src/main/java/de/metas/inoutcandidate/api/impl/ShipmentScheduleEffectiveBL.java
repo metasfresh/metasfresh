@@ -34,7 +34,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.LocationId;
 import de.metas.order.DeliveryRule;
-import de.metas.product.IProductBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
