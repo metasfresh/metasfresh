@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.interiminvoice.contract;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
+import de.metas.contracts.modular.interim.invoice.service.IInterimFlatrateTermService;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.util.Services;
@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Flatrate_Term_CreateInterimContract_StepDef
 {
 	private final C_Flatrate_Term_StepDefData flatrateTermTable;
-	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
+	private final IInterimFlatrateTermService interimInvoiceFlatrateTermBL = Services.get(IInterimFlatrateTermService.class);
 
 	public C_Flatrate_Term_CreateInterimContract_StepDef(
 			@NonNull final C_Flatrate_Term_StepDefData flatrateTermTable)

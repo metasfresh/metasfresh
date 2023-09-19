@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_C_Flatrate_Conditions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -619065983L;
+	private static final long serialVersionUID = -1611038437L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, @Nullable final String trxName)
@@ -104,30 +104,18 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_C_Interim_Invoice_Settings getC_Interim_Invoice_Settings()
+	public void setC_HierarchyCommissionSettings_ID(final int C_HierarchyCommissionSettings_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Interim_Invoice_Settings_ID, org.compiere.model.I_C_Interim_Invoice_Settings.class);
+		if (C_HierarchyCommissionSettings_ID < 1)
+			set_Value(COLUMNNAME_C_HierarchyCommissionSettings_ID, null);
+		else
+			set_Value(COLUMNNAME_C_HierarchyCommissionSettings_ID, C_HierarchyCommissionSettings_ID);
 	}
 
 	@Override
-	public void setC_Interim_Invoice_Settings(final org.compiere.model.I_C_Interim_Invoice_Settings C_Interim_Invoice_Settings)
+	public int getC_HierarchyCommissionSettings_ID()
 	{
-		set_ValueFromPO(COLUMNNAME_C_Interim_Invoice_Settings_ID, org.compiere.model.I_C_Interim_Invoice_Settings.class, C_Interim_Invoice_Settings);
-	}
-
-	@Override
-	public void setC_Interim_Invoice_Settings_ID (final int C_Interim_Invoice_Settings_ID)
-	{
-		if (C_Interim_Invoice_Settings_ID < 1) 
-			set_Value (COLUMNNAME_C_Interim_Invoice_Settings_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Interim_Invoice_Settings_ID, C_Interim_Invoice_Settings_ID);
-	}
-
-	@Override
-	public int getC_Interim_Invoice_Settings_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Interim_Invoice_Settings_ID);
+		return get_ValueAsInt(COLUMNNAME_C_HierarchyCommissionSettings_ID);
 	}
 
 	/** 
@@ -211,46 +199,82 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+		if (C_UOM_ID < 1)
+			set_Value(COLUMNNAME_C_UOM_ID, null);
+		else
+			set_Value(COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
-	/** 
+	@Override
+	public void setDescription(final @Nullable java.lang.String Description)
+	{
+		set_Value(COLUMNNAME_Description, Description);
+	}
+
+	@Override
+	public java.lang.String getDescription()
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	/**
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action
 	 */
-	public static final int DOCACTION_AD_Reference_ID=135;
-	/** Complete = CO */
+	public static final int DOCACTION_AD_Reference_ID = 135;
+	/**
+	 * Complete = CO
+	 */
 	public static final String DOCACTION_Complete = "CO";
-	/** Approve = AP */
+	/**
+	 * Approve = AP
+	 */
 	public static final String DOCACTION_Approve = "AP";
-	/** Reject = RJ */
+	/**
+	 * Reject = RJ
+	 */
 	public static final String DOCACTION_Reject = "RJ";
-	/** Post = PO */
+	/**
+	 * Post = PO
+	 */
 	public static final String DOCACTION_Post = "PO";
-	/** Void = VO */
+	/**
+	 * Void = VO
+	 */
 	public static final String DOCACTION_Void = "VO";
-	/** Close = CL */
+	/**
+	 * Close = CL
+	 */
 	public static final String DOCACTION_Close = "CL";
-	/** Reverse_Correct = RC */
+	/**
+	 * Reverse_Correct = RC
+	 */
 	public static final String DOCACTION_Reverse_Correct = "RC";
-	/** Reverse_Accrual = RA */
+	/**
+	 * Reverse_Accrual = RA
+	 */
 	public static final String DOCACTION_Reverse_Accrual = "RA";
-	/** Invalidate = IN */
+	/**
+	 * Invalidate = IN
+	 */
 	public static final String DOCACTION_Invalidate = "IN";
-	/** Re_Activate = RE */
+	/**
+	 * Re_Activate = RE
+	 */
 	public static final String DOCACTION_Re_Activate = "RE";
-	/** None = -- */
+	/**
+	 * None = --
+	 */
 	public static final String DOCACTION_None = "--";
-	/** Prepare = PR */
+	/**
+	 * Prepare = PR
+	 */
 	public static final String DOCACTION_Prepare = "PR";
 	/** Unlock = XL */
 	public static final String DOCACTION_Unlock = "XL";
@@ -517,30 +541,45 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public int getM_Product_Correction_ID() 
+	public int getM_Product_Correction_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_Correction_ID);
 	}
 
 	@Override
-	public void setM_Product_Flatrate_ID (final int M_Product_Flatrate_ID)
+	public void setM_Product_Flatrate_ID(final int M_Product_Flatrate_ID)
 	{
-		if (M_Product_Flatrate_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_Flatrate_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_Flatrate_ID, M_Product_Flatrate_ID);
+		if (M_Product_Flatrate_ID < 1)
+			set_Value(COLUMNNAME_M_Product_Flatrate_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Product_Flatrate_ID, M_Product_Flatrate_ID);
 	}
 
 	@Override
-	public int getM_Product_Flatrate_ID() 
+	public int getM_Product_Flatrate_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_Flatrate_ID);
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setM_QualityInsp_LagerKonf_ID(final int M_QualityInsp_LagerKonf_ID)
 	{
-		set_Value (COLUMNNAME_Name, Name);
+		if (M_QualityInsp_LagerKonf_ID < 1)
+			set_Value(COLUMNNAME_M_QualityInsp_LagerKonf_ID, null);
+		else
+			set_Value(COLUMNNAME_M_QualityInsp_LagerKonf_ID, M_QualityInsp_LagerKonf_ID);
+	}
+
+	@Override
+	public int getM_QualityInsp_LagerKonf_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_QualityInsp_LagerKonf_ID);
+	}
+
+	@Override
+	public void setName(final java.lang.String Name)
+	{
+		set_Value(COLUMNNAME_Name, Name);
 	}
 
 	@Override

@@ -28,7 +28,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
-import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
+import de.metas.contracts.modular.interim.invoice.service.IInterimFlatrateTermService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
@@ -53,7 +53,7 @@ public class C_Flatrate_Term
 	private final BPartnerInterimContractService bPartnerInterimContractService;
 	private final ModularContractService modularContractService;
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
-	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
+	private final IInterimFlatrateTermService interimInvoiceFlatrateTermBL = Services.get(IInterimFlatrateTermService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";

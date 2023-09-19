@@ -122,10 +122,10 @@ public class InterimInvoiceCandidateService
 				.productId(productIdToInvoice)
 				.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
 				.billPartnerInfo(BPartnerInfo.builder()
-						.bpartnerId(bpartnerId)
-						.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getBill_Location_ID()))
-						.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getBill_User_ID()))
-						.build())
+										 .bpartnerId(bpartnerId)
+										 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getBill_Location_ID()))
+										 .contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getBill_User_ID()))
+										 .build())
 				.invoicingUomId(stockUOM)
 				//.qtyOrdered(stockDeliveredQty)
 				//.qtyDelivered(stockDeliveredQty)
@@ -134,7 +134,8 @@ public class InterimInvoiceCandidateService
 				.recordReference(TableRecordReference.of(flatrateTermRecord))
 				.isInterimInvoice(true)
 				.isManual(false)
-				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(FlatrateTerm_Handler.class));
+				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(FlatrateTerm_Handler.class))
+				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
 
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
 
