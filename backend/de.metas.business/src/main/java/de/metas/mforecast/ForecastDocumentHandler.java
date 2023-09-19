@@ -1,19 +1,13 @@
 package de.metas.mforecast;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Forecast;
-import org.compiere.util.TimeUtil;
-
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Forecast;
 
 /*
  * #%L
@@ -63,21 +57,10 @@ class ForecastDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public int getC_Currency_ID(final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
-		return -1;
-	}
-
-	@Override
-	public BigDecimal getApprovalAmt(final DocumentTableFields docFields)
-	{
-		return BigDecimal.ZERO;
-	}
-
-	@Override
-	public File createPDF(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
+		final I_M_Forecast forecast = extractForecast(docFields);
+		return InstantAndOrgId.ofTimestamp(forecast.getDatePromised(), OrgId.ofRepoId(forecast.getAD_Org_ID()));
 	}
 
 	@Override
@@ -89,58 +72,10 @@ class ForecastDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public void approveIt(final DocumentTableFields docFields)
-	{
-	}
-
-	@Override
-	public void rejectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void voidIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void closeIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void unCloseIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void reverseCorrectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void reverseAccrualIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public void reactivateIt(final DocumentTableFields docFields)
 	{
 		final I_M_Forecast forecast = extractForecast(docFields);
 		forecast.setProcessed(false);
 		forecast.setDocAction(IDocument.ACTION_Complete);
-	}
-
-	@Override
-	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
-	{
-		final I_M_Forecast forecast = extractForecast(docFields);
-		return InstantAndOrgId.ofTimestamp(forecast.getDatePromised(), OrgId.ofRepoId(forecast.getAD_Org_ID()));
 	}
 }

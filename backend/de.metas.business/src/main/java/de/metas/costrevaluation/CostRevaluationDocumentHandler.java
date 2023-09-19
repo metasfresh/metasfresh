@@ -33,9 +33,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_CostRevaluation;
 
-import java.io.File;
-import java.math.BigDecimal;
-
 class CostRevaluationDocumentHandler implements DocumentHandler
 {
 	private final CostRevaluationService costRevaluationService;
@@ -99,59 +96,4 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 		costRevaluation.setDocAction(IDocument.ACTION_None);
 		return IDocument.STATUS_Completed;
 	}
-
-	@Override
-	public void reactivateIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void unCloseIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void closeIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void voidIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void rejectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void approveIt(final DocumentTableFields docFields)
-	{
-
-	}
-
-	@Override
-	public File createPDF(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public BigDecimal getApprovalAmt(final DocumentTableFields docFields)
-	{
-		return BigDecimal.ZERO;
-	}
-
-	@Override
-	public int getC_Currency_ID(final DocumentTableFields docFields)
-	{
-		return -1;
-	}
-
 }

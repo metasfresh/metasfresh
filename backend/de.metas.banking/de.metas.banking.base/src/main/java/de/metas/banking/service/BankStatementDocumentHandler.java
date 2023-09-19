@@ -422,12 +422,6 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		return description;
 	}
 
-	@Override
-	public void reactivateIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
 	private static void addDescription(final I_C_BankStatement bankStatement, final String description)
 	{
 		final String desc = bankStatement.getDescription();

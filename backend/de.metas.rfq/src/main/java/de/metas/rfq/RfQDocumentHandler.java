@@ -17,9 +17,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import java.io.File;
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.rfq
@@ -50,7 +47,7 @@ class RfQDocumentHandler implements DocumentHandler
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfQConfiguration rfqConfiguration = Services.get(IRfQConfiguration.class);
 
-	private static final I_C_RfQ extractRfQ(final DocumentTableFields docFields)
+	private static I_C_RfQ extractRfQ(final DocumentTableFields docFields)
 	{
 		return InterfaceWrapperHelper.create(docFields, I_C_RfQ.class);
 	}
@@ -84,18 +81,6 @@ class RfQDocumentHandler implements DocumentHandler
 	public int getC_Currency_ID(final DocumentTableFields docFields)
 	{
 		return extractRfQ(docFields).getC_Currency_ID();
-	}
-
-	@Override
-	public BigDecimal getApprovalAmt(final DocumentTableFields docFields)
-	{
-		return BigDecimal.ZERO;
-	}
-
-	@Override
-	public File createPDF(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -153,23 +138,6 @@ class RfQDocumentHandler implements DocumentHandler
 		InterfaceWrapperHelper.save(rfq);
 
 		return rfq.getDocStatus();
-	}
-
-	@Override
-	public void approveIt(final DocumentTableFields docFields)
-	{
-	}
-
-	@Override
-	public void rejectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void voidIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -238,18 +206,6 @@ class RfQDocumentHandler implements DocumentHandler
 
 		// Make sure it's saved
 		InterfaceWrapperHelper.save(rfq);
-	}
-
-	@Override
-	public void reverseCorrectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void reverseAccrualIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
