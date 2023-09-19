@@ -47,7 +47,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.inoutcandidate.api.ShippingNotificationFromShipmentScheduleProducer;
+import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;

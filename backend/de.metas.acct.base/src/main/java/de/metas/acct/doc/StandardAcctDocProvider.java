@@ -2,6 +2,8 @@ package de.metas.acct.doc;
 
 import de.metas.acct.gljournal_sap.acct.Doc_SAPGLJournal;
 import de.metas.acct.model.I_SAP_GLJournal;
+import de.metas.shippingnotification.acct.Doc_ShippingNotification;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import org.compiere.acct.Doc_AllocationHdr;
 import org.compiere.acct.Doc_Cash;
 import org.compiere.acct.Doc_CostRevaluation;
@@ -64,6 +66,7 @@ public class StandardAcctDocProvider extends AcctDocProviderTemplate
 			.put(I_C_Cash.Table_Name, Doc_Cash::new)
 			.put(I_GL_Journal.Table_Name, Doc_GLJournal::new)
 			.put(I_SAP_GLJournal.Table_Name, Doc_SAPGLJournal::new)
+			.put(I_M_Shipping_Notification.Table_Name, Doc_ShippingNotification::new)
 			.put(I_M_InOut.Table_Name, Doc_InOut::new)
 			.put(I_M_Inventory.Table_Name, Doc_Inventory::new)
 			.put(I_C_Invoice.Table_Name, Doc_Invoice::new)

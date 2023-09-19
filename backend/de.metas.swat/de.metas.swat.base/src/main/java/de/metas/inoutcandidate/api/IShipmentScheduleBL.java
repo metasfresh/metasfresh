@@ -33,6 +33,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuil
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
 import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;

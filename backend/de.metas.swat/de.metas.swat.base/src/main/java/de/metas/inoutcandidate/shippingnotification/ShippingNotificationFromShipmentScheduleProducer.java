@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.api;
+package de.metas.inoutcandidate.shippingnotification;
 
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.document.DocBaseType;
@@ -6,6 +6,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;

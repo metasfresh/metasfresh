@@ -31,7 +31,7 @@ public class Doc_ShippingNotification extends Doc<DocLine<?>>
 	private final ShippingNotificationService shippingNotificationService = SpringContextHolder.instance.getBean(ShippingNotificationService.class);
 	private ShippingNotification shippingNotification;
 
-	protected Doc_ShippingNotification(final @NonNull AcctDocContext ctx)
+	public Doc_ShippingNotification(final @NonNull AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.ShippingNotification);
 	}
