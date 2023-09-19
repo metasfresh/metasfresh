@@ -508,6 +508,7 @@
             <xsd:element minOccurs="0" name="receivergln" type="xsd:string"/>
             <xsd:element minOccurs="0" name="sendergln" type="xsd:string"/>
             <xsd:element minOccurs="0" name="shipment_documentno" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="EDIDesadvDocumentNo" type="xsd:string"/>
             <xsd:element minOccurs="0" name="TotalLines" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="totaltaxbaseamt" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="totalvat" type="xsd:decimal"/>

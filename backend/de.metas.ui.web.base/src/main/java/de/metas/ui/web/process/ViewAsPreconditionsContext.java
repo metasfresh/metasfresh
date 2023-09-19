@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -163,25 +164,27 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	@Override
 	public <T> T getSelectedModel(final Class<T> modelClass)
 	{
-		final List<T> models = getSelectedModels(modelClass);
-		if (models.isEmpty())
+		if (getSelectedRowIds().isMoreThanOneDocumentId())
 		{
-			return null;
+			logger.warn("More then one selected model found for view but only one was expected: {}", view);
 		}
-		else
-		{
-			if (models.size() > 1)
-			{
-				logger.warn("More then one selected model found for view but only one was expected: {}", view);
-			}
-			return models.get(0);
-		}
+
+		return streamSelectedModels(modelClass)
+				.findFirst()
+				.orElse(null);
 	}
 
 	@Override
 	public <T> List<T> getSelectedModels(final Class<T> modelClass)
 	{
 		return _selectedModelsSupplier.apply(modelClass).getModels(modelClass);
+	}
+
+	@NonNull
+	@Override
+	public <T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass)
+	{
+		return view.streamModelsByIds(getSelectedRowIds(), modelClass);
 	}
 
 	@Override

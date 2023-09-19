@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Order_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -334085824L;
+	private static final long serialVersionUID = -1884950035L;
 
     /** Standard Constructor */
     public X_PP_Order_BOMLine (final Properties ctx, final int PP_Order_BOMLine_ID, @Nullable final String trxName)
@@ -230,6 +230,18 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	public java.lang.String getHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
+	}
+
+	@Override
+	public void setIsAllowIssuingAnyProduct (final boolean IsAllowIssuingAnyProduct)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsAllowIssuingAnyProduct, IsAllowIssuingAnyProduct);
+	}
+
+	@Override
+	public boolean isAllowIssuingAnyProduct() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowIssuingAnyProduct);
 	}
 
 	@Override

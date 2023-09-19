@@ -102,12 +102,10 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI = "To-MF_Lookup-ExternalReference_V2";
 
-	public static final String REST_WOOCOMMERCE_PATH = "/woocommerce";
 
 	public static final String REST_API_AUTHENTICATE_TOKEN = "Core-registerToken";
 	public static final String REST_API_EXPIRE_TOKEN = "Core-expireToken";
 
-	public static final String WOOCOMMERCE_AUTHORITY = "WOO";
 
 	public static final String MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI= "metasfresh.create-service-status-v2.camel.uri";
 	public static final String MF_GET_SERVICE_STATUS_V2_CAMEL_URI = "metasfresh.service-status-v2.camel.uri";
@@ -119,7 +117,6 @@ public class ExternalSystemCamelConstants
 	public static final String MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_ROUTE_ID = "To-MF_updateHUAttributes_V2-Route";
 	public static final String MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_URI = "metasfresh.update-hu-attributes-v2.api.uri";
 
-	public static final String MF_PROCESS_REMOTE_HTTP_ERROR_ROUTE_ID = "Extract_HTTP_Error-Route";
 
 	public static final String MF_GET_EXTERNAL_SYSTEM_INFO = "metasfresh.external-system-info-v2.camel.uri";
 
@@ -129,4 +126,9 @@ public class ExternalSystemCamelConstants
 	public static final String MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID = "To-MF_retrieve_PPOrder_V2-Route";
 	public static final String MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID = "To-MF_retrieve_Material_ProductInfo_V2-Route";
 	public static final String MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID = "To-MF_Search_ProductPrices_V2-Route";
+
+	public static final String MF_GET_PRINTING_DATA_ROUTE_ID = "To-MF_getPrintingData_V2_Route";
+	public static final String MF_SET_PRINTING_RESULT_ROUTE_ID = "To-MF_setPrintingResult_V2_Route";
+	public static final String HEADER_PRINTING_QUEUE_ID = "printingQueueId";
+	public static final String MF_PRINT_V2_BASE = "metasfresh.print.v2.api.base.uri";
 }

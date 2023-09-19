@@ -89,7 +89,6 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	@Nullable
 	@Override

@@ -321,7 +321,7 @@ public class EDIDesadvPackService
 
 			desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createEDIDesadvPackItemRequestBuilder::ediDesadvPackItemId);
 
-			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, uomId, qtyCUsPerTUInStockUOM.toBigDecimal(), movementQty);
+			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, uomId, movementQty);
 
 			ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequestBuilder
 															 .createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
@@ -466,7 +466,7 @@ public class EDIDesadvPackService
 
 		desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createEDIDesadvPackItemRequestBuilder::ediDesadvPackItemId);
 
-		setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUInStockUOM, quantity, uomId, qtyCUInStockUOM.toBigDecimal(), movementQty);
+		setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUInStockUOM, quantity, uomId, movementQty);
 
 		extractAndSetPackagingCodes(rootHU, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
 		extractAndSetPackagingGTINs(rootHU, bPartnerId, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
@@ -501,27 +501,25 @@ public class EDIDesadvPackService
 	public void setQty(
 			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder,
 			@NonNull final ProductId productId,
-			@NonNull final Quantity qtyCUInStockUOM,
+			@NonNull final Quantity qtyCUsPerTUInStockUOM,
 			@NonNull final StockQtyAndUOMQty qtyCUsPerLU,
 			@NonNull final UomId packUomId,
-			@NonNull final BigDecimal qtyItemCapacity,
 			@NonNull final BigDecimal movementQty)
 	{
 		final BigDecimal qtyCUPerTUinPackUOM;
 		final BigDecimal qtyCUsPerLUinPackUOM;
 		if (uomDAO.isUOMForTUs(packUomId))
 		{
-			qtyCUPerTUinPackUOM = ONE; // we count in TUs, also on the CU-level
-
-			qtyCUsPerLUinPackUOM = qtyCUsPerLU.getStockQty()
-					.toBigDecimal()
-					.divide(qtyItemCapacity, 0/* result's scale */, RoundingMode.UP);
+			// If the packUomId is a TU-UOM ("TU" or "COLI"), we count the CUs as such.
+			// For example if there is one TU with ten CUs then we have qtyCUPerTUinPackUOM=10, even if the UOM is COLI.
+			qtyCUPerTUinPackUOM = qtyCUsPerTUInStockUOM.toBigDecimal();
+			qtyCUsPerLUinPackUOM = qtyCUsPerLU.getStockQty().toBigDecimal();
 		}
 		else
 		{
 			qtyCUPerTUinPackUOM = uomConversionBL
 					.convertQuantityTo(
-							qtyCUInStockUOM,
+							qtyCUsPerTUInStockUOM,
 							UOMConversionContext.of(productId),
 							packUomId)
 					.toBigDecimal();
@@ -533,7 +531,6 @@ public class EDIDesadvPackService
 							packUomId)
 					.toBigDecimal();
 		}
-
 		createEDIDesadvPackItemRequestBuilder.movementQtyInStockUOM(movementQty);
 		createEDIDesadvPackItemRequestBuilder.qtyCu(qtyCUPerTUinPackUOM);
 		createEDIDesadvPackItemRequestBuilder.qtyCUsPerLU(qtyCUsPerLUinPackUOM);

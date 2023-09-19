@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtycount_from_fact_acct(
+DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
     p_M_Inventory_ID      numeric,
     p_ProductAssetAccount varchar,
     p_RecreateLines       char(1),
@@ -8,7 +8,7 @@ DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtycount_from_fact_
 )
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_update_qtycount_from_fact_acct(
+CREATE OR REPLACE FUNCTION de_metas_acct.m_inventoryline_update_qtybook_from_fact_acct(
     p_M_Inventory_ID      numeric,
     p_ProductAssetAccount varchar,
     p_RecreateLines       char(1) = 'N',
@@ -92,7 +92,7 @@ BEGIN
         -- Backup existing lines
         DROP TABLE IF EXISTS tmp_prev_inventoryline;
         CREATE TEMPORARY TABLE tmp_prev_inventoryline AS
-        SELECT line, m_product_id, c_uom_id, qtycount, qtybook, m_locator_id, isactive
+        SELECT line, m_product_id, c_uom_id, qtycount, qtybook, costprice, m_locator_id, isactive
         FROM m_inventoryline invl
         WHERE invl.m_inventory_id = p_M_Inventory_ID;
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
@@ -163,7 +163,8 @@ BEGIN
         SET qtycount=uomConvert(invl.m_product_id,
                                 t.c_uom_id,
                                 invl.c_uom_id,
-                                t.qtycount)
+                                t.qtycount),
+            costprice=t.costprice
         FROM tmp_prev_inventoryline t
         WHERE invl.m_inventory_id = p_M_Inventory_ID
           AND invl.m_product_id = t.m_product_id;
@@ -202,9 +203,9 @@ BEGIN
                NULL                                                                                   AS m_hu_id,
                NULL                                                                                   AS assignedto,
                NULL                                                                                   AS externalid,
-               NULL                                                                                   AS costprice,
+               costprice                                                                                   AS costprice,
                --
-               prev_invl.qtybook                                                                      AS qtybook,
+               0                                                                                      AS qtybook,
                prev_invl.qtycount                                                                     AS qtycount,
                'Y'                                                                                    AS iscounted,
                'Y'                                                                                    AS processed,
@@ -255,21 +256,21 @@ BEGIN
         INSERT INTO m_inventoryline_hu (ad_client_id, ad_org_id, created, createdby, c_uom_id, isactive, m_hu_id, m_inventoryline_hu_id, m_inventoryline_id, qtybook, qtycount, updated, updatedby, qtyinternaluse, m_inventory_id)
         SELECT invl.ad_client_id,
                invl.ad_org_id,
-               NOW()                             AS created,
-               99                                AS createdby,
-               hu.c_uom_id,
-               'Y'                               AS isactive,
+               NOW()                                AS created,
+               99                                   AS createdby,
+               COALESCE(hu.c_uom_id, invl.c_uom_id) AS c_uom_id,
+               'Y'                                  AS isactive,
                hu.m_hu_id,
-               NEXTVAL('m_inventoryline_hu_seq') AS m_inventoryline_hu_id,
+               NEXTVAL('m_inventoryline_hu_seq')    AS m_inventoryline_hu_id,
                invl.m_inventoryline_id,
-               hu.qty                            AS qtybook,
-               hu.qty                            AS qtycount,
-               NOW()                             AS updated,
-               99                                AS updatedby,
-               NULL                              AS qtyinternaluse,
+               COALESCE(hu.qty, 0)                  AS qtybook,
+               COALESCE(hu.qty, 0)                  AS qtycount,
+               NOW()                                AS updated,
+               99                                   AS updatedby,
+               NULL                                 AS qtyinternaluse,
                invl.m_inventory_id
         FROM m_inventoryline invl
-                 INNER JOIN tmp_hu hu ON hu.m_product_id = invl.m_product_id
+                 LEFT JOIN tmp_hu hu ON hu.m_product_id = invl.m_product_id
         WHERE invl.m_inventory_id = p_M_Inventory_ID
           AND invl.isactive = 'Y'
         ORDER BY invl.m_inventoryline_id, hu.m_hu_id;
