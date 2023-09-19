@@ -65,7 +65,8 @@ public class ShipmentLineForPOModularContractHandler implements IModularContract
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull
+	private final ModularContractLogService contractLogService;
 
 	@Override
 	@NonNull
@@ -78,7 +79,7 @@ public class ShipmentLineForPOModularContractHandler implements IModularContract
 	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		return (SOTrx.ofBoolean(inOutRecord.isSOTrx()).isSales() && inOutLineRecord.getC_Order_ID() > 0);
+		return inOutRecord.isSOTrx() && inOutLineRecord.getC_Order_ID() > 0;
 	}
 
 	@Override
@@ -118,7 +119,9 @@ public class ShipmentLineForPOModularContractHandler implements IModularContract
 		switch (action)
 		{
 			case VOIDED, REACTIVATED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
-			case COMPLETED, REVERSED -> {}
+			case COMPLETED, REVERSED ->
+			{
+			}
 			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
