@@ -55,8 +55,8 @@ public enum ProductAcctType
 	P_Burden_Acct(I_M_Product_Acct.COLUMNNAME_P_Burden_Acct),
 	P_OutsideProcessing_Acct(I_M_Product_Acct.COLUMNNAME_P_OutsideProcessing_Acct),
 	P_Overhead_Acct(I_M_Product_Acct.COLUMNNAME_P_Overhead_Acct),
-	P_Scrap_Acct(I_M_Product_Acct.COLUMNNAME_P_Scrap_Acct)
-
+	P_Scrap_Acct(I_M_Product_Acct.COLUMNNAME_P_Scrap_Acct),
+	P_ExternallyOwnedStock_Acct(I_M_Product_Acct.COLUMNNAME_P_ExternallyOwnedStock_Acct),
 	//
 	;
 
