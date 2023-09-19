@@ -51,6 +51,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
@@ -325,4 +326,6 @@ public interface IOrderBL extends ISingletonService
 	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
 
 	void deleteLineById(final OrderAndLineId orderAndLineId);
+
+	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 }
