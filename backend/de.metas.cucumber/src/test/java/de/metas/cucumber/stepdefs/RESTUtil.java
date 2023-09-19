@@ -74,6 +74,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
 
@@ -117,7 +118,6 @@ public class RESTUtil
 
 	public APIResponse performHTTPRequest(@NonNull final APIRequest apiRequest) throws IOException
 	{
-		final CloseableHttpClient httpClient = HttpClients.createDefault();
 
 		final String appServerPort = System.getProperty("server.port");
 		final String url = "http://localhost:" + appServerPort + "/" + apiRequest.getEndpointPath();
@@ -141,53 +141,62 @@ public class RESTUtil
 		}
 
 		setHeaders(request, authToken, apiRequest.getAdditionalHeaders());
-		final HttpResponse response = httpClient.execute(request);
 
-		final Header contentType = response.getEntity().getContentType();
-		final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();
-		if (contentType != null)
+		try(final CloseableHttpClient httpClient = HttpClients.createDefault())
 		{
-			apiResponseBuilder.contentType(contentType.getValue());
-		}
+			final HttpResponse response = httpClient.execute(request);
 
-		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		response.getEntity().writeTo(stream);
-
-		final String endpointPath = apiRequest.getEndpointPath();
-
-		if (endpointPath.contains(ENDPOINT_API_V2.substring(1)))
-		{
-			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-
-			try
+			final Header contentType = response.getEntity().getContentType();
+			final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();
+			if (contentType != null)
 			{
-				final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
-
-				final String content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
-
-				apiResponseBuilder
-						.requestId(jsonApiResponse.getRequestId())
-						.content(content);
-
-				logDetails(jsonApiResponse.getRequestId());
+				apiResponseBuilder.contentType(contentType.getValue());
 			}
-			catch (final MismatchedInputException mismatchedInputException)
+
+			final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			response.getEntity().writeTo(stream);
+
+			final String endpointPath = apiRequest.getEndpointPath();
+
+			if (endpointPath.contains(ENDPOINT_API_V2.substring(1)))
 			{
-				extractRequestAuditIdFromHeader(response, stream, apiResponseBuilder);
+				final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
+				try
+				{
+					final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
+
+					final String content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
+
+					apiResponseBuilder
+							.requestId(jsonApiResponse.getRequestId())
+							.content(content);
+
+					logDetails(jsonApiResponse.getRequestId());
+				}
+				catch (final MismatchedInputException mismatchedInputException)
+				{
+					extractRequestAuditIdFromHeader(response, stream, apiResponseBuilder);
+				}
+				catch (final JsonParseException jsonParseException)
+				{
+					apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+				}
 			}
-			catch (final JsonParseException jsonParseException)
+			else
 			{
 				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 			}
-		}
-		else
-		{
-			apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
-		}
 
-		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
+			assertThat(response.getStatusLine().getStatusCode())
+				.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
+															CoalesceUtil.coalesce(statusCode, 200),
+															response.getStatusLine().getStatusCode(),
+															apiResponseBuilder.build().getContent()))
+				.isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
-		return apiResponseBuilder.build();
+			return apiResponseBuilder.build();
+		}
 	}
 
 	private void setHeaders(
