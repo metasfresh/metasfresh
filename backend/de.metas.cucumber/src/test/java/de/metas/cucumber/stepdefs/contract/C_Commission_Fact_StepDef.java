@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.contracts.commission.model.I_C_Commission_Fact.COLUMNNAME_C_Commission_Fact_ID;
 import static de.metas.contracts.commission.model.I_C_Commission_Fact.COLUMNNAME_C_Commission_Share_ID;
 import static de.metas.contracts.commission.model.I_C_Commission_Fact.COLUMNNAME_C_Invoice_Candidate_Commission_ID;
 import static de.metas.contracts.commission.model.I_C_Commission_Fact.COLUMNNAME_CommissionPoints;
@@ -74,7 +75,7 @@ public class C_Commission_Fact_StepDef
 
 		final List<I_C_Commission_Fact> commissionFacts = queryBL.createQueryBuilder(I_C_Commission_Fact.class)
 				.addEqualsFilter(COLUMNNAME_C_Commission_Share_ID, commissionShare.getC_Commission_Share_ID())
-				.orderByDescending(COLUMNNAME_Updated)
+				.orderByDescending(COLUMNNAME_C_Commission_Fact_ID)
 				.create()
 				.list();
 
