@@ -45,6 +45,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
 
+	boolean anyMatchByOrderId(@NonNull OrderId orderId);
+
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(Set<ShipmentScheduleId> ids, Class<T> clazz);
 
 	@Nullable
