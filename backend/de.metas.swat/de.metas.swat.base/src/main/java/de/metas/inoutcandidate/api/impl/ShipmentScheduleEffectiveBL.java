@@ -56,12 +56,14 @@ import java.time.ZonedDateTime;
 public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public I_C_BPartner_Location getBPartnerLocation(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final BPartnerLocationId locationId = getBPartnerLocationId(sched);
-		return Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(locationId);
+		return bpartnerDAO.getBPartnerLocationByIdEvenInactive(locationId);
 	}
 
 	@Override
@@ -106,7 +108,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	public LocatorId getDefaultLocatorId(final I_M_ShipmentSchedule sched)
 	{
 		final WarehouseId warehouseId = getWarehouseId(sched);
-		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
+		return warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -130,9 +132,8 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
-		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 		final BPartnerId bpartnerId = getBPartnerId(sched);
-		return partnerDAO.getById(bpartnerId, I_C_BPartner.class);
+		return bpartnerDAO.getById(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override

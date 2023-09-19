@@ -180,7 +180,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
@@ -201,13 +200,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		postponeMissingSchedsCreationUntilClose.set(true);
 
-		final IAutoCloseable onCloseCreateMissingScheds = //
-				() -> {
-					postponeMissingSchedsCreationUntilClose.set(false);
-					CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
-				};
-
-		return onCloseCreateMissingScheds;
+		return () -> {
+			postponeMissingSchedsCreationUntilClose.set(false);
+			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(PlainContextAware.newWithThreadInheritedTrx());
+		};
 	}
 
 	@Override
@@ -358,13 +354,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return false;
 		}
 
+		//noinspection UnnecessaryLocalVariable
 		final boolean wasClosed = createOld(shipmentScheduleRecord, I_M_ShipmentSchedule.class).isClosed();
-		if (!wasClosed)
-		{
-			return false;
-		}
-
-		return true; // was closed, but is now open
+		return wasClosed;// was closed, but is now open
 	}
 
 	@Override
@@ -543,13 +535,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return shipmentScheduleEffectiveBL.getBPartnerId(schedule);
+		return scheduleEffectiveBL.getBPartnerId(schedule);
 	}
 
 	@Override
 	public BPartnerLocationId getBPartnerLocationId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return shipmentScheduleEffectiveBL.getBPartnerLocationId(schedule);
+		return scheduleEffectiveBL.getBPartnerLocationId(schedule);
 	}
 
 	@Override
@@ -785,7 +777,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			shipmentSchedule.setDeliveryRule_Override(request.getDeliveryRule().getCode());
 		}
 
-		if (!Check.isEmpty(request.getAttributes()))
+		if (request.getAttributes() != null && !request.getAttributes().isEmpty())
 		{
 			addAttributes(shipmentSchedule, request.getAttributes());
 		}
@@ -810,10 +802,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	private boolean isCloseIfPartiallyShipped(@NonNull final OrgId orgId)
 	{
-		final boolean isCloseIfPartiallyInvoiced =
-				sysConfigBL.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
-
-		return isCloseIfPartiallyInvoiced;
+		return sysConfigBL.getBooleanValue(SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped, false, ClientId.METASFRESH.getRepoId(), orgId.getRepoId());
 	}
 
 	private IAutoCloseable doNotInvalidateOnChange(@NonNull final I_M_ShipmentSchedule sched)
@@ -899,9 +888,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@NonNull
 	public Quantity getQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = this.shipmentScheduleEffectiveBL;
-
-		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentScheduleRecord);
+		final BigDecimal qtyOrdered = scheduleEffectiveBL.computeQtyOrdered(shipmentScheduleRecord);
 
 		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
 
