@@ -420,7 +420,6 @@ Feature: Delivery rules with and without quantity in stock
 
   @from:cucumber
   @Id:S0159_B_10
-  @runThisOne
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true
   _And C_BPartner.DeliveryRule = Availability
@@ -493,7 +492,6 @@ Feature: Delivery rules with and without quantity in stock
 
   @from:cucumber
   @Id:S0159_B_20
-    @runThisOne
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true
   _And C_BPartner.DeliveryRule = Availability

@@ -1,5 +1,6 @@
 package de.metas;
 
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
@@ -81,6 +82,16 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 			{
 				// ok; the bean is not in the spring context, so let's just return null
 				return null;
+			}
+			catch (final IllegalStateException e)
+			{
+				if (Adempiere.isUnitTestMode())
+				{
+					// added for @SpringBootTests starting up with a 'Marked for closing' Context, mostly due to DirtiesContext.ClassMode.BEFORE_CLASS
+					return null;
+				}
+
+				throw e;
 			}
 		}
 	}
