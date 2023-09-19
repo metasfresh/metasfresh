@@ -3,7 +3,6 @@ package de.metas.banking.payment;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
-import de.metas.document.engine.IDocument;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
