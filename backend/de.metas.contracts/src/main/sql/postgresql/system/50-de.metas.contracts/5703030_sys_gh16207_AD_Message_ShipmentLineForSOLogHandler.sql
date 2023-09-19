@@ -17,7 +17,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 ;
 
 -- 2023-09-15T16:13:50.826377100Z
-UPDATE AD_Message_Trl SET MsgText='A shipment line for product {0} , quantity {1} was completed.',Updated=TO_TIMESTAMP('2023-09-15 17:13:50.825','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545336
+UPDATE AD_Message_Trl SET MsgText='A shipment for product {0} , quantity {1} was completed.',Updated=TO_TIMESTAMP('2023-09-15 17:13:50.825','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545336
 ;
 
 -- Value: de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnComplete.Description
@@ -25,11 +25,11 @@ UPDATE AD_Message_Trl SET MsgText='A shipment line for product {0} , quantity {1
 ;
 
 -- 2023-09-15T16:14:09.002315600Z
-UPDATE AD_Message SET MsgText='Eine Transportlinie für Produkt {0}, Menge {1} wurde abgeschlossen.',Updated=TO_TIMESTAMP('2023-09-15 17:14:08.999','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545336
+UPDATE AD_Message SET MsgText='Eine Lieferung für Produkt {0} mit der Menge {1} wurde fertiggestellt.',Updated=TO_TIMESTAMP('2023-09-15 17:14:08.999','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545336
 ;
 
 -- 2023-09-15T16:14:09.005507100Z
-UPDATE AD_Message_Trl trl SET MsgText='Eine Transportlinie für Produkt {0}, Menge {1} wurde abgeschlossen.' WHERE AD_Message_ID=545336 AND AD_Language='de_DE'
+UPDATE AD_Message_Trl trl SET MsgText='Eine Lieferung für Produkt {0} mit der Menge {1} wurde fertiggestellt.' WHERE AD_Message_ID=545336 AND AD_Language='de_DE'
 ;
 
 -- Value: de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnReverse.Description
@@ -37,7 +37,7 @@ UPDATE AD_Message_Trl trl SET MsgText='Eine Transportlinie für Produkt {0}, Men
 ;
 
 -- 2023-09-15T16:15:52.609832400Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545337,0,TO_TIMESTAMP('2023-09-15 17:15:52.386','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Eine Versandlinie für Produkt {0}, Menge {1} {1} wurde storniert.','I',TO_TIMESTAMP('2023-09-15 17:15:52.386','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnReverse.Description')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545337,0,TO_TIMESTAMP('2023-09-15 17:15:52.386','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Eine Lieferung für Produkt {0} mit der Menge {1} wurde storniert.','I',TO_TIMESTAMP('2023-09-15 17:15:52.386','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnReverse.Description')
 ;
 
 -- 2023-09-15T16:15:52.611436300Z
@@ -49,7 +49,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 ;
 
 -- 2023-09-15T17:13:24.865905500Z
-UPDATE AD_Message_Trl SET MsgText='A shipment line for product {0} , quantity {1} was reversed.',Updated=TO_TIMESTAMP('2023-09-15 18:13:24.865','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545337
+UPDATE AD_Message_Trl SET MsgText='A shipment for product {0} , quantity {1} was reversed.',Updated=TO_TIMESTAMP('2023-09-15 18:13:24.865','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545337
 ;
 
 -- Value: de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnReverse.Description
@@ -60,6 +60,12 @@ UPDATE AD_Message_Trl SET MsgText='A shipment line for product {0} , quantity {1
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-15 18:13:39.396','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545337
 ;
 
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-15 18:13:39.396','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545337
+;
+
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-15 18:13:39.396','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545337
+;
+
 -- Value: de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnComplete.Description
 
 ;
@@ -68,3 +74,8 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-15 18:1
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-15 18:13:44.176','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545336
 ;
 
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-15 18:13:44.176','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545336
+;
+
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-09-15 18:13:44.176','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545336
+;
