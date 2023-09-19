@@ -39,6 +39,8 @@ public interface IDocumentLocationBL
 {
 	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location);
 
+	String computeRenderedAddressString(@NonNull DocumentLocation location);
+
 	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentLocationAdapter locationAdapter);
 
 	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentBillLocationAdapter locationAdapter);
