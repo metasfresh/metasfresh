@@ -1242,6 +1242,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				() -> _dateDoc,
 				() -> getValueAsLocalDateOrNull("DateDoc"),
 				() -> getValueAsLocalDateOrNull("MovementDate"),
+				() -> getValueAsLocalDateOrNull("DateAcct"),
 				() -> {
 					throw new AdempiereException("No DateDoc");
 				});
