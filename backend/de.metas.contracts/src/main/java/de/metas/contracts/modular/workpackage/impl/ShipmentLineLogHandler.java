@@ -27,7 +27,6 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.impl.ShipmentLineModularContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -51,7 +50,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
@@ -81,7 +79,6 @@ class ShipmentLineLogHandler implements IModularContractLogHandler<I_M_InOutLine
 					case COMPLETED -> LogAction.CREATE;
 					case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
 					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
 	}
 

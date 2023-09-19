@@ -1,50 +1,28 @@
 package de.metas.customs;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.document.location.RenderedAddressAndCapturedLocation;
-import de.metas.inout.IInOutBL;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.NoUOMConversionException;
-import org.compiere.model.I_C_Customs_Invoice;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.customs.process.ShipmentLinesForCustomsInvoiceRepo;
 import de.metas.document.DocTypeId;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -55,7 +33,6 @@ import de.metas.money.Money;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProducer;
@@ -70,8 +47,27 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
+import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L
