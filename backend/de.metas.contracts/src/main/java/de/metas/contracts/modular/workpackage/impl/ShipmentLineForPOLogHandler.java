@@ -43,7 +43,6 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
@@ -51,8 +50,6 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -73,7 +70,6 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
 	private static final String language = Env.getADLanguageOrBaseLanguage();
 
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -126,12 +122,11 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 	{
 		final I_M_InOutLine inOutLineRecord = createLogRequest.getHandleLogsRequest().getModel();
 
-		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(createLogRequest.getContractId());
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
 
-		final UomId uomId = UomId.ofRepoId(inOutLineRecord.getC_UOM_ID());
-		final Quantity quantity = Quantitys.create(inOutLineRecord.getMovementQty(), uomId);
+		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 
 		final String description = msgBL.getMsg(language, MSG_INFO_SHIPMENT_COMPLETED);
 

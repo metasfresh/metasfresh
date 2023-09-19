@@ -39,7 +39,7 @@ import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrat
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.inout.IInOutDAO;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -70,7 +70,7 @@ import java.util.function.Consumer;
 
 public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTermBL
 {
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IInterimInvoiceFlatrateTermDAO interimInvoiceFlatrateTermDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
 	private final IInterimInvoiceFlatrateTermLineDAO interimInvoiceFlatrateTermLineDAO = Services.get(IInterimInvoiceFlatrateTermLineDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -103,7 +103,7 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 	@Override
 	public void updateInterimInvoiceFlatrateTermForInOut(@NonNull final I_M_InOut inOut)
 	{
-		inOutDAO.retrieveLines(inOut)
+		inOutBL.getLines(inOut)
 				.forEach(this::updateInterimInvoiceFlatrateTermForInOutLine);
 	}
 
@@ -160,9 +160,9 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 				.stream()
 				.map(interimInvoiceFlatrateTermLine -> interimInvoiceFlatrateTermLine.getInOutAndLineId().getInOutLineId())
 				.collect(ImmutableSet.toImmutableSet());
-		return inOutDAO.getLinesByIds(inOutLineIds, I_M_InOutLine.class)
+		return inOutBL.getLinesByIds(inOutLineIds)
 				.stream()
-				.map(inOutLine -> Quantitys.create(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
+				.map(inOutBL::getQtyEntered)
 				.reduce(Quantitys.createZero(interimInvoiceFlatrateTerm.getUomId()), Quantity::add);
 	}
 
