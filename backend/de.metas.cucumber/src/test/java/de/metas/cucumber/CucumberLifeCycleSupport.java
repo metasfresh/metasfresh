@@ -25,7 +25,6 @@ package de.metas.cucumber;
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
 import de.metas.util.Services;
-import io.cucumber.plugin.Plugin;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
@@ -47,7 +46,7 @@ import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_H
  * Then starts {@link ServerBoot} (i.e. metasfresh {@code app}).
  * Generally invoked by {@link de.metas.cucumber.stepdefs.CucumberLifeCycleSupport_StepDef}.
  */
-public class CucumberLifeCycleSupport implements Plugin
+public class CucumberLifeCycleSupport
 {
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
