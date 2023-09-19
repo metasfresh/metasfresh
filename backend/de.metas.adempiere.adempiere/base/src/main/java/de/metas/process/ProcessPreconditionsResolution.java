@@ -74,6 +74,11 @@ public final class ProcessPreconditionsResolution
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
 	}
 
+	public static ProcessPreconditionsResolution reject(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return reject(TranslatableStrings.adMessage(adMessage, msgParameters));
+	}
+
 	/**
 	 * Like {@link #reject(ITranslatableString)}, but with a constant string.
 	 *
@@ -118,6 +123,11 @@ public final class ProcessPreconditionsResolution
 		final OptionalInt sortNo = OptionalInt.empty();
 		//noinspection ConstantConditions
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
+	}
+
+	public static ProcessPreconditionsResolution rejectWithInternalReason(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return rejectWithInternalReason(TranslatableStrings.adMessage(adMessage, msgParameters));
 	}
 
 	public static ProcessPreconditionsResolution rejectBecauseNoSelection()
