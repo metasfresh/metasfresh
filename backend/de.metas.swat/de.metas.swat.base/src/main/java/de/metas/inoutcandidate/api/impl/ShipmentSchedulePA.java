@@ -635,6 +635,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	}
 
 	@Override
+	public Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull final OrderId orderId)
+	{
+		return queryByOrderId(orderId).list();
+	}
+
+	@Override
 	public ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(@NonNull final OrderId orderId)
 	{
 		return queryByOrderId(orderId)

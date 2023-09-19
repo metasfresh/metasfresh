@@ -52,6 +52,7 @@ import org.compiere.model.I_M_InOut;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -158,6 +159,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
+
+	Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull OrderId orderId);
 
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
 
