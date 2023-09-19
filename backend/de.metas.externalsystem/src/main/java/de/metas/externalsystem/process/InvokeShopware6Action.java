@@ -40,8 +40,8 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.util.Services;
@@ -68,6 +68,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_PROCESSING;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_LOOKUP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UOM_MAPPINGS;
@@ -124,6 +125,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_PRODUCT_LOOKUP, shopware6Config.getProductLookup().getCode());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_METASFRESH_ID, shopware6Config.getMetasfreshIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID, shopware6Config.getShopwareIdJSONPath());
+		parameters.put(PARAM_ORDER_PROCESSING, shopware6Config.getOrderProcessingConfig().getCode());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{

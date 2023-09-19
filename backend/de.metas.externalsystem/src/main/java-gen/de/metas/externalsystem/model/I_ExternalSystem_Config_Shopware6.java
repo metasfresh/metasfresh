@@ -53,7 +53,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Base-URL.
+	 * Set Base URL.
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: true
@@ -62,7 +62,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	void setBaseURL (String BaseURL);
 
 	/**
-	 * Get Base-URL.
+	 * Get Base URL.
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: true
@@ -479,6 +479,27 @@ public interface I_ExternalSystem_Config_Shopware6
 	int getM_PriceList_ID();
 
 	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
+	 * Set Auftragsbearbeitung.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOrderProcessing (String OrderProcessing);
+
+	/**
+	 * Get Auftragsbearbeitung.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	String getOrderProcessing();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_OrderProcessing = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "OrderProcessing", null);
+	String COLUMNNAME_OrderProcessing = "OrderProcessing";
 
 	/**
 	 * Set Percentage deduction.

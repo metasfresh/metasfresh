@@ -79,6 +79,9 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 
 	boolean syncAvailableForSalesToShopware6;
 
+	@NonNull
+	OrderProcessingConfig orderProcessingConfig;
+
 	/**
 	 * Percentage - e.g. 90% - of the actually availabe stock that we report to shopware.
 	 * Can be used to maintain a safety margin.
@@ -106,6 +109,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @Nullable String metasfreshIdJSONPath,
 			final @Nullable String shopwareIdJSONPath,
 			final boolean syncAvailableForSalesToShopware6,
+			final @NonNull OrderProcessingConfig orderProcessingConfig,
 			final @Nullable Percent percentageToDeductFromAvailableForSales)
 	{
 		this.id = id;
@@ -127,6 +131,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.metasfreshIdJSONPath = metasfreshIdJSONPath;
 		this.shopwareIdJSONPath = shopwareIdJSONPath;
 		this.syncAvailableForSalesToShopware6 = syncAvailableForSalesToShopware6;
+		this.orderProcessingConfig = orderProcessingConfig;
 		this.percentageToDeductFromAvailableForSales = CoalesceUtil.coalesceNotNull(percentageToDeductFromAvailableForSales, Percent.ZERO);
 	}
 

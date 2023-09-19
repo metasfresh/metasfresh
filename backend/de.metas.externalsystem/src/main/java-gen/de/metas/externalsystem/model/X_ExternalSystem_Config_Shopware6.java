@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -370255063L;
+	private static final long serialVersionUID = 1714252838L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Shopware6 (final Properties ctx, final int ExternalSystem_Config_Shopware6_ID, @Nullable final String trxName)
@@ -264,6 +264,31 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	public int getM_PriceList_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_PriceList_ID);
+	}
+
+	/** 
+	 * OrderProcessing AD_Reference_ID=541831
+	 * Reference name: Order Processing
+	 */
+	public static final int ORDERPROCESSING_AD_Reference_ID=541831;
+	/** Keine = N */
+	public static final String ORDERPROCESSING_Keine = "N";
+	/** Auftrag = O */
+	public static final String ORDERPROCESSING_Auftrag = "O";
+	/** Auftrag und Lieferung = S */
+	public static final String ORDERPROCESSING_AuftragUndLieferung = "S";
+	/** Auftrag, Lieferung und Rechnun = I */
+	public static final String ORDERPROCESSING_AuftragLieferungUndRechnun = "I";
+	@Override
+	public void setOrderProcessing (final String OrderProcessing)
+	{
+		set_Value (COLUMNNAME_OrderProcessing, OrderProcessing);
+	}
+
+	@Override
+	public String getOrderProcessing()
+	{
+		return get_ValueAsString(COLUMNNAME_OrderProcessing);
 	}
 
 	@Override
