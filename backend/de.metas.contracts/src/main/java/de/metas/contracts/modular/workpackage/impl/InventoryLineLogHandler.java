@@ -54,6 +54,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.springframework.stereotype.Component;
@@ -86,8 +87,9 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InventoryLine model)
+	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_M_InventoryLine> createLogRequest)
 	{
+		final I_M_InventoryLine model = createLogRequest.getHandleLogsRequest().getModel();
 		final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(model.getM_Inventory_ID()));
 
 		if (!inventoryDocStatus.isCompleted())

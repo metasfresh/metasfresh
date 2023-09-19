@@ -38,7 +38,6 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
@@ -47,22 +46,17 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogHandler<I_M_InOutLine>
 {
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -83,8 +77,9 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine model)
+	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_M_InOutLine> createLogRequest)
 	{
+		final I_M_InOutLine model = createLogRequest.getHandleLogsRequest().getModel();
 		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(model.getM_InOut_ID()));
 
 		if (!inOutDocStatus.isCompleted())
@@ -101,10 +96,9 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	{
 		final I_M_InOutLine inOutLineRecord = request.getHandleLogsRequest().getModel();
 
-		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(request.getContractId());
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
+		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
@@ -145,8 +139,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	{
 		final I_M_InOutLine inOutLineRecord = request.getModel();
 
-		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(inOutLineRecord.getC_UOM_ID()));
-		final Quantity quantity = Quantity.of(inOutLineRecord.getMovementQty(), uomId);
+		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);

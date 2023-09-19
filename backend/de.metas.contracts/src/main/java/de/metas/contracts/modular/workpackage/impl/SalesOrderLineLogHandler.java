@@ -64,6 +64,7 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -95,8 +96,9 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_OrderLine model)
+	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_C_OrderLine> createLogRequest)
 	{
+		final I_C_OrderLine model = createLogRequest.getHandleLogsRequest().getModel();
 		final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(model.getC_Order_ID()));
 
 		if (!orderDocStatus.isCompletedOrClosed())

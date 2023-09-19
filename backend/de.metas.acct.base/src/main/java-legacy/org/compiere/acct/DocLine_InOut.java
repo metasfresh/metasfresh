@@ -76,7 +76,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 
 		this.inoutCosts = ImmutableList.copyOf(inoutCosts);
 
-		final Quantity qty = Quantity.of(inoutLine.getMovementQty(), getProductStockingUOM());
+		final Quantity qty = doc.inOutBL.getMovementQty(inoutLine);
 		setQty(qty, doc.isSOTrx());
 	}
 
@@ -135,7 +135,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		{
 			return getAccount(ProductAcctType.P_Asset_Acct, as);
 		}
-		// if the line is a Outside Processing then DR WIP
+		// if the line is an Outside Processing then DR WIP
 		else if (getPP_Cost_Collector_ID() > 0)
 		{
 			return getAccount(ProductAcctType.P_WIP_Acct, as);
