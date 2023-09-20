@@ -55,9 +55,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Root( $P{REC
 	<field name="ishidepackingmaterialinshipmentprint" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="ishidepackingmaterialinshipmentprint"/>
 	</field>
-	<field name="email" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="email"/>
-	</field>
 	<field name="issourcesupplycert" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="issourcesupplycert"/>
 	</field>
@@ -123,9 +120,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Root( $P{REC
 				</reportElement>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="email">
-					<subreportParameterExpression><![CDATA[$F{email} != null ? $F{email} : $R{mail}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
