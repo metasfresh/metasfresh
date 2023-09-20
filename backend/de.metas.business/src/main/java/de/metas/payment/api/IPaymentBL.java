@@ -88,7 +88,7 @@ public interface IPaymentBL extends ISingletonService
 	/**
 	 * check if the invoice is allocated with the specified payment
 	 */
-	boolean isMatchInvoice(I_C_Payment payment, I_C_Invoice invoice);
+	boolean isMatchInvoice(@NonNull I_C_Payment payment, @NonNull I_C_Invoice invoice);
 
 	void setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(List<I_C_Payment> payments);
 
