@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,13 +36,23 @@ import java.util.Map;
 @Value
 @Builder
 @Jacksonized
-public class ContractTypeParameter
+public class ContractInfoParameter
 {
-	@NonNull Map<Integer, List<LogEntryContractType>> recordId2ContractType;
+	@NonNull Map<Integer, List<ContractProcessInfo>> recordId2ContractInfo;
 
 	@Nullable
-	public List<LogEntryContractType> getContractTypesByRecordId(final int recordId)
+	public List<ContractProcessInfo> getContractInfoByRecordId(final int recordId)
 	{
-		return recordId2ContractType.get(recordId);
+		return recordId2ContractInfo.get(recordId);
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class ContractProcessInfo
+	{
+		@NonNull LogEntryContractType contractType;
+		@NonNull FlatrateTermId flatrateTermId;
+		@NonNull String handlerClassName;
 	}
 }
