@@ -189,7 +189,7 @@ public class SAPGLJournal
 				// calculate line's base tax amount & reset IsTaxIncluded to N
 				if(line.isTaxIncluded())
 				{
-					final Money taxBaseAmt = taxProvider.calculateTaxBaseAmt(line.getAmount(), line.getTaxId());
+					final Money taxBaseAmt = line.getAmount().subtract(taxLine.getAmount());
 					final Money taxBaseAcct = currencyConverter.convertToAcctCurrency(taxBaseAmt, conversionCtx);
 
 					line.setAmount(taxBaseAmt);

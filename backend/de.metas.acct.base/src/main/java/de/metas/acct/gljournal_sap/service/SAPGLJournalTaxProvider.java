@@ -55,32 +55,11 @@ public class SAPGLJournalTaxProvider
 			@NonNull final TaxId taxId,
 			@NonNull final boolean isTaxIncluded)
 	{
-		return isTaxIncluded
-				? calculateTaxAmt(calculateTaxBaseAmt(lineAmt, taxId), taxId) // lineAmt is a GrossAmt
-				: calculateTaxAmt(lineAmt, taxId);
-
-	}
-
-	private Money calculateTaxAmt(
-			@NonNull final Money baseAmt,
-			@NonNull final TaxId taxId)
-	{
-		final CurrencyId currencyId = baseAmt.getCurrencyId();
+		//
+		final CurrencyId currencyId = lineAmt.getCurrencyId();
 		final CurrencyPrecision precision = moneyService.getStdPrecision(currencyId);
 		final Tax tax = taxBL.getTaxById(taxId);
-		final BigDecimal taxAmtBD = tax.calculateTax(baseAmt.toBigDecimal(), false, precision.toInt());
-
-		return Money.of(taxAmtBD, currencyId);
-	}
-
-	public Money calculateTaxBaseAmt(
-			@NonNull final Money grossAmt,
-			@NonNull final TaxId taxId)
-	{
-		final CurrencyId currencyId = grossAmt.getCurrencyId();
-		final CurrencyPrecision precision = moneyService.getStdPrecision(currencyId);
-		final Tax tax = taxBL.getTaxById(taxId);
-		final BigDecimal taxAmtBD = tax.calculateBaseAmt(grossAmt.toBigDecimal(), true, precision.toInt());
+		final BigDecimal taxAmtBD = tax.calculateTax(lineAmt.toBigDecimal(), isTaxIncluded, precision.toInt());
 
 		return Money.of(taxAmtBD, currencyId);
 	}
