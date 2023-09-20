@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.auction.AuctionId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -62,9 +63,6 @@ import java.util.List;
 @Data
 public class InvoiceCandidate
 {
-	/**
-	 * Note that {@code newIC} does not contain the paymentTermId. It's later deducted from the billPartnerId and soTrx.
-	 */
 	public static InvoiceCandidate.InvoiceCandidateBuilder createBuilder(@NonNull final NewInvoiceCandidate newIC)
 	{
 		return InvoiceCandidate
@@ -93,7 +91,8 @@ public class InvoiceCandidate
 				.harvestYearAndCalendarId(newIC.getHarvestYearAndCalendarId())
 				.isInterimInvoice(newIC.isInterimInvoice())
 				.handlerId(newIC.getHandlerId())
-				.isManual(newIC.isManual());
+				.isManual(newIC.isManual())
+				.flatrateTermId(newIC.getFlatrateTermId());
 	}
 
 	private final OrgId orgId;
@@ -121,6 +120,7 @@ public class InvoiceCandidate
 
 	private final SOTrx soTrx;
 
+	@Nullable
 	private LocalDate dateOrdered;
 
 	@Nullable
@@ -188,6 +188,9 @@ public class InvoiceCandidate
 	private final boolean isManual;
 	private final AuctionId auctionId;
 
+	@Nullable
+	private final FlatrateTermId flatrateTermId;
+
 	@Builder
 	private InvoiceCandidate(
 			@NonNull final OrgId orgId,
@@ -200,7 +203,7 @@ public class InvoiceCandidate
 			@NonNull final InvoiceRule invoiceRule,
 			@Nullable final InvoiceRule invoiceRuleOverride,
 			@NonNull final SOTrx soTrx,
-			@NonNull final LocalDate dateOrdered,
+			@Nullable final LocalDate dateOrdered,
 			@Nullable final LocalDate presetDateInvoiced,
 			@NonNull final StockQtyAndUOMQty qtyOrdered,
 			@NonNull final StockQtyAndUOMQty qtyDelivered,
@@ -225,6 +228,7 @@ public class InvoiceCandidate
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems,
 			final boolean isInterimInvoice,
 			@NonNull final ILCandHandlerId handlerId,
+			@Nullable final FlatrateTermId flatrateTermId,
 			final boolean isManual,
 			@Nullable final AuctionId auctionId)
 	{
@@ -265,6 +269,7 @@ public class InvoiceCandidate
 		this.handlerId = handlerId;
 		this.isManual = isManual;
 		this.auctionId = auctionId;
+		this.flatrateTermId = flatrateTermId;
 
 		final CurrencyId currencyId = CollectionUtils
 				.extractSingleElement(

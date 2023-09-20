@@ -22,23 +22,14 @@
 
 package de.metas.contracts.modular.interim.invoice.service;
 
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.interim.invoice.InterimInvoiceFlatrateTerm;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.compiere.model.I_M_InOut;
 
 import java.sql.Timestamp;
 import java.util.function.Consumer;
 
-/**
- * Note: this BL is not about flatrate-terms, but about {@link org.compiere.model.I_C_InterimInvoice_FlatrateTerm}s.
- */
-public interface IInterimInvoiceFlatrateTermBL extends ISingletonService
+public interface IInterimFlatrateTermService extends ISingletonService
 {
 	void create(
 			@NonNull I_C_Flatrate_Term modularFlatrateTermRecord,
@@ -50,15 +41,4 @@ public interface IInterimInvoiceFlatrateTermBL extends ISingletonService
 			@NonNull Timestamp startDate,
 			@NonNull Timestamp endDate,
 			@NonNull final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor);
-
-	void updateInterimInvoiceFlatrateTermForInOut(I_M_InOut inOutLine);
-
-	void updateQuantities(@NonNull InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm);
-
-	@NonNull
-	Quantity getQtyDelivered(@NonNull InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm);
-
-	void updateInvoicedQtyForPartialPayment(I_C_Invoice_Candidate invoiceCand);
-
-	void generateICsFor(ModularFlatrateTermQuery modularFlatrateTermQuery, final NewInvoiceCandidate.NewInvoiceCandidateBuilder flatrateTermRecord);
 }

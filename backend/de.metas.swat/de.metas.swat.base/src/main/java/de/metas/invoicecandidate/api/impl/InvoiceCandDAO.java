@@ -80,8 +80,6 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_InterimInvoice_FlatrateTerm;
-import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
@@ -438,26 +436,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.create()
 				.stream(I_C_InvoiceCandidate_InOutLine.class)
 				.filter(this::isInOutCompletedOrClosed)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsViaInterimInvoice(@NonNull final InvoiceCandidateId invoiceCandidateId)
-	{
-		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
-				.addOnlyActiveRecordsFilter()
-				.addFilter(queryBL.createCompositeQueryFilter(I_C_InterimInvoice_FlatrateTerm.class)
-						.setJoinOr()
-						.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Interim_Invoice_Candidate_ID, invoiceCandidateId)
-						.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Invoice_Candidate_Withholding_ID, invoiceCandidateId))
-				.andCollectChildren(I_C_InterimInvoice_FlatrateTerm_Line.COLUMN_C_InterimInvoice_FlatrateTerm_ID)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_C_InterimInvoice_FlatrateTerm_Line.COLUMN_M_InOutLine_ID)
-				.addOnlyActiveRecordsFilter()
-				.andCollectChildren(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream(I_C_InvoiceCandidate_InOutLine.class)
 				.collect(ImmutableList.toImmutableList());
 	}
 

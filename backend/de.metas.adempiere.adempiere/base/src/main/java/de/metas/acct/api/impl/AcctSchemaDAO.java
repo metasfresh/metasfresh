@@ -17,6 +17,7 @@ import de.metas.acct.api.AcctSchemaValidCombinationOptions;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
@@ -25,10 +26,12 @@ import de.metas.costing.CostingMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -42,6 +45,7 @@ import org.adempiere.service.IClientDAO;
 import de.metas.acct.Account;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_CostElement;
 import org.compiere.model.I_C_AcctSchema_Default;
@@ -51,6 +55,7 @@ import org.compiere.model.MColumn;
 import org.compiere.report.MReportTree;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -58,6 +63,8 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
@@ -182,6 +189,32 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		}
 
 		return schemas.get(0);
+	}
+
+	@Override
+	public void saveAcctSchemaElement(@NonNull final AcctSchemaElement acctSchemaElement)
+	{
+		final I_C_AcctSchema_Element record;
+		if (acctSchemaElement.getId() == null)
+		{
+			record = newInstance(I_C_AcctSchema_Element.class);
+		}
+		else
+		{
+			record = load(acctSchemaElement.getId(), I_C_AcctSchema_Element.class);
+		}
+		final ChartOfAccountsId chartOfAccountsId = acctSchemaElement.getChartOfAccountsId();
+
+		record.setName(acctSchemaElement.getName());
+		record.setC_AcctSchema_ID(acctSchemaElement.getAcctSchemaId().getRepoId());
+		record.setC_Element_ID(chartOfAccountsId !=null ? chartOfAccountsId.getRepoId() : -1);
+		record.setElementType(acctSchemaElement.getElementType().getCode());
+		record.setIsBalanced(acctSchemaElement.isBalanced());
+		record.setIsDisplayInEditor(acctSchemaElement.isDisplayedInEditor());
+		record.setSeqNo(acctSchemaElement.getSeqNo());
+		record.setOrg_ID(acctSchemaElement.getOrgId().getRepoId());
+		saveRecord(record);
+
 	}
 
 	private AcctSchemasMap getAcctSchemasMap()
@@ -385,6 +418,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	{
 		final AcctSchemaElementType elementType = AcctSchemaElementType.ofCode(record.getElementType());
 		final AcctSchemaElement element = AcctSchemaElement.builder()
+				.id(AcctSchemaElementId.ofRepoId(record.getC_AcctSchema_Element_ID()))
 				.elementType(elementType)
 				.name(record.getName())
 				.seqNo(record.getSeqNo())
@@ -398,6 +432,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.displayedInEditor(record.isDisplayInEditor())
 				.balanced(record.isBalanced())
 				//
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
+				.OrgId(OrgId.ofRepoId(record.getOrg_ID()))
 				.build();
 		if (element.isMandatory() && element.getDefaultValue() <= 0)
 		{

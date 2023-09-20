@@ -70,6 +70,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -140,6 +141,10 @@ public class InvoiceCandidateRepository
 			icRecord.setC_ILCandHandler_ID(ic.getHandlerId().getRepoId());
 			icRecord.setIsManual(ic.isManual());
 			icRecord.setC_Auction_ID(AuctionId.toRepoId(ic.getAuctionId()));
+			if (ic.getFlatrateTermId() != null)
+			{
+				icRecord.setC_Flatrate_Term_ID(ic.getFlatrateTermId().getRepoId());
+			}
 		}
 		else
 		{
@@ -304,7 +309,7 @@ public class InvoiceCandidateRepository
 		final ProductPrice priceEnteredOverride = invoiceCandBL.getPriceEnteredOverride(icRecord).orElse(null);
 		candidate.priceEnteredOverride(priceEnteredOverride);
 
-		candidate.discount(Percent.ofNullable(icRecord.getDiscount()))
+		candidate.discount(Percent.of(icRecord.getDiscount()))
 				.discountOverride(Percent.ofNullable(icRecord.getDiscount_Override()));
 
 		candidate.priceActual(invoiceCandBL.getPriceActual(icRecord));
@@ -376,12 +381,13 @@ public class InvoiceCandidateRepository
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
 		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
 		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
-		invoiceDetailEntity.setDate(getDate(invoiceDetailItem));
+		invoiceDetailEntity.setDate(getDateOrNull(invoiceDetailItem));
 
 		return invoiceDetailEntity;
 	}
 
-	private Timestamp getDate(@NonNull final InvoiceDetailItem invoiceDetailItem)
+	@Nullable
+	private Timestamp getDateOrNull(@NonNull final InvoiceDetailItem invoiceDetailItem)
 	{
 		if (invoiceDetailItem.getDate() != null)
 		{
