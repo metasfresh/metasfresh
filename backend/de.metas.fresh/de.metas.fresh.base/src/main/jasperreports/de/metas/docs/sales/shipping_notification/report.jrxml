@@ -23,7 +23,7 @@
 	<parameter name="PRINTER_OPTS_IsPrintLogo" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="p_bp_loc_id" class="java.lang.Integer"/>
+	<parameter name="p_bp_loc_id" class="java.lang.Integer" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[SELECT 	*
 FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Root( $P{RECORD_ID}, $P{ad_language} )
