@@ -7,7 +7,6 @@ import de.metas.dao.selection.QuerySelectionToDeleteHelper;
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
