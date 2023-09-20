@@ -82,6 +82,7 @@ import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
+import de.metas.externalsystem.shopware6.OrderProcessingConfig;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
@@ -525,6 +526,7 @@ public class ExternalSystemConfigRepo
 				.shopwareIdJSONPath(config.getJSONPathShopwareID())
 				.syncAvailableForSalesToShopware6(config.isSyncAvailableForSalesToShopware6())
 				.percentageToDeductFromAvailableForSales(Percent.ofNullable(config.getPercentageOfAvailableForSalesToSync()))
+				.orderProcessingConfig(OrderProcessingConfig.ofCode(config.getOrderProcessing()))
 				.build();
 	}
 
