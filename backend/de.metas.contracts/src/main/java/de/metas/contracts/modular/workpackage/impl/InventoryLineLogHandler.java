@@ -87,9 +87,8 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 	}
 
 	@Override
-	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_M_InventoryLine> createLogRequest)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InventoryLine model)
 	{
-		final I_M_InventoryLine model = createLogRequest.getHandleLogsRequest().getModel();
 		final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(model.getM_Inventory_ID()));
 
 		if (!inventoryDocStatus.isCompleted())

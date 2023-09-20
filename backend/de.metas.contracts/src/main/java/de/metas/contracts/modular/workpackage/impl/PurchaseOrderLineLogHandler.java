@@ -84,10 +84,8 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	}
 
 	@Override
-	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_C_OrderLine> createLogRequest)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_OrderLine model)
 	{
-		final I_C_OrderLine model = createLogRequest.getHandleLogsRequest().getModel();
-
 		final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(model.getC_Order_ID()));
 
 		if (!orderDocStatus.isCompleted())

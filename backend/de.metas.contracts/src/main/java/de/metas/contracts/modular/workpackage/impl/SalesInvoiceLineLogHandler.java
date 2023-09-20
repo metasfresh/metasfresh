@@ -97,9 +97,8 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	}
 
 	@Override
-	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_C_InvoiceLine> createLogRequest)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_InvoiceLine model)
 	{
-		final I_C_InvoiceLine model = createLogRequest.getHandleLogsRequest().getModel();
 		final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(model.getC_Invoice_ID()));
 
 		if (!invoiceDocStatus.isCompleted())

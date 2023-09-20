@@ -93,9 +93,8 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 	}
 
 	@Override
-	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_C_Flatrate_Term> createLogRequest)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_Flatrate_Term model)
 	{
-		final I_C_Flatrate_Term model = createLogRequest.getHandleLogsRequest().getModel();
 		if (!DocStatus.ofCode(model.getDocStatus()).isCompleted())
 		{
 			return BooleanWithReason.falseBecause("The C_Flatrate_Term.DocStatus is " + model.getDocStatus());

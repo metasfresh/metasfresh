@@ -114,9 +114,8 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	}
 
 	@Override
-	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_C_InvoiceLine> createLogRequest)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_InvoiceLine invoiceLineRecord)
 	{
-		@NonNull final I_C_InvoiceLine invoiceLineRecord = createLogRequest.getHandleLogsRequest().getModel();
 		final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID()));
 		if (!invoiceDocStatus.isCompleted())
 		{

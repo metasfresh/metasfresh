@@ -59,6 +59,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Warehouse;
@@ -96,27 +97,13 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 	}
 
 	@Override
-	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_M_InOutLine> createLogRequest)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine inOutLineRecord)
 	{
-		final I_M_InOutLine inOutLineRecord = createLogRequest.getHandleLogsRequest().getModel();
-
 		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
 		if (!inOutDocStatus.isCompleted())
 		{
 			return BooleanWithReason.falseBecause("The M_Inout.DocStatus is " + inOutDocStatus);
-		}
-
-		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
-		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(createLogRequest.getContractId());
-		final ModularContractLogQuery query = ModularContractLogQuery.builder()
-				.referenceSet(TableRecordReferenceSet.of(inOutLineRef))
-				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.build();
-
-		if (contractLogDAO.anyMatch(query))
-		{
-			return BooleanWithReason.falseBecause("Contract Log already created for " + inOutLineRef);
 		}
 
 		return BooleanWithReason.TRUE;

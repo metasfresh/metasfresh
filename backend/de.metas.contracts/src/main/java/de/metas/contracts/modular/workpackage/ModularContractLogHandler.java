@@ -197,7 +197,8 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler<T> handler,
 			@NonNull final IModularContractLogHandler.CreateLogRequest<T> createLogRequest)
 	{
-		final BooleanWithReason areLogsRequired = handler.doesRecordRequireLogCreation(createLogRequest);
+		final BooleanWithReason areLogsRequired = handler.doesRecordStateRequireLogCreation(
+				createLogRequest.getHandleLogsRequest().getModel());
 
 		if (areLogsRequired.isFalse())
 		{
