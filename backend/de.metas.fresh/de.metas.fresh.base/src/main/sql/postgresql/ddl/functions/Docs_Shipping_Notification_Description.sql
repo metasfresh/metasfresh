@@ -28,7 +28,6 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_De
                                                                                           ad_language character varying)
     RETURNS TABLE
             (
-                DeliveryTo            character varying,
                 Document_name         character varying,
                 documentno            character varying,
                 sales_order           character varying,
@@ -42,12 +41,7 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_De
 AS
 $$
 SELECT
-       TRIM(COALESCE(snbp.name || E'\n', '') ||
-            COALESCE(snbploc.address1 || E'\n', '') ||
-            COALESCE(snbploc.postal || E'\n', '') ||
-            COALESCE(snbploc.city || E'\n', '') ||
-            COALESCE(snbpc.name, '')
-           )           AS DeliveryTo,
+
        dt_trl.name     AS Document_name,
        sn.documentno,
        o.documentno    AS sales_order,
