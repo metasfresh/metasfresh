@@ -58,8 +58,8 @@ SELECT snl.line,
 
 FROM m_shipping_notificationline snl
          INNER JOIN M_Shipping_Notification sn ON snl.m_shipping_notification_id = sn.m_shipping_notification_id
-         LEFT OUTER JOIN C_BPartner bp ON sn.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = snl.C_UOM_ID
+         INNER JOIN C_BPartner bp ON sn.C_BPartner_ID = bp.C_BPartner_ID
+         INNER JOIN C_UOM uom ON uom.C_UOM_ID = snl.C_UOM_ID
          LEFT OUTER JOIN C_UOM_Trl uomt
                          ON uomt.C_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = $2
     -- Product and its translation
