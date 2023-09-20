@@ -39,6 +39,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
@@ -66,6 +67,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	private final PurchaseOrderLineModularContractHandler contractHandler;
 
@@ -106,7 +108,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(orderLine.getQtyEntered(), uomId);
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
-
+		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
@@ -127,6 +129,8 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(null)
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
+											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.build());
 	}
 

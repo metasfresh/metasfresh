@@ -24,6 +24,7 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.impl.PurchaseModularContractHandler;
@@ -39,6 +40,7 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -46,6 +48,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -73,6 +76,7 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final PurchaseModularContractHandler contractHandler;
 
@@ -122,6 +126,10 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 				.translate(Language.getBaseAD_Language());
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
+		final ProductPrice priceActual = flatrateBL.extractPriceActual(modularContractRecord);
+		final Money amount = quantity != null && priceActual != null
+				? priceActual.computeAmount(quantity)
+				: null;
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
@@ -142,6 +150,9 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
+											.configId(request.getConfigId())
+											.priceActual(priceActual)
+											.amount(amount)
 											.build());
 	}
 

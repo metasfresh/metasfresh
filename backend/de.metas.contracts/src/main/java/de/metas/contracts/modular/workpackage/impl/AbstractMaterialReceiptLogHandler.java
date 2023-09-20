@@ -127,6 +127,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
+											.configId(request.getConfigId())
 											.isBillable(isBillable)
 											.build());
 	}

@@ -33,9 +33,6 @@ import de.metas.location.ICountryDAO;
 import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
@@ -46,7 +43,6 @@ import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -148,17 +144,6 @@ public class ManualCandidateService
 
 		candidate.descriptionBottom(newIC.getDescriptionBottom());
 		candidate.userInChargeId(newIC.getUserInChargeId());
-
-		// payment term
-		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(newIC.getBillPartnerInfo().getBpartnerId(), newIC.getSoTrx());
-
-		final PaymentTermId paymentTermId = Services.get(IPaymentTermRepository.class)
-				.retrievePaymentTermId(paymentTermQuery)
-				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
-						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
-						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
-		candidate.paymentTermId(paymentTermId);
 
 		return candidate.build();
 

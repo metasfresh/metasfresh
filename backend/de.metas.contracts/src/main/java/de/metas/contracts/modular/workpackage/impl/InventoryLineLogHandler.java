@@ -137,6 +137,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
 											.build());
 	}
 

@@ -68,7 +68,7 @@ public class MigrationScriptFileLoggerHolder
 		{
 			return;
 		}
-		if (dontLog(sql.getSqlWithoutParamsResolved()))
+		if (isSkipLogging(sql))
 		{
 			return;
 		}
@@ -82,7 +82,7 @@ public class MigrationScriptFileLoggerHolder
 		{
 			return;
 		}
-		if (dontLog(sqlBatch.getSqlCommand()))
+		if (isSkipLogging(sqlBatch.getSqlCommand()))
 		{
 			return;
 		}
@@ -168,26 +168,31 @@ public class MigrationScriptFileLoggerHolder
 		return MigrationScriptFileLogger.getMigrationScriptDirectory();
 	}
 
-	private static boolean dontLog(@NonNull final String statement)
+	private static boolean isSkipLogging(@NonNull final Sql sql)
+	{
+		return sql.isEmpty() || isSkipLogging(sql.getSqlCommand());
+	}
+
+	private static boolean isSkipLogging(@NonNull final String sqlCommand)
 	{
 		// Always log DDL (flagged) commands
-		if (statement.startsWith(DDL_PREFIX))
+		if (sqlCommand.startsWith(DDL_PREFIX))
 		{
 			return false;
 		}
 
-		final String uppStmt = statement.toUpperCase().trim();
+		final String sqlCommandUC = sqlCommand.toUpperCase().trim();
 
 		//
 		// Don't log selects
-		if (uppStmt.startsWith("SELECT "))
+		if (sqlCommandUC.startsWith("SELECT "))
 		{
 			return true;
 		}
 
 		//
 		// Don't log DELETE FROM Some_Table WHERE AD_Table_ID=? AND Record_ID=?
-		if (uppStmt.startsWith("DELETE FROM ") && uppStmt.endsWith(" WHERE AD_TABLE_ID=? AND RECORD_ID=?"))
+		if (sqlCommandUC.startsWith("DELETE FROM ") && sqlCommandUC.endsWith(" WHERE AD_TABLE_ID=? AND RECORD_ID=?"))
 		{
 			return true;
 		}
@@ -197,15 +202,15 @@ public class MigrationScriptFileLoggerHolder
 		final ImmutableSet<String> exceptionTablesUC = Services.get(IMigrationLogger.class).getTablesToIgnoreUC(Env.getClientIdOrSystem());
 		for (final String tableNameUC : exceptionTablesUC)
 		{
-			if (uppStmt.startsWith("INSERT INTO " + tableNameUC + " "))
+			if (sqlCommandUC.startsWith("INSERT INTO " + tableNameUC + " "))
 				return true;
-			if (uppStmt.startsWith("DELETE FROM " + tableNameUC + " "))
+			if (sqlCommandUC.startsWith("DELETE FROM " + tableNameUC + " "))
 				return true;
-			if (uppStmt.startsWith("DELETE " + tableNameUC + " "))
+			if (sqlCommandUC.startsWith("DELETE " + tableNameUC + " "))
 				return true;
-			if (uppStmt.startsWith("UPDATE " + tableNameUC + " "))
+			if (sqlCommandUC.startsWith("UPDATE " + tableNameUC + " "))
 				return true;
-			if (uppStmt.startsWith("INSERT INTO " + tableNameUC + "("))
+			if (sqlCommandUC.startsWith("INSERT INTO " + tableNameUC + "("))
 				return true;
 		}
 

@@ -149,7 +149,7 @@ public class AccountDAO implements IAccountDAO
 			return AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID());
 		}
 
-		final MAccount vc = InterfaceWrapperHelper.newInstanceOutOfTrx(MAccount.class);
+		final MAccount vc = InterfaceWrapperHelper.newInstance(MAccount.class);
 		vc.setAD_Org_ID(dimension.getAD_Org_ID());
 		vc.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
 		vc.setAccount_ID(dimension.getC_ElementValue_ID());

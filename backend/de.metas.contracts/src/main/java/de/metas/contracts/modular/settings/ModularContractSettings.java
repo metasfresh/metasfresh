@@ -69,13 +69,12 @@ public class ModularContractSettings
 	@NonNull
 	SOTrx soTrx;
 
-	public Optional<ModularContractTypeId> getModularContractTypeId(@NonNull final Class<? extends IModularContractTypeHandler<?>> handlerType)
+	@NonNull
+	public Optional<ModuleConfig> getModuleConfig(@NonNull final Class<? extends IModularContractTypeHandler<?>> handlerType)
 	{
 		return getModuleConfigs()
 				.stream()
 				.filter(config -> config.isMatchingClassName(handlerType.getName()))
-				.map(ModuleConfig::getModularContractType)
-				.map(ModularContractType::getId)
 				.findFirst();
 	}
 }

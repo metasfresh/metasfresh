@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api;
 
+import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.CalendarId;
@@ -135,4 +136,7 @@ public interface IInvoiceHeader
 
 	@Nullable
 	WarehouseId getWarehouseId();
+
+	@Nullable
+	AuctionId getAuctionId();
 }

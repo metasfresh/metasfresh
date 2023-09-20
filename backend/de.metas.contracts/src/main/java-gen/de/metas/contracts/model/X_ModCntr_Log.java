@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1934756832L;
+	private static final long serialVersionUID = 207253882L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -356,6 +356,33 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
+	public I_ModCntr_Module getModCntr_Module()
+	{
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.class);
+	}
+
+	@Override
+	public void setModCntr_Module(final I_ModCntr_Module ModCntr_Module)
+	{
+		set_ValueFromPO(COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.class, ModCntr_Module);
+	}
+
+	@Override
+	public void setModCntr_Module_ID (final int ModCntr_Module_ID)
+	{
+		if (ModCntr_Module_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_Module_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_Module_ID, ModCntr_Module_ID);
+	}
+
+	@Override
+	public int getModCntr_Module_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Module_ID);
+	}
+
+	@Override
 	public I_ModCntr_Type getModCntr_Type()
 	{
 		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.class);
@@ -407,6 +434,34 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getPP_Cost_Collector_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Cost_Collector_ID);
+	}
+
+	@Override
+	public void setPrice_UOM_ID (final int Price_UOM_ID)
+	{
+		if (Price_UOM_ID < 1)
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else
+			set_Value (COLUMNNAME_Price_UOM_ID, Price_UOM_ID);
+	}
+
+	@Override
+	public int getPrice_UOM_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Price_UOM_ID);
+	}
+
+	@Override
+	public void setPriceActual (final @Nullable BigDecimal PriceActual)
+	{
+		set_Value (COLUMNNAME_PriceActual, PriceActual);
+	}
+
+	@Override
+	public BigDecimal getPriceActual()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

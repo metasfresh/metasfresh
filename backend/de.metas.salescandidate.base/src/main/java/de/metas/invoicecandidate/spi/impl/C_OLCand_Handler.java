@@ -224,6 +224,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setAD_InputDataSource_ID(olcRecord.getAD_InputDataSource_ID());
 
 		ic.setM_SectionCode_ID(olcRecord.getM_SectionCode_ID());
+		ic.setC_Auction_ID(olcRecord.getC_Auction_ID());
 
 		olcRecord.setProcessed(true);
 		saveRecord(olcRecord);

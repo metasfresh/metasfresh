@@ -148,6 +148,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
 											.build());
 	}
 

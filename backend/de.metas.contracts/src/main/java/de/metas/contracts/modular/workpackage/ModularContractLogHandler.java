@@ -30,7 +30,7 @@ import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
@@ -121,12 +121,12 @@ class ModularContractLogHandler
 			return;
 		}
 
-		final ModularContractTypeId contractTypeId = settings.getModularContractTypeId(handler.getModularContractTypeHandlerClass())
+		final ModuleConfig moduleConfig = settings.getModuleConfig(handler.getModularContractTypeHandlerClass())
 				.orElse(null);
-		if (contractTypeId == null)
+		if (moduleConfig == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG)
-					.addLog("No ModularContractTypeId found for contractId: {} and settingsId: {}! no logs will be created!", contractId, settings.getId());
+					.addLog("No ModuleConfig found for contractId: {} and settingsId: {}! no logs will be created!", contractId, settings.getId());
 
 			return;
 		}
@@ -137,7 +137,8 @@ class ModularContractLogHandler
 				.<T>builder()
 				.handleLogsRequest(request)
 				.modularContractSettings(settings)
-				.typeId(contractTypeId)
+				.configId(moduleConfig.getId())
+				.typeId(moduleConfig.getModularContractType().getId())
 				.contractId(contractId)
 				.build();
 

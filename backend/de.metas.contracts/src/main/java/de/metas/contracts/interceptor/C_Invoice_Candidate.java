@@ -27,7 +27,6 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
-import de.metas.contracts.modular.interim.invoice.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -53,7 +52,6 @@ public class C_Invoice_Candidate
 	private static final AdMessageKey MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P = AdMessageKey.of("DataEntry_Error_AlreadyCompleted_Text");
 
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void closeDirectly(final I_C_Invoice_Candidate invoiceCand)
@@ -138,7 +136,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Deletes {@link I_C_Invoice_Clearing_Alloc}s and udpates {@link I_C_Flatrate_DataEntry}s.
-	 * @param invoiceCand
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void cleanup(final I_C_Invoice_Candidate invoiceCand)
@@ -219,18 +216,8 @@ public class C_Invoice_Candidate
 				}
 			}
 		}
-
-		interimInvoiceFlatrateTermBL.updateInvoicedQtyForPartialPayment(invoiceCand);
-
 	}
 
-	/**
-	 *
-	 * @param dataEntry
-	 * @param po
-	 * @param colName
-	 * @param isToClearChanged if <code>true</code>, then we assume that IsToClean has been change to 'Y'. In that case, we don't add the difference between old and new value, but just the new value
-	 */
 	private void updateActualQty(
 			final I_C_Flatrate_DataEntry dataEntry,
 			final I_C_Invoice_Candidate invoiceCand,

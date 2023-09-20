@@ -22,12 +22,12 @@
 
 package de.metas.invoice.detail;
 
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
 
-import de.metas.organization.OrgId;
-
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -41,13 +41,16 @@ public class InvoiceDetailItem
 
 	String description;
 
+	@Nullable
 	LocalDate date;
-	
+
+	@Nullable
 	BigDecimal price;
-	
+
 	String note;
 
-    OrgId orgId;
+	OrgId orgId;
+
 	/**
 	 * @return true if label and description, date and price are blank/null, false otherwise.
 	 */
