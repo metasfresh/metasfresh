@@ -28,14 +28,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
+import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6.ORDERPROCESSING_None;
+import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6.ORDERPROCESSING_SalesOrder;
+import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6.ORDERPROCESSING_SalesOrderAndShipment;
+import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6.ORDERPROCESSING_SalesOrderShipmentAndInvoice;
+
 @Getter
 @AllArgsConstructor
 public enum OrderProcessingConfig implements ReferenceListAwareEnum
 {
-	NONE("N"),
-	ORDER("O"),
-	SHIPPING("S"),
-	INVOICE("I");
+	NONE(ORDERPROCESSING_None),
+	ORDER(ORDERPROCESSING_SalesOrder),
+	SHIPPING(ORDERPROCESSING_SalesOrderAndShipment),
+	INVOICE(ORDERPROCESSING_SalesOrderShipmentAndInvoice);
 
 	private final String code;
 	private static final ReferenceListAwareEnums.ValuesIndex<OrderProcessingConfig> typesByCode = ReferenceListAwareEnums.index(values());

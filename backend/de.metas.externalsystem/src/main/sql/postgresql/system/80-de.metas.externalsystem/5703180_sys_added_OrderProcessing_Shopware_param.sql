@@ -28,7 +28,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Value: O
 -- ValueName: Keine
 -- 2023-09-18T10:53:48.167361400Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541831,543551,TO_TIMESTAMP('2023-09-18 13:53:48.035','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Keine',TO_TIMESTAMP('2023-09-18 13:53:48.035','YYYY-MM-DD HH24:MI:SS.US'),100,'O','Keine')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541831,543551,TO_TIMESTAMP('2023-09-18 13:53:48.035','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Keine',TO_TIMESTAMP('2023-09-18 13:53:48.035','YYYY-MM-DD HH24:MI:SS.US'),100,'O','None')
 ;
 
 -- 2023-09-18T10:53:48.168428600Z
@@ -37,16 +37,16 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 -- Reference: Order Processing
 -- Value: N
--- ValueName: Keine
+-- ValueName: None
 -- 2023-09-18T10:55:46.084838500Z
 UPDATE AD_Ref_List SET Value='N',Updated=TO_TIMESTAMP('2023-09-18 13:55:46.084','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Ref_List_ID=543551
 ;
 
 -- Reference: Order Processing
 -- Value: O
--- ValueName: Auftrag
+-- ValueName: Sales Order
 -- 2023-09-18T10:56:04.875918200Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541831,543557,TO_TIMESTAMP('2023-09-18 13:56:04.744','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Auftrag',TO_TIMESTAMP('2023-09-18 13:56:04.744','YYYY-MM-DD HH24:MI:SS.US'),100,'O','Auftrag')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541831,543557,TO_TIMESTAMP('2023-09-18 13:56:04.744','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Auftrag',TO_TIMESTAMP('2023-09-18 13:56:04.744','YYYY-MM-DD HH24:MI:SS.US'),100,'O','Sales Order')
 ;
 
 -- 2023-09-18T10:56:04.876968900Z
@@ -55,9 +55,9 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 -- Reference: Order Processing
 -- Value: S
--- ValueName: Auftrag und Lieferung
+-- ValueName: Sales Order and Shipment
 -- 2023-09-18T10:56:24.030205900Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541831,543558,TO_TIMESTAMP('2023-09-18 13:56:23.906','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Auftrag und Lieferung',TO_TIMESTAMP('2023-09-18 13:56:23.906','YYYY-MM-DD HH24:MI:SS.US'),100,'S','Auftrag und Lieferung')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541831,543558,TO_TIMESTAMP('2023-09-18 13:56:23.906','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Auftrag und Lieferung',TO_TIMESTAMP('2023-09-18 13:56:23.906','YYYY-MM-DD HH24:MI:SS.US'),100,'S','Sales Order and Shipment')
 ;
 
 -- 2023-09-18T10:56:24.031250600Z
@@ -66,46 +66,46 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 -- Reference: Order Processing
 -- Value: I
--- ValueName: Auftrag, Lieferung und Rechnung
+-- ValueName: Sales Order, Shipment and Invoice
 -- 2023-09-18T10:56:40.554252500Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541831,543559,TO_TIMESTAMP('2023-09-18 13:56:40.433','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Auftrag, Lieferung und Rechnung',TO_TIMESTAMP('2023-09-18 13:56:40.433','YYYY-MM-DD HH24:MI:SS.US'),100,'I','Auftrag, Lieferung und Rechnung')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541831,543559,TO_TIMESTAMP('2023-09-18 13:56:40.433','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Auftrag, Lieferung und Rechnung',TO_TIMESTAMP('2023-09-18 13:56:40.433','YYYY-MM-DD HH24:MI:SS.US'),100,'I','Sales Order, Shipment and Invoice')
 ;
 
 -- 2023-09-18T10:56:40.555309900Z
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543559 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
--- Reference Item: Order Processing -> N_Keine
+-- Reference Item: Order Processing -> N_None
 -- 2023-09-18T10:56:55.276626100Z
 UPDATE AD_Ref_List_Trl SET Name='None',Updated=TO_TIMESTAMP('2023-09-18 13:56:55.276','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543551
 ;
 
--- Reference Item: Order Processing -> O_Auftrag
+-- Reference Item: Order Processing -> O_Sales Order
 -- 2023-09-18T10:57:06.147212500Z
 UPDATE AD_Ref_List_Trl SET Name='Sales Order',Updated=TO_TIMESTAMP('2023-09-18 13:57:06.147','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543557
 ;
 
--- Reference Item: Order Processing -> S_Auftrag und Lieferung
+-- Reference Item: Order Processing -> S_Sales Order and Shipment
 -- 2023-09-18T10:57:17.588968500Z
 UPDATE AD_Ref_List_Trl SET Name='Sales Order and Shipment',Updated=TO_TIMESTAMP('2023-09-18 13:57:17.588','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543558
 ;
 
--- Reference Item: Order Processing -> I_Auftrag, Lieferung und Rechnung
+-- Reference Item: Order Processing -> I_Sales Order, Shipment and Invoice
 -- 2023-09-18T10:57:33.015961500Z
 UPDATE AD_Ref_List_Trl SET Name='Sales Order, Shipment and Invoice',Updated=TO_TIMESTAMP('2023-09-18 13:57:33.015','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543559
 ;
 
--- Reference Item: Order Processing -> I_Auftrag, Lieferung und Rechnung
+-- Reference Item: Order Processing -> I_Sales Order, Shipment and Invoice
 -- 2023-09-18T10:57:40.435795200Z
 UPDATE AD_Ref_List_Trl SET Name='Auftrag, Lieferung und Rechnung',Updated=TO_TIMESTAMP('2023-09-18 13:57:40.435','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543559
 ;
 
--- Reference Item: Order Processing -> I_Auftrag, Lieferung und Rechnung
+-- Reference Item: Order Processing -> I_Sales Order, Shipment and Invoice
 -- 2023-09-18T10:57:41.384933700Z
 UPDATE AD_Ref_List_Trl SET Name='Auftrag, Lieferung und Rechnung',Updated=TO_TIMESTAMP('2023-09-18 13:57:41.384','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Ref_List_ID=543559
 ;
 
--- Reference Item: Order Processing -> I_Auftrag, Lieferung und Rechnung
+-- Reference Item: Order Processing -> I_Sales Order, Shipment and Invoice
 -- 2023-09-18T10:57:42.083854Z
 UPDATE AD_Ref_List_Trl SET Name='Auftrag, Lieferung und Rechnung',Updated=TO_TIMESTAMP('2023-09-18 13:57:42.083','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543559
 ;
@@ -114,7 +114,7 @@ UPDATE AD_Ref_List_Trl SET Name='Auftrag, Lieferung und Rechnung',Updated=TO_TIM
 UPDATE AD_Ref_List SET Name='Auftrag, Lieferung und Rechnung', Updated=TO_TIMESTAMP('2023-09-18 13:57:42.084','YYYY-MM-DD HH24:MI:SS.US') WHERE AD_Ref_List_ID=543559
 ;
 
--- Reference Item: Order Processing -> I_Auftrag, Lieferung und Rechnung
+-- Reference Item: Order Processing -> I_Sales Order, Shipment and Invoice
 -- 2023-09-18T10:57:43.406122600Z
 UPDATE AD_Ref_List_Trl SET Name='Auftrag, Lieferung und Rechnung',Updated=TO_TIMESTAMP('2023-09-18 13:57:43.406','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Ref_List_ID=543559
 ;
