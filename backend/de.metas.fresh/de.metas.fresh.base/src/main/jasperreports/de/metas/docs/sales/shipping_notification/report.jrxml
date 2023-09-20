@@ -138,6 +138,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Root( $P{REC
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
+			<subreport>
+				<reportElement isPrintRepeatedValues="false" x="40" y="290" width="150" height="49" uuid="5e084f1d-2d7a-4101-86bc-d7492f132069"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/shipping_notification/report_delivery_from.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</title>
 	<pageHeader>

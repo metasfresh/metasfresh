@@ -220,14 +220,6 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				</textElement>
 				<textFieldExpression><![CDATA[$R{DeliveryTo}]]></textFieldExpression>
 			</textField>
-			<subreport>
-				<reportElement isPrintRepeatedValues="false" x="40" y="100" width="150" height="60" uuid="6b7bf115-baac-4849-a9cd-54a88579340f"/>
-				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/shipping_notification/report_delivery_from.jasper"]]></subreportExpression>
-			</subreport>
 		</band>
 	</title>
 	<pageHeader>
