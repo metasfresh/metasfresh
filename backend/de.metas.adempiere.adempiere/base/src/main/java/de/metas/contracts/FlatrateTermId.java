@@ -41,6 +41,7 @@ public class FlatrateTermId implements RepoIdAware
 		return new FlatrateTermId(repoId);
 	}
 
+	@Nullable
 	public static FlatrateTermId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;

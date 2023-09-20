@@ -44,7 +44,6 @@ import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommi
 import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSettings_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Margin_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettings_StepDefData;
-import de.metas.cucumber.stepdefs.interiminvoice.settings.C_Interim_Invoice_Settings_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.i18n.AdMessageKey;
@@ -60,7 +59,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Message;
-import org.compiere.model.I_C_Interim_Invoice_Settings;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -97,7 +95,6 @@ public class C_Flatrate_Conditions_StepDef
 	private final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable;
 	private final C_Flatrate_Conditions_StepDefData conditionsTable;
 	private final M_PricingSystem_StepDefData pricingSysTable;
-	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
 	private final ModCntr_Settings_StepDefData modCntrSettingsTable;
 	private final C_Year_StepDefData yearTable;
 	private final M_Product_StepDefData productTable;
@@ -110,7 +107,6 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable,
 			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
-			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable,
 			@NonNull final ModCntr_Settings_StepDefData modCntrSettingsTable,
 			@NonNull final C_Year_StepDefData yearTable,
 			@NonNull final M_Product_StepDefData productTable,
@@ -122,7 +118,6 @@ public class C_Flatrate_Conditions_StepDef
 		this.mediatedCommissionSettingsTable = mediatedCommissionSettingsTable;
 		this.conditionsTable = conditionsTable;
 		this.pricingSysTable = pricingSysTable;
-		this.interimInvoiceSettingsTable = interimInvoiceSettingsTable;
 		this.modCntrSettingsTable = modCntrSettingsTable;
 		this.yearTable = yearTable;
 		this.productTable = productTable;
@@ -214,13 +209,6 @@ public class C_Flatrate_Conditions_StepDef
 			if (Check.isNotBlank(onFlatrateTermExtend))
 			{
 				flatrateConditions.setOnFlatrateTermExtend(onFlatrateTermExtend);
-			}
-
-			final String interimInvoiceSettingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Interim_Invoice_Settings.COLUMNNAME_C_Interim_Invoice_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(interimInvoiceSettingsIdentifier))
-			{
-				final I_C_Interim_Invoice_Settings interimInvoiceSettings = interimInvoiceSettingsTable.get(interimInvoiceSettingsIdentifier);
-				flatrateConditions.setC_Interim_Invoice_Settings_ID(interimInvoiceSettings.getC_Interim_Invoice_Settings_ID());
 			}
 
 			final String modCntrSetttingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
