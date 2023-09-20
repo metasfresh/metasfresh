@@ -24,6 +24,7 @@ package de.metas.invoicecandidate;
 
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.spi.ILCandHandlerId;
@@ -116,6 +117,9 @@ public class NewInvoiceCandidate
 	ILCandHandlerId handlerId;
 	boolean isManual;
 
+	@Nullable
+	FlatrateTermId flatrateTermId;
+
 	private NewInvoiceCandidate(
 			@NonNull final OrgId orgId,
 
@@ -147,7 +151,8 @@ public class NewInvoiceCandidate
 			@Nullable final YearAndCalendarId harvestYearAndCalendarId,
 			final boolean isInterimInvoice,
 			@NonNull final ILCandHandlerId handlerId,
-			final boolean isManual)
+			final boolean isManual,
+			@Nullable final FlatrateTermId flatrateTermId)
 	{
 		this.orgId = orgId;
 
@@ -180,6 +185,7 @@ public class NewInvoiceCandidate
 		this.isInterimInvoice = isInterimInvoice;
 		this.handlerId = handlerId;
 		this.isManual = isManual;
+		this.flatrateTermId = flatrateTermId;
 
 		if (priceEnteredOverride != null)
 		{

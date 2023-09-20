@@ -1,7 +1,10 @@
 package de.metas.acct.impexp;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.acct.api.TaxCorrectionType;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.elementvalue.ChartOfAccounts;
 import de.metas.elementvalue.ChartOfAccountsService;
@@ -16,10 +19,22 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.AdTreeId;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_Element;
+import org.compiere.model.I_C_AcctSchema_GL;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_I_ElementValue;
+import org.compiere.model.I_M_CostType;
+import org.compiere.model.X_C_AcctSchema;
+import org.compiere.model.X_C_AcctSchema_Element;
 
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 /*
@@ -97,6 +112,57 @@ class AccountImportTestHelper
 
 		InterfaceWrapperHelper.save(importRecord);
 		return importRecord;
+	}
+
+	public static void createAcctSchemaInfos()
+	{
+		final I_C_Currency currencyRecord = InterfaceWrapperHelper.newInstance(I_C_Currency.class);
+		currencyRecord.setISO_Code("EUR");
+		InterfaceWrapperHelper.save(currencyRecord);
+
+		final I_M_CostType costTypeRecord = InterfaceWrapperHelper.newInstance(I_M_CostType.class);
+		costTypeRecord.setName("Test");
+		InterfaceWrapperHelper.save(costTypeRecord);
+
+		final I_C_AcctSchema acctSchemaRecord = InterfaceWrapperHelper.newInstance(I_C_AcctSchema.class);
+		acctSchemaRecord.setName("Test");
+		acctSchemaRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
+		acctSchemaRecord.setM_CostType_ID(costTypeRecord.getM_CostType_ID());
+		acctSchemaRecord.setCostingMethod(X_C_AcctSchema.COSTINGMETHOD_AveragePO);
+		acctSchemaRecord.setCostingLevel(X_C_AcctSchema.COSTINGLEVEL_Client);
+		acctSchemaRecord.setSeparator("-");
+		acctSchemaRecord.setTaxCorrectionType(TaxCorrectionType.NONE.getCode());
+		InterfaceWrapperHelper.save(acctSchemaRecord);
+
+		final I_C_AcctSchema_GL acctSchemaGL = newInstance(I_C_AcctSchema_GL.class);
+		acctSchemaGL.setC_AcctSchema_ID(acctSchemaRecord.getC_AcctSchema_ID());
+		acctSchemaGL.setIntercompanyDueFrom_Acct(1);
+		acctSchemaGL.setIntercompanyDueTo_Acct(1);
+		acctSchemaGL.setIncomeSummary_Acct(1);
+		acctSchemaGL.setRetainedEarning_Acct(1);
+		acctSchemaGL.setPPVOffset_Acct(1);
+		saveRecord(acctSchemaGL);
+
+		final I_C_AcctSchema_Default acctSchemaDefault = newInstance(I_C_AcctSchema_Default.class);
+		acctSchemaDefault.setC_AcctSchema_ID(acctSchemaRecord.getC_AcctSchema_ID());
+		acctSchemaDefault.setRealizedGain_Acct(1);
+		acctSchemaDefault.setRealizedLoss_Acct(1);
+		acctSchemaDefault.setUnrealizedGain_Acct(1);
+		acctSchemaDefault.setUnrealizedLoss_Acct(1);
+		saveRecord(acctSchemaDefault);
+
+
+		final I_C_AcctSchema_Element acctSchemaElementRecord = InterfaceWrapperHelper.newInstance(I_C_AcctSchema_Element.class);
+		acctSchemaElementRecord.setC_AcctSchema_ID(acctSchemaRecord.getC_AcctSchema_ID());
+		acctSchemaElementRecord.setElementType(X_C_AcctSchema_Element.ELEMENTTYPE_Account);
+		acctSchemaElementRecord.setName("Test");
+		InterfaceWrapperHelper.save(acctSchemaElementRecord);
+
+
+		final I_AD_ClientInfo clienInfotRecord = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class);
+		clienInfotRecord.setC_AcctSchema1_ID(acctSchemaRecord.getC_AcctSchema_ID());
+		InterfaceWrapperHelper.setValue(clienInfotRecord, I_AD_ClientInfo.COLUMN_AD_Client_ID.getColumnName(), 1000000);
+		InterfaceWrapperHelper.save(clienInfotRecord);
 	}
 
 	public void assertImported(final I_I_ElementValue importRecord)

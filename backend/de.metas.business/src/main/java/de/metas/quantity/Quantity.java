@@ -844,4 +844,23 @@ public final class Quantity implements Comparable<Quantity>
 		assertSameUOM(this, whole);
 		return Percent.of(toBigDecimal(), whole.toBigDecimal());
 	}
+	
+	public void assertUOM(@NonNull final UomId uomId)
+	{
+		if (!getUomId().equals(uomId))
+		{
+			throw new QuantitiesUOMNotMatchingExpection("UOMs are not compatible")
+					.appendParametersToMessage()
+					.setParameter("Qty.UOM", getUomId())
+					.setParameter("assertUOM", uomId);
+		}
+	}
+	
+	@NonNull
+	public BigDecimal toBigDecimalAssumingUOM(@NonNull final UomId uomId)
+	{
+		assertUOM(uomId);
+		
+		return toBigDecimal();
+	}
 }

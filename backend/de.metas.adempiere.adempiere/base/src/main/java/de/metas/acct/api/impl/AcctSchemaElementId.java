@@ -1,4 +1,4 @@
-package de.metas.contracts;
+package de.metas.acct.api.impl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -7,12 +7,13 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,29 +32,35 @@ import javax.annotation.Nullable;
  */
 
 @Value
-public class FlatrateTermId implements RepoIdAware
+public class AcctSchemaElementId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static FlatrateTermId ofRepoId(final int repoId)
+	private AcctSchemaElementId(final int repoId)
 	{
-		return new FlatrateTermId(repoId);
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_AcctSchema_Element_ID");
 	}
 
-	public static FlatrateTermId ofRepoIdOrNull(final int repoId)
+	public static AcctSchemaElementId ofRepoId(final int repoId)
+	{
+		return new AcctSchemaElementId(repoId);
+	}
+
+	@Nullable
+	public static AcctSchemaElementId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final FlatrateTermId flatrateTermId)
+	public static int toRepoId(final AcctSchemaElementId id)
 	{
-		return flatrateTermId != null ? flatrateTermId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 
-	private FlatrateTermId(final int repoId)
+	public static boolean equals(@Nullable final AcctSchemaElementId id1, @Nullable final AcctSchemaElementId id2)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		return Objects.equals(id1, id2);
 	}
 
 	@Override

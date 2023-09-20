@@ -28,6 +28,7 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
 
 import javax.annotation.Nullable;
@@ -89,4 +90,5 @@ public interface IAcctSchemaDAO extends ISingletonService
 
 	@NonNull
 	AcctSchema getByClientAndName(@NonNull ClientId clientId, @NonNull String name);
+	void saveAcctSchemaElement(@NonNull AcctSchemaElement acctSchemaElement);
 }
