@@ -237,7 +237,18 @@ public final class AEnv
 	 */
 	public static void positionScreen(final Window window, final int position)
 	{
-		window.pack();
+		// guard against
+		// java.lang.NullPointerException: Cannot invoke "sun.awt.X11.XBaseWindow.isVisible()" because "parent" is null
+		// see https://stackoverflow.com/q/75209745/1012103
+		try
+		{
+			window.pack();
+		}
+		catch(final Exception e)
+		{
+			log.info("Unable to pack the window (known issue for java17 andd x2go). Will continue without packing it. window={}",window);
+		}
+		
 		final Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize();
 		// take into account task bar and other adornments
 		final GraphicsConfiguration config = window.getGraphicsConfiguration();
