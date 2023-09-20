@@ -63,7 +63,7 @@ FROM m_shipping_notificationline snl
          LEFT OUTER JOIN C_UOM_Trl uomt
                          ON uomt.C_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = $2
     -- Product and its translation
-         LEFT OUTER JOIN M_Product p ON snl.M_Product_ID = p.M_Product_ID
+         INNER JOIN M_Product p ON snl.M_Product_ID = p.M_Product_ID
          LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2
 
     -- Attributes
