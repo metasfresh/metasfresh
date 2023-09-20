@@ -23,6 +23,7 @@
 	<parameter name="PRINTER_OPTS_IsPrintLogo" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="p_bp_loc_id" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[SELECT 	*
 FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Root( $P{RECORD_ID}, $P{ad_language} )
@@ -104,10 +105,13 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Root( $P{REC
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
-					<subreportParameterExpression><![CDATA[new String("io")]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[new String("shn")]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="bp_loc_id">
+					<subreportParameterExpression><![CDATA[$F{c_bpartner_location_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
