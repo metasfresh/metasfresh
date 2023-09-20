@@ -38,12 +38,12 @@ Feature: Regenerate tax lines for SAP GL Journal
       | sap_gljournal_S0320_100     |
 
     Then validate generated lines:
-      | Identifier                     | SAP_GLJournal_ID.Identifier | Amount | OPT.Parent_ID                  |
-      | sap_gljournalLine_S0320_100_20 | sap_gljournal_S0320_100     | 7.7    | sap_gljournalLine_S0320_100_10 |
+      | Identifier                     | SAP_GLJournal_ID.Identifier | PostingSign | Amount | OPT.Parent_ID                  |
+      | sap_gljournalLine_S0320_100_20 | sap_gljournal_S0320_100     | C           | 7.7    | sap_gljournalLine_S0320_100_10 |
 
     And base tax line updated:
-      | Identifier                     | SAP_GLJournal_ID.Identifier | Amount | OPT.IsTaxIncluded |
-      | sap_gljournalLine_S0320_100_10 | sap_gljournal_S0320_100     | 100    | false             |
+      | Identifier                     | SAP_GLJournal_ID.Identifier | PostingSign | Amount | OPT.IsTaxIncluded |
+      | sap_gljournalLine_S0320_100_10 | sap_gljournal_S0320_100     | C           | 100    | false             |
 
 
   @from:cucumber
@@ -65,9 +65,9 @@ Feature: Regenerate tax lines for SAP GL Journal
       | sap_gljournal_S0320_200     |
 
     Then validate generated lines:
-      | Identifier                     | SAP_GLJournal_ID.Identifier | Amount | OPT.Parent_ID                  |
-      | sap_gljournalLine_S0320_200_20 | sap_gljournal_S0320_200     | 7.7    | sap_gljournalLine_S0320_200_10 |
+      | Identifier                     | SAP_GLJournal_ID.Identifier | PostingSign | Amount | OPT.Parent_ID                  |
+      | sap_gljournalLine_S0320_200_20 | sap_gljournal_S0320_200     | C           | 7.7    | sap_gljournalLine_S0320_200_10 |
 
     And base tax line updated:
-      | Identifier                     | SAP_GLJournal_ID.Identifier | Amount | OPT.IsTaxIncluded |
-      | sap_gljournalLine_S0320_200_10 | sap_gljournal_S0320_200     | 100    | false             |
+      | Identifier                     | SAP_GLJournal_ID.Identifier | PostingSign | Amount | OPT.IsTaxIncluded |
+      | sap_gljournalLine_S0320_200_10 | sap_gljournal_S0320_200     | C           | 100    | false             |

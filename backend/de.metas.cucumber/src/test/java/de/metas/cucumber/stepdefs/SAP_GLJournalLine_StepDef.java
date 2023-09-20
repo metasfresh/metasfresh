@@ -168,6 +168,10 @@ public class SAP_GLJournalLine_StepDef
 		final String parentLineIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_Parent_ID);
 		assertThat(parentLineIdentifier).as("%s is mandatory in this context", COLUMNNAME_Parent_ID).isNotBlank();
 
+		// PostingSign
+		final String postingSign = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_PostingSign);
+		assertThat(postingSign).as("%s is mandatory in this context", COLUMNNAME_PostingSign).isNotBlank();
+
 		final I_SAP_GLJournalLine parentLine = glJournalLineTable.get(parentLineIdentifier);
 		assertThat(parentLine).as("No record found").isNotNull();
 
@@ -184,8 +188,8 @@ public class SAP_GLJournalLine_StepDef
 				.get();
 
 		assertThat(generatedLine).as("No generated line").isNotNull();
+		assertThat(generatedLine.getPostingSign()).isEqualTo(postingSign);
 		assertThat(generatedLine.getAmount()).isEqualByComparingTo(amount);
-
 	}
 
 	@Given("base tax line updated:")
@@ -195,6 +199,10 @@ public class SAP_GLJournalLine_StepDef
 
 		final I_SAP_GLJournal header = extractHeader(row);
 		assertThat(header).as("Record not found").isNotNull();
+
+		// PostingSign
+		final String postingSign = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_PostingSign);
+		assertThat(postingSign).as("%s is mandatory in this context", COLUMNNAME_PostingSign).isNotBlank();
 
 		final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_Amount);
 		assertThat(amount).as("Please provide a valid amount").isNotNull();
@@ -214,6 +222,7 @@ public class SAP_GLJournalLine_StepDef
 				.findFirst()
 				.get();
 
+		assertThat(baseLine.getPostingSign()).isEqualTo(postingSign);
 		assertThat(baseLine.getAmount()).isEqualByComparingTo(amount);
 		assertThat(baseLine.isTaxIncluded()).isEqualTo(isTaxIncluded);
 	}
