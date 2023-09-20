@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 480936277L;
+	private static final long serialVersionUID = 1996831869L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -77,6 +77,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String EXTERNALSYSTEM_WooCommerce = "WooCommerce";
 	/** GRSSignum = GRSSignum */
 	public static final String EXTERNALSYSTEM_GRSSignum = "GRSSignum";
+	/** LeichUndMehl = LeichUndMehl */
+	public static final String EXTERNALSYSTEM_LeichUndMehl = "LeichUndMehl";
 	@Override
 	public void setExternalSystem (final java.lang.String ExternalSystem)
 	{

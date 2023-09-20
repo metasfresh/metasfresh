@@ -25,6 +25,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -168,7 +169,6 @@ public class FlatrateTermTestHelper
 	{
 		pricingRules.put("PriceListVersion", PriceListVersionPricingRule.class.getName());
 		pricingRules.put("Discount", Discount.class.getName());
-		pricingRules.put("Attribute pricing rule", AttributePricing.class.getName());
 		pricingRules.put("de.metas.contracts Discount", ContractDiscount.class.getName());
 		pricingRules.put("de.metas.contracts Subscription", SubscriptionPricingRule.class.getName());
 	}

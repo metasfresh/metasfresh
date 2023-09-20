@@ -36,8 +36,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_WOOCOMMERCE_PATH;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY;
 import static de.metas.camel.externalsystems.core.restapi.auth.preauthenticated.ActuatorIdentity.ACTUATOR_AUTHORITY;
 
 @Configuration

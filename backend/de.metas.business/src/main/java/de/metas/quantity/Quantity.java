@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -816,5 +817,10 @@ public final class Quantity implements Comparable<Quantity>
 	public int intValueExact()
 	{
 		return toBigDecimal().intValueExact();
+	}
+
+	public boolean isWeightable()
+	{
+		return UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight();
 	}
 }

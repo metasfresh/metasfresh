@@ -36,6 +36,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderId;
@@ -58,6 +59,8 @@ public class PP_Order
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final PostMaterialEventService materialEventService;
@@ -273,6 +276,15 @@ public class PP_Order
 					.appendParametersToMessage()
 					.setParameter("PP_Order.M_Product_ID", ppOrder.getM_Product_ID())
 					.setParameter("PP_Order.PP_Product_BOM_ID.M_Product_ID", productIdOfBOM.getRepoId());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void setSeqNo(final I_PP_Order ppOrder)
+	{
+		if (ppOrder.getSeqNo() <= 0)
+		{
+			ppOrder.setSeqNo(ppOrderDAO.getLastSeqNoPerOrderDate(ppOrder));
 		}
 	}
 }

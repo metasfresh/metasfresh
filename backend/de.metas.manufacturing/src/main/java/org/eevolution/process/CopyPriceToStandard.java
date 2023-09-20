@@ -120,7 +120,7 @@ public class CopyPriceToStandard extends JavaProcess
 	{
 		final AcctSchema acctSchema = getAcctSchema();
 		final CostElement element = getCostElement();
-		if (!element.isMaterialCostingMethod())
+		if (!element.isMaterial())
 		{
 			throw new LiberoException("Only Material Cost Elements are allowed");
 		}

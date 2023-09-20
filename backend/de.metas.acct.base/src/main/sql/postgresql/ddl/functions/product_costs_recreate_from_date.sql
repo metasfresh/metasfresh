@@ -8,6 +8,28 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
 ;
 
 DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE)
+;
+
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_m_product_selection_id     numeric,
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE)
+;
+
+
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_C_AcctSchema_ID  numeric,
     p_M_CostElement_ID numeric,
     p_M_Product_ID     numeric,
@@ -18,12 +40,14 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
 ;
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
-    p_C_AcctSchema_ID  numeric,
-    p_M_CostElement_ID numeric,
-    p_M_Product_ID     numeric = NULL,
-    p_M_Product_IDs    numeric[] = NULL,
-    p_ReorderDocs      char(1) = 'Y',
-    p_StartDateAcct    timestamp WITH TIME ZONE = '1970-01-01',
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric = NULL,
+    p_M_Product_IDs              numeric[] = NULL,
+    p_m_product_selection_id     numeric = NULL,
+    p_ReorderDocs                char(1) = 'Y',
+    p_ReorderDocs_DateAcct_Trunc varchar = 'DD',
+    p_StartDateAcct              timestamp WITH TIME ZONE = '1970-01-01',
     p_DryRun           char(1) = 'N')
     RETURNS text
 AS
@@ -53,7 +77,13 @@ BEGIN
     --
     -- Validate parameter: Product
     --
-    IF (p_M_Product_ID IS NOT NULL AND p_M_Product_ID > 0) THEN
+    IF (p_m_product_selection_id IS NOT NULL AND p_m_product_selection_id > 0) THEN
+        SELECT ARRAY_AGG(sel.T_Selection_ID ORDER BY sel.T_Selection_ID)
+        INTO v_productIds
+        FROM T_Selection sel
+        WHERE sel.ad_pinstance_id = p_m_product_selection_id;
+        RAISE NOTICE 'v_productIds: %', v_productIds;
+    ELSEIF (p_M_Product_ID IS NOT NULL AND p_M_Product_ID > 0) THEN
         v_productIds := ARRAY [p_M_Product_ID];
         -- RAISE EXCEPTION 'Product shall be > 0 but it was %', p_M_Product_ID;
     ELSE
@@ -282,13 +312,11 @@ BEGIN
     --
     DELETE
     FROM pp_order_cost poc
-    WHERE EXISTS(
-                  SELECT 1
-                  FROM pp_order o
-                  WHERE o.pp_order_id = poc.pp_order_id
-                    AND o.m_product_id = ANY (v_productIds)
-                    AND o.dateordered >= p_StartDateAcct
-              );
+    WHERE EXISTS(SELECT 1
+                 FROM pp_order o
+                 WHERE o.pp_order_id = poc.pp_order_id
+                   AND o.m_product_id = ANY (v_productIds)
+                   AND o.dateordered >= p_StartDateAcct);
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     RAISE NOTICE 'Deleted % PP_Order_Cost records', rowcount;
     v_result := v_result || rowcount || ' PP_Order_Cost(s) deleted; ';
@@ -324,7 +352,9 @@ BEGIN
     -- This step it's very important in order to get correct costs.
     --
     IF (p_ReorderDocs = 'Y') THEN
-        PERFORM "de_metas_acct".accounting_docs_to_repost_reorder();
+        PERFORM "de_metas_acct".accounting_docs_to_repost_reorder(
+                p_DateAcct_Trunc := p_ReorderDocs_DateAcct_Trunc
+            );
         v_result := v_result || 'reordered enqueued docs';
     END IF;
 

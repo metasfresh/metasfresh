@@ -34,11 +34,28 @@
 	<packaging>jar</packaging>
 
 	<description>SEPA Payments - schema - pain_001_01_03_ch_02 (Direct Credit)</description>
-
 	<properties>
 		<migration-sql-basedir/>
 	</properties>
 
+<dependencies>
+	<dependency>
+		<groupId>org.xmlunit</groupId>
+		<artifactId>xmlunit-core</artifactId>
+		<version>2.6.2</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.projectlombok</groupId>
+		<artifactId>lombok</artifactId>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.assertj</groupId>
+		<artifactId>assertj-core</artifactId>
+		<scope>test</scope>
+	</dependency>
+</dependencies>
 
 	<build>
 		<plugins>

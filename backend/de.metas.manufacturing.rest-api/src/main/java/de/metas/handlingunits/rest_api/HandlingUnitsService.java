@@ -34,6 +34,7 @@ import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
@@ -46,7 +47,6 @@ import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHUCommand;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
@@ -340,7 +340,7 @@ public class HandlingUnitsService
 
 	private static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
 	{
-		final JsonRenderedHUQRCode rendered = qrCode.toRenderedJson();
+		final JsonDisplayableQRCode rendered = qrCode.toRenderedJson();
 		return JsonHUQRCode.builder()
 				.code(rendered.getCode())
 				.displayable(rendered.getDisplayable())

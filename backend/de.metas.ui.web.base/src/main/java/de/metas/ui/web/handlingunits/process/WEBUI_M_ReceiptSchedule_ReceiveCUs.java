@@ -2,6 +2,10 @@ package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -13,11 +17,15 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.GuavaCollectors;
@@ -70,8 +78,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProcess
 {
+	private final static AdMessageKey MESSAGE_ClearanceStatusInfo_Receipt = AdMessageKey.of("ClearanceStatusInfo.Receipt");
+
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private boolean allowMultipleReceiptsSchedules = true; // by default we shall allow multiple lines
 	private boolean allowNoQuantityAvailable = false; // by default we shall not allow lines which have no quantity available
@@ -103,8 +116,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 		//
 		// Fetch the receipt schedules which have some qty available for receiving
-		final List<I_M_ReceiptSchedule> receiptSchedules = context.getSelectedModels(I_M_ReceiptSchedule.class)
-				.stream()
+		final List<I_M_ReceiptSchedule> receiptSchedules = context.streamSelectedModels(I_M_ReceiptSchedule.class)
 				.filter(receiptSchedule -> allowNoQuantityAvailable || getDefaultAvailableQtyToReceive(receiptSchedule).signum() > 0)
 				.collect(ImmutableList.toImmutableList());
 		if (receiptSchedules.isEmpty())
@@ -236,14 +248,32 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(rs.getAD_Client_ID(), rs.getAD_Org_ID());
 		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), clientAndOrgId);
+		final I_M_Product product = productDAO.getById(rs.getM_Product_ID());
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(product.getHUClearanceStatus());
+		final ClearanceStatusInfo clearanceStatusInfo;
+		if (clearanceStatus != null)
+		{
+			final String language = partnerOrgBL.getOrgLanguageOrLoggedInUserLanguage(clientAndOrgId.getOrgId());
+			clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(clearanceStatus)
+					.clearanceNote(msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Receipt))
+					.clearanceDate(InstantAndOrgId.ofInstant(SystemTime.asInstant(), clientAndOrgId.getOrgId()))
+					.build();
+
+		}
+		else
+		{
+			clearanceStatusInfo = null;
+		}
 
 		return AllocationUtils.builder()
 				.setHUContext(huContextInitial)
 				.setDateAsToday()
-				.setProduct(loadOutOfTrx(rs.getM_Product_ID(), I_M_Product.class))
+				.setProduct(product)
 				.setQuantity(new Quantity(qty, loadOutOfTrx(rs.getC_UOM_ID(), I_C_UOM.class)))
 				.setFromReferencedModel(rs)
 				.setForceQtyAllocation(true)
+				.setClearanceStatusInfo(clearanceStatusInfo)
 				.create();
 	}
 

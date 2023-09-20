@@ -54,8 +54,8 @@ public class M_Warehouse_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_Warehouse_StepDefData warehouseTable;
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	public M_Warehouse_StepDef(
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
@@ -63,8 +63,8 @@ public class M_Warehouse_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
 	{
 		this.warehouseTable = warehouseTable;
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
+		this.bpartnerTable = bPartnerTable;
+		this.bpartnerLocationTable = bPartnerLocationTable;
 	}
 
 	@And("load M_Warehouse:")
@@ -117,12 +117,12 @@ public class M_Warehouse_StepDef
 			final boolean isQualityReturnWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, false);
 
 			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
-					.map(bPartnerTable::get)
+					.map(bpartnerTable::get)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId());
 
 			final int bPartnerLocationId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER))
-					.map(bPartnerLocationTable::get)
+					.map(bpartnerLocationTable::get)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
 
@@ -139,6 +139,41 @@ public class M_Warehouse_StepDef
 
 			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			warehouseTable.put(warehouseIdentifier, warehouseRecord);
+		}
+	}
+
+	@And("metasfresh contains M_Warehouse")
+	public void create_warehouse(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+
+			final String name = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_Name);
+			final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
+			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
+
+			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner partner = bpartnerTable.get(bPartnerIdentifier);
+			assertThat(partner).isNotNull();
+
+			final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bPartnerLocationIdentifier);
+			assertThat(bPartnerLocation).isNotNull();
+
+			warehouse.setC_BPartner_ID(partner.getC_BPartner_ID());
+			warehouse.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			warehouse.setName(name);
+			warehouse.setValue(value);
+			warehouse.setSeparator("*");
+			warehouse.setIsInTransit(isInTransit);
+
+			InterfaceWrapperHelper.save(warehouse);
+
+			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			warehouseTable.put(warehouseIdentifier, warehouse);
 		}
 	}
 }

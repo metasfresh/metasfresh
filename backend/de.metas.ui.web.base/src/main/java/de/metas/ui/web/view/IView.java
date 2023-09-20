@@ -209,6 +209,12 @@ public interface IView
 
 	<T> List<T> retrieveModelsByIds(DocumentIdsSelection rowIds, Class<T> modelClass);
 
+	@NonNull
+	default <T> Stream<T> streamModelsByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final Class<T> modelClass)
+	{
+		return retrieveModelsByIds(rowIds, modelClass).stream();
+	}
+
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.
 	 * If a {@link IViewRow} was not found for given ID, this method simply ignores it.

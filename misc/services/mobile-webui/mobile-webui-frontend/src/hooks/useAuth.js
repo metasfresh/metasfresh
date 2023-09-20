@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-import { loginRequest } from '../api/login';
+import { loginRequest, logoutRequest } from '../api/login';
 import { COOKIE_EXPIRATION } from '../constants/Cookie';
 import { setToken, clearToken } from '../actions/TokenActions';
 import { setLanguage } from '../utils/translations';
@@ -82,6 +82,10 @@ function createAuthObject() {
   };
 
   const logout = () => {
+    logoutRequest().catch((error) => {
+      console.error('logout error: ', error);
+    });
+
     dispatch(clearToken());
 
     Cookies.remove('Token', { expires: COOKIE_EXPIRATION });

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -49,12 +49,12 @@ public class EDI_DesadvLine_StepDef
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final EDI_DesadvLine_StepDefData desadvLineTable;
-	private final Edi_Desadv_StepDefData desadvTable;
+	private final EDI_Desadv_StepDefData desadvTable;
 	private final M_Product_StepDefData productTable;
 
 	public EDI_DesadvLine_StepDef(
 			@NonNull final EDI_DesadvLine_StepDefData desadvLineTable,
-			@NonNull final Edi_Desadv_StepDefData desadvTable,
+			@NonNull final EDI_Desadv_StepDefData desadvTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.desadvLineTable = desadvLineTable;

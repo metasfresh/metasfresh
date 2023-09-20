@@ -81,6 +81,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
@@ -483,7 +484,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
-		if(shipBPartnerId == null || billBPartnerId == null)
+		if (shipBPartnerId == null || billBPartnerId == null)
 		{
 			return Optional.empty(); // orderRecord is not yet ready
 		}
@@ -723,11 +724,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
-								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-								 .locationId(newBPartnerLocationId.getLocationCaptureId())
-								 .contactId(newContactId)
-								 .build());
+						.bpartnerId(newBPartnerLocationId.getBpartnerId())
+						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+						.locationId(newBPartnerLocationId.getLocationCaptureId())
+						.contactId(newContactId)
+						.build());
 
 		return true; // found it
 	}
@@ -1178,34 +1179,47 @@ public class OrderBL implements IOrderBL
 	public String getLocationEmail(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = orderDAO.getById(orderId);
-
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
 
-		final String locationEmail = bpartnerLocation.getEMail();
-		if (!Check.isEmpty(locationEmail))
+		//
+		// Check main (ship) location
 		{
-			return locationEmail;
+			final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
+			final String locationEmail = bpartnerLocation != null ? StringUtils.trimBlankToNull(bpartnerLocation.getEMail()) : null;
+			if (locationEmail != null)
+			{
+				return locationEmail;
+			}
 		}
 
+		//
+		// Check main (ship) contact
 		final BPartnerContactId orderContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID());
-
-		final String contactLocationEmail = bpartnerDAO.getContactLocationEmail(orderContactId);
-		if (!Check.isEmpty(contactLocationEmail))
+		if (orderContactId != null)
 		{
-			return contactLocationEmail;
+			final String contactLocationEmail = StringUtils.trimBlankToNull(bpartnerDAO.getContactLocationEmail(orderContactId));
+			if (contactLocationEmail != null)
+			{
+				return contactLocationEmail;
+			}
 		}
 
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
-
-		if(bpartnerLocationId == null)
+		//
+		// Check bill location
+		final BPartnerLocationId billBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+		if (billBPLocationId != null)
 		{
-			return null;
+			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
+			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
+			if (billLocationEmail != null)
+			{
+				return billLocationEmail;
+			}
 		}
 
-		final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(bpartnerLocationId);
-
-		return billLocationRecord.getEMail();
+		//
+		// Fallback: nothing
+		return null;
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.product.UpdateProductRequest;
 import de.metas.quantity.Quantity;
@@ -35,6 +36,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -59,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class ProductBOMBL implements IProductBOMBL
@@ -324,5 +327,14 @@ public class ProductBOMBL implements IProductBOMBL
 				.uom(uomDAO.getById(productBOMLine.getC_UOM_ID()))
 				//
 				.build();
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> ProductBOMDAO.extractIssuingToleranceSpec(bomLine),
+				() -> productBL.getIssuingToleranceSpec(ProductId.ofRepoId(bomLine.getM_Product_ID()))
+		);
 	}
 }

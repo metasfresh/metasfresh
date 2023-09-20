@@ -158,6 +158,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	private final boolean m_IsChangeLog;
 
 	private final boolean m_HasStaleableColumns;
+	@Getter private final int webuiViewPageLength;
 
 	private final String sqlWhereClauseByKeys;
 	private final String sqlSelectByKeys;
@@ -198,7 +199,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ",c." + I_AD_Column.COLUMNNAME_IsStaleable                    // 28 // metas: 01537
 				+ ",c." + I_AD_Column.COLUMNNAME_IsSelectionColumn                // 29 // metas
 				+ ",t." + I_AD_Table.COLUMNNAME_IsView                            // 30 // metas
-				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn			  // 31
+				+ ",t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength             // 31 // metas
+			    + ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn			  // 31
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
@@ -288,6 +290,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		this.m_IsChangeLog = header.isChangeLog();
 		this.m_columns = ImmutableList.copyOf(columns);
 		this.m_HasStaleableColumns = hasStaleableColumns;
+		this.webuiViewPageLength = header.getWebuiViewPageLength();
 
 		//
 		// Iterate columns and build pre-calculated values and indexes
@@ -385,6 +388,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				.accessLevel(TableAccessLevel.forAccessLevel(rs.getString(I_AD_Table.COLUMNNAME_AccessLevel)))
 				.isView(StringUtils.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsView)))
 				.isChangeLog(StringUtils.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsChangeLog)))
+				.webuiViewPageLength(Math.max(rs.getInt(I_AD_Table.COLUMNNAME_WEBUI_View_PageLength), 0))
 				.build();
 	}
 
@@ -1384,6 +1388,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		@NonNull TableAccessLevel accessLevel;
 		boolean isView;
 		boolean isChangeLog;
+		int webuiViewPageLength;
 	}
 
 	private static class POInfoMap

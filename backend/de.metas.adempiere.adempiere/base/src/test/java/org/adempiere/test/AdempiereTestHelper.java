@@ -337,7 +337,7 @@ public class AdempiereTestHelper
 	 * <p>
 	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
 	 *
-	 * @deprecated  Consider using de.metas.test.SnapshotFunctionFactory
+	 * @deprecated Consider using de.metas.test.SnapshotFunctionFactory
 	 */
 	@Deprecated
 	public static Function<Object, String> createSnapshotJsonFunction()
@@ -354,6 +354,36 @@ public class AdempiereTestHelper
 				throw AdempiereException.wrapIfNeeded(e);
 			}
 		};
+	}
+
+	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
+	{
+		final CleanupTask task = new CleanupTask(name, runnable);
+		cleanupTasks.add(task);
+		log("onCleanup", "Scheduled task: " + task.getName());
+	}
+
+	private void runCleanupTasks()
+	{
+		for (final Iterator<CleanupTask> it = cleanupTasks.iterator(); it.hasNext(); )
+		{
+			final CleanupTask task = it.next();
+
+			task.run();
+			log("runCleanupTasks", "Executed task: " + task.getName());
+
+			it.remove();
+		}
+	}
+
+	@AllArgsConstructor
+	@ToString(of = "name")
+	private static class CleanupTask
+	{
+		@Getter @NonNull private final String name;
+		@NonNull private final Runnable runnable;
+
+		public void run() {runnable.run();}
 	}
 
 	private void staticInit0()

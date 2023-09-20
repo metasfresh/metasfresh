@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -64,11 +65,13 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
 public class M_Product_StepDef
 {
@@ -214,22 +217,32 @@ public class M_Product_StepDef
 		InterfaceWrapperHelper.saveRecord(taxCategory);
 	}
 
-	@And("update M_Product:")
-	public void update_M_Product(@NonNull final DataTable dataTable)
+	@And("load product by value:")
+	public void load_product_by_value(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
+		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
+			final String value = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Value);
 
-			final boolean isStocked = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsStocked);
-			product.setIsStocked(isStocked);
+			final I_M_Product loadedProduct = queryBL.createQueryBuilder(I_M_Product.class)
+					.addEqualsFilter(COLUMNNAME_Value, value)
+					.create()
+					.firstOnlyNotNull(I_M_Product.class);
 
-			InterfaceWrapperHelper.saveRecord(product);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-			productTable.putOrReplace(productIdentifier, product);
+			productTable.put(productIdentifier, loadedProduct);
+		}
+	}
+
+	@Given("update M_Product:")
+	public void update_M_Product(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> productTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : productTableList)
+		{
+			updateMProduct(dataTableRow);
 		}
 	}
 
@@ -238,6 +251,7 @@ public class M_Product_StepDef
 		final String productName = tableRow.get("Name");
 		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
+		final String huClearanceStatus = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_Product.COLUMNNAME_HUClearanceStatus);
 
 		final String productType = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_Product.COLUMNNAME_ProductType);
 
@@ -272,6 +286,11 @@ public class M_Product_StepDef
 
 		productRecord.setProductType(CoalesceUtil.coalesceNotNull(productType, ProductType.Item.getCode()));
 		productRecord.setIsStocked(isStocked);
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(huClearanceStatus);
+		if (clearanceStatus != null)
+		{
+			productRecord.setHUClearanceStatus(clearanceStatus.getCode());
+		}
 
 		final String productCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(productCategoryIdentifier))
@@ -361,5 +380,27 @@ public class M_Product_StepDef
 				throw Check.fail("Unexpected type={}", type);
 		}
 		return productType;
+	}
+
+	private void updateMProduct(@NonNull final Map<String, String> tableRow)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).isNotNull();
+
+		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
+
+		if (Check.isNotBlank(gtin))
+		{
+			productRecord.setGTIN(gtin);
+		}
+
+		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
+		if(isStocked != null)
+		{
+			productRecord.setIsStocked(isStocked);
+		}
+
+		saveRecord(productRecord);
 	}
 }

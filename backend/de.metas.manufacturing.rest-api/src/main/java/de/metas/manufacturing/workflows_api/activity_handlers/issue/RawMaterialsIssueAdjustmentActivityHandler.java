@@ -34,9 +34,7 @@ public class RawMaterialsIssueAdjustmentActivityHandler implements WFActivityHan
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No " + RawMaterialsIssueActivityHandler.HANDLED_ACTIVITY_TYPE + " activity found in " + wfProcess));
 
-		return UIComponent.builder()
-				.type(UIComponentType.CONFIRM_BUTTON)
-				.type(COMPONENT_TYPE)
+		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.value("rawMaterialsIssueActivityId", issueActivity.getId().getAsString())
 						.build())

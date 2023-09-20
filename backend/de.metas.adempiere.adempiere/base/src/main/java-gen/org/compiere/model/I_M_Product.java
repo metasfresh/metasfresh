@@ -401,6 +401,27 @@ public interface I_M_Product
 	String COLUMNNAME_DocumentNote = "DocumentNote";
 
 	/**
+	 * Set Drying Methods.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDryingMethods (@Nullable java.lang.String DryingMethods);
+
+	/**
+	 * Get Drying Methods.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDryingMethods();
+
+	ModelColumn<I_M_Product, Object> COLUMN_DryingMethods = new ModelColumn<>(I_M_Product.class, "DryingMethods", null);
+	String COLUMNNAME_DryingMethods = "DryingMethods";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -420,6 +441,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_ExternalId = new ModelColumn<>(I_M_Product.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
+	 * Set FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFLO_Identifier (@Nullable java.lang.String FLO_Identifier);
+
+	/**
+	 * Get FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFLO_Identifier();
+
+	ModelColumn<I_M_Product, Object> COLUMN_FLO_Identifier = new ModelColumn<>(I_M_Product.class, "FLO_Identifier", null);
+	String COLUMNNAME_FLO_Identifier = "FLO_Identifier";
 
 	/**
 	 * Set Group1.
@@ -617,6 +661,29 @@ public interface I_M_Product
 	String COLUMNNAME_Help = "Help";
 
 	/**
+	 * Set HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHUClearanceStatus (@Nullable java.lang.String HUClearanceStatus);
+
+	/**
+	 * Get HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHUClearanceStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_HUClearanceStatus = new ModelColumn<>(I_M_Product.class, "HUClearanceStatus", null);
+	String COLUMNNAME_HUClearanceStatus = "HUClearanceStatus";
+
+	/**
 	 * Set Bild-URL.
 	 * URL of  image
 	 *
@@ -751,6 +818,27 @@ public interface I_M_Product
 	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
+	 * Set Enforce Issuing Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEnforceIssuingTolerance (boolean IsEnforceIssuingTolerance);
+
+	/**
+	 * Get Enforce Issuing Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEnforceIssuingTolerance();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsEnforceIssuingTolerance = new ModelColumn<>(I_M_Product.class, "IsEnforceIssuingTolerance", null);
+	String COLUMNNAME_IsEnforceIssuingTolerance = "IsEnforceIssuingTolerance";
+
+	/**
 	 * Set Ausnehmen von Automatischer Lieferung.
 	 * Exclude from automatic Delivery
 	 *
@@ -841,6 +929,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_IsPickListPrintDetails = new ModelColumn<>(I_M_Product.class, "IsPickListPrintDetails", null);
 	String COLUMNNAME_IsPickListPrintDetails = "IsPickListPrintDetails";
+
+	/**
+	 * Set Print as packing material.
+	 * When activated, packing material products will be printed on documents only when also used as packing materials in the order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPrintWhenPackingMaterial (boolean IsPrintWhenPackingMaterial);
+
+	/**
+	 * Get Print as packing material.
+	 * When activated, packing material products will be printed on documents only when also used as packing materials in the order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPrintWhenPackingMaterial();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsPrintWhenPackingMaterial = new ModelColumn<>(I_M_Product.class, "IsPrintWhenPackingMaterial", null);
+	String COLUMNNAME_IsPrintWhenPackingMaterial = "IsPrintWhenPackingMaterial";
 
 	/**
 	 * Set Eingekauft.
@@ -952,6 +1063,89 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_IsStocked = new ModelColumn<>(I_M_Product.class, "IsStocked", null);
 	String COLUMNNAME_IsStocked = "IsStocked";
+
+	/**
+	 * Set Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_Perc (@Nullable BigDecimal IssuingTolerance_Perc);
+
+	/**
+	 * Get Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIssuingTolerance_Perc();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_Perc = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_Perc", null);
+	String COLUMNNAME_IssuingTolerance_Perc = "IssuingTolerance_Perc";
+
+	/**
+	 * Set Tolerance.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_Qty (@Nullable BigDecimal IssuingTolerance_Qty);
+
+	/**
+	 * Get Tolerance.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIssuingTolerance_Qty();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_Qty = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_Qty", null);
+	String COLUMNNAME_IssuingTolerance_Qty = "IssuingTolerance_Qty";
+
+	/**
+	 * Set Tolerance UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_UOM_ID (int IssuingTolerance_UOM_ID);
+
+	/**
+	 * Get Tolerance UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getIssuingTolerance_UOM_ID();
+
+	String COLUMNNAME_IssuingTolerance_UOM_ID = "IssuingTolerance_UOM_ID";
+
+	/**
+	 * Set Tolerance Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_ValueType (@Nullable java.lang.String IssuingTolerance_ValueType);
+
+	/**
+	 * Get Tolerance Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIssuingTolerance_ValueType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_ValueType = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_ValueType", null);
+	String COLUMNNAME_IssuingTolerance_ValueType = "IssuingTolerance_ValueType";
 
 	/**
 	 * Set Summary Level.

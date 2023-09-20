@@ -121,6 +121,7 @@ public class M_HU_StepDef
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 	
 	private final M_Product_StepDefData productTable;
@@ -134,7 +135,6 @@ public class M_HU_StepDef
 	private final M_HU_QRCode_StepDefData qrCodesTable;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final TestContext testContext;
 

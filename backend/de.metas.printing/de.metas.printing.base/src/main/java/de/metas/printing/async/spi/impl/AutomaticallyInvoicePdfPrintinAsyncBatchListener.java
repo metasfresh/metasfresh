@@ -2,17 +2,13 @@ package de.metas.printing.async.spi.impl;
 
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.printing.Printing_Constants;
-import de.metas.printing.api.IPrintingDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;

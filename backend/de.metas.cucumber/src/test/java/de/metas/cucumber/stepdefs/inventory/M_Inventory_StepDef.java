@@ -71,6 +71,7 @@ import java.util.Map;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class M_Inventory_StepDef
 {
@@ -143,6 +144,8 @@ public class M_Inventory_StepDef
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
+
+		assertThat(productRecord).isNotNull();
 
 		final I_C_UOM productUOM = uomDAO.getById(productRecord.getC_UOM_ID());
 

@@ -186,7 +186,7 @@ public class ShipmentScheduleEnqueuer
 				if (invalidSchedulesService.isFlaggedForRecompute(shipmentScheduleId))
 				{
 					// we can't just not enqueue those workpackages and only write a debug log message about it
-					// => enqueue them, log if and collect experience about what what the practical impact is.
+					// => enqueue them, log if and collect experience about what the practical impact is.
 					// 	doEnqueueCurrentPackage = false;
 					Loggables.withLogger(logger, Level.INFO).addLog("shipmentScheduleId is flagged for recompute; -> still enqueue the workpackage!");
 				}

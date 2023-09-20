@@ -3,6 +3,7 @@ package de.metas.handlingunits.allocation.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
@@ -267,7 +268,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
-		huBuilder.setHUClearanceStatusInfo(getHUClearanceStatusInfo());
+		huBuilder.setHUClearanceStatusInfo(CoalesceUtil.coalesce(getHUClearanceStatusInfo(), request.getClearanceStatusInfo()));
 
 		return huBuilder;
 	}
@@ -514,7 +515,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 			//
 			// Create current actual request, perform the allocation to current HU and merge the result back
-			prepareToLoad(request.getHUContext(), currentHU);
+			prepareToLoad(request.getHuContext(), currentHU);
 			final IAllocationRequest currentRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
 			final IAllocationResult currentResult = loadHU(currentHU, currentRequest);
 			AllocationUtils.mergeAllocationResult(result, currentResult);
@@ -612,7 +613,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		//
 		// Notify that we finished the loading
-		loadFinished(result, request.getHUContext());
+		loadFinished(result, request.getHuContext());
 
 		return result;
 	}

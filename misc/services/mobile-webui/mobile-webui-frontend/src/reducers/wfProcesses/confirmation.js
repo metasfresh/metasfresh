@@ -39,7 +39,7 @@ registerHandler({
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     console.log('fromActivity: ', { fromActivity });
 
-    draftActivityDataStored.isAlwaysAvailableToUser = true;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.confirmed = !!fromActivity.componentProps.confirmed;
     draftActivityDataStored.completeStatus = computeActivityStatus({
       confirmed: draftActivityDataStored.confirmed,

@@ -27,7 +27,6 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -47,7 +46,6 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_IsActive;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_ItemType;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID;
-import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_Qty;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -117,13 +115,14 @@ public class M_HU_PI_Item_StepDef
 				huPiItemRecord.setIncluded_HU_PI_ID(huPi.getM_HU_PI_ID());
 			}
 
-			final String huPackingMaterialIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String huPackingMaterialIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(huPackingMaterialIdentifier))
 			{
-				final I_M_HU_PackingMaterial huPackingMaterial = huPackingMaterialTable.get(huPackingMaterialIdentifier);
-				assertThat(huPackingMaterial).isNotNull();
+				final int huPackingMaterialId = DataTableUtil.nullToken2Null(huPackingMaterialIdentifier) == null
+						? -1
+						: huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
 
-				huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterial.getM_HU_PackingMaterial_ID());
+				huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
 			}
 
 			saveRecord(huPiItemRecord);

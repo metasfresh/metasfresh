@@ -145,21 +145,20 @@ public class M_PriceList_StepDef
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
 		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
+		final PricingSystemId pricingSystemId = priceListDAO.getPricingSystemIdByValueOrNull(value);
+		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.loadOrNew(pricingSystemId, I_M_PricingSystem.class);
+		
 		final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PricingSystem.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final int orgId = Optional.ofNullable(orgIdentifier)
 				.map(orgTable::get)
 				.map(I_AD_Org::getAD_Org_ID)
 				.orElse(ORG_ID.getRepoId());
 
-		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
-
 		m_pricingSystem.setName(name);
 		m_pricingSystem.setValue(value);
 		m_pricingSystem.setIsActive(isActive);
 		m_pricingSystem.setDescription(description);
 		m_pricingSystem.setAD_Org_ID(orgId);
-
-		saveRecord(m_pricingSystem);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
 
@@ -203,7 +202,7 @@ public class M_PriceList_StepDef
 		}
 
 		m_priceList.setAD_Org_ID(orgId);
-		m_priceList.setM_PricingSystem_ID(pricingSystemTable.get(pricingSystemIdentifier).getM_PricingSystem_ID());
+		m_priceList.setM_PricingSystem_ID(pricingSystemId);
 		m_priceList.setC_Currency_ID(currencyId.getRepoId());
 		m_priceList.setName(name);
 		m_priceList.setIsTaxIncluded(isTaxIncluded);

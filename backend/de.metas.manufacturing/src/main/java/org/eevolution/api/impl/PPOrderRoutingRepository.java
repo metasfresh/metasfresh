@@ -6,13 +6,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -270,12 +273,14 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.type(PPRoutingActivityType.ofCode(record.getPP_Activity_Type()))
 				.code(PPOrderRoutingActivityCode.ofString(record.getValue()))
 				.name(record.getName())
-				.routingActivityId(PPRoutingActivityId.ofAD_WF_Node_ID(routingId, record.getAD_WF_Node_ID()))
+				.routingActivityId(PPRoutingActivityId.ofRepoId(routingId, record.getAD_WF_Node_ID()))
 				//
 				.subcontracting(record.isSubcontracting())
 				.subcontractingVendorId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				//
 				.milestone(record.isMilestone())
+				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()))
+				.userInstructions(UserInstructions.ofNullableString(record.getPP_UserInstructions()))
 				//
 				.resourceId(resourceId)
 				//
@@ -303,6 +308,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.qtyRejected(Quantitys.create(record.getQtyReject(), uomId))
 				.dateStart(TimeUtil.asInstant(record.getDateStart()))
 				.dateFinish(TimeUtil.asInstant(record.getDateFinish()))
+				//
+				.scannedQRCode(GlobalQRCode.ofNullableString(record.getScannedQRCode()))
 				//
 				.build();
 	}
@@ -631,6 +638,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getSubcontractingVendorId()));
 
 		record.setIsMilestone(from.isMilestone());
+		record.setPP_AlwaysAvailableToUser(from.getAlwaysAvailableToUser().getCode());
+		record.setPP_UserInstructions(from.getUserInstructions() != null ? from.getUserInstructions().getAsString() : null);
 
 		record.setS_Resource_ID(from.getResourceId().getRepoId());
 
@@ -665,6 +674,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		final PPRoutingActivityTemplateId activityTemplateId = from.getActivityTemplateId();
 		record.setAD_WF_Node_Template_ID(PPRoutingActivityTemplateId.toRepoId(activityTemplateId));
+
+		record.setScannedQRCode(from.getScannedQRCode() != null ? from.getScannedQRCode().getAsString() : null);
 	}
 
 	private I_PP_Order_NodeNext toNewOrderNodeNextRecord(final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)

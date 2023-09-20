@@ -119,7 +119,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+		candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
 	}
 
 	private void assertCorrectCandidateType(@NonNull final Candidate candidate)

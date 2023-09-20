@@ -400,7 +400,7 @@ Feature: Product items invoice candidates: receipts
     And load M_Attribute:
       | M_Attribute_ID.Identifier | Value                  |
       | attr_qty_discount_percent | QualityDiscountPercent |
-    And update M_HU_Attribute:
+    And update M_HU_Attribute recursive:
       | M_HU_ID.Identifier | M_Attribute_ID.Identifier | OPT.ValueNumber |
       | processedTopHU     | attr_qty_discount_percent | 5               |
     And create material receipt

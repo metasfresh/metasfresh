@@ -90,7 +90,7 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 			@NonNull final I_M_HU hu,
 			@NonNull final IAllocationRequest request)
 	{
-		final IHUStorageFactory huStorageFactory = request.getHUContext().getHUStorageFactory();
+		final IHUStorageFactory huStorageFactory = request.getHuContext().getHUStorageFactory();
 
 		final ArrayList<AllocCandidate> candidates = new ArrayList<>();
 		final List<I_M_HU_Item> huItems = services.retrieveItems(hu);

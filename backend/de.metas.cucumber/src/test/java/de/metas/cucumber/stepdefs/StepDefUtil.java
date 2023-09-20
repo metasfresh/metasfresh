@@ -102,6 +102,7 @@ public class StepDefUtil
 	 *
 	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
 	 */
+	@Deprecated
 	public <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
@@ -154,6 +155,7 @@ public class StepDefUtil
 	 *
 	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
 	 */
+	@Deprecated
 	public <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
@@ -162,14 +164,26 @@ public class StepDefUtil
 	{
 		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
-		while (deadLineMillis > System.currentTimeMillis())
+		try
 		{
-			Thread.sleep(checkingIntervalMs);
-			final Optional<T> workerResult = worker.get();
-			if (workerResult.isPresent())
+			while (deadLineMillis > System.currentTimeMillis())
 			{
-				return workerResult.get();
+				Thread.sleep(checkingIntervalMs);
+				final Optional<T> workerResult = worker.get();
+				if (workerResult.isPresent())
+				{
+					return workerResult.get();
+				}
 			}
+		}
+		catch (final Exception e)
+		{
+			if (logContext != null)
+			{
+				logContext.run();
+			}
+
+			throw e;
 		}
 
 		if (logContext != null)

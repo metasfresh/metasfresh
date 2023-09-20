@@ -40,6 +40,7 @@ docker-compose --env-file ./env-files/intensive_care_uat.env --project-name ${BR
 ### How to reset the DB or search
 
 * for *even more* convenience (scnr), set the base branch to an environment variable with e.g. `BRANCH_NAME=intensive_care_uat`
+* for *even more* convenience (scnr), set the base branch to an environment variable with e.g. `BRANCH_NAME=intensive_care_uat`
 * stop the whole thing with `docker-compose --env-file ./env-files/${BRANCH_NAME}.env --project-name ${BRANCH_NAME}_infrastructure down`
 * delete
   * the DB's data volume with `docker volume rm ${BRANCH_NAME}_metasfresh_postgres`

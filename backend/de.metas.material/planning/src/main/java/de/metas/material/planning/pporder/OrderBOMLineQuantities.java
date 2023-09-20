@@ -23,6 +23,10 @@
 package de.metas.material.planning.pporder;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -40,6 +44,7 @@ public class OrderBOMLineQuantities
 	@NonNull Quantity qtyRequiredBeforeClose;
 	@NonNull Quantity qtyIssuedOrReceived;
 	@NonNull Quantity qtyIssuedOrReceivedActual;
+	@Nullable IssuingToleranceSpec issuingToleranceSpec;
 	@NonNull Quantity qtyReject;
 	@NonNull Quantity qtyScrap;
 
@@ -49,12 +54,16 @@ public class OrderBOMLineQuantities
 
 	@NonNull UomId uomId;
 
+	private static final AdMessageKey MSG_CannotIssueLessThan = AdMessageKey.of("OrderBOMLineQuantities.CannotIssueLessThan");
+	private static final AdMessageKey MSG_CannotIssueMoreThan = AdMessageKey.of("OrderBOMLineQuantities.CannotIssueMoreThan");
+
 	@Builder(toBuilder = true)
 	private OrderBOMLineQuantities(
 			@NonNull final Quantity qtyRequired,
 			@Nullable final Quantity qtyRequiredBeforeClose,
 			@Nullable final Quantity qtyIssuedOrReceived,
 			@Nullable final Quantity qtyIssuedOrReceivedActual,
+			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
 			@Nullable final Quantity qtyReject,
 			@Nullable final Quantity qtyScrap,
 			@Nullable final Quantity qtyUsageVariance,
@@ -62,14 +71,15 @@ public class OrderBOMLineQuantities
 			@Nullable final Quantity qtyReserved)
 	{
 		this.qtyRequired = qtyRequired;
-		this.qtyRequiredBeforeClose = CoalesceUtil.coalesce(qtyRequiredBeforeClose, qtyRequired::toZero);
-		this.qtyIssuedOrReceived = CoalesceUtil.coalesce(qtyIssuedOrReceived, qtyRequired::toZero);
-		this.qtyIssuedOrReceivedActual = CoalesceUtil.coalesce(qtyIssuedOrReceivedActual, qtyRequired::toZero);
-		this.qtyReject = CoalesceUtil.coalesce(qtyReject, qtyRequired::toZero);
-		this.qtyScrap = CoalesceUtil.coalesce(qtyScrap, qtyRequired::toZero);
-		this.qtyUsageVariance = CoalesceUtil.coalesce(qtyUsageVariance, qtyRequired::toZero);
-		this.qtyPost = CoalesceUtil.coalesce(qtyPost, qtyRequired::toZero);
-		this.qtyReserved = CoalesceUtil.coalesce(qtyReserved, qtyRequired::toZero);
+		this.qtyRequiredBeforeClose = CoalesceUtil.coalesceNotNull(qtyRequiredBeforeClose, qtyRequired::toZero);
+		this.qtyIssuedOrReceived = CoalesceUtil.coalesceNotNull(qtyIssuedOrReceived, qtyRequired::toZero);
+		this.qtyIssuedOrReceivedActual = CoalesceUtil.coalesceNotNull(qtyIssuedOrReceivedActual, qtyRequired::toZero);
+		this.issuingToleranceSpec = issuingToleranceSpec;
+		this.qtyReject = CoalesceUtil.coalesceNotNull(qtyReject, qtyRequired::toZero);
+		this.qtyScrap = CoalesceUtil.coalesceNotNull(qtyScrap, qtyRequired::toZero);
+		this.qtyUsageVariance = CoalesceUtil.coalesceNotNull(qtyUsageVariance, qtyRequired::toZero);
+		this.qtyPost = CoalesceUtil.coalesceNotNull(qtyPost, qtyRequired::toZero);
+		this.qtyReserved = CoalesceUtil.coalesceNotNull(qtyReserved, qtyRequired::toZero);
 
 		this.uomId = Quantity.getCommonUomIdOfAll(
 				this.qtyRequired,
@@ -140,32 +150,6 @@ public class OrderBOMLineQuantities
 				|| qtyReject.signum() != 0;
 	}
 
-	public OrderBOMLineQuantities withAdditionalQtyIssuedOrReceived(@NonNull final Quantity qtyToAdd)
-	{
-		if (qtyToAdd.signum() == 0)
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.qtyIssuedOrReceived(getQtyIssuedOrReceived().add(qtyToAdd))
-				.qtyIssuedOrReceivedActual(getQtyIssuedOrReceivedActual().add(qtyToAdd))
-				.build();
-	}
-
-	public OrderBOMLineQuantities withAdditionalQtyUsageVariance(@NonNull final Quantity qtyToAdd)
-	{
-		if (qtyToAdd.signum() == 0)
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.qtyIssuedOrReceived(getQtyIssuedOrReceived().add(qtyToAdd))
-				.qtyUsageVariance(getQtyUsageVariance().add(qtyToAdd))
-				.build();
-	}
-
 	public OrderBOMLineQuantities reduce(@NonNull final OrderBOMLineQtyChangeRequest request)
 	{
 		final OrderBOMLineQuantitiesBuilder builder = toBuilder();
@@ -176,7 +160,10 @@ public class OrderBOMLineQuantities
 
 			if (!request.isUsageVariance())
 			{
-				builder.qtyIssuedOrReceivedActual(getQtyIssuedOrReceivedActual().add(request.getQtyIssuedOrReceivedToAdd()));
+				final Quantity qtyIssuedOrReceivedActualNew = getQtyIssuedOrReceivedActual().add(request.getQtyIssuedOrReceivedToAdd());
+				assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActualNew);
+
+				builder.qtyIssuedOrReceivedActual(qtyIssuedOrReceivedActualNew);
 			}
 		}
 
@@ -212,6 +199,58 @@ public class OrderBOMLineQuantities
 	public Quantity getQtyIssuedOrReceived_NegateBecauseIsCOProduct()
 	{
 		return adjustCoProductQty(getQtyIssuedOrReceived());
+	}
+
+	public void assertQtyToIssueToleranceIsRespected()
+	{
+		assertQtyToIssueToleranceIsRespected_LowerBound(qtyIssuedOrReceivedActual);
+		assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActual);
+	}
+
+	private void assertQtyToIssueToleranceIsRespected_LowerBound(final Quantity qtyIssuedOrReceivedActual)
+	{
+		if (issuingToleranceSpec == null)
+		{
+			return;
+		}
+
+		final Quantity qtyIssuedOrReceivedActualMin = issuingToleranceSpec.subtractFrom(qtyRequired);
+		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMin) < 0)
+		{
+			final ITranslatableString qtyStr = TranslatableStrings.builder()
+					.appendQty(qtyIssuedOrReceivedActualMin.toBigDecimal(), qtyIssuedOrReceivedActualMin.getUOMSymbol())
+					.append(" (")
+					.appendQty(qtyRequired.toBigDecimal(), qtyRequired.getUOMSymbol())
+					.append(" - ")
+					.append(issuingToleranceSpec.toTranslatableString())
+					.append(")")
+					.build();
+			throw new AdempiereException(MSG_CannotIssueLessThan, qtyStr)
+					.markAsUserValidationError();
+		}
+	}
+
+	private void assertQtyToIssueToleranceIsRespected_UpperBound(final Quantity qtyIssuedOrReceivedActual)
+	{
+		if (issuingToleranceSpec == null)
+		{
+			return;
+		}
+
+		final Quantity qtyIssuedOrReceivedActualMax = issuingToleranceSpec.addTo(qtyRequired);
+		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMax) > 0)
+		{
+			final ITranslatableString qtyStr = TranslatableStrings.builder()
+					.appendQty(qtyIssuedOrReceivedActualMax.toBigDecimal(), qtyIssuedOrReceivedActualMax.getUOMSymbol())
+					.append(" (")
+					.appendQty(qtyRequired.toBigDecimal(), qtyRequired.getUOMSymbol())
+					.append(" + ")
+					.append(issuingToleranceSpec.toTranslatableString())
+					.append(")")
+					.build();
+			throw new AdempiereException(MSG_CannotIssueMoreThan, qtyStr)
+					.markAsUserValidationError();
+		}
 	}
 
 }

@@ -236,6 +236,9 @@ Feature: Checking the effect of override fields on invoice candidate
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.QualityDiscountPercent_Override |
       | invoice_candidate_1               | 10                                  |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyWithIssues_Effective |
+      | invoice_candidate_1               | 1                           |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 100                 |

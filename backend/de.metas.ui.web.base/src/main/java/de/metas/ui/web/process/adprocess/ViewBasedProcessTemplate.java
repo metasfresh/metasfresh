@@ -226,6 +226,11 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		}
 	}
 
+	protected final boolean isSingleSelectedRow()
+	{
+		return getSelectedRowIds().isSingleDocumentId();
+	}
+
 	protected final DocumentIdsSelection getSelectedRowIds()
 	{
 		Check.assumeNotNull(_viewRowIdsSelection, "View loaded");

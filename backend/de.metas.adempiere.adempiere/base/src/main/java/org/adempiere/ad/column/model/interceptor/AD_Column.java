@@ -229,4 +229,48 @@ public class AD_Column
 	{
 		return tableDAO.retrieveTableName(AdTableId.ofRepoId(adColumn.getAD_Table_ID()));
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_AD_Column.COLUMNNAME_ColumnName, I_AD_Column.COLUMNNAME_AD_Reference_ID })
+	public void onBeforeSave_assertColumnNameValid(final I_AD_Column adColumn)
+	{
+		assertColumnNameValid(adColumn.getColumnName(), adColumn.getAD_Reference_ID());
+	}
+
+	private void assertColumnNameValid(@NonNull final String columnName, final int displayType)
+	{
+		if (DisplayType.isID(displayType) && displayType != DisplayType.Account)
+		{
+			if (!columnName.endsWith("_ID")
+					&& !columnName.equals("CreatedBy")
+					&& !columnName.equals("UpdatedBy"))
+			{
+				throw new AdempiereException("Lookup or ID columns shall have the name ending with `_ID`");
+			}
+
+			if (displayType == DisplayType.Locator && !columnName.contains("Locator"))
+			{
+				throw new AdempiereException("A Locator column name must contain the term `Locator`.");
+			}
+		}
+		else if (displayType == DisplayType.Account)
+		{
+			if (!columnName.endsWith("_Acct"))
+			{
+				throw new AdempiereException("Account columns shall have the name ending with `_Acct`");
+			}
+		}
+		else
+		{
+			if (columnName.endsWith("_ID"))
+			{
+				throw new AdempiereException("Ending a non lookup column wiht `_ID` is might be misleading");
+			}
+			if (columnName.endsWith("_Acct"))
+			{
+				throw new AdempiereException("Ending a non Account column wiht `_Acct` is might be misleading");
+			}
+		}
+	}
+
 }

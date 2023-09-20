@@ -12,27 +12,16 @@
 
 package io.swagger.client.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.client.model.CareGiver;
-import io.swagger.client.model.PatientBillingAddress;
-import io.swagger.client.model.PatientDeliveryAddress;
-import io.swagger.client.model.PatientHospital;
-import io.swagger.client.model.PatientPayer;
-import io.swagger.client.model.PatientPrimaryDoctorInstitution;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.io.IOException;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.OffsetDateTime;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.OffsetDateTime;
 /**
  * Patient
  */

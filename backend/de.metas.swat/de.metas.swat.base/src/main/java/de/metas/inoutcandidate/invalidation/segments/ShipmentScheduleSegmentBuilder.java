@@ -22,20 +22,18 @@ package de.metas.inoutcandidate.invalidation.segments;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class ShipmentScheduleSegmentBuilder
 {

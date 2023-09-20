@@ -180,13 +180,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 				requestEffective = request.withAmount(effectiveAmt);
 
-				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
+				// NOTE: if explicit cost price is provided then use it
+				// we are no longer checking for " && currentCosts.getCurrentQty().isZero()"
+				// because we agreed that is the responsibility of whom is setting the explicit cost price
+				// to decide if it's suitable
+				if (explicitCostPrice != null)
 				{
 					currentCosts.setOwnCostPrice(explicitCostPrice);
-				}
-				else
-				{
-					// Do not change an existing positive cost price if there is also a positive qty
 				}
 			}
 

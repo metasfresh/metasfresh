@@ -557,6 +557,15 @@ public final class DefaultView implements IEditableView
 		return viewDataRepository.retrieveModelsByIds(getViewId(), rowIds, modelClass);
 	}
 
+	@NonNull
+	@Override
+	public <T> Stream<T> streamModelsByIds(
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final Class<T> modelClass)
+	{
+		return viewDataRepository.retrieveModelsByIdsAsStream(getViewId(), rowIds, modelClass);
+	}
+
 	@Override
 	public void notifyRecordsChanged(
 			@NonNull final TableRecordReferenceSet recordRefs,

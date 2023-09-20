@@ -142,7 +142,7 @@ public class AttachmentEntryService
 	}
 
 	/**
-	 * @param referencedRecords may be a single model object, a a single {@link TableRecordReference} or a collection of both.
+	 * @param referencedRecords may be a single model object, a single {@link TableRecordReference} or a collection of both.
 	 */
 	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(

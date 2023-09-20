@@ -124,7 +124,6 @@ public class PricingTestHelper
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
 		return ImmutableList.of(
-				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
 				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName());
 	}

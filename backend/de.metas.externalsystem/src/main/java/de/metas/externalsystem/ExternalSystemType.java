@@ -46,7 +46,9 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	RabbitMQ(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI, "RabbitMQRESTAPI", null),
 	Other(X_ExternalSystem_Config.TYPE_Other, "Other", InvokeOtherAction.class.getName()),
 	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName()),
-	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName())
+	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName()),
+	LeichUndMehl(X_ExternalSystem_Config.TYPE_LeichMehl, "LeichUndMehl", null),
+	PrintClient(X_ExternalSystem_Config.TYPE_PrintingClient, "PrintingClient", null)
 	;
 
 	@Getter
@@ -58,7 +60,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	@Getter
 	private final String externalSystemProcessClassName;
 
-	ExternalSystemType(@NonNull final String code, final String name, final String externalSystemProcessClassName)
+	ExternalSystemType(@NonNull final String code, final String name, @Nullable final String externalSystemProcessClassName)
 	{
 		this.code = code;
 		this.name = name;

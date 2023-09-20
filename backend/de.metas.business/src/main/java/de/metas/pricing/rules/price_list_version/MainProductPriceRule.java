@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 package de.metas.pricing.rules.price_list_version;
 
 import ch.qos.logback.classic.Level;
@@ -28,7 +29,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -53,8 +53,6 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 /**
  * Calculate Price using Price List Version
@@ -68,7 +66,6 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
@@ -86,10 +83,8 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 			return;
 		}
 
-		final ZoneId timeZone = orgDAO.getTimeZone(pricingCtx.getOrgId());
 		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(),
-				ctxPriceListVersion,
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), timeZone));
+				ctxPriceListVersion);
 
 		if (productPrice == null)
 		{
@@ -152,13 +147,9 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 
 	@Nullable
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
-			final I_M_PriceList_Version ctxPriceListVersion,
-			final ZonedDateTime promisedDate)
+			final I_M_PriceList_Version ctxPriceListVersion)
 	{
-		return ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId),
-				promisedDate);
+		return ProductPrices.retrieveMainProductPriceOrNull(ctxPriceListVersion, productId);
 	}
 
 	private I_M_PriceList_Version getOrLoadPriceListVersion(

@@ -37,6 +37,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
@@ -263,21 +264,23 @@ public class M_InOut_Line_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-
+		SoftAssertions softly = new SoftAssertions();
 		if (Check.isNotBlank(x12de355Code))
 		{
 			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-			assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+			softly.assertThat(shipmentLine.getC_UOM_ID()).as("C_UOM_ID").isEqualTo(uomId.getRepoId());
 		}
 
-		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
-		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
-		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
+		softly.assertThat(shipmentLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
+		softly.assertThat(shipmentLine.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementqty);
+		softly.assertThat(shipmentLine.isProcessed()).as("Processed").isEqualTo(processed);
 
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_QtyEntered);
 		if (qtyEntered != null)
 		{
-			assertThat(shipmentLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+			softly.assertThat(shipmentLine.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered);
 		}
+
+		softly.assertAll();
 	}
 }

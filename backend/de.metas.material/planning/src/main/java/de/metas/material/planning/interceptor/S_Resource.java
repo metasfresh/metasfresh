@@ -6,6 +6,7 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -56,5 +57,26 @@ public class S_Resource
 	{
 		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
 		Services.get(IProductDAO.class).deleteProductByResourceId(resourceId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_S_Resource.COLUMNNAME_CapacityPerProductionCycle, I_S_Resource.COLUMNNAME_CapacityPerProductionCycle_UOM_ID })
+	public void validateCapacityUOMID(final I_S_Resource resource)
+	{
+		if (resource.getCapacityPerProductionCycle().signum() < 0)
+		{
+			throw new AdempiereException("CapacityPerProductionCycle cannot go below 0!")
+					.appendParametersToMessage()
+					.setParameter("S_Resource_ID", resource.getS_Resource_ID())
+					.markAsUserValidationError();
+		}
+
+		if (resource.getCapacityPerProductionCycle().signum() > 0 && resource.getCapacityPerProductionCycle_UOM_ID() <= 0)
+		{
+			throw new AdempiereException("Unit of measurement for capacity per production cycle cannot be missing if capacity is provided!")
+					.appendParametersToMessage()
+					.setParameter("S_Resource_ID", resource.getS_Resource_ID())
+					.markAsUserValidationError();
+		}
 	}
 }

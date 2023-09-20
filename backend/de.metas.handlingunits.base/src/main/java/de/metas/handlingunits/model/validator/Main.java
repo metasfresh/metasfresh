@@ -89,6 +89,8 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
+import de.metas.pricing.attributebased.impl.AttributePricing;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
