@@ -158,18 +158,18 @@ public class SAP_GLJournalLine_StepDef
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
 		final I_SAP_GLJournal header = extractHeader(row);
-		assertThat(header).isNotNull();
+		assertThat(header).as("Record not found").isNotNull();
 
 		// Amount
 		final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_Amount);
-		assertThat(amount).isNotNull();
+		assertThat(amount).as("Please provide a valid amount").isNotNull();
 
 		// ParentID
 		final String parentLineIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_Parent_ID);
-		assertThat(parentLineIdentifier).isNotBlank();
+		assertThat(parentLineIdentifier).as("%s is mandatory in this context", COLUMNNAME_Parent_ID).isNotBlank();
 
 		final I_SAP_GLJournalLine parentLine = glJournalLineTable.get(parentLineIdentifier);
-		assertThat(parentLine).isNotNull();
+		assertThat(parentLine).as("No record found").isNotNull();
 
 		// validate
 		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
@@ -183,7 +183,7 @@ public class SAP_GLJournalLine_StepDef
 				.findFirst()
 				.get();
 
-		assertThat(generatedLine).isNotNull();
+		assertThat(generatedLine).as("No generated line").isNotNull();
 		assertThat(generatedLine.getAmount()).isEqualByComparingTo(amount);
 
 	}
@@ -194,10 +194,10 @@ public class SAP_GLJournalLine_StepDef
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
 		final I_SAP_GLJournal header = extractHeader(row);
-		assertThat(header).isNotNull();
+		assertThat(header).as("Record not found").isNotNull();
 
 		final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_Amount);
-		assertThat(amount).isNotNull();
+		assertThat(amount).as("Please provide a valid amount").isNotNull();
 
 		final boolean isTaxIncluded = DataTableUtil.extractBooleanForColumnName(row, "OPT." + COLUMNNAME_IsTaxIncluded);
 
@@ -220,10 +220,11 @@ public class SAP_GLJournalLine_StepDef
 
 	private I_SAP_GLJournal extractHeader(@NonNull final Map<String, String> row)
 	{
-		final String glJournalIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_SAP_GLJournal_ID + "." + TABLECOLUMN_IDENTIFIER);
-		assertThat(glJournalIdentifier).isNotBlank();
+		final String headerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_SAP_GLJournal_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		return glJournalTable.get(glJournalIdentifier);
+		assertThat(headerIdentifier).as("%s is mandatory in this context", COLUMNNAME_SAP_GLJournal_ID).isNotBlank();
+
+		return glJournalTable.get(headerIdentifier);
 	}
 
 }
