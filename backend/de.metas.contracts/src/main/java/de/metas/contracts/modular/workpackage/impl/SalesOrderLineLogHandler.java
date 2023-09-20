@@ -24,7 +24,6 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
@@ -152,16 +151,14 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			@NonNull final HandleLogsRequest<I_C_OrderLine> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_OrderLine> handleLogsRequest)
 	{
 		final I_C_OrderLine orderLine = handleLogsRequest.getModel();
 
 		final TableRecordReference orderLineRef = TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID());
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
-																						 .flatrateTermId(contractId)
+																						 .flatrateTermId(handleLogsRequest.getContractId())
 																						 .referenceSet(TableRecordReferenceSet.of(orderLineRef))
 																						 .build());
 
@@ -170,7 +167,7 @@ class SalesOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLi
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
 						.referencedModel(orderLineRef)
-						.flatrateTermId(contractId)
+						.flatrateTermId(handleLogsRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build());

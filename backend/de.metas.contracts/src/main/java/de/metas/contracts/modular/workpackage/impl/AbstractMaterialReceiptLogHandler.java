@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContract_Constants;
@@ -139,9 +138,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			final @NonNull IModularContractLogHandler.HandleLogsRequest<I_M_InOutLine> request,
-			final @NonNull FlatrateTermId contractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.HandleLogsRequest<I_M_InOutLine> request)
 	{
 		final I_M_InOutLine inOutLineRecord = request.getModel();
 
@@ -155,7 +152,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-											.flatrateTermId(contractId)
+											.flatrateTermId(request.getContractId())
 											.description(description)
 											.logEntryContractType(request.getLogEntryContractType())
 											.build());
