@@ -153,7 +153,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(@NonNull I_C_Payment payment)
+	public List<I_C_AllocationLine> retrieveAllocationLines(@NonNull final I_C_Payment payment)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
@@ -258,12 +258,12 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		return paymentsForEmployees;
 	}
-
+	
 	@NonNull
 	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
 	{
 		final I_C_Payment paymentRecord = getById(paymentId);
-
+		
 		return Optional.ofNullable(CurrencyConversionTypeId.ofRepoIdOrNull(paymentRecord.getC_ConversionType_ID()));
 	}
 }
