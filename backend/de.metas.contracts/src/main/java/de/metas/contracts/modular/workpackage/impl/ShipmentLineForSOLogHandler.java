@@ -113,20 +113,8 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_M_InOutLine> createLogRequest)
 	{
 		final I_M_InOutLine inOutLineRecord = createLogRequest.getHandleLogsRequest().getModel();
-
 		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(createLogRequest.getContractId());
-
-		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
-		final ModularContractLogQuery query = ModularContractLogQuery.builder()
-				.referenceSet(TableRecordReferenceSet.of(inOutLineRef))
-				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.build();
-
-		if (contractLogDAO.anyMatch(query))
-		{
-			return ExplainedOptional.emptyBecause("Contract Log already created for " + inOutLineRef);
-		}
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
 
@@ -156,6 +144,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
 											.build());
 	}
 
