@@ -97,9 +97,8 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	}
 
 	@Override
-	public BooleanWithReason doesRecordRequireLogCreation(@NonNull final CreateLogRequest<I_PP_Cost_Collector> createLogRequest)
+	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_PP_Cost_Collector model)
 	{
-		final I_PP_Cost_Collector model = createLogRequest.getHandleLogsRequest().getModel();
 		if (!model.isProcessed())
 		{
 			return BooleanWithReason.falseBecause("The PP_Cost_Collector.Processed is false");
