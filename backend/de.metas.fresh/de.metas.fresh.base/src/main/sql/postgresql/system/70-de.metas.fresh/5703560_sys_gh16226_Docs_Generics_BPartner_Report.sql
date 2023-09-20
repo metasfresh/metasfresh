@@ -61,7 +61,7 @@ SELECT x.org_name,
                    COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')
            WHEN p_doctype = 'shn'
                THEN
-                   COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')
+                   COALESCE(bpl.address, '')
            WHEN p_doctype = 'o'
                THEN o.BPartnerAddress
            WHEN p_doctype = 'o_delivery'
