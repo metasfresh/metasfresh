@@ -23,7 +23,6 @@
 package de.metas.externalsystem;
 
 import au.com.origin.snapshots.Expect;
-
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
@@ -56,6 +55,7 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
+import de.metas.externalsystem.shopware6.OrderProcessingConfig;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
@@ -72,7 +72,7 @@ import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Map
 import static de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.createExternalConfigParameterRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SnapshotExtension.class)
 class ExternalSystemConfigRepoTest
@@ -139,6 +139,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		childRecord.setIsSyncAvailableForSalesToShopware6(true);
 		childRecord.setPercentageOfAvailableForSalesToSync(BigDecimal.TEN);
+		childRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -227,6 +228,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -401,6 +403,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(childRecord);
 
 		final I_ExternalSystem_Config_Shopware6Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Shopware6Mapping.class);
@@ -841,6 +844,7 @@ class ExternalSystemConfigRepoTest
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setIsActive(false);
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -886,6 +890,7 @@ class ExternalSystemConfigRepoTest
 		initialChildRecord.setM_PriceList_ID(1);
 		initialChildRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
 		initialChildRecord.setIsActive(false);
+		initialChildRecord.setOrderProcessing(OrderProcessingConfig.INVOICE.getCode());
 		saveRecord(initialChildRecord);
 
 		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
