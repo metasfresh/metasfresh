@@ -30,8 +30,6 @@ public interface CoreConstants
 {
 	String AUTHORIZATION = "Authorization";
 
-	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
-
 	String AUDIT_SENSITIVE_DATA_PATTERN_PROPERTY = "metasfresh.audit.sensitive-data.pattern";
 	String AUDIT_SENSITIVE_DATA_PATTERN_GROUP_PROPERTY = "metasfresh.audit.sensitive-data.pattern.group";
 
