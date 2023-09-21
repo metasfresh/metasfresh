@@ -117,10 +117,10 @@ public class M_InOut
 			@NonNull final I_M_InOut inOutRecord,
 			@NonNull final ModelAction modelAction)
 	{
-		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveAllLines(inOutRecord);
-
-		inOutLines.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
-		inOutLines.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.INTERIM));
+		inOutDAO.retrieveAllLines(inOutRecord).forEach(line -> {
+			contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT);
+			contractService.invokeWithModel(line, modelAction, LogEntryContractType.INTERIM);
+		});
 	}
 
 	private void propagateHarvestingDetails(@NonNull final I_M_InOutLine inOutLineRecord)
