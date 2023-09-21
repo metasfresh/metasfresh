@@ -48,7 +48,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 	<title>
 		<band height="200" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="340" y="141" width="140" height="13" uuid="2f7f6410-10b7-447c-a38d-ab84c20aa5cd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
