@@ -207,6 +207,7 @@ public class SAPGLJournal
 						? request.getDimension()
 						: request.getDimension().withSectionCodeId(dimension.getSectionCodeId()))
 				.determineTaxBaseSAP(request.isDetermineTaxBaseSAP())
+				.isTaxIncluded(request.isTaxIncluded())
 				.openItemTrxInfo(request.getOpenItemTrxInfo())
 				.isFieldsReadOnlyInUI(request.isFieldsReadOnlyInUI())
 				.build();
@@ -267,6 +268,25 @@ public class SAPGLJournal
 				{
 					taxLines.forEach(it::add);
 					hasChanges = true;
+
+					//
+					// once tax line is generated,
+					// calculate line's base tax amount & reset IsTaxIncluded to N
+					if (line.isTaxIncluded())
+					{
+						final Money taxIncludedAmt = line.getAmount();
+						final Money taxAmt = taxLines.stream()
+								.map(taxLine -> taxLine.getAmount().negateIf(!taxLine.getPostingSign().equals(line.getPostingSign())))
+								.reduce(Money::add)
+								.orElseGet(() -> Money.zero(taxIncludedAmt.getCurrencyId()));
+
+						final Money taxBaseAmt = taxIncludedAmt.subtract(taxAmt);
+						final Money taxBaseAcct = currencyConverter.convertToAcctCurrency(taxBaseAmt, conversionCtx);
+
+						line.setAmount(taxBaseAmt);
+						line.setAmountAcct(taxBaseAcct);
+						line.setTaxIncluded(false);
+					}
 				}
 			}
 		}
@@ -287,7 +307,8 @@ public class SAPGLJournal
 		final TaxId taxId = Check.assumeNotNull(baseLine.getTaxId(), "line shall have the tax set: {}", baseLine);
 		final PostingSign taxPostingSign = baseLine.getPostingSign();
 		final Account taxAccount = taxProvider.getTaxAccount(taxId, acctSchemaId, taxPostingSign);
-		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
+
+		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId, baseLine.isTaxIncluded());
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
 		final SAPGLJournalLine line = SAPGLJournalLine.builder()
@@ -300,6 +321,7 @@ public class SAPGLJournal
 				.taxId(taxId)
 				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())
+				.isTaxIncluded(false) // tax can't be included for generated tax lines
 				.build();
 
 		final ImmutableList.Builder<SAPGLJournalLine> resultBuilder = ImmutableList.builder();

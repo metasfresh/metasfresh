@@ -156,13 +156,13 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 		if (!isReverseCharge)
 		{
 			final Money grossAmt = grossLine.getAmount();
-			taxAmt = glJournalTaxProvider.calculateTaxAmt(grossAmt, true, taxId);
+			taxAmt = glJournalTaxProvider.calculateTaxAmt(grossAmt, taxId, true);
 			netAmt = grossAmt.subtract(taxAmt);
 		}
 		else
 		{
 			netAmt = grossLine.getAmount();
-			taxAmt = glJournalTaxProvider.calculateTaxAmt(netAmt, false, taxId);
+			taxAmt = glJournalTaxProvider.calculateTaxAmt(netAmt, taxId, false);
 		}
 
 		final Money netAmtAcct = glJournalCurrencyConverter.convertToAcctCurrency(netAmt, glJournal.getConversionCtx());

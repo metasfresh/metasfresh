@@ -283,6 +283,29 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Price incl. Tax.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsTaxIncluded (boolean IsTaxIncluded);
+
+	/**
+	 * Get Price incl. Tax.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isTaxIncluded();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsTaxIncluded = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsTaxIncluded", null);
+	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
+
+	/**
 	 * Set Fields are Read Only for User.
 	 *
 	 * <br>Type: YesNo

@@ -30,6 +30,7 @@ public class SAPGLJournalLineCreateRequest
 	@Nullable BPartnerId bpartnerId;
 	@NonNull Dimension dimension;
 	boolean determineTaxBaseSAP;
+	boolean isTaxIncluded;
 	@Nullable @With FAOpenItemTrxInfo openItemTrxInfo;
 	boolean isFieldsReadOnlyInUI;
 
@@ -48,6 +49,7 @@ public class SAPGLJournalLineCreateRequest
 				.description(line.getDescription())
 				.taxId(line.getTaxId())
 				.determineTaxBaseSAP(line.isDetermineTaxBaseSAP())
+				.isTaxIncluded(line.isTaxIncluded())
 				.build();
 	}
 }

@@ -4,27 +4,25 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_generics_bpartne
                                                                                          p_record_id numeric)
 ;
 
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report
-;
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id    numeric,
+                                                                                 p_doctype   text,
+                                                                                 p_bp_loc_id numeric,
+                                                                                 p_record_id numeric)
 
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report
-(
-    org_name        text,
-    Org_AddressLine text,
-    address1        text,
-    postal          text,
-    city            text,
-    country         text,
-    gln             text,
-    AddressBlock    text
-)
-;
+    RETURNS TABLE
+            (
+                org_name        text,
+                org_addressline text,
+                address1        text,
+                postal          text,
+                city            text,
+                country         text,
+                gln             text,
+                addressblock    text
+            )
+    STABLE
+    LANGUAGE sql
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id    numeric,
-                                                                                            p_doctype   text,
-                                                                                            p_bp_loc_id numeric,
-                                                                                            p_record_id numeric)
-    RETURNS SETOF de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report
 AS
 $BODY$
 SELECT x.org_name,
@@ -38,7 +36,10 @@ SELECT x.org_name,
        CASE
            WHEN p_bp_loc_id IS NOT NULL
                THEN
-               COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')
+                   COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')
+           WHEN p_doctype = 'shn'
+               THEN
+                   COALESCE(bpl.address, '')
            WHEN p_doctype = 'o'
                THEN o.BPartnerAddress
            WHEN p_doctype = 'o_delivery'
