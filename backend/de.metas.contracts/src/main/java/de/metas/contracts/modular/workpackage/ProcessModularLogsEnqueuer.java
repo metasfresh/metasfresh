@@ -28,6 +28,8 @@ import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
@@ -52,7 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.LOG_ENTRY_CONTRACT_TYPE;
+import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.CONTRACT_INFO_LIST;
 import static de.metas.contracts.modular.workpackage.ModularLogsWorkPackageProcessor.Params.MODEL_ACTION;
 import static org.compiere.util.Env.getCtx;
 
@@ -68,8 +70,10 @@ public class ProcessModularLogsEnqueuer
 	private final ModularLogCreateStatusService createStatusService;
 
 	public void enqueueAfterCommit(
+			@NonNull final IModularContractTypeHandler<?> handler,
 			@NonNull final TableRecordReference recordReference,
 			@NonNull final ModelAction action,
+			@NonNull final FlatrateTermId flatrateTermId,
 			@NonNull final LogEntryContractType logEntryContractType)
 	{
 		trxManager.accumulateAndProcessAfterCommit(
@@ -80,6 +84,8 @@ public class ProcessModularLogsEnqueuer
 								.action(action)
 								.logEntryContractType(logEntryContractType)
 								.userInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+								.flatrateTermId(flatrateTermId)
+								.handlerClassname(handler.getClass().getName())
 								.build()
 				),
 				this::enqueueAllNow);
@@ -106,7 +112,7 @@ public class ProcessModularLogsEnqueuer
 				.bindToThreadInheritedTrx()
 				.setUserInChargeId(request.userInChargeId())
 				.parameter(MODEL_ACTION.name(), request.action().name())
-				.parameter(LOG_ENTRY_CONTRACT_TYPE.name(), JsonObjectMapperHolder.toJsonNonNull(request.contractTypeMappings()))
+				.parameter(CONTRACT_INFO_LIST.name(), JsonObjectMapperHolder.toJsonNonNull(request.contractInfoParameter()))
 				.setElementsLocker(createElementsLocker(request.recordReferenceSet()))
 				.addElements(request.recordReferenceSet().getRecordRefs())
 				.buildAndEnqueue();
@@ -165,6 +171,8 @@ public class ProcessModularLogsEnqueuer
 			@NonNull TableRecordReference recordReference,
 			@NonNull ModelAction action,
 			@NonNull LogEntryContractType logEntryContractType,
+			@NonNull FlatrateTermId flatrateTermId,
+			@NonNull String handlerClassname,
 			@Nullable UserId userInChargeId)
 	{
 	}
@@ -173,7 +181,7 @@ public class ProcessModularLogsEnqueuer
 	private record AggregatedEnqueueRequest(
 			@NonNull TableRecordReferenceSet recordReferenceSet,
 			@NonNull ModelAction action,
-			@NonNull ContractTypeParameter contractTypeMappings,
+			@NonNull ContractInfoParameter contractInfoParameter,
 			@Nullable UserId userInChargeId)
 	{
 	}
@@ -183,7 +191,7 @@ public class ProcessModularLogsEnqueuer
 	private static class RequestAggregator
 	{
 		@NonNull ArrayList<TableRecordReference> recordReferenceList;
-		@NonNull HashMap<Integer, List<LogEntryContractType>> recordId2ContractType;
+		@NonNull HashMap<Integer, List<ContractInfoParameter.ContractProcessInfo>> recordId2ContractInfo;
 		@NonNull ModelAction modelAction;
 		@Nullable
 		UserId userInChargeId;
@@ -191,17 +199,17 @@ public class ProcessModularLogsEnqueuer
 		@NonNull
 		static RequestAggregator init(@NonNull final EnqueueRequest enqueueRequest)
 		{
-			final ArrayList<LogEntryContractType> contractTypes = new ArrayList<>();
-			contractTypes.add(enqueueRequest.logEntryContractType());
+			final ArrayList<ContractInfoParameter.ContractProcessInfo> contractInfos = new ArrayList<>();
+			contractInfos.add(buildContractInfoParameter(enqueueRequest));
 
 			return RequestAggregator.builder()
 					.recordReferenceList(new ArrayList<>()
 					{{
 						add(enqueueRequest.recordReference());
 					}})
-					.recordId2ContractType(new HashMap<>()
+					.recordId2ContractInfo(new HashMap<>()
 					{{
-						put(enqueueRequest.recordReference().getRecord_ID(), contractTypes);
+						put(enqueueRequest.recordReference().getRecord_ID(), contractInfos);
 					}})
 					.modelAction(enqueueRequest.action())
 					.userInChargeId(enqueueRequest.userInChargeId())
@@ -222,9 +230,9 @@ public class ProcessModularLogsEnqueuer
 			}
 
 			recordReferenceList.add(enqueueRequest.recordReference());
-			final ArrayList<LogEntryContractType> newContractTypes = new ArrayList<>();
-			newContractTypes.add(enqueueRequest.logEntryContractType());
-			recordId2ContractType.merge(enqueueRequest.recordReference().getRecord_ID(), newContractTypes, (oldList, newList) -> {
+			final ArrayList<ContractInfoParameter.ContractProcessInfo> contractProcessInfos = new ArrayList<>();
+			contractProcessInfos.add(buildContractInfoParameter(enqueueRequest));
+			recordId2ContractInfo.merge(enqueueRequest.recordReference().getRecord_ID(), contractProcessInfos, (oldList, newList) -> {
 				oldList.addAll(newList);
 				return oldList;
 			});
@@ -240,10 +248,20 @@ public class ProcessModularLogsEnqueuer
 			return AggregatedEnqueueRequest.builder()
 					.action(modelAction)
 					.recordReferenceSet(referenceSet)
-					.contractTypeMappings(ContractTypeParameter.builder()
-												  .recordId2ContractType(recordId2ContractType)
+					.contractInfoParameter(ContractInfoParameter.builder()
+												  .recordId2ContractInfo(recordId2ContractInfo)
 												  .build())
 					.userInChargeId(userInChargeId)
+					.build();
+		}
+
+		@NonNull
+		private static ContractInfoParameter.ContractProcessInfo buildContractInfoParameter(@NonNull final EnqueueRequest enqueueRequest)
+		{
+			return ContractInfoParameter.ContractProcessInfo.builder()
+					.contractType(enqueueRequest.logEntryContractType())
+					.flatrateTermId(enqueueRequest.flatrateTermId())
+					.handlerClassName(enqueueRequest.handlerClassname())
 					.build();
 		}
 	}

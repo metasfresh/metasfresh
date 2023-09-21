@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.workpackage;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
@@ -36,12 +35,11 @@ import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
-
-import java.util.Set;
 
 public interface IModularContractLogHandler<T>
 {
@@ -53,7 +51,7 @@ public interface IModularContractLogHandler<T>
 	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest<T> createLogRequest);
 
 	@NonNull
-	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest<T> handleLogsRequest, @NonNull FlatrateTermId contractId);
+	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest<T> handleLogsRequest);
 
 	@NonNull
 	IModularContractTypeHandler<T> getModularContractTypeHandler();
@@ -69,8 +67,20 @@ public interface IModularContractLogHandler<T>
 	{
 		final IModularContractTypeHandler<T> contractTypeHandler = getModularContractTypeHandler();
 
-		return contractTypeHandler.applies(request.getLogEntryContractType())
+		final boolean isHandlerMatchingRequest = contractTypeHandler.getClass().getName().equals(request.getHandlerClassname())
+				&& contractTypeHandler.applies(request.getLogEntryContractType())
 				&& contractTypeHandler.applies(request.getModel());
+
+		final boolean isHandlerMatchingContract = getModularContractTypeHandler()
+				.streamContractIds(request.getModel())
+				.anyMatch(contractId -> contractId.equals(request.getContractId()));
+
+		if (isHandlerMatchingRequest && !isHandlerMatchingContract)
+		{
+			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
+		}
+
+		return isHandlerMatchingContract && isHandlerMatchingRequest;
 	}
 
 	@NonNull
@@ -79,21 +89,12 @@ public interface IModularContractLogHandler<T>
 		return getModularContractTypeHandler().getType();
 	}
 
-	default Set<FlatrateTermId> getContractIds(@NonNull final T model)
-	{
-		return getModularContractTypeHandler()
-				.streamContractIds(model)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	@NonNull
-	default LogEntryDeleteRequest getDeleteRequestFor(
-			@NonNull final HandleLogsRequest<T> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	default LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest<T> handleLogsRequest)
 	{
 		return LogEntryDeleteRequest.builder()
 				.referencedModel(handleLogsRequest.getModelRef())
-				.flatrateTermId(contractId)
+				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
 				.build();
 	}
@@ -106,8 +107,13 @@ public interface IModularContractLogHandler<T>
 		@NonNull LogEntryContractType logEntryContractType;
 		@NonNull ModelAction modelAction;
 		@NonNull QueueWorkPackageId workPackageId;
+		@NonNull String handlerClassname;
+		@NonNull FlatrateTermId contractId;
 
-		public TableRecordReference getModelRef() {return TableRecordReference.of(model);}
+		public TableRecordReference getModelRef()
+		{
+			return TableRecordReference.of(model);
+		}
 	}
 
 	@Value
@@ -118,7 +124,11 @@ public interface IModularContractLogHandler<T>
 		@NonNull ModularContractSettings modularContractSettings;
 		@NonNull ModuleConfigId configId;
 		@NonNull ModularContractTypeId typeId;
-		@NonNull FlatrateTermId contractId;
+
+		public FlatrateTermId getContractId()
+		{
+			return handleLogsRequest.getContractId();
+		}
 	}
 
 	enum LogAction
