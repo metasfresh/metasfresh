@@ -16,7 +16,10 @@ import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.resource.HumanResourceTestGroupRepository;
+import de.metas.resource.HumanResourceTestGroupService;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.Disabled;
 import org.optaplanner.core.api.solver.SolverFactory;
 
@@ -40,6 +43,7 @@ public class ManualPOCTest
 	public static void main(String[] args)
 	{
 		LogManager.setLoggerLevel(SimulationOptimizerTask.class, Level.DEBUG);
+		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(new HumanResourceTestGroupRepository()));
 
 		final SimulationPlanId simulationId = SimulationPlanId.ofRepoId(123);
 
@@ -131,7 +135,7 @@ public class ManualPOCTest
 		return plan;
 	}
 
-	private static Resource resource(int index) {return new Resource(resourceId(index), "R" + index);}
+	private static Resource resource(int index) {return new Resource(resourceId(index), "R" + index, null);}
 
 	@NonNull
 	private static ResourceId resourceId(final int index) {return ResourceId.ofRepoId(100 + index);}

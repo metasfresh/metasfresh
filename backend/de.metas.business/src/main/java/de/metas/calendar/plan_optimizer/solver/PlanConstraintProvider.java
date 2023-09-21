@@ -1,9 +1,16 @@
 package de.metas.calendar.plan_optimizer.solver;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.HumanResourceAvailableCapacity;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.ResourceGroupYearWeek;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.StepRequiredCapacity;
 import de.metas.project.InternalPriority;
+import de.metas.resource.HumanResourceTestGroupId;
+import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.util.Check;
+import org.compiere.SpringContextHolder;
 import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
 import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintCollectors;
@@ -14,16 +21,20 @@ import org.optaplanner.core.api.score.stream.bi.BiJoiner;
 import org.optaplanner.core.impl.score.stream.JoinerSupport;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 public class PlanConstraintProvider implements ConstraintProvider
 {
-	public static final int HARD_LEVELS_SIZE = 1;
+	public static final int HARD_LEVELS_SIZE = 2;
 	public static final int SOFT_LEVELS_SIZE = 3;
 
-	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 1 }, new int[] { 0, 0, 0 });
-	private static final BendableScore ONE_SOFT_1 = BendableScore.of(new int[] { 0 }, new int[] { 1, 0, 0 });
-	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0 }, new int[] { 0, 1, 0 });
-	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0 }, new int[] { 0, 0, 1 });
+	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 1, 0 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_HARD_2 = BendableScore.of(new int[] { 0, 1 }, new int[] { 0, 0, 0 });
+	private static final BendableScore ONE_SOFT_1 = BendableScore.of(new int[] { 0, 0 }, new int[] { 1, 0, 0 });
+	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 1, 0 });
+	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 0, 1 });
+
+	private final HumanResourceTestGroupService humanResourceTestGroupService = SpringContextHolder.instance.getBean(HumanResourceTestGroupService.class);
 
 	@Override
 	public Constraint[] defineConstraints(final ConstraintFactory constraintFactory)
@@ -33,6 +44,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				resourceConflict(constraintFactory),
 				startDateMin(constraintFactory),
 				dueDate(constraintFactory),
+				humanResourceAvailableCapacity(constraintFactory),
 				// Soft:
 				stepsNotRespectingProjectPriority(constraintFactory),
 				delayIsMinimum(constraintFactory),
@@ -41,7 +53,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 		};
 	}
 
-	Constraint resourceConflict(ConstraintFactory constraintFactory)
+	Constraint resourceConflict(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEachUniquePair(
 						Step.class,
@@ -53,7 +65,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	private static BiJoiner<Step, Step> stepsOverlapping() {return Joiners.overlapping(Step::getStartDate, Step::getEndDate);}
 
-	Constraint startDateMin(ConstraintFactory constraintFactory)
+	Constraint startDateMin(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(step -> !step.isStartDateMinRespected())
@@ -61,7 +73,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.asConstraint("StartDateMin not respected");
 	}
 
-	Constraint dueDate(ConstraintFactory constraintFactory)
+	Constraint dueDate(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(Step::isDueDateNotRespected)
@@ -69,7 +81,33 @@ public class PlanConstraintProvider implements ConstraintProvider
 				.asConstraint("DueDate not respected");
 	}
 
-	Constraint delayIsMinimum(ConstraintFactory constraintFactory)
+	Constraint humanResourceAvailableCapacity(final ConstraintFactory constraintFactory)
+	{
+		return constraintFactory.forEach(Step.class)
+				.filter(step -> step.getResource().getHumanResourceTestGroupId() != null)
+				.filter(step -> !step.getHumanResourceTestGroupDuration().isZero())
+				.groupBy(ConstraintCollectors.sum(
+						StepRequiredCapacity::ofStep,
+						StepRequiredCapacity.ZERO,
+						StepRequiredCapacity::add,
+						StepRequiredCapacity::subtract))
+				.penalize(ONE_HARD_2, this::computePenaltyWeight_availableCapacity)
+				.asConstraint("Available human resource test group capacity");
+	}
+
+	private int computePenaltyWeight_availableCapacity(final StepRequiredCapacity requiredCapacity)
+	{
+		final Set<HumanResourceTestGroupId> ids = requiredCapacity.getMap().keySet()
+				.stream()
+				.map(ResourceGroupYearWeek::getGroupId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(humanResourceTestGroupService.getByIds(ids));
+		humanResourceAvailableCapacity.reserveCapacity(requiredCapacity);
+		return humanResourceAvailableCapacity.getOverReservedCapacity().intValue();
+	}
+
+	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(step -> step.getDelay() > 0)
@@ -107,12 +145,12 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	private static BiJoiner<Step, Step> stepsNotRespectingProjectPriority() {return JoinerSupport.getJoinerService().newBiJoiner(PlanConstraintProvider::stepsNotRespectingProjectPriority);}
 
-	static boolean stepsNotRespectingProjectPriority(Step step1, Step step2)
+	static boolean stepsNotRespectingProjectPriority(final Step step1, final Step step2)
 	{
 		return computePenaltyWeight_StepsNotRespectingProjectPriority(step1, step2) > 0;
 	}
 
-	static int computePenaltyWeight_StepsNotRespectingProjectPriority(Step step1, Step step2)
+	static int computePenaltyWeight_StepsNotRespectingProjectPriority(final Step step1, final Step step2)
 	{
 		final InternalPriority prio1 = step1.getProjectPriority();
 		final InternalPriority prio2 = step2.getProjectPriority();

@@ -403,14 +403,14 @@ jobs:
             docker push metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
             docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
             docker tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
-            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
       - name: produce-summary
         run: |
           echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY

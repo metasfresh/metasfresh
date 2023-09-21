@@ -103,6 +103,12 @@ public class WOProjectStep
 	public Optional<Instant> getEndDate()
 	{
 		return Optional.ofNullable(dateRange)
-				.map(CalendarDateRange::getEndDate);
+				.map(CalendarDateRange::getEndDate)
+				.filter(Instant.MAX::isAfter);
+	}
+
+	public boolean inTesting()
+	{
+		return WOStepStatus.INTESTING.equals(woStepStatus);
 	}
 }

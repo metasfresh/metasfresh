@@ -171,11 +171,11 @@ public class M_Delivery_Planning_StepDef
 			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
 			assertThat(deliveryPlanning).isNotNull();
 
-			final String errorMsg = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorMessage");
+			final String errorCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorCode");
 			try
 			{
 				deliveryPlanningService.validateDeletion(deliveryPlanning);
-				if (Check.isNotBlank(errorMsg))
+				if (Check.isNotBlank(errorCode))
 				{
 					throw new RuntimeException("Was expecting operation to fail!");
 				}
@@ -184,7 +184,7 @@ public class M_Delivery_Planning_StepDef
 			}
 			catch (final AdempiereException e)
 			{
-				assertThat(e.getMessage()).contains(errorMsg);
+				assertThat(e.getErrorCode()).as("ErrorCode of %s", e).isEqualTo(errorCode);
 			}
 		}
 	}
