@@ -61,6 +61,12 @@ public class CostAmountDetailed
 		this.alreadyShippedAmt = alreadyShippedAmt != null ? alreadyShippedAmt : CostAmount.zero(currencyId);
 	}
 
+	public static CostAmountDetailed zero(@NonNull final CurrencyId currencyId)
+	{
+		final CostAmount zero = CostAmount.zero(currencyId);
+		return new CostAmountDetailed(zero, zero, zero);
+	}
+
 	public static CostAmountDetailed ofAmtAndType(@NonNull final CostAmount amt, @NonNull final CostAmountType type)
 	{
 		return switch (type)
