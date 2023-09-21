@@ -161,7 +161,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest, @NonNull final FlatrateTermId contractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -174,16 +174,14 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 
 	@Override
 	@NonNull
-	public LogEntryDeleteRequest getDeleteRequestFor(
-			@NonNull final HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	public LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest)
 	{
 		final I_PP_Cost_Collector ppCostCollector = handleLogsRequest.getModel();
 
 		return LogEntryDeleteRequest.builder()
 				.referencedModel(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
 				.subEntryId(LogSubEntryId.ofCostCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID())))
-				.flatrateTermId(contractId)
+				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
 				.build();
 	}

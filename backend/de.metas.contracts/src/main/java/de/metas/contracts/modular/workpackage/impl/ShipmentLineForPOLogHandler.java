@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
@@ -139,16 +138,14 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			@NonNull final HandleLogsRequest<I_M_InOutLine> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_M_InOutLine> handleLogsRequest)
 	{
 		final String description = msgBL.getMsg(language, MSG_INFO_SHIPMENT_REVERSED);
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))
-											.flatrateTermId(contractId)
-											.description(description)
+											.flatrateTermId(handleLogsRequest.getContractId())
+											.description(msgText.translate(Env.getAD_Language()))
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 											.build());
 	}

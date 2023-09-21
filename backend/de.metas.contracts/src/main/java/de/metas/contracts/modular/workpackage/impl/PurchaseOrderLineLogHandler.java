@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler;
@@ -133,13 +132,11 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			@NonNull final HandleLogsRequest<I_C_OrderLine> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_OrderLine> handleLogsRequest)
 	{
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, handleLogsRequest.getModel().getC_OrderLine_ID()))
-											.flatrateTermId(contractId)
+											.flatrateTermId(handleLogsRequest.getContractId())
 											.description(null)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 											.build());

@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
@@ -153,16 +152,14 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			@NonNull final HandleLogsRequest<I_C_InvoiceLine> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_InvoiceLine> handleLogsRequest)
 	{
 		final TableRecordReference invoiceLineRef = TableRecordReference.of(I_C_InvoiceLine.Table_Name,
 																			handleLogsRequest.getModel().getC_InvoiceLine_ID());
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
-						.flatrateTermId(contractId)
+						.flatrateTermId(handleLogsRequest.getContractId())
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))
 						.contractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build());
@@ -175,7 +172,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
 						.referencedModel(invoiceLineRef)
-						.flatrateTermId(contractId)
+						.flatrateTermId(handleLogsRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build()
