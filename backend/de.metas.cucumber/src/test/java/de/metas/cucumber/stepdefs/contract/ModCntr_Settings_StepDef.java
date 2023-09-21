@@ -93,11 +93,14 @@ public class ModCntr_Settings_StepDef
 		final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Year yearRecord = yearTable.get(yearIdentifier);
 
+		final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx, false);
+		
 		final I_ModCntr_Settings modCntrSettingsRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, calendarRecord.getC_Calendar_ID())
 						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearRecord.getC_Year_ID())
+						.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, isSoTrx)
 						.create()
 						.firstOnlyOrNull(I_ModCntr_Settings.class),
 				() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Settings.class));
@@ -106,6 +109,7 @@ public class ModCntr_Settings_StepDef
 		modCntrSettingsRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		modCntrSettingsRecord.setC_Calendar_ID(calendarRecord.getC_Calendar_ID());
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
+		modCntrSettingsRecord.setIsSOTrx(isSoTrx);
 
 		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(pricingSystemIdentifier))
