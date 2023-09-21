@@ -13,7 +13,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.impl.DocTypeService;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.shippingnotification.ShippingNotification;
@@ -71,13 +71,13 @@ public class ShippingNotificationFromShipmentScheduleProducer
 		shippingNotificationService.reverseBySalesOrderId(salesOrderId);
 
 		final I_C_Order salesOrderRecord = orderBL.getById(salesOrderId);
-		final OrgId orgId = OrgId.ofRepoId(salesOrderRecord.getAD_Org_ID());
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(salesOrderRecord.getAD_Client_ID(), salesOrderRecord.getAD_Org_ID());
 
 		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentScheduleBL.getByOrderId(salesOrderId);
 
 		final ShippingNotification shippingNotification = ShippingNotification.builder()
-				.orgId(orgId)
-				.docTypeId(docTypeService.getDocTypeId(DocBaseType.ShippingNotification, orgId))
+				.clientAndOrgId(clientAndOrgId)
+				.docTypeId(docTypeService.getDocTypeId(DocBaseType.ShippingNotification, clientAndOrgId.getOrgId()))
 				.bpartnerAndLocationId(orderBL.getShipToLocationId(salesOrderRecord).getBpartnerLocationId())
 				.contactId(orderBL.getShipToContactId(salesOrderRecord).orElse(null))
 				.salesOrderId(OrderId.ofRepoId(salesOrderRecord.getC_Order_ID()))

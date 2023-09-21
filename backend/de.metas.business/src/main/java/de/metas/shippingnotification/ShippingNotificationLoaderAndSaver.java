@@ -11,7 +11,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
@@ -187,7 +187,7 @@ class ShippingNotificationLoaderAndSaver
 	{
 		return ShippingNotification.builder()
 				.id(ShippingNotificationId.ofRepoIdOrNull(record.getM_Shipping_Notification_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
 				.documentNo(record.getDocumentNo())
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
@@ -263,7 +263,7 @@ class ShippingNotificationLoaderAndSaver
 
 	private static void updateRecord(@NonNull final I_M_Shipping_Notification record, @NonNull final ShippingNotification from)
 	{
-		record.setAD_Org_ID(from.getOrgId().getRepoId());
+		record.setAD_Org_ID(from.getClientAndOrgId().getOrgId().getRepoId());
 		record.setC_DocType_ID(from.getDocTypeId().getRepoId());
 		record.setDocumentNo(from.getDocumentNo());
 		record.setC_BPartner_ID(from.getBpartnerAndLocationId().getBpartnerId().getRepoId());

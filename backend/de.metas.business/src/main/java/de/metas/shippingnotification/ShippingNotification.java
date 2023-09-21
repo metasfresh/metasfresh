@@ -36,6 +36,7 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.exception.ShipmentNotificationException;
 import de.metas.util.Check;
@@ -47,6 +48,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
@@ -64,7 +66,7 @@ public class ShippingNotification
 {
 	@Nullable private ShippingNotificationId id;
 
-	@NonNull private final OrgId orgId;
+	@NonNull private final ClientAndOrgId clientAndOrgId;
 	@NonNull private final DocTypeId docTypeId;
 	@Nullable @Setter private String documentNo;
 	@NonNull private final BPartnerLocationId bpartnerAndLocationId;
@@ -89,7 +91,7 @@ public class ShippingNotification
 	@Builder(toBuilder = true)
 	private ShippingNotification(
 			@Nullable final ShippingNotificationId id,
-			@NonNull final OrgId orgId,
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final DocTypeId docTypeId,
 			@Nullable final String documentNo,
 			@NonNull final BPartnerLocationId bpartnerAndLocationId,
@@ -108,7 +110,7 @@ public class ShippingNotification
 			@Nullable final List<ShippingNotificationLine> lines)
 	{
 		this.id = id;
-		this.orgId = orgId;
+		this.clientAndOrgId = clientAndOrgId;
 		this.docTypeId = docTypeId;
 		this.documentNo = documentNo;
 		this.bpartnerAndLocationId = bpartnerAndLocationId;
@@ -129,6 +131,10 @@ public class ShippingNotification
 	}
 
 	public ShippingNotificationId getIdNotNull() {return Check.assumeNotNull(id, "Shipment notification is expected to be saved at this point: {}", this);}
+
+	public ClientId getClientId() {return clientAndOrgId.getClientId();}
+
+	public OrgId getOrgId() {return clientAndOrgId.getOrgId();}
 
 	public BPartnerId getBPartnerId()
 	{
