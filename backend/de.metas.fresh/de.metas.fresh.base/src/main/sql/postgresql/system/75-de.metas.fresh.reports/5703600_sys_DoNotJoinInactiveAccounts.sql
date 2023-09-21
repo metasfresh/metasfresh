@@ -158,5 +158,3 @@ WHERE dd.C_DunningDoc_ID = p_C_DunningDoc_ID
 $$
     LANGUAGE sql STABLE
 ;
-
-
