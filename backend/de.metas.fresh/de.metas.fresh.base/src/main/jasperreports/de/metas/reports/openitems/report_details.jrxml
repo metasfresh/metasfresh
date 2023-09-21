@@ -210,7 +210,7 @@ DocumentNo]]>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -353,7 +353,7 @@ DocumentNo]]>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true" isItalic="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -912,7 +912,7 @@ DocumentNo]]>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -1025,7 +1025,7 @@ DocumentNo]]>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
