@@ -20,8 +20,12 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationCollection;
+import de.metas.shippingnotification.ShippingNotificationLine;
+import de.metas.shippingnotification.acct.ShippingNotificationAcctService;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Getter;
 import lombok.NonNull;
@@ -61,6 +65,7 @@ import java.util.Optional;
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
 	@NonNull private final IOrderBL orderBL;
+	@NonNull private final ShippingNotificationAcctService shippingNotificationAcctService;
 
 	@NonNull @Getter private final ImmutableList<InOutCost> inoutCosts;
 	private final ShippingNotificationCollection shippingNotifications;
@@ -78,6 +83,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		super(InterfaceWrapperHelper.getPO(inoutLine), doc);
 		this.orderBL = doc.orderBL;
+		this.shippingNotificationAcctService = doc.shippingNotificationAcctService;
 		this.inoutCosts = ImmutableList.copyOf(inoutCosts);
 		this.shippingNotifications = shippingNotifications;
 
@@ -291,6 +297,63 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		return getOrderAndLineId()
 				.map(orderLineId -> shippingNotifications.sumQtyByOrderLineId(orderLineId, movementQty.getUomId(), services.getUomConverter()))
 				.orElseGet(movementQty::toZero);
+	}
+
+	// TODO implement
+	public void aaaa(final AcctSchema as)
+	{
+		final Quantity movementQty = getQty().negate(); // make it positive
+		CostAmount costsExternallyOwned = CostAmount.zero(as.getCurrencyId());
+		Quantity qtyExternallyOwned = movementQty.toZero();
+
+		final ProductId productId = getProductId();
+		final OrderAndLineId orderAndLineId = getOrderAndLineId().orElse(null);
+		if (productId != null && orderAndLineId != null)
+		{
+			for (final ShippingNotification shippingNotification : shippingNotifications)
+			{
+				final ShippingNotificationLine shippingNotificationLine = shippingNotification.getLineBySalesOrderLineId(orderAndLineId).orElse(null);
+				if (shippingNotificationLine == null)
+				{
+					continue;
+				}
+
+				final CostAmount shippingNotificationLineCosts = shippingNotificationAcctService.getCreateCosts(shippingNotification, shippingNotificationLine, as);
+				costsExternallyOwned = costsExternallyOwned.add(shippingNotificationLineCosts);
+
+				final Quantity shippingNotificationLineQty = services.convertQuantityTo(shippingNotificationLine.getQty(), productId, qtyExternallyOwned.getUomId());
+				qtyExternallyOwned = qtyExternallyOwned.add(shippingNotificationLineQty);
+			}
+		}
+
+		final Quantity movementQtyWOExternallyOwned = movementQty.subtract(qtyExternallyOwned);
+		//
+		// Shipped less than notified
+		// => we need to add back to P_Asset
+		//
+		// P_Asset_Acct                             DR                       (difference)
+		// P_ExternallyOwnedStock                          CR        (difference)
+		if (movementQtyWOExternallyOwned.signum() < 0)
+		{
+		}
+		//
+		// Shipped exactly as much as notified
+		//
+		// P_COGS                                           DR                  (costsExternallyOwned)
+		// P_ExternallyOwnedStock                            CR       (costsExternallyOwned)
+		else if (movementQtyWOExternallyOwned.signum() == 0)
+		{
+		}
+		//
+		// Shipped more than notified
+		// NOTE: that's also the case when we don't use a shipping notification
+		// => we need to get more from P_Asset
+		//
+		// P_COGS                         DR                  (difference)
+		// P_Asset_Acct                                CR    (difference)
+		else // movementQtyWOExternallyOwned.signum() > 0
+		{
+		}
 	}
 
 }

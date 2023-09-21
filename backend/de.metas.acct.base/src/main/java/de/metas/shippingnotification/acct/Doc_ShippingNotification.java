@@ -7,14 +7,10 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailReverseRequest;
-import de.metas.costing.CostingDocumentRef;
 import de.metas.document.DocBaseType;
 import de.metas.document.dimension.Dimension;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationLine;
-import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import lombok.NonNull;
 import org.compiere.acct.Doc;
@@ -27,21 +23,21 @@ import java.util.List;
 
 class Doc_ShippingNotification extends Doc<DocLine<?>>
 {
-	private final ShippingNotificationService shippingNotificationService;
+	private final ShippingNotificationAcctService shippingNotificationAcctService;
 	private ShippingNotification shippingNotification;
 
 	Doc_ShippingNotification(
-			@NonNull final ShippingNotificationService shippingNotificationService,
+			@NonNull ShippingNotificationAcctService shippingNotificationAcctService,
 			@NonNull final AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.ShippingNotification);
-		this.shippingNotificationService = shippingNotificationService;
+		this.shippingNotificationAcctService = shippingNotificationAcctService;
 	}
 
 	@Override
 	protected void loadDocumentDetails()
 	{
-		this.shippingNotification = shippingNotificationService.getByRecord(getModel(I_M_Shipping_Notification.class));
+		this.shippingNotification = shippingNotificationAcctService.getByRecord(getModel(I_M_Shipping_Notification.class));
 	}
 
 	@Override
@@ -64,7 +60,7 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = getCreateShipmentCosts(line, as);
+		final CostAmount costs = shippingNotificationAcctService.getCreateCosts(shippingNotification, line, as);
 
 		final Dimension dimension = line.getDimension().fallbackTo(shippingNotification.getDimension());
 
@@ -103,45 +99,6 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 		cr.setM_Locator_ID(shippingNotification.getLocatorId().getRepoId());
 		cr.setLocationFromLocator(shippingNotification.getLocatorId().getRepoId(), true);    // from Loc
 		cr.setLocationFromBPartner(shippingNotification.getBpartnerAndLocationId(), false);  // to Loc
-	}
-
-	public CostAmount getCreateShipmentCosts(final ShippingNotificationLine line, final AcctSchema as)
-	{
-		if (shippingNotification.isReversal())
-		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-							.acctSchemaId(as.getId())
-							.reversalDocumentRef(CostingDocumentRef.ofShippingNotificationLineId(line.getIdNotNull()))
-							.initialDocumentRef(CostingDocumentRef.ofShippingNotificationLineId(line.getReversalLineId()))
-							.date(getDateAcctAsInstant())
-							.build())
-					.getTotalAmountToPost(as)
-					.getMainAmt()
-					// Negate the amount coming from the costs because it must be negative in the accounting.
-					.negate();
-		}
-		else
-		{
-			return services.createCostDetail(
-							CostDetailCreateRequest.builder()
-									.acctSchemaId(as.getId())
-									.clientId(getClientId())
-									.orgId(shippingNotification.getOrgId())
-									.productId(line.getProductId())
-									.attributeSetInstanceId(line.getAsiId())
-									.documentRef(CostingDocumentRef.ofShippingNotificationLineId(line.getIdNotNull()))
-									.qty(line.getQty())
-									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-									.currencyConversionContext(getCurrencyConversionContext(as))
-									.date(getDateAcctAsInstant())
-									.build())
-					.getTotalAmountToPost(as)
-					.getMainAmt()
-					// The shipment notification is an outgoing document, so the costing amounts will be negative values.
-					// In the accounting they must be positive values. This is the reason why the amount
-					// coming from the product costs must be negated.
-					.negate();
-		}
 	}
 
 	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as, @NonNull ShippingNotificationLine line)

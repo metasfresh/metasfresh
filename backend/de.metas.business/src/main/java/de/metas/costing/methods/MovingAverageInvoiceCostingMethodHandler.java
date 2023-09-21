@@ -24,6 +24,7 @@ package de.metas.costing.methods;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -55,12 +56,14 @@ import de.metas.order.costs.inout.InOutCost;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Component
@@ -179,6 +182,156 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		return result;
 	}
 
+	// TODO fix it/implement it
+	@Override
+	protected CostDetailCreateResult createCostForMaterialShipment(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		final CostPrice currentCostPrice = currentCosts.getCostPrice();
+
+		final Quantity qty = utils.convertToUOM(request.getQty(), currentCostPrice.getUomId(), request.getProductId());
+		final boolean isInboundTrx = qty.signum() >= 0;
+
+		final CostDetailCreateRequest requestEffective;
+
+		//
+		// Reversal
+		if(request.isReversal())
+		{
+			// In case of reversals, always consider the provided Amt
+			requestEffective = request.withQty(qty);
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
+		}
+		//
+		// Inbound transactions (qty >= 0)
+		else if (isInboundTrx)
+		{
+			// In case the amount was not provided but there is a positive qty incoming
+			// use the current cost price to calculate the amount.
+			if (request.getAmt().isZero())
+			{
+				final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+				requestEffective = request.withAmountAndQty(amt, qty);
+			}
+			else
+			{
+				requestEffective = request.withQty(qty);
+			}
+
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
+		}
+		//
+		// Outbound transactions (qty < 0)
+		else
+		{
+			//
+			// -----------------------
+			//
+
+
+
+			//
+			// -----------------------
+			//
+			final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			requestEffective = request.withAmountAndQty(amt, qty);
+
+			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+		}
+
+		utils.saveCurrentCost(currentCosts);
+
+		return utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
+	}
+
+
+	@Builder
+	private record OutboundTrxCostAmountDetailed(
+			@NonNull Quantity qtyMovedEffective,
+			@NonNull CostAmount costMovedEffective,
+			@NonNull Quantity qtyAlreadyMoved,
+			@NonNull CostAmount costAlreadyMoved,
+			@NonNull CostAmount costAdjustment
+	)
+	{}
+
+	private OutboundTrxCostAmountDetailed computeCostAmountDetailedForOutboundTrx(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrencyPrecision precision = currentCosts.getPrecision();
+		final CostPrice currentCostPrice = currentCosts.getCostPrice();
+
+		final Quantity qtyMoved = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId()).negate(); // negate to get positve
+		Quantity qtyMovedEffective = qtyMoved;
+
+		final CostAmount ZERO = CostAmount.zero(currentCostPrice.getCurrencyId());
+		@NonNull final CostAmount costAlreadyMoved = ZERO; // TODO negate to get positive
+		@NonNull final Quantity qtyAlreadyMoved = qtyMoved.toZero(); // TODO negate to get positive
+		@Nullable CostAmount costPriceAlreadMoved = null;
+
+		if (qtyAlreadyMoved != null
+				&& qtyAlreadyMoved.signum() != 0
+				&& costAlreadyMoved != null)
+		{
+			final Quantity alreadyMovedQtyConv = utils.convertToUOM(qtyAlreadyMoved, currentCosts.getUomId(), request.getProductId());
+			qtyMovedEffective = qtyMoved.subtract(alreadyMovedQtyConv);
+
+			costPriceAlreadMoved = costAlreadyMoved.divide(qtyAlreadyMoved, precision);
+		}
+
+		//
+		// Shipped less than notified
+		// => we need to add back to P_Asset
+		//
+		// P_Asset_Acct                             DR                       (difference)
+		// P_ExternallyOwnedStock                          CR        (difference)
+		if (qtyMovedEffective.signum() < 0)
+		{
+			final CostAmount adjustmentCostPrice = CoalesceUtil.coalesceNotNull(costPriceAlreadMoved, currentCostPrice::toCostAmount);
+
+			return OutboundTrxCostAmountDetailed.builder()
+					.qtyMovedEffective(qtyMovedEffective.negate())
+					.costMovedEffective(ZERO)
+					.qtyAlreadyMoved(qtyAlreadyMoved.negate())
+					.costAlreadyMoved(costAlreadyMoved.negate())
+					.costAdjustment(adjustmentCostPrice.multiply(qtyMovedEffective.negate()).roundToPrecisionIfNeeded(precision))
+					.build();
+		}
+		//
+		// Shipped exactly as much as notified
+		//
+		// P_COGS                                           DR                  (costsExternallyOwned)
+		// P_ExternallyOwnedStock                            CR       (costsExternallyOwned)
+		else if (qtyMovedEffective.signum() == 0)
+		{
+			return OutboundTrxCostAmountDetailed.builder()
+					.qtyMovedEffective(qtyMovedEffective.negate())
+					.costMovedEffective(ZERO)
+					.qtyAlreadyMoved(qtyAlreadyMoved.negate())
+					.costAlreadyMoved(costAlreadyMoved.negate())
+					.costAdjustment(ZERO)
+					.build();
+		}
+		//
+		// Shipped more than notified
+		// NOTE: that's also the case when we don't use a shipping notification
+		// => we need to get more from P_Asset
+		//
+		// P_COGS                         DR                  (difference)
+		// P_Asset_Acct                                CR    (difference)
+		else // qtyMovedEffective.signum() > 0
+		{
+			return OutboundTrxCostAmountDetailed.builder()
+					.qtyMovedEffective(qtyMovedEffective.negate())
+					.costMovedEffective(currentCostPrice.multiply(qtyMovedEffective).roundToPrecisionIfNeeded(precision))
+					.qtyAlreadyMoved(qtyAlreadyMoved.negate())
+					.costAlreadyMoved(costAlreadyMoved.negate())
+					.costAdjustment(ZERO)
+					.build();
+		}
+	}
+
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
@@ -193,10 +346,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
-		final Quantity requestQty = request.getQty();
-		final Quantity qty = utils.convertToUOM(requestQty, currentCostPrice.getUomId(), request.getProductId());
+		final Quantity qty = utils.convertToUOM(request.getQty(), currentCostPrice.getUomId(), request.getProductId());
 
-		final boolean isInboundTrx = requestQty.signum() >= 0;
+		final boolean isInboundTrx = qty.signum() >= 0;
 
 		final CostDetailCreateRequest requestEffective;
 
@@ -257,9 +409,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		}
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
-				requestEffective,
-				previousCosts);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
 		utils.saveCurrentCost(currentCosts);
 
