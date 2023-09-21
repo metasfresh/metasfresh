@@ -127,14 +127,14 @@ public class EnqueueSourceModelInterceptor extends AbstractModelInterceptor
 		{
 			if (changeType.isAfter())
 			{
-				queueService.enqueue(extractRequests(model, ModelToIndexEventType.CREATED_OR_UPDATED, getSourceTables()));
+				queueService.enqueue(extractRequests(model, ModelToIndexEventType.MODEL_CREATED_OR_UPDATED, getSourceTables()));
 			}
 		}
 		else if (changeType.isDelete())
 		{
 			if (changeType.isBefore())
 			{
-				queueService.enqueue(extractRequests(model, ModelToIndexEventType.REMOVED, getSourceTables()));
+				queueService.enqueue(extractRequests(model, ModelToIndexEventType.MODEL_REMOVED, getSourceTables()));
 			}
 		}
 	}
@@ -161,7 +161,7 @@ public class EnqueueSourceModelInterceptor extends AbstractModelInterceptor
 			if (parentRecordRef != null)
 			{
 				recordRefEffective = parentRecordRef;
-				eventTypeEffective = ModelToIndexEventType.CREATED_OR_UPDATED;
+				eventTypeEffective = ModelToIndexEventType.MODEL_CREATED_OR_UPDATED;
 			}
 			else
 			{
@@ -172,7 +172,7 @@ public class EnqueueSourceModelInterceptor extends AbstractModelInterceptor
 				}
 				else
 				{
-					eventTypeEffective = ModelToIndexEventType.REMOVED;
+					eventTypeEffective = ModelToIndexEventType.MODEL_REMOVED;
 				}
 			}
 
