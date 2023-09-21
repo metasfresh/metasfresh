@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
@@ -49,11 +50,17 @@ public final class ShippingNotificationCollection implements Iterable<ShippingNo
 			@NonNull final UomId targetUomId,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
-		return list.stream()
-				.map(shippingNotification -> shippingNotification.getLineBySalesOrderLineId(salesOrderAndLineId).orElse(null))
-				.filter(Objects::nonNull)
+		return streamLinesByOrderLineId(salesOrderAndLineId)
 				.map(line -> uomConverter.convertQuantityTo(line.getQty(), line.getProductId(), targetUomId))
 				.reduce(Quantity::add)
 				.orElseGet(() -> Quantitys.createZero(targetUomId));
+	}
+
+	@NonNull
+	private Stream<ShippingNotificationLine> streamLinesByOrderLineId(final @NonNull OrderAndLineId salesOrderAndLineId)
+	{
+		return list.stream()
+				.map(shippingNotification -> shippingNotification.getLineBySalesOrderLineId(salesOrderAndLineId).orElse(null))
+				.filter(Objects::nonNull);
 	}
 }
