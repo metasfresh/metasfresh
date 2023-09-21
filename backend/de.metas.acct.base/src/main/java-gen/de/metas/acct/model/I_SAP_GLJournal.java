@@ -1,9 +1,8 @@
 package de.metas.acct.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for SAP_GLJournal
  *  @author metasfresh (generated) 
@@ -189,6 +188,31 @@ public interface I_SAP_GLJournal
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Tax Departure Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_Departure_Country_ID (int C_Tax_Departure_Country_ID);
+
+	/**
+	 * Get Tax Departure Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_Departure_Country_ID();
+
+	@Nullable org.compiere.model.I_C_Country getC_Tax_Departure_Country();
+
+	void setC_Tax_Departure_Country(@Nullable org.compiere.model.I_C_Country C_Tax_Departure_Country);
+
+	ModelColumn<I_SAP_GLJournal, org.compiere.model.I_C_Country> COLUMN_C_Tax_Departure_Country_ID = new ModelColumn<>(I_SAP_GLJournal.class, "C_Tax_Departure_Country_ID", org.compiere.model.I_C_Country.class);
+	String COLUMNNAME_C_Tax_Departure_Country_ID = "C_Tax_Departure_Country_ID";
+
+	/**
 	 * Set Currency Rate.
 	 *
 	 * <br>Type: Number
@@ -260,7 +284,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (String Description);
+	void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -269,28 +293,30 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDescription();
+	java.lang.String getDescription();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_Description = new ModelColumn<>(I_SAP_GLJournal.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocAction (String DocAction);
+	void setDocAction (java.lang.String DocAction);
 
 	/**
 	 * Get Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDocAction();
+	java.lang.String getDocAction();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_DocAction = new ModelColumn<>(I_SAP_GLJournal.class, "DocAction", null);
 	String COLUMNNAME_DocAction = "DocAction";
@@ -302,7 +328,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (String DocStatus);
+	void setDocStatus (java.lang.String DocStatus);
 
 	/**
 	 * Get Status.
@@ -311,7 +337,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDocStatus();
+	java.lang.String getDocStatus();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_DocStatus = new ModelColumn<>(I_SAP_GLJournal.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
@@ -324,7 +350,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (String DocumentNo);
+	void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
 	 * Get Document No.
@@ -334,7 +360,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDocumentNo();
+	java.lang.String getDocumentNo();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_DocumentNo = new ModelColumn<>(I_SAP_GLJournal.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
@@ -487,7 +513,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPostingType (String PostingType);
+	void setPostingType (java.lang.String PostingType);
 
 	/**
 	 * Get Posting Type.
@@ -496,7 +522,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getPostingType();
+	java.lang.String getPostingType();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_PostingType = new ModelColumn<>(I_SAP_GLJournal.class, "PostingType", null);
 	String COLUMNNAME_PostingType = "PostingType";

@@ -283,29 +283,6 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsTaxIncluded (boolean IsTaxIncluded);
-
-	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isTaxIncluded();
-
-	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsTaxIncluded = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsTaxIncluded", null);
-	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
-
-	/**
 	 * Set Fields are Read Only for User.
 	 *
 	 * <br>Type: YesNo
@@ -348,6 +325,29 @@ public interface I_SAP_GLJournalLine
 
 	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsOpenItem = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsOpenItem", null);
 	String COLUMNNAME_IsOpenItem = "IsOpenItem";
+
+	/**
+	 * Set Price incl. Tax.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsTaxIncluded (boolean IsTaxIncluded);
+
+	/**
+	 * Get Price incl. Tax.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isTaxIncluded();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_IsTaxIncluded = new ModelColumn<>(I_SAP_GLJournalLine.class, "IsTaxIncluded", null);
+	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
 	 * Set SeqNo..
@@ -769,7 +769,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Assignment.
+	 * Set UserElementString1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -778,7 +778,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get Assignment.
+	 * Get UserElementString1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -790,7 +790,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set Ship-from.
+	 * Set UserElementString2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -799,7 +799,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get Ship-from.
+	 * Get UserElementString2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -811,7 +811,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
 
 	/**
-	 * Set Ship-to.
+	 * Set UserElementString3.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -820,7 +820,7 @@ public interface I_SAP_GLJournalLine
 	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
-	 * Get Ship-to.
+	 * Get UserElementString3.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
