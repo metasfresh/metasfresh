@@ -49,15 +49,19 @@ public class SAPGLJournalTaxProvider
 				.orElseThrow(() -> new AdempiereException("No account found for " + taxId + ", " + acctSchemaId + ", " + taxAcctType));
 	}
 
+
 	public Money calculateTaxAmt(
-			@NonNull final Money baseAmt,
-			@NonNull final TaxId taxId)
+			@NonNull final Money lineAmt,
+			@NonNull final TaxId taxId,
+			@NonNull final boolean isTaxIncluded)
 	{
-		final CurrencyId currencyId = baseAmt.getCurrencyId();
+		//
+		final CurrencyId currencyId = lineAmt.getCurrencyId();
 		final CurrencyPrecision precision = moneyService.getStdPrecision(currencyId);
 		final Tax tax = taxBL.getTaxById(taxId);
-		final BigDecimal taxAmtBD = tax.calculateTax(baseAmt.toBigDecimal(), false, precision.toInt());
+		final BigDecimal taxAmtBD = tax.calculateTax(lineAmt.toBigDecimal(), isTaxIncluded, precision.toInt());
 
 		return Money.of(taxAmtBD, currencyId);
 	}
+
 }
