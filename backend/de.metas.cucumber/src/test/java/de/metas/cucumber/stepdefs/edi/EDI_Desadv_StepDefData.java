@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,6 +25,9 @@ package de.metas.cucumber.stepdefs.edi;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class EDI_Desadv_StepDefData extends StepDefData<I_EDI_Desadv>
 {
 	public EDI_Desadv_StepDefData()
