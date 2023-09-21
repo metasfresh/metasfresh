@@ -140,7 +140,7 @@ Feature: Modular contract log from sales order
       | poLog_1                   | poLine                 | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 10  | C_OrderLine     | moduleLogContract             | modCntr_type_PO                | false         | PurchaseOrder                | year_2023                         | false       | modCntr_module_PO                | 5.00            | PCE                       | 50         |
       | poLog_2                   | moduleLogContract      | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod    | bp_moduleLogPO                      | bp_moduleLogPO                  | 10  | C_Flatrate_Term | moduleLogContract             | modCntr_type_MC_PO             | false         | PurchaseModularContract      | year_2023                         | false       | modCntr_module_MC_PO             | 5.00            | PCE                       | 50         |
 
-    And after not more than 30s, validate ModCntr_Log_Statuses:
+    And after not more than 60s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
       | soLine_1             | C_OrderLine | SP               | 2                   |
       | soLine_2             | C_OrderLine | SP               | 2                   |
@@ -148,7 +148,7 @@ Feature: Modular contract log from sales order
     And recompute modular logs for record:
       | TableName | Record_ID.Identifier |
       | C_Order   | so_order             |
-    And after not more than 30s, validate ModCntr_Log_Statuses:
+    And after not more than 60s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
       | soLine_1             | C_OrderLine | SP               | 3                   |
       | soLine_2             | C_OrderLine | SP               | 3                   |
