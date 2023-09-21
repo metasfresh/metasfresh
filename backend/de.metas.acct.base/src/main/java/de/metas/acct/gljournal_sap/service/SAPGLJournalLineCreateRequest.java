@@ -23,6 +23,7 @@ public class SAPGLJournalLineCreateRequest
 	@Nullable TaxId taxId;
 	@Nullable String description;
 	boolean determineTaxBaseSAP;
+	boolean isTaxIncluded;
 
 	@NonNull
 	public static SAPGLJournalLineCreateRequest of(
@@ -37,6 +38,7 @@ public class SAPGLJournalLineCreateRequest
 				.description(line.getDescription())
 				.taxId(line.getTaxId())
 				.determineTaxBaseSAP(line.isDetermineTaxBaseSAP())
+				.isTaxIncluded(line.isTaxIncluded())
 				.build();
 	}
 }
