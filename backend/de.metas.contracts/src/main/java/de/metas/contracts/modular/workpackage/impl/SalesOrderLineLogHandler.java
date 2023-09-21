@@ -63,7 +63,6 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
