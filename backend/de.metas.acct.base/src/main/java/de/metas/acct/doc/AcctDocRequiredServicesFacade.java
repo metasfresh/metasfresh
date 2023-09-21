@@ -64,6 +64,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -425,4 +426,13 @@ public class AcctDocRequiredServicesFacade
 	{
 		return dimensionService.getFromRecord(model);
 	}
+
+	public Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final ProductId productId,
+			@NonNull final UomId uomToId)
+	{
+		return uomConverter.convertQuantityTo(quantity, productId, uomToId);
+	}
+
 }
