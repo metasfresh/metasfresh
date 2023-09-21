@@ -42,6 +42,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -124,7 +126,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
-		final String description = msgBL.getMsg(language, MSG_INFO_SHIPMENT_SO_COMPLETED, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
+		final String description = TranslatableStrings.adMessage(MSG_INFO_SHIPMENT_SO_COMPLETED, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString())).translate(Language.getBaseAD_Language());
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
@@ -149,24 +151,22 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			@NonNull final HandleLogsRequest<I_M_InOutLine> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_M_InOutLine> handleLogsRequest)
 	{
 		final I_M_InOutLine inOutLineRecord = handleLogsRequest.getModel();
 
 		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
-																						 .flatrateTermId(contractId)
+																						 .flatrateTermId(handleLogsRequest.getContractId())
 																						 .referenceSet(TableRecordReferenceSet.of(inOutLineRef))
 																						 .build());
 
-		final String description = msgBL.getMsg(language, MSG_INFO_SHIPMENT_SO_REVERSED, ImmutableList.of(String.valueOf(inOutLineRecord.getM_Product_ID()), quantity.toString()));
+		final String description = TranslatableStrings.adMessage(MSG_INFO_SHIPMENT_SO_REVERSED, ImmutableList.of(String.valueOf(inOutLineRecord.getM_Product_ID()), quantity.toString())).translate(Language.getBaseAD_Language());
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))
-											.flatrateTermId(contractId)
+											.flatrateTermId(handleLogsRequest.getContractId())
 											.description(description)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 											.build());
