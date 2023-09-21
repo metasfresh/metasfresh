@@ -44,7 +44,7 @@ import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.shippingnotification.ShippingNotificationCollection;
 import de.metas.shippingnotification.ShippingNotificationQuery;
-import de.metas.shippingnotification.ShippingNotificationService;
+import de.metas.shippingnotification.acct.ShippingNotificationAcctService;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
@@ -81,7 +81,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	@NonNull final IInOutBL inOutBL;
 	@NonNull final IOrderBL orderBL;
-	@NonNull final ShippingNotificationService shippingNotificationService;
+	@NonNull final ShippingNotificationAcctService shippingNotificationAcctService;
 	@NonNull private final MatchInvoiceService matchInvoiceService;
 	@NonNull private final OrderCostService orderCostService;
 
@@ -91,13 +91,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	public Doc_InOut(
 			@NonNull final IInOutBL inOutBL,
 			@NonNull final IOrderBL orderBL,
-			@NonNull final ShippingNotificationService shippingNotificationService,
+			@NonNull final ShippingNotificationAcctService shippingNotificationAcctService,
 			@NonNull final AcctDocContext ctx)
 	{
 		super(ctx);
 		this.inOutBL = inOutBL;
 		this.orderBL = orderBL;
-		this.shippingNotificationService = shippingNotificationService;
+		this.shippingNotificationAcctService = shippingNotificationAcctService;
 		this.matchInvoiceService = services.getMatchInvoiceService();
 		this.orderCostService = services.getOrderCostService();
 	}
@@ -166,7 +166,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return ShippingNotificationCollection.EMPTY;
 		}
 
-		return shippingNotificationService.getByQuery(ShippingNotificationQuery.completedOrClosedByOrderIds(orderIds));
+		return shippingNotificationAcctService.getByQuery(ShippingNotificationQuery.completedOrClosedByOrderIds(orderIds));
 	}
 
 	private static ImmutableSet<OrderId> extractOrderIds(final List<I_M_InOutLine> inoutLines)

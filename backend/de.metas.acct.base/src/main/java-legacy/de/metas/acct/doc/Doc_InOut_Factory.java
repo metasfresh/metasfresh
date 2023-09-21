@@ -5,7 +5,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.order.IOrderBL;
-import de.metas.shippingnotification.ShippingNotificationService;
+import de.metas.shippingnotification.acct.ShippingNotificationAcctService;
 import de.metas.util.Services;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -23,7 +23,7 @@ public class Doc_InOut_Factory implements IAcctDocProvider
 {
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final ShippingNotificationService shippingNotificationService;
+	private final ShippingNotificationAcctService shippingNotificationAcctService;
 
 	@Override
 	public Set<String> getDocTableNames() {return ImmutableSet.of(I_M_InOut.Table_Name);}
@@ -36,7 +36,7 @@ public class Doc_InOut_Factory implements IAcctDocProvider
 		return new Doc_InOut(
 				inOutBL,
 				orderBL,
-				shippingNotificationService,
+				shippingNotificationAcctService,
 				AcctDocContext.builder()
 						.services(services)
 						.acctSchemas(acctSchemas)

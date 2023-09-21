@@ -6,7 +6,6 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.IAcctDocProvider;
 import de.metas.shippingnotification.ShippingNotificationId;
-import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -20,7 +19,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class Doc_ShippingNotification_Factory implements IAcctDocProvider
 {
-	private final ShippingNotificationService shippingNotificationService;
+	private final ShippingNotificationAcctService shippingNotificationAcctService;
 
 	@Override
 	public Set<String> getDocTableNames()
@@ -34,11 +33,11 @@ public class Doc_ShippingNotification_Factory implements IAcctDocProvider
 		final ShippingNotificationId shippingNotificationId = documentRef.getIdAssumingTableName(I_M_Shipping_Notification.Table_Name, ShippingNotificationId::ofRepoId);
 
 		return new Doc_ShippingNotification(
-				shippingNotificationService,
+				shippingNotificationAcctService,
 				AcctDocContext.builder()
 						.services(services)
 						.acctSchemas(acctSchemas)
-						.documentModel(shippingNotificationService.getRecordById(shippingNotificationId))
+						.documentModel(shippingNotificationAcctService.getRecordById(shippingNotificationId))
 						.build());
 	}
 }
