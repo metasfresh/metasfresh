@@ -209,6 +209,7 @@ public class SAPGLJournal
 				.determineTaxBaseSAP(request.isDetermineTaxBaseSAP())
 				.openItemTrxInfo(request.getOpenItemTrxInfo())
 				.isFieldsReadOnlyInUI(request.isFieldsReadOnlyInUI())
+				.isTaxIncluded(request.isTaxIncluded())
 				.build();
 	}
 
@@ -262,11 +263,21 @@ public class SAPGLJournal
 			}
 			else if (line.isBaseTaxLine())
 			{
-				final List<SAPGLJournalLine> taxLines = createTaxLines(line, taxProvider, currencyConverter);
-				if (!taxLines.isEmpty())
+				final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
+				it.add(taxLine);
+				hasChanges = true;
+
+				//
+				// once tax line is generated,
+				// calculate line's base tax amount & reset IsTaxIncluded to N
+				if(line.isTaxIncluded())
 				{
-					taxLines.forEach(it::add);
-					hasChanges = true;
+					final Money taxBaseAmt = line.getAmount().subtract(taxLine.getAmount());
+					final Money taxBaseAcct = currencyConverter.convertToAcctCurrency(taxBaseAmt, conversionCtx);
+
+					line.setAmount(taxBaseAmt);
+					line.setAmountAcct(taxBaseAcct);
+					line.setTaxIncluded(false);
 				}
 			}
 		}
@@ -287,7 +298,8 @@ public class SAPGLJournal
 		final TaxId taxId = Check.assumeNotNull(baseLine.getTaxId(), "line shall have the tax set: {}", baseLine);
 		final PostingSign taxPostingSign = baseLine.getPostingSign();
 		final Account taxAccount = taxProvider.getTaxAccount(taxId, acctSchemaId, taxPostingSign);
-		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
+
+		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId, baseLine.isTaxIncluded());
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
 		final SAPGLJournalLine line = SAPGLJournalLine.builder()
@@ -300,6 +312,7 @@ public class SAPGLJournal
 				.taxId(taxId)
 				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())
+				.isTaxIncluded(false) // tax can't be included for generated tax lines
 				.build();
 
 		final ImmutableList.Builder<SAPGLJournalLine> resultBuilder = ImmutableList.builder();

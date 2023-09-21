@@ -37,8 +37,8 @@ public class SAPGLJournalLine
 
 	@NonNull @Getter private final Account account;
 	@NonNull @Getter private final PostingSign postingSign;
-	@NonNull @Getter private final Money amount;
 	@NonNull @Getter @Setter(AccessLevel.PACKAGE) private Money amountAcct;
+	@NonNull @Getter @Setter private Money amount;
 
 	@Nullable @Getter private final TaxId taxId;
 
@@ -51,6 +51,7 @@ public class SAPGLJournalLine
 	@Nullable @Getter private final FAOpenItemTrxInfo openItemTrxInfo;
 
 	@Getter private final boolean isFieldsReadOnlyInUI;
+	@Getter @Setter private boolean isTaxIncluded;
 
 	public SAPGLJournalLineId getIdNotNull()
 	{
