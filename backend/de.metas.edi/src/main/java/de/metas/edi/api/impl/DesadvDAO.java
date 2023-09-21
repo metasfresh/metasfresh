@@ -2,7 +2,7 @@
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 package de.metas.edi.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.IDesadvDAO;

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -78,7 +78,7 @@ public class AD_EventLog_Entry_StepDef
 	@And("metasfresh has no AD_EventLog records")
 	public void delete_AD_EventLog_records()
 	{
-		DB.executeUpdateEx("DELETE FROM AD_EventLog_Entry;", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM AD_EventLog_Entry;", ITrx.TRXNAME_None);
 	}
 
 	@And("^after not more than (.*)s, AD_EventLog_Entry are found$")

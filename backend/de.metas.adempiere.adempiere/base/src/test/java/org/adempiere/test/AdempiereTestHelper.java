@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.test;
 
 import ch.qos.logback.classic.Level;
@@ -67,28 +89,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * Helper to be used in order to setup ANY test which depends on ADempiere.
@@ -414,35 +414,5 @@ public class AdempiereTestHelper
 		CacheMgt.get().reset();
 
 		staticInitialized = true;
-	}
-
-	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
-	{
-		final CleanupTask task = new CleanupTask(name, runnable);
-		cleanupTasks.add(task);
-		log("onCleanup", "Scheduled task: " + task.getName());
-	}
-
-	private void runCleanupTasks()
-	{
-		for (final Iterator<CleanupTask> it = cleanupTasks.iterator(); it.hasNext(); )
-		{
-			final CleanupTask task = it.next();
-
-			task.run();
-			log("runCleanupTasks", "Executed task: " + task.getName());
-
-			it.remove();
-		}
-	}
-
-	@AllArgsConstructor
-	@ToString(of = "name")
-	private static class CleanupTask
-	{
-		@Getter @NonNull private final String name;
-		@NonNull private final Runnable runnable;
-
-		public void run() {runnable.run();}
 	}
 }

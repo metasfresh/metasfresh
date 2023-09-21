@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -258,6 +258,6 @@ public class EDI_Desadv_Pack_Item_StepDef
 
 	private void truncateEDIDesadvPackItem()
 	{
-		DB.executeUpdateEx("DELETE FROM EDI_Desadv_Pack_Item", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM EDI_Desadv_Pack_Item", ITrx.TRXNAME_None);
 	}
 }

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.payment.sepa.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.payment.sepa.sepamarshaller.impl;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -124,8 +146,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private static final String NOTPROVIDED_BIC = "NOTPROVIDED_BIC";
 	@VisibleForTesting
 	static final String NOTPROVIDED_GENERAL = "NOTPROVIDED";
-
-	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
 
 	/**
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.

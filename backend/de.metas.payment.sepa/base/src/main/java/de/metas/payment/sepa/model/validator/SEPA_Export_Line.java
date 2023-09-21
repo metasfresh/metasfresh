@@ -1,33 +1,26 @@
-package de.metas.payment.sepa.model.validator;
-
 /*
  * #%L
- * de.metas.payment.sepa
+ * de.metas.payment.sepa.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
+package de.metas.payment.sepa.model.validator;
 
 import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.api.IESRImportBL;
@@ -35,6 +28,11 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
 
 @Validator(I_SEPA_Export_Line.class)
 public class SEPA_Export_Line
@@ -60,8 +58,6 @@ public class SEPA_Export_Line
 			esrImport.setOtherAccountIdentification(""); // set nothing, but we need to make sure that tag is closed
 			return;
 		}
-
-		final String QR_IBAN = bpBankAccount.getQR_IBAN();
 
 		if (Check.isNotBlank(QR_IBAN))
 		{

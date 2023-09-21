@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.payment.sepa.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.payment.sepa.sepamarshaller.impl;
 
 import de.metas.banking.Bank;
@@ -170,7 +192,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter if we do batch or not.
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
 		final Set<String> endToEndIds = xmlDocument.getCstmrCdtTrfInitn().getPmtInf()
 				.stream()
@@ -224,7 +246,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		xmlDocument = xmlGenerator.createDocument(sepaExport);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter if we do batch or not.
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
 		final Set<String> endToEndIds = xmlDocument.getCstmrCdtTrfInitn().getPmtInf()
 				.stream()
@@ -234,39 +256,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 		assertThat(endToEndIds).containsExactlyInAnyOrder("Ref123", "Ref456", "Ref789");
-
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
-	}
-
-	@Test
-	public void createDocument_batch_with_QR_IBAN() throws Exception
-	{
-		final I_SEPA_Export sepaExport = createSEPAExport(
-				"org", // SEPA_CreditorName
-				"12345", // SEPA_CreditorIdentifier
-				"INGBNL2A" // bic
-		);
-		createSEPAExportLineQRVersion(sepaExport,
-				"001",// SEPA_MandateRefNo
-				"NL31INGB0000000044",// IBAN
-				"INGBNL2A", // BIC
-				new BigDecimal("100"), // amount
-				eur, "210000000003139471430009017");
-
-		createSEPAExportLineQRVersion(sepaExport,
-				"002", // SEPA_MandateRefNo
-				"NL31INGB0000000044", // IBAN
-				"INGBNL2A",// BIC
-				new BigDecimal("40"), // amount
-				chf, "210000000003139471430009017");
-
-		// invoke the method under test
-		xmlDocument = xmlGenerator.createDocument(sepaExport);
-
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("140");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("2");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
@@ -337,18 +326,18 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final I_SEPA_Export sepaExport,
 			final String SEPA_MandateRefNo,
 			final String iban,
-			final String bic,
+			final String swiftCode,
 			final BigDecimal amt,
 			final CurrencyId currencyId)
 	{
-		return createSEPAExportLine(sepaExport, SEPA_MandateRefNo, iban, bic, amt, currencyId, null);
+		return createSEPAExportLine(sepaExport, SEPA_MandateRefNo, iban, swiftCode, amt, currencyId, null);
 	}
 
 	private I_SEPA_Export_Line createSEPAExportLine(
 			final I_SEPA_Export sepaExport,
 			final String SEPA_MandateRefNo,
 			final String iban,
-			final String bic,
+			final String swiftCode,
 			final BigDecimal amt,
 			final CurrencyId currencyId,
 			final String structuredRemittanceInfo)
@@ -368,7 +357,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
 		line.setIBAN(iban);
-		line.setSwiftCode(bic);
+		line.setSwiftCode(swiftCode);
 		line.setAmt(amt);
 		line.setC_Currency_ID(currencyId.getRepoId());
 		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);
@@ -422,44 +411,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		return line;
 	}
 
-	private I_SEPA_Export_Line createSEPAExportLineQRVersion(
-			final I_SEPA_Export sepaExport,
-			final String SEPA_MandateRefNo,
-			final String QRIban,
-			final String bic,
-			final BigDecimal amt,
-			final CurrencyId currencyId,
-			final String reference)
-	{
-		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
-				.bankName("myBank")
-				.routingNo("routingNo")
-				.build());
-
-		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
-		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
-		bankAccount.setC_Currency_ID(currencyId.getRepoId());
-		bankAccount.setQR_IBAN(QRIban);
-		bankAccount.setIsEsrAccount(true);
-		bankAccount.setA_Name("bankAccount.A_Name");
-		save(bankAccount);
-
-		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
-		line.setIBAN(QRIban);
-		line.setSwiftCode(bic);
-		line.setAmt(amt);
-		line.setC_Currency_ID(currencyId.getRepoId());
-		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);
-		line.setStructuredRemittanceInfo(reference);
-
-		line.setC_BP_BankAccount(bankAccount);
-		line.setSEPA_Export(sepaExport);
-		line.setIsActive(true);
-		line.setIsError(false);
-		save(line);
-
-		return line;
-	}
 	@Test
 	public void testReplaceForbiddenChars()
 	{
