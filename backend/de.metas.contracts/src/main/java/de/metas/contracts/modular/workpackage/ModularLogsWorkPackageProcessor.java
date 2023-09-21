@@ -26,7 +26,6 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,7 +38,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -51,13 +49,12 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String localTrxName)
 	{
 		final TableRecordReferenceSet enqueuedModels = TableRecordReferenceSet.of(retrieveItems(TableRecordReference.class));
-		enqueuedModels.assertSingleTableName();
 
 		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workpackage.getC_Queue_WorkPackage_ID());
 
 		try
 		{
-			logHandler.handleLogs(getRequestList(enqueuedModels));
+			logHandler.handleLogs(getRequestList());
 
 			enqueuedModels.forEach(recordReference -> createStatusService.setStatusSuccessfullyProcessed(workPackageId, recordReference));
 		}
@@ -75,60 +72,38 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 
 	public enum Params
 	{
-		MODEL_ACTION,
-		CONTRACT_INFO_LIST
+		REQUESTS_TO_PROCESS
 	}
 
 	@NonNull
-	private List<IModularContractLogHandler.HandleLogsRequest<Object>> getRequestList(final TableRecordReferenceSet enqueuedModels)
+	private List<IModularContractLogHandler.HandleLogsRequest<Object>> getRequestList()
 	{
-		final ModelAction modelAction = getModelAction();
-		final ContractInfoParameter contractInfoParameter = getContractInfoParameter();
+		final ProcessModularLogAggRequest processModularLogAggRequest = getRequestListParam();
 
 		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID());
 
-		return enqueuedModels.streamReferences()
-				.flatMap(recordReference -> {
-					final List<ContractInfoParameter.ContractProcessInfo> contractInfoList = contractInfoParameter.getContractInfoByRecordId(recordReference.getRecord_ID());
-					if (contractInfoList == null || contractInfoList.isEmpty())
-					{
-						throw new AdempiereException("Missing mandatory parameter for record reference=" + recordReference)
-								.appendParametersToMessage()
-								.setParameter("wpParameterName", Params.CONTRACT_INFO_LIST.name());
-					}
-
-					return contractInfoList.stream()
-							.map(contractProcessInfo -> IModularContractLogHandler.HandleLogsRequest.builder()
-									.model(recordReference.getModel())
-									.logEntryContractType(contractProcessInfo.getContractType())
-									.modelAction(modelAction)
-									.workPackageId(workPackageId)
-									.handlerClassname(contractProcessInfo.getHandlerClassName())
-									.contractId(contractProcessInfo.getFlatrateTermId())
-									.build());
-				})
-				.collect(Collectors.toList());
+		return processModularLogAggRequest.getRequestList()
+				.stream()
+				.map(processRequest -> IModularContractLogHandler.HandleLogsRequest.builder()
+						.model(processRequest.getRecordReference().getModel())
+						.logEntryContractType(processRequest.getLogEntryContractType())
+						.modelAction(processRequest.getAction())
+						.workPackageId(workPackageId)
+						.handlerClassname(processRequest.getHandlerClassname())
+						.contractId(processRequest.getFlatrateTermId())
+						.build())
+				.toList();
 	}
 
 	@NonNull
-	private ContractInfoParameter getContractInfoParameter()
+	private ProcessModularLogAggRequest getRequestListParam()
 	{
-		final String recordId2ContractTypesString = getParameters().getParameterAsString(Params.CONTRACT_INFO_LIST.name());
+		final String requestsToProcess = getParameters().getParameterAsString(Params.REQUESTS_TO_PROCESS.name());
 
-		return Optional
-				.ofNullable(recordId2ContractTypesString)
-				.map(recordId2ContractTypesStringParam -> JsonObjectMapperHolder.fromJson(recordId2ContractTypesStringParam, ContractInfoParameter.class))
+		return Optional.ofNullable(requestsToProcess)
+				.map(requestsToProcessParam -> JsonObjectMapperHolder.fromJson(requestsToProcess, ProcessModularLogAggRequest.class))
 				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
 						.appendParametersToMessage()
-						.setParameter("wpParameterName", Params.CONTRACT_INFO_LIST.name()));
-	}
-
-	@NonNull
-	private ModelAction getModelAction()
-	{
-		return getParameters().getParameterAsEnum(Params.MODEL_ACTION.name(), ModelAction.class)
-				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
-						.appendParametersToMessage()
-						.setParameter("wpParameterName", Params.MODEL_ACTION.name()));
+						.setParameter("wpParameterName", Params.REQUESTS_TO_PROCESS.name()));
 	}
 }
