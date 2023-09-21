@@ -29,7 +29,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -64,17 +63,12 @@ public class CostAmountDetailed
 
 	public static CostAmountDetailed ofAmtAndType(@NonNull final CostAmount amt, @NonNull final CostAmountType type)
 	{
-		switch (type)
+		return switch (type)
 		{
-			case MAIN:
-				return builder().mainAmt(amt).build();
-			case ADJUSTMENT:
-				return builder().costAdjustmentAmt(amt).build();
-			case ALREADY_SHIPPED:
-				return builder().alreadyShippedAmt(amt).build();
-			default:
-				throw new AdempiereException("Unknown type: " + type);
-		}
+			case MAIN -> builder().mainAmt(amt).build();
+			case ADJUSTMENT -> builder().costAdjustmentAmt(amt).build();
+			case ALREADY_SHIPPED -> builder().alreadyShippedAmt(amt).build();
+		};
 	}
 
 	public CostAmountDetailed add(@NonNull final CostAmountDetailed amtToAdd)
