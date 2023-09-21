@@ -49,7 +49,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 		<band height="200" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="363" y="141" width="97" height="13" uuid="2f7f6410-10b7-447c-a38d-ab84c20aa5cd"/>
+				<reportElement key="textField-5" x="340" y="141" width="140" height="13" uuid="2f7f6410-10b7-447c-a38d-ab84c20aa5cd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -62,7 +62,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$R{PhysicalClearanceDate}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="460" y="128" width="91" height="13" uuid="3c4dcef5-1224-4889-ab28-77d4bfd15e5f"/>
+				<reportElement key="textField-3" x="480" y="128" width="71" height="13" uuid="3c4dcef5-1224-4889-ab28-77d4bfd15e5f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -75,7 +75,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$F{poreference}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="363" y="128" width="97" height="13" uuid="4a8fba7c-9d63-484e-8acb-abd0894837b3"/>
+				<reportElement key="textField-5" x="340" y="128" width="140" height="13" uuid="4a8fba7c-9d63-484e-8acb-abd0894837b3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -88,7 +88,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$R{POReference}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-6" x="363" y="101" width="97" height="13" forecolor="#000000" uuid="ad7e6470-0901-4b6a-84c6-57356f52df4f"/>
+				<reportElement key="textField-6" x="340" y="101" width="140" height="13" forecolor="#000000" uuid="ad7e6470-0901-4b6a-84c6-57356f52df4f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -101,7 +101,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$F{document_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="460" y="101" width="91" height="13" forecolor="#000000" uuid="32c99b4e-6dee-45af-bfcb-2766e20b30ba"/>
+				<reportElement key="textField-1" x="480" y="101" width="71" height="13" forecolor="#000000" uuid="32c99b4e-6dee-45af-bfcb-2766e20b30ba"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -114,7 +114,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="460" y="141" width="91" height="13" uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf"/>
+				<reportElement key="textField-3" x="480" y="141" width="71" height="13" uuid="9817521f-5905-468e-9e02-1b8a5fa30bdf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -140,7 +140,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="363" y="115" width="97" height="13" uuid="302da669-74e1-4608-a327-a39d12275edb"/>
+				<reportElement key="textField-5" x="340" y="115" width="140" height="13" uuid="302da669-74e1-4608-a327-a39d12275edb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -153,7 +153,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$R{orderno}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="460" y="115" width="91" height="13" uuid="cf106d41-baed-4808-b8e5-3f86ee8a863d"/>
+				<reportElement key="textField-3" x="480" y="115" width="71" height="13" uuid="cf106d41-baed-4808-b8e5-3f86ee8a863d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -166,7 +166,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$F{sales_order}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="363" y="154" width="97" height="13" uuid="a871a143-e45a-4e20-b4d7-c7a0acce5a73"/>
+				<reportElement key="textField-5" x="340" y="154" width="140" height="13" uuid="a871a143-e45a-4e20-b4d7-c7a0acce5a73"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -179,7 +179,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Shipping_Notification_Description(
 				<textFieldExpression><![CDATA[$R{HarvestingYear}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="460" y="154" width="91" height="13" uuid="d7c784b3-0d8d-4a3a-9bd0-879a2cc9cde7"/>
+				<reportElement key="textField-3" x="480" y="154" width="71" height="13" uuid="d7c784b3-0d8d-4a3a-9bd0-879a2cc9cde7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
