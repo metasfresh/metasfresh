@@ -1,4 +1,5 @@
 @from:cucumber
+@tag2
 Feature: create or update BPartner v1
   As a user
   I want create or update a BPartner record
