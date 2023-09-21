@@ -71,16 +71,21 @@ public interface IModularContractLogHandler<T>
 				&& contractTypeHandler.applies(request.getLogEntryContractType())
 				&& contractTypeHandler.applies(request.getModel());
 
+		if (!isHandlerMatchingRequest)
+		{
+			return false;
+		}
+
 		final boolean isHandlerMatchingContract = getModularContractTypeHandler()
 				.streamContractIds(request.getModel())
 				.anyMatch(contractId -> contractId.equals(request.getContractId()));
 
-		if (isHandlerMatchingRequest && !isHandlerMatchingContract)
+		if (!isHandlerMatchingContract)
 		{
 			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
 		}
 
-		return isHandlerMatchingContract && isHandlerMatchingRequest;
+		return isHandlerMatchingContract;
 	}
 
 	@NonNull
