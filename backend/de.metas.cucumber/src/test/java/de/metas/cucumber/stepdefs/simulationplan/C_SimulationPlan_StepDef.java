@@ -174,7 +174,7 @@ public class C_SimulationPlan_StepDef
 
 		final SimulationPlanRef simulationPlan = simulationPlanService.getOrCreateMainSimulationPlan(
 				UserId.ofRepoId(userRecord.getAD_User_ID()),
-				OrgId.MAIN);
+				OrgId.ofRepoId(userRecord.getAD_Org_ID()));
 
 		final I_C_SimulationPlan simulationPlanRecord = InterfaceWrapperHelper.load(simulationPlan.getId().getRepoId(), I_C_SimulationPlan.class);
 		assertThat(simulationPlanRecord).isNotNull();

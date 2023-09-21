@@ -22,7 +22,6 @@
 
 package de.metas.rest_api.v2.project.workorder;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -42,9 +41,7 @@ import de.metas.project.workorder.project.WOProject;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.project.ValidateProjectHelper;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.MissingPropertyException;
@@ -61,7 +58,6 @@ public class WorkOrderMapper
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-	private final IUserBL userBL = Services.get(IUserBL.class);
 
 	private final ProjectService projectService;
 
@@ -176,11 +172,6 @@ public class WorkOrderMapper
 			woProjectBuilder.woProjectCreatedDate(TimeUtil.asInstant(request.getWoProjectCreatedDate(), zoneId));
 		}
 
-		if (request.isSpecialistConsultantExternalIdSet())
-		{
-			woProjectBuilder.specialistConsultantID(getSpecialistConsultantIdOrNull(request.getSpecialistConsultantExternalId(), orgId));
-		}
-
 		return woProjectBuilder.build();
 	}
 
@@ -226,22 +217,20 @@ public class WorkOrderMapper
 				.woProjectCreatedDate(TimeUtil.asInstant(request.getWoProjectCreatedDate(), zoneId))
 				.salesRepId(JsonMetasfreshId.mapToOrNull(request.getSalesRepId(), UserId::ofRepoId))
 				.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBpartnerId(), BPartnerId::ofRepoId))
-				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId))
-				.specialistConsultantId(getSpecialistConsultantIdOrNull(request.getSpecialistConsultantExternalId(), orgId));
+				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId));
 
 		if (request.getExternalId() == null) // if no externalId was given for the new project, then see if it was implied by the identifier
 		{
 			final IdentifierString projectIdentifier = request.mapProjectIdentifier(IdentifierString::of);
-			if (projectIdentifier.isExternalId())
+			if(projectIdentifier.isExternalId())
 			{
 				createWOProjectRequestBuilder.externalId(projectIdentifier.asExternalId());
 			}
 		}
-
-		if (Check.isBlank(request.getValue())) // if no value was given for the new project, then see if it was implied by the identifier
+		if(Check.isBlank(request.getValue())) // if no value was given for the new project, then see if it was implied by the identifier
 		{
 			final IdentifierString projectIdentifier = request.mapProjectIdentifier(IdentifierString::of);
-			if (projectIdentifier.isValue())
+			if(projectIdentifier.isValue())
 			{
 				createWOProjectRequestBuilder.value(projectIdentifier.asValue());
 			}
@@ -288,32 +277,6 @@ public class WorkOrderMapper
 		return request.isCurrencyCodeSet()
 				? currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getCurrencyCode())).getId()
 				: existingWOProject.getCurrencyId();
-	}
-
-	@Nullable
-	private UserId getSpecialistConsultantIdOrNull(
-			@Nullable final String specialistConsultantExternalId,
-			@NonNull final OrgId orgId)
-	{
-		if (Check.isBlank(specialistConsultantExternalId))
-		{
-			return null;
-		}
-
-		final ImmutableSet<UserId> userIds = userBL.retrieveUserIdsByExternalId(specialistConsultantExternalId, orgId);
-		if (userIds.size() > 1)
-		{
-			Loggables.get().addLog("Multiple Users found for SpecialistConsultantExternalId={}", specialistConsultantExternalId);
-			return null;
-		}
-
-		if (userIds.isEmpty())
-		{
-			Loggables.get().addLog("No User found for SpecialistConsultantExternalId={}", specialistConsultantExternalId);
-			return null;
-		}
-
-		return userIds.iterator().next();
 	}
 
 	@Nullable

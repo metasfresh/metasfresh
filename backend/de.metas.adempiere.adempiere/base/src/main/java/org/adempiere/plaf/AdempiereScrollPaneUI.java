@@ -38,11 +38,8 @@ import org.compiere.util.DisplayType;
 
 public class AdempiereScrollPaneUI extends MetalScrollPaneUI
 {
-	/**
-	 * The UI Class ID to bind this UI to
-	 * See {@link JScrollPane#getUIClassID()}.
-	 */
-	public static final String uiClassID = "ScrollPaneUI";
+	/** the UI Class ID to bind this UI to */
+	public static final String uiClassID = AdempierePLAF.getUIClassID(JScrollPane.class, "ScrollPaneUI");
 
 	/**
 	 * Property used to disable forwarding the mouse wheel events when this scroll pane cannot handle them.

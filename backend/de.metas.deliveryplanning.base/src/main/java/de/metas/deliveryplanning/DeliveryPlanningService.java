@@ -111,7 +111,7 @@ public class DeliveryPlanningService
 {
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllClosed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllClosed");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllOpen = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllOpen");
-	public static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
+	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	private static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced");
 
@@ -729,8 +729,8 @@ public class DeliveryPlanningService
 
 	public <T> T getShipmentOrReceiptInfo(
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
-			@NonNull final Function<DeliveryPlanningReceiptInfo, T> receiptInfoMapper,
-			@NonNull final Function<DeliveryPlanningShipmentInfo, T> shipmentInfoMapper)
+			@NonNull Function<DeliveryPlanningReceiptInfo, T> receiptInfoMapper,
+			@NonNull Function<DeliveryPlanningShipmentInfo, T> shipmentInfoMapper)
 	{
 		return deliveryPlanningRepository.getShipmentOrReceiptInfo(deliveryPlanningId, receiptInfoMapper, shipmentInfoMapper);
 	}

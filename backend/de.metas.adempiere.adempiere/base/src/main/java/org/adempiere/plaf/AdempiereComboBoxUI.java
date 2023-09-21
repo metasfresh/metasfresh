@@ -62,11 +62,8 @@ import com.jgoodies.looks.plastic.PlasticComboBoxUI;
  */
 public class AdempiereComboBoxUI extends PlasticComboBoxUI
 {
-	/**
-	 * The UI Class ID to bind this UI to
-	 * See {@link JComboBox#getUIClassID()}.
-	 */
-	public static final String uiClassID = "ComboBoxUI";
+	/** the UI Class ID to bind this UI to */
+	public static final String uiClassID = AdempierePLAF.getUIClassID(JComboBox.class, "ComboBoxUI");
 
 	private static final String KEY_EnableAutoCompletion = "ComboBox.AutoCompletion";
 	

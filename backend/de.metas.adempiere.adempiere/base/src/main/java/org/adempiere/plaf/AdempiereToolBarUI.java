@@ -30,10 +30,7 @@ import javax.swing.plaf.metal.MetalToolBarUI;
 
 public class AdempiereToolBarUI extends MetalToolBarUI
 {
-	/**
-	 * The UI Class ID to bind this UI to
-	 * See {@link JToolBar#getUIClassID()}.
-	 */public static final String uiClassID = "ToolBarUI";
+	public static final String uiClassID = AdempierePLAF.getUIClassID(JToolBar.class, "ToolBarUI");
 
 	public static ComponentUI createUI(final JComponent b)
 	{

@@ -343,17 +343,17 @@ public class WorkOrderProjectObjectUnderTestRestService
 				.externalIds(rawExternalIds)
 				.build();
 
-		final List<WOProjectObjectUnderTest> existingWOPrjObjectUnderTest = workOrderProjectObjectUnderTestRepository.getByQuery(query);
+		final List<WOProjectObjectUnderTest> existingWOProjectUnderTest = workOrderProjectObjectUnderTestRepository.getByQuery(query);
 
-		if (!existingWOPrjObjectUnderTest.isEmpty())
+		if (!existingWOProjectUnderTest.isEmpty())
 		{
-			final String projectIds = existingWOPrjObjectUnderTest.stream()
+			final String projectIds = existingWOProjectUnderTest.stream()
 					.map(WOProjectObjectUnderTest::getProjectId)
 					.map(ProjectId::getRepoId)
 					.map(String::valueOf)
 					.collect(Collectors.joining(","));
 
-			throw new AdempiereException("WOProjectObjectUnderTest.ExternalId already stored under a different project!")
+			throw new AdempiereException("WOProjectUnderTest.ExternalId already stored under a different project!")
 					.appendParametersToMessage()
 					.setParameter("ExternalIds", StringUtils.join(rawExternalIds, ", "))
 					.setParameter("Request-ProjectId", requestProjectId)
@@ -401,20 +401,23 @@ public class WorkOrderProjectObjectUnderTestRestService
 			@NonNull final IdentifierString identifier,
 			@NonNull final List<WOProjectObjectUnderTest> objectsUnderTest)
 	{
-		return switch (identifier.getType())
+		switch (identifier.getType())
 		{
-			case METASFRESH_ID -> objectsUnderTest.stream()
-					.filter(objectUnderTest -> {
-						final int id = objectUnderTest.getObjectUnderTestId().getRepoId();
-						return id == identifier.asMetasfreshId().getValue();
-					})
-					.findFirst();
-			case EXTERNAL_ID -> objectsUnderTest.stream()
-					.filter(objectUnderTest -> objectUnderTest.getExternalId() != null)
-					.filter(objectUnderTest -> objectUnderTest.getExternalId().equals(identifier.asExternalId()))
-					.findFirst();
-			default -> throw new AdempiereException("Unhandled IdentifierString type=" + identifier);
-		};
+			case METASFRESH_ID:
+				return objectsUnderTest.stream()
+						.filter(objectUnderTest -> {
+							final int id = objectUnderTest.getObjectUnderTestId().getRepoId();
+							return id == identifier.asMetasfreshId().getValue();
+						})
+						.findFirst();
+			case EXTERNAL_ID:
+				return objectsUnderTest.stream()
+						.filter(objectUnderTest -> objectUnderTest.getExternalId() != null)
+						.filter(objectUnderTest -> objectUnderTest.getExternalId().equals(identifier.asExternalId()))
+						.findFirst();
+			default:
+				throw new AdempiereException("Unhandled IdentifierString type=" + identifier);
+		}
 	}
 
 	private static void validateJsonWorkOrderObjectUnderTestUpsertRequest(@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request)

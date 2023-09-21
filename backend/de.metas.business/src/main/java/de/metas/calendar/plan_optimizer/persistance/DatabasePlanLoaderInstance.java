@@ -169,7 +169,7 @@ public class DatabasePlanLoaderInstance
 			final WOProject woProject,
 			final WOProjectStep woStep,
 			final WOProjectResource woStepResourceOrig,
-			final Step prevStep,
+			Step prevStep,
 			final LocalDateTime startDateMin,
 			final LocalDateTime dueDate)
 	{
@@ -189,18 +189,14 @@ public class DatabasePlanLoaderInstance
 				.map(this::toLocalDateTime)
 				.orElse(null);
 
-		boolean pinned = woStep.isManuallyLocked() || woStep.inTesting();
-		if (pinned && (startDate == null || endDate == null))
+		boolean manuallyLocked = woStep.isManuallyLocked();
+		if (manuallyLocked && (startDate == null || endDate == null))
 		{
 			logger.info("Cannot consider resource as locked because it has no start/end date: {}", woStepResource);
-			pinned = false;
+			manuallyLocked = false;
 		}
 
 		final int delay = prevStep == null ? computeDelay(startDateMin, startDate) : computeDelay(prevStep.getEndDate(), startDate);
-
-		final Duration humanResourceTestGroupDuration = Optional.ofNullable(woStep.getWoPlannedPersonDurationHours())
-				.map(Duration::ofHours)
-				.orElse(Duration.ZERO);
 
 		final Step step = Step.builder()
 				.id(StepId.builder()
@@ -213,8 +209,7 @@ public class DatabasePlanLoaderInstance
 				.dueDate(dueDate)
 				.startDateMin(startDateMin)
 				.delay(delay)
-				.pinned(pinned)
-				.humanResourceTestGroupDuration(humanResourceTestGroupDuration)
+				.pinned(manuallyLocked)
 				.build();
 
 		final BooleanWithReason valid = step.checkProblemFactsValid();
@@ -242,7 +237,7 @@ public class DatabasePlanLoaderInstance
 	private de.metas.calendar.plan_optimizer.domain.Resource createOptaPlannerResource(final ResourceId resourceId)
 	{
 		final de.metas.resource.Resource resource = resourceService.getResourceById(resourceId);
-		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue(), resource.getHumanResourceTestGroupId());
+		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue());
 	}
 
 	public static int computeDelay(@NonNull final LocalDateTime lastStepEndDate, @Nullable final LocalDateTime thisStepStartDate)

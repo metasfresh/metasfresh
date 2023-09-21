@@ -69,7 +69,7 @@ public class WorkOrderProjectRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProjectUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{" + MF_UPSERT_WORK_ORDER_PROJECT_V2_CAMEL_URI + "}}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));

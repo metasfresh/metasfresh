@@ -10,10 +10,6 @@ import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
-import de.metas.resource.HumanResourceTestGroupRepository;
-import de.metas.resource.HumanResourceTestGroupService;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -26,14 +22,14 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PlanConstraintProviderTest
 {
 	private static final ProjectId PROJECT_ID1 = ProjectId.ofRepoId(1);
 	private static final ProjectId PROJECT_ID2 = ProjectId.ofRepoId(2);
-	private static final Resource RESOURCE = new Resource(ResourceId.ofRepoId(1), "R1", null);
-	private static final Resource RESOURCE2 = new Resource(ResourceId.ofRepoId(2), "R2", null);
+	private static final Resource RESOURCE = new Resource(ResourceId.ofRepoId(1), "R1");
+	private static final Resource RESOURCE2 = new Resource(ResourceId.ofRepoId(2), "R2");
 
 	private static ConstraintVerifier<PlanConstraintProvider, Plan> constraintVerifier;
 
@@ -42,8 +38,6 @@ class PlanConstraintProviderTest
 	@BeforeAll
 	static void beforeAll()
 	{
-		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(new HumanResourceTestGroupRepository()));
 		constraintVerifier = ConstraintVerifier.build(new PlanConstraintProvider(), Plan.class, Step.class);
 	}
 

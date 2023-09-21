@@ -1,6 +1,5 @@
 package de.metas.user.api.impl;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -18,7 +17,6 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserAuthTokenRepository;
@@ -490,9 +488,4 @@ public class UserBL implements IUserBL
 
 	}
 
-	@NonNull
-	public ImmutableSet<UserId> retrieveUserIdsByExternalId(@NonNull final String externalId, @NonNull final OrgId orgId)
-	{
-		return userDAO.retrieveUserIdsByExternalId(externalId, orgId);
-	}
 }

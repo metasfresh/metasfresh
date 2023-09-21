@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
 
 const SimulationOptimizerButton = ({
   simulationId,
@@ -26,7 +25,7 @@ const SimulationOptimizerButton = ({
     case 'STOPPED':
       return (
         <button onClick={() => onStart({ simulationId })}>
-          {counterpart.translate('calendar.button.start.optimization')}
+          Start optimization
         </button>
       );
     default:

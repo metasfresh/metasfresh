@@ -33,11 +33,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
-import org.apache.camel.spi.PropertiesComponent;
 import org.springframework.stereotype.Component;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_AUDIT_TRAIL;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNAL_SYSTEM_VALUE;
@@ -45,9 +41,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_ROUTE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TRACE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.core.CoreConstants.CONCURRENT_CONSUMERS_PROPERTY;
 import static de.metas.camel.externalsystems.core.CoreConstants.FROM_MF_ROUTE;
-import static de.metas.camel.externalsystems.core.CoreConstants.THREAD_POOL_SIZE_PROPERTY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
 
 @Component
@@ -61,8 +55,6 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 
 	private final static String FROM_MF_ROUTE_ID = "RabbitMQ_from_MF_ID";
 
-	private static final Logger logger = Logger.getLogger(CallDispatcherRouteBuilder.class.getName());
-
 	public CallDispatcherRouteBuilder(final @NonNull ProcessLogger processLogger)
 	{
 		this.processLogger = processLogger;
@@ -75,11 +67,6 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 		onException(Exception.class)
 				.to(StaticEndpointBuilders.direct(MF_ERROR_ROUTE_ID));
 
-		final PropertiesComponent propertiesComponent = getContext().getPropertiesComponent();
-
-		logger.log(Level.INFO, "Property " + THREAD_POOL_SIZE_PROPERTY + "=" + propertiesComponent.resolveProperty(THREAD_POOL_SIZE_PROPERTY));
-		logger.log(Level.INFO, "Property " + CONCURRENT_CONSUMERS_PROPERTY + "=" + propertiesComponent.resolveProperty(CONCURRENT_CONSUMERS_PROPERTY));
-
 		from(FROM_MF_ROUTE)
 				.routeId(FROM_MF_ROUTE_ID)
 				.to("direct:dispatch");
@@ -89,7 +76,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemRequest.class))
 				.process(this::processExternalSystemRequest)
-				.log("routing request to route ${header." + HEADER_TARGET_ROUTE + "}; MessageId=${id}")
+				.log("routing request to route ${header." + HEADER_TARGET_ROUTE + "}")
 				.process(this::logRequestRouted)
 				.toD("direct:${header." + HEADER_TARGET_ROUTE + "}", false)
 				.process(this::logInvocationDone);
