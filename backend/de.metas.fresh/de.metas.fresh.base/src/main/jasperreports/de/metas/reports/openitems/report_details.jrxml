@@ -912,7 +912,7 @@ DocumentNo]]>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[" "+$F{iso_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[" "+$F{main_currency}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
