@@ -143,6 +143,14 @@ public class FTSConfigRepository
 						.collect(ImmutableList.toImmutableList()));
 	}
 
+	public void deleteSourceTablesByConfigId(final FTSConfigId configId)
+	{
+		queryBL.createQueryBuilder(I_ES_FTS_Config_SourceModel.class)
+				.addEqualsFilter(I_ES_FTS_Config_SourceModel.COLUMNNAME_ES_FTS_Config_ID, configId)
+				.create()
+				.delete();
+	}
+
 	@NonNull
 	private static FTSConfigId extractConfigId(@NonNull final I_ES_FTS_Config configRecord)
 	{
