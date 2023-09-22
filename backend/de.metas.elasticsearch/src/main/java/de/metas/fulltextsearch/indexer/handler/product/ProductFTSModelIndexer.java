@@ -95,6 +95,10 @@ public class ProductFTSModelIndexer implements FTSModelIndexer
 		for (final ModelToIndex request : requests)
 		{
 			final TableRecordReference sourceModelRef = request.getSourceModelRef();
+			if (sourceModelRef == null)
+			{
+				continue;
+			}
 
 			productIds.add(ProductId.ofRepoId(sourceModelRef.getRecord_ID()));
 

@@ -23,6 +23,7 @@
 package de.metas.fulltextsearch.config.model_interceptor;
 
 import de.metas.elasticsearch.model.I_ES_FTS_Config;
+import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.fulltextsearch.config.FTSConfigService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -44,4 +45,12 @@ public class ES_FTS_Config
 	{
 		ftsConfigService.updateConfigFields(record);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void onBeforeDelete(@NonNull final I_ES_FTS_Config record)
+	{
+		final FTSConfigId configId = FTSConfigId.ofRepoId(record.getES_FTS_Config_ID());
+		ftsConfigService.deleteDependingData(configId);
+	}
+
 }
