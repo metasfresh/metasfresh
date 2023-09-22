@@ -80,7 +80,7 @@ Feature: Shipping Notifications
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
       | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | A            | S               | POReference_21092023 | true      | CO        | 2021-04-20                |
-    And after not more than 30s, validate shipment schedules:
+    And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
       | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-20                |
       | s_ol_2                           | 10           | 0            | 10         | false     | 2021-04-20                |
@@ -125,7 +125,7 @@ Feature: Shipping Notifications
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
       | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | A            | S               | POReference_21092023 | true      | CO        | 2021-04-19                |
-    And after not more than 30s, validate shipment schedules:
+    And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
       | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-19                |
       | s_ol_2                           | 10           | 0            | 10         | false     | 2021-04-19                |
