@@ -702,6 +702,12 @@ public class M_ShipmentSchedule_StepDef
 		{
 			assertThat(shipmentSchedule.getQtyOrdered_TU()).isEqualTo(qtyOrderedTU);
 		}
+
+		final Timestamp physicalClearanceDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_PhysicalClearanceDate);
+		if (physicalClearanceDate != null)
+		{
+			assertThat(shipmentSchedule.getPhysicalClearanceDate()).isEqualTo(physicalClearanceDate);
+		}
 	}
 
 	@Value
