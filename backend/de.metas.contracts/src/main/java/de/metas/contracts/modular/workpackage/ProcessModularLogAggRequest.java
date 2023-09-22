@@ -23,36 +23,33 @@
 package de.metas.contracts.modular.workpackage;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
 @Value
 @Builder
 @Jacksonized
-public class ContractInfoParameter
+public class ProcessModularLogAggRequest
 {
-	@NonNull Map<Integer, List<ContractProcessInfo>> recordId2ContractInfo;
-
-	@Nullable
-	public List<ContractProcessInfo> getContractInfoByRecordId(final int recordId)
-	{
-		return recordId2ContractInfo.get(recordId);
-	}
+	@NonNull
+	List<ProcessRequest> requestList;
 
 	@Value
 	@Builder
 	@Jacksonized
-	public static class ContractProcessInfo
+	public static class ProcessRequest
 	{
-		@NonNull LogEntryContractType contractType;
+		@NonNull TableRecordReference recordReference;
+		@NonNull ModelAction action;
+		@NonNull LogEntryContractType logEntryContractType;
 		@NonNull FlatrateTermId flatrateTermId;
-		@NonNull String handlerClassName;
+		@NonNull String handlerClassname;
 	}
 }

@@ -396,4 +396,17 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
+
+
+	@Override
+	public void setIsTaxIncluded (final boolean IsTaxIncluded)
+	{
+		set_Value (COLUMNNAME_IsTaxIncluded, IsTaxIncluded);
+	}
+
+	@Override
+	public boolean isTaxIncluded()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsTaxIncluded);
+	}
 }
