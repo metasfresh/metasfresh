@@ -54,7 +54,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InventoryLine;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
