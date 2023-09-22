@@ -144,9 +144,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			@NonNull final HandleLogsRequest<I_C_Flatrate_Term> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> handleLogsRequest)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -159,9 +157,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 
 	@Override
 	@NonNull
-	public LogEntryDeleteRequest getDeleteRequestFor(
-			@NonNull final HandleLogsRequest<I_C_Flatrate_Term> handleLogsRequest,
-			@NonNull final FlatrateTermId contractId)
+	public LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> handleLogsRequest)
 	{
 		final I_C_Flatrate_Term interimContract = handleLogsRequest.getModel();
 		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(interimContract.getModular_Flatrate_Term_ID());

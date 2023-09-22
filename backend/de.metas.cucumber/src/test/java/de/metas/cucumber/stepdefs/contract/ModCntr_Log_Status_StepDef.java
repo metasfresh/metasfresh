@@ -178,7 +178,13 @@ public class ModCntr_Log_Status_StepDef
 	@NonNull
 	private String buildMessageWitAllLogStatuses(@NonNull final Map<String, String> row)
 	{
-		final StringBuilder messageBuilder = new StringBuilder("Row: " + writeRowAsString(row) + "! See currently created message statuses:");
+		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
+		final int tableId = tableDAO.retrieveTableId(tableName);
+		
+		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int recordId = resolveRepoId(tableName, recordIdentifier);
+		
+		final StringBuilder messageBuilder = new StringBuilder("Row: " + writeRowAsString(row) + " tableID: " + tableId + " recordID: " + recordId + "! See currently created message statuses:");
 
 		queryBL.createQueryBuilder(I_ModCntr_Log_Status.class)
 				.addCompareFilter(I_ModCntr_Log_Status.COLUMNNAME_Created, CompareQueryFilter.Operator.GREATER_OR_EQUAL, scenarioLifeCycleStepDef.getScenarioStartTimeOr(Instant.ofEpochMilli(0)))

@@ -1,8 +1,7 @@
 package de.metas.elasticsearch.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ES_FTS_Index_Queue
  *  @author metasfresh (generated) 

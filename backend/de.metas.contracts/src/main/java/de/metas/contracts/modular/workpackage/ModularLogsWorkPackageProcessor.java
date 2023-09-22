@@ -26,9 +26,10 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -37,77 +38,72 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
 	private final ModularContractLogHandler logHandler = SpringContextHolder.instance.getBean(ModularContractLogHandler.class);
+	private final ModularLogCreateStatusService createStatusService = SpringContextHolder.instance.getBean(ModularLogCreateStatusService.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String localTrxName)
 	{
-		logHandler.handleLogs(getRequestList());
+		final TableRecordReferenceSet enqueuedModels = TableRecordReferenceSet.of(retrieveItems(TableRecordReference.class));
+
+		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(workpackage.getC_Queue_WorkPackage_ID());
+
+		try
+		{
+			logHandler.handleLogs(getRequestList());
+
+			enqueuedModels.forEach(recordReference -> createStatusService.setStatusSuccessfullyProcessed(workPackageId, recordReference));
+		}
+		catch (final Exception e)
+		{
+			// the current one will be rolled back
+			trxManager.runInNewTrx(() -> enqueuedModels
+					.forEach(recordReference -> createStatusService.setStatusErrored(workPackageId, recordReference, e)));
+
+			throw e;
+		}
 
 		return Result.SUCCESS;
 	}
 
 	public enum Params
 	{
-		MODEL_ACTION,
-		LOG_ENTRY_CONTRACT_TYPE
+		REQUESTS_TO_PROCESS
 	}
 
 	@NonNull
 	private List<IModularContractLogHandler.HandleLogsRequest<Object>> getRequestList()
 	{
-		final TableRecordReferenceSet enqueuedModels = TableRecordReferenceSet.of(retrieveItems(TableRecordReference.class));
-		enqueuedModels.assertSingleTableName();
-
-		final ModelAction modelAction = getModelAction();
-		final ContractTypeParameter contractTypeParameter = getLogEntryContractType();
+		final ProcessModularLogAggRequest processModularLogAggRequest = getRequestListParam();
 
 		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID());
 
-		return enqueuedModels.streamReferences()
-				.flatMap(recordReference -> {
-					final List<LogEntryContractType> contractTypes = contractTypeParameter.getContractTypesByRecordId(recordReference.getRecord_ID());
-					if (contractTypes == null || contractTypes.isEmpty())
-					{
-						throw new AdempiereException("Missing mandatory parameter for record reference=" + recordReference)
-								.appendParametersToMessage()
-								.setParameter("wpParameterName", Params.LOG_ENTRY_CONTRACT_TYPE.name());
-					}
-
-					return contractTypes.stream()
-							.map(contractType -> IModularContractLogHandler.HandleLogsRequest.builder()
-									.model(recordReference.getModel())
-									.logEntryContractType(contractType)
-									.modelAction(modelAction)
-									.workPackageId(workPackageId)
-									.build());
-				})
-				.collect(Collectors.toList());
+		return processModularLogAggRequest.getRequestList()
+				.stream()
+				.map(processRequest -> IModularContractLogHandler.HandleLogsRequest.builder()
+						.model(processRequest.getRecordReference().getModel())
+						.logEntryContractType(processRequest.getLogEntryContractType())
+						.modelAction(processRequest.getAction())
+						.workPackageId(workPackageId)
+						.handlerClassname(processRequest.getHandlerClassname())
+						.contractId(processRequest.getFlatrateTermId())
+						.build())
+				.toList();
 	}
 
 	@NonNull
-	private ContractTypeParameter getLogEntryContractType()
+	private ProcessModularLogAggRequest getRequestListParam()
 	{
-		final String recordId2ContractTypesString = getParameters().getParameterAsString(Params.LOG_ENTRY_CONTRACT_TYPE.name());
+		final String requestsToProcess = getParameters().getParameterAsString(Params.REQUESTS_TO_PROCESS.name());
 
-		return Optional
-				.ofNullable(recordId2ContractTypesString)
-				.map(recordId2ContractTypesStringParam -> JsonObjectMapperHolder.fromJson(recordId2ContractTypesStringParam, ContractTypeParameter.class))
+		return Optional.ofNullable(requestsToProcess)
+				.map(requestsToProcessParam -> JsonObjectMapperHolder.fromJson(requestsToProcess, ProcessModularLogAggRequest.class))
 				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
 						.appendParametersToMessage()
-						.setParameter("wpParameterName", Params.LOG_ENTRY_CONTRACT_TYPE.name()));
-	}
-
-	@NonNull
-	private ModelAction getModelAction()
-	{
-		return getParameters().getParameterAsEnum(Params.MODEL_ACTION.name(), ModelAction.class)
-				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
-						.appendParametersToMessage()
-						.setParameter("wpParameterName", Params.MODEL_ACTION.name()));
+						.setParameter("wpParameterName", Params.REQUESTS_TO_PROCESS.name()));
 	}
 }

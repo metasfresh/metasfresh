@@ -24,7 +24,6 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
@@ -140,9 +139,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			@NonNull final IModularContractLogHandler.HandleLogsRequest<I_M_InventoryLine> handleLogsRequest,
-			@NonNull final FlatrateTermId modularContractId)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.HandleLogsRequest<I_M_InventoryLine> handleLogsRequest)
 	{
 		final I_M_Inventory inventory = inventoryBL.getById(InventoryId.ofRepoId(handleLogsRequest.getModel().getM_Inventory_ID()));
 
@@ -154,7 +151,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(handleLogsRequest.getModel()))
-											.flatrateTermId(modularContractId)
+											.flatrateTermId(handleLogsRequest.getContractId())
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 											.build());
 	}

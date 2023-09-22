@@ -130,7 +130,11 @@ public class ModularContractService
 	{
 		handler.validateAction(model, action);
 
-		processLogsEnqueuer.enqueueAfterCommit(TableRecordReference.of(model), action, logEntryContractType);
+		processLogsEnqueuer.enqueueAfterCommit(handler,
+											   TableRecordReference.of(model),
+											   action,
+											   flatrateTermId,
+											   logEntryContractType);
 
 		handleAction(handler, model, action, flatrateTermId);
 	}

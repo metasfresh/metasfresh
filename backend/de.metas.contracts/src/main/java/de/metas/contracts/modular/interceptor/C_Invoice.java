@@ -68,8 +68,9 @@ public class C_Invoice
 			@NonNull final ModelAction modelAction)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
-
-		invoiceBL.getLines(invoiceId)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
+		invoiceBL.getLines(invoiceId).forEach(line -> {
+			contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT);
+			contractService.invokeWithModel(line, modelAction, LogEntryContractType.INTERIM);
+		});
 	}
 }

@@ -218,6 +218,8 @@ public class SAPGLJournalLoaderAndSaver
 				//
 				.determineTaxBaseSAP(record.isSAP_DetermineTaxBase())
 				//
+				.isTaxIncluded(record.isTaxIncluded())
+				//
 				.build();
 	}
 
@@ -320,6 +322,7 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setAmount(line.getAmount().toBigDecimal());
 		lineRecord.setAmtAcct(line.getAmountAcct().toBigDecimal());
 		lineRecord.setC_Tax_ID(TaxId.toRepoId(line.getTaxId()));
+		lineRecord.setIsTaxIncluded(line.isTaxIncluded());
 
 		lineRecord.setAD_Org_ID(line.getOrgId().getRepoId());
 		lineRecord.setSAP_DetermineTaxBase(line.isDetermineTaxBaseSAP());
