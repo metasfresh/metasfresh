@@ -33,8 +33,7 @@ BEGIN
     SELECT v_es_fts_config_id,
            'X'                        AS eventtype,
            get_table_id('C_BPartner') AS ad_table_id,
-           0                          AS record_id
-    FROM es_fts_config;
+           0                          AS record_id;
 
 
     INSERT INTO es_fts_index_queue (es_fts_config_id, eventtype, ad_table_id, record_id)
