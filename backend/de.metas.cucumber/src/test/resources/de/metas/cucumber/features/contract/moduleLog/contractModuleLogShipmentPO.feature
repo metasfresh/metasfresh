@@ -45,7 +45,7 @@ Feature: Modular contract log from shipment
       | ModCntr_Type_ID.Identifier | Name                    | Value                   | Classname                                                               |
       | modCntr_type_PO_S0303      | modCntr_type_PO_S0303   | modCntr_type_PO_S0303   | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
       | modCntr_type_SO_S0303      | modCntr_type_SO_S0303   | modCntr_type_SO_S0303   | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler       |
-      | modCntr_type_SHIP_S0303    | modCntr_type_SHIP_S0303 | modCntr_type_SHIP_S0303 | de.metas.contracts.modular.impl.ShipmentLineModularContractHandler      |
+      | modCntr_type_SHIP_S0303    | modCntr_type_SHIP_S0303 | modCntr_type_SHIP_S0303 | de.metas.contracts.modular.impl.ShipmentLineForPOModularContractHandler |
 
   @Id:S0303_100
   @from:cucumber
