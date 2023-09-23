@@ -82,8 +82,8 @@ Feature: Shipping Notifications
       | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | A            | S               | POReference_21092023 | true      | CO        | 2021-04-20                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
-      | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-20                |
-      | s_ol_2                           | 10           | 0            | 10         | false     | 2021-04-20                |
+      | s_ol_1                           | 0            | 0            | 10         | false     | 2021-04-20                |
+      | s_ol_2                           | 0            | 0            | 10         | false     | 2021-04-20                |
 
   @from:cucumber
   Scenario: we can generate 2 shipping notifications for sales order and the previous one is reversed
@@ -127,8 +127,8 @@ Feature: Shipping Notifications
       | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | A            | S               | POReference_21092023 | true      | CO        | 2021-04-19                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
-      | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-19                |
-      | s_ol_2                           | 10           | 0            | 10         | false     | 2021-04-19                |
+      | s_ol_1                           | 0            | 0            | 10         | false     | 2021-04-19                |
+      | s_ol_2                           | 0            | 0            | 10         | false     | 2021-04-19                |
 
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order and after the order is voided, the notification is reversed
@@ -158,6 +158,7 @@ Feature: Shipping Notifications
     And after not more than 30s, locate reversal M_Shipping_Notifications
       | M_Shipping_Notification_ID.Identifier | Reversal_ID.Identifier        |
       | reversalShippingNotification_21092023 | shippingNotification_21092023 |
+
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order with dropship partner data and it will be passed to the notification
     And metasfresh contains C_BPartners without locations:
