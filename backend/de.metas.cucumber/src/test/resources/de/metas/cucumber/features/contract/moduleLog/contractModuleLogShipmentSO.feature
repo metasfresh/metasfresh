@@ -132,7 +132,6 @@ Feature: Modular contract log from shipment
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier    | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
       | shipLog_1_S0321           | s_l_1_S0321          | ModularContract | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0321 | bp_moduleLogSO                      | bp_moduleLogSO                  | 8   | M_InOutLine | moduleLogContract_SO_S0321    | modCntr_type_SO_SHIP_S0321     | false         | Shipment                     | year_2023                         | true        |
 
-  @dev:runThisOne
   @Id:S0321_200
   @from:cucumber
   Scenario: When a shipment has any ongoing sales modular contracts linked to it and the shipment is reversed
