@@ -45,7 +45,7 @@ Feature: Modular contract log for sales invoice
       | ModCntr_Type_ID.Identifier | Name                | Value               | Classname                                                               |
       | modCntr_type_PO            | modCntr_type_PO     | modCntr_type_PO     | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
       | modCntr_type_SO            | modCntr_type_SO     | modCntr_type_SO     | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler       |
-      | modCntr_type_SHIP          | modCntr_type_SHIP   | modCntr_type_SHIP   | de.metas.contracts.modular.impl.ShipmentLineModularContractHandler      |
+      | modCntr_type_SHIP          | modCntr_type_SHIP   | modCntr_type_SHIP   | de.metas.contracts.modular.impl.ShipmentLineForPOModularContractHandler |
       | modCntr_type_INV_SO        | modCntr_type_INV_SO | modCntr_type_INV_SO | de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler  |
 
 
