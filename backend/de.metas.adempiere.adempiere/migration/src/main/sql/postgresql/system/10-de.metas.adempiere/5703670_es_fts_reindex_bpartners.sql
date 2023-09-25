@@ -54,7 +54,7 @@ $$
 
 COMMENT ON FUNCTION ops.es_fts_reindex_bpartners() IS 'Causes metasfresh to delete the index and resend all existing bpartner data to elasticsearch in order to enable full text search.
 Enqueues the C_BPartners for sending and returns the number of enqueued records.
-You can then check the indexing progress with 
+You can then check the indexing progress with
 
     SELECT processed,
        iserror,

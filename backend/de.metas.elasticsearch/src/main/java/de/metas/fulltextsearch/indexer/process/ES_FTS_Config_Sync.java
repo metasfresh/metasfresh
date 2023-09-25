@@ -124,7 +124,7 @@ public class ES_FTS_Config_Sync extends JavaProcess
 	{
 		return EnqueueSourceModelInterceptor.extractRequests(
 				model,
-				ModelToIndexEventType.CREATED_OR_UPDATED,
+				ModelToIndexEventType.MODEL_CREATED_OR_UPDATED,
 				sourceTables);
 	}
 }
