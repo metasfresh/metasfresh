@@ -158,7 +158,7 @@ Feature: Shipping Notifications
 
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order with dropship partner data and it will be passed to the notification
-    And metasfresh contains C_BPartners without locations:
+    And metasfresh contains C_BPartners:
       | Identifier             | OPT.C_BPartner_Location_ID.Identifier | Name                          | M_PricingSystem_ID.Identifier | OPT.IsCustomer |
       | endcustomer_dropship_1 | bpLocationDropship                    | Endcustomer_Dropship_21092023 | ps_1                          | Y              |
     And metasfresh contains AD_Users:
