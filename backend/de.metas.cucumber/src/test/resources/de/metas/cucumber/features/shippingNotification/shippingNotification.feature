@@ -39,12 +39,9 @@ Feature: Shipping Notifications
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_1                             | p_2                     | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name                 | M_PricingSystem_ID.Identifier | OPT.IsCustomer |
-      | endcustomer_1 | Endcustomer_21092023 | ps_1                          | Y              |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier        | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault |
-      | bpLocationDefault | 0123456789012 | endcustomer_1            | Y                   |
+    And metasfresh contains C_BPartners:
+      | Identifier    | OPT.C_BPartner_Location_ID.Identifier | Name                 | M_PricingSystem_ID.Identifier | OPT.IsCustomer |
+      | endcustomer_1 | bpLocationDefault                     | Endcustomer_21092023 | ps_1                          | Y              |
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | Name                      | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.IsBillToContact_Default |
       | bpContactDefault      | bpContactDefault_21092023 | endcustomer_1                | bpLocationDefault                     | Y                           |
@@ -56,8 +53,8 @@ Feature: Shipping Notifications
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order and data is passed correctly to the notification and lines
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier |
-      | o_1        | true    | endcustomer_1            | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | A                | S                   | warehouseStd                  | locator                     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -79,7 +76,7 @@ Feature: Shipping Notifications
       | shippingNotificationLine_21092023_2       | shippingNotification_21092023         | s_ol_2                           | p_2                     | 10          |
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
-      | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | A            | S               | POReference_21092023 | true      | CO        | 2021-04-20                |
+      | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | F            | S               | POReference_21092023 | true      | CO        | 2021-04-20                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
       | s_ol_1                           | 0            | 0            | 10         | false     | 2021-04-20                |
@@ -88,8 +85,8 @@ Feature: Shipping Notifications
   @from:cucumber
   Scenario: we can generate 2 shipping notifications for sales order and the previous one is reversed
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier |
-      | o_1        | true    | endcustomer_1            | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | A                | S                   | warehouseStd                  | locator                     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -124,7 +121,7 @@ Feature: Shipping Notifications
       | reversalShippingNotification_21092023 | shippingNotification_21092023 |
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
-      | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | A            | S               | POReference_21092023 | true      | CO        | 2021-04-19                |
+      | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | F            | S               | POReference_21092023 | true      | CO        | 2021-04-19                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
       | s_ol_1                           | 0            | 0            | 10         | false     | 2021-04-19                |
@@ -133,8 +130,8 @@ Feature: Shipping Notifications
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order and after the order is voided, the notification is reversed
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier |
-      | o_1        | true    | endcustomer_1            | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | A                | S                   | warehouseStd                  | locator                     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -162,18 +159,15 @@ Feature: Shipping Notifications
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order with dropship partner data and it will be passed to the notification
     And metasfresh contains C_BPartners without locations:
-      | Identifier             | Name                          | M_PricingSystem_ID.Identifier | OPT.IsCustomer |
-      | endcustomer_dropship_1 | Endcustomer_Dropship_21092023 | ps_1                          | Y              |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault |
-      | bpLocationDropship | 0123456789013 | endcustomer_dropship_1   | Y                   |
+      | Identifier             | OPT.C_BPartner_Location_ID.Identifier | Name                          | M_PricingSystem_ID.Identifier | OPT.IsCustomer |
+      | endcustomer_dropship_1 | bpLocationDropship                    | Endcustomer_Dropship_21092023 | ps_1                          | Y              |
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | Name                       | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.IsBillToContact_Default |
       | bpContactDropship     | bpContactDropship_21092023 | endcustomer_dropship_1       | bpLocationDropship                    | Y                           |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier | OPT.IsDropShip | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier |
-      | o_1        | true    | endcustomer_1            | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | A                | S                   | warehouseStd                  | locator                     | Y              | endcustomer_dropship_1              | bpLocationDropship                  | bpContactDropship               |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | DateOrdered | OPT.AD_Org_ID.Identifier | OPT.POReference      | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier | OPT.Description            | OPT.C_Auction_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Locator_ID.Identifier | OPT.IsDropShip | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier |
+      | o_1        | true    | endcustomer_1            | bpLocationDefault                     | bpContactDefault          | 2021-04-17  | org_1                    | POReference_21092023 | harvesting_calendar                     | year_2023                         | order description 21092023 | Auction_1                   | warehouseStd                  | locator                     | Y              | endcustomer_dropship_1              | bpLocationDropship                  | bpContactDropship               |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
