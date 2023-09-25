@@ -79,4 +79,6 @@ public enum ProductAcctType
 			throw new AdempiereException("No " + ProductAcctType.class + " found for name: " + name);
 		}
 	}
+
+	public boolean isCOGS() {return P_COGS_Acct.equals(this);}
 }
