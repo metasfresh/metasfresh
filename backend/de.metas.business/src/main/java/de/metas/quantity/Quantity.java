@@ -124,22 +124,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	public static UomId getCommonUomIdOfAll(final Quantity... quantities)
 	{
-		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
-
-		final Iterator<Quantity> quantitiesIterator = Stream.of(quantities)
-				.filter(Objects::nonNull)
-				.iterator();
-		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
-		if (uomIds2qties.isEmpty())
-		{
-			throw new AdempiereException("The given quantities may not be empty");
-		}
-
-		final ImmutableSet<UomId> uomIds = uomIds2qties.keySet();
-		Check.errorIf(uomIds.size() > 1,
-				"at least two quantity instances have different uoms: {}", uomIds2qties);
-
-		return CollectionUtils.singleElement(uomIds.asList());
+		return UomId.getCommonUomIdOfAll(Quantity::getUomId, "quantity", quantities);
 	}
 
 	public static void assertSameUOM(@Nullable final Quantity... quantities)
