@@ -8,13 +8,13 @@ import com.google.common.collect.Range;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
@@ -38,15 +38,12 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
-import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -57,12 +54,10 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -138,13 +133,13 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
+	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return createCostDetailOrEmpty(request).orElseThrow();
 	}
 
 	@Override
-	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	public ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
 	{
 		final ImmutableList<CostDetailCreateResult> costElementResults = Stream.of(request)
 				.flatMap(this::explodeAcctSchemas)
@@ -159,32 +154,8 @@ public class CostingService implements ICostingService
 		}
 		else
 		{
-			return ExplainedOptional.of(toAggregatedCostAmount(costElementResults));
+			return ExplainedOptional.of(CostDetailCreateResultsList.of(costElementResults));
 		}
-	}
-
-	@NonNull
-	private static AggregatedCostAmount toAggregatedCostAmount(final List<CostDetailCreateResult> costElementResults)
-	{
-		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
-
-		final CostSegment costSegment = costElementResults
-				.stream()
-				.map(CostDetailCreateResult::getCostSegment)
-				.distinct()
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one CostSegment found in " + costElementResults)));
-
-		final Map<CostElement, CostAmountDetailed> amountsByCostElement = costElementResults
-				.stream()
-				.collect(Collectors.toMap(
-						CostDetailCreateResult::getCostElement, // keyMapper
-						CostDetailCreateResult::getAmt, // valueMapper
-						CostAmountDetailed::add)); // mergeFunction
-
-		return AggregatedCostAmount.builder()
-				.costSegment(costSegment)
-				.amounts(amountsByCostElement)
-				.build();
 	}
 
 	private Stream<CostDetailCreateResult> createCostDetailUsingHandlersAndStream(final CostDetailCreateRequest request)
@@ -332,7 +303,7 @@ public class CostingService implements ICostingService
 		if (costingMethodHandlers.isEmpty())
 		{
 			throw new AdempiereException("No " + CostingMethodHandler.class.getName() + " found for " + costingMethod
-												 + ". Available costing methods are: " + this.costingMethodHandlers.keySet());
+					+ ". Available costing methods are: " + this.costingMethodHandlers.keySet());
 		}
 		return costingMethodHandlers;
 	}
@@ -391,13 +362,13 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
+	public CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
 	{
 		return createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
 	}
 
 	@Override
-	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest reversalRequest)
+	public ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest reversalRequest)
 	{
 		final List<CostDetail> initialDocCostDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(reversalRequest.getInitialDocumentRef(), reversalRequest.getAcctSchemaId());
 		if (initialDocCostDetails.isEmpty())
@@ -435,7 +406,7 @@ public class CostingService implements ICostingService
 			return ExplainedOptional.emptyBecause("No costs created for " + reversalRequest);
 		}
 
-		return ExplainedOptional.of(toAggregatedCostAmount(costDetailCreateResults));
+		return ExplainedOptional.of(CostDetailCreateResultsList.of(costDetailCreateResults));
 	}
 
 	private ImmutableList<CostDetailCreateResult> createReversalCostDetails(
@@ -577,9 +548,9 @@ public class CostingService implements ICostingService
 
 		//
 		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
-												  .qty(currentCost.getCurrentQty())
-												  .costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
-												  .build());
+				.qty(currentCost.getCurrentQty())
+				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
+				.build());
 
 		//
 		return result.build();

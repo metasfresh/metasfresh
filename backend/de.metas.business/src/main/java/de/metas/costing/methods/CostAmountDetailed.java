@@ -25,28 +25,16 @@ package de.metas.costing.methods;
 import de.metas.costing.CostAmount;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-
-@EqualsAndHashCode
-@ToString
 public class CostAmountDetailed
 {
-	// amount after correction
-	// e.g. invoiced amount
 	@NonNull CostAmount mainAmt;
-
-	// i.e.
-	// positive - invoiced price is greater than receipt price
-	// negative - invoiced price is less than receipt price
 	@NonNull CostAmount costAdjustmentAmt;
-
 	@NonNull CostAmount alreadyShippedAmt;
 
 	@Builder
@@ -67,13 +55,13 @@ public class CostAmountDetailed
 		return new CostAmountDetailed(zero, zero, zero);
 	}
 
-	public static CostAmountDetailed ofAmtAndType(@NonNull final CostAmount amt, @NonNull final CostAmountType type)
+	public CostAmount getAmt(@NonNull final CostAmountType type)
 	{
 		return switch (type)
 		{
-			case MAIN -> builder().mainAmt(amt).build();
-			case ADJUSTMENT -> builder().costAdjustmentAmt(amt).build();
-			case ALREADY_SHIPPED -> builder().alreadyShippedAmt(amt).build();
+			case MAIN -> mainAmt;
+			case ADJUSTMENT -> costAdjustmentAmt;
+			case ALREADY_SHIPPED -> alreadyShippedAmt;
 		};
 	}
 
@@ -91,7 +79,7 @@ public class CostAmountDetailed
 		return condition ? negate() : this;
 	}
 
-	private CostAmountDetailed negate()
+	public CostAmountDetailed negate()
 	{
 		return builder()
 				.mainAmt(mainAmt.negate())

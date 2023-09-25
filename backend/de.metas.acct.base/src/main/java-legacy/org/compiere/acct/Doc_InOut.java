@@ -28,7 +28,9 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostElement;
+import de.metas.costing.methods.CostAmountAndQtyDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
@@ -42,6 +44,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
+import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.ShippingNotificationCollection;
 import de.metas.shippingnotification.ShippingNotificationQuery;
 import de.metas.shippingnotification.acct.ShippingNotificationAcctService;
@@ -258,39 +261,102 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateShipmentCosts(as);
+		final CostAmountAndQtyDetailed costs = line.getCreateShipmentCosts(as);
 
-		//
-		// CoGS DR
-		final FactLine dr = fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getAccount(ProductAcctType.P_COGS_Acct, as))
-				.setAmt(roundToStdPrecision(costs), null)
-				.buildAndAdd();
-		if (dr == null)
-		{
-			throw newPostingException().setDetailMessage("FactLine DR not created: " + line);
-		}
-		dr.setM_Locator_ID(line.getM_Locator_ID());
-		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
-		dr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
-		dr.setAD_Org_ID(line.getOrderOrgId().getRepoId());        // Revenue X-Org
-		dr.setQty(line.getQty().negate());
+		createFacts_SalesShipmentLine(
+				fact,
+				line,
+				ProductAcctType.P_COGS_Acct,
+				ProductAcctType.P_Asset_Acct,
+				costs.getMain().negate(),
+				true);
+		createFacts_SalesShipmentLine(
+				fact,
+				line,
+				ProductAcctType.P_COGS_Acct,
+				ProductAcctType.P_ExternallyOwnedStock_Acct,
+				costs.getAlreadyShipped().negate(),
+				false);
+		createFacts_SalesShipmentLine(
+				fact,
+				line,
+				ProductAcctType.P_Asset_Acct,
+				ProductAcctType.P_ExternallyOwnedStock_Acct,
+				costs.getCostAdjustment().negate(),
+				false);
+	}
 
-		//
-		// Inventory CR
-		final FactLine cr = fact.createLine()
+	private void createFacts_SalesShipmentLine(
+			@NonNull final Fact fact,
+			@NonNull final DocLine_InOut line,
+			@NonNull final ProductAcctType debitAccount,
+			@NonNull final ProductAcctType creditAccount,
+			@NonNull final CostAmountAndQty amountAndQty,
+			boolean addZeroLine)
+	{
+		final AcctSchema as = fact.getAcctSchema();
+
+		final CostAmount amount = roundToStdPrecision(amountAndQty.getAmt());
+		final Quantity qty = amountAndQty.getQty();
+
+		fact.createLine()
 				.setDocLine(line)
-				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
-				.setAmt(null, roundToStdPrecision(costs))
+				.setAccount(line.getAccount(debitAccount, as))
+				.setAmt(amount, null)
+				.setQty(qty)
+				.orgId(debitAccount.isCOGS() ? line.getOrderOrgId() : line.getOrgId())
+				.locatorId(line.getM_Locator_ID())
+				.fromLocationOfLocator(line.getM_Locator_ID())
+				.toLocationOfBPartner(getBPartnerLocationId())
+				.alsoAddZeroLineIf(addZeroLine)
 				.buildAndAdd();
-		if (cr == null)
-		{
-			throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
-		}
-		cr.setM_Locator_ID(line.getM_Locator_ID());
-		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
-		cr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
+		fact.createLine()
+				.setDocLine(line)
+				.setAccount(line.getAccount(creditAccount, as))
+				.setAmt(null, amount)
+				.orgId(creditAccount.isCOGS() ? line.getOrderOrgId() : line.getOrgId())
+				.setQty(qty.negate())
+				.locatorId(line.getM_Locator_ID())
+				.fromLocationOfLocator(line.getM_Locator_ID())
+				.toLocationOfBPartner(getBPartnerLocationId())
+				.alsoAddZeroLineIf(addZeroLine)
+				.buildAndAdd();
+	}
+
+	private void createFacts_SalesReturnLine(
+			@NonNull final Fact fact,
+			@NonNull final DocLine_InOut line,
+			@NonNull final ProductAcctType debitAccount,
+			@NonNull final ProductAcctType creditAccount,
+			@NonNull final CostAmountAndQty amountAndQty,
+			boolean addZeroLine)
+	{
+		final AcctSchema as = fact.getAcctSchema();
+		final CostAmount amount = roundToStdPrecision(amountAndQty.getAmt());
+		final Quantity qty = amountAndQty.getQty();
+
+		fact.createLine()
+				.setDocLine(line)
+				.setAccount(line.getAccount(debitAccount, as))
+				.setAmt(amount, null)
+				.setQty(qty)
+				.orgId(debitAccount.isCOGS() ? line.getOrderOrgId() : line.getOrgId())
+				.locatorId(line.getM_Locator_ID())
+				.fromLocationOfBPartner(getBPartnerLocationId())
+				.toLocationOfLocator(line.getM_Locator_ID())
+				.alsoAddZeroLineIf(addZeroLine)
+				.buildAndAdd();
+		fact.createLine()
+				.setDocLine(line)
+				.setAccount(line.getAccount(creditAccount, as))
+				.setAmt(null, amount)
+				.setQty(qty.negate())
+				.orgId(creditAccount.isCOGS() ? line.getOrderOrgId() : line.getOrgId())
+				.locatorId(line.getM_Locator_ID())
+				.fromLocationOfBPartner(getBPartnerLocationId())
+				.toLocationOfLocator(line.getM_Locator_ID())
+				.alsoAddZeroLineIf(addZeroLine)
+				.buildAndAdd();
 	}
 
 	private List<Fact> createFacts_SalesReturn(final AcctSchema as)
@@ -310,39 +376,29 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateShipmentCosts(as);
+		final CostAmountAndQtyDetailed costs = line.getCreateShipmentCosts(as);
 
-		//
-		// Inventory DR
-		final FactLine dr = fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
-				.setAmt(roundToStdPrecision(costs), null)
-				.buildAndAdd();
-		if (dr == null)
-		{
-			throw newPostingException().addDetailMessage("FactLine DR not created: " + line);
-		}
-		dr.setM_Locator_ID(line.getM_Locator_ID());
-		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
-		dr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
-
-		//
-		// CoGS CR
-		final FactLine cr = fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getAccount(ProductAcctType.P_COGS_Acct, as))
-				.setAmt(null, roundToStdPrecision(costs))
-				.buildAndAdd();
-		if (cr == null)
-		{
-			throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
-		}
-		cr.setM_Locator_ID(line.getM_Locator_ID());
-		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
-		cr.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
-		cr.setAD_Org_ID(line.getOrderOrgId());        // Revenue X-Org
-		cr.setQty(line.getQty().negate());
+		createFacts_SalesReturnLine(
+				fact,
+				line,
+				ProductAcctType.P_Asset_Acct,
+				ProductAcctType.P_COGS_Acct,
+				costs.getMain().negate(),
+				true);
+		createFacts_SalesReturnLine(
+				fact,
+				line,
+				ProductAcctType.P_ExternallyOwnedStock_Acct,
+				ProductAcctType.P_COGS_Acct,
+				costs.getAlreadyShipped().negate(),
+				false);
+		createFacts_SalesReturnLine(
+				fact,
+				line,
+				ProductAcctType.P_ExternallyOwnedStock_Acct,
+				ProductAcctType.P_Asset_Acct,
+				costs.getCostAdjustment().negate(),
+				false);
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)

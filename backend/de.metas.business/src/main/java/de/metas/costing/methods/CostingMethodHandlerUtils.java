@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -99,6 +100,15 @@ public class CostingMethodHandlerUtils
 	)
 	{
 		return uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
+	}
+
+	@NonNull
+	public UnaryOperator<Quantity> convertQuantityToUOM(
+			@NonNull final UomId targetUomId,
+			@NonNull final ProductId productId
+	)
+	{
+		return qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 	}
 
 	public AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)

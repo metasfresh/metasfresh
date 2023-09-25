@@ -52,8 +52,7 @@ public class ShippingNotificationAcctService
 							.initialDocumentRef(CostingDocumentRef.ofShippingNotificationLineId(line.getReversalLineId()))
 							.date(shippingNotification.getDateAcct())
 							.build())
-					.getTotalAmountToPost(as)
-					.getMainAmt()
+					.getMainAmountToPost(as)
 					// Negate the amount coming from the costs because it must be negative in the accounting.
 					.negate();
 		}
@@ -71,8 +70,7 @@ public class ShippingNotificationAcctService
 									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 									.date(shippingNotification.getDateAcct())
 									.build())
-					.getTotalAmountToPost(as)
-					.getMainAmt()
+					.getMainAmountToPost(as)
 					// The shipment notification is an outgoing document, so the costing amounts will be negative values.
 					// In the accounting they must be positive values. This is the reason why the amount
 					// coming from the product costs must be negated.

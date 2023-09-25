@@ -127,10 +127,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 			return Optional.of(
 					utils.toCostDetailCreateResult(mainCostDetail)
-							.withAmt(CostAmountDetailed.builder()
-									.mainAmt(mainCostDetail.getAmt())
-									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
-									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
+							.withAmtAndQty(CostAmountAndQtyDetailed.builder()
+									.main(mainCostDetail.getAmtAndQty())
+									.costAdjustment(costAdjustmentDetail != null ? costAdjustmentDetail.getAmtAndQty() : null)
+									.alreadyShipped(alreadyShippedDetail != null ? alreadyShippedDetail.getAmtAndQty() : null)
 									.build())
 			);
 		}

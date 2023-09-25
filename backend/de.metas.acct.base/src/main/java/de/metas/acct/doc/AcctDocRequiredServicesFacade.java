@@ -23,8 +23,8 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
@@ -306,13 +306,13 @@ public class AcctDocRequiredServicesFacade
 		return costingService.getCostElementById(costElementId);
 	}
 
-	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
+	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return costingService.createCostDetail(request);
 	}
 
 	@SuppressWarnings("UnusedReturnValue")
-	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	public ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
 	{
 		return costingService.createCostDetailOrEmpty(request);
 	}
@@ -322,12 +322,12 @@ public class AcctDocRequiredServicesFacade
 		return costingService.moveCosts(request);
 	}
 
-	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
+	public CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
 	{
 		return costingService.createReversalCostDetails(request);
 	}
 
-	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest request)
+	public ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest request)
 	{
 		return costingService.createReversalCostDetailsOrEmpty(request);
 	}

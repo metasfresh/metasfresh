@@ -1,21 +1,10 @@
 package de.metas.costing;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
-import de.metas.costing.methods.CostAmountDetailed;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,6 +12,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -116,12 +113,10 @@ public class AggregatedCostAmount
 	public AggregatedCostAmount retainOnlyAccountable(@NonNull final AcctSchema as)
 	{
 		final AcctSchemaCosting costing = as.getCosting();
-		final CostingMethod costingMethod = costing.getCostingMethod();
-		final ImmutableSet<CostElementId> postOnlyCostElementIds = costing.getPostOnlyCostElementIds();
 
 		final LinkedHashMap<CostElement, CostAmountDetailed> amountsPerElementNew = new LinkedHashMap<>();
 		amountsPerElement.forEach((costElement, costAmount) -> {
-			if (isCostElementMatching(costElement, costingMethod, postOnlyCostElementIds))
+			if (costElement.isAccountable(costing))
 			{
 				amountsPerElementNew.put(costElement, costAmount);
 			}
@@ -137,29 +132,16 @@ public class AggregatedCostAmount
 
 	public CostAmountDetailed getTotalAmountToPost(@NonNull final AcctSchema as)
 	{
-		final AcctSchemaCosting acctSchemaCosting = as.getCosting();
-		return getTotalAmount(acctSchemaCosting.getCostingMethod(), acctSchemaCosting.getPostOnlyCostElementIds())
-				.orElseGet(() -> CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build());
+		return getTotalAmount(as.getCosting()).orElseGet(() -> CostAmountDetailed.zero(as.getCurrencyId()));
 	}
 
 	@VisibleForTesting
-	Optional<CostAmountDetailed> getTotalAmount(
-			@NonNull final CostingMethod costingMethod,
-			final Set<CostElementId> onlyCostElementIds)
+	Optional<CostAmountDetailed> getTotalAmount(@NonNull final AcctSchemaCosting asCosting)
 	{
 		return getCostElements()
 				.stream()
-				.filter(costElement -> isCostElementMatching(costElement, costingMethod, onlyCostElementIds))
+				.filter(costElement -> costElement.isAccountable(asCosting))
 				.map(this::getCostAmountForCostElement)
 				.reduce(CostAmountDetailed::add);
-	}
-
-	private static boolean isCostElementMatching(
-			@NonNull final CostElement costElement,
-			@NonNull final CostingMethod costingMethod,
-			final Set<CostElementId> onlyCostElementIds)
-	{
-		return costingMethod.equals(costElement.getCostingMethod())
-				&& (onlyCostElementIds == null || onlyCostElementIds.isEmpty() || onlyCostElementIds.contains(costElement.getId()));
 	}
 }

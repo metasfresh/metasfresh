@@ -246,9 +246,7 @@ public final class CostAmount
 			@NonNull final Quantity divisor,
 			@NonNull final CurrencyPrecision precision)
 	{
-		return !divisor.isZero()
-				? Optional.empty()
-				: Optional.of(divide(divisor.toBigDecimal(), precision));
+		return divisor.isZero() ? Optional.empty() : Optional.of(divide(divisor, precision));
 	}
 
 	public CostAmount round(@NonNull final Function<CurrencyId, CurrencyPrecision> precisionProvider)

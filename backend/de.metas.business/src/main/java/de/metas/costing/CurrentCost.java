@@ -226,6 +226,12 @@ public final class CurrentCost
 		addCumulatedAmtAndQty(amt, qtyToAdd);
 	}
 
+	public void addToCurrentQtyAndCumulate(@NonNull final CostAmountAndQty amtAndQty)
+	{
+		addToCurrentQtyAndCumulate(amtAndQty.getQty(), amtAndQty.getAmt());
+	}
+
+
 	public void setCostPrice(@NonNull final CostPrice costPrice)
 	{
 		this.costPrice = costPrice;

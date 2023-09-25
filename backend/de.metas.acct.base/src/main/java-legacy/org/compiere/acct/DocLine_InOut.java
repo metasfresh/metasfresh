@@ -9,10 +9,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountAndQtyDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
 import de.metas.order.IOrderBL;
@@ -154,12 +156,14 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build());
+			return services.createReversalCostDetails(
+							CostDetailReverseRequest.builder()
+									.acctSchemaId(as.getId())
+									.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+									.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
+									.date(getDateAcctAsInstant())
+									.build())
+					.toAggregatedCostAmount();
 		}
 		else
 		{
@@ -178,19 +182,21 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			//
 			// Material costs:
 			AggregatedCostAmount result = services.createCostDetail(
-					requestBuilder
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.build());
+							requestBuilder
+									.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+									.build())
+					.toAggregatedCostAmount();
 
 			//
 			// Additional costs
 			for (final InOutCost inoutCost : inoutCosts)
 			{
 				final AggregatedCostAmount nonMaterialCosts = services.createCostDetail(
-						requestBuilder
-								.costElement(services.getCostElementById(inoutCost.getCostElementId()))
-								.amt(CostAmount.ofMoney(inoutCost.getCostAmount()))
-								.build());
+								requestBuilder
+										.costElement(services.getCostElementById(inoutCost.getCostElementId()))
+										.amt(CostAmount.ofMoney(inoutCost.getCostAmount()))
+										.build())
+						.toAggregatedCostAmount();
 
 				result = result.merge(nonMaterialCosts);
 			}
@@ -199,7 +205,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	public CostAmount getCreateShipmentCosts(final AcctSchema as)
+	public CostAmountAndQtyDetailed getCreateShipmentCosts(final AcctSchema as)
 	{
 		if (isReversalLine())
 		{
@@ -209,8 +215,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
 							.date(getDateAcctAsInstant())
 							.build())
-					.getTotalAmountToPost(as)
-					.getMainAmt()
+					.getTotalAmountAndQtyToPost(as)
 					// Negate the amount coming from the costs because it must be negative in the accounting.
 					.negate();
 		}
@@ -228,9 +233,9 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 									.currencyConversionContext(getCurrencyConversionContext(as))
 									.date(getDateAcctAsInstant())
+									.externallyOwned(computeAmtAndQtyExternallyOwned(as))
 									.build())
-					.getTotalAmountToPost(as)
-					.getMainAmt()
+					.getTotalAmountAndQtyToPost(as)
 					// The shipment is an outgoing document, so the costing amounts will be negative values.
 					// In the accounting they must be positive values. This is the reason why the amount
 					// coming from the product costs must be negated.
@@ -290,21 +295,13 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	private Quantity getQtyInShippingNotification()
+	private CostAmountAndQty computeAmtAndQtyExternallyOwned(final AcctSchema as)
 	{
-		final Quantity movementQty = getQty();
+		//noinspection UnnecessaryLocalVariable
+		final Quantity ZERO = getQty().toZero();
 
-		return getOrderAndLineId()
-				.map(orderLineId -> shippingNotifications.sumQtyByOrderLineId(orderLineId, movementQty.getUomId(), services.getUomConverter()))
-				.orElseGet(movementQty::toZero);
-	}
-
-	// TODO implement
-	public void aaaa(final AcctSchema as)
-	{
-		final Quantity movementQty = getQty().negate(); // make it positive
+		Quantity qtyExternallyOwned = ZERO;
 		CostAmount costsExternallyOwned = CostAmount.zero(as.getCurrencyId());
-		Quantity qtyExternallyOwned = movementQty.toZero();
 
 		final ProductId productId = getProductId();
 		final OrderAndLineId orderAndLineId = getOrderAndLineId().orElse(null);
@@ -326,34 +323,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			}
 		}
 
-		final Quantity movementQtyWOExternallyOwned = movementQty.subtract(qtyExternallyOwned);
-		//
-		// Shipped less than notified
-		// => we need to add back to P_Asset
-		//
-		// P_Asset_Acct                             DR                       (difference)
-		// P_ExternallyOwnedStock                          CR        (difference)
-		if (movementQtyWOExternallyOwned.signum() < 0)
-		{
-		}
-		//
-		// Shipped exactly as much as notified
-		//
-		// P_COGS                                           DR                  (costsExternallyOwned)
-		// P_ExternallyOwnedStock                            CR       (costsExternallyOwned)
-		else if (movementQtyWOExternallyOwned.signum() == 0)
-		{
-		}
-		//
-		// Shipped more than notified
-		// NOTE: that's also the case when we don't use a shipping notification
-		// => we need to get more from P_Asset
-		//
-		// P_COGS                         DR                  (difference)
-		// P_Asset_Acct                                CR    (difference)
-		else // movementQtyWOExternallyOwned.signum() > 0
-		{
-		}
+		return CostAmountAndQty.of(costsExternallyOwned, qtyExternallyOwned);
 	}
 
 }
