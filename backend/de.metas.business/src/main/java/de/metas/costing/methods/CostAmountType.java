@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_M_CostDetail;
-import org.compiere.model.X_M_CostRevaluation_Detail;
 
 @AllArgsConstructor
 public enum CostAmountType implements ReferenceListAwareEnum
