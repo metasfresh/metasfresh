@@ -29,8 +29,9 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostAmountAndQty;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostElement;
-import de.metas.costing.methods.CostAmountAndQtyDetailed;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
@@ -261,29 +262,33 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmountAndQtyDetailed costs = line.getCreateShipmentCosts(as);
+		final CostDetailCreateResultsList costs = line.getCreateShipmentCosts(as);
 
 		createFacts_SalesShipmentLine(
 				fact,
 				line,
 				ProductAcctType.P_COGS_Acct,
 				ProductAcctType.P_Asset_Acct,
-				costs.getMain().negate(),
+				costs.getAmtAndQtyToPost(CostAmountType.MAIN, as).orElseThrow().negate(),
 				true);
-		createFacts_SalesShipmentLine(
-				fact,
-				line,
-				ProductAcctType.P_COGS_Acct,
-				ProductAcctType.P_ExternallyOwnedStock_Acct,
-				costs.getAlreadyShipped().negate(),
-				false);
-		createFacts_SalesShipmentLine(
-				fact,
-				line,
-				ProductAcctType.P_Asset_Acct,
-				ProductAcctType.P_ExternallyOwnedStock_Acct,
-				costs.getCostAdjustment().negate(),
-				false);
+
+		costs.getAmtAndQtyToPost(CostAmountType.ALREADY_SHIPPED, as)
+				.ifPresent(alreadyShipped -> createFacts_SalesShipmentLine(
+						fact,
+						line,
+						ProductAcctType.P_COGS_Acct,
+						ProductAcctType.P_ExternallyOwnedStock_Acct,
+						alreadyShipped.negate(),
+						false));
+
+		costs.getAmtAndQtyToPost(CostAmountType.ADJUSTMENT, as)
+				.ifPresent(costAdjustment -> createFacts_SalesShipmentLine(
+						fact,
+						line,
+						ProductAcctType.P_Asset_Acct,
+						ProductAcctType.P_ExternallyOwnedStock_Acct,
+						costAdjustment.negate(),
+						false));
 	}
 
 	private void createFacts_SalesShipmentLine(
@@ -376,29 +381,31 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmountAndQtyDetailed costs = line.getCreateShipmentCosts(as);
+		final CostDetailCreateResultsList costs = line.getCreateShipmentCosts(as);
 
 		createFacts_SalesReturnLine(
 				fact,
 				line,
 				ProductAcctType.P_Asset_Acct,
 				ProductAcctType.P_COGS_Acct,
-				costs.getMain().negate(),
+				costs.getAmtAndQtyToPost(CostAmountType.MAIN, as).orElseThrow().negate(),
 				true);
-		createFacts_SalesReturnLine(
-				fact,
-				line,
-				ProductAcctType.P_ExternallyOwnedStock_Acct,
-				ProductAcctType.P_COGS_Acct,
-				costs.getAlreadyShipped().negate(),
-				false);
-		createFacts_SalesReturnLine(
-				fact,
-				line,
-				ProductAcctType.P_ExternallyOwnedStock_Acct,
-				ProductAcctType.P_Asset_Acct,
-				costs.getCostAdjustment().negate(),
-				false);
+		costs.getAmtAndQtyToPost(CostAmountType.ALREADY_SHIPPED, as)
+				.ifPresent(alreadyShipped -> createFacts_SalesReturnLine(
+						fact,
+						line,
+						ProductAcctType.P_ExternallyOwnedStock_Acct,
+						ProductAcctType.P_COGS_Acct,
+						alreadyShipped.negate(),
+						false));
+		costs.getAmtAndQtyToPost(CostAmountType.ADJUSTMENT, as)
+				.ifPresent((costAdjustment) -> createFacts_SalesReturnLine(
+						fact,
+						line,
+						ProductAcctType.P_ExternallyOwnedStock_Acct,
+						ProductAcctType.P_Asset_Acct,
+						costAdjustment.negate(),
+						false));
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)

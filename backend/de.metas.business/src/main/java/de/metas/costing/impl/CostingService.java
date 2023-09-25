@@ -154,7 +154,7 @@ public class CostingService implements ICostingService
 		}
 		else
 		{
-			return ExplainedOptional.of(CostDetailCreateResultsList.of(costElementResults));
+			return ExplainedOptional.of(CostDetailCreateResultsList.ofList(costElementResults));
 		}
 	}
 
@@ -163,10 +163,10 @@ public class CostingService implements ICostingService
 		final CostElement costElement = request.getCostElement();
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
-				.map(handler -> {
+				.flatMap(handler -> {
 					try
 					{
-						return handler.createOrUpdateCost(request);
+						return handler.createOrUpdateCost(request).stream();
 					}
 					catch (final Exception ex)
 					{
@@ -174,9 +174,7 @@ public class CostingService implements ICostingService
 								.setParameter("request", request)
 								.appendParametersToMessage();
 					}
-				})
-				.filter(Optional::isPresent)
-				.map(Optional::get);
+				});
 	}
 
 	private CostDetailCreateRequest convertToAcctSchemaCurrency(final CostDetailCreateRequest request)
@@ -406,10 +404,10 @@ public class CostingService implements ICostingService
 			return ExplainedOptional.emptyBecause("No costs created for " + reversalRequest);
 		}
 
-		return ExplainedOptional.of(CostDetailCreateResultsList.of(costDetailCreateResults));
+		return ExplainedOptional.of(CostDetailCreateResultsList.ofList(costDetailCreateResults));
 	}
 
-	private ImmutableList<CostDetailCreateResult> createReversalCostDetails(
+	private List<CostDetailCreateResult> createReversalCostDetails(
 			@NonNull final CostDetail costDetail,
 			@NonNull final CostDetailReverseRequest reversalRequest)
 	{
@@ -424,9 +422,7 @@ public class CostingService implements ICostingService
 		final CostDetailCreateRequest request = toCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
-				.map(handler -> handler.createOrUpdateCost(request))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(handler -> handler.createOrUpdateCost(request).stream())
 				.collect(ImmutableList.toImmutableList());
 	}
 

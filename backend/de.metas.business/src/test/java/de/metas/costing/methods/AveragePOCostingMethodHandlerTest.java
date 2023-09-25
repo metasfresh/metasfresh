@@ -292,7 +292,7 @@ public class AveragePOCostingMethodHandlerTest
 								.explicitCostPrice(null)
 								.qty(Quantity.of(10, eachUOM))
 								.build())
-				.get();
+				.getSingleResult();
 
 		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "10"));
 
@@ -313,7 +313,7 @@ public class AveragePOCostingMethodHandlerTest
 								.amt(CostAmount.of(100, euroCurrencyId))
 								.qty(Quantity.of(0, eachUOM))
 								.build())
-				.get();
+				.getSingleResult();
 
 		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
@@ -335,7 +335,7 @@ public class AveragePOCostingMethodHandlerTest
 								.explicitCostPrice(CostAmount.of(100, euroCurrencyId))
 								.qty(Quantity.of(0, eachUOM))
 								.build())
-				.get();
+				.getSingleResult();
 
 		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
@@ -358,7 +358,7 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
@@ -376,7 +376,7 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
@@ -400,7 +400,7 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
@@ -418,7 +418,7 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
@@ -443,7 +443,7 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
@@ -461,7 +461,7 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
@@ -486,7 +486,7 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
@@ -503,7 +503,7 @@ public class AveragePOCostingMethodHandlerTest
 									.amt(CostAmount.of(0, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			// The amount is the current explicit cost multiplied by the existing qty
 			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
@@ -533,7 +533,7 @@ public class AveragePOCostingMethodHandlerTest
 										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 										.qty(Quantity.of(0, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
@@ -550,7 +550,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-100", "-10"));
 
@@ -567,7 +567,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(10 * 15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
@@ -585,7 +585,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(+100, euroCurrencyId))
 										.qty(Quantity.of(+10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
@@ -610,7 +610,7 @@ public class AveragePOCostingMethodHandlerTest
 										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 										.qty(Quantity.of(0, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
@@ -627,7 +627,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-100", "-10"));
 
@@ -645,7 +645,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(+100, euroCurrencyId))
 										.qty(Quantity.of(+10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
@@ -662,7 +662,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(10 * 15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
@@ -686,7 +686,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-100, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "-100"));
 
@@ -703,7 +703,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(10 * 15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
@@ -721,7 +721,7 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(0, euroCurrencyId))
 										.qty(Quantity.of(+100, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
 				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "100"));
 

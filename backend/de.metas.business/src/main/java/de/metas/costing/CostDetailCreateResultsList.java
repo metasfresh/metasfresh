@@ -2,39 +2,82 @@ package de.metas.costing;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
-import de.metas.costing.methods.CostAmountAndQtyDetailed;
 import de.metas.costing.methods.CostAmountDetailed;
-import de.metas.util.Check;
+import de.metas.costing.methods.CostAmountType;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
 public class CostDetailCreateResultsList
 {
-	private final CostSegment costSegment;
+	public static final CostDetailCreateResultsList EMPTY = new CostDetailCreateResultsList(ImmutableList.of());
+
 	private final ImmutableList<CostDetailCreateResult> list;
 
 	private CostDetailCreateResultsList(@NonNull final List<CostDetailCreateResult> list)
 	{
-		Check.assumeNotEmpty(list, "list is not empty");
-		this.costSegment = CollectionUtils.extractSingleElement(list, CostDetailCreateResult::getCostSegment);
 		this.list = ImmutableList.copyOf(list);
 	}
 
-	public static CostDetailCreateResultsList of(@NonNull final List<CostDetailCreateResult> list)
+	public static CostDetailCreateResultsList ofList(@NonNull final List<CostDetailCreateResult> list)
 	{
+		if (list.isEmpty())
+		{
+			return EMPTY;
+		}
 		return new CostDetailCreateResultsList(list);
+	}
+
+	public static CostDetailCreateResultsList ofNullable(@Nullable final CostDetailCreateResult result)
+	{
+		return result != null ? of(result) : EMPTY;
+	}
+
+	public static CostDetailCreateResultsList of(@NonNull final CostDetailCreateResult result) {return ofList(ImmutableList.of(result));}
+
+	public static Collector<CostDetailCreateResult, ?, CostDetailCreateResultsList> collect() {return GuavaCollectors.collectUsingListAccumulator(CostDetailCreateResultsList::ofList);}
+
+	public Stream<CostDetailCreateResult> stream() {return list.stream();}
+
+	public CostDetailCreateResult getSingleResult() {return CollectionUtils.singleElement(list);}
+
+	public Optional<CostAmountAndQty> getAmtAndQtyToPost(@NonNull final CostAmountType type, @NonNull AcctSchema as)
+	{
+		return list.stream()
+				.filter(result -> isAccountable(result, as))
+				.map(result -> result.getAmtAndQty(type))
+				.reduce(CostAmountAndQty::add);
+	}
+
+	public CostAmount getMainAmountToPost(@NonNull final AcctSchema as)
+	{
+		return getAmtAndQtyToPost(CostAmountType.MAIN, as)
+				.map(CostAmountAndQty::getAmt)
+				.orElseThrow();
+	}
+
+	public CostAmountDetailed getTotalAmountToPost(@NonNull final AcctSchema as)
+	{
+		return toAggregatedCostAmount().getTotalAmountToPost(as);
 	}
 
 	public AggregatedCostAmount toAggregatedCostAmount()
 	{
+		final CostSegment costSegment = CollectionUtils.extractSingleElement(list, CostDetailCreateResult::getCostSegment);
+
 		final Map<CostElement, CostAmountDetailed> amountsByCostElement = list.stream()
 				.collect(Collectors.toMap(
 						CostDetailCreateResult::getCostElement, // keyMapper
@@ -47,22 +90,29 @@ public class CostDetailCreateResultsList
 				.build();
 	}
 
-	public CostAmount getMainAmountToPost(@NonNull final AcctSchema as)
+	public CostDetailCreateResultsList filter(@NonNull final Predicate<CostDetailCreateResult> predicate)
 	{
-		return getTotalAmountToPost(as).getMainAmt();
+		if (list.isEmpty())
+		{
+			return this;
+		}
+
+		final ImmutableList<CostDetailCreateResult> newList = list.stream().filter(predicate).collect(ImmutableList.toImmutableList());
+		if (this.list.size() == newList.size())
+		{
+			return this;
+		}
+
+		return ofList(newList);
 	}
 
-	public CostAmountDetailed getTotalAmountToPost(@NonNull final AcctSchema as)
+	public CostDetailCreateResultsList retainAccountable(final AcctSchema as)
 	{
-		return toAggregatedCostAmount().getTotalAmountToPost(as);
+		return filter(result -> isAccountable(result, as));
 	}
 
-	public CostAmountAndQtyDetailed getTotalAmountAndQtyToPost(@NonNull final AcctSchema as)
+	private static boolean isAccountable(@NonNull CostDetailCreateResult result, @NonNull final AcctSchema as)
 	{
-		return list.stream()
-				.filter(detail -> detail.getCostElement().isAccountable(as.getCosting()))
-				.map(CostDetailCreateResult::getAmtAndQty)
-				.reduce(CostAmountAndQtyDetailed::add)
-				.orElseThrow();
+		return result.getCostElement().isAccountable(as.getCosting());
 	}
 }

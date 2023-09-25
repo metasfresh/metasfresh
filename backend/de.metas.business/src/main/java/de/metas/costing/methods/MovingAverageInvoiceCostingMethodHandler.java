@@ -30,6 +30,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
@@ -69,6 +70,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Objects;
 
 @Component
@@ -188,7 +190,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMaterialShipment(final CostDetailCreateRequest request)
+	protected CostDetailCreateResultsList createCostForMaterialShipment(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
@@ -196,7 +198,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCostPrice.getUomId(), request.getProductId());
 		final boolean isInboundTrx = qty.signum() >= 0;
 
-		CostDetailCreateResult result;
+		final CostDetailCreateResultsList result;
 
 		//
 		// Reversal
@@ -205,7 +207,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			// In case of reversals, always consider the provided Amt
 			final CostDetailCreateRequest requestEffective = request.withQty(qty);
 			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
-			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCosts));
+			final CostDetailCreateResult singleResult = utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCosts));
+			result = CostDetailCreateResultsList.of(singleResult);
 		}
 		//
 		// Inbound transactions (qty >= 0)
@@ -226,26 +229,24 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			}
 
 			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
-			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCosts));
+			final CostDetailCreateResult singleResult = utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCosts));
+			result = CostDetailCreateResultsList.of(singleResult);
 		}
 		//
 		// Outbound transactions (qty < 0)
 		else
 		{
 			final ShipmentCostAmountDetailed shipmentCostAmountDetailed = computeShipmentCostAmountDetailed(request, currentCosts);
+			final ArrayList<CostDetailCreateResult> resultsList = new ArrayList<>();
 
 			//
 			// Shipped but not notified
-			CostAmountAndQtyDetailed amtAndQty;
 			{
 				final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
 						request.withAmountAndTypeAndQty(shipmentCostAmountDetailed.getShippedButNotNotified().negate(), CostAmountType.MAIN),
 						CostDetailPreviousAmounts.of(currentCosts));
-				//
-				result = shippedButNotNotifiedResult;
-				amtAndQty = shippedButNotNotifiedResult.getAmtAndQty();
-				//
 				currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(CostAmountType.MAIN));
+				resultsList.add(shippedButNotNotifiedResult);
 			}
 
 			if (!shipmentCostAmountDetailed.getShippedAndNotified().isZero())
@@ -253,7 +254,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				final CostDetailCreateResult alreadyShippedResult = utils.createCostDetailRecordNoCostsChanged(
 						request.withAmountAndTypeAndQty(shipmentCostAmountDetailed.getShippedAndNotified().negate(), CostAmountType.ALREADY_SHIPPED),
 						CostDetailPreviousAmounts.of(currentCosts));
-				amtAndQty = amtAndQty.add(alreadyShippedResult.getAmtAndQty());
+				resultsList.add(alreadyShippedResult);
 			}
 
 			if (!shipmentCostAmountDetailed.getNotifiedButNotShipped().isZero())
@@ -262,10 +263,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 						request.withAmountAndTypeAndQty(shipmentCostAmountDetailed.getNotifiedButNotShipped().negate(), CostAmountType.ADJUSTMENT),
 						CostDetailPreviousAmounts.of(currentCosts));
 				currentCosts.addToCurrentQtyAndCumulate(adjustmentResult.getAmtAndQty(CostAmountType.ADJUSTMENT));
-				amtAndQty = amtAndQty.add(adjustmentResult.getAmtAndQty());
+				resultsList.add(adjustmentResult);
 			}
 
-			result = result.withAmtAndQty(amtAndQty);
+			result = CostDetailCreateResultsList.ofList(resultsList);
 		}
 
 		utils.saveCurrentCost(currentCosts);

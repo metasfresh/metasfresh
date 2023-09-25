@@ -11,10 +11,10 @@ import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.methods.CostAmountAndQtyDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
 import de.metas.order.IOrderBL;
@@ -205,41 +205,33 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	public CostAmountAndQtyDetailed getCreateShipmentCosts(final AcctSchema as)
+	CostDetailCreateResultsList getCreateShipmentCosts(final AcctSchema as)
 	{
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-							.acctSchemaId(as.getId())
-							.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-							.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
-							.date(getDateAcctAsInstant())
-							.build())
-					.getTotalAmountAndQtyToPost(as)
-					// Negate the amount coming from the costs because it must be negative in the accounting.
-					.negate();
+					.acctSchemaId(as.getId())
+					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
+					.date(getDateAcctAsInstant())
+					.build());
 		}
 		else
 		{
 			return services.createCostDetail(
-							CostDetailCreateRequest.builder()
-									.acctSchemaId(as.getId())
-									.clientId(getClientId())
-									.orgId(getOrgId())
-									.productId(getProductId())
-									.attributeSetInstanceId(getAttributeSetInstanceId())
-									.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-									.qty(getQty())
-									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-									.currencyConversionContext(getCurrencyConversionContext(as))
-									.date(getDateAcctAsInstant())
-									.externallyOwned(computeAmtAndQtyExternallyOwned(as))
-									.build())
-					.getTotalAmountAndQtyToPost(as)
-					// The shipment is an outgoing document, so the costing amounts will be negative values.
-					// In the accounting they must be positive values. This is the reason why the amount
-					// coming from the product costs must be negated.
-					.negate();
+					CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getId())
+							.clientId(getClientId())
+							.orgId(getOrgId())
+							.productId(getProductId())
+							.attributeSetInstanceId(getAttributeSetInstanceId())
+							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
+							.qty(getQty())
+							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
+							.currencyConversionContext(getCurrencyConversionContext(as))
+							.date(getDateAcctAsInstant())
+							.externallyOwned(computeAmtAndQtyExternallyOwned(as))
+							.build());
 		}
 	}
 
