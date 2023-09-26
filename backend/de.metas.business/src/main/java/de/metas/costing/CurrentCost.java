@@ -160,6 +160,13 @@ public final class CurrentCost
 		}
 	}
 
+	public void addWeightedAverage(
+			@NonNull final CostAmountAndQty amtAndQty,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		addWeightedAverage(amtAndQty.getAmt(), amtAndQty.getQty(), uomConverter);
+	}
+
 	/**
 	 * Add Amt/Qty and calculate weighted average.
 	 * ((OldAvg*OldQty)+(Price*Qty)) / (OldQty+Qty).
@@ -230,7 +237,6 @@ public final class CurrentCost
 	{
 		addToCurrentQtyAndCumulate(amtAndQty.getQty(), amtAndQty.getAmt());
 	}
-
 
 	public void setCostPrice(@NonNull final CostPrice costPrice)
 	{
