@@ -824,7 +824,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 							.getSingleResult();
 
 					assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-200 EUR", "-20 Ea"));
-					amtAndQtyNotified = costDetailResult.getAmtAndQty(CostAmountType.MAIN);
+					amtAndQtyNotified = costDetailResult.getAmtAndQty(CostAmountType.MAIN).negate();
 
 					final CurrentCost currentCost = getCurrentCost(orgId1);
 					assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("80");

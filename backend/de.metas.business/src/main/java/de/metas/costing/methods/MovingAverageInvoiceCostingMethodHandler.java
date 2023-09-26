@@ -250,7 +250,16 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
 						request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
 						CostDetailPreviousAmounts.of(currentCosts));
-				currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
+
+				if (!request.isReversal())
+				{
+					currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
+				}
+				else
+				{
+					currentCosts.addWeightedAverage(shippedButNotNotifiedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
+				}
+
 				return shippedButNotNotifiedResult;
 			}
 
