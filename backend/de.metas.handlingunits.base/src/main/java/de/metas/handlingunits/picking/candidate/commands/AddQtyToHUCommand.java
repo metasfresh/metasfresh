@@ -42,6 +42,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -286,7 +287,7 @@ public class AddQtyToHUCommand
 		final ImmutableMap<HuId, ImmutableSet<OrderId>> huId2OpenPickingOrderIds = pickingCandidateService
 				.getOpenPickingOrderIdsByHuId(ImmutableSet.of(packToHuId));
 
-		final boolean thereAreOpenPickingOrdersForHU = !huId2OpenPickingOrderIds.isEmpty();
+		final boolean thereAreOpenPickingOrdersForHU = CollectionUtils.isNotEmpty(huId2OpenPickingOrderIds.get(packToHuId));
 		final boolean noneOfThePickingOrdersMatchesTheCurrentOrder = !huId2OpenPickingOrderIds.get(packToHuId).contains(pickingForOrderId);
 
 		if (thereAreOpenPickingOrdersForHU && noneOfThePickingOrdersMatchesTheCurrentOrder)
