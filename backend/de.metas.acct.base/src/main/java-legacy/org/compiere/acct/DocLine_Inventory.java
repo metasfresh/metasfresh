@@ -41,8 +41,7 @@ import java.math.BigDecimal;
 
 public class DocLine_Inventory extends DocLine<Doc_Inventory>
 {
-	@Nullable
-	private BigDecimal explicitCostPriceBD;
+	@Nullable private final BigDecimal explicitCostPriceBD;
 
 	public DocLine_Inventory(final I_M_InventoryLine inventoryLine, final Doc_Inventory doc)
 	{

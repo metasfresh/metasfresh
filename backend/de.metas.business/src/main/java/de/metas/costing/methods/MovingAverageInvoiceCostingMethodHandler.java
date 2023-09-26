@@ -510,6 +510,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostDetailCreateResult inboundResult;
 		if (Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement))
 		{
+			//noinspection UnnecessaryLocalVariable
 			final CostDetailPreviousAmounts inboundPreviousCosts = outboundPreviousCosts;
 
 			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest, outboundPreviousCosts);

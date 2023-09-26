@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -239,17 +240,12 @@ public class CostingMethodHandlerUtils
 	private CurrencyConversionContext getCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
 		final CurrencyConversionContext currencyConversionContext = request.getCurrencyConversionContext();
-		if (currencyConversionContext != null)
-		{
-			return currencyConversionContext;
-		}
-		else
-		{
-			return currencyBL.createCurrencyConversionContext(
-					request.getDate(),
-					(CurrencyConversionTypeId)null,
-					request.getClientId(),
-					request.getOrgId());
-		}
+		return Objects.requireNonNullElseGet(
+				currencyConversionContext,
+				() -> currencyBL.createCurrencyConversionContext(
+						request.getDate(),
+						(CurrencyConversionTypeId)null,
+						request.getClientId(),
+						request.getOrgId()));
 	}
 }

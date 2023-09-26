@@ -126,7 +126,5 @@ public class CostDetail
 		}
 	}
 
-	public CostAmountAndQty getAmtAndQty() {return CostAmountAndQty.of(amt, qty);}
-
 	public CostAmountAndQtyDetailed getAmtAndQtyDetailed() {return CostAmountAndQtyDetailed.of(amt, qty, amtType);}
 }
