@@ -66,7 +66,7 @@ public class ShippingNotificationAcctService
 									.productId(line.getProductId())
 									.attributeSetInstanceId(line.getAsiId())
 									.documentRef(CostingDocumentRef.ofShippingNotificationLineId(line.getIdNotNull()))
-									.qty(line.getQty())
+									.qty(line.getQty().negate())
 									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 									.date(shippingNotification.getDateAcct())
 									.build())
