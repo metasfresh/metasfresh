@@ -90,27 +90,6 @@ public class CostDetailCreateResultsList
 				.build();
 	}
 
-	public CostDetailCreateResultsList filter(@NonNull final Predicate<CostDetailCreateResult> predicate)
-	{
-		if (list.isEmpty())
-		{
-			return this;
-		}
-
-		final ImmutableList<CostDetailCreateResult> newList = list.stream().filter(predicate).collect(ImmutableList.toImmutableList());
-		if (this.list.size() == newList.size())
-		{
-			return this;
-		}
-
-		return ofList(newList);
-	}
-
-	public CostDetailCreateResultsList retainAccountable(final AcctSchema as)
-	{
-		return filter(result -> isAccountable(result, as));
-	}
-
 	private static boolean isAccountable(@NonNull CostDetailCreateResult result, @NonNull final AcctSchema as)
 	{
 		return result.getCostElement().isAccountable(as.getCosting());
