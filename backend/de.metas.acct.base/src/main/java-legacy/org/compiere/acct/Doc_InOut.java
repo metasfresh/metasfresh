@@ -247,24 +247,25 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
 	{
-		final Fact fact = newFacts(as);
-		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
-		return ImmutableList.of(fact);
+		final ArrayList<Fact> facts = new ArrayList<>();
+		getDocLines().forEach(line -> facts.addAll(createFacts_SalesShipmentLine(as, line)));
+		return facts;
 	}
 
-	private void createFacts_SalesShipmentLine(final Fact fact, final DocLine_InOut line)
+	private List<Fact> createFacts_SalesShipmentLine(final AcctSchema as, final DocLine_InOut line)
 	{
 		// Skip not stockable (e.g. service products) because they have no cost
 		if (!line.isItem())
 		{
-			return;
+			return ImmutableList.of();
 		}
 
-		final AcctSchema as = fact.getAcctSchema();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		final ShipmentCosts costs = line.getCreateShipmentCosts(as);
 
 		createFacts_SalesShipmentLine(
-				fact,
+				facts,
+				as,
 				line,
 				ProductAcctType.P_COGS_Acct,
 				ProductAcctType.P_Asset_Acct,
@@ -272,7 +273,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				true);
 
 		createFacts_SalesShipmentLine(
-				fact,
+				facts,
+				as,
 				line,
 				ProductAcctType.P_COGS_Acct,
 				ProductAcctType.P_ExternallyOwnedStock_Acct,
@@ -280,16 +282,20 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				false);
 
 		createFacts_SalesShipmentLine(
-				fact,
+				facts,
+				as,
 				line,
 				ProductAcctType.P_Asset_Acct,
 				ProductAcctType.P_ExternallyOwnedStock_Acct,
 				costs.getNotifiedButNotShipped(),
 				false);
+
+		return facts;
 	}
 
 	private void createFacts_SalesShipmentLine(
-			@NonNull final Fact fact,
+			@NonNull final ArrayList<Fact> facts,
+			@NonNull final AcctSchema as,
 			@NonNull final DocLine_InOut line,
 			@NonNull final ProductAcctType debitAccount,
 			@NonNull final ProductAcctType creditAccount,
@@ -301,11 +307,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final AcctSchema as = fact.getAcctSchema();
-
 		final CostAmount amount = roundToStdPrecision(amountAndQty.getAmt());
 		final Quantity qty = amountAndQty.getQty();
 
+		final Fact fact = newFacts(as);
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(debitAccount, as))
@@ -328,10 +333,16 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.toLocationOfBPartner(getBPartnerLocationId())
 				.alsoAddZeroLineIf(addZeroLine)
 				.buildAndAdd();
+
+		if (!fact.isEmpty())
+		{
+			facts.add(fact);
+		}
 	}
 
 	private void createFacts_SalesReturnLine(
-			@NonNull final Fact fact,
+			@NonNull final ArrayList<Fact> facts,
+			@NonNull final AcctSchema as,
 			@NonNull final DocLine_InOut line,
 			@NonNull final ProductAcctType debitAccount,
 			@NonNull final ProductAcctType creditAccount,
@@ -343,10 +354,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final AcctSchema as = fact.getAcctSchema();
 		final CostAmount amount = roundToStdPrecision(amountAndQty.getAmt());
 		final Quantity qty = amountAndQty.getQty();
 
+		final Fact fact = newFacts(as);
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(debitAccount, as))
@@ -369,48 +380,57 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.toLocationOfLocator(line.getM_Locator_ID())
 				.alsoAddZeroLineIf(addZeroLine)
 				.buildAndAdd();
+
+		if (!fact.isEmpty())
+		{
+			facts.add(fact);
+		}
 	}
 
 	private List<Fact> createFacts_SalesReturn(final AcctSchema as)
 	{
-		final Fact fact = newFacts(as);
-		getDocLines().forEach(line -> createFacts_SalesReturnLine(fact, line));
-
-		return ImmutableList.of(fact);
+		final ArrayList<Fact> facts = new ArrayList<>();
+		getDocLines().forEach(line -> facts.addAll(createFacts_SalesReturnLine(as, line)));
+		return facts;
 	}
 
-	private void createFacts_SalesReturnLine(final Fact fact, final DocLine_InOut line)
+	private List<Fact> createFacts_SalesReturnLine(final AcctSchema as, final DocLine_InOut line)
 	{
 		// Skip not stockable (e.g. service products) because they have no cost
 		if (!line.isItem())
 		{
-			return;
+			return ImmutableList.of();
 		}
 
-		final AcctSchema as = fact.getAcctSchema();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		final ShipmentCosts costs = line.getCreateShipmentCosts(as);
 
 		createFacts_SalesReturnLine(
-				fact,
+				facts,
+				as,
 				line,
 				ProductAcctType.P_Asset_Acct,
 				ProductAcctType.P_COGS_Acct,
 				costs.getShippedButNotNotified(),
 				true);
 		createFacts_SalesReturnLine(
-				fact,
+				facts,
+				as,
 				line,
 				ProductAcctType.P_ExternallyOwnedStock_Acct,
 				ProductAcctType.P_COGS_Acct,
 				costs.getShippedAndNotified(),
 				false);
 		createFacts_SalesReturnLine(
-				fact,
+				facts,
+				as,
 				line,
 				ProductAcctType.P_ExternallyOwnedStock_Acct,
 				ProductAcctType.P_Asset_Acct,
 				costs.getNotifiedButNotShipped(),
 				false);
+
+		return facts;
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
