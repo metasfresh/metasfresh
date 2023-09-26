@@ -124,38 +124,6 @@ from tmp_period_map tpm
 WHERE c_period_id = tpm.fromPeriodId
 ;
 
-UPDATE fact_acct
-SET c_period_id = tpm.toPeriodId,
-    updated     = TO_TIMESTAMP('2023-09-22 22:22:22.222', 'YYYY-MM-DD HH24:MI:SS.US'),
-    updatedby   = 100
-from tmp_period_map tpm
-WHERE c_period_id = tpm.fromPeriodId
-;
-
-UPDATE fact_acct_activitychangerequest
-SET c_period_id = tpm.toPeriodId,
-    updated     = TO_TIMESTAMP('2023-09-22 22:22:22.222', 'YYYY-MM-DD HH24:MI:SS.US'),
-    updatedby   = 100
-from tmp_period_map tpm
-WHERE c_period_id = tpm.fromPeriodId
-;
-
-UPDATE fact_acct_log
-SET c_period_id = tpm.toPeriodId,
-    updated     = TO_TIMESTAMP('2023-09-22 22:22:22.222', 'YYYY-MM-DD HH24:MI:SS.US'),
-    updatedby   = 100
-from tmp_period_map tpm
-WHERE c_period_id = tpm.fromPeriodId
-;
-
-UPDATE fact_acct_summary
-SET c_period_id = tpm.toPeriodId,
-    updated     = TO_TIMESTAMP('2023-09-22 22:22:22.222', 'YYYY-MM-DD HH24:MI:SS.US'),
-    updatedby   = 100
-from tmp_period_map tpm
-WHERE c_period_id = tpm.fromPeriodId
-;
-
 UPDATE gl_journal
 SET c_period_id = tpm.toPeriodId,
     updated     = TO_TIMESTAMP('2023-09-22 22:22:22.222', 'YYYY-MM-DD HH24:MI:SS.US'),
@@ -250,19 +218,4 @@ SET c_period_id = tpm.toPeriodId,
     updatedby   = 100
 from tmp_period_map tpm
 WHERE c_period_id = tpm.fromPeriodId
-;
-
-DELETE
-FROM C_PeriodControl
-WHERE c_period_id IN (SELECT fromPeriodId FROM tmp_period_map)
-;
-
-DELETE
-FROM c_period_trl
-WHERE c_period_id IN (SELECT fromPeriodId FROM tmp_period_map)
-;
-
-DELETE
-FROM c_period
-WHERE c_period_id IN (SELECT fromPeriodId FROM tmp_period_map)
 ;
