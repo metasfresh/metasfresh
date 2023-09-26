@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shippingNotification;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -121,7 +122,9 @@ public class M_Shipping_Notification_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String salesOrderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Instant physicalClearanceDate = DataTableUtil.extractInstantForColumnName(row, COLUMNNAME_PhysicalClearanceDate);
+			final Instant physicalClearanceDate = DataTableUtil.extractLocalDateForColumnName(row, COLUMNNAME_PhysicalClearanceDate)
+					.atStartOfDay(SystemTime.zoneId())
+					.toInstant();
 
 			final I_C_Order salesOrder = orderTable.get(salesOrderIdentifier);
 			final OrderId salesOrderId = OrderId.ofRepoId(salesOrder.getC_Order_ID());
