@@ -22,6 +22,7 @@
 
 package de.metas.common.util;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,5 +57,25 @@ public class CoalesceUtilTest
 	public void firstGreaterThanZero()
 	{
 		assertThat(CoalesceUtil.firstGreaterThanZero(0, 3, 1)).isEqualTo(3);
+	}
+
+	@Nested
+	public class isAllNotNull
+	{
+		@Test
+		void empty() {assertThat(CoalesceUtil.isAllNotNulls()).isTrue();}
+
+		@Test
+		void singleNullValue() {assertThat(CoalesceUtil.isAllNotNulls((String)null)).isFalse();}
+
+		@Test
+		void singleNotNull() {assertThat(CoalesceUtil.isAllNotNulls((String)"1")).isTrue();}
+
+		@Test
+		void multipleNullAndNotNullValues() {assertThat(CoalesceUtil.isAllNotNulls("1", "2", null, "3")).isFalse();}
+
+		@Test
+		void multipleNotNullValues() {assertThat(CoalesceUtil.isAllNotNulls("1", "2", "3")).isTrue();}
+
 	}
 }
