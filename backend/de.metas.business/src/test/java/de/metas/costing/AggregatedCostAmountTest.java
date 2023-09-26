@@ -57,16 +57,16 @@ public class AggregatedCostAmountTest
 				.amount(createCostElement(7, CostingMethod.MovingAverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(1, currencyId))).build())
 				.build();
 
-		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.AveragePO)).get().getMainAmt())
+		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.AveragePO)).orElseThrow().getMainAmt())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.AveragePO, 2, 4)).get().getMainAmt())
+		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.AveragePO, 2, 4)).orElseThrow().getMainAmt())
 				.isEqualTo(CostAmount.of(101, currencyId));
 
-		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.MovingAverageInvoice)).get().getMainAmt())
+		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.MovingAverageInvoice)).orElseThrow().getMainAmt())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.MovingAverageInvoice, 5, 7)).get().getMainAmt())
+		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.MovingAverageInvoice, 5, 7)).orElseThrow().getMainAmt())
 				.isEqualTo(CostAmount.of(101, currencyId));
 	}
 

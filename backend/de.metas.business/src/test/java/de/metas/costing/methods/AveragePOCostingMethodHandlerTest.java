@@ -92,7 +92,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 @ExtendWith(AdempiereTestWatcher.class)
 public class AveragePOCostingMethodHandlerTest
 {

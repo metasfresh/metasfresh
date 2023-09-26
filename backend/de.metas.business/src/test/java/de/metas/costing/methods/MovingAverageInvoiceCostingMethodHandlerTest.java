@@ -91,7 +91,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 @ExtendWith(AdempiereTestWatcher.class)
 public class MovingAverageInvoiceCostingMethodHandlerTest
 {
