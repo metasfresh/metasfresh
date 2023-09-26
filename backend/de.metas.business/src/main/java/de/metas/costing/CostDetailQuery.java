@@ -3,6 +3,7 @@ package de.metas.costing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.AllArgsConstructor;
@@ -47,6 +48,7 @@ public class CostDetailQuery
 	@Nullable AcctSchemaId acctSchemaId;
 	@Nullable CostElementId costElementId;
 	@Nullable CostingDocumentRef documentRef;
+	@Nullable CostAmountType amtType;
 
 	@Nullable ProductId productId;
 	@Nullable AttributeSetInstanceId attributeSetInstanceId;

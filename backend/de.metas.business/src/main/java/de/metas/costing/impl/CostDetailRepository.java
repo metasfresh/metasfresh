@@ -250,6 +250,13 @@ public class CostDetailRepository implements ICostDetailRepository
 			}
 		}
 
+		// AmtType
+		final CostAmountType amtType = query.getAmtType();
+		if (amtType != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostDetail_Type, amtType.getCode());
+		}
+
 		// Product
 		if (query.getProductId() != null)
 		{
