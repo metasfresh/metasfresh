@@ -282,8 +282,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		@NonNull final Quantity qtyShipped = utils.convertToUOM(request.getQty(), uomId, productId).negate(); // negate to get positive
 
-		@NonNull final CostAmountAndQty costAndQtyNotified = request.getExternallyOwned()
-				.map(CostAmountAndQty::negate) // negate to get positive
+		@NonNull final CostAmountAndQty costAndQtyNotified = request.getExternallyOwned() // already positive
 				.map(amtAndQty -> amtAndQty.mapQty(utils.convertQuantityToUOM(uomId, productId)))
 				.orElseGet(() -> CostAmountAndQty.zero(currencyId, uomId));
 		@NonNull final CostAmount costNotified = costAndQtyNotified.getAmt();

@@ -296,6 +296,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			@NonNull final CostAmountAndQty amountAndQty,
 			boolean addZeroLine)
 	{
+		if (!addZeroLine && amountAndQty.isZero())
+		{
+			return;
+		}
+
 		final AcctSchema as = fact.getAcctSchema();
 
 		final CostAmount amount = roundToStdPrecision(amountAndQty.getAmt());
@@ -333,6 +338,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			@NonNull final CostAmountAndQty amountAndQty,
 			boolean addZeroLine)
 	{
+		if (!addZeroLine && amountAndQty.isZero())
+		{
+			return;
+		}
+
 		final AcctSchema as = fact.getAcctSchema();
 		final CostAmount amount = roundToStdPrecision(amountAndQty.getAmt());
 		final Quantity qty = amountAndQty.getQty();
