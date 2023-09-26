@@ -15,6 +15,7 @@ import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ShipmentCosts;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
 import de.metas.order.IOrderBL;
@@ -205,11 +206,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	CostDetailCreateResultsList getCreateShipmentCosts(final AcctSchema as)
+	ShipmentCosts getCreateShipmentCosts(final AcctSchema as)
 	{
+		final CostDetailCreateResultsList results;
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
+			results = services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
@@ -218,7 +220,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 		else
 		{
-			return services.createCostDetail(
+			results = services.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getId())
 							.clientId(getClientId())
@@ -233,6 +235,8 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.externallyOwned(computeAmtAndQtyExternallyOwned(as))
 							.build());
 		}
+
+		return ShipmentCosts.extractAccountableFrom(results, as);
 	}
 
 	private CurrencyConversionContext getCurrencyConversionContext(final AcctSchema as)

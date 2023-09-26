@@ -69,7 +69,7 @@ public class CoalesceUtilTest
 		void singleNullValue() {assertThat(CoalesceUtil.isAllNotNulls((String)null)).isFalse();}
 
 		@Test
-		void singleNotNull() {assertThat(CoalesceUtil.isAllNotNulls((String)"1")).isTrue();}
+		void singleNotNull() {assertThat(CoalesceUtil.isAllNotNulls("1")).isTrue();}
 
 		@Test
 		void multipleNullAndNotNullValues() {assertThat(CoalesceUtil.isAllNotNulls("1", "2", null, "3")).isFalse();}

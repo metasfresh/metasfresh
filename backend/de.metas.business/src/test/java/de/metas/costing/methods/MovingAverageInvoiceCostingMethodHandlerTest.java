@@ -46,6 +46,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.ShipmentCosts;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -849,15 +850,11 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				}
 			}
 
-			void printQuantities(final CostDetailCreateResultsList costDetailResults)
+			void print(final ShipmentCosts shipmentCosts)
 			{
-				final CostAmountAndQty shippedButNotNotified = costDetailResults.getAmtAndQtyToPost(CostAmountType.MAIN, acctSchema).orElse(null);
-				final CostAmountAndQty shippedAndNotified = costDetailResults.getAmtAndQtyToPost(CostAmountType.ALREADY_SHIPPED, acctSchema).orElse(null);
-				final CostAmountAndQty notifiedButNotShipped = costDetailResults.getAmtAndQtyToPost(CostAmountType.ADJUSTMENT, acctSchema).orElse(null);
-
-				System.out.println("shippedButNotNotified: " + shippedButNotNotified);
-				System.out.println("   shippedAndNotified: " + shippedAndNotified);
-				System.out.println("notifiedButNotShipped: " + notifiedButNotShipped);
+				System.out.println("shippedButNotNotified: " + shipmentCosts.getShippedButNotNotified());
+				System.out.println("   shippedAndNotified: " + shipmentCosts.getShippedAndNotified());
+				System.out.println("notifiedButNotShipped: " + shipmentCosts.getNotifiedButNotShipped());
 			}
 
 			void print(final CurrentCost currentCost)
@@ -874,22 +871,21 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 
 				// Shipment
 				{
-					final CostDetailCreateResultsList costDetailResults = handler.createOrUpdateCost(
+					final CostDetailCreateResultsList results = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
 									.amt(costAmount("0 EUR")) // to be calculated
 									.qty(qty("-17 Ea"))
 									.externallyOwned(amtAndQtyNotified)
 									.build());
-					printQuantities(costDetailResults);
 
-					final CostAmountAndQty shippedButNotNotified = costDetailResults.getAmtAndQtyToPost(CostAmountType.MAIN, acctSchema).orElse(null);
-					final CostAmountAndQty shippedAndNotified = costDetailResults.getAmtAndQtyToPost(CostAmountType.ALREADY_SHIPPED, acctSchema).orElse(null);
-					final CostAmountAndQty notifiedButNotShipped = costDetailResults.getAmtAndQtyToPost(CostAmountType.ADJUSTMENT, acctSchema).orElse(null);
-
-					assertThat(shippedAndNotified).usingRecursiveComparison().isEqualTo(amtAndQty("-170 EUR", "-17 Ea"));
-					assertThat(shippedButNotNotified).usingRecursiveComparison().isEqualTo(amtAndQty("0 EUR", "0 Ea"));
-					assertThat(notifiedButNotShipped).usingRecursiveComparison().isEqualTo(amtAndQty("30 EUR", "3 Ea"));
+					final ShipmentCosts shipmentCosts = ShipmentCosts.extractAccountableFrom(results, acctSchema);
+					print(shipmentCosts);
+					assertThat(shipmentCosts).usingRecursiveComparison().isEqualTo(ShipmentCosts.builder()
+							.shippedAndNotified(amtAndQty("170 EUR", "17 Ea"))
+							.shippedButNotNotified(amtAndQty("0 EUR", "0 Ea"))
+							.notifiedButNotShipped(amtAndQty("30 EUR", "3 Ea"))
+							.build());
 
 					final CurrentCost currentCost = getCurrentCost(orgId1);
 					print(currentCost);
@@ -908,22 +904,19 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 
 				// Shipment
 				{
-					final CostDetailCreateResultsList costDetailResults = handler.createOrUpdateCost(
+					final CostDetailCreateResultsList results = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
 									.amt(costAmount("0 EUR")) // to be calculated
 									.qty(qty("-20 Ea"))
 									.externallyOwned(amtAndQtyNotified)
 									.build());
-					printQuantities(costDetailResults);
 
-					final CostAmountAndQty shippedAndNotified = costDetailResults.getAmtAndQtyToPost(CostAmountType.ALREADY_SHIPPED, acctSchema).orElse(null);
-					final CostAmountAndQty shippedButNotNotified = costDetailResults.getAmtAndQtyToPost(CostAmountType.MAIN, acctSchema).orElse(null);
-					final CostAmountAndQty notifiedButNotShipped = costDetailResults.getAmtAndQtyToPost(CostAmountType.ADJUSTMENT, acctSchema).orElse(null);
-
-					assertThat(shippedAndNotified).usingRecursiveComparison().isEqualTo(amtAndQty("-200 EUR", "-20 Ea"));
-					assertThat(shippedButNotNotified).usingRecursiveComparison().isEqualTo(amtAndQty("0 EUR", "0 Ea"));
-					assertThat(notifiedButNotShipped).usingRecursiveComparison().isEqualTo(amtAndQty("0 EUR", "0 Ea"));
+					final ShipmentCosts shipmentCosts = ShipmentCosts.extractAccountableFrom(results, acctSchema);
+					print(shipmentCosts);
+					assertThat(shipmentCosts).usingRecursiveComparison().isEqualTo(ShipmentCosts.builder()
+							.shippedAndNotified(amtAndQty("200 EUR", "20 Ea"))
+							.build());
 
 					final CurrentCost currentCost = getCurrentCost(orgId1);
 					print(currentCost);
@@ -938,22 +931,20 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 
 				// Shipment
 				{
-					final CostDetailCreateResultsList costDetailResults = handler.createOrUpdateCost(
+					final CostDetailCreateResultsList results = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
 									.amt(costAmount("0 EUR")) // to be calculated
 									.qty(qty("-30 Ea"))
 									.externallyOwned(amtAndQtyNotified)
 									.build());
-					printQuantities(costDetailResults);
 
-					final CostAmountAndQty shippedButNotNotified = costDetailResults.getAmtAndQtyToPost(CostAmountType.MAIN, acctSchema).orElse(null);
-					final CostAmountAndQty shippedAndNotified = costDetailResults.getAmtAndQtyToPost(CostAmountType.ALREADY_SHIPPED, acctSchema).orElse(null);
-					final CostAmountAndQty notifiedButNotShipped = costDetailResults.getAmtAndQtyToPost(CostAmountType.ADJUSTMENT, acctSchema).orElse(null);
-
-					assertThat(shippedButNotNotified).usingRecursiveComparison().isEqualTo(amtAndQty("-150 EUR", "-10 Ea")); // using current cost price
-					assertThat(shippedAndNotified).usingRecursiveComparison().isEqualTo(amtAndQty("-200 EUR", "-20 Ea"));
-					assertThat(notifiedButNotShipped).usingRecursiveComparison().isEqualTo(amtAndQty("0 EUR", "0 Ea"));
+					final ShipmentCosts shipmentCosts = ShipmentCosts.extractAccountableFrom(results, acctSchema);
+					print(shipmentCosts);
+					assertThat(shipmentCosts).usingRecursiveComparison().isEqualTo(ShipmentCosts.builder()
+							.shippedAndNotified(amtAndQty("200 EUR", "20 Ea"))
+							.shippedButNotNotified(amtAndQty("150 EUR", "10 Ea"))
+							.build());
 
 					final CurrentCost currentCost = getCurrentCost(orgId1);
 					print(currentCost);
