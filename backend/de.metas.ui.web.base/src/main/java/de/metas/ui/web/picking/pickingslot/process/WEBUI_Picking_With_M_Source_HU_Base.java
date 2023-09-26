@@ -19,7 +19,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.picking.api.PickingConfig;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -33,6 +35,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -145,19 +148,18 @@ import java.util.List;
 
 	protected Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
 	{
-		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
-
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 
 		return pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
-				.qtyToPack(qtyToPack)
-				.packToHuId(packToHuId)
-				.sourceHUIds(huIdsToPick)
-				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(getCurrentShipmentScheduleId())
-				.allowOverDelivery(allowOverDelivery)
-				.build());
+														  .qtyToPack(qtyToPack)
+														  .packToHuId(packToHuId)
+														  .sourceHUIds(huIdsToPick)
+														  .pickingSlotId(pickingSlotId)
+														  .shipmentScheduleId(getCurrentShipmentScheduleId())
+														  .allowOverDelivery(getPickingConfig().isAllowOverDelivery())
+														  .isForbidAggCUsForDifferentOrders(getPickingConfig().isForbidAggCUsForDifferentOrders())
+														  .build());
 	}
 
 	protected void forcePick(Quantity qtyToPack, final HuId packToHuId)
@@ -212,6 +214,19 @@ import java.util.List;
 		qtyToPack = qtyToPack.subtract(qtyPickedFromSuppliedHU);
 
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
+	}
+
+	@NonNull
+	protected PickingConfig getPickingConfig()
+	{
+		return pickingConfigRepo.getPickingConfig();
+	}
+
+	@Nullable
+	protected OrderId getCurrentlyPickingOrderId()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
+		return OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
 	}
 
 	private HuId createInventoryForMissingQty(@NonNull final Quantity qtyToBeAdded)

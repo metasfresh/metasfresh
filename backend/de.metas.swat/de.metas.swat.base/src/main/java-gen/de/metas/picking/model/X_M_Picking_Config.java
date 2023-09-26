@@ -1,115 +1,88 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.picking.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_Picking_Config
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Picking_Config, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1247752507L;
+	private static final long serialVersionUID = 1617316970L;
 
     /** Standard Constructor */
-    public X_M_Picking_Config (Properties ctx, int M_Picking_Config_ID, String trxName)
+    public X_M_Picking_Config (final Properties ctx, final int M_Picking_Config_ID, @Nullable final String trxName)
     {
       super (ctx, M_Picking_Config_ID, trxName);
-      /** if (M_Picking_Config_ID == 0)
-        {
-			setIsAllowOverdelivery (false); // N
-			setIsAutoProcess (false); // N
-			setM_Picking_Config_ID (0);
-			setWEBUI_PickingTerminal_ViewProfile (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_Picking_Config (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Picking_Config (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set IsAllowOverdelivery.
-		@param IsAllowOverdelivery IsAllowOverdelivery	  */
+	/** Load Meta Data */
 	@Override
-	public void setIsAllowOverdelivery (boolean IsAllowOverdelivery)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		set_Value (COLUMNNAME_IsAllowOverdelivery, Boolean.valueOf(IsAllowOverdelivery));
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-	/** Get IsAllowOverdelivery.
-		@return IsAllowOverdelivery	  */
 	@Override
-	public boolean isAllowOverdelivery () 
+	public void setIsAllowOverdelivery (final boolean IsAllowOverdelivery)
 	{
-		Object oo = get_Value(COLUMNNAME_IsAllowOverdelivery);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		set_Value (COLUMNNAME_IsAllowOverdelivery, IsAllowOverdelivery);
 	}
 
-	/** Set IsAutoProcess.
-		@param IsAutoProcess IsAutoProcess	  */
 	@Override
-	public void setIsAutoProcess (boolean IsAutoProcess)
+	public boolean isAllowOverdelivery() 
 	{
-		set_Value (COLUMNNAME_IsAutoProcess, Boolean.valueOf(IsAutoProcess));
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowOverdelivery);
 	}
 
-	/** Get IsAutoProcess.
-		@return IsAutoProcess	  */
 	@Override
-	public boolean isAutoProcess () 
+	public void setIsAutoProcess (final boolean IsAutoProcess)
 	{
-		Object oo = get_Value(COLUMNNAME_IsAutoProcess);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		set_Value (COLUMNNAME_IsAutoProcess, IsAutoProcess);
 	}
 
-	/** Set Picking configuration.
-		@param M_Picking_Config_ID Picking configuration	  */
 	@Override
-	public void setM_Picking_Config_ID (int M_Picking_Config_ID)
+	public boolean isAutoProcess() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoProcess);
+	}
+
+	@Override
+	public void setIsForbidAggCUsForDifferentOrders (final boolean IsForbidAggCUsForDifferentOrders)
+	{
+		set_Value (COLUMNNAME_IsForbidAggCUsForDifferentOrders, IsForbidAggCUsForDifferentOrders);
+	}
+
+	@Override
+	public boolean isForbidAggCUsForDifferentOrders() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsForbidAggCUsForDifferentOrders);
+	}
+
+	@Override
+	public void setM_Picking_Config_ID (final int M_Picking_Config_ID)
 	{
 		if (M_Picking_Config_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Picking_Config_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Picking_Config_ID, Integer.valueOf(M_Picking_Config_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Config_ID, M_Picking_Config_ID);
 	}
 
-	/** Get Picking configuration.
-		@return Picking configuration	  */
 	@Override
-	public int getM_Picking_Config_ID () 
+	public int getM_Picking_Config_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Picking_Config_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Config_ID);
 	}
 
 	/** 
@@ -121,20 +94,15 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	public static final String WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByProduct = "groupByProduct";
 	/** Group by Order = groupByOrder */
 	public static final String WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByOrder = "groupByOrder";
-	/** Set Picking terminal view profile.
-		@param WEBUI_PickingTerminal_ViewProfile Picking terminal view profile	  */
 	@Override
-	public void setWEBUI_PickingTerminal_ViewProfile (java.lang.String WEBUI_PickingTerminal_ViewProfile)
+	public void setWEBUI_PickingTerminal_ViewProfile (final String WEBUI_PickingTerminal_ViewProfile)
 	{
-
 		set_Value (COLUMNNAME_WEBUI_PickingTerminal_ViewProfile, WEBUI_PickingTerminal_ViewProfile);
 	}
 
-	/** Get Picking terminal view profile.
-		@return Picking terminal view profile	  */
 	@Override
-	public java.lang.String getWEBUI_PickingTerminal_ViewProfile () 
+	public String getWEBUI_PickingTerminal_ViewProfile()
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_PickingTerminal_ViewProfile);
+		return get_ValueAsString(COLUMNNAME_WEBUI_PickingTerminal_ViewProfile);
 	}
 }
