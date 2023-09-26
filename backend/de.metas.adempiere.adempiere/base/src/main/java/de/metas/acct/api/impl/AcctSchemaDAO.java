@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
@@ -17,7 +18,6 @@ import de.metas.acct.api.AcctSchemaValidCombinationOptions;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
-import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
@@ -26,12 +26,10 @@ import de.metas.costing.CostingMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -42,10 +40,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import de.metas.acct.Account;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_CostElement;
 import org.compiere.model.I_C_AcctSchema_Default;
@@ -55,7 +51,6 @@ import org.compiere.model.MColumn;
 import org.compiere.report.MReportTree;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -70,7 +65,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 {
 	private static final Logger logger = LogManager.getLogger(AcctSchemaDAO.class);
 
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	private final CCache<Integer, AcctSchemasMap> acctSchemasCache = CCache.<Integer, AcctSchemasMap>builder()
 			.initialCapacity(1)
@@ -116,7 +112,8 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
-	public @NonNull AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	@NonNull
+	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
 		if (acctSchemaId == null)
@@ -240,7 +237,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 
 		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(acctSchemaRecord.getC_Currency_ID());
-		final Currency acctCurrency = Services.get(ICurrencyDAO.class).getById(acctCurrencyId);
+		final Currency acctCurrency = currencyDAO.getById(acctCurrencyId);
 		final CurrencyPrecision standardPrecision = acctCurrency.getPrecision();
 		final CurrencyPrecision costingPrecision = acctCurrency.getCostingPrecision();
 
