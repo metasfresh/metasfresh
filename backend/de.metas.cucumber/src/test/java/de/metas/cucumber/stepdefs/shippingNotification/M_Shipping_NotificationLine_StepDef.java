@@ -93,6 +93,8 @@ public class M_Shipping_NotificationLine_StepDef
 			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_MovementQty);
 			softly.assertThat(movementQty).isEqualTo(shippingNotificationLine.getMovementQty()).isEqualTo(shipmentSchedule.getQtyDelivered());
 
+			softly.assertAll();
+
 			final String shippingNotificationLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_NotificationLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shippingNotificationLineTable.putOrReplace(shippingNotificationLineIdentifier, shippingNotificationLine);
 		}
