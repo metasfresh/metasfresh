@@ -175,14 +175,3 @@ SET c_year_id = yearMap.toYearId,
 FROM tmp_year_map yearMap
 WHERE c_year_id = yearMap.fromYearId
 ;
-
-DELETE
-FROM c_year
-WHERE c_calendar_id = 540014
-;
-
-DELETE
-FROM c_calendar
-WHERE c_calendar_id = 540014
-;
-
