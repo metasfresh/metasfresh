@@ -227,6 +227,8 @@ public class M_Shipping_Notification_StepDef
 				softly.assertThat(description).isEqualTo(shippingNotification.getDescription()).isEqualTo(order.getDescription());
 			}
 
+			softly.assertAll();
+
 			final String shippingNotificationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_Notification_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shippingNotificationTable.putOrReplace(shippingNotificationIdentifier, shippingNotification);
 		}
@@ -240,8 +242,8 @@ public class M_Shipping_Notification_StepDef
 			final I_M_Shipping_Notification reversalShippingNotification = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_reversal_ShippingNotification(row));
 
 			final SoftAssertions softly = new SoftAssertions();
-
 			softly.assertThat(reversalShippingNotification).isNotNull();
+			softly.assertAll();
 
 			final String reversalShippingNotificationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_Notification_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shippingNotificationTable.putOrReplace(reversalShippingNotificationIdentifier, reversalShippingNotification);
