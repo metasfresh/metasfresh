@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
+import de.metas.inout.IInOutBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -101,6 +102,7 @@ public class CustomsInvoiceService
 
 	private static final Logger logger = LogManager.getLogger(CustomsInvoiceService.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final CustomsInvoiceRepository customsInvoiceRepo;
 	private final OrderLineRepository orderLineRepo;
 	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo;
@@ -294,12 +296,11 @@ public class CustomsInvoiceService
 		}
 		else if (inoutLineRecord.getC_UOM_ID() > 0)
 		{
-			lineQty = Quantitys.create(inoutLineRecord.getQtyEntered(), UomId.ofRepoId(inoutLineRecord.getC_UOM_ID()));
+			lineQty = inoutBL.getQtyEntered(inoutLineRecord);
 		}
 		else
 		{
-			final IProductBL productBL = Services.get(IProductBL.class);
-			lineQty = Quantitys.create(inoutLineRecord.getMovementQty(), productBL.getStockUOMId(productId));
+			lineQty = inoutBL.getMovementQty(inoutLineRecord);
 		}
 
 		return convertToKillogram(lineQty, productId)

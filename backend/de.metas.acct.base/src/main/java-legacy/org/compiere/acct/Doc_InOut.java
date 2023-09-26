@@ -71,7 +71,7 @@ import java.util.Set;
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final MatchInvoiceService matchInvoiceService;
 	private final OrderCostService orderCostService;
 

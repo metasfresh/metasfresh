@@ -86,6 +86,7 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.I_M_Warehouse;
@@ -107,7 +108,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -122,7 +123,9 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_C_Tax_Departure_Country_ID
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
@@ -156,6 +159,7 @@ public class C_Order_StepDef
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
 	private final C_Auction_StepDefData auctionStepDefData;
+	private final M_Locator_StepDefData locatorTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -172,7 +176,8 @@ public class C_Order_StepDef
 			@NonNull final M_InOut_StepDefData inoutTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
 			@NonNull final C_Year_StepDefData yearTable,
-			@NonNull final C_Auction_StepDefData auctionStepDefData)
+			@NonNull final C_Auction_StepDefData auctionStepDefData,
+			@NonNull final M_Locator_StepDefData locatorTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
@@ -189,6 +194,7 @@ public class C_Order_StepDef
 		this.calendarTable = calendarTable;
 		this.yearTable = yearTable;
 		this.auctionStepDefData = auctionStepDefData;
+		this.locatorTable = locatorTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -360,12 +366,26 @@ public class C_Order_StepDef
 				order.setBill_User_ID(billUser.getAD_User_ID());
 			}
 
+			final String dropShipBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(dropShipBPartnerIdentifier))
+			{
+				final I_C_BPartner dropShipBPartner = bpartnerTable.get(dropShipBPartnerIdentifier);
+				order.setDropShip_BPartner_ID(dropShipBPartner.getC_BPartner_ID());
+			}
+
 			final String dropShipLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(dropShipLocationIdentifier))
 			{
 				final I_C_BPartner_Location dropShipLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
 				order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
 				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
+			}
+
+			final String dropShipUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(dropShipUserIdentifier))
+			{
+				final I_AD_User dropShipUser = userTable.get(dropShipUserIdentifier);
+				order.setDropShip_User_ID(dropShipUser.getAD_User_ID());
 			}
 
 			final int salesRepID = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_SalesRep_ID);
@@ -393,6 +413,22 @@ public class C_Order_StepDef
 			{
 				final I_C_Year harvestingYearRecord = yearTable.get(harvestingYearIdentifier);
 				order.setHarvesting_Year_ID(harvestingYearRecord.getC_Year_ID());
+			}
+
+			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(locatorIdentifier))
+			{
+				final int locatorId = locatorTable.getOptional(locatorIdentifier)
+						.map(I_M_Locator::getM_Locator_ID)
+						.orElseGet(() -> Integer.parseInt(locatorIdentifier));
+				order.setM_Locator_ID(locatorId);
+			}
+
+			final String auctionIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_Auction_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(auctionIdentifier))
+			{
+				final I_C_Auction auction = auctionStepDefData.get(auctionIdentifier);
+				order.setC_Auction_ID(auction.getC_Auction_ID());
 			}
 
 			saveRecord(order);
@@ -935,6 +971,13 @@ public class C_Order_StepDef
 			final I_C_Auction auction = auctionStepDefData.get(auctionIdentifier);
 			softly.assertThat(order.getC_Auction_ID()).isEqualTo(auction.getC_Auction_ID());
 		}
+
+		final Timestamp physicalClearanceDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_Order.COLUMNNAME_PhysicalClearanceDate);
+		if (physicalClearanceDate != null)
+		{
+			softly.assertThat(order.getPhysicalClearanceDate()).isEqualTo(physicalClearanceDate);
+		}
+
 		softly.assertAll();
 	}
 

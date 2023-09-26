@@ -1,13 +1,35 @@
 package de.metas.shipment.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.shipment.ShipmentDeclaration;
+import de.metas.shipment.ShipmentDeclarationConfig;
+import de.metas.shipment.ShipmentDeclarationLine;
+import de.metas.shipment.ShipmentDeclarationVetoer;
+import de.metas.shipment.repo.ShipmentDeclarationConfigRepository;
+import de.metas.shipment.repo.ShipmentDeclarationRepository;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -17,37 +39,11 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.DocTypeId;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
-import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.shipment.ShipmentDeclaration;
-import de.metas.shipment.ShipmentDeclarationConfig;
-import de.metas.shipment.ShipmentDeclarationLine;
-import de.metas.shipment.ShipmentDeclarationVetoer;
-import de.metas.shipment.repo.ShipmentDeclarationConfigRepository;
-import de.metas.shipment.repo.ShipmentDeclarationRepository;
-import de.metas.uom.IUOMDAO;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -234,18 +230,17 @@ public class ShipmentDeclarationCreator
 	{
 		final InOutLineId shipmentLineId = shipmentAndLineId.getInOutLineId();
 
-		final I_M_InOutLine shipmentLineRecord = Services.get(IInOutDAO.class).getLineByIdInTrx(shipmentLineId);
+		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+		final I_M_InOutLine shipmentLineRecord = inOutBL.getLineByIdInTrx(shipmentLineId);
 
 		final ProductId productId = ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(shipmentLineRecord.getC_UOM_ID());
 
 		return ShipmentDeclarationLine.builder()
 				.orgId(OrgId.ofRepoId(shipmentLineRecord.getAD_Org_ID()))
 				.packageSize(product.getPackageSize())
 				.productId(productId)
-				.quantity(Quantity.of(shipmentLineRecord.getMovementQty(), uom))
+				.quantity(inOutBL.getQtyEntered(shipmentLineRecord))
 				.shipmentLineId(shipmentLineId)
 				.build();
 	}
