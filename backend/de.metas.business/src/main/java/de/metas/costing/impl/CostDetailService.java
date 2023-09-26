@@ -123,6 +123,7 @@ public class CostDetailService implements ICostDetailService
 				.acctSchemaId(request.getAcctSchemaId())
 				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
+				.amtType(request.getAmtType())
 				// .productId(request.getProductId())
 				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build());

@@ -202,9 +202,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		{
 			// In case of reversals, always consider the provided Amt
 			final CostDetailCreateRequest requestEffective = request.withQty(qty);
-			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
-			final CostDetailCreateResult singleResult = utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCosts));
-			result = CostDetailCreateResultsList.of(singleResult);
+			result = ShipmentCosts.extractFrom(requestEffective).toCostDetailCreateResultsList(shipmentCostsToCostDetails(requestEffective, currentCosts));
 		}
 		//
 		// Inbound transactions (qty >= 0)
@@ -232,41 +230,48 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		// Outbound transactions (qty < 0)
 		else
 		{
-			result = computeShipmentCosts(request, currentCosts).toCostDetailCreateResultsList(new ShipmentCosts.CostAmountAndQtyAndTypeMapper()
-			{
-				@Override
-				public CostDetailCreateResult shippedButNotNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
-				{
-					final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
-							request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
-							CostDetailPreviousAmounts.of(currentCosts));
-					currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
-					return shippedButNotNotifiedResult;
-				}
-
-				@Override
-				public CostDetailCreateResult shippedAndNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
-				{
-					return utils.createCostDetailRecordNoCostsChanged(
-							request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
-							CostDetailPreviousAmounts.of(currentCosts));
-				}
-
-				@Override
-				public CostDetailCreateResult notifiedButNotShipped(final CostAmountAndQty amtAndQty, final CostAmountType type)
-				{
-					final CostDetailCreateResult notifiedButNotShippedResult = utils.createCostDetailRecordWithChangedCosts(
-							request.withAmountAndTypeAndQty(amtAndQty, type),
-							CostDetailPreviousAmounts.of(currentCosts));
-					currentCosts.addWeightedAverage(notifiedButNotShippedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
-					return notifiedButNotShippedResult;
-				}
-			});
+			result = computeShipmentCosts(request, currentCosts).toCostDetailCreateResultsList(shipmentCostsToCostDetails(request, currentCosts));
 		}
 
 		utils.saveCurrentCost(currentCosts);
 
 		return result;
+	}
+
+	private ShipmentCosts.CostAmountAndQtyAndTypeMapper shipmentCostsToCostDetails(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CurrentCost currentCosts)
+	{
+		return new ShipmentCosts.CostAmountAndQtyAndTypeMapper()
+		{
+			@Override
+			public CostDetailCreateResult shippedButNotNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
+			{
+				final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
+						request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
+						CostDetailPreviousAmounts.of(currentCosts));
+				currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
+				return shippedButNotNotifiedResult;
+			}
+
+			@Override
+			public CostDetailCreateResult shippedAndNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
+			{
+				return utils.createCostDetailRecordNoCostsChanged(
+						request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
+						CostDetailPreviousAmounts.of(currentCosts));
+			}
+
+			@Override
+			public CostDetailCreateResult notifiedButNotShipped(final CostAmountAndQty amtAndQty, final CostAmountType type)
+			{
+				final CostDetailCreateResult notifiedButNotShippedResult = utils.createCostDetailRecordWithChangedCosts(
+						request.withAmountAndTypeAndQty(amtAndQty, type),
+						CostDetailPreviousAmounts.of(currentCosts));
+				currentCosts.addWeightedAverage(notifiedButNotShippedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
+				return notifiedButNotShippedResult;
+			}
+		};
 	}
 
 	@SuppressWarnings("UnnecessaryLocalVariable")

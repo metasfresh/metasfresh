@@ -440,8 +440,9 @@ public class CostingService implements ICostingService
 				.documentRef(reversalRequest.getReversalDocumentRef())
 				.initialDocumentRef(reversalRequest.getInitialDocumentRef())
 				.costElement(costElement)
-				.qty(costDetail.getQty().negate())
+				.amtType(costDetail.getAmtType())
 				.amt(costDetail.getAmt().negate())
+				.qty(costDetail.getQty().negate())
 				// .currencyConversionTypeId(currencyConversionTypeId) // N/A
 				.date(reversalRequest.getDate())
 				.description(reversalRequest.getDescription())

@@ -56,6 +56,17 @@ public class ShipmentCosts
 				.build();
 	}
 
+	public static ShipmentCosts extractFrom(@NonNull final CostDetailCreateRequest request)
+	{
+		final CostAmountAndQty amtAndQty = CostAmountAndQty.of(request.getAmt(), request.getQty());
+		return switch (request.getAmtType())
+		{
+			case ALREADY_SHIPPED -> builder().shippedAndNotified(amtAndQty.negate()).build();
+			case MAIN -> builder().shippedButNotNotified(amtAndQty.negate()).build();
+			case ADJUSTMENT -> builder().notifiedButNotShipped(amtAndQty).build();
+		};
+	}
+
 	public interface CostAmountAndQtyAndTypeMapper
 	{
 		CostDetailCreateResult shippedAndNotified(CostAmountAndQty amtAndQty, CostAmountType type);
