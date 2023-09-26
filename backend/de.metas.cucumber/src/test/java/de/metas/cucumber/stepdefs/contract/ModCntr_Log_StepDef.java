@@ -87,6 +87,7 @@ import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -399,6 +400,12 @@ public class ModCntr_Log_StepDef
 			}
 		}
 
+		final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_DateTrx);
+		if (dateTrx != null)
+		{
+			softly.assertThat(modCntrLogRecord.getDateTrx()).as(I_ModCntr_Log.COLUMNNAME_DateTrx).isEqualTo(dateTrx);
+		}
+		
 		softly.assertAll();
 
 		final String modCntrLogIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
