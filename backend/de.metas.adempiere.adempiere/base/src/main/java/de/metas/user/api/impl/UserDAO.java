@@ -82,7 +82,7 @@ public class UserDAO implements IUserDAO
 			logger.info("More then one user found for UserId '{}': {}", userId, users);
 			throw new AdempiereException(MSG_MailOrUsernameNotFound).markAsUserValidationError();
 		}
-		else if (users.size() == 0)
+		else if (users.isEmpty())
 		{
 			throw new AdempiereException(MSG_MailOrUsernameNotFound).markAsUserValidationError();
 		}
