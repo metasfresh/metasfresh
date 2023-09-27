@@ -26,6 +26,7 @@ import de.metas.contracts.callorder.detail.model.CallOrderDetail;
 import de.metas.contracts.callorder.detail.model.CallOrderDetailData;
 import de.metas.contracts.callorder.detail.model.CallOrderDetailId;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
@@ -38,6 +39,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
@@ -47,16 +49,13 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CallOrderDetailService
 {
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
-	private final CallOrderDetailRepo detailRepo;
-
-	public CallOrderDetailService(@NonNull final CallOrderDetailRepo detailRepo)
-	{
-		this.detailRepo = detailRepo;
-	}
+	@NonNull private final CallOrderDetailRepo detailRepo;
 
 	@NonNull
 	public CallOrderDetail createCallOrderDetail(@NonNull final CallOrderDetailData callOrderDetailData)
@@ -178,17 +177,14 @@ public class CallOrderDetailService
 	}
 
 	@NonNull
-	private static CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_M_InOutLine shipmentLine)
+	private CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_M_InOutLine shipmentLine)
 	{
-		final UomId uomId = UomId.ofRepoId(shipmentLine.getC_UOM_ID());
-		final Quantity qtyDelivered = Quantitys.create(shipmentLine.getMovementQty(), uomId);
-
 		return CallOrderDetailData
 				.builder()
 				.summaryId(summaryId)
 				.shipmentId(InOutId.ofRepoId(shipmentLine.getM_InOut_ID()))
 				.shipmentLineId(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()))
-				.qtyDelivered(qtyDelivered)
+				.qtyDelivered(inoutBL.getQtyEntered(shipmentLine))
 				.build();
 	}
 }
