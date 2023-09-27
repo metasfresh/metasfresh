@@ -1,11 +1,14 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -19,12 +22,14 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductDAO;
@@ -37,6 +42,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -67,6 +73,7 @@ public class AddQtyToHUCommand
 {
 	private static final Logger logger = LogManager.getLogger(AddQtyToHUCommand.class);
 
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -78,12 +85,14 @@ public class AddQtyToHUCommand
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private final PickingCandidateRepository pickingCandidateRepository;
+	private final PickingCandidateService pickingCandidateService;
 
 	private final ImmutableList<HuId> sourceHUIds;
 	private final Quantity qtyToPack;
 	private final HuId packToHuId;
 	private final PickingSlotId pickingSlotId;
 	private final boolean allowOverDelivery;
+	private final boolean isForbidAggCUsForDifferentOrders;
 
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final I_M_ShipmentSchedule shipmentSchedule;
@@ -92,15 +101,18 @@ public class AddQtyToHUCommand
 
 	@Builder
 	private AddQtyToHUCommand(
+			@NonNull final PickingCandidateService pickingCandidateService,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final AddQtyToHURequest request)
 	{
 		this.sourceHUIds = request.getSourceHUIds();
 
 		this.pickingCandidateRepository = pickingCandidateRepository;
+		this.pickingCandidateService = pickingCandidateService;
 		this.packToHuId = request.getPackToHuId();
 		this.pickingSlotId = request.getPickingSlotId();
 		this.allowOverDelivery = request.isAllowOverDelivery();
+		this.isForbidAggCUsForDifferentOrders = request.isForbidAggCUsForDifferentOrders();
 
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 		shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
@@ -108,7 +120,6 @@ public class AddQtyToHUCommand
 		qtyToDeliverTarget = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
 
 		this.qtyToPack = request.getQtyToPack();
-
 	}
 
 	/**
@@ -122,10 +133,15 @@ public class AddQtyToHUCommand
 			assertNotOverDelivery();
 		}
 
+		if (isForbidAggCUsForDifferentOrders)
+		{
+			assertNotAggregatingCUsToDiffOrders();
+		}
+
 		final PickingCandidate candidate = getOrCreatePickingCandidate();
 
 		final HUListAllocationSourceDestination source = createFromSourceHUsAllocationSource();
-		final IAllocationDestination destination = createAllocationDestination(packToHuId);
+		final IAllocationDestination destination = createAllocationDestination();
 
 		// NOTE: create the context with the tread-inherited transaction,
 		// otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
@@ -193,9 +209,9 @@ public class AddQtyToHUCommand
 		return source;
 	}
 
-	private IAllocationDestination createAllocationDestination(final HuId huId)
+	private IAllocationDestination createAllocationDestination()
 	{
-		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final I_M_HU hu = handlingUnitsDAO.getById(packToHuId);
 
 		// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
 		if (!huStatusBL.isStatusActive(hu))
@@ -246,6 +262,40 @@ public class AddQtyToHUCommand
 					.setParameter("qtyToDeliverTarget", qtyToDeliverTarget)
 					.setParameter("qtyPickedPlanned", qtyPickedPlanned)
 					.setParameter("qtyToPack", qtyToPack);
+		}
+	}
+
+	private void assertNotAggregatingCUsToDiffOrders()
+	{
+		final OrderId pickingForOrderId = OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
+
+		if (pickingForOrderId == null)
+		{
+			throw new AdempiereException("When isForbidAggCUsForDifferentOrders='Y' the pickingForOrderId must be known!")
+					.appendParametersToMessage()
+					.setParameter("ShipmentScheduleId", shipmentSchedule.getM_ShipmentSchedule_ID());
+		}
+
+		final I_M_HU hu = handlingUnitsDAO.getById(packToHuId);
+		final boolean isLoadingUnit = handlingUnitsBL.isLoadingUnit(hu);
+
+		if (isLoadingUnit)
+		{
+			throw new AdempiereException("packToHuId cannot be an LU, as picking to unknown TU is not allowed when isForbidAggCUsForDifferentOrders='Y'");
+		}
+
+		final ImmutableMap<HuId, ImmutableSet<OrderId>> huId2OpenPickingOrderIds = pickingCandidateService
+				.getOpenPickingOrderIdsByHuId(ImmutableSet.of(packToHuId));
+
+		final boolean thereAreOpenPickingOrdersForHU = CollectionUtils.isNotEmpty(huId2OpenPickingOrderIds.get(packToHuId));
+		final boolean noneOfThePickingOrdersMatchesTheCurrentOrder = !huId2OpenPickingOrderIds.get(packToHuId).contains(pickingForOrderId);
+
+		if (thereAreOpenPickingOrdersForHU && noneOfThePickingOrdersMatchesTheCurrentOrder)
+		{
+			throw new AdempiereException("Cannot pick to an HU with an open picking candidate pointing to a different order!")
+					.appendParametersToMessage()
+					.setParameter("shipmentScheduleId", shipmentSchedule.getM_ShipmentSchedule_ID())
+					.setParameter("huId", packToHuId);
 		}
 	}
 }

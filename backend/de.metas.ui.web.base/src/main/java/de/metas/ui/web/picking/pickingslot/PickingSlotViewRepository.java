@@ -17,7 +17,6 @@ import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -169,7 +168,8 @@ public class PickingSlotViewRepository
 		}
 
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
-		final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(toPickingCandidatesQuery(query, pickingSlotIds));
+		final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo
+				.retrievePickedHUsIndexedByPickingSlotId(toPickingCandidatesQuery(query, pickingSlotIds));
 
 		return pickingSlots.stream() // get stream of I_M_PickingSlot
 				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
@@ -264,7 +264,9 @@ public class PickingSlotViewRepository
 		final List<PickingSlotRow> includedHURows = huEditorRow.getIncludedRows()
 				.stream()
 				.map(includedHUEditorRow -> createPickedHURow(
-						new PickedHUEditorRow(includedHUEditorRow, from.isProcessed()), // create PickingSlotRows for the included HU rows which shall inherit the parent's processed flag
+						new PickedHUEditorRow(includedHUEditorRow, // create PickingSlotRows for the included HU rows which shall inherit the parent's processed flag
+											  from.isProcessed(),
+											  from.getPickingOrderIdsFor(includedHUEditorRow.getAllHuIds())),
 						pickingSlotId))
 				.collect(ImmutableList.toImmutableList());
 
@@ -283,6 +285,7 @@ public class PickingSlotViewRepository
 				.packingInfo(huEditorRow.getPackingInfo())
 				.qtyCU(huEditorRow.getQtyCU())
 				.topLevelHU(huEditorRow.isTopLevel())
+				.huId2OpenPickingOrderIds(from.getHuIds2OpenPickingOrderIds())
 				//
 				.includedHURows(includedHURows)
 				//
@@ -306,7 +309,7 @@ public class PickingSlotViewRepository
 				.build();
 	}
 
-	public List<PickingSlotRow> retrievePickingSlotsRows(@NonNull final PickingSlotQuery query)
+	public List<PickingSlotRow> retrievePickingSlotsRowsForClearing(@NonNull final PickingSlotQuery query)
 	{
 		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(query);
 
