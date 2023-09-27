@@ -132,10 +132,9 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 			@NonNull final String iban)
 	{
 		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban, CleanWhitespaceQueryFilterModifier.instance)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban, CleanWhitespaceQueryFilterModifier.getInstance())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnlyOptional(I_C_BP_BankAccount.class)
-				.map(bpBankAccount -> BankAccountId.ofRepoId(bpBankAccount.getC_BP_BankAccount_ID()));
+				.firstIdOnlyOptional(BankAccountId::ofRepoId);
 	}
 }

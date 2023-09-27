@@ -24,6 +24,7 @@ package org.adempiere.ad.dao.impl;
 
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 
@@ -33,7 +34,8 @@ import java.util.List;
 @EqualsAndHashCode
 public final class CleanWhitespaceQueryFilterModifier implements IQueryFilterModifier
 {
-	public static final transient CleanWhitespaceQueryFilterModifier instance = new CleanWhitespaceQueryFilterModifier();
+	@Getter
+	private static final transient CleanWhitespaceQueryFilterModifier instance = new CleanWhitespaceQueryFilterModifier();
 
 	private CleanWhitespaceQueryFilterModifier()
 	{
