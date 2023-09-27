@@ -5,13 +5,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -22,7 +20,6 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -124,22 +121,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	public static UomId getCommonUomIdOfAll(final Quantity... quantities)
 	{
-		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
-
-		final Iterator<Quantity> quantitiesIterator = Stream.of(quantities)
-				.filter(Objects::nonNull)
-				.iterator();
-		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
-		if (uomIds2qties.isEmpty())
-		{
-			throw new AdempiereException("The given quantities may not be empty");
-		}
-
-		final ImmutableSet<UomId> uomIds = uomIds2qties.keySet();
-		Check.errorIf(uomIds.size() > 1,
-				"at least two quantity instances have different uoms: {}", uomIds2qties);
-
-		return CollectionUtils.singleElement(uomIds.asList());
+		return UomId.getCommonUomIdOfAll(Quantity::getUomId, "quantity", quantities);
 	}
 
 	public static void assertSameUOM(@Nullable final Quantity... quantities)
@@ -277,6 +259,7 @@ public final class Quantity implements Comparable<Quantity>
 	 *
 	 * @return true if current Qty/UOM are comparable equal.
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean qtyAndUomCompareToEquals(@Nullable final Quantity quantity)
 	{
 		if (this == quantity)

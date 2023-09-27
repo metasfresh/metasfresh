@@ -84,7 +84,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		final Map<String, DocumentHandlerProvider> providersByTableName = SpringContextHolder.instance.getBeansOfType(DocumentHandlerProvider.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
-		logger.debug("Retrieved providers: {}", providersByTableName);
+		logger.info("Retrieved providers: {}", providersByTableName);
 		return providersByTableName;
 	}
 

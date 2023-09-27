@@ -111,10 +111,13 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPCostCollectorId;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -1328,4 +1331,19 @@ public class OrderBL implements IOrderBL
 	{
 		orderDAO.deleteByLineId(orderAndLineId);
 	}
+
+	@Override
+	public void setPhysicalClearanceDate(@NonNull final OrderId orderId, @Nullable final Instant physicalClearanceDate)
+	{
+		final I_C_Order salesOrderRecord = orderDAO.getById(orderId);
+		salesOrderRecord.setPhysicalClearanceDate(physicalClearanceDate != null ? Timestamp.from(physicalClearanceDate) : null);
+		orderDAO.save(salesOrderRecord);
+	}
+
+	@Override
+	public Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getPPCostCollectorId(orderLineId);
+	}
+
 }

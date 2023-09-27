@@ -195,6 +195,32 @@ public final class CollectionUtils
 		}
 	}
 
+	public static <T> Optional<T> singleElementOrEmptyIfNotFound(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
+	{
+		final List<T> result = new ArrayList<>();
+
+		for (final T e : collection)
+		{
+			if (filter.test(e))
+			{
+				result.add(e);
+			}
+		}
+
+		if (result.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (result.size() == 1)
+		{
+			return Optional.of(result.get(0));
+		}
+		else
+		{
+			throw Check.mkEx("Only one matching element was expected but we got more: " + result);
+		}
+	}
+
 	/**
 	 * Assumes that given collection has one element only and returns it.
 	 * <p>

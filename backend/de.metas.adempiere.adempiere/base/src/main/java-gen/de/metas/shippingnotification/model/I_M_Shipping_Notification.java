@@ -76,19 +76,19 @@ public interface I_M_Shipping_Notification
 	 * Set Address.
 	 *
 	 * <br>Type: TextLong
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBPartnerAddress (java.lang.String BPartnerAddress);
+	void setBPartnerAddress (@Nullable java.lang.String BPartnerAddress);
 
 	/**
 	 * Get Address.
 	 *
 	 * <br>Type: TextLong
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getBPartnerAddress();
+	@Nullable java.lang.String getBPartnerAddress();
 
 	ModelColumn<I_M_Shipping_Notification, Object> COLUMN_BPartnerAddress = new ModelColumn<>(I_M_Shipping_Notification.class, "BPartnerAddress", null);
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
@@ -121,7 +121,7 @@ public interface I_M_Shipping_Notification
 	/**
 	 * Set Business Partner.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -130,7 +130,7 @@ public interface I_M_Shipping_Notification
 	/**
 	 * Get Business Partner.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -183,7 +183,7 @@ public interface I_M_Shipping_Notification
 	/**
 	 * Set Harvesting Calendar.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -192,7 +192,7 @@ public interface I_M_Shipping_Notification
 	/**
 	 * Get Harvesting Calendar.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -421,7 +421,7 @@ public interface I_M_Shipping_Notification
 	 * Warehouse Locator
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_Locator_ID (int M_Locator_ID);
@@ -431,7 +431,7 @@ public interface I_M_Shipping_Notification
 	 * Warehouse Locator
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_Locator_ID();
@@ -463,7 +463,7 @@ public interface I_M_Shipping_Notification
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -473,7 +473,7 @@ public interface I_M_Shipping_Notification
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -547,6 +547,26 @@ public interface I_M_Shipping_Notification
 
 	ModelColumn<I_M_Shipping_Notification, Object> COLUMN_Posted = new ModelColumn<>(I_M_Shipping_Notification.class, "Posted", null);
 	String COLUMNNAME_Posted = "Posted";
+
+	/**
+	 * Set Posting Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPostingError_Issue_ID (int PostingError_Issue_ID);
+
+	/**
+	 * Get Posting Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPostingError_Issue_ID();
+
+	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**
 	 * Set Processed.

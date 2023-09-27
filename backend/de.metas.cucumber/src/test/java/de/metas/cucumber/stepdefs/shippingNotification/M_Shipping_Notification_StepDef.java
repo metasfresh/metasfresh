@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shippingNotification;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -35,11 +36,9 @@ import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
 import de.metas.order.OrderId;
-import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -48,7 +47,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Auction;
@@ -58,9 +56,8 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Locator;
-import org.compiere.util.TimeUtil;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -82,10 +79,8 @@ import static de.metas.shippingnotification.model.I_M_Shipping_Notification.COLU
 
 public class M_Shipping_Notification_StepDef
 {
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ShippingNotificationService shippingNotificationService = SpringContextHolder.instance.getBean(ShippingNotificationService.class);
-
 	private final M_Shipping_Notification_StepDefData shippingNotificationTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_BPartner_StepDefData bPartnerTable;
@@ -96,7 +91,6 @@ public class M_Shipping_Notification_StepDef
 	private final C_Year_StepDefData yearTable;
 	private final C_Auction_StepDefData auctionTable;
 	private final AD_Org_StepDefData orgTable;
-
 
 	public M_Shipping_Notification_StepDef(
 			@NonNull final M_Shipping_Notification_StepDefData shippingNotificationTable,
@@ -127,25 +121,17 @@ public class M_Shipping_Notification_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Timestamp physicalClearanceDate = DataTableUtil.extractDateTimestampForColumnName(row, COLUMNNAME_PhysicalClearanceDate);
+			final String salesOrderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Instant physicalClearanceDate = DataTableUtil.extractLocalDateForColumnName(row, COLUMNNAME_PhysicalClearanceDate)
+					.atStartOfDay(SystemTime.zoneId())
+					.toInstant();
 
-			final I_C_Order order = orderTable.get(orderIdentifier);
-			final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+			final I_C_Order salesOrder = orderTable.get(salesOrderIdentifier);
+			final OrderId salesOrderId = OrderId.ofRepoId(salesOrder.getC_Order_ID());
 
-			final SoftAssertions softly = new SoftAssertions();
-
-			softly.assertThat(DocStatus.ofNullableCodeOrUnknown(order.getDocStatus()).isCompleted()).isEqualTo(true);
-			softly.assertThat(order.getHarvesting_Year_ID()).isGreaterThan(0);
-
-			final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId), I_M_ShipmentSchedule.class);
-
-			softly.assertThat(shipmentSchedules.isEmpty()).isEqualTo(false);
-
-			shippingNotificationService.reverseIfExistsShippingNotifications(orderId);
-
-			// generate new one
-			shippingNotificationService.generateShippingNotificationAndPropagatePhysicalClearanceDate(orderId, TimeUtil.asInstant(physicalClearanceDate));
+			final ShippingNotificationFromShipmentScheduleProducer shippingNotificationProducer = shipmentScheduleBL.newShippingNotificationProducer();
+			shippingNotificationProducer.checkCanCreateShippingNotification(salesOrderId).throwExceptionIfRejected();
+			shippingNotificationProducer.createShippingNotification(salesOrderId, physicalClearanceDate);
 		}
 	}
 
@@ -244,6 +230,8 @@ public class M_Shipping_Notification_StepDef
 				softly.assertThat(description).isEqualTo(shippingNotification.getDescription()).isEqualTo(order.getDescription());
 			}
 
+			softly.assertAll();
+
 			final String shippingNotificationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_Notification_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shippingNotificationTable.putOrReplace(shippingNotificationIdentifier, shippingNotification);
 		}
@@ -257,8 +245,8 @@ public class M_Shipping_Notification_StepDef
 			final I_M_Shipping_Notification reversalShippingNotification = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_reversal_ShippingNotification(row));
 
 			final SoftAssertions softly = new SoftAssertions();
-
 			softly.assertThat(reversalShippingNotification).isNotNull();
+			softly.assertAll();
 
 			final String reversalShippingNotificationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_Notification_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shippingNotificationTable.putOrReplace(reversalShippingNotificationIdentifier, reversalShippingNotification);

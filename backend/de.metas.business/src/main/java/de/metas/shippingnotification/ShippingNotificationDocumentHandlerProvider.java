@@ -34,10 +34,11 @@ import org.springframework.stereotype.Component;
 public class ShippingNotificationDocumentHandlerProvider implements DocumentHandlerProvider
 {
 	private final ShippingNotificationService shipperNotificationService;
+	private final ShippingNotificationListenersRegistry listenersRegistry;
 
 	@Override
 	public String getHandledTableName() {return I_M_Shipping_Notification.Table_Name;}
 
 	@Override
-	public DocumentHandler provideForDocument(@NonNull final Object model) {return new ShippingNotificationDocumentHandler(shipperNotificationService);}
+	public DocumentHandler provideForDocument(@NonNull final Object model_ignored) {return new ShippingNotificationDocumentHandler(shipperNotificationService, listenersRegistry);}
 }
