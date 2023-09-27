@@ -305,9 +305,10 @@ public class CoalesceUtil
 
 		for (final String value : values)
 		{
-			if (value != null && EmptyUtil.isNotBlank(value))
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm != null)
 			{
-				return value.trim();
+				return valueNorm;
 			}
 		}
 
@@ -331,9 +332,10 @@ public class CoalesceUtil
 			}
 
 			final String value = valueSupplier.get();
-			if (value != null && EmptyUtil.isNotBlank(value))
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm != null)
 			{
-				return value.trim();
+				return valueNorm;
 			}
 		}
 
