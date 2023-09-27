@@ -13,6 +13,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TrimQueryFilterModifier;
 import org.compiere.model.I_C_BP_BankAccount;
 
 import java.util.Optional;
@@ -131,7 +132,7 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 			@NonNull final String iban)
 	{
 		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban, TrimQueryFilterModifier.instance)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnlyOptional(I_C_BP_BankAccount.class)
