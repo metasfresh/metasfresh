@@ -1,3 +1,4 @@
+@dev:runThisOne
 @from:cucumber
 Feature: import bank statement in camt53 import format
 
@@ -266,7 +267,7 @@ Feature: import bank statement in camt53 import format
 			<CreDtTm>2022-09-12T19:45:37.000Z</CreDtTm>
 			<Acct>
 				<Id>
-					<IBAN>GB33BUKB20201555555555</IBAN>
+					<IBAN>GB33BUKB2020 1555555 555</IBAN>
 				</Id>
 				<Ccy>EUR</Ccy>
 				<Svcr>
