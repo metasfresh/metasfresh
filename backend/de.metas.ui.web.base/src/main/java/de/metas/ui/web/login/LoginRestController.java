@@ -479,7 +479,7 @@ public class LoginRestController
 		final WebuiImageId avatarId = WebuiImageId.ofRepoIdOrNull(user.getAvatar_ID());
 		if (avatarId == null)
 		{
-			return ResponseEntity.notFound().build();
+			return imageService.getEmptyImage();
 		}
 
 		return imageService.getWebuiImage(avatarId, maxWidth, maxHeight)
