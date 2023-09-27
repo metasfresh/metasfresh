@@ -22,6 +22,7 @@
 
 package org.adempiere.ad.dao.impl;
 
+import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
@@ -30,18 +31,18 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @EqualsAndHashCode
-public final class TrimQueryFilterModifier implements IQueryFilterModifier
+public final class CleanWhitespaceQueryFilterModifier implements IQueryFilterModifier
 {
-	public static final transient TrimQueryFilterModifier instance = new TrimQueryFilterModifier();
+	public static final transient CleanWhitespaceQueryFilterModifier instance = new CleanWhitespaceQueryFilterModifier();
 
-	private TrimQueryFilterModifier()
+	private CleanWhitespaceQueryFilterModifier()
 	{
 	}
 
 	@Override
 	public @NonNull String getColumnSql(@NonNull String columnName)
 	{
-		final String columnSqlNew = "TRIM(" + columnName + ")";
+		final String columnSqlNew = "REPLACE(" + columnName + ", ' ', '')";
 		return columnSqlNew;
 	}
 
@@ -60,7 +61,7 @@ public final class TrimQueryFilterModifier implements IQueryFilterModifier
 			params.add(value);
 		}
 
-		return "TRIM(" + valueSql + ")";
+		return "REPLACE(" + valueSql + ", ' ', '')";
 	}
 
 	@Nullable
@@ -73,7 +74,7 @@ public final class TrimQueryFilterModifier implements IQueryFilterModifier
 		}
 
 		final String str = (String)value;
-		return str.trim();
+		return StringUtils.cleanWhitespace(str);
 	}
 
 }

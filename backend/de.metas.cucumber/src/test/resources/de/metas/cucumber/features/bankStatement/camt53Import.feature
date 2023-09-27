@@ -1,4 +1,3 @@
-@dev:runThisOne
 @from:cucumber
 Feature: import bank statement in camt53 import format
 
