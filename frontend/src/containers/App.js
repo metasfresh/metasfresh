@@ -15,7 +15,7 @@ import {
   initKeymap,
   setLanguages,
 } from '../actions/AppActions';
-import { getAvailableLang } from '../api';
+import { getAvailableLang } from '../api/login';
 import { connectionError } from '../actions/AppActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
