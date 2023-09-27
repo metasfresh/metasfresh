@@ -47,6 +47,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -213,7 +214,7 @@ public class InOutBL implements IInOutBL
 				OrgId.ofRepoIdOrAny(inOutLine.getAD_Org_ID()),
 				ProductId.ofRepoId(inOutLine.getM_Product_ID()),
 				bpLocationId.getBpartnerId(),
-				Quantitys.create(inOutLine.getQtyEntered(), UomId.ofRepoId(inOutLine.getC_UOM_ID())),
+				getQtyEntered(inOutLine),
 				soTrx);
 
 		I_M_PricingSystem pricingSystem = getPricingSystemOrNull(inOut, soTrx);
@@ -268,6 +269,19 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public Quantity getQtyEntered(@NonNull final I_M_InOutLine inoutLine)
+	{
+		return Quantitys.create(inoutLine.getQtyEntered(), UomId.ofRepoId(inoutLine.getC_UOM_ID()));
+	}
+
+	@Override
+	public Quantity getMovementQty(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		return Quantitys.create(inoutLine.getMovementQty(), productId);
+	}
+
+	@Override
 	public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine inoutLine)
 	{
 		final UomId catchUomIdOrNull;
@@ -292,13 +306,11 @@ public class InOutBL implements IInOutBL
 	@Override
 	public StockQtyAndUOMQty getStockQtyAndQtyInUOM(@NonNull final I_M_InOutLine inoutLine)
 	{
-		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
-		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
-		return StockQtyAndUOMQtys.create(
-				inoutLine.getMovementQty(),
-				productId,
-				inoutLine.getQtyEntered(),
-				uomId);
+		return StockQtyAndUOMQty.builder()
+				.productId(ProductId.ofRepoId(inoutLine.getM_Product_ID()))
+				.stockQty(getMovementQty(inoutLine))
+				.uomQty(getQtyEntered(inoutLine))
+				.build();
 	}
 
 	@Override
