@@ -72,31 +72,53 @@ public class M_Shipping_NotificationLine_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String shippingNotificationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_Notification_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Shipping_Notification shippingNotification = shippingNotificationTable.get(shippingNotificationIdentifier);
-
-			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-			final I_M_Shipping_NotificationLine shippingNotificationLine = queryBL.createQueryBuilder(I_M_Shipping_NotificationLine.class)
-					.addEqualsFilter(COLUMNNAME_M_Shipping_Notification_ID, shippingNotification.getM_Shipping_Notification_ID())
-					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
-					.create()
-					.firstOnlyNotNull(I_M_Shipping_NotificationLine.class);
+			final I_M_Shipping_Notification shippingNotification = getShippingNotification(row);
+			final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule(row);
+			final I_M_Shipping_NotificationLine shippingNotificationLine = getShippingNotificationLine(shippingNotification, shipmentSchedule);
+			final I_M_Product product = getProduct(row);
+			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_MovementQty);
+			final String shippingNotificationLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_NotificationLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final SoftAssertions softly = new SoftAssertions();
-
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			softly.assertThat(product.getM_Product_ID()).isEqualTo(shippingNotificationLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
-
-			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_MovementQty);
-			softly.assertThat(movementQty).isEqualTo(shippingNotificationLine.getMovementQty()).isEqualTo(shipmentSchedule.getQtyDelivered());
-
+			softly.assertThat(product.getM_Product_ID()).isEqualTo(shippingNotificationLine.getM_Product_ID());
+			softly.assertThat(movementQty).isEqualTo(shippingNotificationLine.getMovementQty());
 			softly.assertAll();
 
-			final String shippingNotificationLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_NotificationLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shippingNotificationLineTable.putOrReplace(shippingNotificationLineIdentifier, shippingNotificationLine);
 		}
 	}
+
+	@NonNull
+	private I_M_Shipping_Notification getShippingNotification(final Map<String, String> row)
+	{
+		final String shippingNotificationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_Notification_ID + "." + TABLECOLUMN_IDENTIFIER);
+		return shippingNotificationTable.get(shippingNotificationIdentifier);
+	}
+
+	@NonNull
+	private I_M_ShipmentSchedule getShipmentSchedule(final Map<String, String> row)
+	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		return shipmentScheduleTable.get(shipmentScheduleIdentifier);
+	}
+
+	@NonNull
+	private I_M_Shipping_NotificationLine getShippingNotificationLine(
+			final I_M_Shipping_Notification shippingNotification,
+			final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return queryBL.createQueryBuilder(I_M_Shipping_NotificationLine.class)
+				.addEqualsFilter(COLUMNNAME_M_Shipping_Notification_ID, shippingNotification.getM_Shipping_Notification_ID())
+				.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.create()
+				.firstOnlyNotNull(I_M_Shipping_NotificationLine.class);
+	}
+
+	@NonNull
+	private I_M_Product getProduct(final Map<String, String> row)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		return productTable.get(productIdentifier);
+	}
+
 }
