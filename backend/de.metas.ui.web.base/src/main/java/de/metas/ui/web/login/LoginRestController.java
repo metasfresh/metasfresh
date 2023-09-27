@@ -11,6 +11,8 @@ import de.metas.organization.OrgId;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
+import de.metas.security.user_2fa.User2FAService;
+import de.metas.security.user_2fa.totp.OTP;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
 import de.metas.ui.web.kpi.data.KPIDataContext;
@@ -112,6 +114,7 @@ public class LoginRestController
 	private final WebuiImageService imageService;
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
+	private final User2FAService user2FAService;
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
 	private static final Comparator<JSONLoginRole> ROLES_ORDERING = Comparator.<JSONLoginRole, Integer>comparing(role -> RoleId.isRegular(role.getRoleId()) ? 0 : 100) // Regular roles first
@@ -123,6 +126,7 @@ public class LoginRestController
 		loginCtx.setWebui(true);
 
 		final Login loginService = new Login(loginCtx);
+		loginService.setUser2FAService(user2FAService);
 		return loginService;
 	}
 
@@ -184,6 +188,53 @@ public class LoginRestController
 		{
 			userSession.setLoggedIn(false);
 			destroyMFSession(loginService);
+			throw convertToUserFriendlyException(ex);
+		}
+	}
+
+	private JSONLoginAuthResponse continueAuthenticationSelectingRole(
+			@NonNull final Login loginService,
+			@NonNull final List<Role> availableRoles,
+			@Nullable final JSONLoginRole roleToLogin)
+	{
+		final List<JSONLoginRole> jsonAvailableRoles;
+		final JSONLoginRole roleToLoginEffective;
+		if (roleToLogin != null)
+		{
+			roleToLoginEffective = roleToLogin;
+			jsonAvailableRoles = ImmutableList.of(roleToLogin);
+		}
+		else
+		{
+			jsonAvailableRoles = createJSONLoginRoles(loginService, availableRoles);
+			roleToLoginEffective = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.get(0) : null;
+		}
+
+		if (roleToLoginEffective != null)
+		{
+			loginComplete(roleToLoginEffective);
+			return JSONLoginAuthResponse.loginComplete(roleToLoginEffective);
+		}
+		else
+		{
+			return JSONLoginAuthResponse.of(jsonAvailableRoles);
+		}
+	}
+
+	@PostMapping("/2fa")
+	public JSONLoginAuthResponse authenticate2FA(@RequestBody final JSONLoginAuth2FARequest request)
+	{
+		userSession.assertNotLoggedIn();
+
+		final OTP otp = OTP.ofString(request.getCode());
+		final Login loginService = getLoginService();
+		try
+		{
+			final LoginAuthenticateResponse authResponse = loginService.authenticate2FA(otp);
+			return continueAuthenticationSelectingRole(loginService, authResponse.getAvailableRoles(), null);
+		}
+		catch (Exception ex)
+		{
 			throw convertToUserFriendlyException(ex);
 		}
 	}

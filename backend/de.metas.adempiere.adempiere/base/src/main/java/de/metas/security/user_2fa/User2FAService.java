@@ -22,10 +22,17 @@
 
 package de.metas.security.user_2fa;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.security.user_2fa.totp.OTP;
 import de.metas.security.user_2fa.totp.SecretKey;
+import de.metas.security.user_2fa.totp.TOTPInfo;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -33,6 +40,9 @@ import java.util.Optional;
 @Service
 public class User2FAService
 {
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+
 	public boolean isEnabled(@NonNull final UserId userId)
 	{
 		return getSecretKey(userId).isPresent();
@@ -45,9 +55,43 @@ public class User2FAService
 
 	private Optional<SecretKey> getSecretKey(final @NonNull UserId userId)
 	{
-		// TODO copy from master
-		// return extractSecretKey(userDAO.getById(userId));
-		return Optional.empty();
+		return extractSecretKey(userDAO.getById(userId));
+	}
+
+	private static Optional<SecretKey> extractSecretKey(final I_AD_User user)
+	{
+		return SecretKey.optionalOfString(user.getSecretKey_2FA());
+	}
+
+	public TOTPInfo enable(@NonNull final UserId userId, final boolean regenerateSecretKey)
+	{
+		final I_AD_User user = userDAO.getById(userId);
+		final String account = CoalesceUtil.firstNotBlank(user::getEMail, user::getLogin, user::getName);
+
+		final String companyName = clientDAO.getClientNameById(ClientId.ofRepoId(user.getAD_Client_ID()));
+
+		SecretKey secretKey = extractSecretKey(user).orElse(null);
+		if (secretKey == null || regenerateSecretKey)
+		{
+			secretKey = SecretKey.random();
+		}
+
+		user.setSecretKey_2FA(secretKey.getAsString());
+		userDAO.save(user);
+
+		return TOTPInfo.builder()
+				.userId(userId)
+				.secretKey(secretKey)
+				.account(account)
+				.issuer(companyName)
+				.build();
+	}
+
+	public void disable(@NonNull final UserId userId)
+	{
+		final I_AD_User user = userDAO.getById(userId);
+		user.setSecretKey_2FA(null);
+		userDAO.save(user);
 	}
 
 	public boolean isValidOTP(@NonNull final UserId userId, @NonNull final OTP otp)

@@ -1652,6 +1652,27 @@ public interface I_AD_User
 	String COLUMNNAME_Registry = "Registry";
 
 	/**
+	 * Set 2FA Secret Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSecretKey_2FA (@Nullable java.lang.String SecretKey_2FA);
+
+	/**
+	 * Get 2FA Secret Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSecretKey_2FA();
+
+	ModelColumn<I_AD_User, Object> COLUMN_SecretKey_2FA = new ModelColumn<>(I_AD_User.class, "SecretKey_2FA", null);
+	String COLUMNNAME_SecretKey_2FA = "SecretKey_2FA";
+
+	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
  lowest number comes first
