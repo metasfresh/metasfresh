@@ -121,7 +121,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
-		
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
@@ -151,11 +151,11 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 		final String description = TranslatableStrings.adMessage(MSG_INFO_SHIPMENT_REVERSED).translate(Language.getBaseAD_Language());
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-				.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))
-				.flatrateTermId(handleLogsRequest.getContractId())
-				.description(description)
-				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-				.build());
+											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))
+											.flatrateTermId(handleLogsRequest.getContractId())
+											.description(description)
+											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+											.build());
 	}
 
 	@Override

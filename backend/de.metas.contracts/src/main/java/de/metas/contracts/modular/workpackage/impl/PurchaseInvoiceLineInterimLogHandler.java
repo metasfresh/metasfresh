@@ -175,13 +175,13 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered)
 				.translate(Language.getBaseAD_Language());
 
-		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(invoiceRecord.getDateInvoiced(), 
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(invoiceRecord.getDateInvoiced(),
 																				OrgId.ofRepoId(invoiceLineRecord.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
-		
+
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
 						.referencedRecord(TableRecordReference.of(org.compiere.model.I_C_InvoiceLine.Table_Name, invoiceLineRecord.getC_InvoiceLine_ID()))
