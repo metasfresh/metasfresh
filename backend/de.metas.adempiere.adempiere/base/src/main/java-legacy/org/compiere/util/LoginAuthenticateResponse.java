@@ -15,9 +15,8 @@ import java.util.Optional;
 public class LoginAuthenticateResponse
 {
 	@NonNull UserId userId;
-
-	@Singular
-	@NonNull ImmutableList<Role> availableRoles;
+	boolean is2FARequired;
+	@NonNull @Singular ImmutableList<Role> availableRoles;
 
 	public Optional<Role> getSingleRole()
 	{
