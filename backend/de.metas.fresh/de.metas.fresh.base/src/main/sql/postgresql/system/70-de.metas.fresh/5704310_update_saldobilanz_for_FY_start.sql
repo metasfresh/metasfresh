@@ -95,6 +95,8 @@ BEGIN
       -- Period: determine it by DateAcct
       AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_date);
 
+    raise notice 'startDate %', v_periodInfo.period_CurrentYearStart_StartDate;
+
     -- get accounts with level hierarchy
     DROP TABLE IF EXISTS tmp_accounts;
     CREATE TEMPORARY TABLE tmp_accounts AS
