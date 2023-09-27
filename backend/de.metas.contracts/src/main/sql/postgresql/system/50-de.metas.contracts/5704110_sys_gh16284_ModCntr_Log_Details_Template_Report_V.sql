@@ -1,3 +1,4 @@
+
 DROP VIEW IF EXISTS ModCntr_Log_Details_Template_Report_V
 ;
 

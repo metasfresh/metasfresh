@@ -52,6 +52,11 @@ public class InvoicingGroupId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "invoicingGroupId");
 	}
 
+	public static int toRepoId(@Nullable final InvoicingGroupId invoicingGroupId)
+	{
+		return invoicingGroupId != null ? invoicingGroupId.getRepoId() : -1;
+	}
+	
 	@Override
 	@JsonValue
 	public int getRepoId()

@@ -83,11 +83,11 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_ModCntr_InvoicingGroup;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -146,6 +146,8 @@ public class ModCntr_Log_StepDef
 	private final M_Inventory_StepDefData inventoryTable;
 	@NonNull
 	private final M_InOut_StepDefData inOutTable;
+	@NonNull
+	private final ModCntr_InvoicingGroup_StepDefData invoicingGroupTable;
 
 	@And("^after not more than (.*)s, ModCntr_Logs are found:$")
 	public void validateModCntr_Logs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
@@ -399,7 +401,22 @@ public class ModCntr_Log_StepDef
 				softly.assertThat(modCntrLogRecord.getPrice_UOM_ID()).as(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName()).isEqualTo(priceUOMId.getRepoId());
 			}
 		}
-		
+
+		final String invoicingGroupIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(invoicingGroupIdentifier))
+		{
+			final String nullableIdentifier = DataTableUtil.nullToken2Null(invoicingGroupIdentifier);
+			if (nullableIdentifier == null)
+			{
+				softly.assertThat(modCntrLogRecord.getModCntr_InvoicingGroup_ID()).as(I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID).isEqualByComparingTo(0);
+			}
+			else
+			{
+				final I_ModCntr_InvoicingGroup invoicingGroupRecord = invoicingGroupTable.get(invoicingGroupIdentifier);
+				softly.assertThat(modCntrLogRecord.getModCntr_InvoicingGroup_ID()).as(I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID).isEqualTo(invoicingGroupRecord.getModCntr_InvoicingGroup_ID());
+			}
+		}
+
 		softly.assertAll();
 
 		final String modCntrLogIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID + "." + TABLECOLUMN_IDENTIFIER);

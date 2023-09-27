@@ -27,6 +27,8 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.impl.SalesModularContractHandler;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -76,7 +78,10 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
+	@NonNull
 	private final SalesModularContractHandler contractHandler;
+	@NonNull
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
 	@NonNull
@@ -128,6 +133,13 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_
 				? priceActual.computeAmount(quantity)
 				: null;
 
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(modularContractRecord.getStartDate(),
+																				OrgId.ofRepoId(modularContractRecord.getAD_Org_ID()),
+																				orgDAO::getTimeZone);
+
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+				.orElse(null);
+		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
 											.productId(productId)
@@ -141,15 +153,14 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_
 											.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 											.processed(false)
 											.quantity(quantity)
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(modularContractRecord.getStartDate(),
-																						   OrgId.ofRepoId(modularContractRecord.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
+											.transactionDate(transactionDate)
 											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
 											.configId(request.getConfigId())
 											.priceActual(priceActual)
 											.amount(amount)
+											.invoicingGroupId(invoicingGroupId)
 											.build());
 	}
 
