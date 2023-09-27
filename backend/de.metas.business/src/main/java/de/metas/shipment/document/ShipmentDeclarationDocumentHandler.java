@@ -1,5 +1,6 @@
 package de.metas.shipment.document;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -60,13 +61,13 @@ public class ShipmentDeclarationDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(DocumentTableFields docFields)
+	public DocStatus completeIt(DocumentTableFields docFields)
 	{
 		final I_M_Shipment_Declaration shipmentDeclaration = extractShipmentDeclaration(docFields);
 		shipmentDeclaration.setProcessed(true);
 		shipmentDeclaration.setDocAction(IDocument.ACTION_ReActivate);
 
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	@Override

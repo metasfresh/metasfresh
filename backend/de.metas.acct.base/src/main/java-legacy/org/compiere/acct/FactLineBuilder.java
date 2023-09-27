@@ -501,6 +501,15 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder alsoAddZeroLineIf(final boolean cond)
+	{
+		if (cond)
+		{
+			alsoAddZeroLine();
+		}
+		return this;
+	}
+
 	public FactLineBuilder setCurrencyId(final CurrencyId currencyId)
 	{
 		assertNotBuild();

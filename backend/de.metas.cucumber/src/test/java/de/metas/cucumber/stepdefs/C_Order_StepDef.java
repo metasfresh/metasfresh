@@ -106,7 +106,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -198,6 +198,7 @@ public class C_Order_StepDef
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
+			final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_Description);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
@@ -311,6 +312,11 @@ public class C_Order_StepDef
 				order.setPOReference(poReference);
 			}
 
+			if(EmptyUtil.isNotBlank(description))
+			{
+				order.setDescription(description);
+			}
+
 			if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
 			{
 				final I_M_PricingSystem pricingSystem = pricingSystemDataTable.get(pricingSystemIdentifier);
@@ -413,6 +419,15 @@ public class C_Order_StepDef
 			{
 				final I_C_Auction auction = auctionStepDefData.get(auctionIdentifier);
 				order.setC_Auction_ID(auction.getC_Auction_ID());
+			}
+
+			saveRecord(order);
+
+			//
+			// Before description might be overriden by some other model interceptors, in case is set, make sure ours is used
+			if(EmptyUtil.isNotBlank(description))
+			{
+				order.setDescription(description);
 			}
 
 			saveRecord(order);
@@ -735,7 +750,9 @@ public class C_Order_StepDef
 
 	private void validateOrder(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		InterfaceWrapperHelper.refresh(order);
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
@@ -746,7 +763,7 @@ public class C_Order_StepDef
 		final Integer expectedBPartnerLocation = bpartnerLocationTable.getOptional(bpartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
-		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
+		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "dateordered");
 		final String docbasetype = DataTableUtil.extractStringForColumnName(row, "docbasetype");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final String deliveryRule = DataTableUtil.extractStringForColumnName(row, "deliveryRule");
@@ -756,9 +773,6 @@ public class C_Order_StepDef
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 		final String bpartnerName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_BPartnerName);
 
-		final I_C_Order order = orderTable.get(identifier);
-		InterfaceWrapperHelper.refresh(order);
-
 		final SoftAssertions softly = new SoftAssertions();
 
 		if (Check.isNotBlank(externalId))
@@ -767,7 +781,10 @@ public class C_Order_StepDef
 		}
 		softly.assertThat(order.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
 		softly.assertThat(order.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocation);
-		softly.assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
+		if(dateOrdered != null)
+		{
+			softly.assertThat(order.getDateOrdered()).isEqualTo(dateOrdered);
+		}
 		softly.assertThat(order.getDeliveryRule()).isEqualTo(deliveryRule);
 		softly.assertThat(order.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
 		softly.assertThat(order.isProcessed()).isEqualTo(processed);

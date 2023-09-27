@@ -19,6 +19,7 @@ import org.adempiere.service.ClientId;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -66,6 +67,7 @@ public class CostDetailCreateRequest
 	@Nullable String description;
 
 	@Nullable CostAmount explicitCostPrice;
+	@Nullable CostAmountAndQty externallyOwned;
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
@@ -83,7 +85,8 @@ public class CostDetailCreateRequest
 			@Nullable final CurrencyConversionContext currencyConversionContext,
 			@NonNull final Instant date,
 			@Nullable final String description,
-			@Nullable final CostAmount explicitCostPrice)
+			@Nullable final CostAmount explicitCostPrice,
+			@Nullable final CostAmountAndQty externallyOwned)
 	{
 		this.acctSchemaId = acctSchemaId;
 		this.clientId = clientId;
@@ -100,6 +103,7 @@ public class CostDetailCreateRequest
 		this.date = date;
 		this.description = description;
 		this.explicitCostPrice = explicitCostPrice;
+		this.externallyOwned = externallyOwned;
 	}
 
 	public AcctSchemaId getAcctSchemaId()
@@ -173,6 +177,23 @@ public class CostDetailCreateRequest
 		}
 
 		return toBuilder().amt(amt).amtType(amtType).build();
+	}
+
+	public CostDetailCreateRequest withAmountAndTypeAndQty(@NonNull final CostAmount amt, @NonNull final CostAmountType amtType, @NonNull final Quantity qty)
+	{
+		if (Objects.equals(this.amt, amt)
+				&& Objects.equals(this.amtType, amtType)
+				&& Objects.equals(this.qty, qty))
+		{
+			return this;
+		}
+
+		return toBuilder().amt(amt).amtType(amtType).qty(qty).build();
+	}
+
+	public CostDetailCreateRequest withAmountAndTypeAndQty(@NonNull final CostAmountAndQty amtAndQty, @NonNull final CostAmountType amtType)
+	{
+		return withAmountAndTypeAndQty(amtAndQty.getAmt(), amtType, amtAndQty.getQty());
 	}
 
 	public CostDetailCreateRequest withAmountAndQty(
@@ -250,4 +271,6 @@ public class CostDetailCreateRequest
 
 		return costDetail;
 	}
+
+	public Optional<CostAmountAndQty> getExternallyOwned() {return Optional.ofNullable(externallyOwned);}
 }

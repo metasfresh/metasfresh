@@ -1,5 +1,6 @@
 package de.metas.dunning;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -73,7 +74,7 @@ public class DunningDocDocumentHandler implements DocumentHandler
 	 * Assumes that the given doc is not yet processed.
 	 */
 	@Override
-	public String completeIt(@NonNull final DocumentTableFields docFields)
+	public DocStatus completeIt(@NonNull final DocumentTableFields docFields)
 	{
 		final I_C_DunningDoc dunningDocRecord = extractDunningDoc(docFields);
 		dunningDocRecord.setDocAction(IDocument.ACTION_ReActivate);
@@ -105,7 +106,7 @@ public class DunningDocDocumentHandler implements DocumentHandler
 
 		dunningDocRecord.setProcessed(true);
 
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	@Override

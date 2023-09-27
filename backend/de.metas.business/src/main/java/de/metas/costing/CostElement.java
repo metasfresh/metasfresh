@@ -1,10 +1,10 @@
 package de.metas.costing;
 
-import org.adempiere.service.ClientId;
-
+import de.metas.acct.api.AcctSchemaCosting;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 /*
  * #%L
@@ -66,4 +66,9 @@ public class CostElement
 		return getCostElementType().isActivityControlElement();
 	}
 
+	public boolean isAccountable(final AcctSchemaCosting acctSchemaCosting)
+	{
+		return this.costingMethod.equals(acctSchemaCosting.getCostingMethod())
+				&& (acctSchemaCosting.getPostOnlyCostElementIds().isEmpty() || acctSchemaCosting.getPostOnlyCostElementIds().contains(id));
+	}
 }

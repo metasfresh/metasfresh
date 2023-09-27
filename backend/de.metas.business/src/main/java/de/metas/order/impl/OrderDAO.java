@@ -1,57 +1,29 @@
 package de.metas.order.impl;
 
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import de.metas.order.OrderId;
-import de.metas.shippingnotification.model.I_M_Shipping_Notification;
-import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
-import de.metas.shippingnotification.model.X_M_Shipping_Notification;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.IDocument;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
+import org.eevolution.api.PPCostCollectorId;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.IDocument;
-import de.metas.order.DeliveryViaRule;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public class OrderDAO extends AbstractOrderDAO
 {
@@ -92,19 +64,19 @@ public class OrderDAO extends AbstractOrderDAO
 						.addEqualsFilter(I_C_Order.COLUMNNAME_DeliveryViaRule, DeliveryViaRule.Pickup)
 
 						.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_Location_ID, bpLoc.getC_BPartner_Location_ID())
-						
+
 						// only orders that are not voided, reversed or closed
 						.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 
 						// DatePromised between DeliveryDateTime and DeliveryDateTimeMax
 						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.LESS_OR_EQUAL, deliveryDateTimeMax)
 						.addCompareFilter(I_C_Order.COLUMNNAME_DatePromised, Operator.GREATER_OR_EQUAL, deliveryDateTime)
-						
+
 						.addOnlyActiveRecordsFilter();
 
 		return queryBuilder.create().list();
 	}
-	
+
 	@Override
 	public BigDecimal getNotInvoicedAmt(@NonNull final BPartnerId bpartnerId)
 	{
@@ -113,9 +85,15 @@ public class OrderDAO extends AbstractOrderDAO
 				+ "FROM C_OrderLine ol"
 				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
 				+ "WHERE o.IsSOTrx='Y' AND Bill_BPartner_ID=?";
-		
+
 		return DB.getSQLValueBDEx(ITrx.TRXNAME_None, sql, bpartnerId);
 	}
 
-
+	@Override
+	public Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull final OrderLineId orderLineId)
+	{
+		final String sql = "SELECT " + I_C_OrderLine.COLUMNNAME_PP_Cost_Collector_ID
+				+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
+		return Optional.ofNullable(PPCostCollectorId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId)));
+	}
 }

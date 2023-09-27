@@ -1,8 +1,8 @@
 package de.metas.banking.payment;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
-import de.metas.document.engine.IDocument;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -60,13 +60,13 @@ public class PaySelectionDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(DocumentTableFields docFields)
+	public DocStatus completeIt(DocumentTableFields docFields)
 	{
 		final I_C_PaySelection paySelection = extractPaySelection(docFields);
 
 		Services.get(IPaySelectionBL.class).completePaySelection(paySelection);
 
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	@Override
