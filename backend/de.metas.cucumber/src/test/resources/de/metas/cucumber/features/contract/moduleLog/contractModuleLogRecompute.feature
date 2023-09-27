@@ -59,7 +59,7 @@ Feature: Modular contract log - Recompute
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
-      | invoicingGroup                       | invoicingGroup_09262023_7 | module_log_product_PO       | 2021-04-14 | 2022-12-12 |
+      | invoicingGroup                       | invoicingGroup_09262023_7 | module_log_recompute_150923 | 2021-04-14 | 2022-12-12 |
 
     And metasfresh contains ModCntr_InvoicingGroup_Product:
       | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier     |
