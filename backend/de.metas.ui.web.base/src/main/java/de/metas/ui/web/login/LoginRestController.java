@@ -125,14 +125,6 @@ public class LoginRestController
 		return loginService;
 	}
 
-	private void assertAuthenticated()
-	{
-		if (!getLoginService().isAuthenticated())
-		{
-			throw new NotLoggedInException();
-		}
-	}
-
 	@PostMapping("/authenticate")
 	public JSONLoginAuthResponse authenticate(@RequestBody final JSONLoginAuthRequest request)
 	{
@@ -211,7 +203,7 @@ public class LoginRestController
 			final LoginAuthenticateResponse authResponse = loginService.authenticate2FA(otp);
 			return continueAuthenticationSelectingRole(loginService, authResponse.getAvailableRoles(), null);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			throw convertToUserFriendlyException(ex);
 		}
@@ -361,8 +353,13 @@ public class LoginRestController
 	@PostMapping("/loginComplete")
 	public void loginComplete(@RequestBody final JSONLoginRole loginRole)
 	{
-		assertAuthenticated();
 		userSession.assertNotLoggedIn();
+
+		final Login loginService = getLoginService();
+		if (!loginService.isAuthenticated())
+		{
+			throw new NotLoggedInException();
+		}
 
 		final RoleId roleId = RoleId.ofRepoId(loginRole.getRoleId());
 		final ClientId clientId = ClientId.ofRepoId(loginRole.getTenantId());
@@ -370,18 +367,16 @@ public class LoginRestController
 
 		//
 		// Update context
-		final Login loginService = getLoginService();
-
 		// TODO: optimize
 		loginService.setRoleAndGetClients(roleId);
 		loginService.setClientAndGetOrgs(clientId);
 
 		//
 		// Load preferences and export them to context
-		final LoginContext ctx = loginService.getCtx();
+		final LoginContext loginCtx = loginService.getCtx();
 		final UserPreference userPreference = userSession.getUserPreference();
-		userPreference.loadPreference(ctx.getSessionContext());
-		userPreference.updateContext(ctx.getSessionContext());
+		userPreference.loadPreference(loginCtx.getSessionContext());
+		userPreference.updateContext(loginCtx.getSessionContext());
 
 		//
 		// Validate login: fires login complete model interceptors
@@ -397,7 +392,7 @@ public class LoginRestController
 		// Load preferences
 		{
 			final String msg = loginService.loadPreferences(orgId, null);
-			if (!Check.isEmpty(msg, true))
+			if (!Check.isBlank(msg))
 			{
 				throw new AdempiereException(msg);
 			}
@@ -405,7 +400,6 @@ public class LoginRestController
 
 		//
 		// Save user preferences
-		final LoginContext loginCtx = loginService.getCtx();
 		// userPreference.setProperty(UserPreference.P_LANGUAGE, Env.getContext(Env.getCtx(), UserPreference.LANGUAGE_NAME));
 		userPreference.setProperty(UserPreference.P_ROLE, RoleId.toRepoId(loginCtx.getRoleId()));
 		userPreference.setProperty(UserPreference.P_CLIENT, ClientId.toRepoId(loginCtx.getClientId()));

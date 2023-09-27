@@ -348,8 +348,6 @@ public class Login
 
 	/**
 	 * Sets current role and retrieves clients on which given role can login
-	 *
-	 * @return list of valid client {@link KeyNamePair}s or null if in error
 	 */
 	public Set<ClientId> setRoleAndGetClients(@NonNull final RoleId roleId)
 	{
@@ -436,10 +434,26 @@ public class Login
 
 	public boolean isAuthenticated()
 	{
-		return getCtx().getUserIdIfExists().isPresent();
+		final LoginContext ctx = getCtx();
+
+		if (!ctx.isPasswordAuthenticated())
+		{
+			return false;
+		}
+
+		if (!ctx.is2FAAuthenticated())
+		{
+			final UserId userId = ctx.getUserIdIfExists().orElse(null);
+			if (userId != null && is2FARequired(userId))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
-	private boolean is2FARequired(final UserId userId)
+	private boolean is2FARequired(@NonNull final UserId userId)
 	{
 		if (user2FAService == null)
 		{
