@@ -54,13 +54,15 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class SalesOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
+public class SalesOrderLineProFormaModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
-	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull
+	private final ModularContractLogService contractLogService;
 
 	@NonNull
 	@Override
@@ -70,10 +72,11 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public boolean applies(@NonNull final I_C_OrderLine orderLine)
+	public boolean applies(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		return SOTrx.ofBoolean(order.isSOTrx()).isSales() && !orderBL.isProFormaSO(order);
+		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+
+		return SOTrx.ofBoolean(orderRecord.isSOTrx()).isSales() && orderBL.isProFormaSO(orderRecord);
 	}
 
 	@Override

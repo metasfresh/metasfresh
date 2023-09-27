@@ -257,7 +257,7 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void setTaxAmt(I_C_InvoiceLine invoiceLine);
 
-	I_C_DocType getC_DocType(I_C_Invoice invoice);
+	I_C_DocType getC_DocTypeEffective(I_C_Invoice invoice);
 
 	/**
 	 * @return true if invoice's DocStatus is COmpleted, CLosed or REversed.
@@ -346,6 +346,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * Allocate parent invoice against it's credit memo
 	 */
 	void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
+
+	boolean isDownPayment(I_C_Invoice invoiceRecord);
 
 	/**
 	 * Decide if the given invoice is an Adjustment Charge

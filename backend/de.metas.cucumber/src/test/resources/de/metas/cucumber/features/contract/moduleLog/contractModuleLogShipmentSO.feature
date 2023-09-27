@@ -7,7 +7,7 @@ Feature: Modular contract log from shipment
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     Given metasfresh contains M_PricingSystems
-      | Identifier             | Name                            | Value                           |
+      | Identifier             | Name                         | Value                        |
       | moduleLogPricingSystem | moduleLogPricingSystem_S0321 | moduleLogPricingSystem_S0321 |
     And metasfresh contains M_PriceLists
       | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                    | SOTrx | IsTaxIncluded | PricePrecision |
@@ -28,10 +28,10 @@ Feature: Modular contract log from shipment
       | bp_moduleLogSO_Location | 0726202312345 | bp_moduleLogSO           | true                | true                |
 
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value              | Name               | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | M_Warehouse_ID.Identifier | Value           | Name            | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | warehouseModularContract  | warehouse_S0321 | warehouse_S0321 | bp_moduleLogPO               | bp_moduleLogPO_Location               |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value            | M_Warehouse_ID.Identifier |
+      | M_Locator_ID.Identifier | Value         | M_Warehouse_ID.Identifier |
       | locatorModularContract  | locator_S0321 | warehouseModularContract  |
 
     And load C_Calendar from metasfresh:

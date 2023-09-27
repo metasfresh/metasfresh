@@ -157,11 +157,12 @@ public interface I_ModCntr_Log
 	 */
 	int getC_Flatrate_Term_ID();
 
-	@Nullable I_C_Flatrate_Term getC_Flatrate_Term();
+	@Nullable
+	de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
-	void setC_Flatrate_Term(@Nullable I_C_Flatrate_Term C_Flatrate_Term);
+	void setC_Flatrate_Term(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 
-	ModelColumn<I_ModCntr_Log, I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_ModCntr_Log.class, "C_Flatrate_Term_ID", I_C_Flatrate_Term.class);
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_ModCntr_Log.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
@@ -184,28 +185,6 @@ public interface I_ModCntr_Log
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_C_Invoice_Candidate_ID = new ModelColumn<>(I_ModCntr_Log.class, "C_Invoice_Candidate_ID", null);
 	String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Collection Point.
@@ -234,7 +213,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setContractType (String ContractType);
+	void setContractType(java.lang.String ContractType);
 
 	/**
 	 * Get Contract Type.
@@ -243,7 +222,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getContractType();
+	java.lang.String getContractType();
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_ContractType = new ModelColumn<>(I_ModCntr_Log.class, "ContractType", null);
 	String COLUMNNAME_ContractType = "ContractType";
@@ -272,6 +251,28 @@ public interface I_ModCntr_Log
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID(int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Date.
@@ -303,7 +304,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription(@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -312,7 +313,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Log.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -410,57 +411,13 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Product_ID();
-
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Warehouse_ID();
-
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	/**
 	 * Set Document Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setModCntr_Log_DocumentType (String ModCntr_Log_DocumentType);
+	void setModCntr_Log_DocumentType(java.lang.String ModCntr_Log_DocumentType);
 
 	/**
 	 * Get Document Type.
@@ -469,7 +426,7 @@ public interface I_ModCntr_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getModCntr_Log_DocumentType();
+	java.lang.String getModCntr_Log_DocumentType();
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_ModCntr_Log_DocumentType = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Log_DocumentType", null);
 	String COLUMNNAME_ModCntr_Log_DocumentType = "ModCntr_Log_DocumentType";
@@ -498,26 +455,27 @@ public interface I_ModCntr_Log
 	/**
 	 * Set Modules.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setModCntr_Module_ID (int ModCntr_Module_ID);
+	void setModCntr_Module_ID(int ModCntr_Module_ID);
 
 	/**
 	 * Get Modules.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getModCntr_Module_ID();
 
-	@Nullable I_ModCntr_Module getModCntr_Module();
+	@Nullable
+	de.metas.contracts.model.I_ModCntr_Module getModCntr_Module();
 
-	void setModCntr_Module(@Nullable I_ModCntr_Module ModCntr_Module);
+	void setModCntr_Module(@Nullable de.metas.contracts.model.I_ModCntr_Module ModCntr_Module);
 
-	ModelColumn<I_ModCntr_Log, I_ModCntr_Module> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Module_ID", I_ModCntr_Module.class);
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Module> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Module_ID", de.metas.contracts.model.I_ModCntr_Module.class);
 	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
 
 	/**
@@ -538,53 +496,57 @@ public interface I_ModCntr_Log
 	 */
 	int getModCntr_Type_ID();
 
-	@Nullable I_ModCntr_Type getModCntr_Type();
+	@Nullable
+	de.metas.contracts.model.I_ModCntr_Type getModCntr_Type();
 
-	void setModCntr_Type(@Nullable I_ModCntr_Type ModCntr_Type);
+	void setModCntr_Type(@Nullable de.metas.contracts.model.I_ModCntr_Type ModCntr_Type);
 
-	ModelColumn<I_ModCntr_Log, I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Type_ID", I_ModCntr_Type.class);
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_Type_ID", de.metas.contracts.model.I_ModCntr_Type.class);
 	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
 
 	/**
-	 * Set Price Unit.
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPrice_UOM_ID (int Price_UOM_ID);
+	void setM_Product_ID(int M_Product_ID);
 
 	/**
-	 * Get Price Unit.
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getPrice_UOM_ID();
+	int getM_Product_ID();
 
-	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Price Actual.
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: CostPrice
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPriceActual (@Nullable BigDecimal PriceActual);
+	void setM_Warehouse_ID(int M_Warehouse_ID);
 
 	/**
-	 * Get Price Actual.
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: CostPrice
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getPriceActual();
+	int getM_Warehouse_ID();
 
-	ModelColumn<I_ModCntr_Log, Object> COLUMN_PriceActual = new ModelColumn<>(I_ModCntr_Log.class, "PriceActual", null);
-	String COLUMNNAME_PriceActual = "PriceActual";
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Manufacturing Cost Collector.
@@ -604,12 +566,54 @@ public interface I_ModCntr_Log
 	 */
 	int getPP_Cost_Collector_ID();
 
-	@Nullable org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
+	@Nullable
+	org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
 
 	void setPP_Cost_Collector(@Nullable org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
 
 	ModelColumn<I_ModCntr_Log, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new ModelColumn<>(I_ModCntr_Log.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
 	String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+
+	/**
+	 * Set Price Actual.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceActual(@Nullable BigDecimal PriceActual);
+
+	/**
+	 * Get Price Actual.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceActual();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_PriceActual = new ModelColumn<>(I_ModCntr_Log.class, "PriceActual", null);
+	String COLUMNNAME_PriceActual = "PriceActual";
+
+	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID(int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Processed.

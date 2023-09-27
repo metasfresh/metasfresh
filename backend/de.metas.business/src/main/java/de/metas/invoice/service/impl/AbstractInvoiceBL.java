@@ -174,6 +174,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -1492,7 +1493,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final I_C_DocType getC_DocType(final org.compiere.model.I_C_Invoice invoice)
+	@Nullable
+	public final I_C_DocType getC_DocTypeEffective(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		if (invoice.getC_DocType_ID() > 0)
@@ -1507,10 +1509,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return null;
 	}
 
+	@Nullable
+	private DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(invoiceRecord.getC_DocType_ID());
+
+		return docTypeId != null ? docTypeId : DocTypeId.ofRepoIdOrNull(invoiceRecord.getC_DocTypeTarget_ID());
+	}
+
 	@Override
 	public final boolean isInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
+		final I_C_DocType docType = assumeNotNull(getC_DocTypeEffective(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
 		final String docBaseType = docType.getDocBaseType();
 		return isInvoice(docBaseType);
 	}
@@ -1524,7 +1534,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isCreditMemo(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
+		final I_C_DocType docType = assumeNotNull(getC_DocTypeEffective(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
 		return InvoiceDocBaseType.ofCode(docType.getDocBaseType()).isCreditMemo();
 	}
 
@@ -1538,15 +1548,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isARCreditMemo(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
+		final I_C_DocType docType = assumeNotNull(getC_DocTypeEffective(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
 		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(docType.getDocBaseType());
 		return invoiceDocBaseType.isCustomerCreditMemo();
 	}
 
 	@Override
+	public final boolean isDownPayment(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = assumeNotNull(getDocTypeIdEffectiveOrNull(invoiceRecord), "The given C_Invoice={} needs to have a C_DocType", invoiceRecord);
+		return docTypeBL.isDownPayment(docTypeId);
+	}
+
+	@Override
 	public final boolean isAdjustmentCharge(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
+		final I_C_DocType docType = assumeNotNull(getC_DocTypeEffective(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
 		return isAdjustmentCharge(docType);
 	}
 

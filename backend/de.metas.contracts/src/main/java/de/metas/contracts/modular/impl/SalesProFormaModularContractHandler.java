@@ -49,12 +49,13 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class SalesModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
+public class SalesProFormaModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull
+	private final ModularContractLogService contractLogService;
 
 	@Override
 	public @NonNull Class<I_C_Flatrate_Term> getType()
@@ -78,7 +79,7 @@ public class SalesModularContractHandler implements IModularContractTypeHandler<
 
 		final OrderId orderId = OrderId.ofRepoId(orderLineBL.getOrderLineById(orderLineId).getC_Order_ID());
 		final I_C_Order order = orderBL.getById(orderId);
-		return SOTrx.ofBoolean(order.isSOTrx()).isSales() && !orderBL.isProFormaSO(order);
+		return SOTrx.ofBoolean(order.isSOTrx()).isSales() && orderBL.isProFormaSO(order);
 	}
 
 	@Override
@@ -98,7 +99,9 @@ public class SalesModularContractHandler implements IModularContractTypeHandler<
 	{
 		switch (action)
 		{
-			case COMPLETED -> {}
+			case COMPLETED ->
+			{
+			}
 			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);

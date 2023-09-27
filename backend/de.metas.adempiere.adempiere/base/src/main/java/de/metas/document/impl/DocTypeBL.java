@@ -169,12 +169,30 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
-	public boolean isInternalVendorInvoice(final DocTypeId docTypeId)
+	public boolean isInternalVendorInvoice(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 
 		return X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType())
 				&& X_C_DocType.DOCSUBTYPE_InternalVendorInvoice.equals(dt.getDocSubType());
+	}
+
+	@Override
+	public boolean isProFormaSO(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_ProFormaSO.equals(dt.getDocBaseType())
+				&& DocBaseType.ofCode(dt.getDocBaseType()).isSalesOrder();
+	}
+
+	@Override
+	public boolean isDownPayment(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+
+		return X_C_DocType.DOCSUBTYPE_DownPayment.equals(dt.getDocBaseType())
+				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
 	}
 
 	@Override

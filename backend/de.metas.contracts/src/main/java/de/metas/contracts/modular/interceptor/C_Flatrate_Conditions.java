@@ -53,7 +53,7 @@ public class C_Flatrate_Conditions
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(record.getType_Conditions());
 
-		if (!typeConditions.isModularContractType())
+		if (!typeConditions.isModularOrInterim())
 		{
 			return;
 		}

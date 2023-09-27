@@ -1026,6 +1026,19 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isProFormaSO(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		if (!soTrx.isSales())
+		{
+			return false;
+		}
+
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isProFormaSO(docTypeId);
+	}
+
+	@Override
 	public boolean isMediated(@NonNull final I_C_Order order)
 	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
