@@ -405,8 +405,8 @@ public class ModCntr_Log_StepDef
 		final String invoicingGroupIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(invoicingGroupIdentifier))
 		{
-			final String nullableIdentifier = DataTableUtil.nullToken2Null(invoicingGroupIdentifier);
-			if (nullableIdentifier == null)
+			final String nullableInvoiceGroupIdentifier = DataTableUtil.nullToken2Null(invoicingGroupIdentifier);
+			if (nullableInvoiceGroupIdentifier == null)
 			{
 				softly.assertThat(modCntrLogRecord.getModCntr_InvoicingGroup_ID()).as(I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID).isEqualByComparingTo(0);
 			}
