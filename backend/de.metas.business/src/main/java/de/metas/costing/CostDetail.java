@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountAndQtyDetailed;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -42,30 +43,29 @@ import java.time.Instant;
 @Value
 public class CostDetail
 {
-	@With
-	CostDetailId id;
+	@With CostDetailId id;
 
-	ClientId clientId;
-	OrgId orgId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 
-	AcctSchemaId acctSchemaId;
-	CostElementId costElementId;
-	ProductId productId;
-	AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull AcctSchemaId acctSchemaId;
+	@NonNull CostElementId costElementId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 	@NonNull CostAmountType amtType;
-	CostAmount amt;
-	@With Quantity qty;
+	@NonNull CostAmount amt;
+	@NonNull @With Quantity qty;
 
 	@With boolean changingCosts;
 
 	CostDetailPreviousAmounts previousAmounts;
 
-	CostingDocumentRef documentRef;
+	@NonNull CostingDocumentRef documentRef;
 
-	String description;
+	@Nullable String description;
 
-	@With Instant dateAcct;
+	@NonNull @With Instant dateAcct;
 
 	@Builder
 	private CostDetail(
@@ -125,4 +125,6 @@ public class CostDetail
 			return getQty().signum() < 0;
 		}
 	}
+
+	public CostAmountAndQtyDetailed getAmtAndQtyDetailed() {return CostAmountAndQtyDetailed.of(amt, qty, amtType);}
 }

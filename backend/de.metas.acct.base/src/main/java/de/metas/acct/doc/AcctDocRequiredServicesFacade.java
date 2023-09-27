@@ -23,8 +23,8 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
@@ -64,14 +64,17 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.acct.api.IFactAcctBL;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -112,6 +115,7 @@ import java.util.Optional;
  */
 
 @Service
+@RequiredArgsConstructor
 public class AcctDocRequiredServicesFacade
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -129,6 +133,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	@Getter private final QuantityUOMConverter uomConverter = Services.get(IUOMConversionBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -136,7 +141,6 @@ public class AcctDocRequiredServicesFacade
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
-	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
 	private final AccountProviderFactory accountProviderFactory;
@@ -153,28 +157,6 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICostingService costingService;
 	private final DimensionService dimensionService;
-
-	public AcctDocRequiredServicesFacade(
-			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService,
-			@NonNull final GLCategoryRepository glCategoryRepository,
-			@NonNull final BankAccountService bankAccountService,
-			@NonNull final ICostingService costingService,
-			@NonNull final AccountProviderFactory accountProviderFactory,
-			@NonNull final InvoiceAcctRepository invoiceAcctRepository,
-			@NonNull final MatchInvoiceService matchInvoiceService,
-			@NonNull final OrderCostService orderCostService,
-			@NonNull final DimensionService dimensionService)
-	{
-		this.modelCacheInvalidationService = modelCacheInvalidationService;
-		this.glCategoryRepository = glCategoryRepository;
-		this.bankAccountService = bankAccountService;
-		this.costingService = costingService;
-		this.accountProviderFactory = accountProviderFactory;
-		this.invoiceAcctRepository = invoiceAcctRepository;
-		this.matchInvoiceService = matchInvoiceService;
-		this.orderCostService = orderCostService;
-		this.dimensionService = dimensionService;
-	}
 
 	public void fireBeforePostEvent(@NonNull final PO po)
 	{
@@ -290,6 +272,11 @@ public class AcctDocRequiredServicesFacade
 		return productBL.isStocked(product);
 	}
 
+	public boolean isProductStocked(final ProductId productId)
+	{
+		return productBL.isStocked(productId);
+	}
+
 	public I_C_UOM getProductStockingUOM(final ProductId productId)
 	{
 		return productBL.getStockUOM(productId);
@@ -319,13 +306,13 @@ public class AcctDocRequiredServicesFacade
 		return costingService.getCostElementById(costElementId);
 	}
 
-	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
+	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return costingService.createCostDetail(request);
 	}
 
 	@SuppressWarnings("UnusedReturnValue")
-	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	public ExplainedOptional<CostDetailCreateResultsList> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
 	{
 		return costingService.createCostDetailOrEmpty(request);
 	}
@@ -335,12 +322,12 @@ public class AcctDocRequiredServicesFacade
 		return costingService.moveCosts(request);
 	}
 
-	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
+	public CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
 	{
 		return costingService.createReversalCostDetails(request);
 	}
 
-	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest request)
+	public ExplainedOptional<CostDetailCreateResultsList> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest request)
 	{
 		return costingService.createReversalCostDetailsOrEmpty(request);
 	}
@@ -439,4 +426,13 @@ public class AcctDocRequiredServicesFacade
 	{
 		return dimensionService.getFromRecord(model);
 	}
+
+	public Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final ProductId productId,
+			@NonNull final UomId uomToId)
+	{
+		return uomConverter.convertQuantityTo(quantity, productId, uomToId);
+	}
+
 }

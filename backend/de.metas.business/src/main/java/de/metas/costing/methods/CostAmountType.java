@@ -2,13 +2,13 @@ package de.metas.costing.methods;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_M_CostDetail;
-import org.compiere.model.X_M_CostRevaluation_Detail;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Getter
 public enum CostAmountType implements ReferenceListAwareEnum
 {
 	MAIN(X_M_CostDetail.M_COSTDETAIL_TYPE_Main),
@@ -16,7 +16,7 @@ public enum CostAmountType implements ReferenceListAwareEnum
 	ALREADY_SHIPPED(X_M_CostDetail.M_COSTDETAIL_TYPE_AlreadyShipped),
 	;
 
-	@Getter @NonNull final String code;
+	@NonNull final String code;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CostAmountType> index = ReferenceListAwareEnums.index(values());
 
@@ -26,5 +26,6 @@ public enum CostAmountType implements ReferenceListAwareEnum
 
 	public boolean isAdjustment() {return ADJUSTMENT.equals(this);}
 
+	@SuppressWarnings("unused")
 	public boolean isAlreadyShipped() {return ALREADY_SHIPPED.equals(this);}
 }

@@ -28,6 +28,7 @@ import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
@@ -65,4 +66,5 @@ public class ShippingNotificationId implements RepoIdAware
 		return id != null ? id.getRepoId() : -1;
 	}
 
+	public TableRecordReference toTableRecordReference() {return TableRecordReference.of(I_M_Shipping_Notification.Table_Name, this);}
 }

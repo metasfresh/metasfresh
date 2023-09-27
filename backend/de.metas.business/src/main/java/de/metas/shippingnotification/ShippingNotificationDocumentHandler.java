@@ -22,22 +22,30 @@
 
 package de.metas.shippingnotification;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
-import de.metas.document.engine.IDocument;
+import de.metas.order.IOrderBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MPeriod;
 import org.compiere.util.Env;
 
+import java.sql.Timestamp;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 @RequiredArgsConstructor
 public class ShippingNotificationDocumentHandler implements DocumentHandler
 {
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final ShippingNotificationService shippingNotificationService;
+	private final ShippingNotificationListenersRegistry listenersRegistry;
 
 	private static I_M_Shipping_Notification extractShippingNotification(@NonNull final DocumentTableFields docFields)
 	{
@@ -69,42 +77,70 @@ public class ShippingNotificationDocumentHandler implements DocumentHandler
 		return InstantAndOrgId.ofTimestamp(record.getPhysicalClearanceDate(), OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
-	@Override
-	public String completeIt(@NonNull final DocumentTableFields docFields)
+	private static void assertPeriodOpen(final ShippingNotification shippingNotification)
 	{
-		final I_M_Shipping_Notification shippingNotificationRecord = extractShippingNotification(docFields);
-		assertPeriodOpen(shippingNotificationRecord);
+		MPeriod.testPeriodOpen(Env.getCtx(),
+				Timestamp.from(shippingNotification.getDateAcct()),
+				shippingNotification.getDocTypeId().getRepoId(),
+				shippingNotification.getOrgId().getRepoId());
+	}
 
-		shippingNotificationService.updateWhileSaving(
-				shippingNotificationRecord,
-				ShippingNotification::completeIt
+	private <R> R updateWhileSaving(@NonNull final DocumentTableFields docFields, @NonNull final Function<ShippingNotification, R> consumer)
+	{
+		return shippingNotificationService.updateWhileSaving(extractShippingNotification(docFields), consumer);
+	}
+
+	private void updateWhileSaving(@NonNull final DocumentTableFields docFields, @NonNull Consumer<ShippingNotification> consumer)
+	{
+		shippingNotificationService.updateWhileSaving(extractShippingNotification(docFields), consumer);
+	}
+
+	@Override
+	public DocStatus completeIt(@NonNull final DocumentTableFields docFields)
+	{
+		return updateWhileSaving(docFields, shippingNotification -> {
+					assertPeriodOpen(shippingNotification);
+
+					shippingNotification.completeIt();
+
+					if (!shippingNotification.isReversal())
+					{
+						fireAfterComplete(shippingNotification);
+					}
+
+					return shippingNotification.getDocStatus();
+				}
 		);
-
-		shippingNotificationRecord.setDocAction(IDocument.ACTION_Reverse_Correct);
-		return IDocument.STATUS_Completed;
 	}
 
-	@Override
-	public void reactivateIt(@NonNull final DocumentTableFields docFields)
+	private void fireAfterComplete(final ShippingNotification shippingNotification)
 	{
-		throw new UnsupportedOperationException();
-	}
+		orderBL.setPhysicalClearanceDate(shippingNotification.getSalesOrderId(), shippingNotification.getPhysicalClearanceDate());
 
-	private static void assertPeriodOpen(final I_M_Shipping_Notification record)
-	{
-		MPeriod.testPeriodOpen(Env.getCtx(), record.getDateAcct(), record.getC_DocType_ID(), record.getAD_Org_ID());
+		listenersRegistry.fireAfterComplete(shippingNotification);
 	}
 
 	@Override
 	public void reverseCorrectIt(final DocumentTableFields docFields)
 	{
-		final I_M_Shipping_Notification shippingNotificationRecord = extractShippingNotification(docFields);
-		assertPeriodOpen(shippingNotificationRecord);
+		updateWhileSaving(docFields, shippingNotification -> {
+					assertPeriodOpen(shippingNotification);
 
-		shippingNotificationService.updateWhileSaving(
-				shippingNotificationRecord,
-				shippingNotificationService::reverseItNoSave
+					final ShippingNotification reversal = shippingNotification.createReversal();
+					shippingNotificationService.completeIt(reversal);
+
+					shippingNotification.setReversalId(reversal.getId());
+					shippingNotification.setDocStatus(DocStatus.Reversed);
+
+					fireAfterReverse(shippingNotification, reversal);
+				}
 		);
 	}
 
+	private void fireAfterReverse(final ShippingNotification shippingNotification, final ShippingNotification reversal)
+	{
+		orderBL.setPhysicalClearanceDate(reversal.getSalesOrderId(), null);
+
+		listenersRegistry.fireAfterReverse(reversal, shippingNotification);
+	}
 }

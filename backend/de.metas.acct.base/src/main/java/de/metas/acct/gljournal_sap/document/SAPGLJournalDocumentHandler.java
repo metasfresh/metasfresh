@@ -78,7 +78,7 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_SAP_GLJournal glJournalRecord = extractRecord(docFields);
 
@@ -94,7 +94,7 @@ public class SAPGLJournalDocumentHandler implements DocumentHandler
 		);
 
 		glJournalRecord.setDocAction(IDocument.ACTION_None);
-		return DocStatus.Completed.getCode();
+		return DocStatus.Completed;
 	}
 
 	private static void assertPeriodOpen(final I_SAP_GLJournal glJournalRecord)

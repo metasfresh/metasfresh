@@ -9,30 +9,38 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ShipmentCosts;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shippingnotification.ShippingNotification;
+import de.metas.shippingnotification.ShippingNotificationCollection;
+import de.metas.shippingnotification.ShippingNotificationLine;
+import de.metas.shippingnotification.acct.ShippingNotificationAcctService;
 import de.metas.util.collections.CollectionUtils;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.DB;
+import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -56,25 +64,31 @@ import java.util.Objects;
  * #L%
  */
 
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
-	@Getter
-	@NonNull private final ImmutableList<InOutCost> inoutCosts;
+	@NonNull private final IOrderBL orderBL;
+	@NonNull private final ShippingNotificationAcctService shippingNotificationAcctService;
+
+	@NonNull @Getter private final ImmutableList<InOutCost> inoutCosts;
+	private final ShippingNotificationCollection shippingNotifications;
 
 	/**
 	 * Outside Processing
 	 */
-	private Integer ppCostCollectorId = null; // lazy
+	private Optional<PPCostCollectorId> ppCostCollectorId = null; // lazy
 
-	@Builder
-	private DocLine_InOut(
+	DocLine_InOut(
+			@NonNull final Doc_InOut doc,
 			@NonNull final I_M_InOutLine inoutLine,
 			@NonNull final List<InOutCost> inoutCosts,
-			@NonNull final Doc_InOut doc)
+			@NonNull final ShippingNotificationCollection shippingNotifications)
 	{
 		super(InterfaceWrapperHelper.getPO(inoutLine), doc);
-
+		this.orderBL = doc.orderBL;
+		this.shippingNotificationAcctService = doc.shippingNotificationAcctService;
 		this.inoutCosts = ImmutableList.copyOf(inoutCosts);
+		this.shippingNotifications = shippingNotifications;
 
 		final Quantity qty = doc.inOutBL.getMovementQty(inoutLine);
 		setQty(qty, doc.isSOTrx());
@@ -85,31 +99,25 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		return InOutLineId.ofRepoId(get_ID());
 	}
 
-	private int getPP_Cost_Collector_ID()
+	private Optional<PPCostCollectorId> getPP_Cost_Collector_ID()
 	{
+		Optional<PPCostCollectorId> ppCostCollectorId = this.ppCostCollectorId;
 		if (ppCostCollectorId == null)
 		{
-			ppCostCollectorId = retrievePPCostCollectorId();
+			ppCostCollectorId = this.ppCostCollectorId = getOrderLineId().flatMap(orderBL::getPPCostCollectorId);
 		}
 		return ppCostCollectorId;
 	}
 
-	private int retrievePPCostCollectorId()
+	private Optional<OrderAndLineId> getOrderAndLineId()
 	{
-		final OrderLineId orderLineId = getOrderLineId();
-		if (orderLineId != null)
-		{
-			final String sql = "SELECT " + I_C_OrderLine.COLUMNNAME_PP_Cost_Collector_ID
-					+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
-			return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId);
-		}
-
-		return 0;
+		final I_M_InOutLine inOutLine = getInOutLine();
+		return OrderAndLineId.optionalOfRepoIds(inOutLine.getC_Order_ID(), inOutLine.getC_OrderLine_ID());
 	}
 
-	public final I_C_OrderLine getOrderLineOrNull()
+	private Optional<I_C_OrderLine> getOrderLine()
 	{
-		return getInOutLine().getC_OrderLine();
+		return getOrderAndLineId().map(orderBL::getLineById);
 	}
 
 	private I_M_InOutLine getInOutLine()
@@ -122,10 +130,9 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	 */
 	public final OrgId getOrderOrgId()
 	{
-		final I_C_OrderLine orderLine = getOrderLineOrNull();
-		return orderLine != null
-				? OrgId.ofRepoId(orderLine.getAD_Org_ID())
-				: getOrgId();
+		return getOrderLine()
+				.map(orderLine -> OrgId.ofRepoId(orderLine.getAD_Org_ID()))
+				.orElseGet(this::getOrgId);
 	}
 
 	@NonNull
@@ -136,7 +143,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			return getAccount(ProductAcctType.P_Asset_Acct, as);
 		}
 		// if the line is an Outside Processing then DR WIP
-		else if (getPP_Cost_Collector_ID() > 0)
+		else if (getPP_Cost_Collector_ID().isPresent())
 		{
 			return getAccount(ProductAcctType.P_WIP_Acct, as);
 		}
@@ -150,12 +157,14 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build());
+			return services.createReversalCostDetails(
+							CostDetailReverseRequest.builder()
+									.acctSchemaId(as.getId())
+									.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+									.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
+									.date(getDateAcctAsInstant())
+									.build())
+					.toAggregatedCostAmount();
 		}
 		else
 		{
@@ -174,19 +183,21 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			//
 			// Material costs:
 			AggregatedCostAmount result = services.createCostDetail(
-					requestBuilder
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.build());
+							requestBuilder
+									.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+									.build())
+					.toAggregatedCostAmount();
 
 			//
 			// Additional costs
 			for (final InOutCost inoutCost : inoutCosts)
 			{
 				final AggregatedCostAmount nonMaterialCosts = services.createCostDetail(
-						requestBuilder
-								.costElement(services.getCostElementById(inoutCost.getCostElementId()))
-								.amt(CostAmount.ofMoney(inoutCost.getCostAmount()))
-								.build());
+								requestBuilder
+										.costElement(services.getCostElementById(inoutCost.getCostElementId()))
+										.amt(CostAmount.ofMoney(inoutCost.getCostAmount()))
+										.build())
+						.toAggregatedCostAmount();
 
 				result = result.merge(nonMaterialCosts);
 			}
@@ -195,43 +206,37 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	public CostAmount getCreateShipmentCosts(final AcctSchema as)
+	ShipmentCosts getCreateShipmentCosts(final AcctSchema as)
 	{
+		final CostDetailCreateResultsList results;
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-							.acctSchemaId(as.getId())
-							.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-							.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
-							.date(getDateAcctAsInstant())
-							.build())
-					.getTotalAmountToPost(as)
-					.getMainAmt()
-					// Negate the amount coming from the costs because it must be negative in the accounting.
-					.negate();
+			results = services.createReversalCostDetails(CostDetailReverseRequest.builder()
+					.acctSchemaId(as.getId())
+					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
+					.date(getDateAcctAsInstant())
+					.build());
 		}
 		else
 		{
-			return services.createCostDetail(
-							CostDetailCreateRequest.builder()
-									.acctSchemaId(as.getId())
-									.clientId(getClientId())
-									.orgId(getOrgId())
-									.productId(getProductId())
-									.attributeSetInstanceId(getAttributeSetInstanceId())
-									.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-									.qty(getQty())
-									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-									.currencyConversionContext(getCurrencyConversionContext(as))
-									.date(getDateAcctAsInstant())
-									.build())
-					.getTotalAmountToPost(as)
-					.getMainAmt()
-					// The shipment is an outgoing document, so the costing amounts will be negative values.
-					// In the accounting they must be positive values. This is the reason why the amount
-					// coming from the product costs must be negated.
-					.negate();
+			results = services.createCostDetail(
+					CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getId())
+							.clientId(getClientId())
+							.orgId(getOrgId())
+							.productId(getProductId())
+							.attributeSetInstanceId(getAttributeSetInstanceId())
+							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
+							.qty(getQty())
+							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
+							.currencyConversionContext(getCurrencyConversionContext(as))
+							.date(getDateAcctAsInstant())
+							.externallyOwned(computeAmtAndQtyExternallyOwned(as))
+							.build());
 		}
+
+		return ShipmentCosts.extractAccountableFrom(results, as);
 	}
 
 	private CurrencyConversionContext getCurrencyConversionContext(final AcctSchema as)
@@ -270,13 +275,13 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	public BPartnerLocationId getBPartnerLocationId(@NonNull final CostElementId costElementId)
 	{
 		final BPartnerLocationId bpartnerLocationId = getDoc().getBPartnerLocationId();
-		if(bpartnerLocationId == null)
+		if (bpartnerLocationId == null)
 		{
 			return null;
 		}
 
 		final BPartnerId bpartnerId = getBPartnerId(costElementId);
-		if(BPartnerId.equals(bpartnerLocationId.getBpartnerId(), bpartnerId))
+		if (BPartnerId.equals(bpartnerLocationId.getBpartnerId(), bpartnerId))
 		{
 			return bpartnerLocationId;
 		}
@@ -284,6 +289,37 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		{
 			return null;
 		}
+	}
+
+	private CostAmountAndQty computeAmtAndQtyExternallyOwned(final AcctSchema as)
+	{
+		//noinspection UnnecessaryLocalVariable
+		final Quantity ZERO = getQty().toZero();
+
+		Quantity qtyExternallyOwned = ZERO;
+		CostAmount costsExternallyOwned = CostAmount.zero(as.getCurrencyId());
+
+		final ProductId productId = getProductId();
+		final OrderAndLineId orderAndLineId = getOrderAndLineId().orElse(null);
+		if (productId != null && orderAndLineId != null)
+		{
+			for (final ShippingNotification shippingNotification : shippingNotifications)
+			{
+				final ShippingNotificationLine shippingNotificationLine = shippingNotification.getLineBySalesOrderLineId(orderAndLineId).orElse(null);
+				if (shippingNotificationLine == null)
+				{
+					continue;
+				}
+
+				final CostAmount shippingNotificationLineCosts = shippingNotificationAcctService.getCreateCosts(shippingNotification, shippingNotificationLine, as);
+				costsExternallyOwned = costsExternallyOwned.add(shippingNotificationLineCosts);
+
+				final Quantity shippingNotificationLineQty = services.convertQuantityTo(shippingNotificationLine.getQty(), productId, qtyExternallyOwned.getUomId());
+				qtyExternallyOwned = qtyExternallyOwned.add(shippingNotificationLineQty);
+			}
+		}
+
+		return CostAmountAndQty.of(costsExternallyOwned, qtyExternallyOwned);
 	}
 
 }

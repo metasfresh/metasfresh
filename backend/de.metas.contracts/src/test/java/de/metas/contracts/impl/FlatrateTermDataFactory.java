@@ -395,9 +395,9 @@ public class FlatrateTermDataFactory
 	public static I_M_Product_Acct createProductAcct(final I_M_Product product, final AcctSchemaId acctSchemaId)
 	{
 		final I_M_Product_Acct productAcct = newInstance(I_M_Product_Acct.class);
-		productAcct.setM_Product(product);
+		productAcct.setM_Product_ID(product.getM_Product_ID());
 		productAcct.setC_AcctSchema_ID(AcctSchemaId.toRepoId(acctSchemaId));
-		productAcct.setC_Activity(createActivity());
+		productAcct.setC_Activity_ID(createActivity().getC_Activity_ID());
 		save(productAcct);
 		return productAcct;
 	}
