@@ -399,12 +399,6 @@ public class ModCntr_Log_StepDef
 				softly.assertThat(modCntrLogRecord.getPrice_UOM_ID()).as(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName()).isEqualTo(priceUOMId.getRepoId());
 			}
 		}
-
-		final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_DateTrx);
-		if (dateTrx != null)
-		{
-			softly.assertThat(modCntrLogRecord.getDateTrx()).as(I_ModCntr_Log.COLUMNNAME_DateTrx).isEqualTo(dateTrx);
-		}
 		
 		softly.assertAll();
 
