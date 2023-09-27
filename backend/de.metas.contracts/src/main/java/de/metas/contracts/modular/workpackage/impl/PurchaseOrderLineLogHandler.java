@@ -26,6 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -67,7 +69,10 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
+	@NonNull
 	private final PurchaseOrderLineModularContractHandler contractHandler;
+	@NonNull
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_OrderLine> request)
@@ -104,10 +109,19 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 		final I_C_UOM uomId = uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID()));
 		final Quantity quantity = Quantity.of(orderLine.getQtyEntered(), uomId);
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
-		
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
+																				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+																				orgDAO::getTimeZone);
+
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+				.orElse(null);
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
-											.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
+											.productId(productId)
 											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 											.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 											.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
@@ -119,14 +133,13 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 											.processed(false)
 											.quantity(quantity)
 											.amount(amount)
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
-																						   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
+											.transactionDate(transactionDate)
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(null)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
+											.invoicingGroupId(invoicingGroupId)
 											.build());
 	}
 
