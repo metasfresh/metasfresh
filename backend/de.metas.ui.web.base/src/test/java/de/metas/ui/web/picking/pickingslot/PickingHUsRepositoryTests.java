@@ -1,15 +1,29 @@
 package de.metas.ui.web.picking.pickingslot;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.PickingCandidatesQuery;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderId;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.quantity.Quantity;
@@ -17,8 +31,8 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
-import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -27,7 +41,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -39,12 +53,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,6 +76,7 @@ public class PickingHUsRepositoryTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
 	}
 
 	private I_C_UOM createUOM()
@@ -69,6 +84,15 @@ public class PickingHUsRepositoryTests
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
 		return uom;
+	}
+
+	private I_M_ShipmentSchedule createShipmentSchedule()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setM_ShipmentSchedule_ID(M_SHIPMENT_SCHEDULE_ID.getRepoId());
+		shipmentSchedule.setC_Order_ID(123);
+		saveRecord(shipmentSchedule);
+		return shipmentSchedule;
 	}
 
 	private HuId createHU()
@@ -90,7 +114,7 @@ public class PickingHUsRepositoryTests
 
 	/**
 	 * Tests {@link PickingHURowsRepository#retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery)} with a simple mocked {@link HUEditorViewRepository} that returns one HURow.
-	 * 
+	 *
 	 * @param pickingCandidateStatus this value is given to the picking candidate we test with, and we verify that this value is correctly translated it to the resulting {@link PickingSlotHUEditorRow#isProcessed()}.
 	 */
 	@Test
@@ -132,19 +156,20 @@ public class PickingHUsRepositoryTests
 	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final PickingCandidateStatus processingStatus, final boolean pickingRackSystem)
 	{
 		final I_C_UOM uom = createUOM();
+		final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule();
 
 		final PickingSlotId pickingSlotId = createPickingSlot(pickingRackSystem);
 		final HuId huId = createHU();
 
 		final PickingCandidateRepository pickingCandidatesRepo = new PickingCandidateRepository();
 		pickingCandidatesRepo.save(PickingCandidate.builder()
-				.processingStatus(processingStatus)
-				.qtyPicked(Quantity.zero(uom))
-				.shipmentScheduleId(M_SHIPMENT_SCHEDULE_ID)
-				.pickingSlotId(pickingSlotId)
-				.pickFrom(PickFrom.ofHuId(huId))
-				.packedToHuId(PickingCandidateStatus.Draft.equals(processingStatus) ? null : huId)
-				.build());
+										   .processingStatus(processingStatus)
+										   .qtyPicked(Quantity.zero(uom))
+										   .shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
+										   .pickingSlotId(pickingSlotId)
+										   .pickFrom(PickFrom.ofHuId(huId))
+										   .packedToHuId(PickingCandidateStatus.Draft.equals(processingStatus) ? null : huId)
+										   .build());
 
 		final HUEditorRow huEditorRow = HUEditorRow
 				.builder(WindowId.of(423))
@@ -160,12 +185,21 @@ public class PickingHUsRepositoryTests
 			huEditorViewRepository.addRow(huEditorRow);
 		}
 
+		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
+				new PickingConfigRepository(),
+				pickingCandidatesRepo,
+				new HuId2SourceHUsService(new HUTraceRepository()),
+				new HUReservationService(new HUReservationRepository()),
+				Services.get(IBPartnerBL.class),
+				new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
+
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(
 				() -> huEditorViewRepository,
-				new PickingCandidateRepository());
+				pickingCandidatesRepo,
+				pickingCandidateService);
 		final ListMultimap<PickingSlotId, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(
 				PickingCandidatesQuery.builder()
-						.shipmentScheduleId(M_SHIPMENT_SCHEDULE_ID)
+						.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
 						.onlyNotClosedOrNotRackSystem(true)
 						.build());
 
@@ -182,7 +216,11 @@ public class PickingHUsRepositoryTests
 			final boolean expectedProcessed = !PickingCandidateStatus.Draft.equals(processingStatus);
 
 			final PickedHUEditorRow resultRow = result.get(pickingSlotId).get(0);
-			final PickedHUEditorRow expectedRow = new PickedHUEditorRow(huEditorRow, expectedProcessed);
+			final PickedHUEditorRow expectedRow = new PickedHUEditorRow(huEditorRow,
+																		expectedProcessed,
+																		expectedProcessed
+																				? ImmutableMap.of()
+																				: ImmutableMap.of(huId, ImmutableSet.of(OrderId.ofRepoId(shipmentSchedule.getC_Order_ID()))));
 			assertThat(resultRow).isEqualTo(expectedRow);
 		}
 	}
