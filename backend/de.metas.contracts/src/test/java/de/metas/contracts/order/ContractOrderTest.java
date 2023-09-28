@@ -32,6 +32,8 @@ import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.user.UserRepository;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +58,7 @@ import de.metas.util.Services;
 
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
-	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+	private IContractChangeBL contractChangeBL;
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static String terminationMemo = "note: cancelContract_test";
@@ -65,8 +67,12 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
+		AdempiereTestHelper.get().init();
+
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
 		SystemTime.setTimeSource(today);
+
+		contractChangeBL = Services.get(IContractChangeBL.class);
 	}
 
 	@Test
