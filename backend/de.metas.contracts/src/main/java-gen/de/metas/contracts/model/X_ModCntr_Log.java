@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 941339976L;
+	private static final long serialVersionUID = 1906768742L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -159,7 +159,6 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String CONTRACTTYPE_Interim = "Interim";
 	/** Modular Contract = ModularContract */
 	public static final String CONTRACTTYPE_ModularContract = "ModularContract";
-
 	@Override
 	public void setContractType(final java.lang.String ContractType)
 	{
@@ -167,7 +166,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public String getContractType()
+	public java.lang.String getContractType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ContractType);
 	}
@@ -182,7 +181,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getC_UOM_ID()
+	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
@@ -194,7 +193,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public java.sql.Timestamp getDateTrx()
+	public java.sql.Timestamp getDateTrx() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateTrx);
 	}
@@ -206,7 +205,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public String getDescription()
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -263,36 +262,6 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public void setM_Product_ID (final int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
-	}
-
-	@Override
-	public int getM_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
-	}
-
-	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
-	}
-
-	@Override
-	public int getM_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
 	{
 		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class);
@@ -307,14 +276,14 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	@Override
 	public void setModCntr_InvoicingGroup_ID (final int ModCntr_InvoicingGroup_ID)
 	{
-		if (ModCntr_InvoicingGroup_ID < 1)
+		if (ModCntr_InvoicingGroup_ID < 1) 
 			set_Value (COLUMNNAME_ModCntr_InvoicingGroup_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_ModCntr_InvoicingGroup_ID, ModCntr_InvoicingGroup_ID);
 	}
 
 	@Override
-	public int getModCntr_InvoicingGroup_ID()
+	public int getModCntr_InvoicingGroup_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_InvoicingGroup_ID);
 	}
@@ -350,25 +319,15 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	 * Definitive Final Settlement = DefinitiveFinalSettlement
 	 */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement = "DefinitiveFinalSettlement";
-	/**
-	 * Inventory = Inventory
-	 */
+	/** Inventory = Inventory */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_Inventory = "Inventory";
-	/**
-	 * Sales invoice = SalesInvoice
-	 */
+	/** Sales invoice = SalesInvoice */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_SalesInvoice = "SalesInvoice";
-	/**
-	 * SalesModularContract = SalesModularContract
-	 */
+	/** SalesModularContract = SalesModularContract */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_SalesModularContract = "SalesModularContract";
-	/**
-	 * PurchaseModularContract = PurchaseModularContract
-	 */
+	/** PurchaseModularContract = PurchaseModularContract */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_PurchaseModularContract = "PurchaseModularContract";
-	/**
-	 * ProFormaSO = ProFormaSO
-	 */
+	/** ProFormaSO = ProFormaSO */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_ProFormaSO = "ProFormaSO";
 
 	@Override
@@ -378,7 +337,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public String getModCntr_Log_DocumentType()
+	public java.lang.String getModCntr_Log_DocumentType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ModCntr_Log_DocumentType);
 	}
@@ -393,7 +352,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getModCntr_Log_ID()
+	public int getModCntr_Log_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Log_ID);
 	}
@@ -420,7 +379,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getModCntr_Module_ID()
+	public int getModCntr_Module_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Module_ID);
 	}
@@ -447,7 +406,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getModCntr_Type_ID()
+	public int getModCntr_Type_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Type_ID);
 	}
@@ -462,7 +421,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getM_Product_ID()
+	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
@@ -477,7 +436,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getM_Warehouse_ID()
+	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
@@ -504,7 +463,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getPP_Cost_Collector_ID()
+	public int getPP_Cost_Collector_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Cost_Collector_ID);
 	}
@@ -516,7 +475,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public BigDecimal getPriceActual()
+	public BigDecimal getPriceActual() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -525,14 +484,14 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	@Override
 	public void setPrice_UOM_ID(final int Price_UOM_ID)
 	{
-		if (Price_UOM_ID < 1)
+		if (Price_UOM_ID < 1) 
 			set_Value (COLUMNNAME_Price_UOM_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Price_UOM_ID, Price_UOM_ID);
 	}
 
 	@Override
-	public int getPrice_UOM_ID()
+	public int getPrice_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Price_UOM_ID);
 	}
