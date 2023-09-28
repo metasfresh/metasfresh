@@ -3,6 +3,10 @@ package de.metas.ui.web.picking.pickingslot;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.AdRefListRepositoryMocked;
+import de.metas.ad_reference.AdRefTableRepositoryMocked;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
@@ -13,6 +17,8 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.PickingCandidatesQuery;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inout.ShipmentScheduleId;
@@ -26,6 +32,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -181,7 +188,10 @@ public class PickingHUsRepositoryTests
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
 				new PickingConfigRepository(),
 				pickingCandidatesRepo,
-				new HuId2SourceHUsService(new HUTraceRepository()));
+				new HuId2SourceHUsService(new HUTraceRepository()),
+				new HUReservationService(new HUReservationRepository()),
+				Services.get(IBPartnerBL.class),
+				new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
 
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(
 				() -> huEditorViewRepository,
