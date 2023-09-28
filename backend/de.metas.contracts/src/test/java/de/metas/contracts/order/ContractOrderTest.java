@@ -58,21 +58,22 @@ import de.metas.util.Services;
 
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
-	private IContractChangeBL contractChangeBL;
-
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static String terminationMemo = "note: cancelContract_test";
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
-		AdempiereTestHelper.get().init();
-
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
+				new C_Flatrate_Term(
+						new ContractOrderService(),
+						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))
+						// ,
+						// ADReferenceService.newMocked(),
+						// new GLCategoryRepository()
+						));
 		SystemTime.setTimeSource(today);
-
-		contractChangeBL = Services.get(IContractChangeBL.class);
 	}
 
 	@Test
