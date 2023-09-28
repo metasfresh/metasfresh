@@ -42,24 +42,18 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
 AS
 $BODY$
 DECLARE
-    v_productIds                       numeric[];
-    v_costingLevel                     char(1);
-    v_orgIds                           numeric[];
+    v_productIds      numeric[];
+    v_costingLevel    char(1);
+    v_orgIds          numeric[];
     --
-    rowcount                           integer := 0;
-    rowcount_mcost_updated             integer := 0;
-    rowcount_mcost_updated_total       integer := 0;
-    rowcount_mcost_deleted             integer := 0;
-    rowcount_mcost_deleted_total       integer := 0;
-    rowcount_mcostdetail_deleted       integer := 0;
-    rowcount_mcostdetail_deleted_total integer := 0;
-    v_result                           text    := '';
-    v_ok                               text    := '';
+    rowcount          integer := 0;
+    v_result          text    := '';
+    v_ok              text    := '';
     --
-    v_currentProduct                   record;
-    v_currentOrgId                     numeric;
-    v_firstCostDetail                  m_costdetail_v%rowtype;
-    v_record                           record;
+    v_currentProduct  record;
+    v_currentOrgId    numeric;
+    v_firstCostDetail m_costdetail_v%rowtype;
+    v_record          record;
 BEGIN
 
     --
@@ -164,24 +158,16 @@ BEGIN
         --
             FOREACH v_currentOrgId IN ARRAY v_orgIds
                 LOOP
-
-                    SELECT de_metas_acct.m_costdetail_delete_from_date(
-                                   p_C_AcctSchema_ID := p_C_AcctSchema_ID,
-                                   p_M_CostElement_ID := p_M_CostElement_Id,
-                                   p_M_Product_ID := v_currentProduct.m_product_id,
-                                   p_AD_Org_ID := v_currentOrgId,
-                                   p_StartDateAcct := p_StartDateAcct,
-                                   p_DryRun := 'N'
-                               )
-                    INTO v_ok;
-
+                    PERFORM de_metas_acct.m_costdetail_delete_from_date(
+                            p_C_AcctSchema_ID := p_C_AcctSchema_ID,
+                            p_M_CostElement_ID := p_M_CostElement_Id,
+                            p_M_Product_ID := v_currentProduct.m_product_id,
+                            p_AD_Org_ID := v_currentOrgId,
+                            p_StartDateAcct := p_StartDateAcct,
+                            p_DryRun := 'N'
+                        );
                 END LOOP;
         END LOOP;
-    --
-    v_result := v_result
-                    || rowcount_mcostdetail_deleted_total || ' M_CostDetails deleted, '
-                    || rowcount_mcost_updated_total || ' M_Cost updated, '
-                    || rowcount_mcost_deleted_total || ' M_Cost deleted; ';
 
 
     --
