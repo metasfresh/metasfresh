@@ -87,6 +87,7 @@ BEGIN
         LIMIT 1;
         --
         IF v_firstCostDetail.m_costdetail_id IS NOT NULL THEN
+            RAISE DEBUG 'v_firstCostDetail.m_costdetail_id is, % ', v_firstCostDetail.m_costdetail_id;
             IF (v_firstCostDetail.ischangingcosts = 'N') THEN
                 v_next_costs_found := TRUE;
                 v_next_costs_debugInfo := 'case 2.1: based on prev costs of last cost details (not changing costs)';
@@ -95,7 +96,7 @@ BEGIN
                 v_next_currentqty := v_firstCostDetail.prev_currentqty;
                 v_next_cumulatedamt := v_firstCostDetail.prev_cumulatedamt;
                 v_next_cumulatedqty := v_firstCostDetail.prev_cumulatedqty;
-            ELSIF (v_firstCostDetail.qty == 0) THEN
+            ELSIF (v_firstCostDetail.qty = 0) THEN
                 v_next_costs_found := TRUE;
                 v_next_costs_debugInfo := 'case 2.2: based on prev costs of last cost details (qty is zero)';
                 v_next_currentcostprice := v_firstCostDetail.prev_currentcostprice;
@@ -114,6 +115,17 @@ BEGIN
                 END IF;
                 v_next_cumulatedamt := v_firstCostDetail.prev_cumulatedamt + v_firstCostDetail.amt;
                 v_next_cumulatedqty := v_firstCostDetail.prev_cumulatedqty + v_firstCostDetail.qty;
+            ELSIF (v_firstCostDetail.qty > 0 AND v_firstCostDetail.ischangingcosts = 'Y') THEN
+                v_next_costs_found := TRUE;
+                v_next_costs_debugInfo := 'case 2.4: based on prev costs of last cost details (inbound trx), with changing costs';
+                v_next_currentcostprice := v_firstCostDetail.prev_currentcostprice;
+                v_next_currentcostpricell := v_firstCostDetail.prev_currentcostpricell;
+                v_next_currentqty := v_firstCostDetail.prev_currentqty - v_firstCostDetail.qty;
+                IF (v_next_currentqty < 0) THEN
+                    v_next_currentqty := 0;
+                END IF;
+                v_next_cumulatedamt := v_firstCostDetail.prev_cumulatedamt - v_firstCostDetail.amt;
+                v_next_cumulatedqty := v_firstCostDetail.prev_cumulatedqty - v_firstCostDetail.qty;
             ELSE -- (v_firstCostDetail.qty > 0) THEN
                 RAISE EXCEPTION 'Extracting current costs from an inbound transaction is not implemented (%)', v_firstCostDetail;
             END IF;
@@ -124,9 +136,16 @@ BEGIN
     END IF;
 
 
+    RAISE DEBUG 'v_next_costs_debugInfo , % ', v_next_costs_debugInfo;
+    RAISE DEBUG 'v_next_currentcostprice , % ', v_next_currentcostprice;
+    RAISE DEBUG 'v_next_currentcostpricell , % ', v_next_currentcostpricell;
+    RAISE DEBUG 'v_next_currentqty , % ', v_next_currentqty;
+    RAISE DEBUG 'v_next_cumulatedamt , % ', v_next_cumulatedamt;
+    RAISE DEBUG 'v_next_cumulatedqty , % ', v_next_cumulatedqty;
+
     --
     --
-    -- DELETE all cost details starting from our target date (inclusive)
+    -- DELETE ALL COST details starting FROM our target DATE (inclusive)
     --
     --
 
@@ -143,10 +162,9 @@ BEGIN
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     RAISE DEBUG 'Deleted % M_CostDetail(s)', rowcount;
 
-
     --
     --
-    -- UPDATE/DELETE current costs record (M_Cost)
+    -- UPDATE /DELETE CURRENT COSTS RECORD (M_Cost)
     --
     --
 
@@ -191,6 +209,8 @@ BEGIN
     IF (p_DryRun = 'Y') THEN
         RAISE EXCEPTION 'ROLLBACK because p_DryRun=Y';
     END IF;
+
+    RETURN 'OK';
 END;
 $BODY$
 
