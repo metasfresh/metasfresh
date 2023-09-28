@@ -60,7 +60,6 @@ import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
-
 	private static final Logger logger = LogManager.getLogger(UserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -115,6 +114,9 @@ public class UserBL implements IUserBL
 	{
 		return userDAO.getByPasswordResetCode(passwordResetCode);
 	}
+
+	@Override
+	public void save(@NonNull final I_AD_User user) {userDAO.save(user);}
 
 	@Override
 	public String extractUserLogin(final I_AD_User user)

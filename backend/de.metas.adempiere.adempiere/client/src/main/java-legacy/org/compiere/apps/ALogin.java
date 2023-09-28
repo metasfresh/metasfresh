@@ -986,8 +986,7 @@ public final class ALogin extends CDialog
 
 			//
 			final ClientId clientId = ClientId.ofRepoId(clientKNP.getKey());
-			final String clientName = clientKNP.getName();
-			final Set<OrgId> orgIds = m_login.setClientAndGetOrgs(clientId, clientName);
+			final Set<OrgId> orgIds = m_login.setClientAndGetOrgs(clientId);
 			final List<KeyNamePair> orgs = toOrgKeyNamePairList(orgIds);
 			orgCombo.setModel(ListComboBoxModel.ofNullable(orgs));
 			// No Orgs

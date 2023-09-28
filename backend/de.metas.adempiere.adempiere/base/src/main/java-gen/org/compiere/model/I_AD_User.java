@@ -699,7 +699,6 @@ public interface I_AD_User
 	ModelColumn<I_AD_User, Object> COLUMN_Email_private = new ModelColumn<>(I_AD_User.class, "Email_private", null);
 	String COLUMNNAME_Email_private = "Email_private";
 
-
 	/**
 	 * Set EMail User ID.
 	 * Set EMail User ID.
@@ -1108,29 +1107,6 @@ public interface I_AD_User
 	String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
 
 	/**
-	 * Set Dunning Default.
-	 * Dunning Default
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDunningDefault (boolean IsDunningDefault);
-
-	/**
-	 * Get Dunning Default.
-	 * Dunning Default
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean IsDunningDefault();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
-	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
-
-	/**
 	 * Set Dunning contact.
 	 *
 	 * <br>Type: YesNo
@@ -1150,6 +1126,29 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDunningContact = new ModelColumn<>(I_AD_User.class, "IsDunningContact", null);
 	String COLUMNNAME_IsDunningContact = "IsDunningContact";
+
+	/**
+	 * Set Dunning Default.
+	 * Dunning Default
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDunningDefault (boolean IsDunningDefault);
+
+	/**
+	 * Get Dunning Default.
+	 * Dunning Default
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDunningDefault();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
+	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
 
 	/**
 	 * Set Full BP Access.
@@ -1264,7 +1263,6 @@ public interface I_AD_User
 
 	/**
 	 * Set Is Membership Contact.
-	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1274,7 +1272,6 @@ public interface I_AD_User
 
 	/**
 	 * Get Is Membership Contact.
-	 * Doppelnamen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1875,6 +1872,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Registry = new ModelColumn<>(I_AD_User.class, "Registry", null);
 	String COLUMNNAME_Registry = "Registry";
+
+	/**
+	 * Set 2FA Secret Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSecretKey_2FA (@Nullable java.lang.String SecretKey_2FA);
+
+	/**
+	 * Get 2FA Secret Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSecretKey_2FA();
+
+	ModelColumn<I_AD_User, Object> COLUMN_SecretKey_2FA = new ModelColumn<>(I_AD_User.class, "SecretKey_2FA", null);
+	String COLUMNNAME_SecretKey_2FA = "SecretKey_2FA";
 
 	/**
 	 * Set SeqNo.

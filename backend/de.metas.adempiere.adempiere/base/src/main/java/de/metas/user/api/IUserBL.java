@@ -22,6 +22,8 @@ public interface IUserBL extends ISingletonService
 
 	I_AD_User getByPasswordResetCode(@NonNull String passwordResetCode);
 
+	void save(I_AD_User user);
+
 	String extractUserLogin(I_AD_User user);
 
 	HashableString extractUserPassword(I_AD_User user);
