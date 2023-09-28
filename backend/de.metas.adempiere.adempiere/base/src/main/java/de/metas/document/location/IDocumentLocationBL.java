@@ -26,18 +26,19 @@ import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
-import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 import java.util.Optional;
 
 /**
  * @author tsa
- * task http://dewiki908/mediawiki/index.php/03120:_Error_in_DocumentLocation_callout_%282012080910000142%29
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/03120:_Error_in_DocumentLocation_callout_%282012080910000142%29">task</a>
  */
 public interface IDocumentLocationBL
 {
 	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location);
+
+	String computeRenderedAddressString(@NonNull DocumentLocation location);
 
 	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentLocationAdapter locationAdapter);
 

@@ -118,6 +118,8 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isCreditMemo(String docBaseType);
 
+	boolean isReversal(InvoiceId invoiceId);
+
 	/**
 	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
 	 */

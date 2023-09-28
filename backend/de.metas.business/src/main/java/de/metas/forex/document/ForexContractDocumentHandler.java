@@ -76,7 +76,7 @@ public class ForexContractDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		updateContract(docFields, contract -> {
 			if (contract.getAmount().signum() <= 0)
@@ -85,7 +85,7 @@ public class ForexContractDocumentHandler implements DocumentHandler
 			}
 		});
 
-		return DocStatus.Completed.getCode();
+		return DocStatus.Completed;
 	}
 
 	@Override

@@ -257,7 +257,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					// p_Error = "Cannot determine SO/PO";
 					// log.error(p_Error);
 					// return null;
-					assert line.getOrderLineId() != null : line;
+					assert line.getOrderLineId().isPresent() : line;
 					return facts;
 					// metas end
 				}
@@ -998,7 +998,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Get how much was booked for invoice, on allocation's date
 		final boolean isDR = invoiceFactLine.getAmtAcctDr().signum() != 0;
-		final Money allocationAcctOnInvoiceDate = isDR 
+		final Money allocationAcctOnInvoiceDate = isDR
 				? Money.of(invoiceFactLine.getAmtAcctDr(), as.getCurrencyId())
 				: Money.of(invoiceFactLine.getAmtAcctCr(), as.getCurrencyId());
 

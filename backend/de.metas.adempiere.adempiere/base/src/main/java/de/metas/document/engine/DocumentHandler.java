@@ -53,17 +53,20 @@ public interface DocumentHandler
 
 	//
 	// Reporting
-	default File createPDF(DocumentTableFields docFields)
+	default File createPDF(DocumentTableFields ignoredDocFields)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	//
 	// Document processing
-	/** @return the resulting document status */
-	default String prepareIt(DocumentTableFields docFields)
+
+	/**
+	 * @return the resulting document status
+	 */
+	default DocStatus prepareIt(DocumentTableFields docFields)
 	{
-		return IDocument.STATUS_InProgress;
+		return DocStatus.InProgress;
 	}
 
 	default void approveIt(DocumentTableFields docFields)
@@ -71,8 +74,10 @@ public interface DocumentHandler
 		// nothing
 	}
 
-	/** @return the resulting document status */
-	String completeIt(DocumentTableFields docFields);
+	/**
+	 * @return the resulting document status
+	 */
+	DocStatus completeIt(DocumentTableFields docFields);
 
 	default void rejectIt(DocumentTableFields docFields)
 	{
@@ -95,7 +100,7 @@ public interface DocumentHandler
 		throw new UnsupportedOperationException("The action ReverseCorrectIt is not implemented by default");
 	}
 
-	default void reverseAccrualIt(DocumentTableFields docFields)
+	default void reverseAccrualIt(DocumentTableFields ignoredDocFields)
 	{
 		throw new UnsupportedOperationException("The action ReverseAccrual It is not implemented by default");
 	}
@@ -106,8 +111,8 @@ public interface DocumentHandler
 		docFields.setDocAction(IDocument.ACTION_None);
 	}
 
-	//@formatter:off
-	void reactivateIt(DocumentTableFields docFields);
-	//@formatter:on
-
+	default void reactivateIt(DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException("Reactivate action is not supported");
+	}
 }

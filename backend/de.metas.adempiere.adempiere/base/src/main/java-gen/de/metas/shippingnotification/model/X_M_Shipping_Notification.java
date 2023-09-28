@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Shipping_Notification extends org.compiere.model.PO implements I_M_Shipping_Notification, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 4867001L;
+	private static final long serialVersionUID = -818657104L;
 
     /** Standard Constructor */
     public X_M_Shipping_Notification (final Properties ctx, final int M_Shipping_Notification_ID, @Nullable final String trxName)
@@ -50,7 +50,7 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setBPartnerAddress (final java.lang.String BPartnerAddress)
+	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
@@ -420,9 +420,24 @@ public class X_M_Shipping_Notification extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setPostingError_Issue_ID (final int PostingError_Issue_ID)
+	{
+		if (PostingError_Issue_ID < 1) 
+			set_Value (COLUMNNAME_PostingError_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_PostingError_Issue_ID, PostingError_Issue_ID);
+	}
+
+	@Override
+	public int getPostingError_Issue_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PostingError_Issue_ID);
+	}
+
+	@Override
 	public void setProcessed (final boolean Processed)
 	{
-		set_ValueNoCheck (COLUMNNAME_Processed, Processed);
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
 	@Override

@@ -99,6 +99,10 @@ public class ShipmentLineForPOModularContractHandler implements IModularContract
 
 		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
 
+		if (harvestingYearId == null || harvestingCalendarId == null) {
+			return Stream.empty();
+		}
+
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
 				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
