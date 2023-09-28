@@ -12,6 +12,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
+import org.eevolution.api.PPCostCollectorId;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -151,4 +152,7 @@ public interface IOrderDAO extends ISingletonService
 	boolean hasIsOnConsignmentLines(@NonNull OrderId orderId);
 
 	Stream<I_C_Order> streamOrders(@NonNull IQueryFilter<I_C_Order> orderFilter);
+
+	Optional<PPCostCollectorId> getPPCostCollectorId(OrderLineId orderLineId);
+
 }

@@ -8,6 +8,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,7 +39,7 @@ import java.util.function.Supplier;
  * #L%
  */
 
-@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType" })
 public final class ProcessPreconditionsResolution
 {
 	/**
@@ -72,6 +73,11 @@ public final class ProcessPreconditionsResolution
 		final OptionalInt sortNo = OptionalInt.empty();
 		//noinspection ConstantConditions
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
+	}
+
+	public static ProcessPreconditionsResolution reject(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return reject(TranslatableStrings.adMessage(adMessage, msgParameters));
 	}
 
 	/**
@@ -118,6 +124,11 @@ public final class ProcessPreconditionsResolution
 		final OptionalInt sortNo = OptionalInt.empty();
 		//noinspection ConstantConditions
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper, sortNo);
+	}
+
+	public static ProcessPreconditionsResolution rejectWithInternalReason(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return rejectWithInternalReason(TranslatableStrings.adMessage(adMessage, msgParameters));
 	}
 
 	public static ProcessPreconditionsResolution rejectBecauseNoSelection()
@@ -170,9 +181,9 @@ public final class ProcessPreconditionsResolution
 	private static final ProcessPreconditionsResolution ACCEPTED = new ProcessPreconditionsResolution(true, null, false, null, OptionalInt.empty());
 	private static final ProcessPreconditionsResolution REJECTED_UnknownReason = new ProcessPreconditionsResolution(false, null, true, null, OptionalInt.empty());
 
-	private final boolean accepted;
+	@Getter private final boolean accepted;
 	private final ITranslatableString reason;
-	private final boolean internal;
+	@Getter private final boolean internal;
 
 	public interface ProcessCaptionMapper
 	{
@@ -208,11 +219,6 @@ public final class ProcessPreconditionsResolution
 				.toString();
 	}
 
-	public boolean isAccepted()
-	{
-		return accepted;
-	}
-
 	public boolean isRejected()
 	{
 		return !accepted;
@@ -226,11 +232,6 @@ public final class ProcessPreconditionsResolution
 		}
 
 		return reason != null ? reason : TranslatableStrings.empty();
-	}
-
-	public boolean isInternal()
-	{
-		return internal;
 	}
 
 	public ProcessPreconditionsResolution toInternal()
@@ -305,7 +306,7 @@ public final class ProcessPreconditionsResolution
 	 */
 	public ProcessPreconditionsResolution withSortNo(final int sortNo)
 	{
-		return !this.sortNo.isPresent() || this.sortNo.getAsInt() != sortNo
+		return this.sortNo.isEmpty() || this.sortNo.getAsInt() != sortNo
 				? toBuilder().sortNo(OptionalInt.of(sortNo)).build()
 				: this;
 	}

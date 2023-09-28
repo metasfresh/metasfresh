@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -67,6 +68,43 @@ class CollectionUtilsTest
 			assertThatThrownBy(() -> CollectionUtils.emptyOrSingleElement(ImmutableList.of("1", "2")))
 					.isInstanceOf(RuntimeException.class)
 					.hasMessageStartingWith("The given collection needs to have ZERO or ONE item");
+		}
+	}
+
+	@Nested
+	class singleElementOrEmptyIfNotFound
+	{
+		@Test
+		void empty()
+		{
+			ImmutableList<Integer> list = ImmutableList.of();
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmptyIfNotFound(list, item -> true);
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void oneElement()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3);
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmptyIfNotFound(list, item -> item == 2);
+			assertThat(result).contains(2);
+		}
+
+		@Test
+		void twoIdenticalElements()
+		{
+			// NOTE: checking if elements are distinct is not the job of this method
+			ImmutableList<Integer> list = ImmutableList.of(1, 1);
+			assertThatThrownBy(() -> CollectionUtils.singleElementOrEmptyIfNotFound(list, item -> true))
+					.hasMessageStartingWith("Only one matching element was expected but we got more");
+		}
+
+		@Test
+		void moreElements()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3);
+			assertThatThrownBy(() -> CollectionUtils.singleElementOrEmptyIfNotFound(list, item -> true))
+					.hasMessageStartingWith("Only one matching element was expected but we got more");
 		}
 	}
 
@@ -179,6 +217,5 @@ class CollectionUtilsTest
 			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4, 5, 6);
 			assertThat(CollectionUtils.filter(list, item -> item == 6)).containsExactly(6);
 		}
-
 	}
 }

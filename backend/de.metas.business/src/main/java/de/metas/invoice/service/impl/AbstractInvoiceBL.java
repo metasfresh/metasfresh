@@ -1613,6 +1613,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public boolean isReversal(@NonNull final InvoiceId invoiceId) {return isReversal(getById(invoiceId));}
+
+	@Override
 	public boolean isReversal(final org.compiere.model.I_C_Invoice invoice)
 	{
 		if (invoice == null)

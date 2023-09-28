@@ -26,8 +26,10 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
@@ -37,6 +39,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.ShipmentCosts;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
@@ -48,12 +51,15 @@ import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -110,7 +116,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				request.withAmountAndType(costAmountDetailed.getMainAmt(), CostAmountType.MAIN),
 				CostDetailPreviousAmounts.of(currentCost));
 
-		CostAmountDetailed amtDetailed = mainResult.getAmt();
+		CostAmountAndQtyDetailed amtAndQty = mainResult.getAmtAndQty();
 
 		if (!costAmountDetailed.getCostAdjustmentAmt().isZero())
 		{
@@ -121,7 +127,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			currentCost.addWeightedAverage(costAmountDetailed.getCostAdjustmentAmt(), request.getQty().toZero(), utils.getQuantityUOMConverter());
 			utils.saveCurrentCost(currentCost);
 
-			amtDetailed = amtDetailed.add(adjustmentResult.getAmt());
+			amtAndQty = amtAndQty.add(adjustmentResult.getAmtAndQty());
 		}
 
 		if (!costAmountDetailed.getAlreadyShippedAmt().isZero())
@@ -129,10 +135,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			final CostDetailCreateResult alreadyShippedResult = utils.createCostDetailRecordNoCostsChanged(
 					request.withAmountAndType(costAmountDetailed.getAlreadyShippedAmt(), CostAmountType.ALREADY_SHIPPED).withQtyZero(),
 					CostDetailPreviousAmounts.of(currentCost));
-			amtDetailed = amtDetailed.add(alreadyShippedResult.getAmt());
+			amtAndQty = amtAndQty.add(alreadyShippedResult.getAmtAndQty());
 		}
 
-		return mainResult.withAmt(amtDetailed);
+		return mainResult.withAmtAndQty(amtAndQty);
 	}
 
 	@Override
@@ -180,6 +186,174 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	@Override
+	protected CostDetailCreateResultsList createCostForMaterialShipment(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostPrice currentCostPrice = currentCosts.getCostPrice();
+
+		final Quantity qty = utils.convertToUOM(request.getQty(), currentCostPrice.getUomId(), request.getProductId());
+		final boolean isInboundTrx = qty.signum() >= 0;
+
+		final CostDetailCreateResultsList result;
+
+		//
+		// Reversal
+		if (request.isReversal())
+		{
+			// In case of reversals, always consider the provided Amt
+			final CostDetailCreateRequest requestEffective = request.withQty(qty);
+			result = ShipmentCosts.extractFrom(requestEffective).toCostDetailCreateResultsList(shipmentCostsToCostDetails(requestEffective, currentCosts));
+		}
+		//
+		// Inbound transactions (qty >= 0)
+		else if (isInboundTrx)
+		{
+			final CostDetailCreateRequest requestEffective;
+
+			// In case the amount was not provided but there is a positive qty incoming
+			// use the current cost price to calculate the amount.
+			if (request.getAmt().isZero())
+			{
+				final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+				requestEffective = request.withAmountAndQty(amt, qty);
+			}
+			else
+			{
+				requestEffective = request.withQty(qty);
+			}
+
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
+			final CostDetailCreateResult singleResult = utils.createCostDetailRecordWithChangedCosts(requestEffective, CostDetailPreviousAmounts.of(currentCosts));
+			result = CostDetailCreateResultsList.of(singleResult);
+		}
+		//
+		// Outbound transactions (qty < 0)
+		else
+		{
+			result = computeShipmentCosts(request, currentCosts).toCostDetailCreateResultsList(shipmentCostsToCostDetails(request, currentCosts));
+		}
+
+		utils.saveCurrentCost(currentCosts);
+
+		return result;
+	}
+
+	private ShipmentCosts.CostAmountAndQtyAndTypeMapper shipmentCostsToCostDetails(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CurrentCost currentCosts)
+	{
+		return new ShipmentCosts.CostAmountAndQtyAndTypeMapper()
+		{
+			@Override
+			public CostDetailCreateResult shippedButNotNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
+			{
+				final CostDetailCreateResult shippedButNotNotifiedResult = utils.createCostDetailRecordWithChangedCosts(
+						request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
+						CostDetailPreviousAmounts.of(currentCosts));
+
+				if (!request.isReversal())
+				{
+					currentCosts.addToCurrentQtyAndCumulate(shippedButNotNotifiedResult.getAmtAndQty(type));
+				}
+				else
+				{
+					currentCosts.addWeightedAverage(shippedButNotNotifiedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
+				}
+
+				return shippedButNotNotifiedResult;
+			}
+
+			@Override
+			public CostDetailCreateResult shippedAndNotified(final CostAmountAndQty amtAndQty, final CostAmountType type)
+			{
+				return utils.createCostDetailRecordNoCostsChanged(
+						request.withAmountAndTypeAndQty(amtAndQty.negate(), type),
+						CostDetailPreviousAmounts.of(currentCosts));
+			}
+
+			@Override
+			public CostDetailCreateResult notifiedButNotShipped(final CostAmountAndQty amtAndQty, final CostAmountType type)
+			{
+				final CostDetailCreateResult notifiedButNotShippedResult = utils.createCostDetailRecordWithChangedCosts(
+						request.withAmountAndTypeAndQty(amtAndQty, type),
+						CostDetailPreviousAmounts.of(currentCosts));
+				currentCosts.addWeightedAverage(notifiedButNotShippedResult.getAmtAndQty(type), utils.getQuantityUOMConverter());
+				return notifiedButNotShippedResult;
+			}
+		};
+	}
+
+	@SuppressWarnings("UnnecessaryLocalVariable")
+	private ShipmentCosts computeShipmentCosts(
+			@NonNull final CostDetailCreateRequest request,
+			@NonNull final CurrentCost currentCosts)
+	{
+		final CurrencyPrecision precision = currentCosts.getPrecision();
+		final CostAmount currentCostPrice = currentCosts.getCostPrice().toCostAmount();
+		final CurrencyId currencyId = currentCostPrice.getCurrencyId();
+		final UomId uomId = currentCosts.getUomId();
+		final ProductId productId = request.getProductId();
+
+		@NonNull final Quantity qtyShipped = utils.convertToUOM(request.getQty(), uomId, productId).negate(); // negate to get positive
+
+		@NonNull final CostAmountAndQty costAndQtyNotified = request.getExternallyOwned() // already positive
+				.map(amtAndQty -> amtAndQty.mapQty(utils.convertQuantityToUOM(uomId, productId)))
+				.orElseGet(() -> CostAmountAndQty.zero(currencyId, uomId));
+		@NonNull final CostAmount costNotified = costAndQtyNotified.getAmt();
+		@NonNull final Quantity qtyNotified = costAndQtyNotified.getQty();
+		@NonNull final CostAmount costPriceNotified = costNotified.divideIfNotZero(qtyNotified, precision).orElse(currentCostPrice);
+
+		@NonNull final Quantity qtyShippedButNotNotified = qtyShipped.subtract(qtyNotified);
+
+		//
+		// Shipped less than notified
+		// => P_ExternallyOwnedStock -> P_COGS (cost of qty shipped and notified)
+		// => P_ExternallyOwnedStock -> P_Asset (cost of qty notified but not shipped)
+		if (qtyShippedButNotNotified.signum() < 0)
+		{
+			final Quantity qtyShippedAndNotified = qtyShipped;
+			final CostAmount costShippedAndNotified = costPriceNotified.multiply(qtyShippedAndNotified).roundToPrecisionIfNeeded(precision);
+
+			final Quantity qtyNotifiedButNotShipped = qtyNotified.subtract(qtyShipped);
+			final CostAmount costNotifiedButNotShipped = costNotified.subtract(costShippedAndNotified);
+
+			return ShipmentCosts.builder()
+					.shippedAndNotified(CostAmountAndQty.of(costShippedAndNotified, qtyShippedAndNotified))
+					.notifiedButNotShipped(CostAmountAndQty.of(costNotifiedButNotShipped, qtyNotifiedButNotShipped))
+					.build();
+		}
+		//
+		// Shipped exactly as much as notified
+		// => P_ExternallyOwnedStock -> P_COGS (cost of qty shipped and notified)
+		else if (qtyShippedButNotNotified.signum() == 0)
+		{
+			final Quantity qtyShippedAndNotified = qtyNotified;
+			final CostAmount costShippedAndNotified = costNotified;
+
+			return ShipmentCosts.builder()
+					.shippedAndNotified(CostAmountAndQty.of(costShippedAndNotified, qtyShippedAndNotified))
+					.build();
+		}
+		//
+		// Shipped more than notified
+		// NOTE: that's also the case when we don't use a shipping notification
+		// => P_ExternallyOwnedStock -> P_COGS (cost of qty shipped and notified)
+		// => P_Asset -> P_COGS (cost of qty shipped but not notified)
+		else // qtyShippedButNotNotified.signum() > 0
+		{
+			final Quantity qtyShippedAndNotified = qtyNotified;
+			final CostAmount costShippedAndNotified = costNotified;
+
+			final CostAmount costShippedButNotNotified = currentCostPrice.multiply(qtyShippedButNotNotified);
+
+			return ShipmentCosts.builder()
+					.shippedAndNotified(CostAmountAndQty.of(costShippedAndNotified, qtyShippedAndNotified))
+					.shippedButNotNotified(CostAmountAndQty.of(costShippedButNotNotified, qtyShippedButNotNotified))
+					.build();
+		}
+	}
+
+	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
 		return createCostDetailAndAdjustCurrentCosts(request);
@@ -193,10 +367,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
-		final Quantity requestQty = request.getQty();
-		final Quantity qty = utils.convertToUOM(requestQty, currentCostPrice.getUomId(), request.getProductId());
+		final Quantity qty = utils.convertToUOM(request.getQty(), currentCostPrice.getUomId(), request.getProductId());
 
-		final boolean isInboundTrx = requestQty.signum() >= 0;
+		final boolean isInboundTrx = qty.signum() >= 0;
 
 		final CostDetailCreateRequest requestEffective;
 
@@ -257,9 +430,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		}
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
-				requestEffective,
-				previousCosts);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
 		utils.saveCurrentCost(currentCosts);
 
@@ -319,6 +490,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostDetailCreateResult inboundResult;
 		if (Objects.equals(outboundSegmentAndElement, inboundSegmentAndElement))
 		{
+			//noinspection UnnecessaryLocalVariable
 			final CostDetailPreviousAmounts inboundPreviousCosts = outboundPreviousCosts;
 
 			outboundResult = utils.createCostDetailRecordNoCostsChanged(outboundCostDetailRequest, outboundPreviousCosts);
@@ -368,31 +540,31 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final boolean isReversal = isReversal(matchInv.getInvoiceId());
+		final InvoiceId invoiceId = matchInv.getInvoiceId();
+		final boolean isReversal = invoiceBL.isReversal(invoiceId);
 
 		final Quantity receiptQty = request.getQty().negateIf(isReversal); // i.e. qty matched
 		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
 		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
-
 		final CostAmount costAdjustmentAmt;
 		final CostAmount alreadyShippedAmt;
 
 		final Quantity qtyStillInStock = currentCost.getCurrentQty().min(receiptQty);
-		if(amtDifference.isZero())
+		if (amtDifference.isZero())
 		{
 			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
 			alreadyShippedAmt = CostAmount.zero(currentCost.getCurrencyId());
 		}
-		else if(receiptQty.isZero())
+		else if (receiptQty.isZero())
 		{
 			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
 			alreadyShippedAmt = amtDifference;
 		}
-		else if(receiptQty.equalsIgnoreSource(qtyStillInStock))
+		else if (receiptQty.equalsIgnoreSource(qtyStillInStock))
 		{
-			costAdjustmentAmt  = amtDifference;
+			costAdjustmentAmt = amtDifference;
 			alreadyShippedAmt = CostAmount.zero(currentCost.getCurrencyId());
 		}
 		else
@@ -449,11 +621,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		{
 			throw new AdempiereException("Unknown type: " + type);
 		}
-	}
-
-	private boolean isReversal(final InvoiceId invoiceId)
-	{
-		return invoiceBL.isReversal(invoiceBL.getById(invoiceId));
 	}
 
 	@Override

@@ -77,19 +77,23 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 	{
 		if (isReversalLine())
 		{
-			final AggregatedCostAmount outboundCosts = services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build());
+			final AggregatedCostAmount outboundCosts = services.createReversalCostDetails(
+							CostDetailReverseRequest.builder()
+									.acctSchemaId(as.getId())
+									.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
+									.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
+									.date(getDateAcctAsInstant())
+									.build())
+					.toAggregatedCostAmount();
 
-			final AggregatedCostAmount inboundCosts = services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build());
+			final AggregatedCostAmount inboundCosts = services.createReversalCostDetails(
+							CostDetailReverseRequest.builder()
+									.acctSchemaId(as.getId())
+									.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
+									.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
+									.date(getDateAcctAsInstant())
+									.build())
+					.toAggregatedCostAmount();
 
 			return MoveCostsResult.builder()
 					.outboundCosts(outboundCosts)

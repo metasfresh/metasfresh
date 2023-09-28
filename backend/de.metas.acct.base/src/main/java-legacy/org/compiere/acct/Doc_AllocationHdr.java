@@ -256,7 +256,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					// p_Error = "Cannot determine SO/PO";
 					// log.error(p_Error);
 					// return null;
-					assert line.getOrderLineId() != null : line;
+					assert line.getOrderLineId().isPresent() : line;
 					return facts;
 					// metas end
 				}

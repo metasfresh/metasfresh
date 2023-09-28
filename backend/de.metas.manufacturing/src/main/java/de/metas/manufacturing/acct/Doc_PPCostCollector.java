@@ -56,7 +56,7 @@ import java.util.List;
  *  Document Types:     MOP
  * </pre>
  *
- * @author victor.perez@e-evolution.com http://www.e-evolution.com
+ * @author victor.perez@e-evolution.com <a href="http://www.e-evolution.com">...</a>
  */
 public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {

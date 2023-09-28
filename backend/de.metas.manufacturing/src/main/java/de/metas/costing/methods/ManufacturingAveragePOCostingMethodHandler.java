@@ -8,6 +8,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
@@ -100,7 +101,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
-	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
 		if (!existingCostDetails.isEmpty())
@@ -173,7 +174,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		}
 	}
 
-	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+	private CostDetailCreateResultsList createCostOrNull(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
@@ -242,7 +243,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			utils.saveCurrentCost(currentCost);
 		}
 
-		return result;
+		return CostDetailCreateResultsList.ofNullable(result);
 	}
 
 	private CurrencyPrecision getCostingPrecision(final CostDetailCreateRequest request)

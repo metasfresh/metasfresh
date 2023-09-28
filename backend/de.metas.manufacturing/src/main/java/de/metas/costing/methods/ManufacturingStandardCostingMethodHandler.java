@@ -8,6 +8,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
@@ -113,7 +114,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	}
 
 	@Override
-	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public final CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
 		if (!existingCostDetails.isEmpty())
@@ -186,7 +187,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		}
 	}
 
-	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+	private CostDetailCreateResultsList createCostOrNull(final CostDetailCreateRequest request)
 	{
 		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
@@ -195,7 +196,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		if (costCollectorType.isMaterial(orderBOMLineId))
 		{
-			return createIssueOrReceipt(request);
+			return CostDetailCreateResultsList.ofNullable(createIssueOrReceipt(request));
 		}
 		else if (costCollectorType.isActivityControl())
 		{
@@ -209,13 +210,13 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
-			return createActivityControl(request.withProductId(actualResourceProductId), totalDuration);
+			return CostDetailCreateResultsList.ofNullable(createActivityControl(request.withProductId(actualResourceProductId), totalDuration));
 		}
 		else if (costCollectorType.isUsageVariance())
 		{
 			if (cc.getPP_Order_BOMLine_ID() > 0)
 			{
-				return createUsageVariance(request);
+				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request));
 			}
 			else
 			{
@@ -230,7 +231,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
 
-				return createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty));
+				return CostDetailCreateResultsList.ofNullable(createUsageVariance(request.withProductIdAndQty(actualResourceProductId, qty)));
 			}
 		}
 		else

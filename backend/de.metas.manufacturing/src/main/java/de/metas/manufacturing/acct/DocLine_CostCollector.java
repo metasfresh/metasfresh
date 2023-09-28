@@ -11,6 +11,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
@@ -129,27 +130,30 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetailsOrEmpty(CostDetailReverseRequest.builder()
-					.acctSchemaId(acctSchemaId)
-					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build());
+			return services.createReversalCostDetailsOrEmpty(
+							CostDetailReverseRequest.builder()
+									.acctSchemaId(acctSchemaId)
+									.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+									.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
+									.date(getDateAcctAsInstant())
+									.build())
+					.map(CostDetailCreateResultsList::toAggregatedCostAmount);
 		}
 		else
 		{
 			return services.createCostDetailOrEmpty(
-					CostDetailCreateRequest.builder()
-							.acctSchemaId(acctSchemaId)
-							.clientId(getClientId())
-							.orgId(getOrgId())
-							.productId(getProductId())
-							.attributeSetInstanceId(getAttributeSetInstanceId())
-							.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
-							.qty(getQty())
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(getDateAcctAsInstant())
-							.build());
+							CostDetailCreateRequest.builder()
+									.acctSchemaId(acctSchemaId)
+									.clientId(getClientId())
+									.orgId(getOrgId())
+									.productId(getProductId())
+									.attributeSetInstanceId(getAttributeSetInstanceId())
+									.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+									.qty(getQty())
+									.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+									.date(getDateAcctAsInstant())
+									.build())
+					.map(CostDetailCreateResultsList::toAggregatedCostAmount);
 		}
 	}
 }

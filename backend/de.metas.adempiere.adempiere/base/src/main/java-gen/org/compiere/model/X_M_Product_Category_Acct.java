@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Product_Category_Acct extends org.compiere.model.PO implements I_M_Product_Category_Acct, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1155918025L;
+	private static final long serialVersionUID = -1146295676L;
 
     /** Standard Constructor */
     public X_M_Product_Category_Acct (final Properties ctx, final int M_Product_Category_Acct_ID, @Nullable final String trxName)
@@ -293,6 +293,30 @@ public class X_M_Product_Category_Acct extends org.compiere.model.PO implements 
 	public int getP_Expense_Acct() 
 	{
 		return get_ValueAsInt(COLUMNNAME_P_Expense_Acct);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ValidCombination getP_ExternallyOwnedStock_A()
+	{
+		return get_ValueAsPO(COLUMNNAME_P_ExternallyOwnedStock_Acct, org.compiere.model.I_C_ValidCombination.class);
+	}
+
+	@Override
+	public void setP_ExternallyOwnedStock_A(final org.compiere.model.I_C_ValidCombination P_ExternallyOwnedStock_A)
+	{
+		set_ValueFromPO(COLUMNNAME_P_ExternallyOwnedStock_Acct, org.compiere.model.I_C_ValidCombination.class, P_ExternallyOwnedStock_A);
+	}
+
+	@Override
+	public void setP_ExternallyOwnedStock_Acct (final int P_ExternallyOwnedStock_Acct)
+	{
+		set_Value (COLUMNNAME_P_ExternallyOwnedStock_Acct, P_ExternallyOwnedStock_Acct);
+	}
+
+	@Override
+	public int getP_ExternallyOwnedStock_Acct() 
+	{
+		return get_ValueAsInt(COLUMNNAME_P_ExternallyOwnedStock_Acct);
 	}
 
 	@Override

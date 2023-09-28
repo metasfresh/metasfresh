@@ -62,8 +62,6 @@ DECLARE
     v_rowcount       numeric;
     v_AcctSchemaInfo record;
     v_periodInfo     record;
-    v_activityInfo   record;
-    v_productInfo    record;
 BEGIN
 
 
@@ -82,13 +80,16 @@ BEGIN
 
     -- get period info
     SELECT period_LastYearEnd.EndDate::date   AS period_LastYearEnd_EndDate,
-           period_LastYearEnd.StartDate::date AS period_LastYearEnd_StartDate,
+           period_CurrentYearStart.StartDate::date as period_CurrentYearStart_StartDate,
+           period_PreviousYearStart.StartDate::date as period_PreviousYearStart_StartDate,
            p.EndDate::date                    AS EndDate,
            p.StartDate::date                  AS StartDate
     INTO v_periodInfo
     FROM C_Period p
              -- Get last period of previous year
              LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
+             LEFT OUTER JOIN C_Period period_CurrentYearStart ON (period_CurrentYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, (p.PeriodNo - 1)::int)) AND period_CurrentYearStart.isActive = 'Y'
+             LEFT OUTER JOIN C_Period period_PreviousYearStart ON (period_PreviousYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(period_LastYearEnd.C_Period_ID, period_LastYearEnd.PeriodNo::int)) AND period_PreviousYearStart.isActive = 'Y'
     WHERE TRUE
       -- Period: determine it by DateAcct
       AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_date);
@@ -136,7 +137,7 @@ BEGIN
     ) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID
         -- make sure we show the standard accounts from metasfresh (org 0)
         AND (CASE WHEN lvl.lvl1_value != 'ZZ' THEN (ev.ad_org_id = p_ad_org_id) ELSE (ev.ad_org_id = 0) END))
-         --
+    --
     WHERE TRUE
       -- Shall we Show default accounts?
       AND (CASE WHEN p_defaultacc = 'Y' THEN TRUE ELSE lvl1_value != 'ZZ' END);
@@ -162,8 +163,8 @@ BEGIN
          , a.AccountType
          , a.IsConvertToEUR
 
-         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator                                  AS SameYearSum
-         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, v_periodInfo.period_LastYearEnd_EndDate::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend)).Balance * a.Multiplicator AS LastYearSum
+         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, p_date::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend, v_periodInfo.period_CurrentYearStart_StartDate::date)).Balance * a.Multiplicator                                  AS SameYearSum
+         , (de_metas_acct.acctBalanceToDate(a.C_ElementValue_ID, v_AcctSchemaInfo.C_AcctSchema_ID, v_periodInfo.period_LastYearEnd_EndDate::date, p_ad_org_id, p_includepostingtypestatistical, p_excludepostingtypeyearend, v_periodInfo.period_PreviousYearStart_StartDate::date)).Balance * a.Multiplicator AS LastYearSum
 
     FROM tmp_accounts a;
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;

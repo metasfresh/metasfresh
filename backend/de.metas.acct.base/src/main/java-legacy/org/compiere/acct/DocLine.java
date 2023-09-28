@@ -583,9 +583,9 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("M_Locator_ID");
 	}
 
-	public final OrderLineId getOrderLineId()
+	public final Optional<OrderLineId> getOrderLineId()
 	{
-		return OrderLineId.ofRepoIdOrNull(getValue("C_OrderLine_ID"));
+		return OrderLineId.optionalOfRepoId(getValue("C_OrderLine_ID"));
 	}
 
 	public final LocationId getLocationFromId()

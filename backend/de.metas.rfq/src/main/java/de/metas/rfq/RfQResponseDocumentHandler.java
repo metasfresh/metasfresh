@@ -1,5 +1,6 @@
 package de.metas.rfq;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -18,7 +19,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -51,7 +51,7 @@ class RfQResponseDocumentHandler implements DocumentHandler
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 
-	private static final I_C_RfQResponse extractRfQResponse(final DocumentTableFields docFields)
+	private static I_C_RfQResponse extractRfQResponse(final DocumentTableFields docFields)
 	{
 		return InterfaceWrapperHelper.create(docFields, I_C_RfQResponse.class);
 	}
@@ -88,19 +88,7 @@ class RfQResponseDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public BigDecimal getApprovalAmt(final DocumentTableFields docFields)
-	{
-		return BigDecimal.ZERO;
-	}
-
-	@Override
-	public File createPDF(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public String completeIt(final DocumentTableFields docFields)
+	public DocStatus completeIt(final DocumentTableFields docFields)
 	{
 		final I_C_RfQResponse rfqResponse = extractRfQResponse(docFields);
 		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
@@ -126,7 +114,7 @@ class RfQResponseDocumentHandler implements DocumentHandler
 		// Make sure everything was saved
 		InterfaceWrapperHelper.save(rfqResponse);
 
-		return X_C_RfQResponse.DOCSTATUS_Completed;
+		return DocStatus.Completed;
 	}
 
 	private void validateBeforeComplete(final I_C_RfQResponse rfqResponse, final List<I_C_RfQResponseLine> rfqResponseLines)
@@ -205,13 +193,13 @@ class RfQResponseDocumentHandler implements DocumentHandler
 		return false;
 	}
 
-	private final void updateRfQResponseLinesStatus(final I_C_RfQResponse rfqResponse)
+	private void updateRfQResponseLinesStatus(final I_C_RfQResponse rfqResponse)
 	{
 		final List<I_C_RfQResponseLine> rfqResponseLines = rfqDAO.retrieveResponseLines(rfqResponse);
 		updateRfQResponseLinesStatus(rfqResponse, rfqResponseLines);
 	}
 
-	private static final void updateRfQResponseLinesStatus(final I_C_RfQResponse rfqResponse, final List<I_C_RfQResponseLine> rfqResponseLines)
+	private static void updateRfQResponseLinesStatus(final I_C_RfQResponse rfqResponse, final List<I_C_RfQResponseLine> rfqResponseLines)
 	{
 		for (final I_C_RfQResponseLine rfqResponseLine : rfqResponseLines)
 		{
@@ -219,23 +207,6 @@ class RfQResponseDocumentHandler implements DocumentHandler
 			rfqResponseLine.setProcessed(rfqResponse.isProcessed());
 			InterfaceWrapperHelper.save(rfqResponseLine);
 		}
-	}
-
-	@Override
-	public void approveIt(final DocumentTableFields docFields)
-	{
-	}
-
-	@Override
-	public void rejectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void voidIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -279,18 +250,6 @@ class RfQResponseDocumentHandler implements DocumentHandler
 
 		// Make sure it's saved
 		InterfaceWrapperHelper.save(rfqResponse);
-	}
-
-	@Override
-	public void reverseCorrectIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void reverseAccrualIt(final DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

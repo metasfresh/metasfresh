@@ -340,9 +340,22 @@ public class CoalesceUtil
 		return null;
 	}
 
+	public boolean isAllNotNulls(final Object... values)
+	{
+		for (final Object value : values)
+		{
+			if (value == null)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public int countNotNulls(@Nullable final Object... values)
 	{
-		if (values == null || values.length <= 0)
+		if (values == null || values.length == 0)
 		{
 			return 0;
 		}

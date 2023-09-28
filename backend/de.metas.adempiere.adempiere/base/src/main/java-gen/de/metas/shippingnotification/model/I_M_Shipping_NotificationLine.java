@@ -96,9 +96,9 @@ public interface I_M_Shipping_NotificationLine
 	 */
 	int getC_OrderLine_ID();
 
-	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine();
+	org.compiere.model.I_C_OrderLine getC_OrderLine();
 
-	void setC_OrderLine(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine);
+	void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
 
 	ModelColumn<I_M_Shipping_NotificationLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_Shipping_NotificationLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
@@ -351,6 +351,33 @@ public interface I_M_Shipping_NotificationLine
 
 	ModelColumn<I_M_Shipping_NotificationLine, Object> COLUMN_Processed = new ModelColumn<>(I_M_Shipping_NotificationLine.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Reversal ID.
+	 * ID of document reversal
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReversal_ID (int Reversal_ID);
+
+	/**
+	 * Get Reversal ID.
+	 * ID of document reversal
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReversal_ID();
+
+	@Nullable de.metas.shippingnotification.model.I_M_Shipping_NotificationLine getReversal();
+
+	void setReversal(@Nullable de.metas.shippingnotification.model.I_M_Shipping_NotificationLine Reversal);
+
+	ModelColumn<I_M_Shipping_NotificationLine, de.metas.shippingnotification.model.I_M_Shipping_NotificationLine> COLUMN_Reversal_ID = new ModelColumn<>(I_M_Shipping_NotificationLine.class, "Reversal_ID", de.metas.shippingnotification.model.I_M_Shipping_NotificationLine.class);
+	String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
 	 * Get Updated.

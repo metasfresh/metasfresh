@@ -9,6 +9,7 @@ SELECT modcntr_log.modcntr_log_id           AS contractmodulelog,
        modcntr_log.issotrx                  AS sotrx,
        contract.documentno                  AS contractdocumentnumber,
        product.value                        AS productvalue,
+       gr.name                              as invoicinggroupname,
        modcntr_log.qty                      AS qty,
        uom.uomsymbol                        AS uom,
        modcntr_log.amount                   AS amount,
@@ -35,4 +36,5 @@ FROM modcntr_log
          LEFT JOIN c_bpartner invoiceBPartner ON invoiceBPartner.c_bpartner_id = modcntr_log.bill_bpartner_id
          LEFT JOIN c_bpartner collectionPointBPartner ON collectionPointBPartner.c_bpartner_id = modcntr_log.collectionpoint_bpartner_id
          LEFT JOIN m_warehouse warehouse ON warehouse.m_warehouse_id = modcntr_log.m_warehouse_id
+         LEFT JOIN modcntr_invoicinggroup gr ON gr.modcntr_invoicinggroup_id = modcntr_log.modcntr_invoicinggroup_id
 ;

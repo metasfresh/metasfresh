@@ -563,21 +563,21 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			throw new AdempiereException("Unhandled type: " + type);
 		}
 
-		return services
-				.createCostDetail(CostDetailCreateRequest.builder()
-						.acctSchemaId(as.getId())
-						.clientId(matchInv.getClientId())
-						.orgId(matchInv.getOrgId())
-						.productId(matchInv.getProductId())
-						.attributeSetInstanceId(matchInv.getAsiId())
-						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
-						.costElement(costElement)
-						.qty(qtyMatched)
-						.amt(CostAmount.ofMoney(amtMatched))
-						.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
-						.date(getDateAcctAsInstant())
-						.description(getDescription())
-						.build())
+		return services.createCostDetail(
+						CostDetailCreateRequest.builder()
+								.acctSchemaId(as.getId())
+								.clientId(matchInv.getClientId())
+								.orgId(matchInv.getOrgId())
+								.productId(matchInv.getProductId())
+								.attributeSetInstanceId(matchInv.getAsiId())
+								.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
+								.costElement(costElement)
+								.qty(qtyMatched)
+								.amt(CostAmount.ofMoney(amtMatched))
+								.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
+								.date(getDateAcctAsInstant())
+								.description(getDescription())
+								.build())
 				.getTotalAmountToPost(as);
 	}
 

@@ -1,9 +1,8 @@
 package de.metas.acct.doc;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.acct.api.AcctSchema;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -12,11 +11,9 @@ import org.compiere.acct.Doc;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.acct.api.AcctSchema;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -42,9 +39,8 @@ import lombok.NonNull;
 
 /**
  * Convenient {@link IAcctDocProvider} implementation.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 {
@@ -53,14 +49,6 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 	protected AcctDocProviderTemplate(final Map<String, AcctDocFactory> docFactoriesByTableName)
 	{
 		this.docFactoriesByTableName = ImmutableMap.copyOf(docFactoriesByTableName);
-	}
-
-	@Override
-	public final String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(getDocTableNames())
-				.toString();
 	}
 
 	@Override

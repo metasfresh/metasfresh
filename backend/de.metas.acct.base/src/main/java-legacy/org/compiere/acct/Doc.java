@@ -894,20 +894,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param AmtType see AMTTYPE_*
 	 * @param amt     Amount
 	 */
-	protected final void setAmount(final int AmtType, final BigDecimal amt)
+	protected final void setAmount(final int AmtType, @Nullable final BigDecimal amt)
 	{
 		if (AmtType < 0 || AmtType >= m_Amounts.length)
 		{
 			return;
 		}
-		if (amt == null)
-		{
-			m_Amounts[AmtType] = BigDecimal.ZERO;
-		}
-		else
-		{
-			m_Amounts[AmtType] = amt;
-		}
+
+		m_Amounts[AmtType] = amt != null ? amt : BigDecimal.ZERO;
 	}    // setAmount
 
 	/**
@@ -1151,6 +1145,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				() -> _dateDoc,
 				() -> getValueAsLocalDateOrNull("DateDoc"),
 				() -> getValueAsLocalDateOrNull("MovementDate"),
+				() -> getValueAsLocalDateOrNull("DateAcct"),
 				() -> {throw new AdempiereException("No DateDoc");});
 	}
 

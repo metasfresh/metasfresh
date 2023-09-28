@@ -99,12 +99,12 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	public String prepareIt()
 	{
 		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_PREPARE);
-		final String newDocStatus = handler.prepareIt(model);
+		final DocStatus newDocStatus = handler.prepareIt(model);
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_PREPARE);
 
-		justPrepared = STATUS_InProgress.equals(newDocStatus);
+		justPrepared = newDocStatus.isInProgress();
 
-		return newDocStatus;
+		return newDocStatus.getCode();
 	}
 
 	@Override
@@ -121,10 +121,10 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		}
 
 		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_COMPLETE);
-		final String newDocStatus = handler.completeIt(model);
+		final DocStatus newDocStatus = handler.completeIt(model);
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_COMPLETE);
 		model.setProcessed(true);
-		return newDocStatus;
+		return newDocStatus.getCode();
 	}
 
 	@Override

@@ -1,10 +1,8 @@
 package de.metas.acct.doc;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AcctSchema;
 import de.metas.logging.LogManager;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -59,20 +57,30 @@ public class AcctDocRegistry
 	@ToString
 	private static class AggregatedAcctDocProvider implements IAcctDocProvider
 	{
-		private final ImmutableList<IAcctDocProvider> providers;
-		@Getter private final ImmutableSet<String> docTableNames;
+		private final ImmutableMap<String, IAcctDocProvider> providersByDocTableName;
 
 		private AggregatedAcctDocProvider(final List<IAcctDocProvider> providers)
 		{
-			this.providers = ImmutableList.copyOf(providers);
-			this.docTableNames = providers.stream()
-					.flatMap(provider -> provider.getDocTableNames().stream())
-					.collect(ImmutableSet.toImmutableSet());
+			final ImmutableMap.Builder<String, IAcctDocProvider> mapBuilder = ImmutableMap.builder();
+			for (final IAcctDocProvider provider : providers)
+			{
+				for (final String docTableName : provider.getDocTableNames())
+				{
+					mapBuilder.put(docTableName, provider);
+				}
+			}
+			this.providersByDocTableName = mapBuilder.build();
+		}
+
+		@Override
+		public Set<String> getDocTableNames()
+		{
+			return providersByDocTableName.keySet();
 		}
 
 		public boolean isAccountingTable(final String docTableName)
 		{
-			return docTableNames.contains(docTableName);
+			return getDocTableNames().contains(docTableName);
 		}
 
 		@Override
@@ -83,17 +91,14 @@ public class AcctDocRegistry
 		{
 			try
 			{
-				for (final IAcctDocProvider provider : providers)
+				final String docTableName = documentRef.getTableName();
+				final IAcctDocProvider provider = providersByDocTableName.get(docTableName);
+				if (provider == null)
 				{
-					final Doc<?> acctDoc = provider.getOrNull(services, acctSchemas, documentRef);
-					if (acctDoc != null)
-					{
-						return acctDoc;
-					}
+					return null;
 				}
 
-				// no accountable document found
-				return null;
+				return provider.getOrNull(services, acctSchemas, documentRef);
 			}
 			catch (final AdempiereException ex)
 			{
