@@ -1,7 +1,9 @@
 package de.metas.ui.web.picking.pickingslot;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
@@ -10,7 +12,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidatesQuery;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -33,16 +35,14 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -78,18 +78,22 @@ import java.util.function.Supplier;
 public class PickingHURowsRepository
 {
 	private static final Logger logger = LogManager.getLogger(PickingHURowsRepository.class);
+
 	private final ExtendedMemorizingSupplier<HUEditorViewRepository> huEditorRepoSupplier;
 	private final PickingCandidateRepository pickingCandidatesRepo;
+	private final PickingCandidateService pickingCandidateService;
 
 	@Autowired
 	public PickingHURowsRepository(
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
 			@NonNull final PickingCandidateRepository pickingCandidatesRepo,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this(
 				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService),
-				pickingCandidatesRepo);
+				pickingCandidatesRepo,
+				pickingCandidateService);
 	}
 
 	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(
@@ -112,10 +116,12 @@ public class PickingHURowsRepository
 	@VisibleForTesting
 	PickingHURowsRepository(
 			@NonNull final Supplier<HUEditorViewRepository> huEditorRepoSupplier,
-			@NonNull final PickingCandidateRepository pickingCandidatesRepo)
+			@NonNull final PickingCandidateRepository pickingCandidatesRepo,
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.huEditorRepoSupplier = ExtendedMemorizingSupplier.of(huEditorRepoSupplier);
 		this.pickingCandidatesRepo = pickingCandidatesRepo;
+		this.pickingCandidateService = pickingCandidateService;
 	}
 
 	private HUEditorViewRepository getHUEditorViewRepository()
@@ -171,67 +177,43 @@ public class PickingHURowsRepository
 
 	private ListMultimap<PickingSlotId, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final List<PickingCandidate> pickingCandidates)
 	{
-		final HUEditorViewRepository huEditorRepo = getHUEditorViewRepository();
+		final ImmutableList<PickingCandidate> pickingCandidateToTakeIntoAccount = pickingCandidates.stream()
+				.filter(pickingCandidate -> !pickingCandidate.isRejectedToPick())
+				.filter(pickingCandidate -> pickingCandidate.getPickFrom().getHuId() != null)
+				.filter(pickingCandidate -> pickingCandidate.getPickingSlotId() != null)
+				.collect(ImmutableList.toImmutableList());
 
-		final Map<HuId, PickedHUEditorRow> huId2huRow = new HashMap<>();
+		final PickingCandidateHURowsProvider huRowsProvider = PickingCandidateHURowsProvider.builder()
+				.huEditorViewRepository(getHUEditorViewRepository())
+				.pickingCandidatesRepo(pickingCandidatesRepo)
+				.pickingCandidateService(pickingCandidateService)
+				.pickingCandidates(pickingCandidateToTakeIntoAccount)
+				.build();
+
+		final ImmutableMap<HuId, PickedHUEditorRow> huId2EditorRow = huRowsProvider.getForPickingCandidates();
+
+		final HashSet<HuId> seenHUIds = new HashSet<>();
 
 		final ImmutableListMultimap.Builder<PickingSlotId, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
-		for (final PickingCandidate pickingCandidate : pickingCandidates)
+		for (final PickingCandidate pickingCandidate : pickingCandidateToTakeIntoAccount)
 		{
-			if (pickingCandidate.isRejectedToPick())
-			{
-				continue;
-			}
-
 			final HuId huId = pickingCandidate.getPickFrom().getHuId();
-			if (huId == null)
-			{
-				logger.warn("Skip {} because huId is null", huId);
-				continue;
-			}
-			if (huId2huRow.containsKey(huId))
+			if (seenHUIds.contains(huId))
 			{
 				continue;
 			}
 
-			final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
-			if (pickingSlotId == null)
+			final PickedHUEditorRow huEditorRow = huId2EditorRow.get(pickingCandidate.getPickFrom().getHuId());
+			if (huEditorRow == null)
 			{
-				logger.warn("Skip picking candidate because it has no picking slot set: {}."
-						+ "\n Usually that happening because it was picked with some other picking terminal.", pickingCandidate);
 				continue;
 			}
 
-			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
-			final boolean pickingCandidateProcessed = isPickingCandidateProcessed(pickingCandidate);
-			final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
-
-			huId2huRow.put(huId, row);
-			builder.put(pickingSlotId, row);
+			seenHUIds.addAll(huEditorRow.getHuEditorRow().getAllHuIds());
+			builder.put(pickingCandidate.getPickingSlotId(), huEditorRow);
 		}
 
 		return builder.build();
-	}
-
-	private static boolean isPickingCandidateProcessed(@NonNull final PickingCandidate pc)
-	{
-		final PickingCandidateStatus status = pc.getProcessingStatus();
-		if (PickingCandidateStatus.Closed.equals(status))
-		{
-			return true;
-		}
-		else if (PickingCandidateStatus.Processed.equals(status))
-		{
-			return true;
-		}
-		else if (PickingCandidateStatus.Draft.equals(status))
-		{
-			return false;
-		}
-		else
-		{
-			throw new AdempiereException("Unexpected M_Picking_Candidate.Status=" + status).setParameter("pc", pc);
-		}
 	}
 
 	public ListMultimap<PickingSlotId, PickedHUEditorRow> //
@@ -251,26 +233,11 @@ public class PickingHURowsRepository
 					final HuId huId = pickingSlotAndHU.getValue();
 
 					final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
-					final boolean pickingCandidateProcessed = true;
-					final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
 
-					return GuavaCollectors.entry(pickingSlotId, row);
+					Check.assumeNotNull(huEditorRow, "HUEditorRow cannot be null if huId is provided!");
+
+					return GuavaCollectors.entry(pickingSlotId, PickedHUEditorRow.ofProcessedRow(huEditorRow));
 				})
 				.collect(GuavaCollectors.toImmutableListMultimap());
-	}
-
-	/**
-	 * Immutable pojo that contains the HU editor as retrieved from {@link HUEditorViewRepository} plus the the {@code processed} value from the respective picking candidate.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 *
-	 */
-	// the fully qualified annotations are a workaround for a javac problem with maven
-	@lombok.Value
-	@lombok.AllArgsConstructor
-	static class PickedHUEditorRow
-	{
-		HUEditorRow huEditorRow;
-		boolean processed;
 	}
 }
