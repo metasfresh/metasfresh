@@ -411,6 +411,31 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Rechnungsgruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_InvoicingGroup_ID (int ModCntr_InvoicingGroup_ID);
+
+	/**
+	 * Get Rechnungsgruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_InvoicingGroup_ID();
+
+	@Nullable org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
+
+	void setModCntr_InvoicingGroup(@Nullable org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
+
+	ModelColumn<I_ModCntr_Log, org.compiere.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", org.compiere.model.I_ModCntr_InvoicingGroup.class);
+	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
+
+	/**
 	 * Set Document Type.
 	 *
 	 * <br>Type: List
@@ -505,6 +530,31 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
 
 	/**
+	 * Set Manufacturing Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID);
+
+	/**
+	 * Get Manufacturing Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Cost_Collector_ID();
+
+	@Nullable org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
+
+	void setPP_Cost_Collector(@Nullable org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
+
+	ModelColumn<I_ModCntr_Log, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new ModelColumn<>(I_ModCntr_Log.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
+	String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -547,32 +597,6 @@ public interface I_ModCntr_Log
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	/**
-	 * Set Manufacturing Cost Collector.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID);
-
-	/**
-	 * Get Manufacturing Cost Collector.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPP_Cost_Collector_ID();
-
-	@Nullable
-	org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
-
-	void setPP_Cost_Collector(@Nullable org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
-
-	ModelColumn<I_ModCntr_Log, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new ModelColumn<>(I_ModCntr_Log.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
-	String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
 
 	/**
 	 * Set Price Actual.

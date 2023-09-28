@@ -24,17 +24,24 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 class MaterialReceiptLineLogHandler extends AbstractMaterialReceiptLogHandler
 {
 	@NonNull
 	private final MaterialReceiptLineInterimContractHandler contractHandler;
+
+	public MaterialReceiptLineLogHandler(
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final MaterialReceiptLineInterimContractHandler contractHandler)
+	{
+		super(modCntrInvoicingGroupRepository);
+		this.contractHandler = contractHandler;
+	}
 
 	@Override
 	public @NonNull IModularContractTypeHandler<I_M_InOutLine> getModularContractTypeHandler()

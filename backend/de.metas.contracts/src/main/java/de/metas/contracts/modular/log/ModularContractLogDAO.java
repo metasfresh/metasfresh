@@ -29,6 +29,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -140,6 +141,8 @@ public class ModularContractLogDAO
 								 () -> log.setPriceActual(null));
 
 		log.setModCntr_Module_ID(request.getConfigId().getRepoId());
+
+		log.setModCntr_InvoicingGroup_ID(InvoicingGroupId.toRepoId(request.getInvoicingGroupId()));
 
 		save(log);
 
