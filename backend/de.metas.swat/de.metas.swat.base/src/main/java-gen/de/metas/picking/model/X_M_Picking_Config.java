@@ -1,12 +1,12 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.picking.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Config
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Picking_Config, org.compiere.model.I_Persistent 
@@ -41,7 +41,7 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	}
 
 	@Override
-	public boolean isAllowOverdelivery() 
+	public boolean isAllowOverdelivery()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowOverdelivery);
 	}
@@ -53,9 +53,21 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	}
 
 	@Override
-	public boolean isAutoProcess() 
+	public boolean isAutoProcess()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAutoProcess);
+	}
+
+	@Override
+	public void setIsForbidAggCUsForDifferentOrders (final boolean IsForbidAggCUsForDifferentOrders)
+	{
+		set_Value (COLUMNNAME_IsForbidAggCUsForDifferentOrders, IsForbidAggCUsForDifferentOrders);
+	}
+
+	@Override
+	public boolean isForbidAggCUsForDifferentOrders()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsForbidAggCUsForDifferentOrders);
 	}
 
 	@Override
@@ -68,7 +80,7 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	}
 
 	@Override
-	public int getM_Picking_Config_ID() 
+	public int getM_Picking_Config_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Picking_Config_ID);
 	}
@@ -89,7 +101,7 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	}
 
 	@Override
-	public java.lang.String getWEBUI_PickingTerminal_ViewProfile() 
+	public java.lang.String getWEBUI_PickingTerminal_ViewProfile()
 	{
 		return get_ValueAsString(COLUMNNAME_WEBUI_PickingTerminal_ViewProfile);
 	}
