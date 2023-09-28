@@ -39,6 +39,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -80,17 +81,34 @@ public class ModCntrInvoicingGroupRepository
 				.stream();
 	}
 
+	@NonNull
 	public Optional<ProductId> getInvoicingGroupProductFor(@NonNull final ProductId productId)
+	{
+		return getInvoicingGroupRecordFor(productId, SystemTime.asInstant())
+				.map(group -> ProductId.ofRepoId(group.getGroup_Product_ID()));
+	}
+
+	@NonNull
+	public Optional<InvoicingGroupId> getInvoicingGroupIdFor(
+			@NonNull final ProductId productId,
+			@NonNull final Instant effectiveDate)
+	{
+		return getInvoicingGroupRecordFor(productId, effectiveDate)
+				.map(group -> InvoicingGroupId.ofRepoId(group.getModCntr_InvoicingGroup_ID()));
+	}
+
+	@NonNull
+	private Optional<I_ModCntr_InvoicingGroup> getInvoicingGroupRecordFor(
+			@NonNull final ProductId productId,
+			@NonNull final Instant effectiveDate)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_M_Product_ID, productId)
 				.andCollect(I_ModCntr_InvoicingGroup_Product.COLUMN_ModCntr_InvoicingGroup_ID)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, SystemTime.asInstant())
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, Operator.GREATER, SystemTime.asInstant())
+				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, effectiveDate)
+				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, Operator.GREATER, effectiveDate)
 				.create()
-				.firstOnlyOptional()
-				.map(group -> ProductId.ofRepoId(group.getGroup_Product_ID()));
-
+				.firstOnlyOptional();
 	}
 }
