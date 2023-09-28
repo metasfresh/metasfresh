@@ -62,8 +62,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
 /**
  * Post Shipment/Receipt Documents.
  *
@@ -546,7 +544,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		if (m_docStatus.isReversed() && m_reversalId != null && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(getTableId(I_M_InOut.class), m_reversalId.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!dr.updateReverseLine(I_M_InOut.Table_Name, m_reversalId.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -570,7 +568,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		if (m_docStatus.isReversed() && m_reversalId != null && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(getTableId(I_M_InOut.class), m_reversalId.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!cr.updateReverseLine(I_M_InOut.Table_Name, m_reversalId.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}

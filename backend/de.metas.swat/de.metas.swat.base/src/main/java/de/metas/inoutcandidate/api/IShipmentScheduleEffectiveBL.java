@@ -29,6 +29,7 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.order.DeliveryRule;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;

@@ -8,6 +8,7 @@ import de.metas.order.IOrderBL;
 import de.metas.shippingnotification.acct.ShippingNotificationAcctService;
 import de.metas.util.Services;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Doc_InOut;
@@ -40,7 +41,15 @@ public class Doc_InOut_Factory implements IAcctDocProvider
 				AcctDocContext.builder()
 						.services(services)
 						.acctSchemas(acctSchemas)
-						.documentModel(inOutBL.getById(inoutId))
+						.documentModel(retrieveDocumentModel(documentRef))
 						.build());
 	}
+
+	private AcctDocModel retrieveDocumentModel(final TableRecordReference documentRef)
+	{
+		final InOutId inoutId = documentRef.getIdAssumingTableName(I_M_InOut.Table_Name, InOutId::ofRepoId);
+		final I_M_InOut inoutRecord = inOutBL.getById(inoutId);
+		return new POAcctDocModel(LegacyAdapters.convertToPO(inoutRecord));
+	}
 }
+

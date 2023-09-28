@@ -25,9 +25,11 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;
 
@@ -65,6 +67,7 @@ public final class FactLineBuilder
 	private final Fact fact;
 	private boolean built = false;
 	private DocLine<?> docLine = null;
+	private int lineId = 0;
 	private Integer subLineId = null;
 
 	@Nullable private ElementValueId elementValueId;
@@ -175,7 +178,7 @@ public final class FactLineBuilder
 				.doc(doc)
 				.docLine(docLine)
 				.docRecordRef(doc.getRecordRef())
-				.Line_ID(docLine == null ? 0 : docLine.get_ID())
+				.Line_ID(lineId)
 				.SubLine_ID(getSubLine_ID())
 				.postingType(fact.getPostingType())
 				.acctSchema(fact.getAcctSchema())
@@ -306,6 +309,21 @@ public final class FactLineBuilder
 	{
 		assertNotBuild();
 		this.docLine = docLine;
+		this.lineId = docLine != null ? docLine.get_ID() : 0;
+		return this;
+	}
+
+	public FactLineBuilder lineId(final int lineId)
+	{
+		assertNotBuild();
+		this.lineId = lineId;
+		return this;
+	}
+
+	public FactLineBuilder lineId(@Nullable final RepoIdAware lineId)
+	{
+		assertNotBuild();
+		this.lineId = lineId != null ? lineId.getRepoId() : 0;
 		return this;
 	}
 
@@ -316,6 +334,7 @@ public final class FactLineBuilder
 
 	public FactLineBuilder setSubLine_ID(final int subLineId)
 	{
+		assertNotBuild();
 		this.subLineId = subLineId;
 		return this;
 	}
@@ -624,6 +643,13 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder locatorId(@Nullable final LocatorId locatorId)
+	{
+		assertNotBuild();
+		this.locatorId = locatorId != null ? locatorId.getRepoId() : null;
+		return this;
+	}
+
 	public FactLineBuilder activityId(@Nullable final ActivityId activityId)
 	{
 		assertNotBuild();
@@ -660,6 +686,12 @@ public final class FactLineBuilder
 	{
 		return fromLocation(getServices().getLocationIdByLocatorRepoId(locatorRepoId));
 	}
+
+	public FactLineBuilder fromLocationOfLocator(@Nullable final LocatorId locatorId)
+	{
+		return fromLocationOfLocator(locatorId != null ? locatorId.getRepoId() : -1);
+	}
+
 
 	public FactLineBuilder toLocation(final Optional<LocationId> optionalLocationId)
 	{

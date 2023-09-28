@@ -68,37 +68,37 @@ class Doc_ShippingNotification extends Doc<DocLine<?>>
 		// ExternallyOwnedStock DR
 		final FactLine dr = fact.createLine()
 				//.setDocLine(line)
+				.lineId(line.getIdNotNull())
 				.setAccount(getAccount(ProductAcctType.P_ExternallyOwnedStock_Acct, as, line))
 				.setAmt(roundToStdPrecision(costs), null)
 				.setQty(line.getQty())
+				.locatorId(shippingNotification.getLocatorId())
+				.fromLocationOfLocator(shippingNotification.getLocatorId())
+				.toLocationOfBPartner(shippingNotification.getBpartnerAndLocationId())
 				.buildAndAdd();
 		if (dr == null)
 		{
 			throw newPostingException().setDetailMessage("FactLine DR not created: " + line);
 		}
-		dr.setLine_ID(line.getIdNotNull().getRepoId());
 		dr.setFromDimension(dimension);
-		dr.setM_Locator_ID(shippingNotification.getLocatorId().getRepoId());
-		dr.setLocationFromLocator(shippingNotification.getLocatorId().getRepoId(), true);    // from Loc
-		dr.setLocationFromBPartner(shippingNotification.getBpartnerAndLocationId(), false);  // to Loc
 
 		//
 		// Inventory CR
 		final FactLine cr = fact.createLine()
 				//.setDocLine(line)
+				.lineId(line.getIdNotNull())
 				.setAccount(getAccount(ProductAcctType.P_Asset_Acct, as, line))
 				.setAmt(null, roundToStdPrecision(costs))
 				.setQty(line.getQty().negate())
+				.locatorId(shippingNotification.getLocatorId())
+				.fromLocationOfLocator(shippingNotification.getLocatorId())
+				.toLocationOfBPartner(shippingNotification.getBpartnerAndLocationId())
 				.buildAndAdd();
 		if (cr == null)
 		{
 			throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
 		}
-		cr.setLine_ID(line.getIdNotNull().getRepoId());
 		cr.setFromDimension(dimension);
-		cr.setM_Locator_ID(shippingNotification.getLocatorId().getRepoId());
-		cr.setLocationFromLocator(shippingNotification.getLocatorId().getRepoId(), true);    // from Loc
-		cr.setLocationFromBPartner(shippingNotification.getBpartnerAndLocationId(), false);  // to Loc
 	}
 
 	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as, @NonNull ShippingNotificationLine line)
