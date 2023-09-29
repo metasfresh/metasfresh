@@ -218,10 +218,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 				.contentADMessage(MSG_PurchaseCandidatesDue)
 				.contentADMessageParam(count)
 				.contentADMessageParam(TableRecordReference.of(I_C_BPartner.Table_Name, reminder.getVendorBPartnerId().getRepoId()))
-				.targetAction(TargetViewAction.builder()
-						.adWindowId(viewId.getWindowId().toAdWindowIdOrNull())
-						.viewId(viewId.toJson())
-						.build())
+				.targetAction(TargetViewAction.openViewById(viewId.toJson(), viewId.getWindowId().toAdWindowIdOrNull()))
 				.build();
 		Services.get(INotificationBL.class).send(notification);
 	}

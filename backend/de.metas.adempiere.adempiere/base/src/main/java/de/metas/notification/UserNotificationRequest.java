@@ -1,30 +1,28 @@
 package de.metas.notification;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.event.EventBusConfig;
+import de.metas.event.Topic;
+import de.metas.i18n.AdMessageKey;
+import de.metas.user.UserId;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Singular;
+import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.core.io.Resource;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.core.io.Resource;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.event.EventBusConfig;
-import de.metas.event.Topic;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
 
 /*
  * #%L
@@ -63,17 +61,25 @@ public class UserNotificationRequest
 
 	boolean important;
 
-	/** Optional; takes precedence over {@link #subjectADMessage}, if set. */
+	/**
+	 * Optional; takes precedence over {@link #subjectADMessage}, if set.
+	 */
 	String subjectPlain;
 
-	/** Optional */
+	/**
+	 * Optional
+	 */
 	AdMessageKey subjectADMessage;
 	List<Object> subjectADMessageParams;
 
-	/** Optional; takes precedence over {@link #contentADMessage}, if set. */
+	/**
+	 * Optional; takes precedence over {@link #contentADMessage}, if set.
+	 */
 	String contentPlain;
 
-	/** Optional */
+	/**
+	 * Optional
+	 */
 	AdMessageKey contentADMessage;
 	List<Object> contentADMessageParams;
 
@@ -203,6 +209,7 @@ public class UserNotificationRequest
 
 	@lombok.Value
 	@lombok.Builder(toBuilder = true)
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static class TargetRecordAction implements TargetAction
 	{
 		public static TargetRecordAction of(@NonNull final TableRecordReference record)
@@ -230,18 +237,13 @@ public class UserNotificationRequest
 			return (TargetRecordAction)targetAction;
 		}
 
-		@NonNull
-		@Builder.Default
-		Optional<AdWindowId> adWindowId = Optional.empty();
-
-		@NonNull
-		TableRecordReference record;
-
+		@NonNull @Builder.Default Optional<AdWindowId> adWindowId = Optional.empty();
+		@NonNull TableRecordReference record;
 		String recordDisplayText;
 	}
 
 	@lombok.Value
-	@lombok.Builder
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class TargetViewAction implements TargetAction
 	{
 		public static TargetViewAction cast(final TargetAction targetAction)
@@ -249,9 +251,18 @@ public class UserNotificationRequest
 			return (TargetViewAction)targetAction;
 		}
 
-		@Nullable
-		AdWindowId adWindowId;
-		@NonNull
-		String viewId;
+		@Nullable AdWindowId adWindowId;
+		@NonNull String viewId;
+
+		public static TargetViewAction openViewById(@NonNull String viewId, @Nullable AdWindowId adWindowId)
+		{
+			return new TargetViewAction(adWindowId, viewId);
+		}
+
+		public static TargetAction openNewView(@NonNull AdWindowId adWindowId)
+		{
+			// keep in sync with frontend/src/components/inbox/Inbox.js - handleItemTarget
+			return new TargetViewAction(adWindowId, "DEFAULT");
+		}
 	}
 }

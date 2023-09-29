@@ -36,6 +36,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
@@ -93,7 +94,13 @@ public class WFActivity
 {
 	private static final Logger log = LogManager.getLogger(WFActivity.class);
 
+	/**
+	 * User {0} requested you to approve {1}
+	 */
 	private static final AdMessageKey MSG_DocumentApprovalRequest = AdMessageKey.of("DocumentApprovalRequest");
+	/**
+	 * Document {0} was sent to be approved by {1}
+	 */
 	private static final AdMessageKey MSG_DocumentSentToApproval = AdMessageKey.of("DocumentSentToApproval");
 	//private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
@@ -730,14 +737,18 @@ public class WFActivity
 			public PerformWorkResult pending() {return PerformWorkResult.SUSPENDED;}
 
 			@Override
-			public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId, @Nullable TableRecordReference documentToOpen)
+			public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId, @Nullable UserNotificationRequest.TargetAction notificationTargetAction)
 			{
-				WFActivity.this.forwardTo(forwardToUserId, msgApprovalRequest(), documentToOpen);
+				final UserId invokerId = request.getWorkflowInvokerId();
+
+				WFActivity.this.forwardTo(forwardToUserId,
+						ADMessageAndParams.of(MSG_DocumentApprovalRequest, context.getUserFullnameById(invokerId), documentRef),
+						notificationTargetAction);
 
 				context.sendNotification(WFUserNotification.builder()
-						.userId(request.getWorkflowInvokerId())
+						.userId(invokerId)
 						.content(MSG_DocumentSentToApproval, documentRef, context.getUserFullnameById(forwardToUserId))
-						.documentToOpen(documentToOpen)
+						.documentToOpen(documentRef)
 						.build());
 
 				return PerformWorkResult.SUSPENDED;
@@ -781,12 +792,6 @@ public class WFActivity
 		return SpringContextHolder.instance.getBean(RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy.class);
 	}
 
-	private ADMessageAndParams msgApprovalRequest()
-	{
-		final String invokerName = context.getUserFullname();
-		return ADMessageAndParams.of(MSG_DocumentApprovalRequest, invokerName, getDocumentRef());
-	}
-
 	private void setVariable(@Nullable final String valueStr, final int displayType)
 	{
 		//noinspection OptionalAssignedToNull
@@ -822,7 +827,7 @@ public class WFActivity
 	private void forwardTo(
 			@NonNull final UserId newUserId,
 			@NonNull final ADMessageAndParams subject,
-			@Nullable TableRecordReference documentToOpen)
+			@Nullable UserNotificationRequest.TargetAction notificationTargetAction)
 	{
 		final UserId oldUserId = getUserId();
 		if (UserId.equals(newUserId, oldUserId))
@@ -841,7 +846,9 @@ public class WFActivity
 		context.sendNotification(WFUserNotification.builder()
 				.userId(newUserId)
 				.content(subject)
-				.documentToOpen(CoalesceUtil.coalesce(documentToOpen, getDocumentRef()))
+				.targetAction(notificationTargetAction != null
+						? notificationTargetAction
+						: UserNotificationRequest.TargetRecordAction.of(getDocumentRef()))
 				.build());
 
 		context.addEventAudit(prepareEventAudit(WFEventAuditType.StateChanged)
