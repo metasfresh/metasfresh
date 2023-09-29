@@ -30,6 +30,7 @@ import de.metas.workflow.execution.approval.WFApprovalRequestStatus;
 import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -52,6 +53,8 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final JobService jobService;
 	@NonNull private final WFApprovalRequestRepository wfApprovalRequestRepository;
+
+	private static final AdWindowId WINDOW_ID_MyApprovals = AdWindowId.ofRepoId(541736);
 
 	@Override
 	public Response approve(@NonNull final WFApprovalStrategy.Request request)
