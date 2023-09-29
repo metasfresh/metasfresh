@@ -5,9 +5,7 @@ DROP FUNCTION IF EXISTS "de_metas_acct".m_costdetail_delete_from_date(
     p_AD_Org_ID        numeric,
     p_StartDateAcct    timestamp WITH TIME ZONE,
     p_DryRun           char(1)
-)
-;
-
+);
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".m_costdetail_delete_from_date(
     p_C_AcctSchema_ID  numeric,
@@ -219,7 +217,7 @@ BEGIN
 
     RETURN 'OK';
 END;
-$BODY$
+$BODY$;
 
 
 DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
@@ -228,9 +226,8 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_M_Product_ID     numeric,
     p_M_Product_IDs    numeric[],
     p_ReorderDocs      char(1),
-    p_StartDateAcct    timestamp WITH TIME ZONE)
-;
-
+    p_StartDateAcct    timestamp WITH TIME ZONE);
+	
 DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_C_AcctSchema_ID            numeric,
     p_M_CostElement_ID           numeric,
@@ -238,8 +235,7 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_M_Product_IDs              numeric[],
     p_ReorderDocs                char(1),
     p_ReorderDocs_DateAcct_Trunc varchar,
-    p_StartDateAcct              timestamp WITH TIME ZONE)
-;
+    p_StartDateAcct              timestamp WITH TIME ZONE);
 
 DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_C_AcctSchema_ID            numeric,
@@ -249,9 +245,7 @@ DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_m_product_selection_id     numeric,
     p_ReorderDocs                char(1),
     p_ReorderDocs_DateAcct_Trunc varchar,
-    p_StartDateAcct              timestamp WITH TIME ZONE)
-;
-
+    p_StartDateAcct              timestamp WITH TIME ZONE);
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
     p_C_AcctSchema_ID            numeric,
@@ -450,5 +444,4 @@ END;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE
-    COST 100
-;
+    COST 100;	
