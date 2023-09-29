@@ -1,11 +1,54 @@
-DROP FUNCTION IF EXISTS "de_metas_acct".m_costdetail_delete_from_date(
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
     p_C_AcctSchema_ID  numeric,
     p_M_CostElement_ID numeric,
     p_M_Product_ID     numeric,
-    p_AD_Org_ID        numeric,
-    p_StartDateAcct    timestamp WITH TIME ZONE,
-    p_DryRun           char(1)
-)
+    p_M_Product_IDs    numeric[],
+    p_ReorderDocs      char(1),
+    p_StartDateAcct    timestamp WITH TIME ZONE)
+;
+
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE)
+;
+
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_m_product_selection_id     numeric,
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE)
+;
+
+
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE,
+    p_DryRun           char(1))
+;
+
+DROP FUNCTION IF EXISTS "de_metas_acct".product_costs_recreate_from_date(
+    p_C_AcctSchema_ID            numeric,
+    p_M_CostElement_ID           numeric,
+    p_M_Product_ID               numeric,
+    p_M_Product_IDs              numeric[],
+    p_m_product_selection_id     numeric,
+    p_ReorderDocs                char(1),
+    p_ReorderDocs_DateAcct_Trunc varchar,
+    p_StartDateAcct              timestamp WITH TIME ZONE)
 ;
 
 
