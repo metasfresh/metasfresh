@@ -1,7 +1,10 @@
 package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
@@ -38,19 +41,23 @@ import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
-import de.metas.ad_reference.ADRefList;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -75,32 +82,17 @@ import java.util.Set;
  */
 
 @Service
+@RequiredArgsConstructor
 public class PickingCandidateService
 {
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IShipmentSchedulePA ShipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
 	private final ADReferenceService adReferenceService;
-
-	public PickingCandidateService(
-			@NonNull final PickingConfigRepository pickingConfigRepository,
-			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final HuId2SourceHUsService sourceHUsRepository,
-			@NonNull final HUReservationService huReservationService,
-			@NonNull final IBPartnerBL bpartnersService,
-			@NonNull final ADReferenceService adReferenceService)
-	{
-		this.pickingConfigRepository = pickingConfigRepository;
-		this.pickingCandidateRepository = pickingCandidateRepository;
-		this.sourceHUsRepository = sourceHUsRepository;
-		this.huReservationService = huReservationService;
-		this.bpartnersService = bpartnersService;
-		this.adReferenceService = adReferenceService;
-	}
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
 	{
@@ -145,6 +137,7 @@ public class PickingCandidateService
 	{
 		return AddQtyToHUCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateService(this)
 				.request(request)
 				.build()
 				.performAndGetQtyPicked();
@@ -238,7 +231,7 @@ public class PickingCandidateService
 		}
 
 		final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
-		final I_M_ShipmentSchedule shipmentScheduleRecord = ShipmentScheduleRepo.getById(shipmentScheduleId);
+		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentSchedulePA.getById(shipmentScheduleId);
 		final ProductId productId = ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID());
 
 		huAttributesBL.validateMandatoryPickingAttributes(huId, productId);
@@ -384,5 +377,39 @@ public class PickingCandidateService
 	private OnOverDelivery getOnOverDelivery(final boolean splitHUIfOverDelivery)
 	{
 		return OnOverDelivery.ofConfigs(splitHUIfOverDelivery, pickingConfigRepository.getPickingConfig().isAllowOverDelivery());
+	}
+
+	@NonNull
+	public ImmutableMap<HuId, ImmutableSet<OrderId>> getOpenPickingOrderIdsByHuId(@NonNull final ImmutableSet<HuId> huIds)
+	{
+		final ImmutableList<PickingCandidate> openPickingCandidates = pickingCandidateRepository.getByHUIds(huIds)
+				.stream()
+				.filter(pickingCandidate -> !pickingCandidate.isProcessed())
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableListMultimap<HuId, ShipmentScheduleId> huId2ShipmentScheduleIds = openPickingCandidates
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(pickingCandidate -> pickingCandidate.getPickFrom().getHuId(),
+																	   PickingCandidate::getShipmentScheduleId));
+
+		final ImmutableMap<ShipmentScheduleId, OrderId> scheduleId2OrderId = shipmentSchedulePA.getByIds(ImmutableSet.copyOf(huId2ShipmentScheduleIds.values()))
+				.values()
+				.stream()
+				.filter(shipmentSchedule -> shipmentSchedule.getC_Order_ID() > 0)
+				.collect(ImmutableMap.toImmutableMap(shipSchedule -> ShipmentScheduleId.ofRepoId(shipSchedule.getM_ShipmentSchedule_ID()),
+													 shipSchedule -> OrderId.ofRepoId(shipSchedule.getC_Order_ID())));
+
+		return huIds.stream()
+				.collect(ImmutableMap.toImmutableMap(Function.identity(),
+													 huId -> {
+														 final ImmutableList<ShipmentScheduleId> scheduleIds = Optional
+																 .ofNullable(huId2ShipmentScheduleIds.get(huId))
+																 .orElseGet(ImmutableList::of);
+
+														 return scheduleIds.stream()
+																 .map(scheduleId2OrderId::get)
+																 .filter(Objects::nonNull)
+																 .collect(ImmutableSet.toImmutableSet());
+													 }));
 	}
 }

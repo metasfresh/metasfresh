@@ -113,7 +113,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 
 		return PickingSlotsClearingView.builder()
 				.viewId(viewId)
-				.rows(() -> pickingSlotRepo.retrievePickingSlotsRows(query))
+				.rows(() -> pickingSlotRepo.retrievePickingSlotsRowsForClearing(query))
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.filterDescriptors(filterDescriptors)
 				.filters(filters)

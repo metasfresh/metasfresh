@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.pickingslot;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.HuId;
@@ -13,7 +14,6 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
-import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -124,7 +124,8 @@ public class PickingSlotViewRepositoryTests
 											.setTopLevel(false)
 											.build())
 									.build(),
-							pickingSlotRowProcessed));
+							pickingSlotRowProcessed,
+							ImmutableMap.of()));
 
 			Mockito.when(pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(
 					PickingCandidatesQuery.builder()
