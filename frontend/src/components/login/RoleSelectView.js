@@ -30,12 +30,8 @@ export const RoleSelectView = ({ roles, onSubmit }) => {
   const [pending, setPending] = useState(false);
   const [role, setRole] = useState(null);
   const [dropdownToggled, setDropdownToggled] = useState(false);
-  const [dropdownFocused, setDropdownFocused] = useState(false);
+  const [dropdownFocused, setDropdownFocused] = useState(true);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    roleRef.current?.instanceRef?.dropdown?.focus();
-  }, []);
 
   useEffect(() => {
     setRole(roles?.[0] ?? null);
