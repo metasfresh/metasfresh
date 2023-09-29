@@ -66,25 +66,19 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".product_costs_recreate_from_date(
 AS
 $BODY$
 DECLARE
-    v_productIds                       numeric[];
-    v_costingLevel                     char(1);
-    v_orgIds                           numeric[];
+    v_productIds      numeric[];
+    v_costingLevel    char(1);
+    v_orgIds          numeric[];
     v_costElement                      m_costelement%rowtype;
-    v_IsManualCostPrice                boolean; -- true if we are dealing with manual cost price (i.e. M_Cost.CurrentCostPrice is set by user and we MUST keep it)
     --
-    rowcount                           integer := 0;
-    rowcount_mcost_updated             integer := 0;
-    rowcount_mcost_updated_total       integer := 0;
-    rowcount_mcost_deleted             integer := 0;
-    rowcount_mcost_deleted_total       integer := 0;
-    rowcount_mcostdetail_deleted       integer := 0;
-    rowcount_mcostdetail_deleted_total integer := 0;
-    v_result                           text    := '';
+    rowcount          integer := 0;
+    v_result          text    := '';
+    v_ok              text    := '';
     --
-    v_currentProduct                   record;
-    v_currentOrgId                     numeric;
-    v_firstCostDetail                  m_costdetail_v%rowtype;
-    v_record                           record;
+    v_currentProduct  record;
+    v_currentOrgId    numeric;
+    v_firstCostDetail m_costdetail_v%rowtype;
+    v_record          record;
 BEGIN
 
     --
@@ -144,7 +138,7 @@ BEGIN
     IF (v_costElement IS NULL) THEN
         RAISE EXCEPTION 'Cost Element % not found', p_M_CostElement_ID;
     END IF;
-    v_IsManualCostPrice := v_costElement.costingmethod = 'S'; -- S=Standard Costing
+
     RAISE NOTICE 'p_M_CostElement_ID=%: CostingMethod=% => IsManualCost=%', p_M_CostElement_ID, v_costElement.costingmethod, v_IsManualCostPrice;
 
     --
@@ -204,120 +198,16 @@ BEGIN
         --
             FOREACH v_currentOrgId IN ARRAY v_orgIds
                 LOOP
-                --
-                -- Fetch first cost detail to be deleted
-                -- That one has the M_CostDetail.prev_* fields which describes how was the M_Cost before.
-                    SELECT cd.*
-                    INTO v_firstCostDetail
-                    FROM m_costdetail_v cd
-                    WHERE cd.ischangingcosts = 'Y'
-                      AND cd.c_acctschema_id = p_C_AcctSchema_ID
-                      AND cd.m_costelement_id = p_M_CostElement_Id
-                      AND cd.M_Product_ID = v_currentProduct.m_product_id
-                      AND cd.ad_client_id = 1000000
-                      AND (v_currentOrgId <= 0 OR cd.ad_org_id = v_currentOrgId)
-                      AND cd.dateacct >= p_StartDateAcct
-                    ORDER BY cd.dateacct, cd.m_costdetail_id
-                    LIMIT 1;
-
-                    rowcount_mcost_updated := 0;
-                    rowcount_mcost_updated := 0;
-                    rowcount_mcostdetail_deleted := 0;
-                    IF v_firstCostDetail.m_costdetail_id IS NOT NULL THEN
-                        --
-                        -- Case: we found first cost detail to be deleted
-                        -- => delete all cost details after the last one found
-                        -- => update M_Cost using the M_CostDetail.prev_* fields of the first cost detail to be deleted
-
-                        DELETE
-                        FROM m_costdetail
-                        WHERE m_costdetail_id IN (SELECT m_costdetail_id
-                                                  FROM m_costdetail_v cd
-                                                  WHERE cd.c_acctschema_id = v_firstCostDetail.c_acctschema_id
-                                                    AND cd.m_costelement_id = v_firstCostDetail.m_costelement_id
-                                                    AND cd.M_Product_ID = v_firstCostDetail.m_product_id
-                                                    AND cd.ad_client_id = v_firstCostDetail.ad_client_id
-                                                    AND (v_currentOrgId <= 0 OR cd.ad_org_id = v_currentOrgId)
-                                                    AND cd.dateacct >= p_StartDateAcct);
-                        GET DIAGNOSTICS rowcount_mcostdetail_deleted = ROW_COUNT;
-
-                        UPDATE m_cost c
-                        SET currentcostprice=(CASE
-                                                  WHEN v_IsManualCostPrice THEN c.currentcostprice -- don't change the M_Cost.CurrentCostPrice if it's a manual cost price
-                                                                           ELSE v_firstCostDetail.prev_currentcostprice
-                                              END),
-                            currentcostpricell=v_firstCostDetail.prev_currentcostpricell,
-                            currentqty=v_firstCostDetail.prev_currentqty,
-                            cumulatedamt=v_firstCostDetail.prev_cumulatedamt,
-                            cumulatedqty=v_firstCostDetail.prev_cumulatedqty,
-                            updated=NOW(),
-                            updatedby=0
-                        WHERE c.c_acctschema_id = p_C_AcctSchema_ID
-                          AND c.m_costelement_id = p_M_CostElement_ID
-                          AND c.M_Product_ID = v_currentProduct.m_product_id
-                          AND c.ad_client_id = 1000000
-                          AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
-                        GET DIAGNOSTICS rowcount_mcost_updated = ROW_COUNT;
-                    ELSE
-                        --
-                        -- Case: no cost details found before our starting date
-                        -- => delete all M_CostDetail and m_cost records
-
-                        DELETE
-                        FROM m_costdetail cd
-                        WHERE cd.c_acctschema_id = p_C_AcctSchema_ID
-                          AND cd.m_costelement_id = p_M_CostElement_Id
-                          AND cd.M_Product_ID = v_currentProduct.m_product_id
-                          AND cd.ad_client_id = 1000000
-                          AND (v_currentOrgId <= 0 OR cd.ad_org_id = v_currentOrgId);
-                        GET DIAGNOSTICS rowcount_mcostdetail_deleted = ROW_COUNT;
-
-                        IF (v_IsManualCostPrice) THEN
-                            -- In case it's a manual cost price (i.e. Standard Costing)
-                            -- then we need to preserve the CurrentCostPrice (which was set by user)
-                            -- but ZEROify all the other fields.
-                            UPDATE m_cost c
-                            SET
-                                -- currentcostprice=... keep it unchanged
-                                currentcostpricell=0,
-                                currentqty=0,
-                                cumulatedamt=0,
-                                cumulatedqty=0,
-                                updated=NOW(),
-                                updatedby=0
-                            WHERE c.c_acctschema_id = p_C_AcctSchema_ID
-                              AND c.m_costelement_id = p_M_CostElement_Id
-                              AND c.M_Product_ID = v_currentProduct.m_product_id
-                              AND c.ad_client_id = 1000000
-                              AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
-                            GET DIAGNOSTICS rowcount_mcost_updated = ROW_COUNT;
-                        ELSE
-                        DELETE
-                        FROM m_cost c
-                        WHERE c.c_acctschema_id = p_C_AcctSchema_ID
-                          AND c.m_costelement_id = p_M_CostElement_Id
-                          AND c.M_Product_ID = v_currentProduct.m_product_id
-                          AND c.ad_client_id = 1000000
-                          AND (v_currentOrgId <= 0 OR c.ad_org_id = v_currentOrgId);
-                            GET DIAGNOSTICS rowcount_mcost_deleted = ROW_COUNT;
-                        END IF;
-                    END IF;
-
-                    RAISE NOTICE 'Product=%, Org=%: % M_CostDetails deleted, % M_Costs deleted, % M_Costs updated. Last cost price (from Cost Detail): %',
-                        v_currentProduct.productInfo, v_currentOrgId,
-                        rowcount_mcostdetail_deleted,rowcount_mcost_deleted,rowcount_mcost_updated,
-                        v_firstCostDetail.prev_currentcostprice;
-
-                    rowcount_mcostdetail_deleted_total := rowcount_mcostdetail_deleted_total + rowcount_mcostdetail_deleted;
-                    rowcount_mcost_deleted_total := rowcount_mcost_deleted_total + rowcount_mcost_deleted;
-                    rowcount_mcost_updated_total := rowcount_mcost_updated_total + rowcount_mcost_updated;
+                    PERFORM de_metas_acct.m_costdetail_delete_from_date(
+                            p_C_AcctSchema_ID := p_C_AcctSchema_ID,
+                            p_M_CostElement_ID := p_M_CostElement_Id,
+                            p_M_Product_ID := v_currentProduct.m_product_id,
+                            p_AD_Org_ID := v_currentOrgId,
+                            p_StartDateAcct := p_StartDateAcct,
+                            p_DryRun := 'N'
+                        );
                 END LOOP;
         END LOOP;
-    --
-    v_result := v_result
-                    || rowcount_mcostdetail_deleted_total || ' M_CostDetails deleted, '
-                    || rowcount_mcost_updated_total || ' M_Cost updated, '
-                    || rowcount_mcost_deleted_total || ' M_Cost deleted; ';
 
 
     --
