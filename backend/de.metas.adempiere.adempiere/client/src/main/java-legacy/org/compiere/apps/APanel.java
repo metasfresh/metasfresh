@@ -1247,67 +1247,70 @@ public class APanel extends CPanel
 		}
 
 		//
-		final StringBuilder where = new StringBuilder(Env.parseContext(m_ctx, m_curWindowNo, mTab.getWhereExtended(), false));
-		// Query automatically if high volume and no query
-		boolean require = mTab.isHighVolume();
-
-		// metas-2009_0021_AP1_CR064: begin
-		if (!mTab.isQueryOnLoad())
-		{
-			return MQuery.getNoRecordQuery(mTab.getTableName(), false);
-		}
-		// metas-2009_0021_AP1_CR064: end
-
-		if (!require
-				&& !m_onlyCurrentRows // No Trx Window
-				&& mTab.isQueryOnLoad())   // metas-2009_0021_AP1_CR064
-		{
-			/* Where Extended already appended above, check for variables */
-			if (query != null)
-			{
-				final String wh2 = query.getWhereClause();
-				if (wh2.length() > 0)
-				{
-					if (where.length() > 0)
-					{
-						where.append(" AND ");
-					}
-					where.append(wh2);
-				}
-			}
-			//
-			final StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ")
-					.append(mTab.getTableName());
-			if (where.length() > 0)
-			{
-				sql.append(" WHERE ").append(where);
-			}
-			// Does not consider security
-			final int no = DB.getSQLValue(ITrx.TRXNAME_None, sql.toString());
-			//
-			require = GridTabMaxRowsRestrictionChecker.builder()
-					.setAD_Tab(mTab)
-					.build()
-					.isQueryRequire(no);
-		}
-		// Show Query
-		if (require)
-		{
-			Find find = Find.builder()
-					.setParentFrame(getCurrentFrame())
-					.setTargetWindowNo(m_curWindowNo)
-					.setGridTab(mTab)
-					.setFindFields(mTab.getFields())
-					.setWhereExtended(where.toString())
-					.setQuery(query)
-					.setMinRecords(10) // no query below 10
-					.buildFindDialog();
-			query = find.getQuery();
-			query = find.isCancel() ? null : query; // metas: teo_sarca: metas-2009_0021_AP1_G113
-			isCancel = (query == null);// Goodwill
-			find.dispose();
-			find = null;
-		}
+		// Never require a FindPanel before the actual window is opened! 
+		// I doesn't work with java-17 and x2go and that is the remaining primary mode of operation for the swing-client.
+		//
+		// final StringBuilder where = new StringBuilder(Env.parseContext(m_ctx, m_curWindowNo, mTab.getWhereExtended(), false));
+		// // Query automatically if high volume and no query
+		// boolean require = mTab.isHighVolume();
+		//
+		// // metas-2009_0021_AP1_CR064: begin
+		// if (!mTab.isQueryOnLoad())
+		// {
+		// 	return MQuery.getNoRecordQuery(mTab.getTableName(), false);
+		// }
+		// // metas-2009_0021_AP1_CR064: end
+		//
+		// if (!require
+		// 		&& !m_onlyCurrentRows // No Trx Window
+		// 		&& mTab.isQueryOnLoad())   // metas-2009_0021_AP1_CR064
+		// {
+		// 	/* Where Extended already appended above, check for variables */
+		// 	if (query != null)
+		// 	{
+		// 		final String wh2 = query.getWhereClause();
+		// 		if (wh2.length() > 0)
+		// 		{
+		// 			if (where.length() > 0)
+		// 			{
+		// 				where.append(" AND ");
+		// 			}
+		// 			where.append(wh2);
+		// 		}
+		// 	}
+		// 	//
+		// 	final StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ")
+		// 			.append(mTab.getTableName());
+		// 	if (where.length() > 0)
+		// 	{
+		// 		sql.append(" WHERE ").append(where);
+		// 	}
+		// 	// Does not consider security
+		// 	final int no = DB.getSQLValue(ITrx.TRXNAME_None, sql.toString());
+		// 	//
+		// 	require = GridTabMaxRowsRestrictionChecker.builder()
+		// 			.setAD_Tab(mTab)
+		// 			.build()
+		// 			.isQueryRequire(no);
+		// }
+		// // Show Query
+		// if (require)
+		// {
+		// 	Find find = Find.builder()
+		// 			.setParentFrame(getCurrentFrame())
+		// 			.setTargetWindowNo(m_curWindowNo)
+		// 			.setGridTab(mTab)
+		// 			.setFindFields(mTab.getFields())
+		// 			.setWhereExtended(where.toString())
+		// 			.setQuery(query)
+		// 			.setMinRecords(10) // no query below 10
+		// 			.buildFindDialog();
+		// 	query = find.getQuery();
+		// 	query = find.isCancel() ? null : query; // metas: teo_sarca: metas-2009_0021_AP1_G113
+		// 	isCancel = (query == null);// Goodwill
+		// 	find.dispose();
+		// 	find = null;
+		// }
 		return query;
 	}	// initialQuery
 

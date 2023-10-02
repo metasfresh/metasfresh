@@ -12,64 +12,63 @@ import {
   markAsRead,
 } from '../../actions/AppActions';
 import InboxItem from './InboxItem';
+import { extractWindowIdFromViewId } from '../../utils/windowHelpers';
 
-/**
- * @file Class based component.
- * @module Inbox
- * @extends Component
- */
 class Inbox extends Component {
-  /**
-   * @method handleClick
-   * @summary ToDo: Describe the method
-   * @param {*} item
-   * @todo Write the documentation
-   */
+  isCurrentWindowId = (windowId) => {
+    const { location } = this.props;
+    const currentViewId = get(location, 'query.viewId');
+    const currentWindowId = extractWindowIdFromViewId(currentViewId);
+    return currentWindowId && currentWindowId === windowId;
+  };
+
   handleClick = (item) => {
-    const { history, close, location } = this.props;
+    const { close } = this.props;
+
     if (item.target) {
-      switch (item.target.targetType) {
-        case 'window':
-          history.push(
-            `/window/${item.target.windowId}/${item.target.documentId}`
-          );
-          break;
-        case 'view': {
-          // in case we're on the same page, we want to add a hash param
-          // to force refresh of DocumentList component so in order to do that
-          // we check if viewId's are equal
-          let samePageParam = '';
-          const locationViewId = get(location, 'query.viewId')
-            ? get(location, 'query.viewId').split('-')[0]
-            : null;
-          const targetViewId = item.target.viewId
-            ? item.target.viewId.split('-')[0]
-            : null;
-
-          if (locationViewId === targetViewId) {
-            samePageParam = '#notification';
-          }
-
-          history.push(
-            `/window/${item.target.windowId}/?viewId=${item.target.viewId}${samePageParam}`
-          );
-
-          break;
-        }
-      }
+      this.handleItemTarget(item.target);
     }
 
     if (!item.read) {
       markAsRead(item.id);
     }
+
     close && close();
   };
 
-  /**
-   * @method handleMarkAllAsRead
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
+  handleItemTarget = (itemTarget) => {
+    const { history } = this.props;
+    switch (itemTarget.targetType) {
+      case 'window':
+        history.push(`/window/${itemTarget.windowId}/${itemTarget.documentId}`);
+        break;
+      case 'view': {
+        // keep in sync with de.metas.notification.UserNotificationRequest.TargetViewAction
+
+        const targetViewId = itemTarget.viewId;
+        const targetWindowId = itemTarget.windowId;
+
+        let targetLocation;
+        if (targetViewId === 'DEFAULT') {
+          targetLocation = `/window/${targetWindowId}`;
+        } else {
+          targetLocation = `/window/${itemTarget.windowId}/?viewId=${targetViewId}`;
+        }
+
+        if (this.isCurrentWindowId(targetWindowId)) {
+          // In case we're on the same page,
+          // for some reason DocumentList won't refresh on history.push,
+          // so we force a full page reload by setting `window.location`.
+          window.location = targetLocation;
+        } else {
+          history.push(targetLocation);
+        }
+
+        break;
+      }
+    }
+  };
+
   handleMarkAllAsRead = () => {
     const { close } = this.props;
 
@@ -78,24 +77,12 @@ class Inbox extends Component {
     close && close();
   };
 
-  /**
-   * @method handleShowAll
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   handleShowAll = () => {
     const { close, history } = this.props;
     history.push('/inbox');
     close && close();
   };
 
-  /**
-   * @method handleDelete
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   * @param {*} item
-   * @todo Write the documentation
-   */
   handleDelete = (e, item) => {
     e.preventDefault();
     e.stopPropagation();
@@ -103,12 +90,6 @@ class Inbox extends Component {
     deleteUserNotification(item.id).then(() => {});
   };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   * @todo Write the documentation
-   */
   handleKeyDown = (e) => {
     const { close } = this.props;
     const inboxItem = document.getElementsByClassName('js-inbox-item')[0];
@@ -133,11 +114,6 @@ class Inbox extends Component {
     }
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const { open, inbox, all, close } = this.props;
 
@@ -168,7 +144,7 @@ class Inbox extends Component {
                       onDelete={(e) => this.handleDelete(e, item)}
                     />
                   ))}
-                {inbox && inbox.notifications.length == 0 && (
+                {inbox && inbox.notifications.length === 0 && (
                   <div className="inbox-item inbox-item-empty">
                     {counterpart.translate('window.inbox.empty')}
                   </div>
@@ -192,12 +168,6 @@ class Inbox extends Component {
   }
 }
 
-/**
- * @method addClickOutsideHandler
- * @summary ToDo: Describe the method
- * @param {*} Child
- * @todo Write the documentation
- */
 const addClickOutsideHandler = (Child) => {
   return class WithClickOutsideHandler extends Component {
     static propTypes = {

@@ -236,11 +236,6 @@ public final class WorkflowExecutionContext
 		return userDAO.getById(userId);
 	}
 
-	public String getUserFullname()
-	{
-		return getUserFullnameById(getUserId());
-	}
-
 	public String getUserFullnameById(@NonNull final UserId userId)
 	{
 		return userDAO.retrieveUserFullName(userId);
@@ -258,9 +253,7 @@ public final class WorkflowExecutionContext
 				.recipientUserId(notification.getUserId())
 				.contentADMessage(notification.getContent().getAdMessage())
 				.contentADMessageParams(notification.getContent().getParams())
-				.targetAction(notification.getDocumentToOpen() != null
-						? UserNotificationRequest.TargetRecordAction.of(notification.getDocumentToOpen())
-						: null)
+				.targetAction(notification.getTargetAction())
 				.build());
 	}
 

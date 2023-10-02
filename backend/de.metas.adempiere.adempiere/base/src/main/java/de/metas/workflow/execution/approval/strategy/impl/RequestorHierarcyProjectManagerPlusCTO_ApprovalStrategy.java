@@ -13,6 +13,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -77,7 +78,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 				}
 				case Pending ->
 				{
-					return Response.forwardTo(approvalRequest.getUserId(), approvalRequest.toTableRecordReference());
+					return Response.forwardTo(approvalRequest.getUserId(), UserNotificationRequest.TargetViewAction.openNewView(WINDOW_ID_MyApprovals));
 				}
 			}
 		}
