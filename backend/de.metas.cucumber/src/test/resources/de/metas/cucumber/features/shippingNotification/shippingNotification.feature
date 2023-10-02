@@ -82,8 +82,8 @@ Feature: Shipping Notifications
       | o_1                   | endcustomer_1            | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2021-04-20                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
-      | s_ol_1                           | 0            | 0            | 10         | false     | 2021-04-20                |
-      | s_ol_2                           | 0            | 0            | 10         | false     | 2021-04-20                |
+      | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-20                |
+      | s_ol_2                           | 10           | 0            | 10         | false     | 2021-04-20                |
 
   @from:cucumber
   Scenario: we can generate 2 shipping notifications for sales order and the previous one is reversed
@@ -127,8 +127,8 @@ Feature: Shipping Notifications
       | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2021-04-19                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
-      | s_ol_1                           | 0            | 0            | 10         | false     | 2021-04-19                |
-      | s_ol_2                           | 0            | 0            | 10         | false     | 2021-04-19                |
+      | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-19                |
+      | s_ol_2                           | 10           | 0            | 10         | false     | 2021-04-19                |
 
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order and after the order is voided, the notification is reversed
@@ -161,9 +161,12 @@ Feature: Shipping Notifications
 
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order with dropship partner data and it will be passed to the notification
-    And metasfresh contains C_BPartners:
-      | Identifier             | OPT.C_BPartner_Location_ID.Identifier | Name                          | M_PricingSystem_ID.Identifier | OPT.IsCustomer |
-      | endcustomer_dropship_1 | bpLocationDropship                    | Endcustomer_Dropship_21092023 | ps_1                          | Y              |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier             | Name                          | M_PricingSystem_ID.Identifier | OPT.IsCustomer |
+      | endcustomer_dropship_1 | Endcustomer_Dropship_21092023 | ps_1                          | Y              |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault |
+      | bpLocationDropship | 0123456789013 | endcustomer_dropship_1   | Y                   |
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | Name                       | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.IsBillToContact_Default |
       | bpContactDropship     | bpContactDropship_21092023 | endcustomer_dropship_1       | bpLocationDropship                    | Y                           |
@@ -184,8 +187,8 @@ Feature: Shipping Notifications
       | C_Order_ID.Identifier | PhysicalClearanceDate |
       | o_1                   | 2021-04-20            |
     And after not more than 30s, M_Shipping_Notifications are found
-      | M_Shipping_Notification_ID.Identifier | C_Order_ID.Identifier | DocStatus | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | AD_Org_ID.Identifier | M_Locator_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | OPT.C_Auction_ID.Identifier | OPT.POReference      | OPT.Description            |
-      | shippingNotification_21092023         | o_1                   | CO        | endcustomer_dropship_1       | bpLocationDropship                    | bpContactDropship         | org_1                | locator                 | harvesting_calendar                 | year_2023                     | Auction_1                   | POReference_21092023 | order description 21092023 |
+      | M_Shipping_Notification_ID.Identifier | C_Order_ID.Identifier | DocStatus | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.DropShip_User_ID.Identifier | AD_Org_ID.Identifier | M_Locator_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | Harvesting_Year_ID.Identifier | OPT.C_Auction_ID.Identifier | OPT.POReference      | OPT.Description            |
+      | shippingNotification_21092023         | o_1                   | CO        | endcustomer_dropship_1              | bpLocationDropship                  | bpContactDropship               | org_1                | locator                 | harvesting_calendar                 | year_2023                     | Auction_1                   | POReference_21092023 | order description 21092023 |
     And validate M_Shipping_NotificationLines:
       | M_Shipping_NotificationLine_ID.Identifier | M_Shipping_Notification_ID.Identifier | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | MovementQty |
       | shippingNotificationLine_21092023_1       | shippingNotification_21092023         | s_ol_1                           | p_1                     | 10          |
