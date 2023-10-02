@@ -30,15 +30,11 @@ export const RoleSelectView = ({ roles, onSubmit }) => {
   const [pending, setPending] = useState(false);
   const [role, setRole] = useState(null);
   const [dropdownToggled, setDropdownToggled] = useState(false);
-  const [dropdownFocused, setDropdownFocused] = useState(false);
+  const [dropdownFocused, setDropdownFocused] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    roleRef.current?.instanceRef?.dropdown?.focus();
-  }, []);
-
-  useEffect(() => {
-    setRole(roles?.[0]);
+    setRole(roles?.[0] ?? null);
   }, [roles]);
 
   const fireOnSubmit = (role) => {
@@ -70,7 +66,7 @@ export const RoleSelectView = ({ roles, onSubmit }) => {
         ref={roleRef}
         rank="primary"
         list={roles}
-        onSelect={(option) => fireOnSubmit(option)}
+        onSelect={(option) => setRole(option)}
         selected={role}
         disabled={pending}
         autofocus={true}
@@ -86,7 +82,7 @@ export const RoleSelectView = ({ roles, onSubmit }) => {
       <div className="mt-2">
         <button
           className="btn btn-sm btn-block btn-meta-success"
-          onClick={fireOnSubmit}
+          onClick={() => fireOnSubmit(role)}
           disabled={pending}
         >
           {counterpart.translate('login.send.caption')}
