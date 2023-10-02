@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,13 +24,20 @@ package de.metas.cucumber.stepdefs.shipment.pickingterminal;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -50,6 +57,7 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_Picking_Candidate.COLUMNNAME_M_HU_ID;
@@ -64,6 +72,8 @@ public class Picking_Terminal_StepDef
 {
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
+	private final M_HU_PI_StepDefData huPiTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiProductTable;
 
 	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
@@ -71,10 +81,14 @@ public class Picking_Terminal_StepDef
 
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
-			@NonNull final M_HU_StepDefData huTable)
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_HU_PI_StepDefData huPiTable,
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiProductTable)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.huTable = huTable;
+		this.huPiTable = huPiTable;
+		this.huPiProductTable = huPiProductTable;
 	}
 
 	@And("the following qty is picked")
@@ -90,6 +104,22 @@ public class Picking_Terminal_StepDef
 
 		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(row, I_M_Picking_Candidate.COLUMNNAME_QtyPicked);
 
+		final HuPackingInstructionsId huPackingInstructionsId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Picking_Candidate.COLUMNNAME_PackTo_HU_PI_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.map(huPiTable::get)
+				.map(I_M_HU_PI::getM_HU_PI_ID)
+				.map(HuPackingInstructionsId::ofRepoId)
+				.orElse(HuPackingInstructionsId.VIRTUAL);
+
+		final HUPIItemProductId huPiItemProductId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Picking_Candidate.COLUMNNAME_PackTo_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.map(huPiProductTable::get)
+				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+				.map(HUPIItemProductId::ofRepoId)
+				.orElse(null);
+
+		final PackToSpec packToSpec = huPiItemProductId != null ?
+				PackToSpec.ofTUPackingInstructionsId(huPiItemProductId)
+				: PackToSpec.ofGenericPackingInstructionsId(huPackingInstructionsId);
+
 		final I_M_Picking_Candidate pickingCandidate = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
 		pickingCandidate.setStatus(STATUS_InProgress);
 		pickingCandidate.setPickStatus(PICKSTATUS_Picked);
@@ -98,7 +128,9 @@ public class Picking_Terminal_StepDef
 		pickingCandidate.setQtyPicked(qtyPicked);
 		pickingCandidate.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
 		pickingCandidate.setC_UOM_ID(UomId.EACH.getRepoId());
-		pickingCandidate.setPackTo_HU_PI_ID(101);
+		pickingCandidate.setPackTo_HU_PI_ID(HuPackingInstructionsId.toRepoId(packToSpec.getGenericPackingInstructionsId()));
+		pickingCandidate.setPackTo_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(packToSpec.getTuPackingInstructionsId()));
+
 
 		saveRecord(pickingCandidate);
 

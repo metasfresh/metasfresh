@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -182,7 +182,7 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 
-		return X_C_DocType.DOCSUBTYPE_ProFormaSO.equals(dt.getDocBaseType())
+		return X_C_DocType.DOCSUBTYPE_ProFormaSO.equals(dt.getDocSubType())
 				&& DocBaseType.ofCode(dt.getDocBaseType()).isSalesOrder();
 	}
 

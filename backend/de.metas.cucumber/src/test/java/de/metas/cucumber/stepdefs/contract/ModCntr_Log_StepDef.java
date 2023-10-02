@@ -363,7 +363,7 @@ public class ModCntr_Log_StepDef
 		final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_IsSOTrx);
 		if (isSoTrx != null)
 		{
-			softly.assertThat(modCntrLogRecord.isSOTrx()).as(I_ModCntr_Log.COLUMNNAME_Processed).isEqualTo(isSoTrx);
+			softly.assertThat(modCntrLogRecord.isSOTrx()).as(I_ModCntr_Log.COLUMNNAME_IsSOTrx).isEqualTo(isSoTrx);
 		}
 
 		final String modCntrModuleIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID + "." + TABLECOLUMN_IDENTIFIER);

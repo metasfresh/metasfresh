@@ -53,7 +53,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 @RequiredArgsConstructor
 public class ShipmentLineForSOModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	private final IInOutDAO inOutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -70,8 +70,13 @@ public class ShipmentLineForSOModularContractHandler implements IModularContract
 	@Override
 	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
 	{
-		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		return inOutRecord.isSOTrx() && inOutLineRecord.getC_Order_ID() > 0;
+		final I_M_InOut inOutRecord = inOutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+		if (orderId == null)
+		{
+			return false;
+		}
+		return inOutRecord.isSOTrx() && !orderBL.isProFormaSO(orderBL.getById(orderId));
 	}
 
 	@Override

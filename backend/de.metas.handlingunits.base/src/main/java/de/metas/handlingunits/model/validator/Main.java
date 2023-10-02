@@ -1,10 +1,8 @@
-package de.metas.handlingunits.model.validator;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +20,15 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
+package de.metas.handlingunits.model.validator;
+
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
+import de.metas.contracts.modular.invoiceCandidate.ProFormaSOInvoiceCandidateVetoer;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.hu_spis.DDOrderLineHUDocumentHandler;
 import de.metas.distribution.ddorder.hu_spis.ForecastLineHUDocumentHandler;
@@ -356,6 +357,8 @@ public final class Main extends AbstractModuleInterceptor
 		{
 			Services.get(IInvoiceCandBL.class)
 					.registerVetoer(new HuInOutInvoiceCandidateVetoer(), I_M_InOutLine.Table_Name);
+			Services.get(IInvoiceCandBL.class)
+					.registerVetoer(new ProFormaSOInvoiceCandidateVetoer(), I_M_InOutLine.Table_Name);
 		}
 
 		// Order - Fast Input

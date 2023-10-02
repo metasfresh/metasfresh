@@ -50,7 +50,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
@@ -94,13 +93,7 @@ public class SalesOrderLineProFormaPOModularContractHandler implements IModularC
 			return false;
 		}
 
-		final BPartnerId warehousePartnerId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(orderRecord.getM_Warehouse_ID()))
-				.map(warehouseBL::getBPartnerId)
-				.orElse(null);
-		if (warehousePartnerId == null)
-		{
-			return false;
-		}
+		final BPartnerId warehousePartnerId = warehouseBL.getBPartnerId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()));
 
 		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehousePartnerId)

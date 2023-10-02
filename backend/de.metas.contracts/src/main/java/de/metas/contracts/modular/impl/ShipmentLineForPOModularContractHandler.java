@@ -79,7 +79,12 @@ public class ShipmentLineForPOModularContractHandler implements IModularContract
 	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		return inOutRecord.isSOTrx() && inOutLineRecord.getC_Order_ID() > 0;
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+		if (orderId == null)
+		{
+			return false;
+		}
+		return inOutRecord.isSOTrx() && !orderBL.isProFormaSO(orderBL.getById(orderId));
 	}
 
 	@Override

@@ -22,13 +22,11 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.impl.SalesOrderLineProFormaPOModularContractHandler;
+import de.metas.contracts.modular.impl.SalesOrderLineProFormaModularContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -40,7 +38,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -50,6 +49,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -61,25 +61,30 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
+
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED;
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
 @Component
 @RequiredArgsConstructor
 class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 {
-	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SalesOrderLineProFormaLogHandler.OnComplete.Description");
+	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SalesOrderLineProFormaLogHandler.CompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SalesOrderLineProFormaLogHandler.OnReverse.Description");
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final ModularContractLogDAO contractLogDAO;
-	private final SalesOrderLineProFormaPOModularContractHandler contractHandler;
+	private final SalesOrderLineProFormaModularContractHandler contractHandler;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_OrderLine> request)
@@ -87,9 +92,9 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler<I_C
 		return switch (request.getModelAction())
 		{
 			case COMPLETED -> LogAction.CREATE;
-			case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
+			case REVERSED, REACTIVATED, VOIDED -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 			case RECREATE_LOGS -> LogAction.RECOMPUTE;
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		};
 	}
 
@@ -117,28 +122,30 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler<I_C
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		final Quantity quantity = Quantitys.create(orderLine.getQtyEntered(), uomId);
 
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final BPartnerId warehousePartnerId = warehouseBL.getBPartnerId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()));
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-
-		final String description = msgBL.getMsg(MSG_ON_COMPLETE_DESCRIPTION, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
+		final String productName = productBL.getProductValueAndName(productId);
+		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity.toString())
+				.translate(Language.getBaseAD_Language());
 
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 											.contractId(createLogRequest.getContractId())
-											.collectionPointBPartnerId(bPartnerId)
+											.collectionPointBPartnerId(warehousePartnerId)
 											.producerBPartnerId(bPartnerId)
 											.invoicingBPartnerId(bPartnerId)
-											.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
+											.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
 											.productId(productId)
 											.documentType(LogEntryDocumentType.PRO_FORMA_SO)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.PURCHASE)
 											.processed(false)
 											.quantity(quantity)
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
+											.transactionDate(LocalDateAndOrgId.ofTimestamp(orderRecord.getDateOrdered(),
 																						   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 																						   orgDAO::getTimeZone))
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
@@ -163,7 +170,10 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler<I_C
 																						 .referenceSet(TableRecordReferenceSet.of(orderLineRef))
 																						 .build());
 
-		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(orderLine.getM_Product_ID()), quantity.toString()));
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final String productName = productBL.getProductValueAndName(productId);
+		final String description = TranslatableStrings.adMessage(MSG_ON_REVERSE_DESCRIPTION, productName, quantity.toString())
+				.translate(Language.getBaseAD_Language());
 
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()

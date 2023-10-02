@@ -64,7 +64,7 @@ public class MaterialReceiptLineModularContractHandler implements IModularContra
 	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase();
+		return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase() && inOutLineRecord.getC_Order_ID() > 0;
 	}
 
 	@Override

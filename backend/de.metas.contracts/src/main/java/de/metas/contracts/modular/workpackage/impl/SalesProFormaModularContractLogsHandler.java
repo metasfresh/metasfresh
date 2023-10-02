@@ -59,7 +59,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
@@ -68,7 +67,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC
 @RequiredArgsConstructor
 class SalesProFormaModularContractLogsHandler implements IModularContractLogHandler<I_C_Flatrate_Term>
 {
-	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.ProFormaModularContractCompleteLogDescription");
+	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SalesProFormaModularContractLogsHandler.CompleteLogDescription");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -111,7 +110,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 
 		final I_C_Order order = orderBL.getById(orderId);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
-		final I_M_Warehouse warehouseRecord = warehouseBL.getById(warehouseId);
+		final BPartnerId warehousePartnerId = warehouseBL.getBPartnerId(warehouseId);
 
 		final Quantity quantity = Quantitys.create(modularContractRecord.getPlannedQtyPerUnit(),
 												   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
@@ -134,9 +133,9 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
 											.producerBPartnerId(billBPartnerId)
 											.invoicingBPartnerId(billBPartnerId)
-											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
+											.collectionPointBPartnerId(warehousePartnerId)
 											.warehouseId(warehouseId)
-											.documentType(LogEntryDocumentType.SALES_MODULAR_CONTRACT)
+											.documentType(LogEntryDocumentType.SALES_MODULAR_CONTRACT) //TODO ProFormaSoModularContract
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 											.processed(false)
