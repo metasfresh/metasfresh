@@ -1,6 +1,8 @@
 package de.metas.workflow.execution.approval;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocBaseType;
+import de.metas.money.Money;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
@@ -11,6 +13,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_WF_Approval_Request;
@@ -27,8 +30,7 @@ public class WFApprovalRequest
 	@Nullable private WFApprovalRequestId id;
 
 	@NonNull private final TableRecordReference documentRef;
-	@Nullable private final String documentNo;
-	@Nullable private final DocBaseType docBaseType;
+	@Nullable private final DocumentInfo documentInfo;
 
 	@NonNull private final SeqNo seqNo;
 	@NonNull private final UserId userId;
@@ -61,5 +63,21 @@ public class WFApprovalRequest
 
 		this.status = WFApprovalRequestStatus.Approved;
 		this.responseDate = date;
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	public static class DocumentInfo
+	{
+		@Nullable String documentNo;
+		@Nullable DocBaseType docBaseType;
+		@Nullable BPartnerId bpartnerId;
+		@Nullable int activityId;
+		@Nullable int projectId;
+		@Nullable Money totalAmt;
 	}
 }

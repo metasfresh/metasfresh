@@ -2,8 +2,11 @@ package de.metas.workflow.execution.approval;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseType;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -23,6 +26,8 @@ import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -97,8 +102,7 @@ public class WFApprovalRequestRepository
 				.id(WFApprovalRequestId.ofRepoId(record.getAD_WF_Approval_Request_ID()))
 				//
 				.documentRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
-				.docBaseType(DocBaseType.ofNullableCode(record.getDocBaseType()))
-				.documentNo(StringUtils.trimBlankToNull(record.getDocumentNo()))
+				.documentInfo(extractDocumentInfo(record))
 				//
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				.userId(UserId.ofRepoId(record.getAD_User_ID()))
@@ -111,6 +115,28 @@ public class WFApprovalRequestRepository
 				.wfActivityId(WFActivityId.ofRepoIdOrNull(record.getAD_WF_Activity_ID()))
 				//
 				.build();
+	}
+
+	private static WFApprovalRequest.DocumentInfo extractDocumentInfo(@NonNull final I_AD_WF_Approval_Request record)
+	{
+		return WFApprovalRequest.DocumentInfo.builder()
+				.docBaseType(DocBaseType.ofNullableCode(record.getDocBaseType()))
+				.documentNo(StringUtils.trimBlankToNull(record.getDocumentNo()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Vendor_ID()))
+				.activityId(record.getC_Activity_ID())
+				.projectId(record.getC_Project_ID())
+				.totalAmt(extractTotalAmt(record))
+				.build();
+
+	}
+
+	@Nullable
+	private static Money extractTotalAmt(final I_AD_WF_Approval_Request record)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
+		return currencyId != null
+				? Money.of(record.getTotalAmt(), currencyId)
+				: null;
 	}
 
 	public void saveForDocument(@NonNull final TableRecordReference documentRef, @NonNull final List<WFApprovalRequest> list)
@@ -143,8 +169,8 @@ public class WFApprovalRequestRepository
 	{
 		record.setAD_Table_ID(from.getDocumentRef().getAD_Table_ID());
 		record.setRecord_ID(from.getDocumentRef().getRecord_ID());
-		record.setDocBaseType(from.getDocBaseType() != null ? from.getDocBaseType().getCode() : null);
-		record.setDocumentNo(StringUtils.trimBlankToNull(from.getDocumentNo()));
+		updateRecord(record, from.getDocumentInfo());
+
 		//
 		record.setSeqNo(from.getSeqNo().toInt());
 		record.setAD_User_ID(from.getUserId().getRepoId());
@@ -155,6 +181,17 @@ public class WFApprovalRequestRepository
 		//
 		record.setAD_WF_Process_ID(WFProcessId.toRepoId(from.getWfProcessId()));
 		record.setAD_WF_Activity_ID(WFActivityId.toRepoId(from.getWfActivityId()));
+	}
+
+	private static void updateRecord(@NonNull final I_AD_WF_Approval_Request record, @Nullable final WFApprovalRequest.DocumentInfo from)
+	{
+		record.setDocBaseType(from != null && from.getDocBaseType() != null ? from.getDocBaseType().getCode() : null);
+		record.setDocumentNo(from != null ? StringUtils.trimBlankToNull(from.getDocumentNo()) : null);
+		record.setC_BPartner_Vendor_ID(from != null ? BPartnerId.toRepoId(from.getBpartnerId()) : -1);
+		record.setC_Activity_ID(from != null ? from.getActivityId() : -1);
+		record.setC_Project_ID(from != null ? from.getProjectId() : -1);
+		record.setC_Currency_ID(from != null && from.getTotalAmt() != null ? from.getTotalAmt().getCurrencyId().getRepoId() : -1);
+		record.setTotalAmt(from != null && from.getTotalAmt() != null ? from.getTotalAmt().toBigDecimal() : BigDecimal.ZERO);
 	}
 
 	public boolean hasRecordsForTable(@NonNull final AdTableId adTableId)
