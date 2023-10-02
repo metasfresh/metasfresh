@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Approval_Request extends org.compiere.model.PO implements I_AD_WF_Approval_Request, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1955292494L;
+	private static final long serialVersionUID = -2083934954L;
 
     /** Standard Constructor */
     public X_AD_WF_Approval_Request (final Properties ctx, final int AD_WF_Approval_Request_ID, @Nullable final String trxName)
@@ -138,6 +138,21 @@ public class X_AD_WF_Approval_Request extends org.compiere.model.PO implements I
 	public int getC_BPartner_Vendor_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
