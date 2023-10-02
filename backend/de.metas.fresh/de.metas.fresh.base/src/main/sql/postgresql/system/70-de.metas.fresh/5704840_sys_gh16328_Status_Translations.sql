@@ -5,16 +5,16 @@ UPDATE AD_Column SET FilterDefaultValue='P',Updated=TO_TIMESTAMP('2023-10-02 16:
 
 -- Reference Item: AD_WF_Approval_Request_Status -> P_Pending
 -- 2023-10-02T15:26:32.851098900Z
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Anhängig',Updated=TO_TIMESTAMP('2023-10-02 16:26:32.85','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543545
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Ausstehend',Updated=TO_TIMESTAMP('2023-10-02 16:26:32.85','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543545
 ;
 
 -- Reference Item: AD_WF_Approval_Request_Status -> P_Pending
 -- 2023-10-02T15:26:45.646823200Z
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Anhängig',Updated=TO_TIMESTAMP('2023-10-02 16:26:45.646','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543545
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Ausstehend',Updated=TO_TIMESTAMP('2023-10-02 16:26:45.646','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543545
 ;
 
 -- 2023-10-02T15:26:45.722689800Z
-UPDATE AD_Ref_List SET Name='Anhängig' WHERE AD_Ref_List_ID=543545
+UPDATE AD_Ref_List SET Name='Ausstehend' WHERE AD_Ref_List_ID=543545
 ;
 
 -- Reference Item: AD_WF_Approval_Request_Status -> A_Approved
