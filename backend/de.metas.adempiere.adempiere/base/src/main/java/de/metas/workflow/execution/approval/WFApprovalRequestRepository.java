@@ -7,6 +7,8 @@ import de.metas.cache.CCache;
 import de.metas.document.DocBaseType;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -123,8 +125,8 @@ public class WFApprovalRequestRepository
 				.docBaseType(DocBaseType.ofNullableCode(record.getDocBaseType()))
 				.documentNo(StringUtils.trimBlankToNull(record.getDocumentNo()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Vendor_ID()))
-				.activityId(record.getC_Activity_ID())
-				.projectId(record.getC_Project_ID())
+				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.totalAmt(extractTotalAmt(record))
 				.build();
 
@@ -187,9 +189,9 @@ public class WFApprovalRequestRepository
 	{
 		record.setDocBaseType(from != null && from.getDocBaseType() != null ? from.getDocBaseType().getCode() : null);
 		record.setDocumentNo(from != null ? StringUtils.trimBlankToNull(from.getDocumentNo()) : null);
-		record.setC_BPartner_Vendor_ID(from != null ? BPartnerId.toRepoId(from.getBpartnerId()) : -1);
-		record.setC_Activity_ID(from != null ? from.getActivityId() : -1);
-		record.setC_Project_ID(from != null ? from.getProjectId() : -1);
+		record.setC_BPartner_Vendor_ID(BPartnerId.toRepoId(from != null ? from.getBpartnerId() : null));
+		record.setC_Activity_ID(ActivityId.toRepoId(from != null ? from.getActivityId() : null));
+		record.setC_Project_ID(ProjectId.toRepoId(from != null ? from.getProjectId() : null));
 		record.setC_Currency_ID(from != null && from.getTotalAmt() != null ? from.getTotalAmt().getCurrencyId().getRepoId() : -1);
 		record.setTotalAmt(from != null && from.getTotalAmt() != null ? from.getTotalAmt().toBigDecimal() : BigDecimal.ZERO);
 	}

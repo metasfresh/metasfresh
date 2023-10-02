@@ -3,6 +3,8 @@ package de.metas.workflow.execution.approval;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocBaseType;
 import de.metas.money.Money;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
@@ -76,8 +78,8 @@ public class WFApprovalRequest
 		@Nullable String documentNo;
 		@Nullable DocBaseType docBaseType;
 		@Nullable BPartnerId bpartnerId;
-		@Nullable int activityId;
-		@Nullable int projectId;
+		@Nullable ActivityId activityId;
+		@Nullable ProjectId projectId;
 		@Nullable Money totalAmt;
 	}
 }

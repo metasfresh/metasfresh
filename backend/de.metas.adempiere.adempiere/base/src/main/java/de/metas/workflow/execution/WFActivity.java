@@ -43,6 +43,8 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.report.ReportResultData;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -798,9 +800,9 @@ public class WFActivity
 		if (I_C_Order.Table_Name.equals(tableName))
 		{
 			final I_C_Order order = document.getDocumentModelAs(I_C_Order.class);
-			builder.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-					.activityId(order.getC_Activity_ID())
-					.projectId(order.getC_Project_ID())
+			builder.bpartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()))
+					.activityId(ActivityId.ofRepoIdOrNull(order.getC_Activity_ID()))
+					.projectId(ProjectId.ofRepoIdOrNull(order.getC_Project_ID()))
 					.totalAmt(Money.of(order.getGrandTotal(), CurrencyId.ofRepoId(order.getC_Currency_ID())));
 		}
 		else
@@ -809,11 +811,11 @@ public class WFActivity
 					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, BPartnerId.class))
 					.orElse(null));
 			builder.activityId(document.getValue("C_Activity_ID")
-					.map(obj -> NumberUtils.asInt(obj, -1))
-					.orElse(-1));
-			builder.activityId(document.getValue("C_Project_ID")
-					.map(obj -> NumberUtils.asInt(obj, -1))
-					.orElse(-1));
+					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, ActivityId.class))
+					.orElse(null));
+			builder.projectId(document.getValue("C_Project_ID")
+					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, ProjectId.class))
+					.orElse(null));
 		}
 
 		return builder.build();
