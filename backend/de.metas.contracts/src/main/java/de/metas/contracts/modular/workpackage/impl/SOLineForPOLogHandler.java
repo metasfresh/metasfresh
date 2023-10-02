@@ -150,7 +150,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 											.productId(productId)
 											.documentType(LogEntryDocumentType.SALES_ORDER)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.PURCHASE)
+											.soTrx(SOTrx.SALES)
 											.processed(false)
 											.quantity(quantity)
 											.transactionDate(transactionDate)

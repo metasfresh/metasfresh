@@ -142,7 +142,7 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler<I_C
 											.productId(productId)
 											.documentType(LogEntryDocumentType.PRO_FORMA_SO)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.PURCHASE)
+											.soTrx(SOTrx.SALES)
 											.processed(false)
 											.quantity(quantity)
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(orderRecord.getDateOrdered(),

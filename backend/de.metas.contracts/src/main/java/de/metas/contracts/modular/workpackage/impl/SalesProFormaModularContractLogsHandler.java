@@ -137,7 +137,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 											.warehouseId(warehouseId)
 											.documentType(LogEntryDocumentType.SALES_MODULAR_CONTRACT) //TODO ProFormaSoModularContract
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+											.soTrx(SOTrx.SALES)
 											.processed(false)
 											.quantity(quantity)
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(modularContractRecord.getStartDate(),
