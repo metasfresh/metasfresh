@@ -223,11 +223,11 @@ Feature: Modular contract log for proForma Sales Order
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier       | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier    | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier        | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx | OPT.ModCntr_Module_ID.Identifier        | OPT.Amount | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
       | Log_1                     | moduleLogContract_SO_S0315 | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_Flatrate_Term | moduleLogContract_SO_S0315    | modCntr_type_MC_proForma_SO_S0315     | false         | SalesModularContract         | year_2022                         | true        | modCntr_module_MC_proForma_SO_S0315     | 100        | 10              | PCE                       |
       | Log_2                     | soLine_1_S0315             | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_OrderLine     | moduleLogContract_SO_S0315    | modCntr_type_proForma_SO_S0315        | false         | ProFormaSO                   | year_2022                         | true        | modCntr_module_proForma_SO_S0315        | 100        | 10              | PCE                       |
-      | Log_3                     | soLine_1_S0315             | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_OrderLine     | moduleLogContract_PO_S0315    | modCntr_type_proForma_SO_for_PO_S0315 | false         | ProFormaSO                   | year_2022                         | true        | modCntr_module_proForma_SO_for_PO_S0315 | 100        | 10              | PCE                       |
+      | Log_3                     | soLine_1_S0315             | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_OrderLine     | moduleLogContract_PO_S0315    | modCntr_type_proForma_SO_for_PO_S0315 | false         | ProFormaSO                   | year_2022                         | false       | modCntr_module_proForma_SO_for_PO_S0315 | 100        | 10              | PCE                       |
 
     And after not more than 120s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier       | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
-      | soLine_1_S0315             | C_OrderLine     | SP               | 2                   |
+      | soLine_1_S0315             | C_OrderLine     | SP               | 1                   |
       | moduleLogContract_SO_S0315 | C_Flatrate_Term | SP               | 1                   |
 
     And recompute modular logs for record:
@@ -237,22 +237,23 @@ Feature: Modular contract log for proForma Sales Order
 
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier       | TableName       | ProcessingStatus | OPT.noOfLogStatuses |
-      | soLine_1_S0315             | C_OrderLine     | SP               | 4                   |
+      | soLine_1_S0315             | C_OrderLine     | SP               | 2                   |
       | moduleLogContract_SO_S0315 | C_Flatrate_Term | SP               | 2                   |
 
-#    And after not more than 30s, ModCntr_Logs are found:
-#      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier    | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-#      | shipLog_1_S0315           | s_l_1_S0315          | ModularContract | bp_moduleLogProFormaPO                             | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO           | bp_moduleLogProFormaSO       | 8   | M_InOutLine | moduleLogContract_SO_S0315    | modCntr_type_SO_SHIP_S0315     | false         | Shipment                     | year_2022                         | true        |
-#
+    And after not more than 120s, ModCntr_Logs are found:
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier       | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier    | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier        | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx | OPT.ModCntr_Module_ID.Identifier        | OPT.Amount | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
+      | Log_1                     | moduleLogContract_SO_S0315 | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_Flatrate_Term | moduleLogContract_SO_S0315    | modCntr_type_MC_proForma_SO_S0315     | false         | SalesModularContract         | year_2022                         | true        | modCntr_module_MC_proForma_SO_S0315     | 100        | 10              | PCE                       |
+      | Log_2                     | soLine_1_S0315             | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_OrderLine     | moduleLogContract_SO_S0315    | modCntr_type_proForma_SO_S0315        | false         | ProFormaSO                   | year_2022                         | true        | modCntr_module_proForma_SO_S0315        | 100        | 10              | PCE                       |
+      | Log_3                     | soLine_1_S0315             | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_OrderLine     | moduleLogContract_PO_S0315    | modCntr_type_proForma_SO_for_PO_S0315 | false         | ProFormaSO                   | year_2022                         | false       | modCntr_module_proForma_SO_for_PO_S0315 | 100        | 10              | PCE                       |
 
     And load AD_Message:
       | Identifier            | Value                                  |
       | docAction_not_allowed | de.metas.contracts.DocActionNotAllowed |
 
-    And the order identified by po_order is reversed expecting error
+    And the order identified by so_order_S0315 is reversed expecting error
       | OPT.AD_Message_ID.Identifier |
       | docAction_not_allowed        |
 
-    And the order identified by po_order is voided expecting error
+    And the order identified by so_order_S0315 is voided expecting error
       | OPT.AD_Message_ID.Identifier |
       | docAction_not_allowed        |
