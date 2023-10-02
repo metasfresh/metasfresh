@@ -1,6 +1,5 @@
 package de.metas.workflow.execution.approval.strategy;
 
-import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.money.Money;
 import de.metas.notification.UserNotificationRequest.TargetAction;
@@ -11,6 +10,7 @@ import de.metas.workflow.WFResponsible;
 import de.metas.workflow.execution.WFActivityId;
 import de.metas.workflow.execution.WFProcessId;
 import de.metas.workflow.execution.WorkflowExecutionContext;
+import de.metas.workflow.execution.approval.WFApprovalRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -34,8 +34,7 @@ public interface WFApprovalStrategy
 		@NonNull TableRecordReference documentRef;
 		@NonNull UserId documentOwnerId;
 		@NonNull ClientAndOrgId clientAndOrgId;
-		@Nullable String documentNo;
-		@Nullable DocBaseType docBaseType;
+		@NonNull WFApprovalRequest.DocumentInfo documentInfo;
 
 		@Nullable Money amountToApprove;
 

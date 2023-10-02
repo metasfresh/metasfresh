@@ -164,7 +164,7 @@ public interface I_AD_WF_Approval_Request
 	 * Set Activity.
 	 * Business Activity
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -174,7 +174,7 @@ public interface I_AD_WF_Approval_Request
 	 * Get Activity.
 	 * Business Activity
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -203,10 +203,32 @@ public interface I_AD_WF_Approval_Request
 	String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
 
 	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -216,7 +238,7 @@ public interface I_AD_WF_Approval_Request
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

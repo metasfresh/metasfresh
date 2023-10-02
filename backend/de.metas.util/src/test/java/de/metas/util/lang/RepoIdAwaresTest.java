@@ -97,6 +97,69 @@ public class RepoIdAwaresTest
 	}
 
 	@Nested
+	class ofObjectOrNull
+	{
+		@Nested
+		class regression
+		{
+			@Test
+			void ofDummyId()
+			{
+				final DummyId id = DummyId.ofRepoId(1234);
+				assertThat(RepoIdAwares.ofObjectOrNull(id, DummyId.class)).isSameAs(id);
+			}
+
+			@Test
+			void ofInt()
+			{
+				assertThat(RepoIdAwares.ofObjectOrNull(1234, DummyId.class)).isEqualTo(DummyId.ofRepoId(1234));
+			}
+
+			@Test
+			void ofBigDecimal()
+			{
+				assertThat(RepoIdAwares.ofObjectOrNull(new BigDecimal("1234.00"), DummyId.class)).isEqualTo(DummyId.ofRepoId(1234));
+			}
+
+			@Test
+			void ofString()
+			{
+				assertThat(RepoIdAwares.ofObjectOrNull("1234", DummyId.class)).isEqualTo(DummyId.ofRepoId(1234));
+			}
+		}
+
+		@Test
+		void ofNull()
+		{
+			assertThat(RepoIdAwares.ofObjectOrNull(null, DummyId.class)).isNull();
+		}
+
+		@Test
+		void ofEmptyString()
+		{
+			assertThat(RepoIdAwares.ofObjectOrNull("", DummyId.class)).isNull();
+		}
+
+		@Test
+		void ofBlankString()
+		{
+			assertThat(RepoIdAwares.ofObjectOrNull("    ", DummyId.class)).isNull();
+		}
+
+		@Test
+		void ofNegativeInt()
+		{
+			assertThat(RepoIdAwares.ofObjectOrNull(-1, DummyId.class)).isNull();
+		}
+
+		@Test
+		void ofZeroInt()
+		{
+			assertThat(RepoIdAwares.ofObjectOrNull(0, DummyId.class)).isNull();
+		}
+	}
+
+	@Nested
 	class ofCommaSeparatedList
 	{
 		@Test

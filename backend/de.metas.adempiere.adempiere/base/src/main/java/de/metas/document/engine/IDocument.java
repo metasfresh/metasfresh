@@ -192,6 +192,8 @@ public interface IDocument
 	 */
 	boolean save();
 
+	String get_TableName();
+
 	String get_TrxName();
 
 	void set_TrxName(String trxName);
@@ -210,6 +212,11 @@ public interface IDocument
 	default Object getDocumentModel()
 	{
 		return this;
+	}
+
+	default <T> T getDocumentModelAs(@NonNull final Class<T> modelType)
+	{
+		return InterfaceWrapperHelper.create(getDocumentModel(), modelType);
 	}
 
 	default Optional<Object> getValue(@NonNull final String columnName)

@@ -23,6 +23,7 @@
 package de.metas.workflow.execution;
 
 import de.metas.ad_reference.ReferenceId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
@@ -42,12 +43,15 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.report.ReportResultData;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAwares;
 import de.metas.workflow.WFAction;
 import de.metas.workflow.WFEventAudit;
 import de.metas.workflow.WFEventAuditType;
@@ -60,6 +64,7 @@ import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
 import de.metas.workflow.WorkflowId;
+import de.metas.workflow.execution.approval.WFApprovalRequest;
 import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
 import de.metas.workflow.execution.approval.strategy.impl.RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy;
 import lombok.Getter;
@@ -71,6 +76,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.util.DisplayType;
@@ -773,8 +779,7 @@ public class WFActivity
 				.documentRef(documentRef)
 				.documentOwnerId(documentOwnerId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(document.getAD_Client_ID(), document.getAD_Org_ID()))
-				.documentNo(document.getDocumentNo())
-				.docBaseType(context.getDocBaseType(document).orElse(null))
+				.documentInfo(newWFApprovalRequestDocumentInfo(document))
 				//
 				.amountToApprove(amountToApprove)
 				//
@@ -783,6 +788,37 @@ public class WFActivity
 				.wfProcessId(getWfProcessId())
 				.wfActivityId(getId())
 				.build();
+	}
+
+	private WFApprovalRequest.DocumentInfo newWFApprovalRequestDocumentInfo(@NonNull final IDocument document)
+	{
+		final WFApprovalRequest.DocumentInfo.DocumentInfoBuilder builder = WFApprovalRequest.DocumentInfo.builder()
+				.documentNo(document.getDocumentNo())
+				.docBaseType(context.getDocBaseType(document).orElse(null));
+
+		final String tableName = document.get_TableName();
+		if (I_C_Order.Table_Name.equals(tableName))
+		{
+			final I_C_Order order = document.getDocumentModelAs(I_C_Order.class);
+			builder.bpartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()))
+					.activityId(ActivityId.ofRepoIdOrNull(order.getC_Activity_ID()))
+					.projectId(ProjectId.ofRepoIdOrNull(order.getC_Project_ID()))
+					.totalAmt(Money.of(order.getGrandTotal(), CurrencyId.ofRepoId(order.getC_Currency_ID())));
+		}
+		else
+		{
+			builder.bpartnerId(document.getValue("C_BPartner_ID")
+					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, BPartnerId.class))
+					.orElse(null));
+			builder.activityId(document.getValue("C_Activity_ID")
+					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, ActivityId.class))
+					.orElse(null));
+			builder.projectId(document.getValue("C_Project_ID")
+					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, ProjectId.class))
+					.orElse(null));
+		}
+
+		return builder.build();
 	}
 
 	private WFApprovalStrategy getApprovalStrategy()

@@ -112,8 +112,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 			approvalRequests.add(
 					WFApprovalRequest.builder()
 							.documentRef(request.getDocumentRef())
-							.documentNo(request.getDocumentNo())
-							.docBaseType(request.getDocBaseType())
+							.documentInfo(request.getDocumentInfo())
 							//
 							.seqNo(seqNoProvider.getAndIncrement())
 							.userId(approverId)
@@ -160,7 +159,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 			final HashSet<UserId> seenSupervisorIds = new HashSet<>();
 			while (supervisorId != null)
 			{
-				if(!seenSupervisorIds.add(supervisorId))
+				if (!seenSupervisorIds.add(supervisorId))
 				{
 					logger.warn("Cycle detected in supervisors hierarchy: {}", seenSupervisorIds);
 					break;
