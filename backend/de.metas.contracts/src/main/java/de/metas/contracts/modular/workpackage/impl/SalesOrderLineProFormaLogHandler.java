@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.impl.SalesOrderLineProFormaModularContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -77,7 +76,6 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler<I_C
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);

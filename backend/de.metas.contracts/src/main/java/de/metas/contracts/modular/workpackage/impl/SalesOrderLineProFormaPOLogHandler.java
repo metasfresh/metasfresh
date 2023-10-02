@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.impl.SalesOrderLineProFormaPOModularContractHandler;
@@ -76,7 +75,6 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler<I
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SalesOrderLineProFormaPOLogHandler.OnReverse.Description");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
