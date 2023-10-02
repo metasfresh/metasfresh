@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.2.3'
+  PIPELINE_VERSION: '0.2.4'
 jobs:
 
   init:
@@ -296,9 +296,9 @@ jobs:
       - name: push-images
         uses: nick-fields/retry@v2
         with:
-          max_attempts: 3
+          max_attempts: 2
           retry_wait_seconds: 60
-          timeout_minutes: 5
+          timeout_minutes: 15
           command: |
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
