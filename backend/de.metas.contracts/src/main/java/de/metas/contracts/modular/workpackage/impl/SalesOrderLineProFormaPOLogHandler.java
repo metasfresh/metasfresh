@@ -24,7 +24,6 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.impl.SalesOrderLineProFormaPOModularContractHandler;
@@ -115,14 +114,13 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler<I
 	{
 		final I_C_OrderLine orderLine = createLogRequest.getHandleLogsRequest().getModel();
 
-		final I_C_Flatrate_Term contract = flatrateBL.getById(createLogRequest.getContractId());
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
-
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		final Quantity quantity = Quantitys.create(orderLine.getQtyEntered(), uomId);
 
 		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		final BPartnerId warehousePartnerId = warehouseBL.getBPartnerId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()));
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(orderRecord.getBill_BPartner_ID());
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
@@ -136,12 +134,12 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler<I
 											.contractId(createLogRequest.getContractId())
 											.collectionPointBPartnerId(warehousePartnerId)
 											.producerBPartnerId(bPartnerId)
-											.invoicingBPartnerId(bPartnerId)
+											.invoicingBPartnerId(billBPartnerId)
 											.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
 											.productId(productId)
 											.documentType(LogEntryDocumentType.PRO_FORMA_SO)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.SALES)
+											.soTrx(SOTrx.PURCHASE)
 											.processed(false)
 											.quantity(quantity)
 											.transactionDate(LocalDateAndOrgId.ofTimestamp(orderRecord.getDateOrdered(),

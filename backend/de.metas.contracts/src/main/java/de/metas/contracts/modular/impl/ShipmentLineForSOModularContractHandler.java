@@ -76,7 +76,7 @@ public class ShipmentLineForSOModularContractHandler implements IModularContract
 		{
 			return false;
 		}
-		return inOutRecord.isSOTrx() && !orderBL.isProFormaSO(orderBL.getById(orderId));
+		return inOutRecord.isSOTrx();
 	}
 
 	@Override
