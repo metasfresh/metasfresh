@@ -55,7 +55,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 	@NonNull private final JobService jobService;
 	@NonNull private final WFApprovalRequestRepository wfApprovalRequestRepository;
 
-	private static final AdWindowId WINDOW_ID_MyApprovals = AdWindowId.ofRepoId(541730); // FIXME replace it with actual My Approvals window
+	private static final AdWindowId WINDOW_ID_MyApprovals = AdWindowId.ofRepoId(541736);
 
 	@Override
 	public Response approve(@NonNull final WFApprovalStrategy.Request request)
