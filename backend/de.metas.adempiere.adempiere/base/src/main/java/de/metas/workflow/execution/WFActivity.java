@@ -23,6 +23,7 @@
 package de.metas.workflow.execution;
 
 import de.metas.ad_reference.ReferenceId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
@@ -36,17 +37,21 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.report.ReportResultData;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAwares;
 import de.metas.workflow.WFAction;
 import de.metas.workflow.WFEventAudit;
 import de.metas.workflow.WFEventAuditType;
@@ -59,6 +64,7 @@ import de.metas.workflow.WFResponsible;
 import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
 import de.metas.workflow.WorkflowId;
+import de.metas.workflow.execution.approval.WFApprovalRequest;
 import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
 import de.metas.workflow.execution.approval.strategy.impl.RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy;
 import lombok.Getter;
@@ -70,6 +76,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.util.DisplayType;
@@ -93,7 +100,13 @@ public class WFActivity
 {
 	private static final Logger log = LogManager.getLogger(WFActivity.class);
 
+	/**
+	 * User {0} requested you to approve {1}
+	 */
 	private static final AdMessageKey MSG_DocumentApprovalRequest = AdMessageKey.of("DocumentApprovalRequest");
+	/**
+	 * Document {0} was sent to be approved by {1}
+	 */
 	private static final AdMessageKey MSG_DocumentSentToApproval = AdMessageKey.of("DocumentSentToApproval");
 	//private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
@@ -730,14 +743,18 @@ public class WFActivity
 			public PerformWorkResult pending() {return PerformWorkResult.SUSPENDED;}
 
 			@Override
-			public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId, @Nullable TableRecordReference documentToOpen)
+			public PerformWorkResult forwardTo(@NonNull final UserId forwardToUserId, @Nullable UserNotificationRequest.TargetAction notificationTargetAction)
 			{
-				WFActivity.this.forwardTo(forwardToUserId, msgApprovalRequest(), documentToOpen);
+				final UserId invokerId = request.getWorkflowInvokerId();
+
+				WFActivity.this.forwardTo(forwardToUserId,
+						ADMessageAndParams.of(MSG_DocumentApprovalRequest, context.getUserFullnameById(invokerId), documentRef),
+						notificationTargetAction);
 
 				context.sendNotification(WFUserNotification.builder()
-						.userId(request.getWorkflowInvokerId())
+						.userId(invokerId)
 						.content(MSG_DocumentSentToApproval, documentRef, context.getUserFullnameById(forwardToUserId))
-						.documentToOpen(documentToOpen)
+						.documentToOpen(documentRef)
 						.build());
 
 				return PerformWorkResult.SUSPENDED;
@@ -762,8 +779,7 @@ public class WFActivity
 				.documentRef(documentRef)
 				.documentOwnerId(documentOwnerId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(document.getAD_Client_ID(), document.getAD_Org_ID()))
-				.documentNo(document.getDocumentNo())
-				.docBaseType(context.getDocBaseType(document).orElse(null))
+				.documentInfo(newWFApprovalRequestDocumentInfo(document))
 				//
 				.amountToApprove(amountToApprove)
 				//
@@ -774,17 +790,42 @@ public class WFActivity
 				.build();
 	}
 
+	private WFApprovalRequest.DocumentInfo newWFApprovalRequestDocumentInfo(@NonNull final IDocument document)
+	{
+		final WFApprovalRequest.DocumentInfo.DocumentInfoBuilder builder = WFApprovalRequest.DocumentInfo.builder()
+				.documentNo(document.getDocumentNo())
+				.docBaseType(context.getDocBaseType(document).orElse(null));
+
+		final String tableName = document.get_TableName();
+		if (I_C_Order.Table_Name.equals(tableName))
+		{
+			final I_C_Order order = document.getDocumentModelAs(I_C_Order.class);
+			builder.bpartnerId(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()))
+					.activityId(ActivityId.ofRepoIdOrNull(order.getC_Activity_ID()))
+					.projectId(ProjectId.ofRepoIdOrNull(order.getC_Project_ID()))
+					.totalAmt(Money.of(order.getGrandTotal(), CurrencyId.ofRepoId(order.getC_Currency_ID())));
+		}
+		else
+		{
+			builder.bpartnerId(document.getValue("C_BPartner_ID")
+					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, BPartnerId.class))
+					.orElse(null));
+			builder.activityId(document.getValue("C_Activity_ID")
+					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, ActivityId.class))
+					.orElse(null));
+			builder.projectId(document.getValue("C_Project_ID")
+					.map(obj -> RepoIdAwares.ofObjectOrNull(obj, ProjectId.class))
+					.orElse(null));
+		}
+
+		return builder.build();
+	}
+
 	private WFApprovalStrategy getApprovalStrategy()
 	{
 		// TODO
 		//return SpringContextHolder.instance.getBean(StandardApprovalStrategy.class);
 		return SpringContextHolder.instance.getBean(RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy.class);
-	}
-
-	private ADMessageAndParams msgApprovalRequest()
-	{
-		final String invokerName = context.getUserFullname();
-		return ADMessageAndParams.of(MSG_DocumentApprovalRequest, invokerName, getDocumentRef());
 	}
 
 	private void setVariable(@Nullable final String valueStr, final int displayType)
@@ -822,7 +863,7 @@ public class WFActivity
 	private void forwardTo(
 			@NonNull final UserId newUserId,
 			@NonNull final ADMessageAndParams subject,
-			@Nullable TableRecordReference documentToOpen)
+			@Nullable UserNotificationRequest.TargetAction notificationTargetAction)
 	{
 		final UserId oldUserId = getUserId();
 		if (UserId.equals(newUserId, oldUserId))
@@ -841,7 +882,9 @@ public class WFActivity
 		context.sendNotification(WFUserNotification.builder()
 				.userId(newUserId)
 				.content(subject)
-				.documentToOpen(CoalesceUtil.coalesce(documentToOpen, getDocumentRef()))
+				.targetAction(notificationTargetAction != null
+						? notificationTargetAction
+						: UserNotificationRequest.TargetRecordAction.of(getDocumentRef()))
 				.build());
 
 		context.addEventAudit(prepareEventAudit(WFEventAuditType.StateChanged)

@@ -278,6 +278,12 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	}
 
 	@Override
+	public final String get_TableName()
+	{
+		return InterfaceWrapperHelper.getModelTableName(model);
+	}
+
+	@Override
 	public String get_TrxName()
 	{
 		return InterfaceWrapperHelper.getTrxName(model);

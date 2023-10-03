@@ -13,6 +13,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -30,6 +31,7 @@ import de.metas.workflow.execution.approval.WFApprovalRequestStatus;
 import de.metas.workflow.execution.approval.strategy.WFApprovalStrategy;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -53,6 +55,8 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 	@NonNull private final JobService jobService;
 	@NonNull private final WFApprovalRequestRepository wfApprovalRequestRepository;
 
+	private static final AdWindowId WINDOW_ID_MyApprovals = AdWindowId.ofRepoId(541736);
+
 	@Override
 	public Response approve(@NonNull final WFApprovalStrategy.Request request)
 	{
@@ -74,7 +78,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 				}
 				case Pending ->
 				{
-					return Response.forwardTo(approvalRequest.getUserId(), approvalRequest.toTableRecordReference());
+					return Response.forwardTo(approvalRequest.getUserId(), UserNotificationRequest.TargetViewAction.openNewView(WINDOW_ID_MyApprovals));
 				}
 			}
 		}
@@ -108,8 +112,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 			approvalRequests.add(
 					WFApprovalRequest.builder()
 							.documentRef(request.getDocumentRef())
-							.documentNo(request.getDocumentNo())
-							.docBaseType(request.getDocBaseType())
+							.documentInfo(request.getDocumentInfo())
 							//
 							.seqNo(seqNoProvider.getAndIncrement())
 							.userId(approverId)
@@ -156,7 +159,7 @@ public class RequestorHierarcyProjectManagerPlusCTO_ApprovalStrategy implements 
 			final HashSet<UserId> seenSupervisorIds = new HashSet<>();
 			while (supervisorId != null)
 			{
-				if(!seenSupervisorIds.add(supervisorId))
+				if (!seenSupervisorIds.add(supervisorId))
 				{
 					logger.warn("Cycle detected in supervisors hierarchy: {}", seenSupervisorIds);
 					break;

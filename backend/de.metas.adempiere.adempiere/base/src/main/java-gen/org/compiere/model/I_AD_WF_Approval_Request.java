@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -158,6 +159,92 @@ public interface I_AD_WF_Approval_Request
 	int getAD_WF_Process_ID();
 
 	String COLUMNNAME_AD_WF_Process_ID = "AD_WF_Process_ID";
+
+	/**
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Vendor.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
+
+	/**
+	 * Get Vendor.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Vendor_ID();
+
+	String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Get Created.
@@ -365,6 +452,29 @@ public interface I_AD_WF_Approval_Request
 
 	ModelColumn<I_AD_WF_Approval_Request, Object> COLUMN_Status = new ModelColumn<>(I_AD_WF_Approval_Request.class, "Status", null);
 	String COLUMNNAME_Status = "Status";
+
+	/**
+	 * Set Total Amount.
+	 * Total Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTotalAmt (@Nullable BigDecimal TotalAmt);
+
+	/**
+	 * Get Total Amount.
+	 * Total Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalAmt();
+
+	ModelColumn<I_AD_WF_Approval_Request, Object> COLUMN_TotalAmt = new ModelColumn<>(I_AD_WF_Approval_Request.class, "TotalAmt", null);
+	String COLUMNNAME_TotalAmt = "TotalAmt";
 
 	/**
 	 * Get Updated.
