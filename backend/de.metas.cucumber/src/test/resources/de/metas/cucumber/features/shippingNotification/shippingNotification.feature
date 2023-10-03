@@ -51,6 +51,16 @@ Feature: Shipping Notifications
     And metasfresh contains C_Auction:
       | Identifier | Name     | Date       |
       | Auction_1  | Auction1 | 2023-09-21 |
+    And load C_Element:
+      | C_Element_ID.Identifier | OPT.C_Element_ID |
+      | element_1               | 1000000          |
+    And load C_ElementValue:
+      | C_ElementValue_ID.Identifier | C_Element_ID.Identifier | Value |
+      | elementValue_1               | element_1               | 90000 |
+      | elementValue_2               | element_1               | 90055 |
+    And load C_Currency:
+      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
+      | chf                      | 318               |
 
 
   @from:cucumber
@@ -84,6 +94,12 @@ Feature: Shipping Notifications
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
       | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-20                |
       | s_ol_2                           | 10           | 0            | 10         | false     | 2021-04-20                |
+    And after not more than 30s, the shippingNotification document with identifier shippingNotification_21092023 has the following accounting records:
+      | Fact_Acct_ID.Identifier | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | factAcct_1              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_2              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_3              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDefault                     | p_2                         | locator                     |
+      | factAcct_4              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDefault                     | p_2                         | locator                     |
 
   @from:cucumber
   Scenario: we can generate 2 shipping notifications for sales order and the previous one is reversed
@@ -123,12 +139,24 @@ Feature: Shipping Notifications
       | M_Shipping_Notification_ID.Identifier | Reversal_ID.Identifier        |
       | reversalShippingNotification_21092023 | shippingNotification_21092023 |
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
-      | o_1                   | endcustomer_1            | bpLocationDefault                 | 2021-04-17  | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2021-04-19                |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference          | processed | docStatus | OPT.PhysicalClearanceDate |
+      | o_1                   | endcustomer_1            | bpLocationDefault                 | SOO         | EUR          | F            | P               | POReference_21092023 | true      | CO        | 2021-04-19                |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | QtyDelivered | QtyOrdered | Processed | OPT.PhysicalClearanceDate |
       | s_ol_1                           | 10           | 0            | 10         | false     | 2021-04-19                |
       | s_ol_2                           | 10           | 0            | 10         | false     | 2021-04-19                |
+    And after not more than 30s, the shippingNotification document with identifier shippingNotification_21092023 has the following accounting records:
+      | Fact_Acct_ID.Identifier | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | factAcct_1              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_2              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_3              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDefault                     | p_2                         | locator                     |
+      | factAcct_4              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDefault                     | p_2                         | locator                     |
+    And after not more than 30s, the shippingNotification document with identifier reversalShippingNotification_21092023 has the following accounting records:
+      | Fact_Acct_ID.Identifier | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | factAcct_5              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | -10     | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_6              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | 10      | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_7              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | -10     | bpLocationDefault                     | p_2                         | locator                     |
+      | factAcct_8              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | 10      | bpLocationDefault                     | p_2                         | locator                     |
 
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order and after the order is voided, the notification is reversed
@@ -158,6 +186,18 @@ Feature: Shipping Notifications
     And after not more than 30s, locate reversal M_Shipping_Notifications
       | M_Shipping_Notification_ID.Identifier | Reversal_ID.Identifier        |
       | reversalShippingNotification_21092023 | shippingNotification_21092023 |
+    And after not more than 30s, the shippingNotification document with identifier shippingNotification_21092023 has the following accounting records:
+      | Fact_Acct_ID.Identifier | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | factAcct_1              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_2              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_3              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDefault                     | p_2                         | locator                     |
+      | factAcct_4              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDefault                     | p_2                         | locator                     |
+    And after not more than 30s, the shippingNotification document with identifier reversalShippingNotification_21092023 has the following accounting records:
+      | Fact_Acct_ID.Identifier | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | factAcct_5              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | -10     | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_6              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | 10      | bpLocationDefault                     | p_1                         | locator                     |
+      | factAcct_7              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | -10     | bpLocationDefault                     | p_2                         | locator                     |
+      | factAcct_8              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | 10      | bpLocationDefault                     | p_2                         | locator                     |
 
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order with dropship partner data and it will be passed to the notification
@@ -193,3 +233,9 @@ Feature: Shipping Notifications
       | M_Shipping_NotificationLine_ID.Identifier | M_Shipping_Notification_ID.Identifier | M_ShipmentSchedule_ID.Identifier | M_Product_ID.Identifier | MovementQty |
       | shippingNotificationLine_21092023_1       | shippingNotification_21092023         | s_ol_1                           | p_1                     | 10          |
       | shippingNotificationLine_21092023_2       | shippingNotification_21092023         | s_ol_2                           | p_2                     | 10          |
+    And after not more than 30s, the shippingNotification document with identifier shippingNotification_21092023 has the following accounting records:
+      | Fact_Acct_ID.Identifier | Account        | DR | CR | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | factAcct_1              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDropship                    | p_1                         | locator                     |
+      | factAcct_2              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDropship                    | p_1                         | locator                     |
+      | factAcct_3              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDropship                    | p_2                         | locator                     |
+      | factAcct_4              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDropship                    | p_2                         | locator                     |

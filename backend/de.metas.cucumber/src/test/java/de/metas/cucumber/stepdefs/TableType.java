@@ -26,5 +26,6 @@ public enum TableType
 {
 	invoice,
 	matchInvoice,
-	inout
+	inout,
+	shippingNotification
 }

@@ -4,12 +4,16 @@ import de.metas.acct.api.IPostingRequestBuilder;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_Currency_StepDefData;
 import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableType;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
@@ -20,7 +24,11 @@ import de.metas.cucumber.stepdefs.matchinv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.shippingNotification.M_Shipping_Notification_StepDefData;
 import de.metas.money.CurrencyId;
+import de.metas.product.ProductId;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -34,10 +42,12 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
@@ -45,7 +55,9 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
 
@@ -79,6 +91,10 @@ public class Fact_Acct_StepDef
 	private final C_Currency_StepDefData currencyTable;
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
+	private final M_Shipping_Notification_StepDefData shippingNotificationTable;
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final M_Locator_StepDefData locatorTable;
 
 	public Fact_Acct_StepDef(
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
@@ -91,7 +107,11 @@ public class Fact_Acct_StepDef
 			@NonNull final C_Currency_StepDefData currencyTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
 			@NonNull final C_Year_StepDefData yearTable,
-			@NonNull final M_InOut_StepDefData inoutTable)
+			@NonNull final M_InOut_StepDefData inoutTable,
+			@NonNull final M_Shipping_Notification_StepDefData shippingNotificationTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final M_Locator_StepDefData locatorTable)
 	{
 		this.sectionCodeTable = sectionCodeTable;
 		this.invoiceTable = invoiceTable;
@@ -104,6 +124,10 @@ public class Fact_Acct_StepDef
 		this.calendarTable = calendarTable;
 		this.yearTable = yearTable;
 		this.inoutTable = inoutTable;
+		this.shippingNotificationTable = shippingNotificationTable;
+		this.productTable = productTable;
+		this.bPartnerLocationTable = bPartnerLocationTable;
+		this.locatorTable = locatorTable;
 	}
 
 	@And("^after not more than (.*)s, Fact_Acct are found$")
@@ -159,7 +183,7 @@ public class Fact_Acct_StepDef
 		}
 	}
 
-	@And("^after not more than (.*)s, the (invoice|matchInvoice|inout) document with identifier (.*) has the following accounting records:$")
+	@And("^after not more than (.*)s, the (invoice|matchInvoice|inout|shippingNotification) document with identifier (.*) has the following accounting records:$")
 	public void find_Fact_Acct(
 			final int timeoutSec,
 			@NonNull final String tableType,
@@ -299,6 +323,34 @@ public class Fact_Acct_StepDef
 					final I_C_Year year = yearTable.get(yearIdentifier);
 					factAcctQueryBuilder.yearId(YearId.ofRepoId(year.getC_Year_ID()));
 				});
+
+		Optional.ofNullable(DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_Qty))
+				.ifPresent(factAcctQueryBuilder::qty);
+
+		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.ifPresent(bPartnerLocationIdentifier -> {
+					final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bPartnerLocationIdentifier);
+					factAcctQueryBuilder.bPartnerLocationId(BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID()));
+				});
+
+		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.ifPresent(productIdentifier -> {
+					final I_M_Product product = productTable.get(productIdentifier);
+					factAcctQueryBuilder.productId(ProductId.ofRepoId(product.getM_Product_ID()));
+				});
+
+		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.ifPresent(locatorIdentifier -> {
+					final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+					factAcctQueryBuilder.locatorId(LocatorId.ofRepoId(locator.getM_Warehouse_ID(), locator.getM_Locator_ID()));
+				});
+
+		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.ifPresent(sectionCodeIdentifier -> {
+					final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+					factAcctQueryBuilder.sectionCodeId(SectionCodeId.ofRepoId(sectionCode.getM_SectionCode_ID()));
+				});
+
 		return factAcctQueryBuilder
 				.build();
 	}
@@ -366,6 +418,24 @@ public class Fact_Acct_StepDef
 		Optional.ofNullable(factAcctQuery.getYearId())
 				.ifPresent(yearId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID, yearId));
 
+		Optional.ofNullable(factAcctQuery.getQty())
+				.ifPresent(qty -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Qty, qty));
+
+		Optional.ofNullable(factAcctQuery.getProductId())
+						.ifPresent(productId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Product_ID, productId));
+
+		Optional.ofNullable(factAcctQuery.getBPartnerLocationId())
+						.ifPresent(bPartnerLocationId -> {
+							queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_ID, bPartnerLocationId.getBpartnerId());
+							queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_BPartner_Location_ID, bPartnerLocationId);
+						});
+
+		Optional.ofNullable(factAcctQuery.getLocatorId())
+						.ifPresent(locatorId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Locator_ID, locatorId));
+
+		Optional.ofNullable(factAcctQuery.getSectionCodeId())
+						.ifPresent(sectionCodeId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_SectionCode_ID, sectionCodeId));
+
 		final I_Fact_Acct factAcctRecord = queryBuilder
 				.create()
 				.firstOnlyOrNull(I_Fact_Acct.class);
@@ -397,6 +467,8 @@ public class Fact_Acct_StepDef
 				return TableRecordReference.of(I_M_MatchInv.Table_Name, matchInvTable.get(identifier).getM_MatchInv_ID());
 			case inout:
 				return TableRecordReference.of(I_M_InOut.Table_Name, inoutTable.get(identifier).getM_InOut_ID());
+			case shippingNotification:
+				return TableRecordReference.of(I_M_Shipping_Notification.Table_Name, shippingNotificationTable.get(identifier).getM_Shipping_Notification_ID());
 			default:
 				throw new AdempiereException("Invalid table type!")
 						.appendParametersToMessage()
@@ -430,6 +502,21 @@ public class Fact_Acct_StepDef
 
 		@Nullable
 		YearId yearId;
+
+		@Nullable
+		BigDecimal qty;
+
+		@Nullable
+		ProductId productId;
+
+		@Nullable
+		SectionCodeId sectionCodeId;
+
+		@Nullable
+		LocatorId locatorId;
+
+		@Nullable
+		BPartnerLocationId bPartnerLocationId;
 
 		public int getRecord_ID()
 		{
