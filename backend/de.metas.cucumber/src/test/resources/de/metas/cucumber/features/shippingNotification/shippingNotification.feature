@@ -63,6 +63,7 @@ Feature: Shipping Notifications
       | chf                      | 318               |
 
 
+  @Id:S0322_100
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order and data is passed correctly to the notification and lines
     And metasfresh contains C_Orders:
@@ -101,6 +102,7 @@ Feature: Shipping Notifications
       | factAcct_3              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | 10      | bpLocationDefault                     | p_2                         | locator                     |
       | factAcct_4              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDefault                     | p_2                         | locator                     |
 
+  @Id:S0322_200
   @from:cucumber
   Scenario: we can generate 2 shipping notifications for sales order and the previous one is reversed
     And metasfresh contains C_Orders:
@@ -158,6 +160,7 @@ Feature: Shipping Notifications
       | factAcct_7              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | -10     | bpLocationDefault                     | p_2                         | locator                     |
       | factAcct_8              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | 10      | bpLocationDefault                     | p_2                         | locator                     |
 
+  @Id:S0322_300
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order and after the order is voided, the notification is reversed
     And metasfresh contains C_Orders:
@@ -199,6 +202,7 @@ Feature: Shipping Notifications
       | factAcct_7              | elementValue_2 | 0  | 0  | chf                      | P_ExternallyOwnedStock_Acct | -10     | bpLocationDefault                     | p_2                         | locator                     |
       | factAcct_8              | elementValue_1 | 0  | 0  | chf                      | P_Asset_Acct                | 10      | bpLocationDefault                     | p_2                         | locator                     |
 
+  @Id:S0322_400
   @from:cucumber
   Scenario: we can generate shipping notifications for sales order with dropship partner data and it will be passed to the notification
     And metasfresh contains C_BPartners without locations:
