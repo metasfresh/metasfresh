@@ -86,15 +86,42 @@ public class Step
 	public String toString()
 	{
 		// NOTE: keep it concise, important for optaplanner troubleshooting
-		return getStartDate() + " -> " + getEndDate()
-				+ " (" + duration + ")"
-				+ ": dueDate=" + dueDate
-				+ ", startDateMin=" + startDateMin
-				+ ", delay=" + getDelayAsDuration() + "(max. " + computeDelayMax() + ")"
-				+ ", " + resource
-				+ ", " + getProjectId()
-				+ ", humanResourceTestGroupDuration=" + getHumanResourceTestGroupDuration()
-				+ ", ID=" + (id != null ? id.getWoProjectResourceId().getRepoId() : "?");
+		final StringBuilder sb = new StringBuilder();
+
+		final LocalDateTime startDate = getStartDate();
+		sb.append(startDate).append(" -> ");
+
+		final LocalDateTime endDate = getEndDate();
+		if (startDate.toLocalDate().equals(endDate.toLocalDate()))
+		{
+			sb.append(endDate.toLocalTime());
+		}
+		else
+		{
+			sb.append(endDate);
+		}
+
+		sb.append(" (").append(duration).append(")");
+		sb.append(": ");
+
+		// + ": dueDate=" + dueDate
+		// + ", startDateMin=" + startDateMin
+		// + ", delay=" + getDelayAsDuration() + "(max. " + computeDelayMax() + ")"
+
+		sb.append(resource);
+		sb.append(", P=").append(getProjectId().getRepoId());
+
+		if (humanResourceTestGroupDuration != null && !humanResourceTestGroupDuration.isZero())
+		{
+			sb.append(", duration(HR)=").append(humanResourceTestGroupDuration);
+		}
+
+		if (id != null)
+		{
+			sb.append(", ID=").append(id.getWoProjectResourceId().getRepoId());
+		}
+
+		return sb.toString();
 	}
 
 	public BooleanWithReason checkProblemFactsValid()
