@@ -1,8 +1,8 @@
 package de.metas.workflow.execution.approval.strategy;
 
-import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.money.Money;
+import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -10,11 +10,12 @@ import de.metas.workflow.WFResponsible;
 import de.metas.workflow.execution.WFActivityId;
 import de.metas.workflow.execution.WFProcessId;
 import de.metas.workflow.execution.WorkflowExecutionContext;
+import de.metas.workflow.execution.approval.WFApprovalRequest;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -33,8 +34,7 @@ public interface WFApprovalStrategy
 		@NonNull TableRecordReference documentRef;
 		@NonNull UserId documentOwnerId;
 		@NonNull ClientAndOrgId clientAndOrgId;
-		@Nullable String documentNo;
-		@Nullable DocBaseType docBaseType;
+		@NonNull WFApprovalRequest.DocumentInfo documentInfo;
 
 		@Nullable Money amountToApprove;
 
@@ -46,7 +46,7 @@ public interface WFApprovalStrategy
 		public IDocument getDocument() {return context.getDocument(documentRef);}
 	}
 
-	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	@EqualsAndHashCode
 	@ToString
 	class Response
@@ -54,9 +54,9 @@ public interface WFApprovalStrategy
 		public enum Type
 		{APPROVED, REJECTED, PENDING, FORWARD_TO}
 
-		@NonNull WFApprovalStrategy.Response.Type type;
-		@Nullable UserId forwardToUserId;
-		@Nullable TableRecordReference documentToOpen;
+		@NonNull private final WFApprovalStrategy.Response.Type type;
+		@Nullable private final UserId forwardToUserId;
+		@Nullable private final TargetAction notificationTargetAction;
 
 		public static final Response APPROVED = new Response(Type.APPROVED, null, null);
 		public static final Response REJECTED = new Response(Type.REJECTED, null, null);
@@ -64,7 +64,7 @@ public interface WFApprovalStrategy
 
 		public static Response forwardTo(@NonNull final UserId userId) {return new Response(Type.FORWARD_TO, userId, null);}
 
-		public static Response forwardTo(@NonNull final UserId userId, @Nullable TableRecordReference documentToOpen) {return new Response(Type.FORWARD_TO, userId, documentToOpen);}
+		public static Response forwardTo(@NonNull final UserId userId, @NonNull TargetAction notificationTargetAction) {return new Response(Type.FORWARD_TO, userId, notificationTargetAction);}
 
 		public interface CaseMapper<R>
 		{
@@ -74,7 +74,7 @@ public interface WFApprovalStrategy
 
 			R pending();
 
-			R forwardTo(@NonNull UserId userId, @Nullable TableRecordReference documentToOpen);
+			R forwardTo(@NonNull UserId userId, @Nullable TargetAction notificationTargetAction);
 		}
 
 		public <R> R map(@NonNull final WFApprovalStrategy.Response.CaseMapper<R> mapper)
@@ -84,7 +84,7 @@ public interface WFApprovalStrategy
 				case APPROVED -> mapper.approved();
 				case REJECTED -> mapper.rejected();
 				case PENDING -> mapper.pending();
-				case FORWARD_TO -> mapper.forwardTo(Check.assumeNotNull(forwardToUserId, "forwardToUserId is set: {}", this), documentToOpen);
+				case FORWARD_TO -> mapper.forwardTo(Check.assumeNotNull(forwardToUserId, "forwardToUserId is set: {}", this), notificationTargetAction);
 			};
 		}
 	}
