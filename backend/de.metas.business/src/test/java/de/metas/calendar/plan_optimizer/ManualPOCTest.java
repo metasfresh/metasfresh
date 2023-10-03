@@ -16,7 +16,7 @@ import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
-import de.metas.resource.HumanResourceTestGroupRepository;
+import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.resource.HumanResourceTestGroupService;
 import lombok.NonNull;
 import org.compiere.Adempiere;
@@ -36,17 +36,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Disabled
 public class ManualPOCTest
 {
-	public static final Duration TERMINATION_SPENT_LIMIT = Duration.ofMinutes(5);
-	private static final ProjectId PROJECT_ID1 = ProjectId.ofRepoId(1);
-	private static final ProjectId PROJECT_ID2 = ProjectId.ofRepoId(2);
-	private static final AtomicInteger nextStepRepoId = new AtomicInteger(1);
+	public static void main(String[] args) {new ManualPOCTest().start();}
 
-	public static void main(String[] args)
+	public static final Duration TERMINATION_SPENT_LIMIT = Duration.ofMinutes(5);
+	private final InMemoryHumanResourceTestGroupRepository humanResourceTestGroupRepository;
+	private final AtomicInteger nextStepRepoId = new AtomicInteger(1);
+	private HumanResourceTestGroupId humanResourceTestGroupId;
+
+	ManualPOCTest()
 	{
 		LogManager.setLoggerLevel(SimulationOptimizerTask.class, Level.DEBUG);
 		Adempiere.enableUnitTestMode();
-		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(new HumanResourceTestGroupRepository()));
 
+		this.humanResourceTestGroupRepository = new InMemoryHumanResourceTestGroupRepository();
+		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(humanResourceTestGroupRepository));
+	}
+
+	void start()
+	{
 		final SimulationPlanId simulationId = SimulationPlanId.ofRepoId(123);
 
 		final InMemoryPlanLoaderAndSaver planLoaderAndSaver = new InMemoryPlanLoaderAndSaver();
@@ -79,53 +86,32 @@ public class ManualPOCTest
 		return SolverFactory.create(SimulationOptimizerConfiguration.solverConfig(null, TERMINATION_SPENT_LIMIT));
 	}
 
-	private static Plan generateProblem(SimulationPlanId simulationId)
+	private Plan generateProblem(SimulationPlanId simulationId)
 	{
+		this.humanResourceTestGroupId = humanResourceTestGroupRepository.createHumanResourceTestGroup(2);
+
 		final ArrayList<Step> stepsList = new ArrayList<>();
 
-		// Project 1:
-		for (int i = 1; i <= 10; i++)
+		for (int projectIdx = 1; projectIdx <= 2; projectIdx++)
 		{
-			stepsList.add(Step.builder()
-					.id(StepId.builder()
-							.woProjectStepId(WOProjectStepId.ofRepoId(PROJECT_ID1, nextStepRepoId.getAndIncrement()))
-							.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID1, nextStepRepoId.get()))
-							.build())
-					.projectPriority(InternalPriority.MEDIUM)
-					.resource(resource(i))
-					.duration(Duration.ofHours(1))
-					.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
-					.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
-					.humanResourceTestGroupDuration(Duration.ZERO)
-					.build());
-		}
+			final ProjectId projectId = projectId(projectIdx);
 
-		// Project 2:
-		for (int i = 1; i <= 10; i++)
-		{
-			stepsList.add(Step.builder()
-					.id(StepId.builder()
-							.woProjectStepId(WOProjectStepId.ofRepoId(PROJECT_ID2, nextStepRepoId.getAndIncrement()))
-							.woProjectResourceId(WOProjectResourceId.ofRepoId(PROJECT_ID2, nextStepRepoId.get()))
-							.build())
-					.projectPriority(InternalPriority.MEDIUM)
-					.resource(resource(i))
-					.duration(Duration.ofHours(1))
-					.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
-					.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
-					.humanResourceTestGroupDuration(Duration.ZERO)
-					.build());
+			for (int resourceIdx = 1; resourceIdx <= 2; resourceIdx++)
+			{
+				stepsList.add(Step.builder()
+						.id(StepId.builder()
+								.woProjectStepId(WOProjectStepId.ofRepoId(projectId, nextStepRepoId.getAndIncrement()))
+								.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, nextStepRepoId.get()))
+								.build())
+						.projectPriority(InternalPriority.MEDIUM)
+						.resource(resource(resourceIdx))
+						.duration(Duration.ofHours(1))
+						.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
+						.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
+						.humanResourceTestGroupDuration(Duration.ofHours(1))
+						.build());
+			}
 		}
-
-		// stepsList.stream()
-		// 		.filter(step -> ProjectId.equals(step.getProjectId(), PROJECT_ID1)
-		// 				&& ResourceId.equals(step.getResource().getId(), resourceId(1)))
-		// 		.findFirst()
-		// 		.ifPresent(step -> {
-		// 			step.setStartDate(LocalDateTime.parse("2023-04-02T17:00"));
-		// 			step.updateEndDate();
-		// 			step.setPinned(true);
-		// 		});
 
 		updatePreviousAndNextStep(stepsList);
 
@@ -137,7 +123,10 @@ public class ManualPOCTest
 		return plan;
 	}
 
-	private static Resource resource(int index) {return new Resource(resourceId(index), "R" + index, null);}
+	@NonNull
+	private static ProjectId projectId(final int index) {return ProjectId.ofRepoId(index);}
+
+	private Resource resource(int index) {return new Resource(resourceId(index), "R" + index, humanResourceTestGroupId);}
 
 	@NonNull
 	private static ResourceId resourceId(final int index) {return ResourceId.ofRepoId(100 + index);}

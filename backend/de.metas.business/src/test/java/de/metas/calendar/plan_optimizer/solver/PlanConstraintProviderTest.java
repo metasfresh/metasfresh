@@ -10,7 +10,7 @@ import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
-import de.metas.resource.HumanResourceTestGroupRepository;
+import de.metas.resource.DatabaseHumanResourceTestGroupRepository;
 import de.metas.resource.HumanResourceTestGroupService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PlanConstraintProviderTest
 {
@@ -43,7 +43,7 @@ class PlanConstraintProviderTest
 	static void beforeAll()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(new HumanResourceTestGroupRepository()));
+		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(new DatabaseHumanResourceTestGroupRepository()));
 		constraintVerifier = ConstraintVerifier.build(new PlanConstraintProvider(), Plan.class, Step.class);
 	}
 

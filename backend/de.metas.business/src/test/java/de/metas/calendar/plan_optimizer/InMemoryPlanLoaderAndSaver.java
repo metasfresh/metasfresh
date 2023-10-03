@@ -10,7 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import java.util.HashMap;
 
 @ToString
-public class InMemoryPlanLoaderAndSaver implements PlanLoaderAndSaver
+class InMemoryPlanLoaderAndSaver implements PlanLoaderAndSaver
 {
 	private final HashMap<SimulationPlanId, Plan> map = new HashMap<>();
 
