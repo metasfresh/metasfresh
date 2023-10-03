@@ -19,6 +19,7 @@ import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.resource.HumanResourceTestGroupRepository;
 import de.metas.resource.HumanResourceTestGroupService;
 import lombok.NonNull;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.Disabled;
 import org.optaplanner.core.api.solver.SolverFactory;
@@ -43,11 +44,10 @@ public class ManualPOCTest
 	public static void main(String[] args)
 	{
 		LogManager.setLoggerLevel(SimulationOptimizerTask.class, Level.DEBUG);
+		Adempiere.enableUnitTestMode();
 		SpringContextHolder.registerJUnitBean(new HumanResourceTestGroupService(new HumanResourceTestGroupRepository()));
 
 		final SimulationPlanId simulationId = SimulationPlanId.ofRepoId(123);
-
-		final SimulationOptimizerStatusDispatcher simulationOptimizerStatusDispatcher = new SimulationOptimizerStatusDispatcher();
 
 		final InMemoryPlanLoaderAndSaver planLoaderAndSaver = new InMemoryPlanLoaderAndSaver();
 		planLoaderAndSaver.saveSolution(generateProblem(simulationId));
@@ -57,7 +57,7 @@ public class ManualPOCTest
 			SimulationOptimizerTask.builder()
 					.executorService(Executors.newSingleThreadExecutor())
 					.solverFactory(createSolverFactory())
-					.simulationOptimizerStatusDispatcher(simulationOptimizerStatusDispatcher)
+					.simulationOptimizerStatusDispatcher(new SimulationOptimizerStatusDispatcher())
 					.planLoaderAndSaver(planLoaderAndSaver)
 					.simulationId(simulationId)
 					.onTaskComplete(() -> {}) // do nothing
@@ -66,7 +66,7 @@ public class ManualPOCTest
 
 			System.out.println("\n\n Press 'q' to quit, any key to run again...");
 			final String key = new Scanner(System.in).next();
-			if (key.length() > 0 && key.charAt(0) == 'q')
+			if (!key.isEmpty() && key.charAt(0) == 'q')
 			{
 				break;
 			}
@@ -96,6 +96,7 @@ public class ManualPOCTest
 					.duration(Duration.ofHours(1))
 					.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
 					.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
+					.humanResourceTestGroupDuration(Duration.ZERO)
 					.build());
 		}
 
@@ -112,6 +113,7 @@ public class ManualPOCTest
 					.duration(Duration.ofHours(1))
 					.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
 					.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
+					.humanResourceTestGroupDuration(Duration.ZERO)
 					.build());
 		}
 
