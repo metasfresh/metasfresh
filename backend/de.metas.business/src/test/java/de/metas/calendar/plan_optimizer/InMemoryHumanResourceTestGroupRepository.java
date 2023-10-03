@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 class InMemoryHumanResourceTestGroupRepository implements HumanResourceTestGroupRepository
 {
 	private final AtomicInteger nextRepoId = new AtomicInteger(1);
-	private HashMap<HumanResourceTestGroupId, HumanResourceTestGroup> map = new HashMap<>();
+	private final HashMap<HumanResourceTestGroupId, HumanResourceTestGroup> map = new HashMap<>();
 
 	@SuppressWarnings("SameParameterValue")
 	public HumanResourceTestGroupId createHumanResourceTestGroup(int capacityInHours)

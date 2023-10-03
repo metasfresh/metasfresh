@@ -8,14 +8,12 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_S_HumanResourceTestGroup;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -94,15 +92,6 @@ public class DatabaseHumanResourceTestGroupRepository implements HumanResourceTe
 		public ImmutableList<HumanResourceTestGroup> getAllActive()
 		{
 			return allActive;
-		}
-
-		@NonNull
-		public HumanResourceTestGroup getById(@NonNull final HumanResourceTestGroupId id)
-		{
-			return Optional.ofNullable(byId.get(id))
-					.orElseThrow(() -> new AdempiereException("No HumanResourceTestGroup found!")
-							.appendParametersToMessage()
-							.setParameter("HumanResourceTestGroupId", id));
 		}
 
 		@NonNull
