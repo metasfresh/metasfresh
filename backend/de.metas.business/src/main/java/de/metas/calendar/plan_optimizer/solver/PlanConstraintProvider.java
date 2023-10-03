@@ -23,6 +23,8 @@ import org.optaplanner.core.impl.score.stream.JoinerSupport;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+// TODO handle pinned steps!
+
 public class PlanConstraintProvider implements ConstraintProvider
 {
 	public static final int HARD_LEVELS_SIZE = 2;
