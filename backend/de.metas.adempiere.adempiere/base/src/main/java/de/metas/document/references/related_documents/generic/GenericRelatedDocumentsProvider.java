@@ -38,6 +38,7 @@ import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.util.Check;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
@@ -55,9 +56,11 @@ import java.util.List;
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
 @Component
+@RequiredArgsConstructor
 public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+	private final DynamicReferencesCache dynamicReferencesCache;
 
 	private final CCache<String, ImmutableList<GenericRelatedDocumentDescriptor>> descriptorsBySourceKeyColumnName = CCache.<String, ImmutableList<GenericRelatedDocumentDescriptor>>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -68,15 +71,9 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.build();
 
-	private final GenericRelatedDocumentDescriptorsRepository genericRelatedDocumentDescriptorsRepository = new DefaultGenericRelatedDocumentDescriptorsRepository();
+	private final GenericRelatedDocumentDescriptorsRepository genericRelatedDocumentDescriptorsRepository = new GenericRelatedDocumentDescriptorsRepository();
 
 	private final Priority relatedDocumentsPriority = Priority.LOWEST;
-
-	GenericRelatedDocumentsProvider(
-			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
-	{
-		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
-	}
 
 	@Override
 	public ImmutableList<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
@@ -99,22 +96,30 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 			}
 
 			final RelatedDocumentsCandidateGroup.RelatedDocumentsCandidateGroupBuilder groupBuilder = RelatedDocumentsCandidateGroup.builder();
-			for (final GenericTargetColumnInfo columnInfo : descriptor.getTargetColumns())
+			for (final GenericTargetColumnInfo targetColumn : descriptor.getTargetColumns())
 			{
-				final MQuery query = buildMQuery(descriptor, columnInfo, fromDocument);
-				final RelatedDocumentsCountSupplier recordsCountSupplier = new GenericRelatedDocumentsCountSupplier(query, descriptor, fromDocument.getTableName());
+				final GenericTargetWindowInfo targetWindow = descriptor.getGenericTargetWindowInfo();
+
+				final MQuery query = buildMQuery(targetWindow, targetColumn, fromDocument);
+
+				final RelatedDocumentsCountSupplier recordsCountSupplier = new GenericRelatedDocumentsCountSupplier(
+						dynamicReferencesCache,
+						targetWindow,
+						targetColumn,
+						query,
+						fromDocument.getTableName());
 
 				groupBuilder.candidate(
 						RelatedDocumentsCandidate.builder()
 								.id(RelatedDocumentsId.ofString(Joiner.on("-")
-																		.skipNulls()
-																		.join("generic", windowId.getRepoId(), columnInfo.getColumnName())))
+										.skipNulls()
+										.join("generic", windowId.getRepoId(), targetColumn.getColumnName())))
 								.internalName(descriptor.getTargetWindowInternalName())
-								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(windowId, columnInfo.getColumnName()))
+								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(windowId, targetColumn.getColumnName()))
 								.priority(relatedDocumentsPriority)
 								.querySupplier(RelatedDocumentsQuerySuppliers.ofQuery(query))
 								.windowCaption(descriptor.getName())
-								.filterByFieldCaption(columnInfo.getCaption())
+								.filterByFieldCaption(targetColumn.getCaption())
 								.documentsCountSupplier(recordsCountSupplier)
 								.build());
 			}
@@ -147,11 +152,11 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 	}
 
 	private static MQuery buildMQuery(
-			final GenericRelatedDocumentDescriptor descriptor,
+			final GenericTargetWindowInfo targetWindow,
 			final GenericTargetColumnInfo targetColumn,
 			final IZoomSource fromDocument)
 	{
-		final String targetTableName = descriptor.getTargetTableName();
+		final String targetTableName = targetWindow.getTargetTableName();
 		final String targetColumnName = targetColumn.getColumnName();
 
 		//
@@ -182,9 +187,9 @@ public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvide
 				query.addRestriction(targetColumnName, Operator.EQUAL, fromDocument.getRecord_ID());
 			}
 
-			if (!Check.isBlank(descriptor.getTabSqlWhereClause()))
+			if (!Check.isBlank(targetWindow.getTabSqlWhereClause()))
 			{
-				query.addRestriction(descriptor.getTabSqlWhereClause());
+				query.addRestriction(targetWindow.getTabSqlWhereClause());
 			}
 
 			query.setZoomTableName(targetTableName);
