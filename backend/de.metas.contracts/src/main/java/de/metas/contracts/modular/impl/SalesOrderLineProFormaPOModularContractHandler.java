@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
@@ -31,11 +32,8 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -48,43 +46,66 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED;
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class ShipmentLineForPOModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
+public class SalesOrderLineProFormaPOModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull
 	private final ModularContractLogService contractLogService;
 
-	@Override
 	@NonNull
-	public Class<I_M_InOutLine> getType()
+	@Override
+	public Class<I_C_OrderLine> getType()
 	{
-		return I_M_InOutLine.class;
+		return I_C_OrderLine.class;
 	}
 
 	@Override
-	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
+	public boolean applies(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
-		if (orderId == null)
+		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+		if (SOTrx.ofBoolean(orderRecord.isSOTrx()).isPurchase() || !orderBL.isProFormaSO(orderRecord))
 		{
 			return false;
 		}
-		return inOutRecord.isSOTrx();
+
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(orderRecord.getC_Harvesting_Calendar_ID());
+		if (harvestingCalendarId == null)
+		{
+			return false;
+		}
+
+		final YearId harvestingYearId = YearId.ofRepoIdOrNull(orderRecord.getHarvesting_Year_ID());
+		if (harvestingYearId == null)
+		{
+			return false;
+		}
+
+		final BPartnerId warehousePartnerId = warehouseBL.getBPartnerId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()));
+
+		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
+				.bPartnerId(warehousePartnerId)
+				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
+				.yearId(harvestingYearId)
+				.calendarId(harvestingCalendarId)
+				.soTrx(SOTrx.PURCHASE)
+				.typeConditions(TypeConditions.MODULAR_CONTRACT)
+				.build();
+
+		return flatrateBL.isModularContractInProgress(modularFlatrateTermQuery);
 	}
 
 	@Override
@@ -94,27 +115,19 @@ public class ShipmentLineForPOModularContractHandler implements IModularContract
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_M_InOutLine inOutLineRecord)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(inOutLineRecord.getC_Order_ID()));
-
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID()); // C_Order.M_Warehouse_ID is mandatory and (warehouseBL.getBPartnerId demands NonNull
-
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
-
-		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
-
-		if (harvestingYearId == null || harvestingCalendarId == null) {
-			return Stream.empty();
-		}
-
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
+		final YearId harvestingYearId = YearId.ofRepoId(order.getHarvesting_Year_ID());
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoId(order.getC_Harvesting_Calendar_ID());
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
-				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
-				.yearId(harvestingYearId)
-				.soTrx(SOTrx.PURCHASE) // in this handler we want the *purchase* flatrate-terms that led to this (sales-)shipment
-				.typeConditions(TypeConditions.MODULAR_CONTRACT)
+				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.calendarId(harvestingCalendarId)
+				.yearId(harvestingYearId)
+				.soTrx(SOTrx.PURCHASE)
+				.typeConditions(TypeConditions.MODULAR_CONTRACT)
 				.build();
 
 		return flatrateBL.streamModularFlatrateTermsByQuery(query)
@@ -123,17 +136,19 @@ public class ShipmentLineForPOModularContractHandler implements IModularContract
 	}
 
 	@Override
-	public void validateAction(final @NonNull I_M_InOutLine model, final @NonNull ModelAction action)
+	public void validateAction(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final ModelAction action)
 	{
 		switch (action)
 		{
-			case VOIDED, REACTIVATED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
-			case COMPLETED, REVERSED ->
+			case COMPLETED ->
 			{
 			}
-			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
+			case VOIDED, REACTIVATED, REVERSED -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(orderLine),
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 }

@@ -29,7 +29,6 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -39,7 +38,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
@@ -49,7 +47,6 @@ import java.util.stream.Stream;
 
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.compiere.model.X_C_DocType.DOCSUBTYPE_DownPayment;
 
 @Component
 public class PurchaseInvoiceLineInterimHandler implements IModularContractTypeHandler<I_C_InvoiceLine>
@@ -73,12 +70,9 @@ public class PurchaseInvoiceLineInterimHandler implements IModularContractTypeHa
 	public boolean applies(final @NonNull I_C_InvoiceLine invoiceLineRecord)
 	{
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID()));
-		final I_C_DocType docType = invoiceBL.getC_DocType(invoiceRecord);
-		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
-		final boolean isInterimInvoice = docBaseAndSubType.getDocSubType() != null && docBaseAndSubType.getDocSubType().equals(DOCSUBTYPE_DownPayment);
 		final SOTrx soTrx = SOTrx.ofBoolean(invoiceRecord.isSOTrx());
 
-		return soTrx.isPurchase() && isInterimInvoice;
+		return soTrx.isPurchase() && invoiceBL.isDownPayment(invoiceRecord);
 	}
 
 	@Override

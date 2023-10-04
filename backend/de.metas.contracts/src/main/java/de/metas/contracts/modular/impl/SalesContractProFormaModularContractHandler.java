@@ -40,6 +40,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -48,12 +49,13 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class PurchaseModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
+public class SalesContractProFormaModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull
+	private final ModularContractLogService contractLogService;
 
 	@Override
 	public @NonNull Class<I_C_Flatrate_Term> getType()
@@ -76,7 +78,8 @@ public class PurchaseModularContractHandler implements IModularContractTypeHandl
 		}
 
 		final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
-		return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isPurchase();
+		final I_C_Order order = orderBL.getById(orderId);
+		return SOTrx.ofBoolean(order.isSOTrx()).isSales() && orderBL.isProFormaSO(order);
 	}
 
 	@Override
@@ -96,7 +99,9 @@ public class PurchaseModularContractHandler implements IModularContractTypeHandl
 	{
 		switch (action)
 		{
-			case COMPLETED -> {}
+			case COMPLETED ->
+			{
+			}
 			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);

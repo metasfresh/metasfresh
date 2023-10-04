@@ -29,7 +29,6 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -50,17 +49,21 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED;
+import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class SalesOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
+public class SalesOrderLineProFormaModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
-	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull
+	private final ModularContractLogService contractLogService;
 
 	@NonNull
 	@Override
@@ -70,10 +73,11 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public boolean applies(@NonNull final I_C_OrderLine orderLine)
+	public boolean applies(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		return SOTrx.ofBoolean(order.isSOTrx()).isSales() && !orderBL.isProFormaSO(order);
+		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+
+		return SOTrx.ofBoolean(orderRecord.isSOTrx()).isSales() && orderBL.isProFormaSO(orderRecord);
 	}
 
 	@Override
@@ -106,11 +110,10 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 			case COMPLETED ->
 			{
 			}
-			case VOIDED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
-			case REACTIVATED, REVERSED -> throw new AdempiereException(ModularContract_Constants.MSG_REACTIVATE_NOT_ALLOWED);
+			case VOIDED, REACTIVATED, REVERSED -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(orderLine),
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
 	}
 

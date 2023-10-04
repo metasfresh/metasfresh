@@ -376,9 +376,12 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@And("^there is no C_Invoice_Candidate for C_Order (.*)$")
-	public void validate_no_C_Invoice_Candidate_created(@NonNull final String orderIdentifier)
+	public void validate_no_C_Invoice_Candidate_created(@NonNull final String orderIdentifier) throws InterruptedException
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		// give IC handlers some time
+		Thread.sleep(1000);
 
 		final I_C_Invoice_Candidate candidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
@@ -387,6 +390,24 @@ public class C_Invoice_Candidate_StepDef
 		Assertions.assertThat(candidate).isNull();
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(order);
+		Assertions.assertThat(invoiceCandidates).isEmpty();
+	}
+
+	@And("^there is no C_Invoice_Candidate for M_InOutLine (.*)$")
+	public void validate_no_C_Invoice_Candidate_created_for_InOutLine(@NonNull final String inOutLineIdentifier) throws InterruptedException
+	{
+		final I_M_InOutLine inOutLineRecord = inoutLineTable.get(inOutLineIdentifier);
+
+		// give IC handlers some time
+		Thread.sleep(1000);
+
+		final I_C_Invoice_Candidate candidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, inOutLineRecord.getM_InOut_ID())
+				.create()
+				.firstOnlyOrNull(I_C_Invoice_Candidate.class);
+		Assertions.assertThat(candidate).isNull();
+
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(inOutLineRecord);
 		Assertions.assertThat(invoiceCandidates).isEmpty();
 	}
 

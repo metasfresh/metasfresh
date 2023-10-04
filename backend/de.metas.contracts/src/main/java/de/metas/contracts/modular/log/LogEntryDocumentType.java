@@ -49,7 +49,9 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 	SALES_INVOICE(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_SalesInvoice),
 	SALES_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_SalesModularContract),
 	PURCHASE_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_PurchaseModularContract),
-	INTERIM_INVOICE(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_InterimInvoice);
+	INTERIM_INVOICE(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_InterimInvoice),
+	PRO_FORMA_SO(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSO),
+	PRO_FORMA_SO_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSOModularContract);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<LogEntryDocumentType> index = ReferenceListAwareEnums.index(values());
 
