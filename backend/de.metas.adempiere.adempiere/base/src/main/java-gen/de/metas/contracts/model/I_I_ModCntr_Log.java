@@ -1,0 +1,727 @@
+package de.metas.contracts.model;
+
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
+
+/** Generated Interface for I_ModCntr_Log
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public interface I_I_ModCntr_Log 
+{
+
+	String Table_Name = "I_ModCntr_Log";
+
+//	/** AD_Table_ID=542372 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
+
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
+
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Issues.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get Issues.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Issue_ID();
+
+	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Table.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get Table.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Table_ID();
+
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
+	 * Set Amount.
+	 * Amount in a defined currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAmount (BigDecimal Amount);
+
+	/**
+	 * Get Amount.
+	 * Amount in a defined currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getAmount();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Amount = new ModelColumn<>(I_I_ModCntr_Log.class, "Amount", null);
+	String COLUMNNAME_Amount = "Amount";
+
+	/**
+	 * Set Bill partner search key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_BPartner_Value (@Nullable java.lang.String Bill_BPartner_Value);
+
+	/**
+	 * Get Bill partner search key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBill_BPartner_Value();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Bill_BPartner_Value = new ModelColumn<>(I_I_ModCntr_Log.class, "Bill_BPartner_Value", null);
+	String COLUMNNAME_Bill_BPartner_Value = "Bill_BPartner_Value";
+
+	/**
+	 * Set Partner No..
+	 * Key of the Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerValue (@Nullable java.lang.String BPartnerValue);
+
+	/**
+	 * Get Partner No..
+	 * Key of the Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerValue();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_BPartnerValue = new ModelColumn<>(I_I_ModCntr_Log.class, "BPartnerValue", null);
+	String COLUMNNAME_BPartnerValue = "BPartnerValue";
+
+	/**
+	 * Set Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DataImport_ID (int C_DataImport_ID);
+
+	/**
+	 * Get Data import.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DataImport_ID();
+
+	@Nullable org.compiere.model.I_C_DataImport getC_DataImport();
+
+	void setC_DataImport(@Nullable org.compiere.model.I_C_DataImport C_DataImport);
+
+	ModelColumn<I_I_ModCntr_Log, org.compiere.model.I_C_DataImport> COLUMN_C_DataImport_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "C_DataImport_ID", org.compiere.model.I_C_DataImport.class);
+	String COLUMNNAME_C_DataImport_ID = "C_DataImport_ID";
+
+	/**
+	 * Set Data Import Run.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DataImport_Run_ID (int C_DataImport_Run_ID);
+
+	/**
+	 * Get Data Import Run.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DataImport_Run_ID();
+
+	@Nullable org.compiere.model.I_C_DataImport_Run getC_DataImport_Run();
+
+	void setC_DataImport_Run(@Nullable org.compiere.model.I_C_DataImport_Run C_DataImport_Run);
+
+	ModelColumn<I_I_ModCntr_Log, org.compiere.model.I_C_DataImport_Run> COLUMN_C_DataImport_Run_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "C_DataImport_Run_ID", org.compiere.model.I_C_DataImport_Run.class);
+	String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
+
+	/**
+	 * Set Collection Point Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCollectionPointValue (java.lang.String CollectionPointValue);
+
+	/**
+	 * Get Collection Point Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCollectionPointValue();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_CollectionPointValue = new ModelColumn<>(I_I_ModCntr_Log.class, "CollectionPointValue", null);
+	String COLUMNNAME_CollectionPointValue = "CollectionPointValue";
+
+	/**
+	 * Set Contract Module Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setContractModuleName (java.lang.String ContractModuleName);
+
+	/**
+	 * Get Contract Module Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getContractModuleName();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ContractModuleName = new ModelColumn<>(I_I_ModCntr_Log.class, "ContractModuleName", null);
+	String COLUMNNAME_ContractModuleName = "ContractModuleName";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Created = new ModelColumn<>(I_I_ModCntr_Log.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Date.
+	 * Transaction Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateTrx (@Nullable java.sql.Timestamp DateTrx);
+
+	/**
+	 * Get Date.
+	 * Transaction Date
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateTrx();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_DateTrx = new ModelColumn<>(I_I_ModCntr_Log.class, "DateTrx", null);
+	String COLUMNNAME_DateTrx = "DateTrx";
+
+	/**
+	 * Set Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentNo (java.lang.String DocumentNo);
+
+	/**
+	 * Get Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocumentNo();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_DocumentNo = new ModelColumn<>(I_I_ModCntr_Log.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set Year.
+	 * The Fiscal Year
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setFiscalYear (java.lang.String FiscalYear);
+
+	/**
+	 * Get Year.
+	 * The Fiscal Year
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getFiscalYear();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_FiscalYear = new ModelColumn<>(I_I_ModCntr_Log.class, "FiscalYear", null);
+	String COLUMNNAME_FiscalYear = "FiscalYear";
+
+	/**
+	 * Set Import Error Message.
+	 * Messages generated from import process
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setI_ErrorMsg (@Nullable java.lang.String I_ErrorMsg);
+
+	/**
+	 * Get Import Error Message.
+	 * Messages generated from import process
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getI_ErrorMsg();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_I_ErrorMsg = new ModelColumn<>(I_I_ModCntr_Log.class, "I_ErrorMsg", null);
+	String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
+
+	/**
+	 * Set Imported.
+	 * Has this import been processed
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setI_IsImported (java.lang.String I_IsImported);
+
+	/**
+	 * Get Imported.
+	 * Has this import been processed
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getI_IsImported();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_I_IsImported = new ModelColumn<>(I_I_ModCntr_Log.class, "I_IsImported", null);
+	String COLUMNNAME_I_IsImported = "I_IsImported";
+
+	/**
+	 * Set Import Line Content.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setI_LineContent (@Nullable java.lang.String I_LineContent);
+
+	/**
+	 * Get Import Line Content.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getI_LineContent();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_I_LineContent = new ModelColumn<>(I_I_ModCntr_Log.class, "I_LineContent", null);
+	String COLUMNNAME_I_LineContent = "I_LineContent";
+
+	/**
+	 * Set Import Line No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setI_LineNo (int I_LineNo);
+
+	/**
+	 * Get Import Line No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getI_LineNo();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_I_LineNo = new ModelColumn<>(I_I_ModCntr_Log.class, "I_LineNo", null);
+	String COLUMNNAME_I_LineNo = "I_LineNo";
+
+	/**
+	 * Set Import Contract Module Logs.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setI_ModCntr_Log_ID (int I_ModCntr_Log_ID);
+
+	/**
+	 * Get Import Contract Module Logs.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getI_ModCntr_Log_ID();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_I_ModCntr_Log_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "I_ModCntr_Log_ID", null);
+	String COLUMNNAME_I_ModCntr_Log_ID = "I_ModCntr_Log_ID";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_IsActive = new ModelColumn<>(I_I_ModCntr_Log.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set ISO Currency Code.
+	 * Three letter ISO 4217 Code of the Currency
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setISO_Code (@Nullable java.lang.String ISO_Code);
+
+	/**
+	 * Get ISO Currency Code.
+	 * Three letter ISO 4217 Code of the Currency
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getISO_Code();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ISO_Code = new ModelColumn<>(I_I_ModCntr_Log.class, "ISO_Code", null);
+	String COLUMNNAME_ISO_Code = "ISO_Code";
+
+	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (boolean IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSOTrx();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_I_ModCntr_Log.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Document Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Log_DocumentType (@Nullable java.lang.String ModCntr_Log_DocumentType);
+
+	/**
+	 * Get Document Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getModCntr_Log_DocumentType();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ModCntr_Log_DocumentType = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Log_DocumentType", null);
+	String COLUMNNAME_ModCntr_Log_DocumentType = "ModCntr_Log_DocumentType";
+
+	/**
+	 * Set Contract Module Log.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Log_ID (int ModCntr_Log_ID);
+
+	/**
+	 * Get Contract Module Log.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Log_ID();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Log_ID", null);
+	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Processed = new ModelColumn<>(I_I_ModCntr_Log.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProductValue (java.lang.String ProductValue);
+
+	/**
+	 * Get Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getProductValue();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ProductValue = new ModelColumn<>(I_I_ModCntr_Log.class, "ProductValue", null);
+	String COLUMNNAME_ProductValue = "ProductValue";
+
+	/**
+	 * Set Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQty (@Nullable BigDecimal Qty);
+
+	/**
+	 * Get Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQty();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Qty = new ModelColumn<>(I_I_ModCntr_Log.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
+
+	/**
+	 * Set Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getRecord_ID();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set UOM Symbol.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUOMSymbol (@Nullable java.lang.String UOMSymbol);
+
+	/**
+	 * Get UOM Symbol.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUOMSymbol();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_UOMSymbol = new ModelColumn<>(I_I_ModCntr_Log.class, "UOMSymbol", null);
+	String COLUMNNAME_UOMSymbol = "UOMSymbol";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Updated = new ModelColumn<>(I_I_ModCntr_Log.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Warehouse Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWarehouseName (@Nullable java.lang.String WarehouseName);
+
+	/**
+	 * Get Warehouse Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWarehouseName();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_WarehouseName = new ModelColumn<>(I_I_ModCntr_Log.class, "WarehouseName", null);
+	String COLUMNNAME_WarehouseName = "WarehouseName";
+}
