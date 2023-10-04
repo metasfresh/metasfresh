@@ -25,8 +25,8 @@ package de.metas.contracts.modular.interceptor;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.shippingnotification.ShippingNotificationDAO;
 import de.metas.shippingnotification.ShippingNotificationId;
+import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,7 @@ public class M_Shipping_Notification
 	@NonNull
 	private final ModularContractService contractService;
 	@NonNull
-	private final ShippingNotificationDAO shippingNotificationDAO;
+	private final ShippingNotificationService shippingNotificationService;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_M_Shipping_Notification shippingNotification)
@@ -65,7 +65,7 @@ public class M_Shipping_Notification
 			@NonNull final ModelAction modelAction)
 	{
 		final ShippingNotificationId notificationId = ShippingNotificationId.ofRepoId(record.getM_Shipping_Notification_ID());
-		shippingNotificationDAO.getLines(notificationId)
+		shippingNotificationService.getLines(notificationId)
 				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
 	}
 }

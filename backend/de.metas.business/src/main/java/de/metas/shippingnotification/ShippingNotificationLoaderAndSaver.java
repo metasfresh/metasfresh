@@ -34,6 +34,7 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -150,12 +151,12 @@ class ShippingNotificationLoaderAndSaver
 	}
 
 	@NonNull
-	public Stream<I_M_Shipping_Notification> stream(@NonNull final IQueryFilter<I_M_Shipping_Notification> shippingNotificationFilter)
+	public Stream<ShippingNotificationId> streamIds(@NonNull final IQueryFilter<I_M_Shipping_Notification> shippingNotificationFilter)
 	{
 		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
 				.filter(shippingNotificationFilter)
 				.create()
-				.iterateAndStream();
+				.iterateAndStreamIds(ShippingNotificationId::ofRepoId);
 	}
 
 	private ArrayList<I_M_Shipping_NotificationLine> retrieveLineRecords(final @NonNull ShippingNotificationId id)
@@ -169,7 +170,7 @@ class ShippingNotificationLoaderAndSaver
 				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
-	public Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> getLineRecords(@NonNull final Set<ShippingNotificationId> ids)
+	public Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> getLineRecords(@NonNull final Collection<ShippingNotificationId> ids)
 	{
 		return CollectionUtils.getAllOrLoadReturningMap(linesByHeaderId, ids, this::retrieveLineRecords);
 	}
