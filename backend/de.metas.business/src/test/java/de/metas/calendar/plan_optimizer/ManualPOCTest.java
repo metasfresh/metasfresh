@@ -115,7 +115,7 @@ public class ManualPOCTest
 
 		updatePreviousAndNextStep(stepsList);
 
-		final Plan plan = new Plan();
+		final Plan plan = Plan.newInstance();
 		plan.setSimulationId(simulationId);
 		plan.setTimeZone(SystemTime.zoneId());
 		plan.setStepsList(stepsList);

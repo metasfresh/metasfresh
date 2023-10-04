@@ -79,7 +79,7 @@ public class DatabasePlanLoaderInstance
 		final List<WOProject> woProjects = woProjectService.getAllActiveProjects();
 		if (woProjects.isEmpty())
 		{
-			return new Plan();
+			return Plan.newInstance();
 		}
 		final ImmutableSet<ProjectId> projectIds = woProjects.stream().map(WOProject::getProjectId).collect(ImmutableSet.toImmutableSet());
 		this.stepsByProjectId = woProjectService.getStepsByProjectIds(projectIds);
@@ -93,7 +93,7 @@ public class DatabasePlanLoaderInstance
 			stepsList.addAll(loadStepsFromWOProject(woProject));
 		}
 
-		final Plan optaPlannerPlan = new Plan();
+		final Plan optaPlannerPlan = Plan.newInstance();
 		optaPlannerPlan.setSimulationId(simulationId);
 		optaPlannerPlan.setTimeZone(timeZone);
 		optaPlannerPlan.setStepsList(stepsList);

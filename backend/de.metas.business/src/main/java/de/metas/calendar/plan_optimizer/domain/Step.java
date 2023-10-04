@@ -57,7 +57,7 @@ public class Step
 	// No-arg constructor required for OptaPlanner
 	public Step() {}
 
-	@Builder
+	@Builder(toBuilder = true)
 	private Step(
 			@NonNull final StepId id,
 			@Nullable final Step previousStep,

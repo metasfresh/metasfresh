@@ -2,9 +2,11 @@ package de.metas.calendar.plan_optimizer.domain;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
+import de.metas.calendar.plan_optimizer.solver.PlanCloner;
 import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.ProjectId;
+import lombok.Builder;
 import lombok.Data;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
@@ -16,9 +18,12 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
-@PlanningSolution
+@PlanningSolution(solutionCloner = PlanCloner.class)
 @Data
+@Builder(toBuilder = true)
 public class Plan
 {
 	public static final ChronoUnit PLANNING_TIME_PRECISION = ChronoUnit.HOURS;
@@ -34,6 +39,8 @@ public class Plan
 	private ScoreExplanation<Plan, BendableScore> scoreExplanation;
 	private boolean isFinalSolution;
 	private Duration timeSpent = Duration.ZERO;
+
+	public static Plan newInstance() {return builder().build();}
 
 	@Override
 	public String toString()
@@ -59,5 +66,56 @@ public class Plan
 		}
 
 		return sb.toString();
+	}
+
+	public Plan copy()
+	{
+		final Plan newPlan = toBuilder().stepsList(null).build();
+
+		if (stepsList != null && !stepsList.isEmpty())
+		{
+			final LinkedHashMap<StepId, Step> newSteps = new LinkedHashMap<>(stepsList.size());
+			final HashMap<StepId, StepId> current2prevId = new HashMap<>();
+			final HashMap<StepId, StepId> current2nextId = new HashMap<>();
+
+			for (final Step originalStep : stepsList)
+			{
+				if (originalStep.getPreviousStep() != null)
+				{
+					current2prevId.put(originalStep.getId(), originalStep.getPreviousStep().getId());
+				}
+				if (originalStep.getNextStep() != null)
+				{
+					current2nextId.put(originalStep.getId(), originalStep.getNextStep().getId());
+				}
+
+				final Step newStep = originalStep.toBuilder()
+						.previousStep(null)
+						.nextStep(null)
+						.build();
+				newSteps.put(newStep.getId(), newStep);
+			}
+
+			for (final Step newStep : newSteps.values())
+			{
+				final StepId prevId = current2prevId.get(newStep.getId());
+				if (prevId != null)
+				{
+					final Step prev = newSteps.get(prevId);
+					newStep.setPreviousStep(prev);
+				}
+
+				final StepId nextId = current2nextId.get(newStep.getId());
+				if (nextId != null)
+				{
+					final Step next = newSteps.get(nextId);
+					newStep.setNextStep(next);
+				}
+			}
+
+			newPlan.setStepsList(new ArrayList<>(newSteps.values()));
+		}
+
+		return newPlan;
 	}
 }
