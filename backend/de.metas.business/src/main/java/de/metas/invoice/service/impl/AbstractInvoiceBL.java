@@ -61,6 +61,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -1568,7 +1569,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public InvoiceDocBaseType getInvoiceDocBaseType(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
+		final I_C_DocType docType = assumeNotNull(getC_DocTypeEffectiveOrNull(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
 		return InvoiceDocBaseType.ofCode(docType.getDocBaseType());
 	}
 
