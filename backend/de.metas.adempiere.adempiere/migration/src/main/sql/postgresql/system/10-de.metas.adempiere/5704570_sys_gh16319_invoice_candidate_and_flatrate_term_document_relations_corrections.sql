@@ -15,7 +15,7 @@ UPDATE AD_Ref_Table SET WhereClause='C_Invoice_Candidate_ID IN (select C_Invoice
 -- Table: C_Invoice_Candidate
 -- Key: C_Invoice_Candidate.C_Invoice_Candidate_ID
 -- 2023-09-29T13:46:35.314Z
-UPDATE AD_Ref_Table SET AD_Window_ID=541517,Updated=TO_TIMESTAMP('2023-09-29 16:46:35.314','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Reference_ID=540753
+UPDATE AD_Ref_Table SET AD_Window_ID=540983,Updated=TO_TIMESTAMP('2023-09-29 16:46:35.314','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Reference_ID=540753
 ;
 
 -- 2023-09-29T13:47:22.610Z
