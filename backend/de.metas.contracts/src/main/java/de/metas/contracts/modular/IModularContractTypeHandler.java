@@ -25,6 +25,7 @@ package de.metas.contracts.modular;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import java.util.stream.Stream;
 
@@ -65,4 +66,9 @@ public interface IModularContractTypeHandler<T>
 			@NonNull final FlatrateTermId contractId,
 			@NonNull final ModularContractService contractService)
 	{}
+
+	default T getModel(@NonNull final TableRecordReference recordReference)
+	{
+		return recordReference.getModel(getType());
+	}
 }

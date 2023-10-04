@@ -188,7 +188,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public java.lang.String getContractType() 
+	public java.lang.String getContractType()
 	{
 		return get_ValueAsString(COLUMNNAME_ContractType);
 	}
@@ -203,7 +203,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
@@ -227,7 +227,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -355,6 +355,8 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	 * ProFormaSOModularContract = ProFormaSOModularContract
 	 */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_ProFormaSOModularContract = "ProFormaSOModularContract";
+	/** Lieferavis = ShippingNotification */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_Lieferavis = "ShippingNotification";
 
 	@Override
 	public void setModCntr_Log_DocumentType(final java.lang.String ModCntr_Log_DocumentType)
@@ -363,7 +365,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public java.lang.String getModCntr_Log_DocumentType() 
+	public java.lang.String getModCntr_Log_DocumentType()
 	{
 		return get_ValueAsString(COLUMNNAME_ModCntr_Log_DocumentType);
 	}
@@ -447,7 +449,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getM_Product_ID() 
+	public int getM_Product_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
@@ -462,7 +464,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getM_Warehouse_ID() 
+	public int getM_Warehouse_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
@@ -501,7 +503,7 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public BigDecimal getPriceActual() 
+	public BigDecimal getPriceActual()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
 		return bd != null ? bd : BigDecimal.ZERO;

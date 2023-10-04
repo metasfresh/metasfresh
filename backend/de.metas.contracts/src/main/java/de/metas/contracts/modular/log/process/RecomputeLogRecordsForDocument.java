@@ -26,6 +26,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.log.LogsRecomputationService;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
@@ -59,6 +60,7 @@ public class RecomputeLogRecordsForDocument extends JavaProcess
 			case I_M_Inventory.Table_Name -> recomputeLogsService.recomputeForInventory(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_PP_Cost_Collector.Table_Name -> recomputeLogsService.recomputeForCostCollector(getProcessInfo().getQueryFilterOrElseFalse());
 			case I_PP_Order.Table_Name -> recomputeLogsService.recomputeForPPOrder(getProcessInfo().getQueryFilterOrElseFalse());
+			case I_M_Shipping_Notification.Table_Name -> recomputeLogsService.recomputeForShippingNotification(getProcessInfo().getQueryFilterOrElseFalse());
 			default -> throw new AdempiereException("Process is not supported for table name=" + tableName);
 		}
 

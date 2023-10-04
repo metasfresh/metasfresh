@@ -22,20 +22,28 @@
 
 package de.metas.shippingnotification;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -47,11 +55,26 @@ public class ShippingNotificationService
 
 	private static final AdMessageKey MSG_M_Shipment_Notification_CompletedNotifications = AdMessageKey.of("de.metas.shippingnotification.CompletedShippingNotifications");
 
-	public ShippingNotificationCollection getByQuery(@NonNull final ShippingNotificationQuery query) {return shippingNotificationRepository.getByQuery(query);}
+	public ShippingNotificationCollection getByQuery(@NonNull final ShippingNotificationQuery query)
+	{
+		return shippingNotificationRepository.getByQuery(query);
+	}
 
-	public ShippingNotification getByRecord(@NonNull final I_M_Shipping_Notification record) {return shippingNotificationRepository.getByRecord(record);}
+	public ShippingNotification getByRecord(@NonNull final I_M_Shipping_Notification record)
+	{
+		return shippingNotificationRepository.getByRecord(record);
+	}
 
-	public I_M_Shipping_Notification getRecordById(@NonNull final ShippingNotificationId id) {return shippingNotificationRepository.getRecordById(id);}
+	public I_M_Shipping_Notification getRecordById(@NonNull final ShippingNotificationId id)
+	{
+		return shippingNotificationRepository.getRecordById(id);
+	}
+
+	@NonNull
+	public ShippingNotification getById(@NonNull final ShippingNotificationId id)
+	{
+		return shippingNotificationRepository.getById(id);
+	}
 
 	public void updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
@@ -104,5 +127,24 @@ public class ShippingNotificationService
 		{
 			throw new AdempiereException(MSG_M_Shipment_Notification_CompletedNotifications);
 		}
+	}
+
+	@NonNull
+	public ImmutableList<I_M_Shipping_NotificationLine> getLines(@NonNull final ShippingNotificationId shippingNotificationId)
+	{
+		return ImmutableList.copyOf(getLines(ImmutableSet.of(shippingNotificationId))
+											.get(shippingNotificationId));
+	}
+
+	@NonNull
+	public Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> getLines(@NonNull final Collection<ShippingNotificationId> shippingNotificationIdCollection)
+	{
+		return shippingNotificationRepository.getLines(shippingNotificationIdCollection);
+	}
+
+	@NonNull
+	public Stream<ShippingNotificationId> streamIds(@NonNull final IQueryFilter<I_M_Shipping_Notification> shippingNotificationFilter)
+	{
+		return shippingNotificationRepository.streamIds(shippingNotificationFilter);
 	}
 }
