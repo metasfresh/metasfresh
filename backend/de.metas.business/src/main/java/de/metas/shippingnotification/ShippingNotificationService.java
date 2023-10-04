@@ -53,6 +53,12 @@ public class ShippingNotificationService
 
 	public I_M_Shipping_Notification getRecordById(@NonNull final ShippingNotificationId id) {return shippingNotificationRepository.getRecordById(id);}
 
+	@NonNull
+	public ShippingNotification getById(@NonNull final ShippingNotificationId id)
+	{
+		return shippingNotificationRepository.getById(id);
+	}
+
 	public void updateWhileSaving(
 			@NonNull final I_M_Shipping_Notification record,
 			@NonNull final Consumer<ShippingNotification> consumer)

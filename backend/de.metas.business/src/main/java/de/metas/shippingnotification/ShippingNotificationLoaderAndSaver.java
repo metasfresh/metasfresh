@@ -25,6 +25,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,6 +43,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 class ShippingNotificationLoaderAndSaver
@@ -145,6 +147,15 @@ class ShippingNotificationLoaderAndSaver
 	public ArrayList<I_M_Shipping_NotificationLine> getLineRecords(@NonNull final ShippingNotificationId id)
 	{
 		return linesByHeaderId.computeIfAbsent(id, this::retrieveLineRecords);
+	}
+
+	@NonNull
+	public Stream<I_M_Shipping_Notification> stream(@NonNull final IQueryFilter<I_M_Shipping_Notification> shippingNotificationFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
+				.filter(shippingNotificationFilter)
+				.create()
+				.iterateAndStream();
 	}
 
 	private ArrayList<I_M_Shipping_NotificationLine> retrieveLineRecords(final @NonNull ShippingNotificationId id)

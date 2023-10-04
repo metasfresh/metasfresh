@@ -355,6 +355,8 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_SalesModularContract = "SalesModularContract";
 	/** PurchaseModularContract = PurchaseModularContract */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_PurchaseModularContract = "PurchaseModularContract";
+	/** Lieferavis = ShippingNotification */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_Lieferavis = "ShippingNotification";
 	@Override
 	public void setModCntr_Log_DocumentType (final String ModCntr_Log_DocumentType)
 	{

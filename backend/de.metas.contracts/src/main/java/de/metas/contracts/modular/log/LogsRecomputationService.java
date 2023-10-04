@@ -33,6 +33,9 @@ import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.IOrderDAO;
+import de.metas.shippingnotification.ShippingNotificationDAO;
+import de.metas.shippingnotification.ShippingNotificationId;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -67,8 +70,9 @@ public class LogsRecomputationService
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	@NonNull
+	private final ShippingNotificationDAO shippingNotificationDAO;
+	@NonNull
 	private final ModularContractService modularContractService;
-
 	@NonNull
 	private final ModularContractLogDAO modularContractLogDAO;
 
@@ -142,6 +146,14 @@ public class LogsRecomputationService
 				.map(I_PP_Order::getPP_Order_ID)
 				.map(PPOrderId::ofRepoId)
 				.forEach(this::recomputeForPPOrder);
+	}
+
+	public void recomputeForShippingNotification(@NonNull final IQueryFilter<I_M_Shipping_Notification> filter)
+	{
+		shippingNotificationDAO.stream(filter)
+				.map(I_M_Shipping_Notification::getM_Shipping_Notification_ID)
+				.map(ShippingNotificationId::ofRepoId)
+				.forEach(this::recomputeForShippingNotification);
 	}
 
 	private void recomputeForInvoice(@NonNull final InvoiceId invoiceId)
@@ -223,5 +235,15 @@ public class LogsRecomputationService
 			default -> trxManager.runInNewTrx(() -> modularContractService
 					.invokeWithModelForAllContractTypes(tableRecordReference.getModel(), ModelAction.RECREATE_LOGS));
 		}
+	}
+
+	private void recomputeForShippingNotification(@NonNull final ShippingNotificationId shippingNotificationId)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
+		trxManager.runInNewTrx(() -> shippingNotificationDAO
+				.getLines(shippingNotificationId)
+				.forEach(line -> modularContractService.invokeWithModelForAllContractTypes(line, ModelAction.RECREATE_LOGS)));
 	}
 }

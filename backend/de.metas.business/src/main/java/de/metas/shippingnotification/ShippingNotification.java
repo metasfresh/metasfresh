@@ -230,5 +230,4 @@ public class ShippingNotification
 	{
 		return CollectionUtils.singleElementOrEmptyIfNotFound(lines, line -> OrderAndLineId.equals(line.getSalesOrderAndLineId(), salesOrderAndLineId));
 	}
-
 }

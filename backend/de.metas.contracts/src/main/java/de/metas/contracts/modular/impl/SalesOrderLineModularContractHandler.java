@@ -25,10 +25,10 @@ package de.metas.contracts.modular.impl;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -36,8 +36,8 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +61,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 
 	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull private final ModularContractProvider contractProvider;
 
 	@NonNull
 	@Override
@@ -85,15 +86,8 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		if (!order.isSOTrx())
-		{
-			return Stream.empty();
-		}
-
-		return flatrateBL.getByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()), TypeConditions.MODULAR_CONTRACT)
-				.map(flatrateTerm -> FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
-				.stream();
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
+		return contractProvider.streamSalesContractsForSalesOrderLine(orderAndLineId);
 	}
 
 	@Override

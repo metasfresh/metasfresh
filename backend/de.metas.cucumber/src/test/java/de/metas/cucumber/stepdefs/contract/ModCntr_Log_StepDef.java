@@ -45,6 +45,8 @@ import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefDa
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.shippingNotification.M_Shipping_NotificationLine_StepDefData;
+import de.metas.cucumber.stepdefs.shippingNotification.M_Shipping_Notification_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -52,6 +54,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -124,6 +128,10 @@ public class ModCntr_Log_StepDef
 	private final C_Year_StepDefData yearTable;
 	@NonNull
 	private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull
+	private final M_Shipping_NotificationLine_StepDefData shippingNotificationLineStepDefData;
+	@NonNull
+	private final M_Shipping_Notification_StepDefData shippingNotificationStepDefData;
 	@NonNull
 	private final M_InventoryLine_StepDefData inventoryLineTable;
 
@@ -245,6 +253,7 @@ public class ModCntr_Log_StepDef
 			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
 			case I_C_InvoiceLine.Table_Name -> recordId = invoiceLineTable.get(recordIdentifier).getC_InvoiceLine_ID();
 			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
+			case I_M_Shipping_NotificationLine.Table_Name -> recordId = shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);
@@ -438,6 +447,7 @@ public class ModCntr_Log_StepDef
 			case I_M_InventoryLine.Table_Name -> recordId = inventoryLineTable.get(recordIdentifier).getM_InventoryLine_ID();
 			case I_C_Flatrate_Term.Table_Name -> recordId = flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID();
 			case I_PP_Order.Table_Name -> recordId = manufacturingOrderTable.get(recordIdentifier).getPP_Order_ID();
+			case I_M_Shipping_NotificationLine.Table_Name -> recordId = shippingNotificationLineStepDefData.get(recordIdentifier).getM_Shipping_NotificationLine_ID();
 			default -> throw new AdempiereException("Unsupported TableName !")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);
@@ -524,6 +534,13 @@ public class ModCntr_Log_StepDef
 						.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermTable.get(recordIdentifier).getC_Flatrate_Term_ID());
 
 				recomputeLogsService.recomputeForFlatrate(filter);
+			}
+			case I_M_Shipping_Notification.Table_Name ->
+			{
+				final IQueryFilter<I_M_Shipping_Notification> filter = queryBL.createCompositeQueryFilter(I_M_Shipping_Notification.class)
+						.addEqualsFilter(I_M_Shipping_Notification.COLUMNNAME_M_Shipping_Notification_ID, shippingNotificationStepDefData.get(recordIdentifier).getM_Shipping_Notification_ID());
+
+				recomputeLogsService.recomputeForShippingNotification(filter);
 			}
 			default -> throw new AdempiereException("Unsupported TableName!")
 					.appendParametersToMessage()
