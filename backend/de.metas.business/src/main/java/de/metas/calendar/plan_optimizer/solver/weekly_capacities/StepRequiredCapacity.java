@@ -1,5 +1,6 @@
 package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -10,6 +11,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.apache.commons.collections4.ListUtils;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,20 @@ public class StepRequiredCapacity
 	private StepRequiredCapacity(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek, @NonNull final StepItemRequiredCapacity capacityItem)
 	{
 		this.map = ImmutableMap.of(resourceGroupYearWeek, ImmutableList.of(capacityItem));
+	}
+
+	@Override
+	public String toString()
+	{
+		final MoreObjects.ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
+		map.forEach((groupYearWeek, items) -> {
+			final Duration requiredDuration = items.stream()
+					.map(StepItemRequiredCapacity::getHumanResourceDuration)
+					.reduce(Duration.ZERO, Duration::plus);
+
+			toStringHelper.add(groupYearWeek.toString(), requiredDuration);
+		});
+		return toStringHelper.toString();
 	}
 
 	public StepRequiredCapacity add(final StepRequiredCapacity other)

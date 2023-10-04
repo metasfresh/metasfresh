@@ -1,6 +1,7 @@
 package de.metas.calendar.plan_optimizer.domain;
 
 import de.metas.calendar.plan_optimizer.solver.DelayStrengthComparator;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.YearWeek;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
@@ -102,7 +103,9 @@ public class Step
 			sb.append(endDate);
 		}
 
-		sb.append(" (").append(duration).append(")");
+		sb.append(" (WK").append(YearWeek.from(startDate).getWeek()).append(")");
+		//sb.append(" (").append(duration).append(")");
+
 		sb.append(": ");
 
 		// + ": dueDate=" + dueDate

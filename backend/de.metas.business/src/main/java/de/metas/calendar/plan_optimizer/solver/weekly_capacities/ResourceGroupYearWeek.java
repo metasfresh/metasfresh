@@ -14,7 +14,7 @@ public class ResourceGroupYearWeek
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
+		return MoreObjects.toStringHelper("")
 				.add("groupId", groupId.getRepoId())
 				.add("yearWeek", yearWeek)
 				.toString();

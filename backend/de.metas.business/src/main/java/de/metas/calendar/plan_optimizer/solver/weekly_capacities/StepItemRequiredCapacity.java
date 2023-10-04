@@ -43,8 +43,9 @@ public class StepItemRequiredCapacity
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("projectId", stepId.getWoProjectStepId().getProjectId().getRepoId())
-				.add("startTime", startDate)
-				.add("duration", humanResourceDuration)
+				.add("stepId", stepId.getWoProjectStepId().getRepoId())
+				//.add("startTime", startDate)
+				.addValue(humanResourceDuration)
 				.toString();
 	}
 }
