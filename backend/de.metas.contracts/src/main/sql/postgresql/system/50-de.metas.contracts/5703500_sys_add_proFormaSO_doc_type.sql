@@ -68,7 +68,7 @@ WHERE AD_Sequence_ID = 556308
 -- 2023-09-21T06:44:52.269Z
 INSERT INTO C_DocType (AD_Client_ID, AD_Org_ID, C_DocType_ID, Created, CreatedBy, DocBaseType, DocumentCopies, EntityType, GL_Category_ID, HasCharges, HasProforma, IsActive, IsCopyDescriptionToDocument, IsCreateCounter, IsDefault, IsDefaultCounterDoc, IsDocNoControlled, IsExcludeFromCommision, IsIndexed, IsInTransit, IsOverwriteDateOnComplete, IsOverwriteSeqOnComplete, IsPickQAConfirm,
                        IsShipConfirm, IsSOTrx, IsSplitWhenDifference, Name, PrintName, Updated, UpdatedBy)
-VALUES (1000000, 1000000, 1000045, TO_TIMESTAMP('2023-09-21 08:44:52.245', 'YYYY-MM-DD HH24:MI:SS.US'), 100, 'SOO', 1, 'de.metas.contracts', 1000000, 'N', 'N', 'Y', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'ProForma-Auftrag', 'ProForma-Auftrag', TO_TIMESTAMP('2023-09-21 08:44:52.245', 'YYYY-MM-DD HH24:MI:SS.US'), 100)
+VALUES (1000000, 1000000, 541113, TO_TIMESTAMP('2023-09-21 08:44:52.245', 'YYYY-MM-DD HH24:MI:SS.US'), 100, 'SOO', 1, 'de.metas.contracts', 1000000, 'N', 'N', 'Y', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'ProForma-Auftrag', 'ProForma-Auftrag', TO_TIMESTAMP('2023-09-21 08:44:52.245', 'YYYY-MM-DD HH24:MI:SS.US'), 100)
 ;
 
 -- 2023-09-21T06:44:52.332Z
@@ -91,7 +91,7 @@ FROM AD_Language l,
      C_DocType t
 WHERE l.IsActive = 'Y'
   AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
-  AND t.C_DocType_ID = 1000045
+  AND t.C_DocType_ID = 541113
   AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.C_DocType_ID = t.C_DocType_ID)
 ;
 
@@ -111,67 +111,67 @@ INSERT INTO AD_Document_Action_Access (AD_Client_ID, AD_Org_ID, IsActive, Create
                                                                                                                                                                       INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID = 135)
                                                                                                                                                                       INNER JOIN AD_Role rol ON (rol.AD_Client_ID = client.AD_Client_ID)
                                                                                                                                                              WHERE client.AD_Client_ID = 1000000
-                                                                                                                                                               AND doctype.C_DocType_ID = 1000045
+                                                                                                                                                               AND doctype.C_DocType_ID = 541113
                                                                                                                                                                AND rol.IsManual = 'N')
 ;
 
 -- 2023-09-21T06:47:00.359Z
 UPDATE C_DocType
 SET DocSubType='PF', Updated=TO_TIMESTAMP('2023-09-21 08:47:00.359', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
-WHERE C_DocType_ID = 1000045
+WHERE C_DocType_ID = 541113
 ;
 
 -- 2023-09-21T06:48:59.122Z
 UPDATE C_DocType
 SET IsSOTrx='Y', Updated=TO_TIMESTAMP('2023-09-21 08:48:59.122', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
-WHERE C_DocType_ID = 1000045
+WHERE C_DocType_ID = 541113
 ;
 
 -- 2023-09-21T06:49:36.501Z
 UPDATE C_DocType
 SET AD_PrintFormat_ID=1000010, Updated=TO_TIMESTAMP('2023-09-21 08:49:36.501', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
-WHERE C_DocType_ID = 1000045
+WHERE C_DocType_ID = 541113
 ;
 
 -- 2023-09-21T06:55:30.272Z
 UPDATE C_DocType_Trl
 SET IsTranslated='Y', Updated=TO_TIMESTAMP('2023-09-21 08:55:30.272', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
 WHERE AD_Language = 'de_CH'
-  AND C_DocType_ID = 1000045
+  AND C_DocType_ID = 541113
 ;
 
 -- 2023-09-21T06:55:33.734Z
 UPDATE C_DocType_Trl
 SET IsTranslated='Y', Updated=TO_TIMESTAMP('2023-09-21 08:55:33.734', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
 WHERE AD_Language = 'de_DE'
-  AND C_DocType_ID = 1000045
+  AND C_DocType_ID = 541113
 ;
 
 -- 2023-09-21T06:55:43.744Z
 UPDATE C_DocType_Trl
 SET Name='ProForma SO', Updated=TO_TIMESTAMP('2023-09-21 08:55:43.744', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
 WHERE AD_Language = 'en_US'
-  AND C_DocType_ID = 1000045
+  AND C_DocType_ID = 541113
 ;
 
 -- 2023-09-21T06:55:50.343Z
 UPDATE C_DocType_Trl
 SET PrintName='ProForma SO', Updated=TO_TIMESTAMP('2023-09-21 08:55:50.343', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
 WHERE AD_Language = 'en_US'
-  AND C_DocType_ID = 1000045
+  AND C_DocType_ID = 541113
 ;
 
 -- 2023-09-21T06:55:55.232Z
 UPDATE C_DocType_Trl
 SET IsTranslated='Y', Updated=TO_TIMESTAMP('2023-09-21 08:55:55.232', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
 WHERE AD_Language = 'en_US'
-  AND C_DocType_ID = 1000045
+  AND C_DocType_ID = 541113
 ;
 
 -- 2023-09-21T07:06:47.915Z
 UPDATE C_DocType
 SET DocNoSequence_ID=556308, Updated=TO_TIMESTAMP('2023-09-21 09:06:47.915', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
-WHERE C_DocType_ID = 1000045
+WHERE C_DocType_ID = 541113
 ;
 
 -- Reference: ModCntr_Log_DocumentType
