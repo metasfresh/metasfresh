@@ -1108,4 +1108,17 @@ public class FlatrateDAO implements IFlatrateDAO
 				.first(I_C_Flatrate_Term.class); // could be more than one, but all belong to the same contract and have same billing infos
 
 	}
+
+	@Override
+	public ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsFroDropShipPartner(@NonNull final BPartnerId bPartnerId, @NonNull Instant date)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Running.getCode())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, bPartnerId)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMN_EndDate, Operator.GREATER_OR_EQUAL, TimeUtil.asTimestamp(date))
+				.create()
+				.listImmutable(I_C_Flatrate_Term.class);
+	}
 }
