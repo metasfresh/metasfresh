@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
@@ -13,7 +35,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1906768742L;
+	private static final long serialVersionUID = -1537531580L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -329,6 +351,10 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_PurchaseModularContract = "PurchaseModularContract";
 	/** ProFormaSO = ProFormaSO */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_ProFormaSO = "ProFormaSO";
+	/**
+	 * ProFormaSOModularContract = ProFormaSOModularContract
+	 */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_ProFormaSOModularContract = "ProFormaSOModularContract";
 
 	@Override
 	public void setModCntr_Log_DocumentType(final java.lang.String ModCntr_Log_DocumentType)

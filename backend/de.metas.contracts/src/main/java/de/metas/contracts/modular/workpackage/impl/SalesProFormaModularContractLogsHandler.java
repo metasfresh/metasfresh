@@ -135,7 +135,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 											.invoicingBPartnerId(billBPartnerId)
 											.collectionPointBPartnerId(warehousePartnerId)
 											.warehouseId(warehouseId)
-											.documentType(LogEntryDocumentType.SALES_MODULAR_CONTRACT) //TODO ProFormaSoModularContract
+											.documentType(LogEntryDocumentType.PRO_FORMA_SO_MODULAR_CONTRACT)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.SALES)
 											.processed(false)

@@ -182,6 +182,28 @@ INSERT INTO AD_Ref_List (AD_Client_ID, AD_Org_ID, AD_Reference_ID, AD_Ref_List_I
 VALUES (0, 0, 541770, 543563, TO_TIMESTAMP('2023-09-26 10:10:26.3', 'YYYY-MM-DD HH24:MI:SS.US'), 100, 'de.metas.contracts', 'Y', 'ProForma-Auftrag', TO_TIMESTAMP('2023-09-26 10:10:26.3', 'YYYY-MM-DD HH24:MI:SS.US'), 100, 'ProFormaSO', 'ProFormaSO')
 ;
 
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 -- 2023-09-26T08:10:26.407Z
 INSERT INTO AD_Ref_List_Trl (AD_Language, AD_Ref_List_ID, Description, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
 SELECT l.AD_Language,
@@ -226,5 +248,59 @@ UPDATE AD_Ref_List_Trl
 SET IsTranslated='Y', Name='ProForma SO', Updated=TO_TIMESTAMP('2023-09-26 10:10:51.387', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
 WHERE AD_Language = 'en_US'
   AND AD_Ref_List_ID = 543563
+;
+
+-- Reference: ModCntr_Log_DocumentType
+-- Value: ProFormaSOModularContract
+-- ValueName: ProFormaSOModularContract
+-- 2023-10-04T07:21:50.003Z
+INSERT INTO AD_Ref_List (AD_Client_ID, AD_Org_ID, AD_Reference_ID, AD_Ref_List_ID, Created, CreatedBy, EntityType, IsActive, Name, Updated, UpdatedBy, Value, ValueName)
+VALUES (0, 0, 541770, 543565, TO_TIMESTAMP('2023-10-04 09:21:49.897', 'YYYY-MM-DD HH24:MI:SS.US'), 100, 'de.metas.contracts', 'Y', 'ProForma-Auftrag Modularer Vertrag', TO_TIMESTAMP('2023-10-04 09:21:49.897', 'YYYY-MM-DD HH24:MI:SS.US'), 100, 'ProFormaSOModularContract', 'ProFormaSOModularContract')
+;
+
+-- 2023-10-04T07:21:50.006Z
+INSERT INTO AD_Ref_List_Trl (AD_Language, AD_Ref_List_ID, Description, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language,
+       t.AD_Ref_List_ID,
+       t.Description,
+       t.Name,
+       'N',
+       t.AD_Client_ID,
+       t.AD_Org_ID,
+       t.Created,
+       t.Createdby,
+       t.Updated,
+       t.UpdatedBy,
+       'Y'
+FROM AD_Language l,
+     AD_Ref_List t
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+  AND t.AD_Ref_List_ID = 543565
+  AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Ref_List_ID = t.AD_Ref_List_ID)
+;
+
+-- Reference Item: ModCntr_Log_DocumentType -> ProFormaSOModularContract_ProFormaSOModularContract
+-- 2023-10-04T07:21:54.732Z
+UPDATE AD_Ref_List_Trl
+SET IsTranslated='Y', Updated=TO_TIMESTAMP('2023-10-04 09:21:54.732', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
+WHERE AD_Language = 'de_CH'
+  AND AD_Ref_List_ID = 543565
+;
+
+-- Reference Item: ModCntr_Log_DocumentType -> ProFormaSOModularContract_ProFormaSOModularContract
+-- 2023-10-04T07:21:55.599Z
+UPDATE AD_Ref_List_Trl
+SET IsTranslated='Y', Updated=TO_TIMESTAMP('2023-10-04 09:21:55.599', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
+WHERE AD_Language = 'de_DE'
+  AND AD_Ref_List_ID = 543565
+;
+
+-- Reference Item: ModCntr_Log_DocumentType -> ProFormaSOModularContract_ProFormaSOModularContract
+-- 2023-10-04T07:22:19.038Z
+UPDATE AD_Ref_List_Trl
+SET IsTranslated='Y', Name='ProForma SO Modular Contract', Updated=TO_TIMESTAMP('2023-10-04 09:22:19.038', 'YYYY-MM-DD HH24:MI:SS.US'), UpdatedBy=100
+WHERE AD_Language = 'en_US'
+  AND AD_Ref_List_ID = 543565
 ;
 
