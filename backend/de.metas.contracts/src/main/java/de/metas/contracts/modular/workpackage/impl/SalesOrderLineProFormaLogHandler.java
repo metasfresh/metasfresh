@@ -30,6 +30,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.BooleanWithReason;
@@ -112,7 +113,7 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler<I_C
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(orderRecord.getC_DocType_ID());
-		final String description = getDescription(docTypeId, productId, quantity);
+		final String description = ModularContractLogHandlerHelper.getDescription(docTypeId, productId, quantity);
 
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
