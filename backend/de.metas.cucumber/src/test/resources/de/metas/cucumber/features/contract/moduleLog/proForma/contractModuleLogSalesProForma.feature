@@ -249,7 +249,7 @@ Feature: Modular contract log for proForma Sales Order
       | Identifier            | Value                                  |
       | docAction_not_allowed | de.metas.contracts.DocActionNotAllowed |
 
-    And the order identified by so_order_S0315 is reversed expecting error
+    And the order identified by so_order_S0315 is reactivated expecting error
       | OPT.AD_Message_ID.Identifier |
       | docAction_not_allowed        |
 
