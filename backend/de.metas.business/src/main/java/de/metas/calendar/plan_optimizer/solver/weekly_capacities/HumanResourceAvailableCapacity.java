@@ -65,7 +65,7 @@ public class HumanResourceAvailableCapacity
 				.map(HumanResourceTestGroup::getWeeklyCapacity)
 				.orElse(Duration.ZERO);
 
-		return new Reservation(resourceGroupYearWeek, groupWeeklyCapacity);
+		return new Reservation(groupWeeklyCapacity);
 	}
 
 	//
@@ -77,7 +77,6 @@ public class HumanResourceAvailableCapacity
 	@RequiredArgsConstructor
 	private static class Reservation
 	{
-		@NonNull private final ResourceGroupYearWeek resourceGroupYearWeek;
 		@NonNull private final Duration totalCapacity;
 		@NonNull private Duration reservedCapacity = Duration.ZERO;
 		@Getter private long overReservedCapacityPenalty = 0;
