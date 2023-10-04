@@ -1,7 +1,10 @@
 package de.metas.calendar.plan_optimizer.domain;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
 import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.project.ProjectId;
 import lombok.Data;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
@@ -41,7 +44,13 @@ public class Plan
 		sb.append("\nPlan score: ").append(score).append(", Time spent: ").append(timeSpent).append(", IsFinalSolution=").append(isFinalSolution);
 		if (stepsList != null && !stepsList.isEmpty())
 		{
-			stepsList.forEach(step -> sb.append("\n").append(step));
+			final ImmutableListMultimap<ProjectId, Step> stepsByProjectId = Multimaps.index(stepsList, Step::getProjectId);
+			for (final ProjectId projectId : stepsByProjectId.keySet())
+			{
+				sb.append("\n").append(projectId);
+				stepsByProjectId.get(projectId).forEach(step -> sb.append("\n\t").append(step));
+
+			}
 		}
 
 		if (scoreExplanation != null)
