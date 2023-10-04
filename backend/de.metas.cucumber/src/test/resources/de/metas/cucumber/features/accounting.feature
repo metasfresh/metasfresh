@@ -654,7 +654,7 @@ Feature: accounting-override-feature
       | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 0                | NotInvoicedReceipts_Acct    |
 
   @from:cucumber
-  @runThisOne
+  @Id:S0322_100
   Scenario: we can generate multiple shipping notifications from sales order (the previous ones getting reversed) with fact accounts generated for each of them
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -829,7 +829,7 @@ Feature: accounting-override-feature
       | factAcct_2              | P_Asset_Acct                | 0  | 0  | chf                      | P_Asset_Acct                | -10     | bpLocationDefault                     | p_1                         | locator                     |
 
   @from:cucumber
-  @runThisOne
+  @Id:S0322_200
   Scenario: we can generate shipping notification for sales order with fact accounts generated for it, but when order is voided, then notification is reversed
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -981,7 +981,7 @@ Feature: accounting-override-feature
       | factAcct_6              | P_Asset_Acct                | 0  | 0  | chf                      | P_Asset_Acct                | 10      | bpLocationDefault                     | p_1                         | locator                     |
 
   @from:cucumber
-  @runThisOne
+  @Id:S0322_300
   Scenario: we can generate shipping notification for sales order with fact accounts generated for it, but when order is voided, then notification is reversed
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
