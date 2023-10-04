@@ -191,7 +191,7 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 
-		return X_C_DocType.DOCSUBTYPE_DownPayment.equals(dt.getDocBaseType())
+		return X_C_DocType.DOCSUBTYPE_DownPayment.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
 	}
 
