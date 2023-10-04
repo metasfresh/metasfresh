@@ -75,7 +75,7 @@ public class PurchaseModularContractHandler implements IModularContractTypeHandl
 			return false;
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(orderLineBL.getOrderLineById(orderLineId).getC_Order_ID());
+		final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
 		return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isPurchase();
 	}
 

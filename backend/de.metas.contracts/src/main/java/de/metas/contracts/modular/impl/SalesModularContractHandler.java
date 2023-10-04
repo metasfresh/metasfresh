@@ -76,7 +76,7 @@ public class SalesModularContractHandler implements IModularContractTypeHandler<
 			return false;
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(orderLineBL.getOrderLineById(orderLineId).getC_Order_ID());
+		final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
 		final I_C_Order order = orderBL.getById(orderId);
 		return SOTrx.ofBoolean(order.isSOTrx()).isSales() && !orderBL.isProFormaSO(order);
 	}

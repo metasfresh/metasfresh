@@ -104,7 +104,7 @@ Feature: Modular contract log for proForma Sales Order
       | modCntr_type_MC_PO_S0315              | modCntr_type_MC_PO_S0315              | modCntr_type_MC_PO_S0315              | de.metas.contracts.modular.impl.PurchaseModularContractHandler                 |
       | modCntr_type_proForma_SO_for_PO_S0315 | modCntr_type_proForma_SO_for_PO_S0315 | modCntr_type_proForma_SO_for_PO_S0315 | de.metas.contracts.modular.impl.SalesOrderLineProFormaPOModularContractHandler |
       | modCntr_type_proForma_SO_S0315        | modCntr_type_proForma_SO_S0315        | modCntr_type_proForma_SO_S0315        | de.metas.contracts.modular.impl.SalesOrderLineProFormaModularContractHandler   |
-      | modCntr_type_MC_proForma_SO_S0315     | modCntr_type_MC_proForma_SO_S0315     | modCntr_type_MC_proForma_SO_S0315     | de.metas.contracts.modular.impl.SalesProFormaModularContractHandler            |
+      | modCntr_type_MC_proForma_SO_S0315     | modCntr_type_MC_proForma_SO_S0315     | modCntr_type_MC_proForma_SO_S0315     | de.metas.contracts.modular.impl.SalesContractProFormaModularContractHandler    |
 
   @Id:S0315_100
   @from:cucumber

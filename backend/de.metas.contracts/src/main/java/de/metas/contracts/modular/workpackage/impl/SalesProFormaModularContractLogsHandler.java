@@ -26,7 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.impl.SalesProFormaModularContractHandler;
+import de.metas.contracts.modular.impl.SalesContractProFormaModularContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -75,7 +75,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	private final SalesProFormaModularContractHandler contractHandler;
+	private final SalesContractProFormaModularContractHandler contractHandler;
 
 	@Override
 	@NonNull

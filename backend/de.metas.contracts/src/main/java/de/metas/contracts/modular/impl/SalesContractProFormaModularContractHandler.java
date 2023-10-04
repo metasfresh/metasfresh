@@ -49,7 +49,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class SalesProFormaModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
+public class SalesContractProFormaModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -77,7 +77,7 @@ public class SalesProFormaModularContractHandler implements IModularContractType
 			return false;
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(orderLineBL.getOrderLineById(orderLineId).getC_Order_ID());
+		final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
 		final I_C_Order order = orderBL.getById(orderId);
 		return SOTrx.ofBoolean(order.isSOTrx()).isSales() && orderBL.isProFormaSO(order);
 	}
