@@ -33,9 +33,18 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfigId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,6 +52,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 public interface IModularContractLogHandler<T>
 {
+	AdMessageKey MSG_ON_COMPLETE_LOG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.IModularContractLogHandler.CompleteLogDescription");
 	LogAction getLogAction(@NonNull HandleLogsRequest<T> request);
 
 	BooleanWithReason doesRecordStateRequireLogCreation(@NonNull T model);
@@ -102,6 +112,20 @@ public interface IModularContractLogHandler<T>
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
 				.build();
+	}
+
+	@NonNull
+	default String getDescription(
+			@NonNull final DocTypeId docTypeId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity quantity)
+	{
+		return TranslatableStrings.adMessage(
+						MSG_ON_COMPLETE_LOG_DESCRIPTION,
+						Services.get(IDocTypeBL.class).getNameById(docTypeId),
+						Services.get(IProductBL.class).getProductValueAndName(productId),
+						quantity.toString())
+				.translate(Language.getBaseAD_Language());
 	}
 
 	@Value
