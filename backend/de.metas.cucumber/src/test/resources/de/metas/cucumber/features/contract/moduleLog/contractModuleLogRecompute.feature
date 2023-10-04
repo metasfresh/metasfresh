@@ -57,6 +57,14 @@ Feature: Modular contract log - Recompute
       | Identifier                           | C_Flatrate_Conditions_ID.Identifier     | Bill_BPartner_ID.Identifier     | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
       | moduleLogContract_recompute_150923_1 | moduleLogConditions_PO_recompute_150923 | bp_moduleLogPO_recompute_150923 | 2021-10-31 | 2022-10-30 | module_log_recompute_150923 |
 
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
+      | invoicingGroup                       | invoicingGroup_09262023_7 | module_log_recompute_150923 | 2021-04-14 | 2022-12-12 |
+
+    And metasfresh contains ModCntr_InvoicingGroup_Product:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier     |
+      | invoicingGroup_p1                            | invoicingGroup                       | module_log_recompute_150923 |
+
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID             | MovementDate |
       | i_1        | warehouse_recompute_150923 | 2021-04-16   |
@@ -67,8 +75,8 @@ Feature: Modular contract log - Recompute
     When the inventory identified by i_1 is completed
 
     Then after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier     | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier        | OPT.ModCntr_Type_ID.Identifier  | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
-      | log_1                     | il_1                 | warehouse_recompute_150923    | ModularContract | module_log_recompute_150923 | bp_moduleLogPO_recompute_150923 | 10  | M_InventoryLine | moduleLogContract_recompute_150923_1 | modCntr_type_recompute_150923_1 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier     | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier        | OPT.ModCntr_Type_ID.Identifier  | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
+      | log_1                     | il_1                 | invoicingGroup                           | warehouse_recompute_150923    | ModularContract | module_log_recompute_150923 | bp_moduleLogPO_recompute_150923 | 10  | M_InventoryLine | moduleLogContract_recompute_150923_1 | modCntr_type_recompute_150923_1 | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
 
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName       | ProcessingStatus |

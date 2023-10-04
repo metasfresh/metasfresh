@@ -28,6 +28,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.interim.logImpl.InterimContractHandler;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
@@ -68,8 +70,12 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
+	@NonNull
 	private final ModularContractLogService modularContractLogService;
+	@NonNull
 	private final InterimContractHandler contractHandler;
+	@NonNull
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> request)
@@ -114,13 +120,21 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 
 		final ModularContractLogEntry modularContractLogEntry = modularContractLogEntryOptional.get();
 
-		final String productName = productBL.getProductValueAndName(modularContractLogEntry.getProductId());
+		final ProductId productId = ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID());
+		final String productName = productBL.getProductValueAndName(productId);
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, modularContractLogEntry.getQuantity())
 				.translate(Language.getBaseAD_Language());
-		
+
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(),
+																				OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),
+																				orgDAO::getTimeZone);
+
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+				.orElse(null);
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(modularContractId)
-											.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
+											.productId(productId)
 											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, createLogRequest.getContractId()))
 											.producerBPartnerId(modularContractLogEntry.getProducerBPartnerId())
 											.invoicingBPartnerId(modularContractLogEntry.getInvoicingBPartnerId())
@@ -132,14 +146,13 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 											.processed(false)
 											.quantity(modularContractLogEntry.getQuantity())
 											.amount(modularContractLogEntry.getAmount())
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(),
-																						   OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
+											.transactionDate(transactionDate)
 											.year(modularContractLogEntry.getYear())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
 											.priceActual(flatrateBL.extractPriceActual(flatrateTermRecord))
+											.invoicingGroupId(invoicingGroupId)
 											.build());
 	}
 

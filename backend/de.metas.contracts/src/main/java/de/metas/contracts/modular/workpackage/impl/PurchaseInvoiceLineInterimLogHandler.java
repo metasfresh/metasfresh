@@ -29,6 +29,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.interim.logImpl.PurchaseInvoiceLineInterimHandler;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -84,32 +86,35 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	private final PurchaseInvoiceLineInterimHandler contractHandler;
-
 	private final ModularContractLogDAO contractLogDAO;
 	private final ModularContractLogService modularContractLogService;
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
 
 	public PurchaseInvoiceLineInterimLogHandler(
 			@NonNull final PurchaseInvoiceLineInterimHandler contractHandler,
-			@NonNull final ModularContractLogDAO contractLogDAO, final ModularContractLogService modularContractLogService)
+			@NonNull final ModularContractLogDAO contractLogDAO,
+			@NonNull final ModularContractLogService modularContractLogService,
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
 	{
 		this.contractHandler = contractHandler;
 		this.contractLogDAO = contractLogDAO;
 		this.modularContractLogService = modularContractLogService;
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 	}
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_InvoiceLine> request)
 	{
 		return switch (request.getModelAction())
-		{
-			case COMPLETED -> LogAction.CREATE;
-			case REVERSED -> LogAction.REVERSE;
-			case RECREATE_LOGS -> LogAction.RECOMPUTE;
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-		};
+				{
+					case COMPLETED -> LogAction.CREATE;
+					case REVERSED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
+					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+				};
 	}
 
 	@Override
@@ -170,6 +175,13 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered)
 				.translate(Language.getBaseAD_Language());
 
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(invoiceRecord.getDateInvoiced(),
+																				OrgId.ofRepoId(invoiceLineRecord.getAD_Org_ID()),
+																				orgDAO::getTimeZone);
+
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+				.orElse(null);
+
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
 						.referencedRecord(TableRecordReference.of(org.compiere.model.I_C_InvoiceLine.Table_Name, invoiceLineRecord.getC_InvoiceLine_ID()))
@@ -185,13 +197,14 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 						.processed(false)
 						.quantity(qtyEntered)
 						.amount(amount)
-						.transactionDate(LocalDateAndOrgId.ofTimestamp(invoiceRecord.getDateInvoiced(), OrgId.ofRepoId(invoiceLineRecord.getAD_Org_ID()), orgDAO::getTimeZone))
+						.transactionDate(transactionDate)
 						.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 						.description(description)
 						.modularContractTypeId(createLogRequest.getTypeId())
 						.configId(createLogRequest.getConfigId())
 						.priceActual(productPrice)
 						.invoiceCandidateId(invoiceCandidateId)
+						.invoicingGroupId(invoicingGroupId)
 						.build()
 		);
 	}

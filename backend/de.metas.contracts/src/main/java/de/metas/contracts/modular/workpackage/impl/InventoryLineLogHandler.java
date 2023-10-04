@@ -29,6 +29,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.impl.InventoryLineModularContractHandler;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -71,6 +73,8 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 
 	@NonNull
 	private final InventoryLineModularContractHandler contractHandler;
+	@NonNull
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
 	public LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest<I_M_InventoryLine> request)
@@ -118,9 +122,18 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(createLogRequest.getContractId());
 
+		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
+
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(inventory.getMovementDate(),
+																				OrgId.ofRepoId(inventoryLine.getAD_Org_ID()),
+																				orgDAO::getTimeZone);
+
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+				.orElse(null);
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
-											.productId(ProductId.ofRepoId(inventoryLine.getM_Product_ID()))
+											.productId(productId)
 											.referencedRecord(TableRecordReference.of(I_M_InventoryLine.Table_Name, inventoryLine.getM_InventoryLine_ID()))
 											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
 											.warehouseId(WarehouseId.ofRepoIdOrNull(inventory.getM_Warehouse_ID()))
@@ -128,13 +141,12 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.PURCHASE)
 											.quantity(quantity)
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(inventory.getMovementDate(),
-																						   OrgId.ofRepoId(inventoryLine.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
+											.transactionDate(transactionDate)
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
+											.invoicingGroupId(invoicingGroupId)
 											.build());
 	}
 

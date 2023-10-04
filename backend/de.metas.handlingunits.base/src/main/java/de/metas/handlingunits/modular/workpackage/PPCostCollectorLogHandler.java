@@ -29,6 +29,8 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
@@ -58,7 +60,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPCostCollectorId;
@@ -84,16 +85,18 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 
 	@NonNull
 	private final PPCostCollectorModularContractHandler contractHandler;
+	@NonNull
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_PP_Cost_Collector> request)
 	{
 		return switch (request.getModelAction())
-		{
-			case COMPLETED -> LogAction.CREATE;
-			case RECREATE_LOGS -> LogAction.RECOMPUTE;
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-		};
+				{
+					case COMPLETED -> LogAction.CREATE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
+					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+				};
 	}
 
 	@Override
@@ -138,26 +141,34 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 			description = msgBL.getMsg(MSG_DESCRIPTION_ISSUE, ImmutableList.of(modCntrLogQty.abs().toString(), product.getName()));
 		}
 
+		final ProductId productId = ProductId.ofRepoId(ppCostCollector.getM_Product_ID());
+
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(ppCostCollector.getMovementDate(),
+																				OrgId.ofRepoId(ppCostCollector.getAD_Org_ID()),
+																				orgDAO::getTimeZone);
+
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+				.orElse(null);
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-				.contractId(contractId)
-				.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
-				.subEntryId(LogSubEntryId.ofCostCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID())))
-				.productId(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()))
-				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
-				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
-				.documentType(LogEntryDocumentType.PRODUCTION)
-				.contractType(LogEntryContractType.MODULAR_CONTRACT)
-				.soTrx(SOTrx.PURCHASE)
-				.quantity(modCntrLogQty)
-				.transactionDate(LocalDateAndOrgId.ofTimestamp(ppCostCollector.getMovementDate(),
-						OrgId.ofRepoId(ppCostCollector.getAD_Org_ID()),
-						orgDAO::getTimeZone))
-				.year(modularContractSettings.getYearAndCalendarId().yearId())
-				.description(description)
-				.modularContractTypeId(createLogRequest.getTypeId())
-				.configId(createLogRequest.getConfigId())
-				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID()))
-				.build());
+											.contractId(contractId)
+											.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
+											.subEntryId(LogSubEntryId.ofCostCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID())))
+											.productId(productId)
+											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
+											.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
+											.documentType(LogEntryDocumentType.PRODUCTION)
+											.contractType(LogEntryContractType.MODULAR_CONTRACT)
+											.soTrx(SOTrx.PURCHASE)
+											.quantity(modCntrLogQty)
+											.transactionDate(transactionDate)
+											.year(modularContractSettings.getYearAndCalendarId().yearId())
+											.description(description)
+											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
+											.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID()))
+											.invoicingGroupId(invoicingGroupId)
+											.build());
 	}
 
 	@Override

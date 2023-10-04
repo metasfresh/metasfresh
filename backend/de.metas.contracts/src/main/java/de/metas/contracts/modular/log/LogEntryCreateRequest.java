@@ -25,6 +25,7 @@ package de.metas.contracts.modular.log;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -108,6 +109,9 @@ public class LogEntryCreateRequest
 	@Nullable
 	ProductPrice priceActual;
 
+	@Nullable
+	InvoicingGroupId invoicingGroupId;
+
 	boolean isBillable;
 
 	@Builder
@@ -133,6 +137,7 @@ public class LogEntryCreateRequest
 			@Nullable final ModularContractTypeId modularContractTypeId,
 			@NonNull final ModuleConfigId configId,
 			@Nullable final ProductPrice priceActual,
+			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable)
 	{
 		if (amount != null && priceActual != null)
@@ -166,6 +171,7 @@ public class LogEntryCreateRequest
 		this.modularContractTypeId = modularContractTypeId;
 		this.configId = configId;
 		this.priceActual = priceActual;
+		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable != null ? isBillable : true;
 	}
 

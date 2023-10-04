@@ -26,6 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -77,7 +79,10 @@ class SOLineForSOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
+	@NonNull
 	private final SalesOrderLineModularContractHandler contractHandler;
+	@NonNull
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_OrderLine> request)
@@ -121,6 +126,13 @@ class SOLineForSOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity)
 				.translate(Language.getBaseAD_Language());
 
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
+																				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+																				orgDAO::getTimeZone);
+
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+				.orElse(null);
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
@@ -135,14 +147,13 @@ class SOLineForSOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 											.processed(false)
 											.quantity(quantity)
 											.amount(amount)
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
-																						   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
+											.transactionDate(transactionDate)
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
+											.invoicingGroupId(invoicingGroupId)
 											.build());
 	}
 

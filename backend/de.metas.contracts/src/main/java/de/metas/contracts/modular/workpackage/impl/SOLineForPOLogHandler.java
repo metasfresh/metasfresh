@@ -29,6 +29,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.impl.SOLineForPOModularContractHandler;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -78,8 +80,12 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
+	@NonNull
 	private final ModularContractLogDAO contractLogDAO;
+	@NonNull
 	private final SOLineForPOModularContractHandler contractHandler;
+	@NonNull
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_OrderLine> request)
@@ -125,6 +131,13 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
+		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
+																				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+																				orgDAO::getTimeZone);
+
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+				.orElse(null);
+		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 											.contractId(createLogRequest.getContractId())
@@ -138,15 +151,14 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 											.soTrx(SOTrx.PURCHASE)
 											.processed(false)
 											.quantity(quantity)
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
-																						   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
+											.transactionDate(transactionDate)
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.amount(amount)
 											.configId(createLogRequest.getConfigId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
+											.invoicingGroupId(invoicingGroupId)
 											.build());
 	}
 
