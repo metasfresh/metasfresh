@@ -108,7 +108,14 @@ Feature: Modular contract log for proForma Sales Order
 
   @Id:S0315_100
   @from:cucumber
-  Scenario: When a proForma Sales Order is completed
+  Scenario: When a proForma Sales Order with modular Condition is completed and Purchase Order with same Harvesting Details exists
+  - validate Modular Contract for ProForma Sales Order is created
+  - validate no IC for ProForma Sales Order and it's shipment (include packing materials) is created
+  - validate ProForma Sales Order can't be reactivated or voided
+  - validate Modular Contract Log for ProForma Sales Order Modular Contract is created
+  - validate Modular Contract Log for related Purchase Modular Contract of ProForma Sales Order is created
+  - validate Modular Contract Log for ProForma Sales OrderLines is created
+  - validate Modular Contract Logs can be recreated
 
     Given metasfresh contains M_Products:
       | Identifier                 | Name                       |
@@ -191,6 +198,18 @@ Feature: Modular contract log for proForma Sales Order
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier    | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier    | OPT.C_OrderLine_Term_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_UOM_ID.X12DE355 | OPT.PlannedQtyPerUnit | OPT.PriceActual | OPT.M_PricingSystem_ID.Identifier | OPT.Type_Conditions | OPT.DocStatus |
       | moduleLogContract_SO_S0315    | modularContractTerms_proForma_SO_S0315 | bp_moduleLogProFormaSO      | modularContract_prod_S0315 | soLine_1_S0315                     | so_order_S0315                 | PCE                   | 10                    | 10.00           | moduleLogPS                       | ModularContract     | CO            |
 
+    And load AD_Message:
+      | Identifier            | Value                                  |
+      | docAction_not_allowed | de.metas.contracts.DocActionNotAllowed |
+
+    And the order identified by so_order_S0315 is voided expecting error
+      | OPT.AD_Message_ID.Identifier |
+      | docAction_not_allowed        |
+
+    And the order identified by so_order_S0315 is reactivated expecting error
+      | OPT.AD_Message_ID.Identifier |
+      | docAction_not_allowed        |
+
     And after not more than 120s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1_S0315 | soLine_1_S0315            | N             |
@@ -244,15 +263,3 @@ Feature: Modular contract log for proForma Sales Order
       | Log_1                     | moduleLogContract_SO_S0315 | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_Flatrate_Term | moduleLogContract_SO_S0315    | modCntr_type_MC_proForma_SO_S0315     | false         | ProFormaSOModularContract    | year_2022                         | true        | modCntr_module_MC_proForma_SO_S0315     | 100        | 10              | PCE                       |
       | Log_2                     | soLine_1_S0315             | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_OrderLine     | moduleLogContract_SO_S0315    | modCntr_type_proForma_SO_S0315        | false         | ProFormaSO                   | year_2022                         | true        | modCntr_module_proForma_SO_S0315        | 100        | 10              | PCE                       |
       | Log_3                     | soLine_1_S0315             | ModularContract | bp_moduleLogProFormaPO                     | warehouseModularContract      | modularContract_prod_S0315 | bp_moduleLogProFormaSO              | bp_moduleLogProFormaSO          | 10  | C_OrderLine     | moduleLogContract_PO_S0315    | modCntr_type_proForma_SO_for_PO_S0315 | false         | ProFormaSO                   | year_2022                         | false       | modCntr_module_proForma_SO_for_PO_S0315 | 100        | 10              | PCE                       |
-
-    And load AD_Message:
-      | Identifier            | Value                                  |
-      | docAction_not_allowed | de.metas.contracts.DocActionNotAllowed |
-
-    And the order identified by so_order_S0315 is reactivated expecting error
-      | OPT.AD_Message_ID.Identifier |
-      | docAction_not_allowed        |
-
-    And the order identified by so_order_S0315 is voided expecting error
-      | OPT.AD_Message_ID.Identifier |
-      | docAction_not_allowed        |
