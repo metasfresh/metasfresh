@@ -25,17 +25,40 @@ package de.metas.contracts.flatrate.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
 
 public class C_Flatrate_Term_Change_BillPartner_For_FlatrateData extends C_Flatrate_Term_Change_BillPartner_Base
 {
 	final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private int p_flatrateDataId;
 
 	@Override
 	protected ImmutableList<I_C_Flatrate_Term> getFlatrateTermsToChange()
 	{
-		final FlatrateDataId flatrateDataId = FlatrateDataId.ofRepoId(getRecord_ID());
-		return flatrateDAO.retrieveTermsAsList(flatrateDataId);
+		if(p_flatrateDataId < 0)
+		{
+			return ImmutableList.of();
+		}
+		return flatrateDAO.retrieveTermsAsList(FlatrateDataId.ofRepoId(p_flatrateDataId));
+	}
+
+	@Override
+	protected void prepare()
+	{
+		for (final ProcessInfoParameter para : getParametersAsArray())
+		{
+			final String name = para.getParameterName();
+			if (para.getParameter() == null)
+			{
+				;
+			}
+			else if (name.equals(I_C_Flatrate_Data.COLUMNNAME_C_Flatrate_Data_ID))
+			{
+				p_flatrateDataId = para.getParameterAsInt();
+			}
+		}
 	}
 }
