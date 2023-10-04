@@ -1,10 +1,8 @@
 package de.metas.calendar.plan_optimizer.solver;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.HumanResourceAvailableCapacity;
-import de.metas.calendar.plan_optimizer.solver.weekly_capacities.ResourceGroupYearWeek;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.StepRequiredCapacity;
 import de.metas.project.InternalPriority;
 import de.metas.resource.HumanResourceTestGroupId;
@@ -99,14 +97,10 @@ public class PlanConstraintProvider implements ConstraintProvider
 
 	private int computePenaltyWeight_availableCapacity(final StepRequiredCapacity requiredCapacity)
 	{
-		final Set<HumanResourceTestGroupId> ids = requiredCapacity.getMap().keySet()
-				.stream()
-				.map(ResourceGroupYearWeek::getGroupId)
-				.collect(ImmutableSet.toImmutableSet());
-
+		final Set<HumanResourceTestGroupId> ids = requiredCapacity.getGroupIds();
 		final HumanResourceAvailableCapacity humanResourceAvailableCapacity = HumanResourceAvailableCapacity.of(humanResourceTestGroupService.getByIds(ids));
 		humanResourceAvailableCapacity.reserveCapacity(requiredCapacity);
-		return humanResourceAvailableCapacity.getOverReservedCapacity().intValue();
+		return humanResourceAvailableCapacity.getOverReservedCapacityPenalty();
 	}
 
 	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)

@@ -6,7 +6,9 @@ import com.google.common.collect.Maps;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.resource.HumanResourceTestGroup;
 import de.metas.resource.HumanResourceTestGroupId;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -34,12 +36,12 @@ public class HumanResourceAvailableCapacity
 		requiredCapacity.forEach(this::reserveCapacity);
 	}
 
-	public Long getOverReservedCapacity()
+	public int getOverReservedCapacityPenalty()
 	{
-		return reservations.values()
+		return (int)reservations.values()
 				.stream()
-				.map(Reservation::getOverReservedCapacity)
-				.reduce((long)0, Long::sum);
+				.mapToLong(Reservation::getOverReservedCapacityPenalty)
+				.reduce(0, Long::sum);
 	}
 
 	private void reserveCapacity(
@@ -72,37 +74,26 @@ public class HumanResourceAvailableCapacity
 	//
 	//
 
+	@RequiredArgsConstructor
 	private static class Reservation
 	{
-		@NonNull ResourceGroupYearWeek resourceGroupYearWeek;
-		@NonNull Duration totalCapacity;
-		@NonNull Duration reservedCapacity = Duration.ZERO;
-		@NonNull Long overReservedCapacity = (long)0;
+		@NonNull private final ResourceGroupYearWeek resourceGroupYearWeek;
+		@NonNull private final Duration totalCapacity;
+		@NonNull private Duration reservedCapacity = Duration.ZERO;
+		@Getter private long overReservedCapacityPenalty = 0;
 
-		public Reservation(@NonNull final ResourceGroupYearWeek resourceGroupYearWeek, @NonNull final Duration totalCapacity)
+		public void reserve(@NonNull final List<StepItemRequiredCapacity> requiredCapacityItems)
 		{
-			this.resourceGroupYearWeek = resourceGroupYearWeek;
-			this.totalCapacity = totalCapacity;
-		}
-
-		public void reserve(@NonNull final List<StepItemRequiredCapacity> capacityItem)
-		{
-			capacityItem.forEach(item -> {
+			requiredCapacityItems.forEach(item -> {
 				this.reservedCapacity = this.reservedCapacity.plus(item.getHumanResourceDuration());
 
 				if (totalCapacity.compareTo(reservedCapacity) < 0)
 				{
 					final LocalDateTime startDate = item.getStartDate();
 					final LocalDateTime nextAvailableDate = YearWeek.from(startDate).nextWeekMonday();
-					this.overReservedCapacity = this.overReservedCapacity + Plan.PLANNING_TIME_PRECISION.between(startDate, nextAvailableDate);
+					this.overReservedCapacityPenalty += Plan.PLANNING_TIME_PRECISION.between(startDate, nextAvailableDate);
 				}
 			});
-		}
-
-		@NonNull
-		public Long getOverReservedCapacity()
-		{
-			return overReservedCapacity;
 		}
 	}
 }

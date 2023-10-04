@@ -1,5 +1,6 @@
 package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
+import com.google.common.base.MoreObjects;
 import de.metas.resource.HumanResourceTestGroupId;
 import lombok.NonNull;
 import lombok.Value;
@@ -9,4 +10,13 @@ public class ResourceGroupYearWeek
 {
 	@NonNull HumanResourceTestGroupId groupId;
 	@NonNull YearWeek yearWeek;
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("groupId", groupId.getRepoId())
+				.add("yearWeek", yearWeek)
+				.toString();
+	}
 }

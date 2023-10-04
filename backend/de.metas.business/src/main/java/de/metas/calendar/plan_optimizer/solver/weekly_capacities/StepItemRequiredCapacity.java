@@ -22,6 +22,7 @@
 
 package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
+import com.google.common.base.MoreObjects;
 import de.metas.calendar.plan_optimizer.domain.StepId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,4 +38,13 @@ public class StepItemRequiredCapacity
 	@NonNull StepId stepId;
 	@NonNull LocalDateTime startDate;
 	@NonNull Duration humanResourceDuration;
+
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.add("projectId", stepId.getWoProjectStepId().getRepoId())
+				.add("startTime", startDate)
+				.add("duration", humanResourceDuration)
+				.toString();
+	}
 }

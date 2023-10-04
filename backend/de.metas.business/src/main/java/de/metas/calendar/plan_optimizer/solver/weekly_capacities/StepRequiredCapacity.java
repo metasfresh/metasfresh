@@ -2,6 +2,7 @@ package de.metas.calendar.plan_optimizer.solver.weekly_capacities;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.util.Check;
@@ -12,6 +13,7 @@ import org.apache.commons.collections4.ListUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
@@ -50,8 +52,8 @@ public class StepRequiredCapacity
 	{
 		final HashMap<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> map = new HashMap<>(this.map);
 		other.map.forEach((resourceGroupYearWeek, capacityItems) -> map.merge(resourceGroupYearWeek,
-																			  capacityItems,
-																			  (existingItems, newItems) -> Stream.concat(existingItems.stream(), newItems.stream()).toList()));
+				capacityItems,
+				(existingItems, newItems) -> Stream.concat(existingItems.stream(), newItems.stream()).toList()));
 
 		return new StepRequiredCapacity(map);
 	}
@@ -60,8 +62,8 @@ public class StepRequiredCapacity
 	{
 		final HashMap<ResourceGroupYearWeek, List<StepItemRequiredCapacity>> map = new HashMap<>(this.map);
 		other.map.forEach((resourceGroupYearWeek, capacityItems) -> map.merge(resourceGroupYearWeek,
-																			  capacityItems,
-																			  ListUtils::subtract));
+				capacityItems,
+				ListUtils::subtract));
 
 		return new StepRequiredCapacity(map);
 	}
@@ -71,4 +73,11 @@ public class StepRequiredCapacity
 		this.map.forEach(consumer);
 	}
 
+	public Set<HumanResourceTestGroupId> getGroupIds()
+	{
+		return map.keySet()
+				.stream()
+				.map(ResourceGroupYearWeek::getGroupId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

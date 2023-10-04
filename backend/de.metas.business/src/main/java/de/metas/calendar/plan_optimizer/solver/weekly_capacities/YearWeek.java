@@ -47,6 +47,11 @@ public class YearWeek
 		this.week = week;
 	}
 
+	public String toString()
+	{
+		return year + "-WK" + week;
+	}
+
 	/**
 	 * Obtains an instance of {@code YearWeek} from a temporal object.
 	 * <p>

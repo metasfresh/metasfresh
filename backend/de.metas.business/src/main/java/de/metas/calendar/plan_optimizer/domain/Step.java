@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 public class Step
 {
 	@PlanningId private StepId id;
+
 	private Step previousStep;
 	private Step nextStep;
 
