@@ -102,22 +102,22 @@ public class C_Flatrate_Term_Change_Product_for_Partner extends JavaProcess impl
 		flatrateBL.updateFlatrateTermProductAndPrice(request);
 	}
 
-	final ImmutableList<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final BPartnerId bPartnerId)
+	private ImmutableList<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final BPartnerId bPartnerId)
 	{
 		return flatrateDAO.retrieveRunningTermsForDropShipPartnerAndProductCategory(bPartnerId, retrieveProductCategoryId());
 	}
 
-	final ProductId retrieveSelectedProductId()
+	private ProductId retrieveSelectedProductId()
 	{
 		return ProductId.ofRepoId(p_M_Product_ID);
 	}
 
-	final ProductCategoryId retrieveProductCategoryId()
+	private ProductCategoryId retrieveProductCategoryId()
 	{
 		return productDAO.retrieveProductCategoryByProductId(retrieveSelectedProductId());
 	}
 
-	final BPartnerId retrieveSelectedBPartnerId()
+	private BPartnerId retrieveSelectedBPartnerId()
 	{
 		return BPartnerId.ofRepoId(getRecord_ID());
 	}
