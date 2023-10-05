@@ -35,11 +35,15 @@ import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface IModularContractLogHandler<T>
 {
@@ -63,6 +67,12 @@ public interface IModularContractLogHandler<T>
 		return (Class<? extends IModularContractTypeHandler<T>>)getModularContractTypeHandler().getClass();
 	}
 
+	@NonNull
+	default Optional<ProductId> getProductId(@NonNull final HandleLogsRequest<T> handleLogsRequest)
+	{
+		return Optional.ofNullable(handleLogsRequest.getContractInfo().getProductId());
+	}
+	
 	default boolean applies(@NonNull final HandleLogsRequest<T> request)
 	{
 		final IModularContractTypeHandler<T> contractTypeHandler = getModularContractTypeHandler();
@@ -113,11 +123,17 @@ public interface IModularContractLogHandler<T>
 		@NonNull ModelAction modelAction;
 		@NonNull QueueWorkPackageId workPackageId;
 		@NonNull String handlerClassname;
-		@NonNull FlatrateTermId contractId;
+		@NonNull FlatrateTermInfo contractInfo;
 
 		public TableRecordReference getModelRef()
 		{
 			return TableRecordReference.of(model);
+		}
+		
+		@NonNull
+		public FlatrateTermId getContractId()
+		{
+			return contractInfo.getFlatrateTermId();
 		}
 	}
 
@@ -141,5 +157,13 @@ public interface IModularContractLogHandler<T>
 		CREATE,
 		REVERSE,
 		RECOMPUTE
+	}
+	
+	@Value
+	@Builder
+	class FlatrateTermInfo
+	{
+		@NonNull FlatrateTermId flatrateTermId;
+		@Nullable ProductId productId;
 	}
 }

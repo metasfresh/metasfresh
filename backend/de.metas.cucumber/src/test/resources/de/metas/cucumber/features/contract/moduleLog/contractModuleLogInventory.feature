@@ -39,13 +39,21 @@ Feature: Modular contract log from inventory
       | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
       | year                 | 2022       | harvesting_calendar      |
 
+    And load AD_JavaClass_Type:
+      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
+      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
+
+    And load AD_JavaClass:
+      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                           |
+      | class_1                    | type_1                          | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_S0282_500     | testSettings_07042023_0 | module_log_S0282_500    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_500  |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name               | Value              | Classname                                                           |
-      | modCntr_type_S0282_500_1   | invLine_07042023_1 | invLine_07042023_1 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name               | Value              | AD_JavaClass_ID.Identifier |
+      | modCntr_type_S0282_500_1   | invLine_07042023_1 | invLine_07042023_1 | class_1                    |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                       | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
@@ -53,7 +61,7 @@ Feature: Modular contract log from inventory
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | moduleLogConditions_PO_S0282_500    | moduleLogConditions_PO_S0282_500 | ModularContract | moduleLogPricingSystem_S0282_500  | Ca                       | modCntr_settings_S0282_500         | DR            |
+      | moduleLogConditions_PO_S0282_500    | moduleLogConditions_PO_S0282_500 | ModularContract | moduleLogPricingSystem_S0282_500  | Ex                       | modCntr_settings_S0282_500         | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -78,9 +86,9 @@ Feature: Modular contract log from inventory
     When the inventory identified by i_1 is completed
 
     Then after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
-      | log_1                     | il_1                 | invoicingGroup                           | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_500_1       | null            | null                      |
-      | log_2                     | il_2                 | invoicingGroup                           | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_500_1       | null            | null                      |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
+      | log_1                     | il_1                 | invoicingGroup                           | bp_moduleLogPO_S0282_500                   | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_500_1       | null            | null                      |
+      | log_2                     | il_2                 | invoicingGroup                           | bp_moduleLogPO_S0282_500                   | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_500_1       | null            | null                      |
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName       | ProcessingStatus |
       | il_1                 | M_InventoryLine | SP               |
@@ -93,9 +101,9 @@ Feature: Modular contract log from inventory
       | il_1                 | M_InventoryLine | SP               | 2                   |
       | il_2                 | M_InventoryLine | SP               | 2                   |
     Then after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
-      | log_3                     | il_1                 | invoicingGroup                           | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
-      | log_4                     | il_2                 | invoicingGroup                           | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
+      | log_3                     | il_1                 | invoicingGroup                           | bp_moduleLogPO_S0282_500                   | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_4                     | il_2                 | invoicingGroup                           | bp_moduleLogPO_S0282_500                   | warehouse_S0282_500           | ModularContract | module_log_S0282_500    | bp_moduleLogPO_S0282_500        | 10  | M_InventoryLine | moduleLogContract_S0282_500_1 | modCntr_type_S0282_500_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
 
   @Id:S0284_200
   @Id:S0282_600
@@ -130,13 +138,21 @@ Feature: Modular contract log from inventory
       | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
       | year                 | 2022       | harvesting_calendar      |
 
+    And load AD_JavaClass_Type:
+      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
+      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
+
+    And load AD_JavaClass:
+      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                           |
+      | class_1                    | type_1                          | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                         | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_S0282_600_1   | modCntr_settings_S0282_600_1 | module_log_S0282_600    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_600  |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name               | Value              | Classname                                                           |
-      | modCntr_type_S0282_600_1   | poLine_S0282_600_1 | poLine_S0282_600_1 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name               | Value              | AD_JavaClass_ID.Identifier |
+      | modCntr_type_S0282_600_1   | poLine_S0282_600_1 | poLine_S0282_600_1 | class_1                    |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                       | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
@@ -144,7 +160,7 @@ Feature: Modular contract log from inventory
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | moduleLogConditions_PO_S0282_600    | moduleLogConditions_PO_S0282_600 | ModularContract | moduleLogPricingSystem_S0282_600  | Ca                       | modCntr_settings_S0282_600_1       | DR            |
+      | moduleLogConditions_PO_S0282_600    | moduleLogConditions_PO_S0282_600 | ModularContract | moduleLogPricingSystem_S0282_600  | Ex                       | modCntr_settings_S0282_600_1       | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -173,9 +189,9 @@ Feature: Modular contract log from inventory
     When the inventory identified by i_1 is completed
 
     Then after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
-      | log_S0282_600_1           | il_1                 | invoicingGroup                           | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_600_1       | null            | null                      |
-      | log_S0282_600_2           | il_2                 | invoicingGroup                           | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_600_1       | null            | null                      |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
+      | log_S0282_600_1           | il_1                 | invoicingGroup                           | bp_moduleLogPO_S0282_600                   | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_600_1       | null            | null                      |
+      | log_S0282_600_2           | il_2                 | invoicingGroup                           | bp_moduleLogPO_S0282_600                   | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_600_1       | null            | null                      |
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName       | ProcessingStatus |
       | il_1                 | M_InventoryLine | SP               |
@@ -188,9 +204,9 @@ Feature: Modular contract log from inventory
       | il_1                 | M_InventoryLine | SP               | 2                   |
       | il_2                 | M_InventoryLine | SP               | 2                   |
     Then after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
-      | log_S0282_600_3           | il_1                 | invoicingGroup                           | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
-      | log_S0282_600_4           | il_2                 | invoicingGroup                           | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  |
+      | log_S0282_600_3           | il_1                 | invoicingGroup                           | bp_moduleLogPO_S0282_600                   | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
+      | log_S0282_600_4           | il_2                 | invoicingGroup                           | bp_moduleLogPO_S0282_600                   | warehouse_S0282_600           | ModularContract | module_log_S0282_600    | bp_moduleLogPO_S0282_600        | -10 | M_InventoryLine | moduleLogContract_S0282_600_1 | modCntr_type_S0282_600_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. |
 
 
   @Id:S0284_300
@@ -226,13 +242,21 @@ Feature: Modular contract log from inventory
       | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
       | year                 | 2022       | harvesting_calendar      |
 
+    And load AD_JavaClass_Type:
+      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
+      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
+
+    And load AD_JavaClass:
+      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                           |
+      | class_1                    | type_1                          | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_S0282_700_1   | testSettings_S0282_700_1 | module_log_S0282_700    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_700  |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name              | Value             | Classname                                                           |
-      | modCntr_type_S0282_700_1   | poLine_07052023_2 | poLine_07052023_2 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name              | Value             | AD_JavaClass_ID.Identifier |
+      | modCntr_type_S0282_700_1   | poLine_07052023_2 | poLine_07052023_2 | class_1                    |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
@@ -240,7 +264,7 @@ Feature: Modular contract log from inventory
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | moduleLogConditions_PO              | moduleLogConditions_po_07052023_2 | ModularContract | moduleLogPricingSystem_S0282_700  | Ca                       | modCntr_settings_S0282_700_1       | DR            |
+      | moduleLogConditions_PO              | moduleLogConditions_po_07052023_2 | ModularContract | moduleLogPricingSystem_S0282_700  | Ex                       | modCntr_settings_S0282_700_1       | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -265,18 +289,18 @@ Feature: Modular contract log from inventory
     When the inventory identified by i_1 is completed
 
     Then after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
-      | log_1                     | il_1                 | invoicingGroup                           | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
-      | log_2                     | il_2                 | invoicingGroup                           | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
+      | log_1                     | il_1                 | invoicingGroup                           | bp_moduleLogPO_S0282_700                   | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
+      | log_2                     | il_2                 | invoicingGroup                           | bp_moduleLogPO_S0282_700                   | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
 
     And the inventory identified by i_1 is reversed
 
     And after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
-      | log_1                     | il_1                 | invoicingGroup                           | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
-      | log_2                     | il_1                 | invoicingGroup                           | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | -10 | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
-      | log_3                     | il_2                 | invoicingGroup                           | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
-      | log_4                     | il_2                 | invoicingGroup                           | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | -10 | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | ContractType    | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.Description                                                  | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
+      | log_1                     | il_1                 | invoicingGroup                           | bp_moduleLogPO_S0282_700                   | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
+      | log_2                     | il_1                 | invoicingGroup                           | bp_moduleLogPO_S0282_700                   | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | -10 | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
+      | log_3                     | il_2                 | invoicingGroup                           | bp_moduleLogPO_S0282_700                   | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | 10  | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
+      | log_4                     | il_2                 | invoicingGroup                           | bp_moduleLogPO_S0282_700                   | warehouse_S0282_700           | ModularContract | module_log_S0282_700    | bp_moduleLogPO_S0282_700        | -10 | M_InventoryLine | moduleLogContract_S0282_700_1 | modCntr_type_S0282_700_1       | false         | Inventory                    | PCE                   | year                              | Bei der Inventur wurde ein Fehl-/Mehrbestand von 10 Stk gezählt. | modCntr_module_S0282_700_1       | null            | null                      |
 
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName       | ProcessingStatus | OPT.noOfLogStatuses |

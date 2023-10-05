@@ -9,10 +9,10 @@ import java.util.Properties;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent
+public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1913315153L;
+	private static final long serialVersionUID = -14278253L;
 
     /** Standard Constructor */
     public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
@@ -35,15 +35,18 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	}
 
 	@Override
-	public void setClassname (final @Nullable String Classname)
+	public void setAD_JavaClass_ID (final int AD_JavaClass_ID)
 	{
-		set_Value (COLUMNNAME_Classname, Classname);
+		if (AD_JavaClass_ID < 1) 
+			set_Value (COLUMNNAME_AD_JavaClass_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_JavaClass_ID, AD_JavaClass_ID);
 	}
 
 	@Override
-	public String getClassname()
+	public int getAD_JavaClass_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_Classname);
+		return get_ValueAsInt(COLUMNNAME_AD_JavaClass_ID);
 	}
 
 	@Override
@@ -53,7 +56,7 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	}
 
 	@Override
-	public String getDescription()
+	public String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -80,7 +83,7 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	}
 
 	@Override
-	public String getName()
+	public String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
@@ -92,7 +95,7 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	}
 
 	@Override
-	public String getValue()
+	public String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}

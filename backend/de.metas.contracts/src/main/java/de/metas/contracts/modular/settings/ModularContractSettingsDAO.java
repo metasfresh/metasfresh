@@ -34,6 +34,8 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.javaclasses.IJavaClassDAO;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -47,6 +49,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -59,6 +62,9 @@ import java.util.Optional;
 public class ModularContractSettingsDAO
 {
 	private final static Logger logger = LogManager.getLogger(ModularContractSettingsDAO.class);
+	
+	private final IJavaClassDAO javaClassDAO = Services.get(IJavaClassDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<SettingsLookupKey, CachedSettingsId> cacheKey2SettingsId = CCache.<SettingsLookupKey, CachedSettingsId>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -75,8 +81,6 @@ public class ModularContractSettingsDAO
 			.additionalTableNamesToResetFor(ImmutableSet.of(I_ModCntr_Module.Table_Name))
 			.invalidationKeysMapper(new SettingsInfoCachingKeysMapper())
 			.build();
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public ModularContractSettings getByFlatrateTermId(@NonNull final FlatrateTermId contractId)
@@ -108,7 +112,7 @@ public class ModularContractSettingsDAO
 	}
 
 	@NonNull
-	private static ModularContractSettings fromPOs(
+	private ModularContractSettings fromPOs(
 			@NonNull final I_ModCntr_Settings settingsRecord,
 			@NonNull final List<I_ModCntr_Module> moduleRecords)
 	{
@@ -127,6 +131,10 @@ public class ModularContractSettingsDAO
 		{
 			final I_ModCntr_Type modCntrType = moduleRecord.getModCntr_Type();
 
+			final String className = Optional.ofNullable(javaClassDAO.retriveJavaClassOrNull(Env.getCtx(), modCntrType.getAD_JavaClass_ID()))
+					.map(I_AD_JavaClass::getClassname)
+					.orElse(null);
+			
 			final ModuleConfig moduleConfig = ModuleConfig.builder()
 					.id(ModuleConfigId.ofRepoId(modularContractSettingsId, moduleRecord.getModCntr_Module_ID()))
 					.name(moduleRecord.getName())
@@ -137,7 +145,7 @@ public class ModularContractSettingsDAO
 												 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
 												 .value(modCntrType.getValue())
 												 .name(modCntrType.getName())
-												 .className(modCntrType.getClassname())
+												 .className(className)
 												 .build())
 					.build();
 

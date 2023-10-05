@@ -23,7 +23,9 @@
 package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.contracts.model.I_ModCntr_Type;
+import de.metas.cucumber.stepdefs.AD_JavaClass_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -41,10 +43,14 @@ public class ModCntr_Type_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final ModCntr_Type_StepDefData modCntrTypeTable;
+	private final AD_JavaClass_StepDefData javaClassTable;
 
-	public ModCntr_Type_StepDef(@NonNull final ModCntr_Type_StepDefData modCntrTypeTable)
+	public ModCntr_Type_StepDef(
+			@NonNull final ModCntr_Type_StepDefData modCntrTypeTable,
+			@NonNull final AD_JavaClass_StepDefData javaClassTable)
 	{
 		this.modCntrTypeTable = modCntrTypeTable;
+		this.javaClassTable = javaClassTable;
 	}
 
 	@Given("metasfresh contains ModCntr_Types:")
@@ -61,18 +67,19 @@ public class ModCntr_Type_StepDef
 	{
 		final String value = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Value);
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Name);
-		final String className = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Classname);
-		
+		final String javaClassIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_AD_JavaClass_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_AD_JavaClass javaClassRecord = javaClassTable.get(javaClassIdentifier);
+
 		final I_ModCntr_Type modCntrTypeRecord = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_Classname, className)
+				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_AD_JavaClass_ID, javaClassRecord.getAD_JavaClass_ID())
 				.create()
 				.firstOnlyOptional()
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_ModCntr_Type.class));
 
 		modCntrTypeRecord.setValue(value);
 		modCntrTypeRecord.setName(name);
-		modCntrTypeRecord.setClassname(className);
+		modCntrTypeRecord.setAD_JavaClass_ID(javaClassRecord.getAD_JavaClass_ID());
 
 		InterfaceWrapperHelper.saveRecord(modCntrTypeRecord);
 

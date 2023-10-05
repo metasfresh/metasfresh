@@ -22,7 +22,6 @@
 
 package de.metas.handlingunits.modular.workpackage;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
@@ -43,7 +42,8 @@ import de.metas.handlingunits.modular.impl.PPCostCollectorModularContractHandler
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
@@ -69,6 +69,8 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_PP_Cost_Collector>
@@ -80,7 +82,6 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull
@@ -133,12 +134,14 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 				|| ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance))
 		{
 			modCntrLogQty = collectorMovementQty.abs();
-			description = msgBL.getMsg(MSG_DESCRIPTION_RECEIPT, ImmutableList.of(modCntrLogQty.abs().toString(), product.getName()));
+			description = TranslatableStrings.adMessage(MSG_DESCRIPTION_RECEIPT, modCntrLogQty.abs().toString(), product.getName())
+					.translate(Language.getBaseAD_Language());
 		}
 		else
 		{
 			modCntrLogQty = collectorMovementQty.isPositive() ? collectorMovementQty.negate() : collectorMovementQty;
-			description = msgBL.getMsg(MSG_DESCRIPTION_ISSUE, ImmutableList.of(modCntrLogQty.abs().toString(), product.getName()));
+			description = TranslatableStrings.adMessage(MSG_DESCRIPTION_ISSUE, modCntrLogQty.abs().toString(), product.getName())
+					.translate(Language.getBaseAD_Language());
 		}
 
 		final ProductId productId = ProductId.ofRepoId(ppCostCollector.getM_Product_ID());
@@ -181,6 +184,13 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	public @NonNull IModularContractTypeHandler<I_PP_Cost_Collector> getModularContractTypeHandler()
 	{
 		return contractHandler;
+	}
+
+	@Override
+	public @NonNull Optional<ProductId> getProductId(final @NonNull HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest)
+	{
+		return Optional.of(handleLogsRequest.getModel().getM_Product_ID())
+				.map(ProductId::ofRepoId);
 	}
 
 	@Override

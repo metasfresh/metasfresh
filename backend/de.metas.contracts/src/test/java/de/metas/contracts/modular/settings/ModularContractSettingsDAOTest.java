@@ -32,6 +32,8 @@ import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Calendar;
@@ -72,9 +74,20 @@ class ModularContractSettingsDAOTest
 		settingsRecord.setM_PricingSystem_ID(40);
 		saveRecord(settingsRecord);
 
+		final I_AD_JavaClass_Type javaClassTypeRecord = newInstance(I_AD_JavaClass_Type.class);
+		javaClassTypeRecord.setName("Modular Contract Type Handler");
+		javaClassTypeRecord.setClassname(IModularContractTypeHandler.class.getName());
+		saveRecord(javaClassTypeRecord);
+
+		final I_AD_JavaClass javaClassRecord = newInstance(I_AD_JavaClass.class);
+		javaClassRecord.setName("Handler Impl");
+		javaClassRecord.setAD_JavaClass_Type_ID(javaClassTypeRecord.getAD_JavaClass_Type_ID());
+		javaClassRecord.setClassname(HandlerImpl.class.getName());
+		saveRecord(javaClassRecord);
+
 		final I_ModCntr_Type typeRecord = newInstance(I_ModCntr_Type.class);
 		typeRecord.setName("ModCntr_Settings");
-		typeRecord.setClassname(HandlerImpl.class.getName());
+		typeRecord.setAD_JavaClass_ID(javaClassRecord.getAD_JavaClass_ID());
 		saveRecord(typeRecord);
 
 		final I_ModCntr_Module moduleRecord = newInstance(I_ModCntr_Module.class);

@@ -34,8 +34,11 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -45,6 +48,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -64,10 +68,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 {
+	private static final AdMessageKey MSG_INFO_PO_COMPLETED = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.PurchaseOrderLineLogHandler.OnComplete.Description");
+
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull
 	private final PurchaseOrderLineModularContractHandler contractHandler;
@@ -119,6 +126,10 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
 
+		final String productName = productBL.getProductValueAndName(productId);
+		final String description = TranslatableStrings.adMessage(MSG_INFO_PO_COMPLETED, productName, quantity.abs().toString())
+				.translate(Language.getBaseAD_Language());
+		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
@@ -135,7 +146,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 											.amount(amount)
 											.transactionDate(transactionDate)
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
-											.description(null)
+											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))

@@ -70,6 +70,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
@@ -2565,5 +2566,11 @@ public class FlatrateBL implements IFlatrateBL
 				.productId(productId)
 				.money(Money.of(priceActual, currencyId))
 				.build();
+	}
+
+	@NonNull
+	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		return flatrateDAO.streamCompletedConditionsBy(modularContractSettingsId);
 	}
 }
