@@ -98,17 +98,17 @@ public interface I_I_ModCntr_Log
 	 * Amount in a defined currency
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAmount (BigDecimal Amount);
+	void setAmount (@Nullable BigDecimal Amount);
 
 	/**
 	 * Get Amount.
 	 * Amount in a defined currency
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getAmount();
@@ -235,19 +235,19 @@ public interface I_I_ModCntr_Log
 	 * Set Contract Module Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setContractModuleName (java.lang.String ContractModuleName);
+	void setContractModuleName (@Nullable java.lang.String ContractModuleName);
 
 	/**
 	 * Get Contract Module Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getContractModuleName();
+	@Nullable java.lang.String getContractModuleName();
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ContractModuleName = new ModelColumn<>(I_I_ModCntr_Log.class, "ContractModuleName", null);
 	String COLUMNNAME_ContractModuleName = "ContractModuleName";
@@ -281,21 +281,21 @@ public interface I_I_ModCntr_Log
 	 * Set Date.
 	 * Transaction Date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDateTrx (@Nullable java.sql.Timestamp DateTrx);
+	void setDateTrx (@Nullable java.lang.String DateTrx);
 
 	/**
 	 * Get Date.
 	 * Transaction Date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateTrx();
+	@Nullable java.lang.String getDateTrx();
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_DateTrx = new ModelColumn<>(I_I_ModCntr_Log.class, "DateTrx", null);
 	String COLUMNNAME_DateTrx = "DateTrx";
@@ -525,6 +525,31 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Invoice Group.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_InvoicingGroup_ID (int ModCntr_InvoicingGroup_ID);
+
+	/**
+	 * Get Invoice Group.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_InvoicingGroup_ID();
+
+	@Nullable org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
+
+	void setModCntr_InvoicingGroup(@Nullable org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
+
+	ModelColumn<I_I_ModCntr_Log, org.compiere.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", org.compiere.model.I_ModCntr_InvoicingGroup.class);
+	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
+
+	/**
 	 * Set Document Type.
 	 *
 	 * <br>Type: List
@@ -565,6 +590,47 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Log_ID", null);
 	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
+
+	/**
+	 * Set Price Actual.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceActual (@Nullable BigDecimal PriceActual);
+
+	/**
+	 * Get Price Actual.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceActual();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_PriceActual = new ModelColumn<>(I_I_ModCntr_Log.class, "PriceActual", null);
+	String COLUMNNAME_PriceActual = "PriceActual";
+
+	/**
+	 * Set Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Price Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_ID();
+
+	String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Processed.

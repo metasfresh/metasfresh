@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -3567340L;
+	private static final long serialVersionUID = 2115800415L;
 
     /** Standard Constructor */
     public X_I_ModCntr_Log (final Properties ctx, final int I_ModCntr_Log_ID, @Nullable final String trxName)
@@ -66,7 +66,7 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public void setAmount (final BigDecimal Amount)
+	public void setAmount (final @Nullable BigDecimal Amount)
 	{
 		set_Value (COLUMNNAME_Amount, Amount);
 	}
@@ -169,7 +169,7 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public void setContractModuleName (final java.lang.String ContractModuleName)
+	public void setContractModuleName (final @Nullable java.lang.String ContractModuleName)
 	{
 		set_Value (COLUMNNAME_ContractModuleName, ContractModuleName);
 	}
@@ -181,15 +181,15 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public void setDateTrx (final @Nullable java.sql.Timestamp DateTrx)
+	public void setDateTrx (final @Nullable java.lang.String DateTrx)
 	{
 		set_Value (COLUMNNAME_DateTrx, DateTrx);
 	}
 
 	@Override
-	public java.sql.Timestamp getDateTrx() 
+	public java.lang.String getDateTrx() 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateTrx);
+		return get_ValueAsString(COLUMNNAME_DateTrx);
 	}
 
 	@Override
@@ -314,6 +314,33 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
+	@Override
+	public org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
+	{
+		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class);
+	}
+
+	@Override
+	public void setModCntr_InvoicingGroup(final org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
+	}
+
+	@Override
+	public void setModCntr_InvoicingGroup_ID (final int ModCntr_InvoicingGroup_ID)
+	{
+		if (ModCntr_InvoicingGroup_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_InvoicingGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_InvoicingGroup_ID, ModCntr_InvoicingGroup_ID);
+	}
+
+	@Override
+	public int getModCntr_InvoicingGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_InvoicingGroup_ID);
+	}
+
 	/** 
 	 * ModCntr_Log_DocumentType AD_Reference_ID=541770
 	 * Reference name: ModCntr_Log_DocumentType
@@ -384,6 +411,34 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	public int getModCntr_Log_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Log_ID);
+	}
+
+	@Override
+	public void setPriceActual (final @Nullable BigDecimal PriceActual)
+	{
+		set_Value (COLUMNNAME_PriceActual, PriceActual);
+	}
+
+	@Override
+	public BigDecimal getPriceActual() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPrice_UOM_ID (final int Price_UOM_ID)
+	{
+		if (Price_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_ID, Price_UOM_ID);
+	}
+
+	@Override
+	public int getPrice_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Price_UOM_ID);
 	}
 
 	@Override
