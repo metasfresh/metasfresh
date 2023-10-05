@@ -41,6 +41,3 @@ WHERE l.IsActive = 'Y'
   AND NOT EXISTS (SELECT 1 FROM AD_Window_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Window_ID = t.AD_Window_ID)
 ;
 
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(NULL, NULL)
-;
-
