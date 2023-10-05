@@ -252,5 +252,5 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveTerms(BPartnerId bPartnerId, OrgId orgId, TypeConditions typeConditions);
 
-	ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsFroDropShipPartnerAndProductCategory(@NonNull BPartnerId bPartnerId, @NonNull ProductCategoryId productCategoryId);
+	ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsForDropShipPartnerAndProductCategory(@NonNull BPartnerId bPartnerId, @NonNull ProductCategoryId productCategoryId);
 }

@@ -43,7 +43,6 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 
-import java.time.Instant;
 import java.time.LocalDate;
 
 public class C_Flatrate_Term_Change_Product_for_Partner extends JavaProcess implements IProcessPrecondition
@@ -105,7 +104,7 @@ public class C_Flatrate_Term_Change_Product_for_Partner extends JavaProcess impl
 
 	final ImmutableList<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final BPartnerId bPartnerId)
 	{
-		return flatrateDAO.retrieveRunningTermsFroDropShipPartnerAndProductCategory(bPartnerId, retrieveProductCategoryId());
+		return flatrateDAO.retrieveRunningTermsForDropShipPartnerAndProductCategory(bPartnerId, retrieveProductCategoryId());
 	}
 
 	final ProductId retrieveSelectedProductId()

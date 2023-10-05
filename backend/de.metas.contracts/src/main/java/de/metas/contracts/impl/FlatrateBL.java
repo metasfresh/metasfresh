@@ -2076,7 +2076,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final I_C_Invoice_Candidate ic = flatrateDAO.retrieveInvoiceCandidate(term);
 
-		if (ic == null && ic.isProcessed())
+		if (ic == null || ic.isProcessed())
 		{
 			return;
 		}

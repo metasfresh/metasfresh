@@ -1111,7 +1111,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsFroDropShipPartnerAndProductCategory(@NonNull final BPartnerId bPartnerId, @NonNull ProductCategoryId productCategoryId)
+	public ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsForDropShipPartnerAndProductCategory(@NonNull final BPartnerId bPartnerId, @NonNull final ProductCategoryId productCategoryId)
 	{
 
 		final IQuery<I_M_Product> subQuery_ProductCateg = queryBL
@@ -1122,7 +1122,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Running.getCode())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Running)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, bPartnerId)
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID)
