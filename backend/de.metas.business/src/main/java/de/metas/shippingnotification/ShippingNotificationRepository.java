@@ -23,14 +23,19 @@
 package de.metas.shippingnotification;
 
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @Repository
 public class ShippingNotificationRepository
@@ -95,4 +100,17 @@ public class ShippingNotificationRepository
 	}
 
 	public Set<ShippingNotificationId> listIds(final ShippingNotificationQuery query) {return newLoaderAndSaver().listIds(query);}
+
+	@NonNull
+	public Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> getLines(@NonNull final Collection<ShippingNotificationId> notificationIds)
+	{
+		return newLoaderAndSaver().getLineRecords(notificationIds);
+	}
+
+	@NonNull
+	public Stream<ShippingNotificationId> streamIds(@NonNull final IQueryFilter<I_M_Shipping_Notification> shippingNotificationFilter)
+	{
+		return newLoaderAndSaver().streamIds(shippingNotificationFilter);
+	}
+
 }
