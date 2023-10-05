@@ -34,7 +34,9 @@ import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.cucumber.stepdefs.shippingNotification.M_Shipping_NotificationLine_StepDefData;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -66,6 +68,7 @@ public class ModCntr_Log_Status_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Flatrate_Term_StepDefData flatrateTermTable;
+	private final M_Shipping_NotificationLine_StepDefData shippingNotificationLineTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_InventoryLine_StepDefData inventoryLineTable;
 	private final M_InOutLine_StepDefData inOutLineTable;
@@ -169,6 +172,7 @@ public class ModCntr_Log_Status_StepDef
 					case I_PP_Cost_Collector.Table_Name -> costCollectorTable.get(stepDefDataIdentifier).getPP_Cost_Collector_ID();
 					case I_C_InvoiceLine.Table_Name -> invoiceLineTable.get(stepDefDataIdentifier).getC_InvoiceLine_ID();
 					case I_C_Flatrate_Term.Table_Name -> flatrateTermTable.get(stepDefDataIdentifier).getC_Flatrate_Term_ID();
+					case I_M_Shipping_NotificationLine.Table_Name -> shippingNotificationLineTable.get(stepDefDataIdentifier).getM_Shipping_NotificationLine_ID();
 					default -> throw new AdempiereException("Unsupported TableName !")
 							.appendParametersToMessage()
 							.setParameter("TableName", tableName);
@@ -180,10 +184,10 @@ public class ModCntr_Log_Status_StepDef
 	{
 		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
 		final int tableId = tableDAO.retrieveTableId(tableName);
-		
+
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, I_ModCntr_Log.COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final int recordId = resolveRepoId(tableName, recordIdentifier);
-		
+
 		final StringBuilder messageBuilder = new StringBuilder("Row: " + writeRowAsString(row) + " tableID: " + tableId + " recordID: " + recordId + "! See currently created message statuses:");
 
 		queryBL.createQueryBuilder(I_ModCntr_Log_Status.class)

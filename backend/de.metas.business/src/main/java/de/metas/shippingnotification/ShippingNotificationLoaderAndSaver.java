@@ -25,6 +25,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -33,6 +34,7 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 class ShippingNotificationLoaderAndSaver
@@ -147,6 +150,15 @@ class ShippingNotificationLoaderAndSaver
 		return linesByHeaderId.computeIfAbsent(id, this::retrieveLineRecords);
 	}
 
+	@NonNull
+	public Stream<ShippingNotificationId> streamIds(@NonNull final IQueryFilter<I_M_Shipping_Notification> shippingNotificationFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Shipping_Notification.class)
+				.filter(shippingNotificationFilter)
+				.create()
+				.iterateAndStreamIds(ShippingNotificationId::ofRepoId);
+	}
+
 	private ArrayList<I_M_Shipping_NotificationLine> retrieveLineRecords(final @NonNull ShippingNotificationId id)
 	{
 		return queryLinesByHeaderIds(ImmutableSet.of(id))
@@ -158,7 +170,7 @@ class ShippingNotificationLoaderAndSaver
 				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
-	public Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> getLineRecords(@NonNull final Set<ShippingNotificationId> ids)
+	public Map<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> getLineRecords(@NonNull final Collection<ShippingNotificationId> ids)
 	{
 		return CollectionUtils.getAllOrLoadReturningMap(linesByHeaderId, ids, this::retrieveLineRecords);
 	}

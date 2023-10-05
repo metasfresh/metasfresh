@@ -249,6 +249,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
+	boolean isProFormaSO(@NonNull I_C_Order order);
+
 	boolean isMediated(@NonNull I_C_Order order);
 
 	boolean isPrepay(OrderId orderId);

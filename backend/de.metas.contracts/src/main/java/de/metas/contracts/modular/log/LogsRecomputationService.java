@@ -33,7 +33,11 @@ import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.IOrderDAO;
+import de.metas.shippingnotification.ShippingNotificationService;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Services;
+import de.metas.util.StreamUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -52,6 +56,9 @@ import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -67,8 +74,9 @@ public class LogsRecomputationService
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	@NonNull
+	private final ShippingNotificationService shippingNotificationService;
+	@NonNull
 	private final ModularContractService modularContractService;
-
 	@NonNull
 	private final ModularContractLogDAO modularContractLogDAO;
 
@@ -142,6 +150,16 @@ public class LogsRecomputationService
 				.map(I_PP_Order::getPP_Order_ID)
 				.map(PPOrderId::ofRepoId)
 				.forEach(this::recomputeForPPOrder);
+	}
+
+	public void recomputeForShippingNotification(@NonNull final IQueryFilter<I_M_Shipping_Notification> filter)
+	{
+		StreamUtils.dice(shippingNotificationService.streamIds(filter), 100)
+				.map(shippingNotificationService::getLines)
+				.map(Map::entrySet)
+				.flatMap(Set::stream)
+				.map(Map.Entry::getValue)
+				.forEach(this::recomputeForShippingNotification);
 	}
 
 	private void recomputeForInvoice(@NonNull final InvoiceId invoiceId)
@@ -223,5 +241,14 @@ public class LogsRecomputationService
 			default -> trxManager.runInNewTrx(() -> modularContractService
 					.invokeWithModelForAllContractTypes(tableRecordReference.getModel(), ModelAction.RECREATE_LOGS));
 		}
+	}
+
+	private void recomputeForShippingNotification(@NonNull final List<I_M_Shipping_NotificationLine> shippingNotificationLinesList)
+	{
+		trxManager.assertThreadInheritedTrxNotExists();
+
+		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
+		trxManager.runInNewTrx(() -> shippingNotificationLinesList
+				.forEach(line -> modularContractService.invokeWithModelForAllContractTypes(line, ModelAction.RECREATE_LOGS)));
 	}
 }

@@ -32,6 +32,7 @@ import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +68,8 @@ public class MaterialReceiptLineInterimContractHandler implements IModularContra
 	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase();
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+		return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase() && orderId != null;
 	}
 
 	@Override

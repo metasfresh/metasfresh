@@ -23,19 +23,14 @@
 package de.metas.contracts.modular.impl;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.lang.SOTrx;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.util.Services;
+import de.metas.order.OrderAndLineId;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,35 +43,23 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class PurchaseModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
+public class ShippingNotificationForSalesModularContractHandler implements IModularContractTypeHandler<I_M_Shipping_NotificationLine>
 {
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-
-	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull
+	private final ModularContractProvider contractProvider;
+	@NonNull
+	private final ModularContractLogService contractLogService;
 
 	@Override
-	public @NonNull Class<I_C_Flatrate_Term> getType()
+	public @NonNull Class<I_M_Shipping_NotificationLine> getType()
 	{
-		return I_C_Flatrate_Term.class;
+		return I_M_Shipping_NotificationLine.class;
 	}
 
 	@Override
-	public boolean applies(final @NonNull I_C_Flatrate_Term flatrateTermRecord)
+	public boolean applies(final @NonNull I_M_Shipping_NotificationLine model)
 	{
-		if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
-		{
-			return false;
-		}
-
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(flatrateTermRecord.getC_OrderLine_Term_ID());
-		if (orderLineId == null)
-		{
-			return false;
-		}
-
-		final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
-		return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isPurchase();
+		return true;
 	}
 
 	@Override
@@ -86,17 +69,19 @@ public class PurchaseModularContractHandler implements IModularContractTypeHandl
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_M_Shipping_NotificationLine model)
 	{
-		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(flatrateTermRecord.getC_Flatrate_Term_ID()));
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(model.getC_Order_ID(), model.getC_OrderLine_ID());
+
+		return contractProvider.streamSalesContractsForSalesOrderLine(orderAndLineId);
 	}
 
 	@Override
-	public void validateAction(final @NonNull I_C_Flatrate_Term model, final @NonNull ModelAction action)
+	public void validateAction(final @NonNull I_M_Shipping_NotificationLine model, final @NonNull ModelAction action)
 	{
 		switch (action)
 		{
-			case COMPLETED -> {}
+			case COMPLETED, REVERSED -> {}
 			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
