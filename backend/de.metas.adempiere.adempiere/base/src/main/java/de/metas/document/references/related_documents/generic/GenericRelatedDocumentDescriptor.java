@@ -36,7 +36,7 @@ import lombok.Value;
 import lombok.experimental.Delegate;
 
 @Value
-public class GenericRelatedDocumentDescriptor
+class GenericRelatedDocumentDescriptor
 {
 	@Delegate
 	@NonNull GenericTargetWindowInfo genericTargetWindowInfo;

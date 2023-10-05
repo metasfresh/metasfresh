@@ -34,7 +34,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import javax.annotation.Nullable;
 
 @Value
-public class GenericTargetWindowInfo
+class GenericTargetWindowInfo
 {
 	@NonNull ImmutableTranslatableString name;
 	@NonNull AdWindowId targetWindowId;
