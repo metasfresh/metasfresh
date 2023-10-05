@@ -111,7 +111,9 @@ public abstract class AbstractFlatrateTermTest
 	private final static String SEQUENCE = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
 	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	public FlatrateTermTestHelper helper;
+
 	protected IContractChangeBL contractChangeBL;
+
 	@Getter
 	private I_C_Calendar calendar;
 	@Getter
@@ -155,8 +157,6 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
-
-		contractChangeBL = Services.get(IContractChangeBL.class);
 
 		contractChangeBL = Services.get(IContractChangeBL.class);
 
