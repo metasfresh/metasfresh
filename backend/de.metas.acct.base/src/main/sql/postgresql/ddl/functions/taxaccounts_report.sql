@@ -121,18 +121,18 @@ BEGIN
                 INSERT INTO tmp_final_taxaccounts_report
                 SELECT (CASE WHEN t.vatcode IS NULL THEN 'Keine MwSt.' ELSE t.vatcode END)::text AS vatcode,
                        (t.kontono || ' ' || t.kontoname)::text                                   AS AccountName,
-                       t.dateacct                                                                  AS DateAcct,
-                       t.documentno                                                                AS DocumentNo,
-                       t.bpname                                                                    AS BPartnerName,
-                       t.taxname                                                                   AS Taxname,
-                       (sm.taxbaseamt + sm.taxamt)                                               AS GrandTotal,
-                       sm.taxbaseamt                                                             AS TotalWithoutVATPerDoc,
-                       sm.taxamt                                                                 AS TaxAmt,
-                       sm.taxbaseamt                                                                AS TotalWithoutVAT,
+                       t.dateacct                                                                AS DateAcct,
+                       t.documentno                                                              AS DocumentNo,
+                       t.bpname                                                                  AS BPartnerName,
+                       t.taxname                                                                 AS Taxname,
+                       (t.taxbaseamt + t.taxamt)                                                 AS GrandTotal,
+                       t.taxbaseamt                                                              AS TotalWithoutVATPerDoc,
+                       t.taxamt                                                                  AS TaxAmt,
+                       NULL::numeric                                                             AS TotalWithoutVAT,
                        NULL::numeric                                                             AS CurrentBalance,
                        NULL::numeric                                                             AS balance_alltimes,
                        currency::varchar                                                         AS Currency,
-                       t.param_org::varchar                                                        AS PARAM_AD_Org_ID
+                       t.param_org::varchar                                                      AS PARAM_AD_Org_ID
 
                 FROM report.tax_accounting_report_details(p_datefrom,
                                                           p_dateto,
@@ -140,14 +140,7 @@ BEGIN
                                                           rec.c_elementvalue_id,
                                                           rec.c_tax_id,
                                                           p_ad_org_id,
-                                                          NULL) t,
-                     de_metas_acct.tax_accounting_report_details_sum(p_datefrom,
-                                                                     p_dateto,
-                                                                     rec.vatcode,
-                                                                     rec.c_elementvalue_id,
-                                                                     rec.c_tax_id,
-                                                                     p_ad_org_id) sm
-
+                                                          NULL) t
                 ORDER BY t.vatcode, t.kontono, t.taxname, t.DateAcct;
             END LOOP;
 

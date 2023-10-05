@@ -576,3 +576,10 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000064, SeqNo=26, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000064, SeqNo=27, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542040 AND AD_Tree_ID=10
 ;
 
+
+-- 2023-10-05T14:08:36.509Z
+UPDATE AD_Process SET SQLStatement='SELECT *
+FROM de_metas_acct.taxaccounts_report(@AD_Org_ID@, @Account_ID/NULL@, @C_VAT_Code_ID/NULL@, ''@DateFrom@''::date, ''@DateTo@''::date,''@showdetails/N@'')
+;',Updated=TO_TIMESTAMP('2023-10-05 17:08:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585325
+;
+
