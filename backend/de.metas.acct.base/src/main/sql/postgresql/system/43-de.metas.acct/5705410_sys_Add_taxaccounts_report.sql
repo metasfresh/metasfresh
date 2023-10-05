@@ -1,0 +1,182 @@
+CREATE OR REPLACE FUNCTION de_metas_acct.taxaccounts_report(p_ad_org_id     numeric,
+                                                            p_account_id    numeric,
+                                                            p_c_vat_code_id numeric,
+                                                            p_datefrom      date,
+                                                            p_dateto        date,
+                                                            p_isshowdetails character DEFAULT 'N'::bpchar)
+    RETURNS TABLE
+            (
+                PARAM_AD_Org_ID       varchar,
+                vatcode               text,
+                AccountName           text,
+                Taxname               text,
+                TotalWithoutVAT       numeric,
+                CurrentBalance        numeric,
+                balance_one_year_ago  numeric,
+                Currency              varchar,
+                DateAcct              timestamp,
+                DocumentNo            text,
+                BPartnerName          text,
+                GrandTotal            numeric,
+                TotalWithoutVATPerDoc numeric,
+                TaxAmt                numeric
+            )
+    LANGUAGE plpgsql
+AS
+$$
+    # VARIABLE_CONFLICT USE_COLUMN
+DECLARE
+    v_rowcount NUMERIC;
+    rec        record;
+BEGIN
+    DROP TABLE IF EXISTS tmp_taxaccountsonly_details;
+    CREATE TEMPORARY TABLE tmp_taxaccountsonly_details AS
+    SELECT balance,
+           balanceyear,
+           taxbaseamt,
+           accountno,
+           accountname,
+           taxname,
+           c_tax_id,
+           vatcode,
+           c_elementvalue_id,
+           param_org,
+           currency
+    FROM de_metas_acct.taxaccountsonly_details(p_ad_org_id, p_account_id, p_c_vat_code_id, p_datefrom, p_dateto) AS t
+    WHERE t.taxname IS NOT NULL
+    ORDER BY vatcode, accountno;
+
+    GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+    RAISE NOTICE 'Show taxes per vatcode % tmp_taxaccountsonly_details', v_rowcount;
+    CREATE INDEX ON tmp_taxaccountsonly_details (vatcode, c_tax_id, c_elementvalue_id);
+
+
+    -- assemble the result in one temporray table
+    DROP TABLE IF EXISTS tmp_final_taxaccounts_report;
+    CREATE TEMPORARY TABLE tmp_final_taxaccounts_report AS
+    SELECT (CASE WHEN vatcode IS NULL THEN 'Keine MwSt.' ELSE vatcode END)::text AS vatcode,
+           NULL::text                                                            AS AccountName,
+           NULL::timestamp                                                       AS DateAcct,
+           NULL::text                                                            AS DocumentNo,
+           NULL::text                                                               BPartnerName,
+           NULL::text                                                            AS Taxname,
+           NULL::numeric                                                         AS GrandTotal,
+           NULL::numeric                                                         AS TotalWithoutVATPerDoc,
+           NULL::numeric                                                         AS TaxAmt,
+           SUM(taxbaseamt)                                                       AS TotalWithoutVAT,
+           SUM(balance)                                                          AS CurrentBalance,
+           SUM(balanceyear)                                                      AS balance_alltimes,
+           currency::varchar                                                     AS Currency,
+           param_org::varchar                                                    AS PARAM_AD_Org_ID
+    FROM tmp_taxaccountsonly_details
+    GROUP BY vatcode, currency, param_org
+    ORDER BY vatcode;
+
+    INSERT INTO tmp_final_taxaccounts_report
+    SELECT (CASE WHEN vatcode IS NULL THEN 'Keine MwSt.' ELSE vatcode END)::text AS vatcode,
+           (accountno || ' ' || accountname)::text                               AS AccountName,
+           NULL::timestamp                                                       AS DateAcct,
+           NULL::text                                                            AS DocumentNo,
+           NULL::text                                                               BPartnerName,
+           NULL::text                                                            AS Taxname,
+           NULL::numeric                                                         AS GrandTotal,
+           NULL::numeric                                                         AS TotalWithoutVATPerDoc,
+           NULL::numeric                                                         AS TaxAmt,
+           SUM(taxbaseamt)                                                       AS TotalWithoutVAT,
+           SUM(balance)                                                          AS CurrentBalance,
+           SUM(balanceyear)                                                      AS balance_alltimes,
+           currency::varchar                                                     AS Currency,
+           param_org::varchar                                                    AS PARAM_AD_Org_ID
+    FROM tmp_taxaccountsonly_details
+    GROUP BY vatcode, currency, param_org, accountno, accountname
+    ORDER BY vatcode, accountno, accountname;
+
+    INSERT INTO tmp_final_taxaccounts_report
+    SELECT (CASE WHEN vatcode IS NULL THEN 'Keine MwSt.' ELSE vatcode END)::text AS vatcode,
+           (accountno || ' ' || accountname)::text                               AS AccountName,
+           NULL::timestamp                                                       AS DateAcct,
+           NULL::text                                                            AS DocumentNo,
+           NULL::text                                                            AS BPartnerName,
+           taxname::text                                                         AS Taxname,
+           NULL::numeric                                                         AS GrandTotal,
+           NULL::numeric                                                         AS TotalWithoutVATPerDoc,
+           NULL::numeric                                                         AS TaxAmt,
+           SUM(taxbaseamt)                                                       AS TotalWithoutVAT,
+           SUM(balance)                                                          AS CurrentBalance,
+           SUM(balanceyear)                                                      AS balance_alltimes,
+           currency::varchar                                                     AS Currency,
+           param_org::varchar                                                    AS PARAM_AD_Org_ID
+    FROM tmp_taxaccountsonly_details
+    GROUP BY vatcode, currency, param_org, accountno, accountname, taxname
+    ORDER BY vatcode, accountno, accountname, taxname;
+
+
+    -- compute balances per activity and product - level 2
+
+    IF p_isshowdetails = 'Y' THEN
+
+        FOR rec IN SELECT vatcode, c_elementvalue_id, c_tax_id FROM tmp_taxaccountsonly_details ORDER BY vatcode, accountno, taxname
+            LOOP
+
+                INSERT INTO tmp_final_taxaccounts_report
+                SELECT (CASE WHEN t.vatcode IS NULL THEN 'Keine MwSt.' ELSE t.vatcode END)::text AS vatcode,
+                       (t.kontono || ' ' || t.kontoname)::text                                   AS AccountName,
+                       t.dateacct                                                                  AS DateAcct,
+                       t.documentno                                                                AS DocumentNo,
+                       t.bpname                                                                    AS BPartnerName,
+                       t.taxname                                                                   AS Taxname,
+                       (sm.taxbaseamt + sm.taxamt)                                               AS GrandTotal,
+                       sm.taxbaseamt                                                             AS TotalWithoutVATPerDoc,
+                       sm.taxamt                                                                 AS TaxAmt,
+                       sm.taxbaseamt                                                                AS TotalWithoutVAT,
+                       NULL::numeric                                                             AS CurrentBalance,
+                       NULL::numeric                                                             AS balance_alltimes,
+                       currency::varchar                                                         AS Currency,
+                       t.param_org::varchar                                                        AS PARAM_AD_Org_ID
+
+                FROM report.tax_accounting_report_details(p_datefrom,
+                                                          p_dateto,
+                                                          rec.vatcode,
+                                                          rec.c_elementvalue_id,
+                                                          rec.c_tax_id,
+                                                          p_ad_org_id,
+                                                          NULL) t,
+                     de_metas_acct.tax_accounting_report_details_sum(p_datefrom,
+                                                                     p_dateto,
+                                                                     rec.vatcode,
+                                                                     rec.c_elementvalue_id,
+                                                                     rec.c_tax_id,
+                                                                     p_ad_org_id) sm
+
+                ORDER BY t.vatcode, t.kontono, t.taxname, t.DateAcct;
+            END LOOP;
+
+
+    END IF;
+
+    GET DIAGNOSTICS v_rowcount = ROW_COUNT; RAISE NOTICE 'Show taxes per vatcodem account and tax: % tmp_final_taxaccounts_report', v_rowcount;
+
+    <<RESULT_TABLE>>
+    BEGIN
+        RETURN QUERY
+            SELECT PARAM_AD_Org_ID,
+                   vatcode,
+                   AccountName,
+                   Taxname,
+                   TotalWithoutVAT,
+                   CurrentBalance,
+                   balance_alltimes,
+                   Currency,
+                   DateAcct,
+                   DocumentNo,
+                   BPartnerName,
+                   GrandTotal,
+                   TotalWithoutVATPerDoc,
+                   TaxAmt
+            FROM tmp_final_taxaccounts_report b
+            ORDER BY vatcode, AccountName NULLS FIRST, taxname NULLS FIRST, DateAcct NULLS FIRST, DocumentNo, BPartnerName;
+
+    END RESULT_TABLE;
+END;
+$$
+;
