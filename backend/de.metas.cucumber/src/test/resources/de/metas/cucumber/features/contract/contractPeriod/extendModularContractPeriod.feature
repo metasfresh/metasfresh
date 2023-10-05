@@ -101,7 +101,7 @@ Feature: Extend Modular Contract Period
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.InvoiceRule
-      | abo_test_23072023_1                 | Abo_test_23072023_1 | Subscr          | ps_1                              | Ex                       | D
+      | abo_test_23072023_1                 | Abo_test_23072023_1 | Subscr          | ps_1                              | Ca                       | D
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier |
