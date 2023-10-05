@@ -31,3 +31,7 @@ UPDATE AD_Process_Para SET EntityType='D',Updated=TO_TIMESTAMP('2023-10-04 18:09
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585322,291,541429,TO_TIMESTAMP('2023-10-04 18:10:12','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2023-10-04 18:10:12','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N')
 ;
 
+-- 2023-10-05T12:37:53.788Z
+UPDATE AD_Val_Rule SET Code='M_Product.AD_Org_ID = (select AD_Org_ID from C_BPartner bp where bp.C_BPartner_id = @C_BPartner_ID@) ',Updated=TO_TIMESTAMP('2023-10-05 15:37:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540659
+;
+

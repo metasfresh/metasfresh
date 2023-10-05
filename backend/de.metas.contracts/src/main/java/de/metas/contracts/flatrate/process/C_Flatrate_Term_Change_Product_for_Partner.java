@@ -35,6 +35,8 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,6 +51,7 @@ public class C_Flatrate_Term_Change_Product_for_Partner extends JavaProcess impl
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Param(parameterName = I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, mandatory = true)
 	private int p_M_Product_ID;
@@ -102,12 +105,17 @@ public class C_Flatrate_Term_Change_Product_for_Partner extends JavaProcess impl
 
 	final ImmutableList<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final BPartnerId bPartnerId)
 	{
-		return flatrateDAO.retrieveRunningTermsFroDropShipPartner(bPartnerId, Instant.now());
+		return flatrateDAO.retrieveRunningTermsFroDropShipPartnerAndProductCategory(bPartnerId, retrieveProductCategoryId());
 	}
 
 	final ProductId retrieveSelectedProductId()
 	{
 		return ProductId.ofRepoId(p_M_Product_ID);
+	}
+
+	final ProductCategoryId retrieveProductCategoryId()
+	{
+		return productDAO.retrieveProductCategoryByProductId(retrieveSelectedProductId());
 	}
 
 	final BPartnerId retrieveSelectedBPartnerId()
