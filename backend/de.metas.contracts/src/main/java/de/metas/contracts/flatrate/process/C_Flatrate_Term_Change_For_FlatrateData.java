@@ -43,10 +43,11 @@ public class C_Flatrate_Term_Change_For_FlatrateData extends C_Flatrate_Term_Cha
 	@Override
 	protected Iterable<I_C_Flatrate_Term> getFlatrateTermsToChange()
 	{
-		if(p_flatrateDataId < 0)
+		final FlatrateDataId flatrateDataId = FlatrateDataId.ofRepoIdOrNull(p_flatrateDataId);
+		if(flatrateDataId == null)
 		{
 			return ImmutableList.of();
 		}
-		return flatrateDAO.retrieveTerms(FlatrateDataId.ofRepoId(p_flatrateDataId));
+		return flatrateDAO.retrieveTerms(flatrateDataId);
 	}
 }
