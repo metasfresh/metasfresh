@@ -31,6 +31,8 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+import static de.metas.contracts.model.X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_Lieferavis;
+
 @AllArgsConstructor
 public enum LogEntryDocumentType implements ReferenceListAwareEnum
 {
@@ -51,7 +53,9 @@ public enum LogEntryDocumentType implements ReferenceListAwareEnum
 	PURCHASE_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_PurchaseModularContract),
 	INTERIM_INVOICE(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_InterimInvoice),
 	PRO_FORMA_SO(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSO),
-	PRO_FORMA_SO_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSOModularContract);
+	PRO_FORMA_SO_MODULAR_CONTRACT(X_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ProFormaSOModularContract),
+	SHIPPING_NOTIFICATION(MODCNTR_LOG_DOCUMENTTYPE_Lieferavis),
+	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<LogEntryDocumentType> index = ReferenceListAwareEnums.index(values());
 
