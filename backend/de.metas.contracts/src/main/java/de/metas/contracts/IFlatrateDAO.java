@@ -270,4 +270,6 @@ public interface IFlatrateDAO extends ISingletonService
 	ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
 
 	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
+	ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsForDropShipPartnerAndProductCategory(@NonNull BPartnerId bPartnerId, @NonNull ProductCategoryId productCategoryId);
 }

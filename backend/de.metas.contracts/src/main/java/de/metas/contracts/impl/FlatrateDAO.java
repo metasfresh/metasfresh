@@ -7,6 +7,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.FlatrateTermId;
@@ -1237,5 +1238,28 @@ public class FlatrateDAO implements IFlatrateDAO
 				.filter(filter)
 				.create()
 				.iterateAndStream();
+	}
+
+	@Override
+	public ImmutableList<I_C_Flatrate_Term> retrieveRunningTermsForDropShipPartnerAndProductCategory(@NonNull final BPartnerId bPartnerId, @NonNull final ProductCategoryId productCategoryId)
+	{
+
+		final IQuery<I_M_Product> subQuery_ProductCateg = queryBL
+				.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, productCategoryId)
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Running)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, bPartnerId)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID)
+				.subQuery(subQuery_ProductCateg)
+				.end()
+				.addCompareFilter(I_C_Flatrate_Term.COLUMN_EndDate, Operator.GREATER_OR_EQUAL, SystemTime.asTimestamp())
+				.create()
+				.listImmutable(I_C_Flatrate_Term.class);
 	}
 }
