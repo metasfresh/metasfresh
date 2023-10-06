@@ -10,13 +10,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.entity.PlanningPin;
-import org.optaplanner.core.api.domain.lookup.PlanningId;
-import org.optaplanner.core.api.domain.valuerange.CountableValueRange;
-import org.optaplanner.core.api.domain.valuerange.ValueRangeFactory;
-import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
-import org.optaplanner.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.entity.PlanningPin;
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -54,7 +54,7 @@ public class Step
 
 	private Duration humanResourceTestGroupDuration;
 
-	// No-arg constructor required for OptaPlanner
+	// No-arg constructor required for Timefold
 	public Step() {}
 
 	@Builder(toBuilder = true)
@@ -87,7 +87,7 @@ public class Step
 	@Override
 	public String toString()
 	{
-		// NOTE: keep it concise, important for optaplanner troubleshooting
+		// NOTE: keep it concise, important for Timefold troubleshooting
 		final StringBuilder sb = new StringBuilder();
 
 		final LocalDateTime startDate = getStartDate();

@@ -22,7 +22,7 @@ import lombok.NonNull;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.Disabled;
-import org.optaplanner.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverFactory;
 
 import java.time.Duration;
 import java.time.LocalDate;

@@ -56,7 +56,7 @@ public class DatabasePlanLoaderInstance
 	private WOProjectResourcesCollection resources;
 	private ZoneId timeZone;
 	private WOProjectSimulationPlan simulationPlan;
-	private final HashMap<ResourceId, Resource> optaPlannerResources = new HashMap<>();
+	private final HashMap<ResourceId, Resource> timefoldResources = new HashMap<>();
 
 	@Builder
 	private DatabasePlanLoaderInstance(
@@ -93,12 +93,12 @@ public class DatabasePlanLoaderInstance
 			stepsList.addAll(loadStepsFromWOProject(woProject));
 		}
 
-		final Plan optaPlannerPlan = Plan.newInstance();
-		optaPlannerPlan.setSimulationId(simulationId);
-		optaPlannerPlan.setTimeZone(timeZone);
-		optaPlannerPlan.setStepsList(stepsList);
+		final Plan plan = Plan.newInstance();
+		plan.setSimulationId(simulationId);
+		plan.setTimeZone(timeZone);
+		plan.setStepsList(stepsList);
 
-		return optaPlannerPlan;
+		return plan;
 	}
 
 	private List<Step> loadStepsFromWOProject(final WOProject woProject)
@@ -208,7 +208,7 @@ public class DatabasePlanLoaderInstance
 						.woProjectResourceId(woStepResource.getWoProjectResourceId())
 						.build())
 				.projectPriority(CoalesceUtil.coalesceNotNull(woProject.getInternalPriority(), InternalPriority.MEDIUM))
-				.resource(toOptaPlannerResource(woStepResource))
+				.resource(toTimefoldResource(woStepResource))
 				.duration(duration)
 				.dueDate(dueDate)
 				.startDateMin(startDateMin)
@@ -234,12 +234,12 @@ public class DatabasePlanLoaderInstance
 	}
 
 	@NonNull
-	private Resource toOptaPlannerResource(final WOProjectResource woStepResource)
+	private Resource toTimefoldResource(final WOProjectResource woStepResource)
 	{
-		return optaPlannerResources.computeIfAbsent(woStepResource.getResourceId(), this::createOptaPlannerResource);
+		return timefoldResources.computeIfAbsent(woStepResource.getResourceId(), this::createTimefoldResource);
 	}
 
-	private de.metas.calendar.plan_optimizer.domain.Resource createOptaPlannerResource(final ResourceId resourceId)
+	private de.metas.calendar.plan_optimizer.domain.Resource createTimefoldResource(final ResourceId resourceId)
 	{
 		final de.metas.resource.Resource resource = resourceService.getResourceById(resourceId);
 		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue(), resource.getHumanResourceTestGroupId());

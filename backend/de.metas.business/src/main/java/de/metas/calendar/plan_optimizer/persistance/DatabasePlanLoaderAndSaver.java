@@ -89,23 +89,23 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 				.currentSimulationPlan(woProjectSimulationService.getSimulationPlanById(simulationId))
 				.build();
 
-		for (final Step optaPlannerStep : solution.getStepsList())
+		for (final Step step : solution.getStepsList())
 		{
-			if (optaPlannerStep.getStartDate() == null || optaPlannerStep.getEndDate() == null)
+			if (step.getStartDate() == null || step.getEndDate() == null)
 			{
-				logger.warn("Skip updating from {} because start/end date is not set", optaPlannerStep);
+				logger.warn("Skip updating from {} because start/end date is not set", step);
 				continue;
 			}
 
 			final CalendarDateRange dateRange = CalendarDateRange.builder()
-					.startDate(optaPlannerStep.getStartDate().atZone(timeZone).toInstant())
-					.endDate(optaPlannerStep.getEndDate().atZone(timeZone).toInstant())
+					.startDate(step.getStartDate().atZone(timeZone).toInstant())
+					.endDate(step.getEndDate().atZone(timeZone).toInstant())
 					.build();
 
 			editor.changeResourceDateRange(
-					optaPlannerStep.getId().getWoProjectResourceId(),
+					step.getId().getWoProjectResourceId(),
 					dateRange,
-					optaPlannerStep.getId().getWoProjectStepId());
+					step.getId().getWoProjectStepId());
 		}
 
 		runInCtx(clientId, orgId, () -> {

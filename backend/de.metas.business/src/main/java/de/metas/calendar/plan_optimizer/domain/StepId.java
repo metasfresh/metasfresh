@@ -10,7 +10,7 @@ import lombok.Value;
 @Value
 @Builder
 public class StepId implements
-		// IMPORTANT: Comparable is required by OptaPlanner
+		// IMPORTANT: Comparable is required by Timefold
 		Comparable<StepId>
 {
 	@NonNull WOProjectStepId woProjectStepId;

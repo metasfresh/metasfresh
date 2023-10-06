@@ -8,11 +8,11 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Data;
-import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
-import org.optaplanner.core.api.domain.solution.PlanningScore;
-import org.optaplanner.core.api.domain.solution.PlanningSolution;
-import org.optaplanner.core.api.score.ScoreExplanation;
-import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.ScoreExplanation;
+import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 
 import java.time.Duration;
 import java.time.ZoneId;
@@ -45,7 +45,7 @@ public class Plan
 	@Override
 	public String toString()
 	{
-		// NOTE: keep it concise, important for optaplanner troubleshooting
+		// NOTE: keep it concise, important for timefold troubleshooting
 		final StringBuilder sb = new StringBuilder();
 		sb.append("\nsimulationId: ").append(simulationId);
 		sb.append("\nPlan score: ").append(score).append(", Time spent: ").append(timeSpent).append(", IsFinalSolution=").append(isFinalSolution);

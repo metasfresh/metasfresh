@@ -4,7 +4,7 @@ import de.metas.product.ResourceId;
 import de.metas.resource.HumanResourceTestGroupId;
 import lombok.NonNull;
 import lombok.Value;
-import org.optaplanner.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 
 import javax.annotation.Nullable;
 

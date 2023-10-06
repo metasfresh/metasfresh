@@ -9,10 +9,10 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
-import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
-import org.optaplanner.core.api.solver.SolutionManager;
-import org.optaplanner.core.api.solver.Solver;
-import org.optaplanner.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.SolverFactory;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -137,8 +137,7 @@ class SimulationOptimizerTask implements Runnable
 	public void run()
 	{
 		// FIXME debugging
-		LogManager.setLoggerLevel("org.drools", Level.INFO);
-		LogManager.setLoggerLevel("org.optaplanner", Level.INFO);
+		LogManager.setLoggerLevel("ai.timefold", Level.INFO);
 
 		simulationOptimizerStatusDispatcher.notifyStarted(simulationId);
 
