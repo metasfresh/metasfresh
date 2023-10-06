@@ -192,6 +192,6 @@ public class PlanConstraintProvider implements ConstraintProvider
 		final LocalDateTime step2End = step2.getEndDate();
 		final LocalDateTime overlappingStart = (step1Start.isAfter(step2Start)) ? step1Start : step2Start; // MAX
 		final LocalDateTime overlappingEnd = (step1End.isBefore(step2End)) ? step1End : step2End; // MIN
-		return (int)Plan.PLANNING_TIME_PRECISION.between(overlappingStart, overlappingEnd);
+		return (int)Math.abs(Plan.PLANNING_TIME_PRECISION.between(overlappingStart, overlappingEnd));
 	}
 }
