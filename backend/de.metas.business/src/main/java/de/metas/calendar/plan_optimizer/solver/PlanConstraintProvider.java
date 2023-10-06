@@ -49,7 +49,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				//
 				// Soft:
 				penalizeNullableDelay(constraintFactory),
-				// stepsNotRespectingProjectPriority(constraintFactory),
+				stepsNotRespectingProjectPriority(constraintFactory),
 				// delayIsMinimum(constraintFactory),
 				//
 				// minDurationFromEndToDueDateIsMaximum(constraintFactory),
