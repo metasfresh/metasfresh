@@ -2,7 +2,7 @@
 
 #
 # %L
-# work-metas
+# master
 # %%
 # Copyright (C) 2023 metas GmbH
 # %%
@@ -24,7 +24,6 @@
 
 set -e
 
-# We assume that the stuff was started with 10_reset_db_to_seed_dump.sh
 # We assume that the stuff was started with 10_reset_db_to_seed_dump.sh
 # We assume that in the folder misc/dev-support/docker/infrastructure/env-files/ there exists an env file named ${BRANCH_NAME}.env
 if ! [ -z "$1" ]; then
