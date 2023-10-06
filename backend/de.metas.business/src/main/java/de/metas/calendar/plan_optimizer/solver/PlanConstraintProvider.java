@@ -40,17 +40,29 @@ public class PlanConstraintProvider implements ConstraintProvider
 	public Constraint[] defineConstraints(final ConstraintFactory constraintFactory)
 	{
 		return new Constraint[] {
+				//
 				// Hard:
 				resourceConflict(constraintFactory),
 				startDateMin(constraintFactory),
 				dueDate(constraintFactory),
 				humanResourceAvailableCapacity(constraintFactory),
+				//
 				// Soft:
-				stepsNotRespectingProjectPriority(constraintFactory),
-				delayIsMinimum(constraintFactory),
-				minDurationFromEndToDueDateIsMaximum(constraintFactory),
-				sumOfDurationFromEndToDueDateIsMaximum(constraintFactory),
+				penalizeNullableDelay(constraintFactory),
+				// stepsNotRespectingProjectPriority(constraintFactory),
+				// delayIsMinimum(constraintFactory),
+				//
+				// minDurationFromEndToDueDateIsMaximum(constraintFactory),
+				// sumOfDurationFromEndToDueDateIsMaximum(constraintFactory),
 		};
+	}
+
+	Constraint penalizeNullableDelay(final ConstraintFactory constraintFactory)
+	{
+		return constraintFactory.forEachIncludingNullVars(Step.class)
+				.filter(step ->step.getDelay() == null)
+				.penalize(ONE_SOFT_1, step -> 1)
+				.asConstraint("nullable delay");
 	}
 
 	Constraint resourceConflict(final ConstraintFactory constraintFactory)

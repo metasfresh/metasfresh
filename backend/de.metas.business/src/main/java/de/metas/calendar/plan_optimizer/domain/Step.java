@@ -46,7 +46,7 @@ public class Step
 	 * The delay is measured in {@link Plan#PLANNING_TIME_PRECISION}
 	 */
 	public static final String FIELD_delay = "delay";
-	@PlanningVariable(strengthComparatorClass = DelayStrengthComparator.class)
+	@PlanningVariable(strengthComparatorClass = DelayStrengthComparator.class, nullable = true)
 	private Integer delay;
 
 	@PlanningPin
@@ -124,6 +124,8 @@ public class Step
 		{
 			sb.append(", ID=").append(id.getWoProjectResourceId().getRepoId());
 		}
+
+		sb.append(", delay=").append(delay);
 
 		return sb.toString();
 	}

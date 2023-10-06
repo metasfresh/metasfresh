@@ -13,6 +13,7 @@ import org.optaplanner.core.config.heuristic.selector.move.generic.ChangeMoveSel
 import org.optaplanner.core.config.heuristic.selector.value.ValueSelectorConfig;
 import org.optaplanner.core.config.localsearch.LocalSearchPhaseConfig;
 import org.optaplanner.core.config.localsearch.LocalSearchType;
+import org.optaplanner.core.config.solver.EnvironmentMode;
 import org.optaplanner.core.config.solver.SolverConfig;
 import org.optaplanner.spring.boot.autoconfigure.OptaPlannerAutoConfiguration;
 import org.optaplanner.spring.boot.autoconfigure.config.OptaPlannerProperties;
@@ -81,7 +82,9 @@ public class SimulationOptimizerConfiguration extends OptaPlannerAutoConfigurati
 				.withEntityClasses(Step.class)
 				.withConstraintProviderClass(PlanConstraintProvider.class)
 				.withTerminationSpentLimit(terminationSpentLimit)
-				.withPhases(constructionHeuristicPhaseConfig, localSearchPhaseConfig);
+				.withPhases(constructionHeuristicPhaseConfig, localSearchPhaseConfig)
+				//.withEnvironmentMode(EnvironmentMode.FULL_ASSERT) // TODO only for dev!
+				;
 	}
 
 	private Duration getTerminationSpentLimit()

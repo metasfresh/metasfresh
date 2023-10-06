@@ -88,7 +88,7 @@ public class ManualPOCTest
 
 	private Plan generateProblem(SimulationPlanId simulationId)
 	{
-		this.humanResourceTestGroupId = humanResourceTestGroupRepository.createHumanResourceTestGroup(2);
+		this.humanResourceTestGroupId = humanResourceTestGroupRepository.createHumanResourceTestGroup(9);
 
 		final ArrayList<Step> stepsList = new ArrayList<>();
 
@@ -96,7 +96,7 @@ public class ManualPOCTest
 		{
 			final ProjectId projectId = projectId(projectIdx);
 
-			for (int resourceIdx = 1; resourceIdx <= 2; resourceIdx++)
+			for (int resourceIdx = 1; resourceIdx <= 10; resourceIdx++)
 			{
 				stepsList.add(Step.builder()
 						.id(StepId.builder()
