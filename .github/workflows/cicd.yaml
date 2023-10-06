@@ -1,7 +1,7 @@
 name: cicd
 on: [push, workflow_dispatch]
 env:
-  PIPELINE_VERSION: '0.2.4'
+  PIPELINE_VERSION: '0.2.5'
 jobs:
 
   init:
@@ -124,9 +124,9 @@ jobs:
       - name: push-images
         uses: nick-fields/retry@v2
         with:
-          max_attempts: 3
-          retry_wait_seconds: 60
-          timeout_minutes: 5
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
@@ -175,9 +175,9 @@ jobs:
             # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
         uses: nick-fields/retry@v2
         with:
-          max_attempts: 3
-          retry_wait_seconds: 60
-          timeout_minutes: 5
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
@@ -296,9 +296,9 @@ jobs:
       - name: push-images
         uses: nick-fields/retry@v2
         with:
-          max_attempts: 2
-          retry_wait_seconds: 60
-          timeout_minutes: 15
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
@@ -393,9 +393,9 @@ jobs:
           # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
         uses: nick-fields/retry@v2
         with:
-          max_attempts: 3
-          retry_wait_seconds: 60
-          timeout_minutes: 5
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
@@ -463,9 +463,9 @@ jobs:
       - name: push-result-image
         uses: nick-fields/retry@v2
         with:
-          max_attempts: 3
-          retry_wait_seconds: 60
-          timeout_minutes: 5
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
@@ -515,9 +515,9 @@ jobs:
       - name: push-images
         uses: nick-fields/retry@v2
         with:
-          max_attempts: 3
-          retry_wait_seconds: 60
-          timeout_minutes: 5
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
@@ -566,9 +566,9 @@ jobs:
       - name: push-database-images
         uses: nick-fields/retry@v2
         with:
-          max_attempts: 3
-          retry_wait_seconds: 60
-          timeout_minutes: 5
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}                                                          # upload database image containing post cucumber test state
       - name: produce-summary
