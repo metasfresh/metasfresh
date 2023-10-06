@@ -1,21 +1,25 @@
 package de.metas.calendar.plan_optimizer;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.calendar.plan_optimizer.domain.Plan;
-import de.metas.calendar.plan_optimizer.domain.Step;
-import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.service.ISysConfigBL;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.spring.boot.autoconfigure.TimefoldAutoConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.calendar.plan_optimizer.domain.Plan;
+import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.slf4j.Logger;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +35,7 @@ import java.time.Duration;
 @EnableConfigurationProperties({ TimefoldProperties.class })
 public class SimulationOptimizerConfiguration extends TimefoldAutoConfiguration
 {
+	private static final Logger logger = LogManager.getLogger(SimulationOptimizerConfiguration.class);
 	private final ISysConfigBL sysconfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String SYSCONFIG_TerminationSpentLimit = "de.metas.calendar.plan_optimizer.TerminationSpentLimitMillis";
@@ -76,14 +81,21 @@ public class SimulationOptimizerConfiguration extends TimefoldAutoConfiguration
 		localSearchPhaseConfig.setMoveSelectorConfig(moveSelectorConfig);
 		localSearchPhaseConfig.setLocalSearchType(LocalSearchType.TABU_SEARCH);
 
-		return new SolverConfig(classLoader)
+		SolverConfig solverConfig = new SolverConfig(classLoader)
 				.withSolutionClass(Plan.class)
 				.withEntityClasses(Step.class)
 				.withConstraintProviderClass(PlanConstraintProvider.class)
 				.withTerminationSpentLimit(terminationSpentLimit)
-				.withPhases(constructionHeuristicPhaseConfig, localSearchPhaseConfig)
-				//.withEnvironmentMode(EnvironmentMode.FULL_ASSERT) // TODO only for dev!
-				;
+				.withPhases(constructionHeuristicPhaseConfig, localSearchPhaseConfig);
+
+		if (Adempiere.isUnitTestMode())
+		{
+			// IMPORTANT: FULL_ASSERT is very expensive and it shall be used only in test/dev mode
+			solverConfig = solverConfig.withEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+			logger.warn("Enabled FULL_ASSERT mode");
+		}
+
+		return solverConfig;
 	}
 
 	private Duration getTerminationSpentLimit()
