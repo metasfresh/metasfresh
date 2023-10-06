@@ -68,7 +68,7 @@ public class Step
 			@NonNull final LocalDateTime startDateMin,
 			@NonNull final LocalDateTime dueDate,
 			@NonNull final Duration humanResourceTestGroupDuration,
-			final int delay,
+			final Integer delay,
 			final boolean pinned)
 	{
 		this.id = id;
