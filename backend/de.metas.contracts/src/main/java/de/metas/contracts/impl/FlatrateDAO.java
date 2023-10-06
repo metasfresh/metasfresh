@@ -1037,7 +1037,6 @@ public class FlatrateDAO implements IFlatrateDAO
 	public void save(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		InterfaceWrapperHelper.save(flatrateTerm);
-		CacheMgt.get().reset(I_C_Flatrate_Term.Table_Name, flatrateTerm.getC_Flatrate_Term_ID());
 	}
 
 	@Override
