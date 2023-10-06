@@ -46,7 +46,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 				resourceConflict(constraintFactory),
 				startDateMin(constraintFactory),
 				dueDate(constraintFactory),
-				//humanResourceAvailableCapacity(constraintFactory),
+				humanResourceAvailableCapacity(constraintFactory),
 				//
 				// Soft:
 				penalizeNullableDelay(constraintFactory),

@@ -6,12 +6,12 @@ import com.google.common.collect.Maps;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.resource.HumanResourceTestGroup;
 import de.metas.resource.HumanResourceTestGroupId;
+import de.metas.util.time.DurationUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -86,13 +86,16 @@ public class HumanResourceAvailableCapacity
 			requiredCapacityItems.forEach(item -> {
 				this.reservedCapacity = this.reservedCapacity.plus(item.getHumanResourceDuration());
 
-				if (totalCapacity.compareTo(reservedCapacity) < 0)
-				{
-					final LocalDateTime startDate = item.getStartDate();
-					final LocalDateTime nextAvailableDate = YearWeek.from(startDate).nextWeekMonday();
-					this.overReservedCapacityPenalty += Plan.PLANNING_TIME_PRECISION.between(startDate, nextAvailableDate);
-				}
+				// if (totalCapacity.compareTo(reservedCapacity) < 0)
+				// {
+				// 	final LocalDateTime startDate = item.getStartDate();
+				// 	final LocalDateTime nextAvailableDate = YearWeek.from(startDate).nextWeekMonday();
+				// 	this.overReservedCapacityPenalty += Plan.PLANNING_TIME_PRECISION.between(startDate, nextAvailableDate);
+				// }
 			});
+
+			final long availableCapacity = DurationUtils.toLong(totalCapacity.minus(reservedCapacity), Plan.PLANNING_TIME_PRECISION);
+			this.overReservedCapacityPenalty = availableCapacity < 0 ? -availableCapacity : 0;
 		}
 	}
 }
