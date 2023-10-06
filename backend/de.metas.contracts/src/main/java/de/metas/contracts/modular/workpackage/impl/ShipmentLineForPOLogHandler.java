@@ -39,8 +39,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
@@ -71,6 +70,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final ShipmentLineForPOModularContractHandler contractHandler;
@@ -116,8 +116,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs().toString())
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs().toString());
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
 																				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
@@ -159,8 +158,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs().toString())
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_REVERSED, productName, quantity.abs().toString());
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))

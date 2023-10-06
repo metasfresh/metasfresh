@@ -37,8 +37,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -75,6 +74,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final PurchaseOrderLineModularContractHandler contractHandler;
@@ -127,8 +127,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 				.orElse(null);
 
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_INFO_PO_COMPLETED, productName, quantity.abs().toString())
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_PO_COMPLETED, productName, quantity.abs().toString());
 		
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())

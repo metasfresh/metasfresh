@@ -39,8 +39,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.lang.SOTrx;
@@ -73,6 +72,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final InventoryLineModularContractHandler contractHandler;
@@ -121,8 +121,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 
 		final Quantity quantity = inventoryBL.getMovementQty(inventoryLine);
 
-		final String description = TranslatableStrings.adMessage(MSG_DESCRIPTION, quantity.abs().toString())
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION, quantity.abs().toString());
 
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(createLogRequest.getContractId());
 
