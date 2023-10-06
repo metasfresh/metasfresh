@@ -281,7 +281,9 @@ public class Fact_Acct_StepDef
 	{
 		final FactAcctQuery factAcctQuery = buildFactAcctQuery(tableRecordReference, row);
 
-		final I_Fact_Acct factAcctRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> loadFactAcct(factAcctQuery), () -> getCurrentContext(factAcctQuery));
+		final Integer noOfHits = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.NoOfHits");
+
+		final I_Fact_Acct factAcctRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> loadFactAcct(factAcctQuery, noOfHits), () -> getCurrentContext(factAcctQuery));
 
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_Fact_Acct.COLUMNNAME_Fact_Acct_ID + "." + TABLECOLUMN_IDENTIFIER);
 		factAcctTable.putOrReplace(identifier, factAcctRecord);
@@ -396,7 +398,9 @@ public class Fact_Acct_StepDef
 	}
 
 	@NonNull
-	private ItemProvider.ProviderResult<I_Fact_Acct> loadFactAcct(@NonNull final FactAcctQuery factAcctQuery)
+	private ItemProvider.ProviderResult<I_Fact_Acct> loadFactAcct(
+			@NonNull final FactAcctQuery factAcctQuery,
+			@Nullable final Integer noOfHits)
 	{
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.getRecord_ID())
@@ -436,16 +440,31 @@ public class Fact_Acct_StepDef
 		Optional.ofNullable(factAcctQuery.getSectionCodeId())
 						.ifPresent(sectionCodeId -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_SectionCode_ID, sectionCodeId));
 
-		final I_Fact_Acct factAcctRecord = queryBuilder
+		final List<I_Fact_Acct> factAcctRecords = queryBuilder
 				.create()
-				.firstOnlyOrNull(I_Fact_Acct.class);
+				.list(I_Fact_Acct.class);
 
-		if (factAcctRecord == null)
+		if (factAcctRecords.isEmpty())
 		{
 			return ItemProvider.ProviderResult.resultWasNotFound("No I_Fact_Acct found for query=" + factAcctQuery);
 		}
 
-		return ItemProvider.ProviderResult.resultWasFound(factAcctRecord);
+		if (noOfHits != null)
+		{
+			if (!noOfHits.equals(factAcctRecords.size()))
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("Number of I_Fact_Acct hits expected for for query=" + factAcctQuery + " is " + noOfHits + " but actual is " + factAcctRecords.size());
+			}
+		}
+		else
+		{
+			if (factAcctRecords.size() > 1)
+			{
+				return ItemProvider.ProviderResult.resultWasNotFound("Number of I_Fact_Acct hits expected for for query=" + factAcctQuery + " was bigger than 1. (This happens when you don't explicitly add the OPT.NoOfHits column in the feature file)");
+			}
+		}
+
+		return ItemProvider.ProviderResult.resultWasFound(factAcctRecords.get(0));
 	}
 
 	@NonNull
