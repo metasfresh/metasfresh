@@ -1,5 +1,13 @@
 package de.metas.calendar.plan_optimizer.solver;
 
+import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
+import ai.timefold.solver.core.impl.score.stream.JoinerSupport;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.calendar.plan_optimizer.solver.weekly_capacities.HumanResourceAvailableCapacity;
@@ -9,14 +17,6 @@ import de.metas.resource.HumanResourceTestGroupId;
 import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.util.Check;
 import org.compiere.SpringContextHolder;
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
-import ai.timefold.solver.core.impl.score.stream.JoinerSupport;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -26,13 +26,14 @@ import java.util.Set;
 public class PlanConstraintProvider implements ConstraintProvider
 {
 	public static final int HARD_LEVELS_SIZE = 2;
-	public static final int SOFT_LEVELS_SIZE = 3;
+	public static final int SOFT_LEVELS_SIZE = 4;
 
-	private static final BendableScore ONE_HARD = BendableScore.of(new int[] { 1, 0 }, new int[] { 0, 0, 0 });
-	private static final BendableScore ONE_HARD_2 = BendableScore.of(new int[] { 0, 1 }, new int[] { 0, 0, 0 });
-	private static final BendableScore ONE_SOFT_1 = BendableScore.of(new int[] { 0, 0 }, new int[] { 1, 0, 0 });
-	private static final BendableScore ONE_SOFT_2 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 1, 0 });
-	private static final BendableScore ONE_SOFT_3 = BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 0, 1 });
+	private static final BendableScore ONE_HARD = BendableScore.ofHard(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 0, 1);
+	private static final BendableScore ONE_HARD_2 = BendableScore.ofHard(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 1, 1);
+	private static final BendableScore ONE_SOFT_1 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 0, 1);
+	private static final BendableScore ONE_SOFT_2 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 1, 1);
+	private static final BendableScore ONE_SOFT_3 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 2, 1);
+	private static final BendableScore ONE_SOFT_4 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 3, 1);
 
 	private final HumanResourceTestGroupService humanResourceTestGroupService = SpringContextHolder.instance.getBean(HumanResourceTestGroupService.class);
 
@@ -45,24 +46,16 @@ public class PlanConstraintProvider implements ConstraintProvider
 				resourceConflict(constraintFactory),
 				startDateMin(constraintFactory),
 				dueDate(constraintFactory),
-				humanResourceAvailableCapacity(constraintFactory),
+				//humanResourceAvailableCapacity(constraintFactory),
 				//
 				// Soft:
 				penalizeNullableDelay(constraintFactory),
 				stepsNotRespectingProjectPriority(constraintFactory),
-				// delayIsMinimum(constraintFactory),
+				delayIsMinimum(constraintFactory),
 				//
 				// minDurationFromEndToDueDateIsMaximum(constraintFactory),
 				// sumOfDurationFromEndToDueDateIsMaximum(constraintFactory),
 		};
-	}
-
-	Constraint penalizeNullableDelay(final ConstraintFactory constraintFactory)
-	{
-		return constraintFactory.forEachIncludingNullVars(Step.class)
-				.filter(step ->step.getDelay() == null)
-				.penalize(ONE_SOFT_1, step -> 1)
-				.asConstraint("nullable delay");
 	}
 
 	Constraint resourceConflict(final ConstraintFactory constraintFactory)
@@ -115,11 +108,19 @@ public class PlanConstraintProvider implements ConstraintProvider
 		return humanResourceAvailableCapacity.getOverReservedCapacityPenalty();
 	}
 
+	Constraint penalizeNullableDelay(final ConstraintFactory constraintFactory)
+	{
+		return constraintFactory.forEachIncludingNullVars(Step.class)
+				.filter(step -> step.getDelay() == null || step.getEndDate() == null)
+				.penalize(ONE_SOFT_1, step -> 1)
+				.asConstraint("nullable delay");
+	}
+
 	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(step -> step.getDelay() > 0)
-				.penalize(ONE_SOFT_1, Step::getDelay)
+				.penalize(ONE_SOFT_2, Step::getDelay)
 				.asConstraint("Delay is minimum");
 	}
 
@@ -128,7 +129,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEach(Step.class)
 				.groupBy(ConstraintCollectors.min(Step::getDurationFromEndToDueDateInHoursAbs))
-				.reward(ONE_SOFT_2, durationFromEndToDueDateInHours -> durationFromEndToDueDateInHours)
+				.reward(ONE_SOFT_3, durationFromEndToDueDateInHours -> durationFromEndToDueDateInHours)
 				.asConstraint("solution for which the minimum of |tdi-tei| is maximum");
 	}
 
@@ -137,7 +138,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEach(Step.class)
 				.groupBy(ConstraintCollectors.sum(Step::getDurationFromEndToDueDateInHoursAbs))
-				.reward(ONE_SOFT_3, sum -> sum)
+				.reward(ONE_SOFT_4, sum -> sum)
 				.asConstraint("solution for which sum of |tdi-tei| is maximum");
 	}
 
@@ -147,7 +148,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getResource),
 						stepsNotRespectingProjectPriority())
-				.penalize(ONE_SOFT_1, PlanConstraintProvider::computePenaltyWeight_StepsNotRespectingProjectPriority)
+				.penalize(ONE_SOFT_2, PlanConstraintProvider::computePenaltyWeight_StepsNotRespectingProjectPriority)
 				.asConstraint("Steps not respecting project priority");
 	}
 

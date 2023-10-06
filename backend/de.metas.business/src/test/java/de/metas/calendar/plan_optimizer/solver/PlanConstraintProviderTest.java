@@ -1,9 +1,11 @@
 package de.metas.calendar.plan_optimizer.solver;
 
+import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Resource;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.calendar.plan_optimizer.domain.StepId;
+import de.metas.calendar.plan_optimizer.domain.StepPreviousEndDateUpdater;
 import de.metas.calendar.plan_optimizer.persistance.DatabasePlanLoaderInstance;
 import de.metas.product.ResourceId;
 import de.metas.project.InternalPriority;
@@ -18,7 +20,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -50,7 +51,7 @@ class PlanConstraintProviderTest
 	@BeforeEach
 	void beforeEach()
 	{
-		nextProjectStepRepoId = new AtomicInteger(101);
+		this.nextProjectStepRepoId = new AtomicInteger(101);
 	}
 
 	StepId nextStepId(final ProjectId projectId)
@@ -60,6 +61,11 @@ class PlanConstraintProviderTest
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, stepRepoId))
 				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, stepRepoId))
 				.build();
+	}
+
+	void updateShadowVars(final Step step)
+	{
+		StepPreviousEndDateUpdater.updateStep(step);
 	}
 
 	@Nested
@@ -73,13 +79,18 @@ class PlanConstraintProviderTest
 			final LocalDateTime endDate = LocalDate.parse(endDateStr).atStartOfDay();
 			final Duration duration = Duration.between(startDate, endDate);
 
-			Step step = new Step();
-			step.setId(nextStepId(PROJECT_ID1));
-			step.setResource(resource);
-			step.setStartDateMin(START_DATE_MIN);
-			step.setDueDate(endDate); // some not null value because we don't want to fail toString()
-			step.setDuration(duration);
-			step.setDelay(DatabasePlanLoaderInstance.computeDelay(step.getStartDateMin(), startDate));
+			final Step step = Step.builder()
+					.id(nextStepId(PROJECT_ID1))
+					.projectPriority(InternalPriority.MEDIUM)
+					.resource(resource)
+					.humanResourceTestGroupDuration(Duration.ZERO)
+					.startDateMin(START_DATE_MIN)
+					.dueDate(endDate) // some not null value because we don't want to fail toString()
+					.duration(duration)
+					.delay(DatabasePlanLoaderInstance.computeDelay(START_DATE_MIN, startDate))
+					.build();
+
+			updateShadowVars(step);
 
 			assertThat(step.getStartDate()).isEqualTo(startDate);
 			assertThat(step.getEndDate()).isEqualTo(endDate);
@@ -92,6 +103,7 @@ class PlanConstraintProviderTest
 		{
 			final Step step1 = step(RESOURCE, "2023-04-01", "2023-04-05");
 			final Step step2 = step(RESOURCE, "2023-04-04", "2023-04-10");
+
 			constraintVerifier.verifyThat(PlanConstraintProvider::resourceConflict).given(step1, step2).penalizesBy(24); // 24h=1day
 		}
 
@@ -139,12 +151,18 @@ class PlanConstraintProviderTest
 			final Duration duration = Duration.of(1, Plan.PLANNING_TIME_PRECISION);
 			final LocalDateTime startDate = endDate.minus(duration);
 
-			Step step = new Step();
-			step.setId(nextStepId(PROJECT_ID1));
-			step.setStartDateMin(startDate);
-			step.setDelay(0);
-			step.setDuration(duration);
-			step.setDueDate(LocalDate.parse(dueDate).atStartOfDay());
+			Step step = Step.builder()
+					.id(nextStepId(PROJECT_ID1))
+					.projectPriority(InternalPriority.MEDIUM)
+					.resource(RESOURCE)
+					.humanResourceTestGroupDuration(Duration.ZERO)
+					.startDateMin(startDate)
+					.delay(0)
+					.duration(duration)
+					.dueDate(LocalDate.parse(dueDate).atStartOfDay())
+					.build();
+
+			updateShadowVars(step);
 
 			return step;
 		}
@@ -203,13 +221,15 @@ class PlanConstraintProviderTest
 		{
 			final LocalDateTime startDate = LocalDate.parse(startDateStr).atStartOfDay();
 
-			Step step = new Step();
-			step.setId(nextStepId(projectId)); // needed for contraint stream forEachUnique
-			step.setResource(RESOURCE);
-			step.setProjectPriority(priority);
-			step.setStartDateMin(START_DATE_MIN);
-			step.setDueDate(LocalDate.parse("2024-12-31").atStartOfDay()); // some not null value because we don't want to fail toString()
-			step.setDuration(Duration.of(1, Plan.PLANNING_TIME_PRECISION));
+			final Step step = Step.builder()
+					.id(nextStepId(projectId)) // needed for constraint stream forEachUnique
+					.projectPriority(priority)
+					.resource(RESOURCE)
+					.humanResourceTestGroupDuration(Duration.ZERO)
+					.startDateMin(START_DATE_MIN)
+					.dueDate(LocalDate.parse("2024-12-31").atStartOfDay()) // some not null value because we don't want to fail toString()
+					.duration(Duration.of(1, Plan.PLANNING_TIME_PRECISION))
+					.build();
 
 			Step prevStep = this.lastStepByProjectId.get(projectId);
 			if (prevStep != null)
@@ -223,6 +243,8 @@ class PlanConstraintProviderTest
 			{
 				step.setDelay(DatabasePlanLoaderInstance.computeDelay(step.getStartDateMin(), startDate));
 			}
+
+			updateShadowVars(step);
 
 			this.lastStepByProjectId.put(projectId, step);
 
@@ -291,6 +313,5 @@ class PlanConstraintProviderTest
 			assertThat(PlanConstraintProvider.stepsNotRespectingProjectPriority(step1, step2)).isTrue();
 			constraintVerifier.verifyThat(PlanConstraintProvider::stepsNotRespectingProjectPriority).given(step1, step2).penalizesBy(25);
 		}
-
 	}
 }

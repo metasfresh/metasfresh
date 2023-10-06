@@ -1,5 +1,6 @@
 package de.metas.calendar.plan_optimizer;
 
+import ai.timefold.solver.core.api.solver.SolverFactory;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -8,6 +9,7 @@ import de.metas.calendar.plan_optimizer.domain.Plan;
 import de.metas.calendar.plan_optimizer.domain.Resource;
 import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.calendar.plan_optimizer.domain.StepId;
+import de.metas.calendar.plan_optimizer.domain.StepPreviousEndDateUpdater;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
@@ -22,7 +24,6 @@ import lombok.NonNull;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.Disabled;
-import ai.timefold.solver.core.api.solver.SolverFactory;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -105,10 +106,11 @@ public class ManualPOCTest
 								.build())
 						.projectPriority(InternalPriority.MEDIUM)
 						.resource(resource(resourceIdx))
+						.humanResourceTestGroupDuration(Duration.ofHours(1))
 						.duration(Duration.ofHours(1))
 						.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
 						.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
-						.humanResourceTestGroupDuration(Duration.ofHours(1))
+						.delay(0)
 						.build());
 			}
 		}
@@ -145,6 +147,8 @@ public class ManualPOCTest
 				step.setPreviousStep(i == 0 ? null : projectSteps.get(i - 1));
 				step.setNextStep(i == lastIndex ? null : projectSteps.get(i + 1));
 			}
+
+			StepPreviousEndDateUpdater.updateStep(projectSteps.get(0));
 		}
 	}
 }

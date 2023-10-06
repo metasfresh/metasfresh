@@ -1,15 +1,5 @@
 package de.metas.calendar.plan_optimizer.domain;
 
-import de.metas.calendar.plan_optimizer.solver.DelayStrengthComparator;
-import de.metas.calendar.plan_optimizer.solver.weekly_capacities.YearWeek;
-import de.metas.i18n.BooleanWithReason;
-import de.metas.project.InternalPriority;
-import de.metas.project.ProjectId;
-import de.metas.util.time.DurationUtils;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
@@ -17,6 +7,19 @@ import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import de.metas.calendar.plan_optimizer.solver.DelayStrengthComparator;
+import de.metas.calendar.plan_optimizer.solver.weekly_capacities.YearWeek;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.project.InternalPriority;
+import de.metas.project.ProjectId;
+import de.metas.util.time.DurationUtils;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -36,26 +39,30 @@ public class Step
 	InternalPriority projectPriority;
 
 	private Resource resource;
+	private Duration humanResourceTestGroupDuration;
 
 	private Duration duration;
 	private LocalDateTime startDateMin;
 	private LocalDateTime dueDate;
 
+	@PlanningPin boolean pinned;
+
 	/**
-	 * Delay it's the offset from previous step end.
-	 * The delay is measured in {@link Plan#PLANNING_TIME_PRECISION}
+	 * Delay it's the offset from previous step end. The delay is measured in {@link Plan#PLANNING_TIME_PRECISION}.
 	 */
 	public static final String FIELD_delay = "delay";
 	@PlanningVariable(strengthComparatorClass = DelayStrengthComparator.class, nullable = true)
 	private Integer delay;
 
-	@PlanningPin
-	boolean pinned;
+	//
+	// Shadow variables
+	private static final String FIELD_PreviousStepEndDate = "previousStepEndDate";
+	@Setter(AccessLevel.NONE) private LocalDateTime previousStepEndDate;
 
-	private Duration humanResourceTestGroupDuration;
-
-	// No-arg constructor required for Timefold
-	public Step() {}
+	//
+	// Computed from shadow variables
+	private LocalDateTime startDate;
+	private LocalDateTime endDate;
 
 	@Builder(toBuilder = true)
 	private Step(
@@ -64,24 +71,31 @@ public class Step
 			@Nullable final Step nextStep,
 			@NonNull final InternalPriority projectPriority,
 			@NonNull final Resource resource,
+			@NonNull final Duration humanResourceTestGroupDuration,
 			@NonNull final Duration duration,
 			@NonNull final LocalDateTime startDateMin,
 			@NonNull final LocalDateTime dueDate,
-			@NonNull final Duration humanResourceTestGroupDuration,
-			final Integer delay,
-			final boolean pinned)
+			@Nullable final Integer delay,
+			final boolean pinned,
+			@Nullable final LocalDateTime previousStepEndDate,
+			@Nullable final LocalDateTime startDate,
+			@Nullable final LocalDateTime endDate)
 	{
 		this.id = id;
 		this.previousStep = previousStep;
 		this.nextStep = nextStep;
 		this.projectPriority = projectPriority;
 		this.resource = resource;
+		this.humanResourceTestGroupDuration = humanResourceTestGroupDuration;
 		this.duration = duration;
 		this.dueDate = dueDate;
 		this.startDateMin = startDateMin;
 		this.delay = delay;
 		this.pinned = pinned;
-		this.humanResourceTestGroupDuration = humanResourceTestGroupDuration;
+
+		this.previousStepEndDate = previousStepEndDate;
+		this.startDate = startDate;
+		this.endDate = endDate;
 	}
 
 	@Override
@@ -94,7 +108,7 @@ public class Step
 		sb.append(startDate).append(" -> ");
 
 		final LocalDateTime endDate = getEndDate();
-		if (startDate.toLocalDate().equals(endDate.toLocalDate()))
+		if (startDate != null && startDate.toLocalDate().equals(endDate.toLocalDate()))
 		{
 			sb.append(endDate.toLocalTime());
 		}
@@ -103,7 +117,10 @@ public class Step
 			sb.append(endDate);
 		}
 
-		sb.append(" (WK").append(YearWeek.from(startDate).getWeek()).append(")");
+		if (startDate != null)
+		{
+			sb.append(" (WK").append(YearWeek.from(startDate).getWeek()).append(")");
+		}
 		//sb.append(" (").append(duration).append(")");
 
 		sb.append(": ");
@@ -177,22 +194,36 @@ public class Step
 
 	private Duration getDelayAsDuration() {return Duration.of(getDelayAsInt(), Plan.PLANNING_TIME_PRECISION);}
 
-	public LocalDateTime getStartDate()
+	@ShadowVariable(variableListenerClass = StepPreviousEndDateUpdater.class, sourceVariableName = FIELD_delay)
+	public LocalDateTime getPreviousStepEndDate()
 	{
-		final Duration delayDuration = getDelayAsDuration();
-		if (previousStep == null)
+		return previousStepEndDate;
+	}
+
+	public void setPreviousStepEndDateAndUpdate(@Nullable final LocalDateTime previousStepEndDate, @Nullable final ScoreDirector<Plan> scoreDirector)
+	{
+		if (scoreDirector != null)
 		{
-			return startDateMin.plus(delayDuration);
+			scoreDirector.beforeVariableChanged(this, FIELD_PreviousStepEndDate);
+		}
+
+		this.previousStepEndDate = previousStepEndDate;
+		if (previousStepEndDate == null)
+		{
+			this.startDate = null;
+			this.endDate = null;
 		}
 		else
 		{
-			return previousStep.getEndDate().plus(delayDuration);
+			final Duration delayDuration = getDelayAsDuration();
+			this.startDate = previousStepEndDate.plus(delayDuration);
+			this.endDate = this.startDate.plus(duration);
 		}
-	}
 
-	public LocalDateTime getEndDate()
-	{
-		return getStartDate().plus(duration);
+		if (scoreDirector != null)
+		{
+			scoreDirector.afterVariableChanged(this, FIELD_PreviousStepEndDate);
+		}
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
