@@ -19,22 +19,6 @@ Feature: Clone Modular Contract Term
       | y2022                | 2022       | harvesting_calendar      |
       | y2023                | 2023       | harvesting_calendar      |
 
-    And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                           | M_Product_ID.Identifier       | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_toclone_S0300 | modCntr_settings_toclone_S0300 | contract_module_product_S0300 | harvesting_calendar      | y2022                |
-
-    And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                  | Value                 | Classname                                                               |
-      | modCntr_Types_1_S0300      | modCntr_Types_1_S0300 | modCntr_Types_1_S0300 | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-
-    And metasfresh contains ModCntr_Modules:
-      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier       | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1_S0300       | 10    | modCntr_module_1_S0300 | contract_module_product_S0300 | Kosten         | modCntr_settings_toclone_S0300 | modCntr_Types_1_S0300      |
-
-    And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                      | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_S0300           | modularContractTerm_S0300 | ModularContract | Ex                       | modCntr_settings_toclone_S0300     | CO            |
-
   @Id:S0300_100
   @from:cucumber
   Scenario: Happy flow - clone a Modular Contract Term -> new cloned Contract Term with Settings had the new harvest year
@@ -43,6 +27,26 @@ Feature: Clone Modular Contract Term
   - validate modular contract term cloned
   - validate modular contract term can be edited (`Draft`)
   - validate modular contract settings cloned for the harvest year 2023
+
+    Given metasfresh contains M_Products:
+      | Identifier              | Name                               |
+      | contract_module_product | contract_module_product_17072023_1 |
+
+    And metasfresh contains ModCntr_Settings:
+      | ModCntr_Settings_ID.Identifier | Name                           | M_Product_ID.Identifier       | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
+      | modCntr_settings_toclone_S0300 | modCntr_settings_toclone_S0300 | contract_module_product_S0300 | harvesting_calendar      | y2022                |
+
+    And metasfresh contains ModCntr_Types:
+      | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
+      | modCntr_Types_1_S0300      | modCntr_Types_17072023_1 | modCntr_Types_17072023_1 | PurchaseOrderLine_Modular  |
+
+    And metasfresh contains ModCntr_Modules:
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier       | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_1_S0300       | 10    | modCntr_module_1_S0300 | contract_module_product_S0300 | Kosten         | modCntr_settings_toclone_S0300 | modCntr_Types_1_S0300      |
+
+    And metasfresh contains C_Flatrate_Conditions:
+      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_2022            | modularContractTerm_17072023_1 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
 
     When clone C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier |
@@ -63,7 +67,27 @@ Feature: Clone Modular Contract Term
   - clone the Modular Contract for harvest year 2022
   - fail with a user message : Settings with the same year already exist
 
-    Given load AD_Message:
+    Given metasfresh contains M_Products:
+      | Identifier              | Name                               |
+      | contract_module_product | contract_module_product_17072023_2 |
+
+    And metasfresh contains ModCntr_Settings:
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
+      | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
+
+    And metasfresh contains ModCntr_Types:
+      | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
+      | modCntr_Types_1            | modCntr_Types_17072023_2 | modCntr_Types_17072023_2 | PurchaseOrderLine_Modular  |
+
+    And metasfresh contains ModCntr_Modules:
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_1             | 10    | moduleTest_17072023_2 | contract_module_product | Kosten         | modCntr_settings_toclone       | modCntr_Types_1            |
+
+    And metasfresh contains C_Flatrate_Conditions:
+      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_2022            | modularContractTerm_17072023_2 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
+
+    When load AD_Message:
       | Identifier              | Value                                      |
       | settings_already_exists | MSG_SETTINGS_WITH_SAME_YEAR_ALREADY_EXISTS |
 

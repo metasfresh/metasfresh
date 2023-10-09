@@ -32,6 +32,7 @@ import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +81,16 @@ class ModularContractLogHandler
 			return;
 		}
 
-		final ModuleConfig moduleConfig = settings.getModuleConfig(handler.getModularContractTypeHandlerClass())
+		final ProductId productId = handler.getProductId(request).orElse(null);
+		if (productId == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("No Product found for contractId: {}! no logs will be created!", request.getContractId());
+
+			return;
+		}
+		
+		final ModuleConfig moduleConfig = settings.getModuleConfig(handler.getModularContractTypeHandler().getHandlerType(), productId)
 				.orElse(null);
 		if (moduleConfig == null)
 		{

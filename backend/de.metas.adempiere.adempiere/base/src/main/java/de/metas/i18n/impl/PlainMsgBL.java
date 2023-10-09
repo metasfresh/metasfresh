@@ -33,8 +33,11 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class PlainMsgBL implements IMsgBL
 {
@@ -147,5 +150,12 @@ public class PlainMsgBL implements IMsgBL
 	public void cacheReset()
 	{
 		// nothing
+	}
+
+	@Override
+	public String getBaseLanguageMsg(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
+	{
+		return TranslatableStrings.adMessage(adMessage, msgParameters)
+				.translate(Language.getBaseAD_Language());
 	}
 }

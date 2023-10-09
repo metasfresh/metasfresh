@@ -22,24 +22,24 @@
 
 package de.metas.contracts.modular.settings;
 
+import de.metas.contracts.modular.ModularContractHandlerType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 @Value
 @Builder
 public class ModularContractType
 {
 	@NonNull ModularContractTypeId id;
-	@Nullable String className;
+	@Nullable ModularContractHandlerType handlerType;
 	@Nullable String value;
 	@Nullable String name;
 
-	public boolean isMatchingClassName(@NonNull final String className)
+	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
 	{
-		return Objects.equals(this.className, className);
+		return this.handlerType == handlerType;
 	}
 }

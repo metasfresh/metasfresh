@@ -156,4 +156,5 @@ public interface IMsgBL extends ISingletonService
 				.msgBL(this);
 	}
 
+	String getBaseLanguageMsg(@NonNull AdMessageKey adMessage, @Nullable Object... msgParameters);
 }
