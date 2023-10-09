@@ -6,10 +6,6 @@ Feature: Clone Modular Contract Term
     And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
-    And metasfresh contains M_Products:
-      | Identifier                    | Name                          |
-      | contract_module_product_S0300 | contract_module_product_S0300 |
-
     And load C_Calendar from metasfresh:
       | C_Calendar_ID.Identifier | Name                  |
       | harvesting_calendar      | Buchführungs-Kalender |
@@ -33,20 +29,20 @@ Feature: Clone Modular Contract Term
       | contract_module_product | contract_module_product_17072023_1 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                           | M_Product_ID.Identifier       | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_toclone_S0300 | modCntr_settings_toclone_S0300 | contract_module_product_S0300 | harvesting_calendar      | y2022                |
+      | ModCntr_Settings_ID.Identifier | Name                           | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
+      | modCntr_settings_toclone_S0300 | modCntr_settings_toclone_S0300 | contract_module_product | harvesting_calendar      | y2022                |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
       | modCntr_Types_1_S0300      | modCntr_Types_17072023_1 | modCntr_Types_17072023_1 | PurchaseOrderLine_Modular  |
 
     And metasfresh contains ModCntr_Modules:
-      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier       | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1_S0300       | 10    | modCntr_module_1_S0300 | contract_module_product_S0300 | Kosten         | modCntr_settings_toclone_S0300 | modCntr_Types_1_S0300      |
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_1_S0300       | 10    | modCntr_module_1_S0300 | contract_module_product | Kosten         | modCntr_settings_toclone_S0300 | modCntr_Types_1_S0300      |
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2022            | modularContractTerm_17072023_1 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
+      | modularContractTerm_2022            | modularContractTerm_17072023_1 | ModularContract | Ex                       | modCntr_settings_toclone_S0300     | CO            |
 
     When clone C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier |
@@ -57,8 +53,8 @@ Feature: Clone Modular Contract Term
       | clonedModularContractTerm_S0300_100 | clonedModularContractTerm_S0300_100 | ModularContract | Ex                       | DR            | clonedModCntr_settings_S0300_100     |
 
     And validate cloned ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier   | Name                           | M_Product_ID.Identifier       | C_Year_ID.Identifier |
-      | clonedModCntr_settings_S0300_100 | modCntr_settings_toclone_S0300 | contract_module_product_S0300 | y2023                |
+      | ModCntr_Settings_ID.Identifier   | Name                           | M_Product_ID.Identifier | C_Year_ID.Identifier |
+      | clonedModCntr_settings_S0300_100 | modCntr_settings_toclone_S0300 | contract_module_product | y2023                |
 
   @Id:S0300_200
   @from:cucumber
