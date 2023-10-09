@@ -55,22 +55,13 @@ Feature: Modular contract log from purchase order
       | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | moduleLogPP | moduleLogPLV                      | module_log_product_PO   | 2.00     | PCE               | Normal                        |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                               |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-      | class_2                    | type_1                          | de.metas.contracts.modular.impl.PurchaseModularContractHandler          |
-
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_06292023_2 | module_log_product_PO   | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                       | Value                      | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | poLine_06292023_2          | poLine_06292023_2          | class_1                    |
-      | modCntr_type_MC            | modCntr_type_MC_09072023_1 | modCntr_type_MC_09072023_1 | class_2                    |
+      | ModCntr_Type_ID.Identifier | Name                       | Value                      | ModularContractHandlerType |
+      | modCntr_type_1             | poLine_06292023_2          | poLine_06292023_2          | PurchaseOrderLine_Modular  |
+      | modCntr_type_MC            | modCntr_type_MC_09072023_1 | modCntr_type_MC_09072023_1 | PurchaseModularContract    |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_06292023_2 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
@@ -159,20 +150,12 @@ Feature: Modular contract log from purchase order
       | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | moduleLogPP | moduleLogPLV                      | module_log_product_PO   | 2.00     | PCE               | Normal                        |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                               |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_06292023_4 | module_log_product_PO   | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name              | Value             | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | poLine_06292023_4 | poLine_06292023_4 | class_1                    |
+      | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
+      | modCntr_type_1             | poLine_06292023_4 | poLine_06292023_4 | PurchaseOrderLine_Modular  |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_06292023_4 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
@@ -267,20 +250,12 @@ Feature: Modular contract log from purchase order
       | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | moduleLogPP | moduleLogPLV                      | module_log_product_PO   | 2.00     | PCE               | Normal                        |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                               |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_07032023_2 | module_log_product_PO   | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name              | Value             | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | poLine_07032023_2 | poLine_07032023_2 | class_1                    |
+      | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
+      | modCntr_type_1             | poLine_07032023_2 | poLine_07032023_2 | PurchaseOrderLine_Modular  |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_07032023_2 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
@@ -378,22 +353,13 @@ Feature: Modular contract log from purchase order
       | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | bp_moduleLogMR_Location | 5823098505483 | bp_moduleLogMR           | true                | true                |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                                 |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler   |
-      | class_2                    | type_1                          | de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler |
-
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_05072023_1 | module_log_product_MR   | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name              | Value             | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | class_1                    |
-      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | class_2                    |
+      | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType  |
+      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | PurchaseOrderLine_Modular   |
+      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | MaterialReceiptLine_Modular |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_05072023_1 | module_log_product_PO   | Kosten         | modCntr_settings_1             | modCntr_type_1             |

@@ -58,6 +58,9 @@ public interface IModularContractTypeHandler<T>
 
 	void validateAction(@NonNull final T model, @NonNull final ModelAction action);
 
+	@NonNull
+	ModularContractHandlerType getHandlerType();
+	
 	default void createContractIfRequired(@NonNull final T model) {}
 
 	default void handleAction(

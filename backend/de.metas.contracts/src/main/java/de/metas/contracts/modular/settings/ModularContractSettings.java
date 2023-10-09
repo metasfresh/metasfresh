@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.calendar.standard.YearAndCalendarId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
@@ -71,13 +71,13 @@ public class ModularContractSettings
 
 	@NonNull
 	public Optional<ModuleConfig> getModuleConfig(
-			@NonNull final Class<? extends IModularContractTypeHandler<?>> handlerType,
+			@NonNull final ModularContractHandlerType handlerType,
 			@NonNull final ProductId productId)
 	{
 		return getModuleConfigs()
 				.stream()
 				.filter(config -> config.getProductId().equals(productId))
-				.filter(config -> config.isMatchingClassName(handlerType.getName()))
+				.filter(config -> config.isMatchingHandler(handlerType))
 				.findFirst();
 	}
 }

@@ -41,23 +41,12 @@ Feature: Modular contract log from shipment
       | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
       | year_2023            | 2023       | harvesting_calendar      |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                               |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-      | class_2                    | type_1                          | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler       |
-      | class_3                    | type_1                          | de.metas.contracts.modular.impl.ShipmentLineForPOModularContractHandler |
-      | class_4                    | type_1                          | de.metas.contracts.modular.impl.ShipmentLineForSOModularContractHandler |
-
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                       | Value                      | AD_JavaClass_ID.Identifier |
-      | modCntr_type_PO_S0303      | modCntr_type_PO_S0303      | modCntr_type_PO_S0303      | class_1                    |
-      | modCntr_type_SO_S0303      | modCntr_type_SO_S0303      | modCntr_type_SO_S0303      | class_2                    |
-      | modCntr_type_PO_SHIP_S0303 | modCntr_type_PO_SHIP_S0303 | modCntr_type_PO_SHIP_S0303 | class_3                    |
-      | modCntr_type_SO_SHIP_S0303 | modCntr_type_SO_SHIP_S0303 | modCntr_type_SO_SHIP_S0303 | class_4                    |
+      | ModCntr_Type_ID.Identifier | Name                       | Value                      | ModularContractHandlerType |
+      | modCntr_type_PO_S0303      | modCntr_type_PO_S0303      | modCntr_type_PO_S0303      | PurchaseOrderLine_Modular  |
+      | modCntr_type_SO_S0303      | modCntr_type_SO_S0303      | modCntr_type_SO_S0303      | SOLineForPO_Modular        |
+      | modCntr_type_PO_SHIP_S0303 | modCntr_type_PO_SHIP_S0303 | modCntr_type_PO_SHIP_S0303 | ShipmentLineForPO_Modular  |
+      | modCntr_type_SO_SHIP_S0303 | modCntr_type_SO_SHIP_S0303 | modCntr_type_SO_SHIP_S0303 | ShipmentLineForSO_Modular  |
 
   @Id:S0303_100
   @from:cucumber

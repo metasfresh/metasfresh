@@ -43,25 +43,13 @@ Feature: Modular contract log from sales order
       | year_2022            | 2022       | harvesting_calendar      |
       | year_2021            | 2021       | harvesting_calendar      |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                               |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-      | class_2                    | type_1                          | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler       |
-      | class_3                    | type_1                          | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler    |
-      | class_4                    | type_1                          | de.metas.contracts.modular.impl.SalesModularContractHandler             |
-      | class_5                    | type_1                          | de.metas.contracts.modular.impl.PurchaseModularContractHandler          |
-
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                            | Value                           | AD_JavaClass_ID.Identifier |
-      | modCntr_type_PO            | modCntr_type_PO_09212023        | modCntr_type_PO_09212023        | class_1                    |
-      | modCntr_type_SO_for_PO     | modCntr_type_SO_for_PO_09212023 | modCntr_type_SO_for_PO_09212023 | class_2                    |
-      | modCntr_type_SO            | modCntr_type_SO_09212023        | modCntr_type_SO_09212023        | class_3                    |
-      | modCntr_type_MC_SO         | modCntr_type_MC_SO_09212023     | modCntr_type_MC_SO_09212023     | class_4                    |
-      | modCntr_type_MC_PO         | modCntr_type_MC_PO_09212023     | modCntr_type_MC_PO_09212023     | class_5                    |
+      | ModCntr_Type_ID.Identifier | Name                            | Value                           | ModularContractHandlerType |
+      | modCntr_type_PO            | modCntr_type_PO_09212023        | modCntr_type_PO_09212023        | PurchaseOrderLine_Modular  |
+      | modCntr_type_SO_for_PO     | modCntr_type_SO_for_PO_09212023 | modCntr_type_SO_for_PO_09212023 | SOLineForPO_Modular        |
+      | modCntr_type_SO            | modCntr_type_SO_09212023        | modCntr_type_SO_09212023        | SalesOrderLine_Modular     |
+      | modCntr_type_MC_SO         | modCntr_type_MC_SO_09212023     | modCntr_type_MC_SO_09212023     | SalesModularContract       |
+      | modCntr_type_MC_PO         | modCntr_type_MC_PO_09212023     | modCntr_type_MC_PO_09212023     | PurchaseModularContract    |
 
 
   @Id:S0298_100

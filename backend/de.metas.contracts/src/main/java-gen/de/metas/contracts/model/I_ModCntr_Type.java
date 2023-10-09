@@ -30,27 +30,6 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Java Class.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_JavaClass_ID (int AD_JavaClass_ID);
-
-	/**
-	 * Get Java Class.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_JavaClass_ID();
-
-	ModelColumn<I_ModCntr_Type, Object> COLUMN_AD_JavaClass_ID = new ModelColumn<>(I_ModCntr_Type.class, "AD_JavaClass_ID", null);
-	String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
-
-	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -161,6 +140,27 @@ public interface I_ModCntr_Type
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Type.class, "ModCntr_Type_ID", null);
 	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
+
+	/**
+	 * Set Modular Contract Handler Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModularContractHandlerType (@Nullable String ModularContractHandlerType);
+
+	/**
+	 * Get Modular Contract Handler Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getModularContractHandlerType();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_ModularContractHandlerType = new ModelColumn<>(I_ModCntr_Type.class, "ModularContractHandlerType", null);
+	String COLUMNNAME_ModularContractHandlerType = "ModularContractHandlerType";
 
 	/**
 	 * Set Name.

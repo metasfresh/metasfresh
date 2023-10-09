@@ -95,31 +95,16 @@ Feature: Modular contract log for proForma Sales Order
       | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
       | year_2022            | 2022       | harvesting_calendar      |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                                      |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler        |
-      | class_2                    | type_1                          | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler              |
-      | class_3                    | type_1                          | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler           |
-      | class_4                    | type_1                          | de.metas.contracts.modular.impl.SalesModularContractHandler                    |
-      | class_5                    | type_1                          | de.metas.contracts.modular.impl.PurchaseModularContractHandler                 |
-      | class_6                    | type_1                          | de.metas.contracts.modular.impl.SalesOrderLineProFormaPOModularContractHandler |
-      | class_7                    | type_1                          | de.metas.contracts.modular.impl.SalesOrderLineProFormaModularContractHandler   |
-      | class_8                    | type_1                          | de.metas.contracts.modular.impl.SalesContractProFormaModularContractHandler    |
-
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier            | Name                                  | Value                                 | AD_JavaClass_ID.Identifier |
-      | modCntr_type_PO_S0315                 | modCntr_type_PO_S0315                 | modCntr_type_PO_S0315                 | class_1                    |
-      | modCntr_type_SO_for_PO_S0315          | modCntr_type_SO_for_PO_S0315          | modCntr_type_SO_for_PO_S0315          | class_2                    |
-      | modCntr_type_SO_S0315                 | modCntr_type_SO_S0315                 | modCntr_type_SO_S0315                 | class_3                    |
-      | modCntr_type_MC_SO_S0315              | modCntr_type_MC_SO_S0315              | modCntr_type_MC_SO_S0315              | class_4                    |
-      | modCntr_type_MC_PO_S0315              | modCntr_type_MC_PO_S0315              | modCntr_type_MC_PO_S0315              | class_5                    |
-      | modCntr_type_proForma_SO_for_PO_S0315 | modCntr_type_proForma_SO_for_PO_S0315 | modCntr_type_proForma_SO_for_PO_S0315 | class_6                    |
-      | modCntr_type_proForma_SO_S0315        | modCntr_type_proForma_SO_S0315        | modCntr_type_proForma_SO_S0315        | class_7                    |
-      | modCntr_type_MC_proForma_SO_S0315     | modCntr_type_MC_proForma_SO_S0315     | modCntr_type_MC_proForma_SO_S0315     | class_8                    |
+      | ModCntr_Type_ID.Identifier            | Name                                  | Value                                 | ModularContractHandlerType       |
+      | modCntr_type_PO_S0315                 | modCntr_type_PO_S0315                 | modCntr_type_PO_S0315                 | PurchaseOrderLine_Modular        |
+      | modCntr_type_SO_for_PO_S0315          | modCntr_type_SO_for_PO_S0315          | modCntr_type_SO_for_PO_S0315          | SOLineForPO_Modular              |
+      | modCntr_type_SO_S0315                 | modCntr_type_SO_S0315                 | modCntr_type_SO_S0315                 | SalesOrderLine_Modular           |
+      | modCntr_type_MC_SO_S0315              | modCntr_type_MC_SO_S0315              | modCntr_type_MC_SO_S0315              | SalesModularContract             |
+      | modCntr_type_MC_PO_S0315              | modCntr_type_MC_PO_S0315              | modCntr_type_MC_PO_S0315              | PurchaseModularContract          |
+      | modCntr_type_proForma_SO_for_PO_S0315 | modCntr_type_proForma_SO_for_PO_S0315 | modCntr_type_proForma_SO_for_PO_S0315 | SalesOrderLineProFormaPO_Modular |
+      | modCntr_type_proForma_SO_S0315        | modCntr_type_proForma_SO_S0315        | modCntr_type_proForma_SO_S0315        | SalesOrderLineProForma_Modular   |
+      | modCntr_type_MC_proForma_SO_S0315     | modCntr_type_MC_proForma_SO_S0315     | modCntr_type_MC_proForma_SO_S0315     | SalesContractProForma_Modular    |
 
   @Id:S0315_100
   @from:cucumber

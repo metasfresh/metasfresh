@@ -45,17 +45,9 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_07212023_1 | componentProduct        | harvesting_calendar      | year                 | moduleLogPricingSystem            |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                                 |
-      | class_1                    | type_1                          | de.metas.handlingunits.modular.impl.PPCostCollectorModularContractHandler |
-
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                          | Value                         | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | manufacturingOrder_07212023_1 | manufacturingOrder_07212023_1 | class_1                    |
+      | ModCntr_Type_ID.Identifier | Name                          | Value                         | ModularContractHandlerType |
+      | modCntr_type_1             | manufacturingOrder_07212023_1 | manufacturingOrder_07212023_1 | PPCostCollector_Modular    |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |

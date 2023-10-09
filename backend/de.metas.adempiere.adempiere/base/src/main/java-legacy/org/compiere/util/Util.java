@@ -23,7 +23,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
-import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -235,12 +234,6 @@ public class Util
 		try
 		{
 			final Class<?> clazz = classInstanceProvider.provideClass(className);
-			
-			final Object beanInstance = provideFromSpringContext(clazz);
-			if (beanInstance != null)
-			{
-				return (T)beanInstance;
-			}
 
 			if (interfaceClazz != null)
 			{
@@ -542,7 +535,7 @@ public class Util
 		catch (final IOException e)
 		{
 			throw new AdempiereException("Cannot write file " + file + "."
-					+ "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
+												 + "\n " + e.getLocalizedMessage() // also append the original error message because it could be helpful for user.
 					, e);
 		}
 		finally
@@ -630,18 +623,5 @@ public class Util
 	public static int getMinimumOfThree(final int no1, final int no2, final int no3)
 	{
 		return no1 < no2 ? (no1 < no3 ? no1 : no3) : (no2 < no3 ? no2 : no3);
-	}
-
-	@Nullable
-	private static <T> T provideFromSpringContext(@NonNull final Class<T> clazz)
-	{
-		try
-		{
-			return SpringContextHolder.instance.getBean(clazz);
-		}
-		catch (final Throwable throwable)
-		{
-			return null;
-		}
 	}
 }   // Util

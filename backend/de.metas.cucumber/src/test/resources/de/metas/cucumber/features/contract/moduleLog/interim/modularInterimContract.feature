@@ -89,25 +89,13 @@ Feature: Interim contract and interim invoice for bpartner
       | modCntr_settings_1             | testSettings_08022023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
       | modCntr_settings_2             | testSettings_08022023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                                            |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler              |
-      | class_2                    | type_1                          | de.metas.contracts.modular.interim.logImpl.InterimContractHandler                    |
-      | class_3                    | type_1                          | de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler            |
-      | class_4                    | type_1                          | de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler |
-      | class_5                    | type_1                          | de.metas.contracts.modular.interim.logImpl.PurchaseInvoiceLineInterimHandler         |
-
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                           | Value                          | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | poLine_08022023_1              | poLine_08022023_1              | class_1                    |
-      | modCntr_type_2             | interim_08022023_1             | interim_08022023_1             | class_2                    |
-      | modCntr_type_3             | receiptLine_modular_08022023_1 | receiptLine_modular_08022023_1 | class_3                    |
-      | modCntr_type_4             | receiptLine_interim_08022023_1 | receiptLine_interim_08022023_1 | class_4                    |
-      | modCntr_type_5             | invoiceLine_interim_08022023_1 | invoiceLine_interim_08022023_1 | class_5                    |
+      | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
+      | modCntr_type_1             | poLine_08022023_1              | poLine_08022023_1              | PurchaseOrderLine_Modular   |
+      | modCntr_type_2             | interim_08022023_1             | interim_08022023_1             | Interim_Contract            |
+      | modCntr_type_3             | receiptLine_modular_08022023_1 | receiptLine_modular_08022023_1 | MaterialReceiptLine_Modular |
+      | modCntr_type_4             | receiptLine_interim_08022023_1 | receiptLine_interim_08022023_1 | MaterialReceiptLine_Interim |
+      | modCntr_type_5             | invoiceLine_interim_08022023_1 | invoiceLine_interim_08022023_1 | PurchaseInvoiceLine_Interim |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_08022023_1  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_1             |
@@ -371,25 +359,13 @@ Feature: Interim contract and interim invoice for bpartner
       | modCntr_settings_1             | testSettings_08032023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
       | modCntr_settings_2             | testSettings_08032023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                                            |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler              |
-      | class_2                    | type_1                          | de.metas.contracts.modular.interim.logImpl.InterimContractHandler                    |
-      | class_3                    | type_1                          | de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler            |
-      | class_4                    | type_1                          | de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler |
-      | class_5                    | type_1                          | de.metas.contracts.modular.interim.logImpl.PurchaseInvoiceLineInterimHandler         |
-
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                           | Value                          | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | poLine_08032023_1              | poLine_08032023_1              | class_1                    |
-      | modCntr_type_2             | interim_08032023_1             | interim_08032023_1             | class_2                    |
-      | modCntr_type_3             | receiptLine_modular_08032023_1 | receiptLine_modular_08032023_1 | class_3                    |
-      | modCntr_type_4             | receiptLine_interim_08032023_1 | receiptLine_interim_08032023_1 | class_4                    |
-      | modCntr_type_5             | invoiceLine_interim_08032023_1 | invoiceLine_interim_08032023_1 | class_5                    |
+      | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
+      | modCntr_type_1             | poLine_08032023_1              | poLine_08032023_1              | PurchaseOrderLine_Modular   |
+      | modCntr_type_2             | interim_08032023_1             | interim_08032023_1             | Interim_Contract            |
+      | modCntr_type_3             | receiptLine_modular_08032023_1 | receiptLine_modular_08032023_1 | MaterialReceiptLine_Modular |
+      | modCntr_type_4             | receiptLine_interim_08032023_1 | receiptLine_interim_08032023_1 | MaterialReceiptLine_Interim |
+      | modCntr_type_5             | invoiceLine_interim_08032023_1 | invoiceLine_interim_08032023_1 | PurchaseInvoiceLine_Interim |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_08032023_1  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_1             |
@@ -581,25 +557,13 @@ Feature: Interim contract and interim invoice for bpartner
       | modCntr_settings_1             | testSettings_08042023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
       | modCntr_settings_2             | testSettings_08042023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                                            |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler              |
-      | class_2                    | type_1                          | de.metas.contracts.modular.interim.logImpl.InterimContractHandler                    |
-      | class_3                    | type_1                          | de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler            |
-      | class_4                    | type_1                          | de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler |
-      | class_5                    | type_1                          | de.metas.contracts.modular.interim.logImpl.PurchaseInvoiceLineInterimHandler         |
-
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                           | Value                          | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | poLine_08042023_1              | poLine_08042023_1              | class_1                    |
-      | modCntr_type_2             | interim_08042023_1             | interim_08042023_1             | class_2                    |
-      | modCntr_type_3             | receiptLine_modular_08042023_1 | receiptLine_modular_08042023_1 | class_3                    |
-      | modCntr_type_4             | receiptLine_interim_08042023_1 | receiptLine_interim_08042023_1 | class_4                    |
-      | modCntr_type_5             | invoiceLine_interim_08042023_1 | invoiceLine_interim_08042023_1 | class_5                    |
+      | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
+      | modCntr_type_1             | poLine_08042023_1              | poLine_08042023_1              | PurchaseOrderLine_Modular   |
+      | modCntr_type_2             | interim_08042023_1             | interim_08042023_1             | Interim_Contract            |
+      | modCntr_type_3             | receiptLine_modular_08042023_1 | receiptLine_modular_08042023_1 | MaterialReceiptLine_Modular |
+      | modCntr_type_4             | receiptLine_interim_08042023_1 | receiptLine_interim_08042023_1 | MaterialReceiptLine_Interim |
+      | modCntr_type_5             | invoiceLine_interim_08042023_1 | invoiceLine_interim_08042023_1 | PurchaseInvoiceLine_Interim |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_08042023_1  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_1             |

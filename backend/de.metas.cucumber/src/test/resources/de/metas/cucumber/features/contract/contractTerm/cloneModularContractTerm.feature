@@ -28,21 +28,13 @@ Feature: Clone Modular Contract Term
       | Identifier              | Name                               |
       | contract_module_product | contract_module_product_17072023_1 |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                               |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
       | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                     | Value                    | AD_JavaClass_ID.Identifier |
-      | modCntr_Types_1            | modCntr_Types_17072023_1 | modCntr_Types_17072023_1 | class_1                    |
+      | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
+      | modCntr_Types_1            | modCntr_Types_17072023_1 | modCntr_Types_17072023_1 | PurchaseOrderLine_Modular  |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
@@ -75,21 +67,13 @@ Feature: Clone Modular Contract Term
       | Identifier              | Name                               |
       | contract_module_product | contract_module_product_17072023_2 |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                               |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
       | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                     | Value                    | AD_JavaClass_ID.Identifier |
-      | modCntr_Types_1            | modCntr_Types_17072023_2 | modCntr_Types_17072023_2 | class_1                    |
+      | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
+      | modCntr_Types_1            | modCntr_Types_17072023_2 | modCntr_Types_17072023_2 | PurchaseOrderLine_Modular  |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |

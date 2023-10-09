@@ -90,7 +90,7 @@ class ModularContractLogHandler
 			return;
 		}
 		
-		final ModuleConfig moduleConfig = settings.getModuleConfig(handler.getModularContractTypeHandlerClass(), productId)
+		final ModuleConfig moduleConfig = settings.getModuleConfig(handler.getModularContractTypeHandler().getHandlerType(), productId)
 				.orElse(null);
 		if (moduleConfig == null)
 		{

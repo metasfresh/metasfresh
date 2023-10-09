@@ -61,18 +61,11 @@ public interface IModularContractLogHandler<T>
 	IModularContractTypeHandler<T> getModularContractTypeHandler();
 
 	@NonNull
-	default Class<? extends IModularContractTypeHandler<T>> getModularContractTypeHandlerClass()
-	{
-		//noinspection unchecked
-		return (Class<? extends IModularContractTypeHandler<T>>)getModularContractTypeHandler().getClass();
-	}
-
-	@NonNull
 	default Optional<ProductId> getProductId(@NonNull final HandleLogsRequest<T> handleLogsRequest)
 	{
 		return Optional.ofNullable(handleLogsRequest.getContractInfo().getProductId());
 	}
-	
+
 	default boolean applies(@NonNull final HandleLogsRequest<T> request)
 	{
 		final IModularContractTypeHandler<T> contractTypeHandler = getModularContractTypeHandler();
@@ -129,7 +122,7 @@ public interface IModularContractLogHandler<T>
 		{
 			return TableRecordReference.of(model);
 		}
-		
+
 		@NonNull
 		public FlatrateTermId getContractId()
 		{
@@ -158,7 +151,7 @@ public interface IModularContractLogHandler<T>
 		REVERSE,
 		RECOMPUTE
 	}
-	
+
 	@Value
 	@Builder
 	class FlatrateTermInfo

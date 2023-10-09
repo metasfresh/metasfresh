@@ -189,22 +189,13 @@ Feature: accounting-purchase-harvesting-feature
       | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | bp_moduleLogMR_Location | 5823098505483 | bp_po                    | true                | true                |
 
-    And load AD_JavaClass_Type:
-      | AD_JavaClass_Type_ID.Identifier | Classname                                              |
-      | type_1                          | de.metas.contracts.modular.IModularContractTypeHandler |
-
-    And load AD_JavaClass:
-      | AD_JavaClass_ID.Identifier | AD_JavaClass_Type_ID.Identifier | Classname                                                                 |
-      | class_1                    | type_1                          | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler   |
-      | class_2                    | type_1                          | de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler |
-
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_2   | harvesting_calendar      | y2022                | ps_1                              |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name              | Value             | AD_JavaClass_ID.Identifier |
-      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | class_1                    |
-      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | class_1                    |
+      | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
+      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | PurchaseOrderLine_Modular  |
+      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | PurchaseOrderLine_Modular  |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_05072023_1 | product_PO_05082023_1   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
