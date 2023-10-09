@@ -31,15 +31,19 @@ import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
 
 @Component
 @Interceptor(I_C_Flatrate_Conditions.class)
 public class C_Flatrate_Conditions
 {
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
+	private static final AdMessageKey MSG_ERROR_INVALID_ONFLATRATE_TERM_EXTEND = AdMessageKey.of("MSG_ExtensionNotAllowed_InterimAndModularContracts");
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 
@@ -53,12 +57,27 @@ public class C_Flatrate_Conditions
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(record.getType_Conditions());
 
-		if (!typeConditions.isModularContractType())
+		if (!typeConditions.isModularOrInterim())
 		{
 			return;
 		}
 
 		validateModularContractSettings(ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()));
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_C_Flatrate_Conditions.COLUMNNAME_OnFlatrateTermExtend)
+	public void onFlatrateTermExtend(@NonNull final I_C_Flatrate_Conditions record)
+	{
+		final TypeConditions typeConditions = TypeConditions.ofCode(record.getType_Conditions());
+
+		if (!typeConditions.isModularOrInterim())
+		{
+			return;
+		}
+
+		validateOnFlatrateTermExtend(record.getOnFlatrateTermExtend());
 	}
 
 	private void validateModularContractSettings(@NonNull final ConditionsId conditionsId)
@@ -68,6 +87,16 @@ public class C_Flatrate_Conditions
 		{
 			throw new AdempiereException(MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS)
 					.markAsUserValidationError();
+		}
+	}
+
+	private void validateOnFlatrateTermExtend(@NonNull final String onFlatrateTermExtend)
+	{
+		if (!ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(onFlatrateTermExtend))
+		{
+			throw new AdempiereException(MSG_ERROR_INVALID_ONFLATRATE_TERM_EXTEND)
+					.appendParametersToMessage()
+					.setParameter("OnFlatrateTermExtend", onFlatrateTermExtend);
 		}
 	}
 }

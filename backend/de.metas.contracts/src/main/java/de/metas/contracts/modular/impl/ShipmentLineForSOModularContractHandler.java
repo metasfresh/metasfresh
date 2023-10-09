@@ -27,6 +27,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -47,13 +48,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.SHIPMENT_LINE_FOR_SO_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
 public class ShipmentLineForSOModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
 {
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	private final IInOutDAO inOutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -70,8 +72,13 @@ public class ShipmentLineForSOModularContractHandler implements IModularContract
 	@Override
 	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
 	{
-		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		return inOutRecord.isSOTrx() && inOutLineRecord.getC_Order_ID() > 0;
+		final I_M_InOut inOutRecord = inOutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+		if (orderId == null)
+		{
+			return false;
+		}
+		return inOutRecord.isSOTrx();
 	}
 
 	@Override
@@ -108,5 +115,11 @@ public class ShipmentLineForSOModularContractHandler implements IModularContract
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
+	}
+
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return SHIPMENT_LINE_FOR_SO_MODULAR;
 	}
 }

@@ -1,10 +1,8 @@
-package de.metas.order;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.order;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.order;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
@@ -53,6 +53,8 @@ public interface IOrderLineBL extends ISingletonService
 	List<I_C_OrderLine> getByOrderIds(final Set<OrderId> orderIds);
 
 	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
+
+	@NonNull OrderId getOrderIdByOrderLineId(@NonNull OrderLineId orderLineId);
 
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 

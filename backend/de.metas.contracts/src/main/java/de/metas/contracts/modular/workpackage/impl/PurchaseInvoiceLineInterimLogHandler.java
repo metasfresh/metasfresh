@@ -44,8 +44,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -84,6 +83,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final PurchaseInvoiceLineInterimHandler contractHandler;
 	private final ModularContractLogDAO contractLogDAO;
@@ -172,8 +172,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 				: InvoiceCandidateId.ofRepoId(invoiceCandidates.get(0).getC_Invoice_Candidate_ID());
 
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered)
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered);
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(invoiceRecord.getDateInvoiced(),
 																				OrgId.ofRepoId(invoiceLineRecord.getAD_Org_ID()),
@@ -224,8 +223,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 
 		final ProductId productId = ProductId.ofRepoId(handleLogsRequest.getModel().getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_REVERSE_DESCRIPTION, productName, quantity)
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
 
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()

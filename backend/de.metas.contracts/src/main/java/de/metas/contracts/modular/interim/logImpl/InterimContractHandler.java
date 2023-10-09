@@ -27,6 +27,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.INTERIM_CONTRACT;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
@@ -84,7 +86,9 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 	{
 		switch (action)
 		{
-			case COMPLETED -> {}
+			case COMPLETED ->
+			{
+			}
 			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
@@ -105,12 +109,18 @@ public class InterimContractHandler implements IModularContractTypeHandler<I_C_F
 		inoutBL.streamLines(
 						InOutLineQuery.builder()
 								.headerQuery(InOutQuery.builder()
-										.docStatus(DocStatus.Completed)
-										.movementDateFrom(interimContract.getStartDate().toInstant())
-										.movementDateTo(Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null").toInstant())
-										.build())
+													 .docStatus(DocStatus.Completed)
+													 .movementDateFrom(interimContract.getStartDate().toInstant())
+													 .movementDateTo(Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null").toInstant())
+													 .build())
 								.flatrateTermId(interimContract.getModular_Flatrate_Term_ID())
 								.build())
 				.forEach(inoutLine -> contractService.invokeWithModel(inoutLine, modelAction, LogEntryContractType.INTERIM));
+	}
+
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return INTERIM_CONTRACT;
 	}
 }

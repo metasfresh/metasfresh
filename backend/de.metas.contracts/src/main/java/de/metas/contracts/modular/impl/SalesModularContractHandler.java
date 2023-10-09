@@ -27,6 +27,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -40,10 +41,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.SALES_MODULAR_CONTRACT;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
@@ -75,8 +78,9 @@ public class SalesModularContractHandler implements IModularContractTypeHandler<
 			return false;
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(orderLineBL.getOrderLineById(orderLineId).getC_Order_ID());
-		return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isSales();
+		final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
+		final I_C_Order order = orderBL.getById(orderId);
+		return SOTrx.ofBoolean(order.isSOTrx()).isSales() && !orderBL.isProFormaSO(order);
 	}
 
 	@Override
@@ -101,5 +105,11 @@ public class SalesModularContractHandler implements IModularContractTypeHandler<
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
+	}
+
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return SALES_MODULAR_CONTRACT;
 	}
 }

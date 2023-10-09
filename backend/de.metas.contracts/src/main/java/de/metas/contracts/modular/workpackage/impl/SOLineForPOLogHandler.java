@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -52,6 +51,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -74,11 +74,12 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnReverse.Description");
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final ModularContractLogDAO contractLogDAO;
@@ -126,8 +127,8 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-
-		final String description = msgBL.getMsg(MSG_ON_COMPLETE_DESCRIPTION, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString()));
+		final String productName = productBL.getProductValueAndName(productId);
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity.toString());
 
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
@@ -173,8 +174,9 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 																						 .flatrateTermId(handleLogsRequest.getContractId())
 																						 .referenceSet(TableRecordReferenceSet.of(orderLineRef))
 																						 .build());
-
-		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(orderLine.getM_Product_ID()), quantity.toString()));
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final String productName = productBL.getProductValueAndName(productId);
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity.toString());
 
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()

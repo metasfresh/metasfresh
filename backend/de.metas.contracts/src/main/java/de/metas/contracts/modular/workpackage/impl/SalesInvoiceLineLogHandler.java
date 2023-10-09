@@ -41,8 +41,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -81,6 +80,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final ModularContractLogDAO contractLogDAO;
@@ -129,8 +129,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 		final Money amount = Money.of(invoiceLine.getLineNetAmt(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered)
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered);
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(),
 																				OrgId.ofRepoId(invoiceLine.getAD_Org_ID()),
@@ -180,8 +179,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 
 		final ProductId productId = ProductId.ofRepoId(handleLogsRequest.getModel().getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_REVERSE_DESCRIPTION, productName, quantity)
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
 
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()

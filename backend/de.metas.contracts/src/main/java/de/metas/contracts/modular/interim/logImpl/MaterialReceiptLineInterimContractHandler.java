@@ -26,12 +26,14 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.MATERIAL_RECEIPT_LINE_INTERIM;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
@@ -67,7 +70,8 @@ public class MaterialReceiptLineInterimContractHandler implements IModularContra
 	public boolean applies(final @NonNull I_M_InOutLine inOutLineRecord)
 	{
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase();
+		final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+		return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase() && orderId != null;
 	}
 
 	@Override
@@ -100,5 +104,11 @@ public class MaterialReceiptLineInterimContractHandler implements IModularContra
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
+	}
+
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return MATERIAL_RECEIPT_LINE_INTERIM;
 	}
 }

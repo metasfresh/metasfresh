@@ -30,12 +30,15 @@ import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.auction.C_Auction_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
 import de.metas.order.OrderId;
@@ -46,6 +49,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -80,6 +84,7 @@ import static de.metas.shippingnotification.model.I_M_Shipping_Notification.COLU
 public class M_Shipping_Notification_StepDef
 {
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final M_Shipping_Notification_StepDefData shippingNotificationTable;
 	private final C_Order_StepDefData orderTable;
@@ -251,6 +256,24 @@ public class M_Shipping_Notification_StepDef
 			shippingNotificationTable.putOrReplace(reversalShippingNotificationIdentifier, reversalShippingNotification);
 		}
 		softly.assertAll();
+	}
+
+	@And("^the ShippingNotification identified by (.*) is (reversed)$")
+	public void shippingNotification_action(@NonNull final String notificationIdentifier, @NonNull final String action)
+	{
+		final I_M_Shipping_Notification shippingNotification = shippingNotificationTable.get(notificationIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case reversed ->
+			{
+				shippingNotification.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(shippingNotification, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+			}
+			default -> throw new AdempiereException("Unhandled shippingNotification action")
+					.appendParametersToMessage()
+					.setParameter("action:", action);
+		}
 	}
 
 	@NonNull

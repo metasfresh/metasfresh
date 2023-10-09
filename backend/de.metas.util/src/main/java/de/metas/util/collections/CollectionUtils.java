@@ -169,30 +169,40 @@ public final class CollectionUtils
 		return result.get(0);
 	}
 
+	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection)
+	{
+		return singleElementOrEmpty(collection, e -> true);
+	}
+
 	/**
 	 * @param filter filter used to match the element
 	 * @return matching element wrapped as Optional or empty Optional if there were more elements matching or no element was matching
 	 */
 	public static <T> Optional<T> singleElementOrEmpty(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
 	{
-		final List<T> result = new ArrayList<>();
+		T singleElement = null;
+		boolean singleElementSet = false;
 
 		for (final T e : collection)
 		{
 			if (filter.test(e))
 			{
-				result.add(e);
+				if (singleElementSet)
+				{
+					// We already have an element => return empty
+					return Optional.empty();
+				}
+				else
+				{
+					singleElementSet = true;
+					singleElement = e;
+				}
 			}
 		}
 
-		if (result.size() == 1)
-		{
-			return Optional.of(result.get(0));
-		}
-		else
-		{
-			return Optional.empty();
-		}
+		return singleElementSet
+				? Optional.of(singleElement)
+				: Optional.empty();
 	}
 
 	public static <T> Optional<T> singleElementOrEmptyIfNotFound(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)

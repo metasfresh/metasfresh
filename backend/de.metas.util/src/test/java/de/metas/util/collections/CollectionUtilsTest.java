@@ -74,6 +74,43 @@ class CollectionUtilsTest
 	}
 
 	@Nested
+	class singleElementOrEmpty
+	{
+		@Test
+		void empty()
+		{
+			ImmutableList<Integer> list = ImmutableList.of();
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmpty(list, item -> true);
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void oneElement()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3);
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmpty(list, item -> item == 2);
+			assertThat(result).contains(2);
+		}
+
+		@Test
+		void twoIdenticalElements()
+		{
+			// NOTE: checking if elements are distinct is not the job of this method
+			ImmutableList<Integer> list = ImmutableList.of(1, 1);
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmpty(list, item -> true);
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void moreElements()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3);
+			final Optional<Integer> result = CollectionUtils.singleElementOrEmpty(list, item -> true);
+			assertThat(result).isEmpty();
+		}
+	}
+
+	@Nested
 	class singleElementOrEmptyIfNotFound
 	{
 		@Test
@@ -114,7 +151,7 @@ class CollectionUtilsTest
 	class mergeElementToMap
 	{
 		@SafeVarargs
-		private final ImmutableMap<String, ImmutableMapEntry<String, String>> mapOf(
+		private ImmutableMap<String, ImmutableMapEntry<String, String>> mapOf(
 				final ImmutableMapEntry<String, String>... entries
 		)
 		{

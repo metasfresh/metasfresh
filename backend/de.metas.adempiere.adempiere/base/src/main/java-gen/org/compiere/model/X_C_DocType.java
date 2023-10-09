@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_DocType
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -914435328L;
+	private static final long serialVersionUID = 2093999198L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -304,7 +304,9 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	/** ModularOrder = MMO */
 	public static final String DOCBASETYPE_ModularOrder = "MMO";
-	/** Shipping notification = SN */
+	/**
+	 * Shipping notification = SHN
+	 */
 	public static final String DOCBASETYPE_ShippingNotification = "SHN";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
@@ -456,24 +458,39 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_Withholding = "WH";
 	/** InternalVendorInvoice = IVI */
 	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
-	/** Delivery Instruction = DI */
+	/**
+	 * Delivery Instruction = DI
+	 */
 	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
-	/** InventoryShortageDocument = ISD */
+	/**
+	 * InventoryShortageDocument = ISD
+	 */
 	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
-	/** InventoryOverageDocument = IOD */
+	/**
+	 * InventoryOverageDocument = IOD
+	 */
 	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
-	/** CorrectionInvoice = CI */
+	/**
+	 * CorrectionInvoice = CI
+	 */
 	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
-	/** Provision = PRV */
+	/**
+	 * Provision = PRV
+	 */
 	public static final String DOCSUBTYPE_Provision = "PRV";
+	/**
+	 * ProFormaSO = PF
+	 */
+	public static final String DOCSUBTYPE_ProFormaSO = "PF";
+
 	@Override
-	public void setDocSubType (final @Nullable java.lang.String DocSubType)
+	public void setDocSubType(final @Nullable java.lang.String DocSubType)
 	{
-		set_Value (COLUMNNAME_DocSubType, DocSubType);
+		set_Value(COLUMNNAME_DocSubType, DocSubType);
 	}
 
 	@Override
-	public java.lang.String getDocSubType() 
+	public java.lang.String getDocSubType()
 	{
 		return get_ValueAsString(COLUMNNAME_DocSubType);
 	}

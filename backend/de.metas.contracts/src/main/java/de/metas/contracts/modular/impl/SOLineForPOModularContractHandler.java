@@ -29,14 +29,16 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -50,9 +52,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.SO_LINE_FOR_PO_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
@@ -63,8 +65,8 @@ public class SOLineForPOModularContractHandler implements IModularContractTypeHa
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	@NonNull
-	private final ModularContractLogService contractLogService;
+	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull private final ModularContractProvider contractProvider;
 
 	@Override
 	public @NonNull Class<I_C_OrderLine> getType()
@@ -76,16 +78,7 @@ public class SOLineForPOModularContractHandler implements IModularContractTypeHa
 	public boolean applies(final @NonNull I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		if (SOTrx.ofBoolean(order.isSOTrx()).isPurchase())
-		{
-			return false;
-		}
-
-		final BPartnerId warehousePartnerId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()))
-				.map(warehouseBL::getBPartnerId)
-				.orElse(null);
-
-		if (warehousePartnerId == null)
+		if (SOTrx.ofBoolean(order.isSOTrx()).isPurchase() || orderBL.isProFormaSO(order))
 		{
 			return false;
 		}
@@ -101,6 +94,8 @@ public class SOLineForPOModularContractHandler implements IModularContractTypeHa
 		{
 			return false;
 		}
+
+		final BPartnerId warehousePartnerId = warehouseBL.getBPartnerId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()));
 
 		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehousePartnerId)
@@ -123,26 +118,8 @@ public class SOLineForPOModularContractHandler implements IModularContractTypeHa
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
-
-		final YearId harvestingYearId = YearId.ofRepoId(order.getHarvesting_Year_ID());
-
-		final CalendarId harvestingCalendarId = CalendarId.ofRepoId(order.getC_Harvesting_Calendar_ID());
-
-		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
-				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
-				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.calendarId(harvestingCalendarId)
-				.yearId(harvestingYearId)
-				.soTrx(SOTrx.PURCHASE)
-				.typeConditions(TypeConditions.MODULAR_CONTRACT)
-				.build();
-
-		return flatrateBL.streamModularFlatrateTermsByQuery(query)
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoId);
+		return contractProvider.streamPurchaseContractsForSalesOrderLine(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(),
+																								  orderLine.getC_OrderLine_ID()));
 	}
 
 	@Override
@@ -157,5 +134,11 @@ public class SOLineForPOModularContractHandler implements IModularContractTypeHa
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
+	}
+
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return SO_LINE_FOR_PO_MODULAR;
 	}
 }
