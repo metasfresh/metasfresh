@@ -68,6 +68,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -622,6 +623,23 @@ public class M_InOut_StepDef
 		assertThat(errorThrown).isTrue();
 	}
 
+	@And("^after not more than (.*)s, locate reversal M_InOut$")
+	public void find_reversal_M_InOut(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final I_M_InOut reversalInOut = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_reversal_InOut(row));
+
+			softly.assertThat(reversalInOut).isNotNull();
+
+			final String reversalInOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			shipmentTable.putOrReplace(reversalInOutIdentifier, reversalInOut);
+		}
+		softly.assertAll();
+	}
+
 	@NonNull
 	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<String> shipmentIdentifiers)
 	{
@@ -705,5 +723,24 @@ public class M_InOut_StepDef
 						.append("-->").append(I_M_InOut.COLUMNNAME_M_Warehouse_ID).append(" : ").append(inOut.getM_Warehouse_ID()).append(" ; "));
 
 		return message.toString();
+	}
+
+	@NonNull
+	private ItemProvider.ProviderResult<I_M_InOut> load_reversal_InOut(@NonNull final Map<String, String> row)
+	{
+		final String inOutToReverseIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_Reversal_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_InOut inOutToReverse = shipmentTable.get(inOutToReverseIdentifier);
+
+		final I_M_InOut reversalInOutRecord = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, inOutToReverse.getM_InOut_ID())
+				.create()
+				.firstOnlyOrNull(I_M_InOut.class);
+
+		if (reversalInOutRecord == null)
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("No reversal I_M_InOut found for row=" + row);
+		}
+
+		return ItemProvider.ProviderResult.resultWasFound(reversalInOutRecord);
 	}
 }
