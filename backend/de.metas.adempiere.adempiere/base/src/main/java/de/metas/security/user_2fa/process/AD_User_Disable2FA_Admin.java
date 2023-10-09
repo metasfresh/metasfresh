@@ -26,12 +26,16 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.user.UserId;
 import de.metas.security.user_2fa.User2FAService;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-public class AD_User_Disable2FA extends JavaProcess implements IProcessPrecondition
+/**
+ * Same as {@link AD_User_Disable2FA_ForLoggedInUser} (that works for logged in user)
+ * but works for all other users than logged user.
+ */
+public class AD_User_Disable2FA_Admin extends JavaProcess implements IProcessPrecondition
 {
 	private final User2FAService user2FAService = SpringContextHolder.instance.getBean(User2FAService.class);
 
@@ -45,9 +49,9 @@ public class AD_User_Disable2FA extends JavaProcess implements IProcessPrecondit
 
 		final UserId loggedUserId = getLoggedUserId();
 		final UserId userId = UserId.ofRepoId(context.getSingleSelectedRecordId());
-		if (!UserId.equals(userId, loggedUserId))
+		if (UserId.equals(userId, loggedUserId))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not logged in user");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("for logged in user we use a different process");
 		}
 
 		if (user2FAService.isDisabled(userId))

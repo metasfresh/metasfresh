@@ -33,7 +33,7 @@ import de.metas.user.UserId;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-public class AD_User_Enable2FA extends JavaProcess implements IProcessPrecondition
+public class AD_User_Enable2FA_ForLoggedInUser extends JavaProcess implements IProcessPrecondition
 {
 	private final User2FAService user2FAService = SpringContextHolder.instance.getBean(User2FAService.class);
 
