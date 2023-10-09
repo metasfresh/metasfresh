@@ -34,7 +34,6 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.order.OrderLineId;
@@ -60,7 +59,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 
 public interface IFlatrateBL extends ISingletonService
 {
@@ -143,7 +141,7 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Updates the <code>NoticeDate</code> and <code>EndDate</code> dates of the given term, using the term's values such as <code>StartDate</code>, as well as the {@link I_C_Flatrate_Transition}
 	 * associated with the term.
-	 *
+	 * <p>
 	 * It is assume that the term is not completed.
 	 */
 	void updateNoticeDateAndEndDate(I_C_Flatrate_Term term);
@@ -160,10 +158,10 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Updates the corresponding {@link I_C_Flatrate_DataEntry#COLUMNNAME_ActualQty} when a M_InOutLine is added/changed/deleted.
 	 *
-	 * @param product used (together with <code>inOutLine</code>) to look up the data entry record to update.
-	 * @param qty the qty to add to or remove from the data entry's <code>ActualQty</code> value
+	 * @param product   used (together with <code>inOutLine</code>) to look up the data entry record to update.
+	 * @param qty       the qty to add to or remove from the data entry's <code>ActualQty</code> value
 	 * @param inOutLine this inout line's header (M_InOut) is used to get the C_BPartner_ID and MovementDate, which in turn are used to get the {@link I_C_Flatrate_DataEntry} which shall be updates.
-	 *            If there is no such entry, the method does nothing.
+	 *                  If there is no such entry, the method does nothing.
 	 * @param substract if <code>true</code> then the given <code>qty</code> is added, otherwise it is subtracted.
 	 */
 	void updateFlatrateDataEntryQty(I_M_Product product, BigDecimal qty, I_M_InOutLine inOutLine, boolean substract);
@@ -200,7 +198,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * Return {@code true} if the given term (by virtue of its conditions-type) does not define a set of invoice candidates that "belong" to it.
 	 * Examples for ICs that belong to a contract in this sense are e.g. ICs that shall trigger a refund, a commission payment or are empties (e.g. empty pallets).
 	 * In all this cases, a completed term matches a set of ICs and for every given ICs, we need to make sure that max. one term matches it.
-	 *
+	 * <p>
 	 * Also see {@link #hasOverlappingTerms(I_C_Flatrate_Term)}.
 	 */
 	boolean isAllowedToOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term);
@@ -210,7 +208,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * <p>
 	 * Note that overlapping need to be prevented for those types of terms (like refund contracts or refundable contracts) to which newly created invoice candidates need to be mapped.
 	 * Overlapping is no problem for subscription contracts.
-	 *
+	 * <p>
 	 * Also see {@link #isAllowedToOverlapWithOtherTerms(I_C_Flatrate_Term)}.
 	 */
 	boolean hasOverlappingTerms(final I_C_Flatrate_Term term);
@@ -226,8 +224,7 @@ public interface IFlatrateBL extends ISingletonService
 	 */
 	I_C_Flatrate_Term getInitialFlatrateTerm(I_C_Flatrate_Term term);
 
-
-	void ensureOneContractOfGivenType(I_C_Flatrate_Term term,TypeConditions targetConditions);
+	void ensureOneContractOfGivenType(I_C_Flatrate_Term term, TypeConditions targetConditions);
 
 	/**
 	 * @return {@code true} if there is at lease one term that references the given <code>ol</code> via its <code>C_OrderLine_Term_ID</code> column.
