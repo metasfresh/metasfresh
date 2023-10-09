@@ -26,7 +26,11 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -36,7 +40,9 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
@@ -44,6 +50,7 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 	private final ModularContractLogHandler logHandler = SpringContextHolder.instance.getBean(ModularContractLogHandler.class);
 	private final ModularLogCreateStatusService createStatusService = SpringContextHolder.instance.getBean(ModularLogCreateStatusService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String localTrxName)
@@ -82,6 +89,8 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 
 		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID());
 
+		final Map<FlatrateTermId, IModularContractLogHandler.FlatrateTermInfo> contractId2Record = new HashMap<>();
+
 		return processModularLogAggRequest.getRequestList()
 				.stream()
 				.map(processRequest -> IModularContractLogHandler.HandleLogsRequest.builder()
@@ -90,7 +99,7 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 						.modelAction(processRequest.getAction())
 						.workPackageId(workPackageId)
 						.handlerClassname(processRequest.getHandlerClassname())
-						.contractId(processRequest.getFlatrateTermId())
+						.contractInfo(contractId2Record.computeIfAbsent(processRequest.getFlatrateTermId(), this::loadFlatrateTermInfo))
 						.build())
 				.toList();
 	}
@@ -105,5 +114,16 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
 						.appendParametersToMessage()
 						.setParameter("wpParameterName", Params.REQUESTS_TO_PROCESS.name()));
+	}
+
+	@NonNull
+	private IModularContractLogHandler.FlatrateTermInfo loadFlatrateTermInfo(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term term = flatrateDAO.retrieveTerm(flatrateTermId);
+		return IModularContractLogHandler.FlatrateTermInfo
+				.builder()
+				.flatrateTermId(flatrateTermId)
+				.productId(ProductId.ofRepoIdOrNull(term.getM_Product_ID()))
+				.build();
 	}
 }

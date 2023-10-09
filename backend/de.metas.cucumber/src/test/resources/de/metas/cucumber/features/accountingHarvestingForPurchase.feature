@@ -193,16 +193,16 @@ Feature: accounting-purchase-harvesting-feature
       | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_2   | harvesting_calendar      | y2022                | ps_1                              |
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name              | Value             | Classname                                                                 |
-      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler   |
-      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
+      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | PurchaseOrderLine_Modular  |
+      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | PurchaseOrderLine_Modular  |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_05072023_1 | product_PO_05082023_1   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
       | modCntr_module_2             | 20    | moduleTest_05072023_2 | product_PO_05082023_2   | Kosten         | modCntr_settings_1             | modCntr_type_2             |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions                 | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ca                       | modCntr_settings_1                 |
+      | moduleLogConditions                 | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ex                       | modCntr_settings_1                 |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |

@@ -26,6 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.PURCHASE_INVOICE_LINE_INTERIM;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
@@ -119,5 +121,11 @@ public class PurchaseInvoiceLineInterimHandler implements IModularContractTypeHa
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
+	}
+
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return PURCHASE_INVOICE_LINE_INTERIM;
 	}
 }

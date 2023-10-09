@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
-import de.metas.cache.CacheMgt;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
@@ -26,6 +25,7 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
@@ -136,7 +136,6 @@ public class FlatrateDAO implements IFlatrateDAO
 			.tableName(I_C_Flatrate_Term.Table_Name)
 			.additionalTableNamesToResetFor(ImmutableSet.of(I_C_Flatrate_Conditions.Table_Name, I_ModCntr_Settings.Table_Name))
 			.build();
-
 
 	private final AdTableId tableId = tableDAO.retrieveAdTableId(I_C_Flatrate_Term.Table_Name);
 
@@ -982,8 +981,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (existingData == null)
 		{
 			existingData = InterfaceWrapperHelper.create(getCtx(bPartner),
-					I_C_Flatrate_Data.class,
-					getTrxName(bPartner));
+														 I_C_Flatrate_Data.class,
+														 getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			existingData.setHasContracts(false);
@@ -1087,8 +1086,8 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateTermOverlapCriteria.getConditionsId())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, flatrateTermOverlapCriteria.getOrgId())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, flatrateTermOverlapCriteria.getProductId())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate,Operator.LESS_OR_EQUAL,flatrateTermOverlapCriteria.getDatePromised())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate,Operator.GREATER_OR_EQUAL, flatrateTermOverlapCriteria.getDatePromised())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, flatrateTermOverlapCriteria.getDatePromised())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, flatrateTermOverlapCriteria.getDatePromised())
 				.create()
 				.anyMatch();
 	}
@@ -1125,8 +1124,8 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = //
 				existingSubscriptionsQueryBuilder(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),
-						BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
-						instant);
+												  BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
+												  instant);
 
 		queryBuilder.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, flatrateTerm.getC_Order_Term_ID());
 
@@ -1223,6 +1222,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, X_C_Flatrate_Term.TYPE_CONDITIONS_InterimInvoice)
 				.anyMatch();
 	}
+
 	@NonNull
 	private IQueryBuilder<I_C_Flatrate_Term> getFlatrateTermQueryBuilder(@NonNull final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter)
 	{
@@ -1260,5 +1260,15 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addCompareFilter(I_C_Flatrate_Term.COLUMN_EndDate, Operator.GREATER_OR_EQUAL, SystemTime.asTimestamp())
 				.create()
 				.listImmutable(I_C_Flatrate_Term.class);
+	}
+
+	@NonNull
+	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DOCSTATUS_Completed)
+				.stream();
 	}
 }

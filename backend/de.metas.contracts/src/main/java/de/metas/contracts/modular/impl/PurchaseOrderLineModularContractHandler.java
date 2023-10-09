@@ -31,6 +31,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -64,6 +65,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract;
+import static de.metas.contracts.modular.ModularContractHandlerType.PURCHASE_ORDER_LINE_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_REACTIVATE_NOT_ALLOWED;
 
@@ -212,6 +214,12 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 		}
 	}
 
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return PURCHASE_ORDER_LINE_MODULAR;
+	}
+	
 	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))

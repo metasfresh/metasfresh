@@ -31,7 +31,10 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Calendar;
@@ -41,6 +44,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.INTERIM_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -74,7 +78,7 @@ class ModularContractSettingsDAOTest
 
 		final I_ModCntr_Type typeRecord = newInstance(I_ModCntr_Type.class);
 		typeRecord.setName("ModCntr_Settings");
-		typeRecord.setClassname(HandlerImpl.class.getName());
+		typeRecord.setModularContractHandlerType(INTERIM_CONTRACT.getCode());
 		saveRecord(typeRecord);
 
 		final I_ModCntr_Module moduleRecord = newInstance(I_ModCntr_Module.class);
@@ -105,8 +109,8 @@ class ModularContractSettingsDAOTest
 		assertThat(moduleConfig.getSeqNo().toInt()).isEqualTo(10);
 		assertThat(moduleConfig.getProductId().getRepoId()).isEqualTo(130);
 
-		final String handlerImpl = moduleConfig.getModularContractType().getClassName();
-		assertThat(handlerImpl).isEqualTo(HandlerImpl.class.getName());
+		final ModularContractHandlerType handlerImpl = moduleConfig.getModularContractType().getHandlerType();
+		assertThat(handlerImpl).isEqualTo(INTERIM_CONTRACT);
 	}
 
 	public static class HandlerImpl implements IModularContractTypeHandler<Object>
@@ -129,6 +133,12 @@ class ModularContractSettingsDAOTest
 		public void validateAction(final @NonNull Object model, final @NonNull ModelAction action)
 		{
 			return;
+		}
+
+		@Override
+		public @NonNull ModularContractHandlerType getHandlerType()
+		{
+			return INTERIM_CONTRACT;
 		}
 
 		@Override
