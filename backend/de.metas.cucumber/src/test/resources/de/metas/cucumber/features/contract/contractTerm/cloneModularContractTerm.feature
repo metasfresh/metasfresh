@@ -46,7 +46,7 @@ Feature: Clone Modular Contract Term
 
     When clone C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier |
-      | modularContractTerm_S0300           | y2023                | clonedModularContractTerm_S0300_100       |
+      | modularContractTerm_2022            | y2023                | clonedModularContractTerm_S0300_100       |
 
     Then validate cloned C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                                | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.DocStatus | CLONE.ModCntr_Settings_ID.Identifier |
@@ -89,4 +89,4 @@ Feature: Clone Modular Contract Term
 
     Then clone C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier | OPT.AD_Message_ID.Identifier |
-      | modularContractTerm_S0300           | y2022                | clonedModularContractTerm_S0300           | settings_already_exists      |
+      | modularContractTerm_2022            | y2022                | clonedModularContractTerm_S0300           | settings_already_exists      |
