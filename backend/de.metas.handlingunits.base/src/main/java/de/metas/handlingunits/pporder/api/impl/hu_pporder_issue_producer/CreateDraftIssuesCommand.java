@@ -307,9 +307,24 @@ public class CreateDraftIssuesCommand
 	private I_PP_Order_BOMLine getTargetOrderBOMLine(@NonNull final ProductId productId)
 	{
 		final List<I_PP_Order_BOMLine> targetBOMLines = targetOrderBOMLines;
-		return targetBOMLines
+
+		//
+		// Find the BOM line which is strictly matching our product
+		final I_PP_Order_BOMLine targetBOMLine = targetBOMLines
 				.stream()
 				.filter(bomLine -> bomLine.getM_Product_ID() == productId.getRepoId())
+				.findFirst()
+				.orElse(null);
+		if (targetBOMLine != null)
+		{
+			return targetBOMLine;
+		}
+
+		//
+		// Find a BOM line which accepts any product
+		return targetBOMLines
+				.stream()
+				.filter(I_PP_Order_BOMLine::isAllowIssuingAnyProduct)
 				.findFirst()
 				.orElseThrow(() -> new HUException("No BOM line found for productId=" + productId + " in " + targetBOMLines));
 	}

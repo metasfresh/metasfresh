@@ -1,12 +1,7 @@
 package de.metas.ui.web.pporder;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-
 import de.metas.handlingunits.HuId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
@@ -15,6 +10,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.eevolution.api.PPOrderBOMLineId;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -43,14 +43,9 @@ import lombok.ToString;
 public class PPOrderLineRowId
 {
 
-	@Getter
-	private final int recordId;
-
-	@Getter
-	private final PPOrderLineRowType type;
-
-	@Getter
-	private final DocumentId parentRowId;
+	@Getter private final int recordId;
+	@NonNull @Getter private final PPOrderLineRowType type;
+	@Nullable @Getter private final DocumentId parentRowId;
 
 	private transient DocumentId _documentId; // lazy
 
@@ -60,7 +55,7 @@ public class PPOrderLineRowId
 			@Nullable final DocumentId parentRowId,
 			final int recordId)
 	{
-		Check.assumeGreaterThanZero(recordId, "RecordId");
+		Check.assumeGreaterThanZero(recordId, "recordId");
 
 		this.type = type;
 		this.parentRowId = parentRowId;
@@ -72,28 +67,25 @@ public class PPOrderLineRowId
 
 	public DocumentId toDocumentId()
 	{
-		DocumentId documentId = _documentId;
+		DocumentId documentId = this._documentId;
 		if (documentId == null)
 		{
-			final StringBuilder sb = new StringBuilder();
-			sb.append(type.getCode());
+			final String sb = type.getCode()
+					+ PARTS_SEPARATOR + parentRowId
+					+ PARTS_SEPARATOR + recordId;
 
-			sb.append(PARTS_SEPARATOR).append(parentRowId);
-
-			sb.append(PARTS_SEPARATOR).append(recordId);
-
-			documentId = DocumentId.ofString(sb.toString());
+			documentId = this._documentId = DocumentId.ofString(sb);
 		}
 		return documentId;
 	}
 
-	public static final PPOrderLineRowId fromDocumentId(final DocumentId documentId)
+	public static PPOrderLineRowId fromDocumentId(final DocumentId documentId)
 	{
 		final List<String> parts = PARTS_SPLITTER.splitToList(documentId.toJson());
 		return fromStringPartsList(parts);
 	}
 
-	private static final PPOrderLineRowId fromStringPartsList(final List<String> parts)
+	private static PPOrderLineRowId fromStringPartsList(final List<String> parts)
 	{
 		final int partsCount = parts.size();
 		if (partsCount < 1)
@@ -108,7 +100,7 @@ public class PPOrderLineRowId
 		return new PPOrderLineRowId(type, parentRowId, recordId);
 	}
 
-	public static final PPOrderLineRowId ofPPOrderBomLineId(int ppOrderBomLineId)
+	public static PPOrderLineRowId ofPPOrderBomLineId(int ppOrderBomLineId)
 	{
 		Preconditions.checkArgument(ppOrderBomLineId > 0, "ppOrderBomLineId > 0");
 		return new PPOrderLineRowId(PPOrderLineRowType.PP_OrderBomLine, null, ppOrderBomLineId);
@@ -130,4 +122,8 @@ public class PPOrderLineRowId
 		return new PPOrderLineRowId(PPOrderLineRowType.Source_HU, parentRowId, sourceHuId.getRepoId());
 	}
 
+	public Optional<PPOrderBOMLineId> getPPOrderBOMLineIdIfApplies()
+	{
+		return type.isPP_OrderBomLine() ? PPOrderBOMLineId.optionalOfRepoId(recordId) : Optional.empty();
+	}
 }

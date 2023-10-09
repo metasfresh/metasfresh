@@ -172,6 +172,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		orderBOMLine.setLeadTimeOffset(bomLine.getLeadTimeOffset());
 		// orderBOMLine.setM_AttributeSetInstance_ID(bomLine.getM_AttributeSetInstance_ID()); // see below
 		orderBOMLine.setM_Product_ID(bomLine.getM_Product_ID());
+		orderBOMLine.setIsAllowIssuingAnyProduct(bomLine.isAllowIssuingAnyProduct());
 		orderBOMLine.setScrap(bomLine.getScrap());
 		orderBOMLine.setIsManualQtyInput(bomLine.isManualQtyInput());
 		orderBOMLine.setValidFrom(bomLine.getValidFrom());
