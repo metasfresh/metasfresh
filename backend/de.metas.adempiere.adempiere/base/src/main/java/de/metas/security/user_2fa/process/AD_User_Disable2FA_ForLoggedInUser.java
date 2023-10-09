@@ -25,15 +25,13 @@ package de.metas.security.user_2fa.process;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.security.user_2fa.User2FAService;
-import de.metas.security.user_2fa.totp.TOTPInfo;
 import de.metas.user.UserId;
+import de.metas.security.user_2fa.User2FAService;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-public class AD_User_Regenerate2FA extends JavaProcess implements IProcessPrecondition
+public class AD_User_Disable2FA_ForLoggedInUser extends JavaProcess implements IProcessPrecondition
 {
 	private final User2FAService user2FAService = SpringContextHolder.instance.getBean(User2FAService.class);
 
@@ -52,9 +50,9 @@ public class AD_User_Regenerate2FA extends JavaProcess implements IProcessPrecon
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not logged in user");
 		}
 
-		if (!user2FAService.isEnabled(userId))
+		if (user2FAService.isDisabled(userId))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Not enabled");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Already disabled");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -64,12 +62,7 @@ public class AD_User_Regenerate2FA extends JavaProcess implements IProcessPrecon
 	protected String doIt()
 	{
 		final UserId userId = UserId.ofRepoId(getRecord_ID());
-		final TOTPInfo totpInfo = user2FAService.enable(userId, true);
-
-		getResult().setDisplayQRCode(ProcessExecutionResult.DisplayQRCode.builder()
-				.code(totpInfo.toQRCodeString())
-				.build());
-
+		user2FAService.disable(userId);
 		return MSG_OK;
 	}
 }
