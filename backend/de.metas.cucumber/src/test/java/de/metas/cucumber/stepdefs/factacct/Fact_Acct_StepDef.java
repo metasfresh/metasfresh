@@ -376,6 +376,9 @@ public class Fact_Acct_StepDef
 		Optional.ofNullable(factAcctQuery.getAccountConceptualName())
 				.ifPresent(accountConceptualName -> message.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(accountConceptualName).append("\n"));
 
+		Optional.ofNullable(factAcctQuery.getQty())
+				.ifPresent(qty -> message.append(I_Fact_Acct.COLUMNNAME_Qty).append(" : ").append(qty).append("\n"));
+
 		message.append("Fact_Acct records:").append("\n");
 
 		queryBL.createQueryBuilder(I_Fact_Acct.class)
@@ -392,6 +395,7 @@ public class Fact_Acct_StepDef
 						.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(factAcctRecord.getAccountConceptualName()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_C_Harvesting_Calendar_ID).append(" : ").append(factAcctRecord.getC_Harvesting_Calendar_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_Harvesting_Year_ID).append(" : ").append(factAcctRecord.getHarvesting_Year_ID()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_Qty).append(":").append(factAcctRecord.getQty())
 						.append("\n"));
 
 		return "see current context: \n" + message;

@@ -624,17 +624,18 @@ public class M_InOut_StepDef
 	@And("^after not more than (.*)s, locate reversal M_InOut$")
 	public void find_reversal_M_InOut(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final I_M_InOut reversalInOut = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_reversal_InOut(row));
 
-			final SoftAssertions softly = new SoftAssertions();
 			softly.assertThat(reversalInOut).isNotNull();
-			softly.assertAll();
 
 			final String reversalInOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shipmentTable.putOrReplace(reversalInOutIdentifier, reversalInOut);
 		}
+		softly.assertAll();
 	}
 
 	@NonNull

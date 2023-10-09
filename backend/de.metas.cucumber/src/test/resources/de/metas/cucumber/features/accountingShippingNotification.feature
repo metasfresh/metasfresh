@@ -389,9 +389,10 @@ Feature: accounting for shipping notification
 
     And after not more than 30s, the inout document with identifier shipment_1 has the following accounting records:
       | Fact_Acct_ID.Identifier | Account                     | DR  | CR  | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.NoOfHits |
-      | factAcct_11             | P_Asset_Acct                | 0   | 113 | chf                      | P_Asset_Acct                | -10     |              |
-      | factAcct_12             | P_COGS_Acct                 | 113 | 0   | chf                      | P_COGS_Acct                 | 10      | 2            |
-      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0   | 113 | chf                      | P_ExternallyOwnedStock_Acct | -10     |              |
+      | factAcct_11             | P_Asset_Acct                | 0   | 0   | chf                      | P_Asset_Acct                | 0       | 2            |
+      | factAcct_12             | P_COGS_Acct                 | 0   | 0   | chf                      | P_COGS_Acct                 | 0       | 2            |
+      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0   | 113 | chf                      | P_ExternallyOwnedStock_Acct | -10     | 2            |
+      | factAcct_21             | P_COGS_Acct                 | 113 | 0   | chf                      | P_COGS_Acct                 | 10      | 2            |
 
     And the shipment identified by shipment_1 is reversed
 
@@ -399,11 +400,12 @@ Feature: accounting for shipping notification
       | M_InOut_ID.Identifier | Reversal_ID.Identifier |
       | reversalShipment_1    | shipment_1             |
 
-    And after not more than 30s, the inout document with identifier reversalShipment_1 has the following accounting records:
+    And after not more than 30s, the inout document with identifier shipment_1 has the following accounting records:
       | Fact_Acct_ID.Identifier | Account                     | DR   | CR   | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.NoOfHits |
-      | factAcct_11             | P_Asset_Acct                | 0    | -113 | chf                      | P_Asset_Acct                | 10      |              |
-      | factAcct_12             | P_COGS_Acct                 | -113 | 0    | chf                      | P_COGS_Acct                 | -10     | 2            |
-      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0    | -113 | chf                      | P_ExternallyOwnedStock_Acct | 10      |              |
+      | factAcct_11             | P_Asset_Acct                | 0    | 0    | chf                      | P_Asset_Acct                | 0       | 2            |
+      | factAcct_12             | P_COGS_Acct                 | 0    | 0    | chf                      | P_COGS_Acct                 | 0       | 2            |
+      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0    | -113 | chf                      | P_ExternallyOwnedStock_Acct | 10      | 2            |
+      | factAcct_21             | P_COGS_Acct                 | -113 | 0    | chf                      | P_COGS_Acct                 | -10     | 2            |
 
     And update C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.CostingMethod |

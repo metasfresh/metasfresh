@@ -138,14 +138,14 @@ public class M_Shipping_Notification_StepDef
 	@And("^after not more than (.*)s, M_Shipping_Notifications are found$")
 	public void find_M_Shipping_Notification(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Order order = orderTable.get(orderIdentifier);
 
 			final I_M_Shipping_Notification shippingNotification = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_ShippingNotification(row, order));
-
-			final SoftAssertions softly = new SoftAssertions();
 
 			// either invoice bpartner or dropship bpartner (dropship takes precedence over invoice)
 
@@ -229,28 +229,28 @@ public class M_Shipping_Notification_StepDef
 			{
 				softly.assertThat(description).isEqualTo(shippingNotification.getDescription()).isEqualTo(order.getDescription());
 			}
-
-			softly.assertAll();
-
 			final String shippingNotificationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_Notification_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shippingNotificationTable.putOrReplace(shippingNotificationIdentifier, shippingNotification);
 		}
+
+		softly.assertAll();
 	}
 
 	@And("^after not more than (.*)s, locate reversal M_Shipping_Notifications$")
 	public void find_reversal_M_Shipping_Notification(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final I_M_Shipping_Notification reversalShippingNotification = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_reversal_ShippingNotification(row));
 
-			final SoftAssertions softly = new SoftAssertions();
 			softly.assertThat(reversalShippingNotification).isNotNull();
-			softly.assertAll();
 
 			final String reversalShippingNotificationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipping_Notification_ID + "." + TABLECOLUMN_IDENTIFIER);
 			shippingNotificationTable.putOrReplace(reversalShippingNotificationIdentifier, reversalShippingNotification);
 		}
+		softly.assertAll();
 	}
 
 	@NonNull
