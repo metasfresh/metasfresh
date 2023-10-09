@@ -42,8 +42,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -69,6 +68,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final ModularContractLogService modularContractLogService;
@@ -122,8 +122,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 
 		final ProductId productId = ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, modularContractLogEntry.getQuantity())
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, modularContractLogEntry.getQuantity());
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(),
 																				OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),

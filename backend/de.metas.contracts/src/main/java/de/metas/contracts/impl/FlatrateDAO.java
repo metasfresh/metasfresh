@@ -25,6 +25,7 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
@@ -1237,5 +1238,15 @@ public class FlatrateDAO implements IFlatrateDAO
 				.filter(filter)
 				.create()
 				.iterateAndStream();
+	}
+
+	@NonNull
+	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DOCSTATUS_Completed)
+				.stream();
 	}
 }

@@ -46,12 +46,13 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | modCntr_settings_1             | testSettings_07212023_1 | componentProduct        | harvesting_calendar      | year                 | moduleLogPricingSystem            |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                          | Value                         | Classname                                                                 |
-      | modCntr_type_1             | manufacturingOrder_07212023_1 | manufacturingOrder_07212023_1 | de.metas.handlingunits.modular.impl.PPCostCollectorModularContractHandler |
+      | ModCntr_Type_ID.Identifier | Name                          | Value                         | ModularContractHandlerType |
+      | modCntr_type_1             | manufacturingOrder_07212023_1 | manufacturingOrder_07212023_1 | PPCostCollector_Modular    |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
       | modCntr_module_1             | 10    | moduleTest_07212023_1 | componentProduct        | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | modCntr_module_2             | 20    | moduleTest_07212023_2 | manufacturingProduct    | Kosten         | modCntr_settings_1             | modCntr_type_1             |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
@@ -65,7 +66,7 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_MO              | moduleLogConditions_MO_07212023_1 | ModularContract | moduleLogPricingSystem            | Ca                       | modCntr_settings_1                 |
+      | moduleLogConditions_MO              | moduleLogConditions_MO_07212023_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier |
@@ -141,7 +142,7 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
     Then after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier  | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName | C_Flatrate_Term_ID.Identifier | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_UOM_ID.X12DE355 | OPT.Harvesting_Year_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
       | log_1                     | ppOrder_manufacturing | ModularContract | invoicingGroup                           | warehouse                     | componentProduct        | bp_moduleLogMO                  | -10 | PP_Order  | moduleLogContract_1           | modCntr_type_1                 | false         | Production                   | PCE                   | year                              | bp_moduleLogMO                             | modCntr_module_1                 | null            | null                      |
-      | log_2                     | ppOrder_manufacturing | ModularContract | invoicingGroup                           | warehouse                     | manufacturingProduct    | bp_moduleLogMO                  | 10  | PP_Order  | moduleLogContract_1           | modCntr_type_1                 | false         | Production                   | PCE                   | year                              | bp_moduleLogMO                             | modCntr_module_1                 | null            | null                      |
+      | log_2                     | ppOrder_manufacturing | ModularContract | invoicingGroup                           | warehouse                     | manufacturingProduct    | bp_moduleLogMO                  | 10  | PP_Order  | moduleLogContract_1           | modCntr_type_1                 | false         | Production                   | PCE                   | year                              | bp_moduleLogMO                             | modCntr_module_2                 | null            | null                      |
 
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |

@@ -36,8 +36,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -74,6 +73,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final SalesContractProFormaModularContractHandler contractHandler;
 
@@ -118,8 +118,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 
 		final String productName = productBL.getProductValueAndName(productId);
 
-		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity)
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity);
 
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
 		final ProductPrice priceActual = flatrateBL.extractPriceActual(modularContractRecord);

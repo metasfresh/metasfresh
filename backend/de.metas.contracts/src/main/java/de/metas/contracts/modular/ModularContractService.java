@@ -115,10 +115,10 @@ public class ModularContractService
 		{
 			return false;
 		}
-		final String handlerClassName = handler.getClass().getName();
+
 		return settings.getModuleConfigs()
 				.stream()
-				.anyMatch(config -> config.isMatchingClassName(handlerClassName));
+				.anyMatch(config -> config.isMatchingHandler(handler.getHandlerType()));
 	}
 
 	private <T> void invokeWithModel(

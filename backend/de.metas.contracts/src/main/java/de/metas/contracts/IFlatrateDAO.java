@@ -34,6 +34,7 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderLineId;
@@ -270,4 +271,7 @@ public interface IFlatrateDAO extends ISingletonService
 	ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
 
 	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+	
+	@NonNull
+	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
 }

@@ -30,76 +30,6 @@ Feature: Interim contract and interim invoice for bpartner
       | C_Year_ID.Identifier | FiscalYear | C_Calendar_ID.Identifier |
       | year_2022            | 2022       | harvesting_calendar      |
 
-    And metasfresh contains M_Products:
-      | Identifier                 | Name                                  |
-      | module_log_product_PO_1    | module_log_product_PO_test_08022023_1 |
-      | module_log_product_PO_2    | module_log_product_PO_test_08022023_2 |
-      | module_log_product_PO_base | module_log_product_PO_test_08022023_3 |
-
-    And metasfresh contains M_ProductPrices
-      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier    | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | moduleLogPP_1    | interimPLV_PO                     | module_log_product_PO_1    | 2.00     | PCE               | Normal                        |
-      | moduleLogPP_2    | interimPLV_PO                     | module_log_product_PO_2    | 2.00     | PCE               | Normal                        |
-      | moduleLogPP_base | interimPLV_PO                     | module_log_product_PO_base | 3.00     | PCE               | Normal                        |
-
-    And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name        |
-      | huPackingLU           | huPackingLU |
-      | huPackingTU           | huPackingTU |
-    And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
-      | packingVersionLU              | huPackingLU           | packingVersionLU | LU          | Y         |
-      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
-    And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
-      | huPiItemLU                 | packingVersionLU              | 100 | HU       | huPackingTU                      |
-      | huPiItemTU                 | packingVersionTU              | 100 | MI       |                                  |
-    And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier    | Qty  | ValidFrom  |
-      | huItemPurchaseProduct_1            | huPiItemTU                 | module_log_product_PO_1    | 1000 | 2022-01-01 |
-      | huItemPurchaseProduct_2            | huPiItemTU                 | module_log_product_PO_2    | 1000 | 2022-01-01 |
-      | huItemPurchaseProduct_base         | huPiItemTU                 | module_log_product_PO_base | 1000 | 2022-01-01 |
-
-
-    And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_08022023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
-      | modCntr_settings_2             | testSettings_08022023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
-    And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier | Name                         | Value                        | Classname                                                                            |
-      | modCntr_type_1             | poLine_08022023              | poLine_08022023              | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler              |
-      | modCntr_type_2             | interim_08022023             | interim_08022023             | de.metas.contracts.modular.interim.logImpl.InterimContractHandler                    |
-      | modCntr_type_3             | receiptLine_modular_08022023 | receiptLine_modular_08022023 | de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler            |
-      | modCntr_type_4             | receiptLine_interim_08022023 | receiptLine_interim_08022023 | de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler |
-      | modCntr_type_5             | invoiceLine_interim_08022023 | invoiceLine_interim_08022023 | de.metas.contracts.modular.interim.logImpl.PurchaseInvoiceLineInterimHandler         |
-    And metasfresh contains ModCntr_Modules:
-      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_08022023_1  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_1             |
-      | modCntr_module_2             | 20    | moduleTest_08022023_2  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_2             |
-      | modCntr_module_3             | 30    | moduleTest_08022023_3  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_3             |
-      | modCntr_module_4             | 40    | moduleTest_08022023_4  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_4             |
-      | modCntr_module_5             | 10    | moduleTest_08022023_5  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_1             |
-      | modCntr_module_6             | 20    | moduleTest_08022023_6  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_2             |
-      | modCntr_module_7             | 30    | moduleTest_08022023_7  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_3             |
-      | modCntr_module_8             | 40    | moduleTest_08022023_8  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_4             |
-      | modCntr_module_9             | 50    | moduleTest_08022023_9  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_5             |
-      | modCntr_module_10            | 50    | moduleTest_08022023_10 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_5             |
-
-    And metasfresh contains ModCntr_InvoicingGroup:
-      | ModCntr_InvoicingGroup_ID.Identifier | Name           | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
-      | invoicingGroup                       | invoicingGroup | module_log_product_PO_base  | 2021-02-10 | 2023-11-25 |
-    And metasfresh contains ModCntr_InvoicingGroup_Product:
-      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
-      | invoicingGroup_p1                            | invoicingGroup                       | module_log_product_PO_1 |
-      | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
-
-    And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO_1            | moduleLogConditions_po_08022023_1      | ModularContract | interimPS                         | Ca                       | modCntr_settings_1                 |
-      | moduleLogConditions_interim_1       | moduleLogConditions_interim_08022023_1 | InterimInvoice  | interimPS                         | Ca                       | modCntr_settings_1                 |
-      | moduleLogConditions_PO_2            | moduleLogConditions_po_08022023_2      | ModularContract | interimPS                         | Ca                       | modCntr_settings_2                 |
-      | moduleLogConditions_interim_2       | moduleLogConditions_interim_08022023_2 | InterimInvoice  | interimPS                         | Ca                       | modCntr_settings_2                 |
-
   @Id:S0306_100
   @Id:S0314_100
   Scenario: purchase modular and interim contract (automatically) + logs are created, with C_BPartner_InterimContract
@@ -116,7 +46,77 @@ Feature: Interim contract and interim invoice for bpartner
   - validate interim invoice log recreation is working
   - validate interim invoice reverse log is created on interim invoice reverse
 
-    Given set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
+    Given metasfresh contains M_Products:
+      | Identifier                 | Name                                  |
+      | module_log_product_PO_1    | module_log_product_PO_test_08022023_1 |
+      | module_log_product_PO_2    | module_log_product_PO_test_08022023_2 |
+      | module_log_product_PO_base | module_log_product_PO_test_08022023_3 |
+
+    And metasfresh contains M_ProductPrices
+      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier    | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | moduleLogPP_1    | interimPLV_PO                     | module_log_product_PO_1    | 2.00     | PCE               | Normal                        |
+      | moduleLogPP_2    | interimPLV_PO                     | module_log_product_PO_2    | 2.00     | PCE               | Normal                        |
+      | moduleLogPP_base | interimPLV_PO                     | module_log_product_PO_base | 3.00     | PCE               | Normal                        |
+
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name                 |
+      | huPackingLU           | huPackingLU_08022023 |
+      | huPackingTU           | huPackingTU_08022023 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                      | HU_UnitType | IsCurrent |
+      | packingVersionLU              | huPackingLU           | packingVersionLU_08022023 | LU          | Y         |
+      | packingVersionTU              | huPackingTU           | packingVersionTU_08022023 | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | huPiItemLU                 | packingVersionLU              | 100 | HU       | huPackingTU                      |
+      | huPiItemTU                 | packingVersionTU              | 100 | MI       |                                  |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier    | Qty  | ValidFrom  |
+      | huItemPurchaseProduct_1            | huPiItemTU                 | module_log_product_PO_1    | 1000 | 2022-01-01 |
+      | huItemPurchaseProduct_2            | huPiItemTU                 | module_log_product_PO_2    | 1000 | 2022-01-01 |
+      | huItemPurchaseProduct_base         | huPiItemTU                 | module_log_product_PO_base | 1000 | 2022-01-01 |
+
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name                    | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
+      | invoicingGroup                       | invoicingGroup_08022023 | module_log_product_PO_base  | 2021-02-10 | 2023-11-25 |
+    And metasfresh contains ModCntr_InvoicingGroup_Product:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
+      | invoicingGroup_p1                            | invoicingGroup                       | module_log_product_PO_1 |
+      | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
+
+    And metasfresh contains ModCntr_Settings:
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | testSettings_08022023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_2             | testSettings_08022023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
+
+    And metasfresh contains ModCntr_Types:
+      | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
+      | modCntr_type_1             | poLine_08022023_1              | poLine_08022023_1              | PurchaseOrderLine_Modular   |
+      | modCntr_type_2             | interim_08022023_1             | interim_08022023_1             | Interim_Contract            |
+      | modCntr_type_3             | receiptLine_modular_08022023_1 | receiptLine_modular_08022023_1 | MaterialReceiptLine_Modular |
+      | modCntr_type_4             | receiptLine_interim_08022023_1 | receiptLine_interim_08022023_1 | MaterialReceiptLine_Interim |
+      | modCntr_type_5             | invoiceLine_interim_08022023_1 | invoiceLine_interim_08022023_1 | PurchaseInvoiceLine_Interim |
+    And metasfresh contains ModCntr_Modules:
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_1             | 10    | moduleTest_08022023_1  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | modCntr_module_2             | 20    | moduleTest_08022023_2  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_2             |
+      | modCntr_module_3             | 30    | moduleTest_08022023_3  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_3             |
+      | modCntr_module_4             | 40    | moduleTest_08022023_4  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_4             |
+      | modCntr_module_5             | 10    | moduleTest_08022023_5  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_1             |
+      | modCntr_module_6             | 20    | moduleTest_08022023_6  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_2             |
+      | modCntr_module_7             | 30    | moduleTest_08022023_7  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_3             |
+      | modCntr_module_8             | 40    | moduleTest_08022023_8  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_4             |
+      | modCntr_module_9             | 50    | moduleTest_08022023_9  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_5             |
+      | modCntr_module_10            | 50    | moduleTest_08022023_10 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_5             |
+
+    And metasfresh contains C_Flatrate_Conditions:
+      | C_Flatrate_Conditions_ID.Identifier | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO_1            | moduleLogConditions_po_08022023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_interim_1       | moduleLogConditions_interim_08022023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_PO_2            | moduleLogConditions_po_08022023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | moduleLogConditions_interim_2       | moduleLogConditions_interim_08022023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
+
+    And set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
 
     # Set the date at the end of ModCntr_InvoicingGroup interval
     And metasfresh has date and time 2022-02-25T13:30:13+01:00[Europe/Berlin]
@@ -316,7 +316,77 @@ Feature: Interim contract and interim invoice for bpartner
   - validate interim receiptLine Log created
   - validate error on create interim contract create, if overlapping with interim contract for same modular contract
 
-    Given set sys config boolean value false for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
+    Given metasfresh contains M_Products:
+      | Identifier                 | Name                                  |
+      | module_log_product_PO_1    | module_log_product_PO_test_08032023_1 |
+      | module_log_product_PO_2    | module_log_product_PO_test_08032023_2 |
+      | module_log_product_PO_base | module_log_product_PO_test_08032023_3 |
+
+    And metasfresh contains M_ProductPrices
+      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier    | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | moduleLogPP_1    | interimPLV_PO                     | module_log_product_PO_1    | 2.00     | PCE               | Normal                        |
+      | moduleLogPP_2    | interimPLV_PO                     | module_log_product_PO_2    | 2.00     | PCE               | Normal                        |
+      | moduleLogPP_base | interimPLV_PO                     | module_log_product_PO_base | 3.00     | PCE               | Normal                        |
+
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name                 |
+      | huPackingLU           | huPackingLU_08032023 |
+      | huPackingTU           | huPackingTU_08032023 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                      | HU_UnitType | IsCurrent |
+      | packingVersionLU              | huPackingLU           | packingVersionLU_08032023 | LU          | Y         |
+      | packingVersionTU              | huPackingTU           | packingVersionTU_08032023 | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | huPiItemLU                 | packingVersionLU              | 100 | HU       | huPackingTU                      |
+      | huPiItemTU                 | packingVersionTU              | 100 | MI       |                                  |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier    | Qty  | ValidFrom  |
+      | huItemPurchaseProduct_1            | huPiItemTU                 | module_log_product_PO_1    | 1000 | 2022-01-01 |
+      | huItemPurchaseProduct_2            | huPiItemTU                 | module_log_product_PO_2    | 1000 | 2022-01-01 |
+      | huItemPurchaseProduct_base         | huPiItemTU                 | module_log_product_PO_base | 1000 | 2022-01-01 |
+
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name                    | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
+      | invoicingGroup                       | invoicingGroup_08032023 | module_log_product_PO_base  | 2021-02-10 | 2023-11-25 |
+    And metasfresh contains ModCntr_InvoicingGroup_Product:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
+      | invoicingGroup_p1                            | invoicingGroup                       | module_log_product_PO_1 |
+      | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
+
+    And metasfresh contains ModCntr_Settings:
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | testSettings_08032023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_2             | testSettings_08032023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
+
+    And metasfresh contains ModCntr_Types:
+      | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
+      | modCntr_type_1             | poLine_08032023_1              | poLine_08032023_1              | PurchaseOrderLine_Modular   |
+      | modCntr_type_2             | interim_08032023_1             | interim_08032023_1             | Interim_Contract            |
+      | modCntr_type_3             | receiptLine_modular_08032023_1 | receiptLine_modular_08032023_1 | MaterialReceiptLine_Modular |
+      | modCntr_type_4             | receiptLine_interim_08032023_1 | receiptLine_interim_08032023_1 | MaterialReceiptLine_Interim |
+      | modCntr_type_5             | invoiceLine_interim_08032023_1 | invoiceLine_interim_08032023_1 | PurchaseInvoiceLine_Interim |
+    And metasfresh contains ModCntr_Modules:
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_1             | 10    | moduleTest_08032023_1  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | modCntr_module_2             | 20    | moduleTest_08032023_2  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_2             |
+      | modCntr_module_3             | 30    | moduleTest_08032023_3  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_3             |
+      | modCntr_module_4             | 40    | moduleTest_08032023_4  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_4             |
+      | modCntr_module_5             | 10    | moduleTest_08032023_5  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_1             |
+      | modCntr_module_6             | 20    | moduleTest_08032023_6  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_2             |
+      | modCntr_module_7             | 30    | moduleTest_08032023_7  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_3             |
+      | modCntr_module_8             | 40    | moduleTest_08032023_8  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_4             |
+      | modCntr_module_9             | 50    | moduleTest_08032023_9  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_5             |
+      | modCntr_module_10            | 50    | moduleTest_08032023_10 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_5             |
+
+    And metasfresh contains C_Flatrate_Conditions:
+      | C_Flatrate_Conditions_ID.Identifier | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO_1            | moduleLogConditions_po_08032023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_interim_1       | moduleLogConditions_interim_08032023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_PO_2            | moduleLogConditions_po_08032023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | moduleLogConditions_interim_2       | moduleLogConditions_interim_08032023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
+
+    And set sys config boolean value false for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
 
     And metasfresh contains C_BPartners:
       | Identifier   | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
@@ -444,8 +514,78 @@ Feature: Interim contract and interim invoice for bpartner
   - validate invoice candidate and interim invoice are generated
   - validate the invoiced product is the one configured on `invoicingGroup`, but the price is inherited from the original product
 
+    Given metasfresh contains M_Products:
+      | Identifier                 | Name                                  |
+      | module_log_product_PO_1    | module_log_product_PO_test_08042023_1 |
+      | module_log_product_PO_2    | module_log_product_PO_test_08042023_2 |
+      | module_log_product_PO_base | module_log_product_PO_test_08042023_3 |
+
+    And metasfresh contains M_ProductPrices
+      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier    | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | moduleLogPP_1    | interimPLV_PO                     | module_log_product_PO_1    | 2.00     | PCE               | Normal                        |
+      | moduleLogPP_2    | interimPLV_PO                     | module_log_product_PO_2    | 2.00     | PCE               | Normal                        |
+      | moduleLogPP_base | interimPLV_PO                     | module_log_product_PO_base | 3.00     | PCE               | Normal                        |
+
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name                 |
+      | huPackingLU           | huPackingLU_08042023 |
+      | huPackingTU           | huPackingTU_08042023 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                      | HU_UnitType | IsCurrent |
+      | packingVersionLU              | huPackingLU           | packingVersionLU_08042023 | LU          | Y         |
+      | packingVersionTU              | huPackingTU           | packingVersionTU_08042023 | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | huPiItemLU                 | packingVersionLU              | 100 | HU       | huPackingTU                      |
+      | huPiItemTU                 | packingVersionTU              | 100 | MI       |                                  |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier    | Qty  | ValidFrom  |
+      | huItemPurchaseProduct_1            | huPiItemTU                 | module_log_product_PO_1    | 1000 | 2022-01-01 |
+      | huItemPurchaseProduct_2            | huPiItemTU                 | module_log_product_PO_2    | 1000 | 2022-01-01 |
+      | huItemPurchaseProduct_base         | huPiItemTU                 | module_log_product_PO_base | 1000 | 2022-01-01 |
+
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name                    | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
+      | invoicingGroup                       | invoicingGroup_08042023 | module_log_product_PO_base  | 2021-02-10 | 2023-11-25 |
+    And metasfresh contains ModCntr_InvoicingGroup_Product:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
+      | invoicingGroup_p1                            | invoicingGroup                       | module_log_product_PO_1 |
+      | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
+
+    And metasfresh contains ModCntr_Settings:
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | testSettings_08042023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_2             | testSettings_08042023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
+
+    And metasfresh contains ModCntr_Types:
+      | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
+      | modCntr_type_1             | poLine_08042023_1              | poLine_08042023_1              | PurchaseOrderLine_Modular   |
+      | modCntr_type_2             | interim_08042023_1             | interim_08042023_1             | Interim_Contract            |
+      | modCntr_type_3             | receiptLine_modular_08042023_1 | receiptLine_modular_08042023_1 | MaterialReceiptLine_Modular |
+      | modCntr_type_4             | receiptLine_interim_08042023_1 | receiptLine_interim_08042023_1 | MaterialReceiptLine_Interim |
+      | modCntr_type_5             | invoiceLine_interim_08042023_1 | invoiceLine_interim_08042023_1 | PurchaseInvoiceLine_Interim |
+    And metasfresh contains ModCntr_Modules:
+      | ModCntr_Module_ID.Identifier | SeqNo | Name                   | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
+      | modCntr_module_1             | 10    | moduleTest_08042023_1  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | modCntr_module_2             | 20    | moduleTest_08042023_2  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_2             |
+      | modCntr_module_3             | 30    | moduleTest_08042023_3  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_3             |
+      | modCntr_module_4             | 40    | moduleTest_08042023_4  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_4             |
+      | modCntr_module_5             | 10    | moduleTest_08042023_5  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_1             |
+      | modCntr_module_6             | 20    | moduleTest_08042023_6  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_2             |
+      | modCntr_module_7             | 30    | moduleTest_08042023_7  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_3             |
+      | modCntr_module_8             | 40    | moduleTest_08042023_8  | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_4             |
+      | modCntr_module_9             | 50    | moduleTest_08042023_9  | module_log_product_PO_1 | Kosten         | modCntr_settings_1             | modCntr_type_5             |
+      | modCntr_module_10            | 50    | moduleTest_08042023_10 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_5             |
+
+    And metasfresh contains C_Flatrate_Conditions:
+      | C_Flatrate_Conditions_ID.Identifier | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO_1            | moduleLogConditions_po_08042023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_interim_1       | moduleLogConditions_interim_08042023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_PO_2            | moduleLogConditions_po_08042023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | moduleLogConditions_interim_2       | moduleLogConditions_interim_08042023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
+
   # Set the date at the start of ModCntr_InvoicingGroup interval
-    Given metasfresh has date and time 2022-02-10T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-02-10T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
 
     And metasfresh contains C_BPartners:
@@ -585,9 +725,18 @@ Feature: Interim contract and interim invoice for bpartner
   @Id:S0314_300
   Scenario: Validate when adding a new `Invoicing group product` an error is thrown, if it overlaps with an existing one for the same product
     Given metasfresh contains M_Products:
-      | Identifier                     | Name                           |
-      | module_log_product_base_022022 | module_log_product_base_022022 |
+      | Identifier                     | Name                                  |
+      | module_log_product_base_022022 | module_log_product_base_022022        |
+      | module_log_product_PO_1        | module_log_product_PO_test_10032023_1 |
+      | module_log_product_PO_2        | module_log_product_PO_test_10032023_2 |
 
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name                       | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |
+      | invoicingGroup                       | invoicingGroup_08042023_10 | module_log_product_base_022022 | 2022-02-10 | 2022-02-25 |
+    And metasfresh contains ModCntr_InvoicingGroup_Product:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
+      | invoicingGroup_p1                            | invoicingGroup                       | module_log_product_PO_1 |
+      | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
     And load AD_Message:
       | Identifier                   | Value                                                     |
       | productAlreadyInAnotherGroup | de.metas.contracts.modular.invgroup.ProductInAnotherGroup |
@@ -604,8 +753,18 @@ Feature: Interim contract and interim invoice for bpartner
   @Id:S0314_400
   Scenario: Validate when changing the dates for an `Invoicing group` an error is thrown, if the period overlaps with an existing one for the same product
     Given metasfresh contains M_Products:
-      | Identifier                     | Name                           |
-      | module_log_product_base_032022 | module_log_product_base_032022 |
+      | Identifier                     | Name                                  |
+      | module_log_product_base_032022 | module_log_product_base_032022        |
+      | module_log_product_PO_1        | module_log_product_PO_test_10022023_1 |
+      | module_log_product_PO_2        | module_log_product_PO_test_10022023_2 |
+
+    And metasfresh contains ModCntr_InvoicingGroup:
+      | ModCntr_InvoicingGroup_ID.Identifier | Name                       | Group_Product_ID.Identifier    | ValidFrom  | ValidTo    |
+      | invoicingGroup                       | invoicingGroup_08042023_11 | module_log_product_base_032022 | 2022-02-10 | 2022-02-25 |
+    And metasfresh contains ModCntr_InvoicingGroup_Product:
+      | ModCntr_InvoicingGroup_Product_ID.Identifier | ModCntr_InvoicingGroup_ID.Identifier | M_Product_ID.Identifier |
+      | invoicingGroup_p1                            | invoicingGroup                       | module_log_product_PO_1 |
+      | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
 
     And load AD_Message:
       | Identifier                   | Value                                                     |

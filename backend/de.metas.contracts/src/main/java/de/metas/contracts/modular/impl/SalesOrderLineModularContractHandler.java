@@ -28,6 +28,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -50,6 +51,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.SALES_ORDER_LINE_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
@@ -124,6 +126,12 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 		createModularContract(orderLine);
 	}
 
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return SALES_ORDER_LINE_MODULAR;
+	}
+	
 	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))

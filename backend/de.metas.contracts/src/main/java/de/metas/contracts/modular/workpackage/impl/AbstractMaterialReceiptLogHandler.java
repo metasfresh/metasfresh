@@ -36,8 +36,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
@@ -66,6 +65,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
@@ -107,8 +107,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity)
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity);
 
 		final boolean isBillable = request.getHandleLogsRequest().getLogEntryContractType().isInterimContractType()
 				? inOutRecord.isInterimInvoiceable()
@@ -154,8 +153,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_REVERSE_DESCRIPTION, productName, quantity)
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))

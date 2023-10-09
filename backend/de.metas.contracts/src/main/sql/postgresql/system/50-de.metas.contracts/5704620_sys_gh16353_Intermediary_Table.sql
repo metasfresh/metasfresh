@@ -20,33 +20,14 @@
  * #L%
  */
 
-package de.metas.contracts.modular.settings;
+CREATE TABLE public.ModCntr_Type_Temp
+(
+    ModCntr_Type_ID NUMERIC(10),
+    Classname       VARCHAR(255)
+)
+;
 
-import de.metas.contracts.modular.ModularContractHandlerType;
-import de.metas.product.ProductId;
-import de.metas.util.lang.SeqNo;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-public class ModuleConfig
-{
-	@NonNull ModuleConfigId id;
-
-	@NonNull SeqNo seqNo;
-
-	@NonNull String name;
-
-	@NonNull String invoicingGroup;
-
-	@NonNull ProductId productId;
-
-	@NonNull ModularContractType modularContractType;
-
-	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
-	{
-		return modularContractType.isMatchingHandler(handlerType);
-	}
-}
+INSERT INTO public.ModCntr_Type_Temp(ModCntr_Type_ID, Classname)
+SELECT ModCntr_Type_ID, Classname
+FROM modcntr_type
+;

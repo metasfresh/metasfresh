@@ -34,6 +34,7 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -60,6 +61,8 @@ public class ModularContractSettingsDAO
 {
 	private final static Logger logger = LogManager.getLogger(ModularContractSettingsDAO.class);
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<SettingsLookupKey, CachedSettingsId> cacheKey2SettingsId = CCache.<SettingsLookupKey, CachedSettingsId>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(1000)
@@ -75,8 +78,6 @@ public class ModularContractSettingsDAO
 			.additionalTableNamesToResetFor(ImmutableSet.of(I_ModCntr_Module.Table_Name))
 			.invalidationKeysMapper(new SettingsInfoCachingKeysMapper())
 			.build();
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public ModularContractSettings getByFlatrateTermId(@NonNull final FlatrateTermId contractId)
@@ -108,7 +109,7 @@ public class ModularContractSettingsDAO
 	}
 
 	@NonNull
-	private static ModularContractSettings fromPOs(
+	private ModularContractSettings fromPOs(
 			@NonNull final I_ModCntr_Settings settingsRecord,
 			@NonNull final List<I_ModCntr_Module> moduleRecords)
 	{
@@ -137,7 +138,7 @@ public class ModularContractSettingsDAO
 												 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
 												 .value(modCntrType.getValue())
 												 .name(modCntrType.getName())
-												 .className(modCntrType.getClassname())
+												 .handlerType(ModularContractHandlerType.ofNullableCode(modCntrType.getModularContractHandlerType()))
 												 .build())
 					.build();
 
@@ -293,8 +294,8 @@ public class ModularContractSettingsDAO
 			if (I_C_Flatrate_Conditions.Table_Name.equals(recordRef.getTableName()))
 			{
 				logger.debug("ComputeCachingKeys called for a ({},{}) that wasn't cached so far!",
-						recordRef.getRecord_ID(),
-						recordRef.getTableName());
+							 recordRef.getRecord_ID(),
+							 recordRef.getTableName());
 
 				return ImmutableSet.of();
 			}
@@ -303,8 +304,8 @@ public class ModularContractSettingsDAO
 				final FlatrateTermId contractId = recordRef.getIdAssumingTableName(I_C_Flatrate_Term.Table_Name, FlatrateTermId::ofRepoId);
 
 				logger.debug("ComputeCachingKeys called for ({},{})!",
-						recordRef.getRecord_ID(),
-						recordRef.getTableName());
+							 recordRef.getRecord_ID(),
+							 recordRef.getTableName());
 
 				return ImmutableSet.of(SettingsLookupKey.of(contractId));
 			}

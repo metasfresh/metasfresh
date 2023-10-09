@@ -32,6 +32,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lang.SOTrx;
@@ -51,6 +52,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+import static de.metas.contracts.modular.ModularContractHandlerType.SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
@@ -150,5 +152,11 @@ public class SalesOrderLineProFormaPOModularContractHandler implements IModularC
 																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		}
+	}
+
+	@Override
+	public @NonNull ModularContractHandlerType getHandlerType()
+	{
+		return SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR;
 	}
 }

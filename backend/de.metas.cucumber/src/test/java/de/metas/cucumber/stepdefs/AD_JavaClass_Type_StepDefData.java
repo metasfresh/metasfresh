@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,33 +20,17 @@
  * #L%
  */
 
-package de.metas.contracts.modular.settings;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.contracts.modular.ModularContractHandlerType;
-import de.metas.product.ProductId;
-import de.metas.util.lang.SeqNo;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 
-@Value
-@Builder
-public class ModuleConfig
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class AD_JavaClass_Type_StepDefData extends StepDefData<I_AD_JavaClass_Type>
 {
-	@NonNull ModuleConfigId id;
-
-	@NonNull SeqNo seqNo;
-
-	@NonNull String name;
-
-	@NonNull String invoicingGroup;
-
-	@NonNull ProductId productId;
-
-	@NonNull ModularContractType modularContractType;
-
-	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
+	public AD_JavaClass_Type_StepDefData()
 	{
-		return modularContractType.isMatchingHandler(handlerType);
+		super(I_AD_JavaClass_Type.class);
 	}
 }

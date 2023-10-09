@@ -42,14 +42,14 @@ Feature: Modular contract log from shipment
       | year_2023            | 2023       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier   | Name                         | Value                        | Classname                                                               |
-      | modCntr_type_PO_S0321        | modCntr_type_PO_S0321        | modCntr_type_PO_S0321        | de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler |
-      | modCntr_type_SO_for_PO_S0321 | modCntr_type_SO_for_PO_S0321 | modCntr_type_SO_for_PO_S0321 | de.metas.contracts.modular.impl.SOLineForPOModularContractHandler       |
-      | modCntr_type_SO_S0321        | modCntr_type_SO_S0321        | modCntr_type_SO_S0321        | de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler    |
-      | modCntr_type_MC_SO_S0321     | modCntr_type_MC_SO_S0321     | modCntr_type_MC_SO_S0321     | de.metas.contracts.modular.impl.SalesModularContractHandler             |
-      | modCntr_type_MC_PO_S0321     | modCntr_type_MC_PO_S0321     | modCntr_type_MC_PO_S0321     | de.metas.contracts.modular.impl.PurchaseModularContractHandler          |
-      | modCntr_type_PO_SHIP_S0321   | modCntr_type_PO_SHIP_S0303   | modCntr_type_PO_SHIP_S0303   | de.metas.contracts.modular.impl.ShipmentLineForPOModularContractHandler |
-      | modCntr_type_SO_SHIP_S0321   | modCntr_type_SO_SHIP_S0303   | modCntr_type_SO_SHIP_S0303   | de.metas.contracts.modular.impl.ShipmentLineForSOModularContractHandler |
+      | ModCntr_Type_ID.Identifier   | Name                         | Value                        | ModularContractHandlerType |
+      | modCntr_type_PO_S0321        | modCntr_type_PO_S0321        | modCntr_type_PO_S0321        | PurchaseOrderLine_Modular  |
+      | modCntr_type_SO_for_PO_S0321 | modCntr_type_SO_for_PO_S0321 | modCntr_type_SO_for_PO_S0321 | SOLineForPO_Modular        |
+      | modCntr_type_SO_S0321        | modCntr_type_SO_S0321        | modCntr_type_SO_S0321        | SalesOrderLine_Modular     |
+      | modCntr_type_MC_SO_S0321     | modCntr_type_MC_SO_S0321     | modCntr_type_MC_SO_S0321     | SalesModularContract       |
+      | modCntr_type_MC_PO_S0321     | modCntr_type_MC_PO_S0321     | modCntr_type_MC_PO_S0321     | PurchaseModularContract    |
+      | modCntr_type_PO_SHIP_S0321   | modCntr_type_PO_SHIP_S0303   | modCntr_type_PO_SHIP_S0303   | ShipmentLineForPO_Modular  |
+      | modCntr_type_SO_SHIP_S0321   | modCntr_type_SO_SHIP_S0303   | modCntr_type_SO_SHIP_S0303   | ShipmentLineForSO_Modular  |
 
   @Id:S0321_100
   @from:cucumber
@@ -211,8 +211,8 @@ Feature: Modular contract log from shipment
     When the shipment identified by s_1_S0321_200 is completed
 
     Then after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier  | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 |
-      | shipLog_1_S0321_200       | s_l_1_S0321_200      | ModularContract | invoicingGroup                           | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0321_200 | bp_moduleLogSO                      | bp_moduleLogSO                  | 8   | M_InOutLine | moduleLogContract_SO_S0321_200 | modCntr_type_SO_SHIP_S0321     | false         | Shipment                     | year_2023                         | true        | modCntr_module_SO_SHIP_S0321_200 | null            | null                      |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier  | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.Description                                                                                                                    |
+      | shipLog_1_S0321_200       | s_l_1_S0321_200      | ModularContract | invoicingGroup                           | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0321_200 | bp_moduleLogSO                      | bp_moduleLogSO                  | 8   | M_InOutLine | moduleLogContract_SO_S0321_200 | modCntr_type_SO_SHIP_S0321     | false         | Shipment                     | year_2023                         | true        | modCntr_module_SO_SHIP_S0321_200 | null            | null                      | Eine Lieferung für Produkt modularContract_prod_S0321_200_modularContract_prod_S0321_200 mit der Menge 8 Stk wurde fertiggestellt. |
 
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus |
@@ -226,14 +226,14 @@ Feature: Modular contract log from shipment
       | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
       | s_l_1_S0321_200      | M_InOutLine | SP               | 2                   |
     And after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier  | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | shipLog_1_S0321_200       | s_l_1_S0321_200      | ModularContract | invoicingGroup                           | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0321_200 | bp_moduleLogSO                      | bp_moduleLogSO                  | 8   | M_InOutLine | moduleLogContract_SO_S0321_200 | modCntr_type_SO_SHIP_S0321     | false         | Shipment                     | year_2023                         | true        |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier  | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx | OPT.Description                                                                                                                    |
+      | shipLog_1_S0321_200       | s_l_1_S0321_200      | ModularContract | invoicingGroup                           | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0321_200 | bp_moduleLogSO                      | bp_moduleLogSO                  | 8   | M_InOutLine | moduleLogContract_SO_S0321_200 | modCntr_type_SO_SHIP_S0321     | false         | Shipment                     | year_2023                         | true        | Eine Lieferung für Produkt modularContract_prod_S0321_200_modularContract_prod_S0321_200 mit der Menge 8 Stk wurde fertiggestellt. |
 
     When the shipment identified by s_1_S0321_200 is reversed
 
     Then after not more than 30s, ModCntr_Logs are found:
-      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier  | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx |
-      | shipLog_1_S0321_200       | s_l_1_S0321_200      | ModularContract | invoicingGroup                           | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0321_200 | bp_moduleLogSO                      | bp_moduleLogSO                  | -8  | M_InOutLine | moduleLogContract_SO_S0321_200 | modCntr_type_SO_SHIP_S0321     | false         | Shipment                     | year_2023                         | true        |
+      | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.ModCntr_InvoicingGroup_ID.Identifier | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier        | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName   | C_Flatrate_Term_ID.Identifier  | OPT.ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.Harvesting_Year_ID.Identifier | OPT.IsSOTrx | OPT.Description                                                                                                               |
+      | shipLog_1_S0321_200       | s_l_1_S0321_200      | ModularContract | invoicingGroup                           | bp_moduleLogPO                             | warehouseModularContract      | modularContract_prod_S0321_200 | bp_moduleLogSO                      | bp_moduleLogSO                  | -8  | M_InOutLine | moduleLogContract_SO_S0321_200 | modCntr_type_SO_SHIP_S0321     | false         | Shipment                     | year_2023                         | true        | Eine Lieferung für Produkt modularContract_prod_S0321_200_modularContract_prod_S0321_200 mit der Menge 8 Stk wurde storniert. |
 
     And after not more than 30s, validate ModCntr_Log_Statuses:
       | Record_ID.Identifier | TableName   | ProcessingStatus | OPT.noOfLogStatuses |
