@@ -52,9 +52,8 @@ public class PlanConstraintProvider implements ConstraintProvider
 				penalizeNullableDelay(constraintFactory),
 				stepsNotRespectingProjectPriority(constraintFactory),
 				delayIsMinimum(constraintFactory),
-				//
-				// minDurationFromEndToDueDateIsMaximum(constraintFactory),
-				// sumOfDurationFromEndToDueDateIsMaximum(constraintFactory),
+				minDurationFromEndToDueDateIsMaximum(constraintFactory),
+				sumOfDurationFromEndToDueDateIsMaximum(constraintFactory),
 		};
 	}
 
