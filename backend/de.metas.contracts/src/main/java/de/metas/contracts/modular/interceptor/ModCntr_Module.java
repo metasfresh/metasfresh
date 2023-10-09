@@ -43,6 +43,6 @@ public class ModCntr_Module
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
 	{
-		modularContractSettingsBL.validateModularContractSettings(ModularContractSettingsId.ofRepoId(moduleRecord.getModCntr_Settings_ID()));
+		modularContractSettingsBL.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(moduleRecord.getModCntr_Settings_ID()));
 	}
 }

@@ -66,7 +66,7 @@ public class ModularContractSettingsBL
 		return conditionsId;
 	}
 	
-	public void validateModularContractSettings(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	public void validateModularContractSettingsNotUsed(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		final Optional<I_C_Flatrate_Conditions> completedConditions = flatrateBL.streamCompletedConditionsBy(modularContractSettingsId)
 				.findFirst();
