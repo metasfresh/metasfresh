@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -55,11 +54,14 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
+import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -67,9 +69,10 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 {
 	private static final AdMessageKey MSG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.Description");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final InventoryLineModularContractHandler contractHandler;
@@ -118,7 +121,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 
 		final Quantity quantity = inventoryBL.getMovementQty(inventoryLine);
 
-		final String description = msgBL.getMsg(MSG_DESCRIPTION, ImmutableList.of(quantity.abs().toString()));
+		final String description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION, quantity.abs().toString());
 
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(createLogRequest.getContractId());
 
@@ -131,12 +134,20 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
 
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(inventory.getM_Warehouse_ID());
+		final BPartnerId collectionPointBPartnerId = Optional.ofNullable(warehouseId)
+				.map(warehouseBL::getById)
+				.map(I_M_Warehouse::getC_BPartner_ID)
+				.map(BPartnerId::ofRepoId)
+				.orElse(null);
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
 											.referencedRecord(TableRecordReference.of(I_M_InventoryLine.Table_Name, inventoryLine.getM_InventoryLine_ID()))
 											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
-											.warehouseId(WarehouseId.ofRepoIdOrNull(inventory.getM_Warehouse_ID()))
+											.collectionPointBPartnerId(collectionPointBPartnerId)
+											.warehouseId(warehouseId)
 											.documentType(LogEntryDocumentType.INVENTORY)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.PURCHASE)

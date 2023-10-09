@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
@@ -34,12 +35,16 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class ModularContractSettingsBL
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
+	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED = AdMessageKey.of("MSG_ModularContractSettings_AlreadyUsed");
 
 	public ConditionsId retrieveFlatrateConditionId(
 			@NonNull final ModularContractSettings modularContractSettings,
@@ -59,5 +64,19 @@ public class ModularContractSettingsBL
 		}
 
 		return conditionsId;
+	}
+	
+	public void validateModularContractSettingsNotUsed(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		final Optional<I_C_Flatrate_Conditions> completedConditions = flatrateBL.streamCompletedConditionsBy(modularContractSettingsId)
+				.findFirst();
+
+		if (completedConditions.isPresent())
+		{
+			throw new AdempiereException(MSG_ERROR_MODULARCONTRACTSETTINGS_ALREADY_USED)
+					.appendParametersToMessage()
+					.setParameter("C_Flatrate_Conditions_ID", completedConditions.get().getC_Flatrate_Conditions_ID())
+					.setParameter("ModCntr_Settings_ID", modularContractSettingsId.getRepoId());
+		}
 	}
 }

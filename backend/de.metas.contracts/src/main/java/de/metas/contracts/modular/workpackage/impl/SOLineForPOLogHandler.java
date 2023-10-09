@@ -41,8 +41,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -80,6 +79,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final ModularContractLogDAO contractLogDAO;
@@ -128,8 +128,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity.toString())
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity.toString());
 
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
@@ -177,8 +176,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 																						 .build());
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = TranslatableStrings.adMessage(MSG_ON_REVERSE_DESCRIPTION, productName, quantity.toString())
-				.translate(Language.getBaseAD_Language());
+		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity.toString());
 
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()

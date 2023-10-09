@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -42,14 +41,14 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -76,6 +75,8 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
 	private final ModularContractLogDAO contractLogDAO;
@@ -124,7 +125,8 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
-		final String description = TranslatableStrings.adMessage(MSG_INFO_SHIPMENT_SO_COMPLETED, ImmutableList.of(String.valueOf(productId.getRepoId()), quantity.toString())).translate(Language.getBaseAD_Language());
+		final String productName = productBL.getProductValueAndName(productId);
+		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_SO_COMPLETED, productName, quantity.toString());
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
 																				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
@@ -168,7 +170,10 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 																						 .referenceSet(TableRecordReferenceSet.of(inOutLineRef))
 																						 .build());
 
-		final String description = TranslatableStrings.adMessage(MSG_INFO_SHIPMENT_SO_REVERSED, ImmutableList.of(String.valueOf(inOutLineRecord.getM_Product_ID()), quantity.toString())).translate(Language.getBaseAD_Language());
+		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		final String productName = productBL.getProductValueAndName(productId);
+
+		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_SO_REVERSED, productName, quantity.toString());
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, handleLogsRequest.getModel().getM_InOutLine_ID()))

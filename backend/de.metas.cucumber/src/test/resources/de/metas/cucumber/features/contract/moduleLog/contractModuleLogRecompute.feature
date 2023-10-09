@@ -42,8 +42,8 @@ Feature: Modular contract log - Recompute
       | modCntr_settings_recompute_150923 | testSettings_07042023_0 | module_log_recompute_150923 | harvesting_calendar      | year                 | moduleLogPricingSystem_recompute_150923 |
 
     And metasfresh contains ModCntr_Types:
-      | ModCntr_Type_ID.Identifier      | Name               | Value              | Classname                                                           |
-      | modCntr_type_recompute_150923_1 | invLine_07042023_1 | invLine_07042023_1 | de.metas.contracts.modular.impl.InventoryLineModularContractHandler |
+      | ModCntr_Type_ID.Identifier      | Name               | Value              | ModularContractHandlerType |
+      | modCntr_type_recompute_150923_1 | invLine_07042023_1 | invLine_07042023_1 | InventoryLine_Modular      |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier      | SeqNo | Name                              | M_Product_ID.Identifier     | InvoicingGroup | ModCntr_Settings_ID.Identifier    | ModCntr_Type_ID.Identifier      |
@@ -51,7 +51,7 @@ Feature: Modular contract log - Recompute
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier     | Name                                    | Type_Conditions | OPT.M_PricingSystem_ID.Identifier       | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | moduleLogConditions_PO_recompute_150923 | moduleLogConditions_PO_recompute_150923 | ModularContract | moduleLogPricingSystem_recompute_150923 | Ca                       | modCntr_settings_recompute_150923  | DR            |
+      | moduleLogConditions_PO_recompute_150923 | moduleLogConditions_PO_recompute_150923 | ModularContract | moduleLogPricingSystem_recompute_150923 | Ex                       | modCntr_settings_recompute_150923  | DR            |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                           | C_Flatrate_Conditions_ID.Identifier     | Bill_BPartner_ID.Identifier     | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
