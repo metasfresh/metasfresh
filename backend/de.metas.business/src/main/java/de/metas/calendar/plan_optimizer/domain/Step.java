@@ -24,26 +24,27 @@ import lombok.Setter;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @PlanningEntity
 @Setter
 @Getter
-//@EqualsAndHashCode(doNotUseGetters = true) // IMPORTANT: do not use it beucase we have next/prev Step refs
+//@EqualsAndHashCode(doNotUseGetters = true) // IMPORTANT: do not use it because we have next/prev Step refs
 public class Step
 {
-	@PlanningId private StepId id;
+	@PlanningId @NonNull private StepId id;
 
-	private Step previousStep;
-	private Step nextStep;
+	@Nullable private Step previousStep;
+	@Nullable private Step nextStep;
 
-	InternalPriority projectPriority;
+	@NonNull private InternalPriority projectPriority;
 
-	private Resource resource;
-	private Duration humanResourceTestGroupDuration;
+	@NonNull private Resource resource;
+	@NonNull private Duration humanResourceTestGroupDuration;
 
-	private Duration duration;
-	private LocalDateTime startDateMin;
-	private LocalDateTime dueDate;
+	@NonNull private Duration duration;
+	@NonNull private LocalDateTime startDateMin;
+	@NonNull private LocalDateTime dueDate;
 
 	@PlanningPin boolean pinned;
 
@@ -52,17 +53,17 @@ public class Step
 	 */
 	public static final String FIELD_delay = "delay";
 	@PlanningVariable(strengthComparatorClass = DelayStrengthComparator.class, nullable = true)
-	private Integer delay;
+	@Nullable private Integer delay;
 
 	//
 	// Shadow variables
 	private static final String FIELD_PreviousStepEndDate = "previousStepEndDate";
-	@Setter(AccessLevel.NONE) private LocalDateTime previousStepEndDate;
+	@Nullable @Setter(AccessLevel.NONE) private LocalDateTime previousStepEndDate;
 
 	//
 	// Computed from shadow variables
-	private LocalDateTime startDate;
-	private LocalDateTime endDate;
+	@Nullable private LocalDateTime startDate;
+	@Nullable private LocalDateTime endDate;
 
 	@Builder(toBuilder = true)
 	private Step(
@@ -104,11 +105,9 @@ public class Step
 		// NOTE: keep it concise, important for Timefold troubleshooting
 		final StringBuilder sb = new StringBuilder();
 
-		final LocalDateTime startDate = getStartDate();
 		sb.append(startDate).append(" -> ");
 
-		final LocalDateTime endDate = getEndDate();
-		if (startDate != null && startDate.toLocalDate().equals(endDate.toLocalDate()))
+		if (startDate != null && endDate != null && startDate.toLocalDate().equals(endDate.toLocalDate()))
 		{
 			sb.append(endDate.toLocalTime());
 		}
@@ -130,17 +129,14 @@ public class Step
 		// + ", delay=" + getDelayAsDuration() + "(max. " + computeDelayMax() + ")"
 
 		sb.append(resource);
-		sb.append(", P=").append(getProjectId().getRepoId());
+		sb.append(", P=").append(id.getProjectId().getRepoId());
 
-		if (humanResourceTestGroupDuration != null && !humanResourceTestGroupDuration.isZero())
+		if (!humanResourceTestGroupDuration.isZero())
 		{
 			sb.append(", duration(HR)=").append(humanResourceTestGroupDuration);
 		}
 
-		if (id != null)
-		{
-			sb.append(", ID=").append(id.getWoProjectResourceId().getRepoId());
-		}
+		sb.append(", ID=").append(id.getWoProjectResourceId().getRepoId());
 
 		sb.append(", delay=").append(delay);
 
@@ -149,19 +145,11 @@ public class Step
 
 	public BooleanWithReason checkProblemFactsValid()
 	{
-		if (startDateMin == null)
-		{
-			return BooleanWithReason.falseBecause("StartDateMin not set");
-		}
-		if (dueDate == null)
-		{
-			return BooleanWithReason.falseBecause("DueDate not set");
-		}
 		if (!startDateMin.isBefore(dueDate))
 		{
 			return BooleanWithReason.falseBecause("StartDateMin shall be before DueDate");
 		}
-		if (duration == null || duration.getSeconds() <= 0)
+		if (duration.getSeconds() <= 0)
 		{
 			return BooleanWithReason.falseBecause("Duration must be set and must be positive");
 		}
@@ -206,6 +194,7 @@ public class Step
 	}
 
 	@ShadowVariable(variableListenerClass = StepPreviousEndDateUpdater.class, sourceVariableName = FIELD_delay)
+	@Nullable
 	public LocalDateTime getPreviousStepEndDate()
 	{
 		return previousStepEndDate;
@@ -242,8 +231,7 @@ public class Step
 
 	public Duration getDurationBeforeStartDateMin()
 	{
-		final LocalDateTime startDate = getStartDate();
-		return startDate.isBefore(startDateMin) ? Duration.between(startDate, startDateMin) : Duration.ZERO;
+		return startDate != null && startDate.isBefore(startDateMin) ? Duration.between(startDate, startDateMin) : Duration.ZERO;
 	}
 
 	public int getDurationBeforeStartDateMinAsInt()
@@ -253,8 +241,7 @@ public class Step
 
 	public Duration getDurationAfterDue()
 	{
-		final LocalDateTime endDate = getEndDate();
-		return endDate.isAfter(dueDate) ? Duration.between(dueDate, endDate) : Duration.ZERO;
+		return endDate != null && endDate.isAfter(dueDate) ? Duration.between(dueDate, endDate) : Duration.ZERO;
 	}
 
 	public int getDurationAfterDueAsInt()
@@ -267,7 +254,7 @@ public class Step
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isDueDateRespected() {return getDurationAfterDue().isZero();}
 
-	private Duration getDurationFromEndToDueDate() {return Duration.between(getEndDate(), dueDate);}
+	private Duration getDurationFromEndToDueDate() {return Duration.between(Objects.requireNonNull(endDate), dueDate);}
 
 	public int getDurationFromEndToDueDateInHoursAbs() {return Math.abs((int)getDurationFromEndToDueDate().toHours());}
 }
