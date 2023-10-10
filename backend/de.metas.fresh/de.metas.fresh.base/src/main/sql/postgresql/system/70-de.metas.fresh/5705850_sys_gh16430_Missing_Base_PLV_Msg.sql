@@ -8,7 +8,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 ;
 
 -- Value: WEBUI_Missing_Base_PriceList_Version
--- 2023-10-10T18:06:53.914Z
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Pricelist has no Base Pricelist',Updated=TO_TIMESTAMP('2023-10-10 19:06:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545352
+-- 2023-10-10T15:48:50.220Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Keine Basispreisliste für {0} Preisliste festgelegt',Updated=TO_TIMESTAMP('2023-10-10 16:48:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545352
 ;
 
