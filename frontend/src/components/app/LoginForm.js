@@ -307,7 +307,7 @@ class LoginForm extends Component {
         onKeyPress={this.handleKeyPress}
       >
         <div className="text-center">
-          <img src={logo} className="header-logo mt-2 mb-2" />
+          <img src={logo} className="login-logo mt-2 mb-2" />
         </div>
         {roleSelect ? (
           <div>
