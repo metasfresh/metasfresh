@@ -118,8 +118,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	Constraint delayIsMinimum(final ConstraintFactory constraintFactory)
 	{
 		return constraintFactory.forEach(Step.class)
-				.filter(step -> step.getDelay() > 0)
-				.penalize(ONE_SOFT_2, Step::getDelay)
+				.penalize(ONE_SOFT_2, Step::getAccumulatedDelayAsInt)
 				.asConstraint("Delay is minimum");
 	}
 

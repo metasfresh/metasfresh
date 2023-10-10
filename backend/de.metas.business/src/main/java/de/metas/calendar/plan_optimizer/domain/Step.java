@@ -194,6 +194,17 @@ public class Step
 
 	private Duration getDelayAsDuration() {return Duration.of(getDelayAsInt(), Plan.PLANNING_TIME_PRECISION);}
 
+	public int getAccumulatedDelayAsInt()
+	{
+		int accumulatedDelay = 0;
+		for (Step step = this; step != null; step = step.getPreviousStep())
+		{
+			accumulatedDelay += step.getDelayAsInt();
+		}
+
+		return accumulatedDelay;
+	}
+
 	@ShadowVariable(variableListenerClass = StepPreviousEndDateUpdater.class, sourceVariableName = FIELD_delay)
 	public LocalDateTime getPreviousStepEndDate()
 	{
