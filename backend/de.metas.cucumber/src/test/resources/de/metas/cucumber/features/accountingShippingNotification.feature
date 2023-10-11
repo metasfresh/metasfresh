@@ -294,11 +294,10 @@ Feature: accounting for shipping notification
       | s_ol_1                           | 0            | 20           | 10         | true      | 2021-04-20                |
 
     And after not more than 30s, the inout document with identifier shipment_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account                     | DR  | CR  | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty |
-      | factAcct_11             | P_Asset_Acct                | 0   | 113 | chf                      | P_Asset_Acct                | -10     |
-      | factAcct_12             | P_COGS_Acct                 | 113 | 0   | chf                      | P_COGS_Acct                 | 10      |
-      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0   | 113 | chf                      | P_ExternallyOwnedStock_Acct | -10     |
-      | factAcct_21             | P_COGS_Acct                 | 113 | 0   | chf                      | P_COGS_Acct                 | 10      |
+      | Fact_Acct_ID.Identifier | Account                     | DR  | CR  | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.NoOfHits |
+      | factAcct_11             | P_Asset_Acct                | 0   | 113 | chf                      | P_Asset_Acct                | -10     |              |
+      | factAcct_12             | P_COGS_Acct                 | 113 | 0   | chf                      | P_COGS_Acct                 | 10      | 2            |
+      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0   | 113 | chf                      | P_ExternallyOwnedStock_Acct | -10     |              |
 
     And the shipment identified by shipment_1 is reversed
 
@@ -307,11 +306,10 @@ Feature: accounting for shipping notification
       | reversalShipment_1    | shipment_1             |
 
     And after not more than 30s, the inout document with identifier reversalShipment_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account                     | DR   | CR   | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty |
-      | factAcct_11             | P_Asset_Acct                | 0    | -113 | chf                      | P_Asset_Acct                | 10      |
-      | factAcct_12             | P_COGS_Acct                 | -113 | 0    | chf                      | P_COGS_Acct                 | -10     |
-      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0    | -113 | chf                      | P_ExternallyOwnedStock_Acct | 10      |
-      | factAcct_21             | P_COGS_Acct                 | -113 | 0    | chf                      | P_COGS_Acct                 | -10     |
+      | Fact_Acct_ID.Identifier | Account                     | DR   | CR   | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.NoOfHits |
+      | factAcct_11             | P_Asset_Acct                | 0    | -113 | chf                      | P_Asset_Acct                | 10      |              |
+      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0    | -113 | chf                      | P_ExternallyOwnedStock_Acct | 10      |              |
+      | factAcct_21             | P_COGS_Acct                 | -113 | 0    | chf                      | P_COGS_Acct                 | -10     | 2            |
 
   @from:cucumber
   @Id:S0322_500
