@@ -99,7 +99,7 @@ public class ManualPOCTest
 
 			for (int resourceIdx = 1; resourceIdx <= 10; resourceIdx++)
 			{
-				stepsList.add(Step.builder()
+				final Step step = Step.builder()
 						.id(StepId.builder()
 								.woProjectStepId(WOProjectStepId.ofRepoId(projectId, nextStepRepoId.getAndIncrement()))
 								.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, nextStepRepoId.get()))
@@ -111,7 +111,14 @@ public class ManualPOCTest
 						.dueDate(LocalDateTime.parse("2023-05-01T15:00"))
 						.startDateMin(LocalDate.parse("2023-04-01").atStartOfDay())
 						.delay(0)
-						.build());
+						.build();
+
+				if(projectIdx == 1 && resourceIdx == 5)
+				{
+					step.setPinnedStartDate(LocalDateTime.parse("2023-04-02T00:00"));
+				}
+
+				stepsList.add(step);
 			}
 		}
 

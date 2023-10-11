@@ -213,7 +213,7 @@ public class DatabasePlanLoaderInstance
 				.dueDate(dueDate)
 				.startDateMin(startDateMin)
 				.delay(delay)
-				.pinned(pinned)
+				.pinnedStartDate(pinned ? startDate : null)
 				.humanResourceTestGroupDuration(humanResourceTestGroupDuration)
 				.build();
 

@@ -1,7 +1,6 @@
 package de.metas.calendar.plan_optimizer.domain;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
@@ -46,7 +45,7 @@ public class Step
 	@NonNull private LocalDateTime startDateMin;
 	@NonNull private LocalDateTime dueDate;
 
-	@PlanningPin boolean pinned;
+	@Nullable private LocalDateTime pinnedStartDate;
 
 	/**
 	 * Delay it's the offset from previous step end. The delay is measured in {@link Plan#PLANNING_TIME_PRECISION}.
@@ -77,7 +76,7 @@ public class Step
 			@NonNull final LocalDateTime startDateMin,
 			@NonNull final LocalDateTime dueDate,
 			@Nullable final Integer delay,
-			final boolean pinned,
+			@Nullable final LocalDateTime pinnedStartDate,
 			@Nullable final LocalDateTime previousStepEndDate,
 			@Nullable final LocalDateTime startDate,
 			@Nullable final LocalDateTime endDate)
@@ -92,7 +91,7 @@ public class Step
 		this.dueDate = dueDate;
 		this.startDateMin = startDateMin;
 		this.delay = delay;
-		this.pinned = pinned;
+		this.pinnedStartDate = pinnedStartDate;
 
 		this.previousStepEndDate = previousStepEndDate;
 		this.startDate = startDate;
@@ -104,6 +103,15 @@ public class Step
 	{
 		// NOTE: keep it concise, important for Timefold troubleshooting
 		final StringBuilder sb = new StringBuilder();
+
+		if (pinnedStartDate != null)
+		{
+			sb.append("(P)");
+		}
+		else
+		{
+			sb.append("   ");
+		}
 
 		sb.append(startDate).append(" -> ");
 
@@ -208,21 +216,29 @@ public class Step
 		}
 
 		this.previousStepEndDate = previousStepEndDate;
-		if (previousStepEndDate == null)
-		{
-			this.startDate = null;
-			this.endDate = null;
-		}
-		else
-		{
-			final Duration delayDuration = getDelayAsDuration();
-			this.startDate = previousStepEndDate.plus(delayDuration);
-			this.endDate = this.startDate.plus(duration);
-		}
+		this.startDate = computeStartDate();
+		this.endDate = this.startDate != null ? this.startDate.plus(duration) : null;
 
 		if (scoreDirector != null)
 		{
 			scoreDirector.afterVariableChanged(this, FIELD_PreviousStepEndDate);
+		}
+	}
+
+	private LocalDateTime computeStartDate()
+	{
+		if (pinnedStartDate != null)
+		{
+			return pinnedStartDate;
+		}
+		else if (previousStepEndDate == null)
+		{
+			return null;
+		}
+		else
+		{
+			final Duration delayDuration = getDelayAsDuration();
+			return previousStepEndDate.plus(delayDuration);
 		}
 	}
 
