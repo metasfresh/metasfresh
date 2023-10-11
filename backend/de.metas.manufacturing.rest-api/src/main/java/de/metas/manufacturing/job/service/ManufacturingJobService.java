@@ -51,6 +51,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
@@ -185,8 +186,9 @@ public class ManufacturingJobService
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
 														   .onlyCompleted(true)
-														   .sortingOptions(ManufacturingOrderQuery.SortingOptions.bySeqNo())
+														   .sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
 														   .responsibleId(ValueRestriction.equalsTo(responsibleId))
+														   .onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
 														   .build());
 	}
 
@@ -197,7 +199,8 @@ public class ManufacturingJobService
 	{
 		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
-				.sortingOptions(ManufacturingOrderQuery.SortingOptions.bySeqNo())
+				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
+				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
 				.responsibleId(ValueRestriction.isNull());
 
 		Set<ResourceId> onlyPlantIds = plantId != null ? ImmutableSet.of(plantId) : ImmutableSet.of();

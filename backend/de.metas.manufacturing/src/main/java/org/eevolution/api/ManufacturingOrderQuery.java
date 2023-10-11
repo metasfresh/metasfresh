@@ -1,11 +1,11 @@
 package org.eevolution.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.dao.ValueRestriction;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -53,21 +53,12 @@ public class ManufacturingOrderQuery
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	boolean onlyDrafted;
 
+	@Nullable ImmutableSet<PPOrderPlanningStatus> onlyPlanningStatuses;
+
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
-	@Nullable SortingOptions sortingOptions;
+	@NonNull @Singular ImmutableList<SortingOption> sortingOptions;
 
-	@Value
-	@Builder(access = AccessLevel.PRIVATE)
-	public static class SortingOptions
-	{
-		@NonNull
-		public static SortingOptions bySeqNo()
-		{
-			return SortingOptions.builder()
-					.sortBySeqNo(true)
-					.build();
-		}
-
-		boolean sortBySeqNo;
+	public enum SortingOption {
+		SEQ_NO
 	}
 }
