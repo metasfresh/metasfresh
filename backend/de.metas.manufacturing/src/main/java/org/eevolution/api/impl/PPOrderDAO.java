@@ -13,6 +13,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -34,7 +35,6 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -184,11 +184,17 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
+		if (query.getOnlyPlanningStatuses() != null)
+		{
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMNNAME_PlanningStatus, query.getOnlyPlanningStatuses());
+		}
+
 		//
 		// Order BYs
-		Optional.ofNullable(query.getSortingOptions())
-				.filter(ManufacturingOrderQuery.SortingOptions::isSortBySeqNo)
-				.ifPresent(sortingOptions -> queryBuilder.orderBy(I_PP_Order.COLUMNNAME_SeqNo));
+		query.getSortingOptions()
+				.stream()
+				.map(PPOrderDAO::sortingOption2ColumnName)
+				.forEach(queryBuilder::orderBy);
 
 		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_DocumentNo);
 		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_PP_Order_ID);
@@ -316,5 +322,19 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
 				.create()
 				.listImmutable(I_PP_Order.class);
+	}
+
+	@NonNull
+	private static String sortingOption2ColumnName(@NonNull final ManufacturingOrderQuery.SortingOption sortingOption)
+	{
+		switch (sortingOption)
+		{
+			case SEQ_NO:
+				return I_PP_Order.COLUMNNAME_SeqNo;
+			default:
+				throw new AdempiereException("Given sortingOption is not supported!")
+						.appendParametersToMessage()
+						.setParameter("SortingOption", sortingOption);
+		}
 	}
 }
