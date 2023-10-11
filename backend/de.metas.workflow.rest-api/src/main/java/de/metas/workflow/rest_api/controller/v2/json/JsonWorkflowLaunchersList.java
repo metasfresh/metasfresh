@@ -34,7 +34,6 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.Comparator;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -53,7 +52,6 @@ public class JsonWorkflowLaunchersList
 		return builder()
 				.launchers(list.stream()
 						.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
-						.sorted(Comparator.comparing(JsonWorkflowLauncher::getCaption))
 						.collect(ImmutableList.toImmutableList()))
 				.filterByQRCode(list.getFilterByQRCode() != null ? list.getFilterByQRCode().toJsonDisplayableQRCode() : null)
 				.computedTime(list.getTimestamp())

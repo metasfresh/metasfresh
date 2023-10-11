@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -185,7 +186,11 @@ public class PPOrderDAO implements IPPOrderDAO
 
 		//
 		// Order BYs
-		queryBuilder.orderBy(I_PP_Order.COLUMN_DocumentNo);
+		Optional.ofNullable(query.getSortingOptions())
+				.filter(ManufacturingOrderQuery.SortingOptions::isSortBySeqNo)
+				.ifPresent(sortingOptions -> queryBuilder.orderBy(I_PP_Order.COLUMNNAME_SeqNo));
+
+		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_DocumentNo);
 		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_PP_Order_ID);
 
 		// Limit

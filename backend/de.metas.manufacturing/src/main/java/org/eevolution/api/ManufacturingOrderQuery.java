@@ -5,6 +5,7 @@ import de.metas.dao.ValueRestriction;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -53,4 +54,20 @@ public class ManufacturingOrderQuery
 	boolean onlyDrafted;
 
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
+	@Nullable SortingOptions sortingOptions;
+
+	@Value
+	@Builder(access = AccessLevel.PRIVATE)
+	public static class SortingOptions
+	{
+		@NonNull
+		public static SortingOptions bySeqNo()
+		{
+			return SortingOptions.builder()
+					.sortBySeqNo(true)
+					.build();
+		}
+
+		boolean sortBySeqNo;
+	}
 }
