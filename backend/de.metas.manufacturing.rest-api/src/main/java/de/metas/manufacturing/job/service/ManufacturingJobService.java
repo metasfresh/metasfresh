@@ -184,9 +184,10 @@ public class ManufacturingJobService
 	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-				.onlyCompleted(true)
-				.responsibleId(ValueRestriction.equalsTo(responsibleId))
-				.build());
+														   .onlyCompleted(true)
+														   .sortingOptions(ManufacturingOrderQuery.SortingOptions.bySeqNo())
+														   .responsibleId(ValueRestriction.equalsTo(responsibleId))
+														   .build());
 	}
 
 	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(
@@ -196,6 +197,7 @@ public class ManufacturingJobService
 	{
 		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
+				.sortingOptions(ManufacturingOrderQuery.SortingOptions.bySeqNo())
 				.responsibleId(ValueRestriction.isNull());
 
 		Set<ResourceId> onlyPlantIds = plantId != null ? ImmutableSet.of(plantId) : ImmutableSet.of();
