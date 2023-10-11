@@ -22,16 +22,16 @@ package de.metas.quantity;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Optional;
-
-import org.compiere.model.I_C_UOM;
-
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Optional;
 
 /**
  * Uom-based capacity definition for all sorts of containers.
@@ -170,9 +170,9 @@ public final class Capacity
 
 		final BigDecimal qtyUsedConv = uomConverter
 				.convertQty(getProductId(),
-						quantity.toBigDecimal(),
-						quantity.getUOM(),
-						uom);
+							quantity.toBigDecimal(),
+							quantity.getUOM(),
+							uom);
 
 		final BigDecimal capacityAvailable = capacity.subtract(qtyUsedConv);
 
@@ -187,15 +187,15 @@ public final class Capacity
 			if (mustCreateZeroCapacity)
 			{
 				return createZeroCapacity(productId,
-						uom,
-						allowNegativeCapacity);
+										  uom,
+										  allowNegativeCapacity);
 			}
 		}
 
 		return createCapacity(capacityAvailable,
-				productId,
-				uom,
-				allowNegativeCapacity);
+							  productId,
+							  uom,
+							  allowNegativeCapacity);
 	}
 
 	/**
@@ -205,7 +205,7 @@ public final class Capacity
 	 * e.g. if Qty=13 and Capacity=10 then QtyPacks=2 (13/10 rounded up).
 	 *
 	 * @param qty
-	 * @param targetUom quantity's unit of measure
+	 * @param targetUom   quantity's unit of measure
 	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
@@ -278,5 +278,15 @@ public final class Capacity
 				+ ", uom=" + (uom == null ? "null" : uom.getUOMSymbol())
 				+ ", allowNegativeCapacity=" + allowNegativeCapacity
 				+ "]";
+	}
+
+	public Quantity computeQtyCUs(final int qtyTUs)
+	{
+		if (qtyTUs < 0)
+		{
+			throw new AdempiereException("@QtyPacks@ < 0");
+		}
+
+		return multiply(qtyTUs).toQuantity();
 	}
 }
