@@ -28,6 +28,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.X_I_ModCntr_Log;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
@@ -134,7 +135,7 @@ public class ImportModularContractLog extends SimpleImportProcessTemplate<I_I_Mo
 				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
-				.processed(record.isProcessed())
+				.processed(false)
 				.build();
 	}
 
