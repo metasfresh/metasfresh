@@ -117,6 +117,26 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_Amount = "Amount";
 
 	/**
+	 * Set Bill Business Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_BPartner_ID (int Bill_BPartner_ID);
+
+	/**
+	 * Get Bill Business Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_BPartner_ID();
+
+	String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+
+	/**
 	 * Set Bill partner search key.
 	 *
 	 * <br>Type: String
@@ -159,6 +179,28 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_BPartnerValue = new ModelColumn<>(I_I_ModCntr_Log.class, "BPartnerValue", null);
 	String COLUMNNAME_BPartnerValue = "BPartnerValue";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Data import.
@@ -209,6 +251,51 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, org.compiere.model.I_C_DataImport_Run> COLUMN_C_DataImport_Run_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "C_DataImport_Run_ID", org.compiere.model.I_C_DataImport_Run.class);
 	String COLUMNNAME_C_DataImport_Run_ID = "C_DataImport_Run_ID";
+
+	/**
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
+
+	void setC_Flatrate_Term(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
+
+	ModelColumn<I_I_ModCntr_Log, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set Collection Point.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCollectionPoint_BPartner_ID (int CollectionPoint_BPartner_ID);
+
+	/**
+	 * Get Collection Point.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCollectionPoint_BPartner_ID();
+
+	String COLUMNNAME_CollectionPoint_BPartner_ID = "CollectionPoint_BPartner_ID";
 
 	/**
 	 * Set Collection Point Key.
@@ -278,24 +365,46 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Date.
-	 * Transaction Date
+	 * Set UOM.
+	 * Unit of Measure
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDateTrx (@Nullable java.lang.String DateTrx);
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Date.
+	 * Transaction Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateTrx (@Nullable java.sql.Timestamp DateTrx);
 
 	/**
 	 * Get Date.
 	 * Transaction Date
 	 *
-	 * <br>Type: String
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDateTrx();
+	@Nullable java.sql.Timestamp getDateTrx();
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_DateTrx = new ModelColumn<>(I_I_ModCntr_Log.class, "DateTrx", null);
 	String COLUMNNAME_DateTrx = "DateTrx";
@@ -345,6 +454,31 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_FiscalYear = new ModelColumn<>(I_I_ModCntr_Log.class, "FiscalYear", null);
 	String COLUMNNAME_FiscalYear = "FiscalYear";
+
+	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_I_ModCntr_Log, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
 	 * Set Import Error Message.
@@ -550,6 +684,27 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
 
 	/**
+	 * Set Invoicing Group Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_InvoicingGroupName (@Nullable java.lang.String ModCntr_InvoicingGroupName);
+
+	/**
+	 * Get Invoicing Group Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getModCntr_InvoicingGroupName();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ModCntr_InvoicingGroupName = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_InvoicingGroupName", null);
+	String COLUMNNAME_ModCntr_InvoicingGroupName = "ModCntr_InvoicingGroupName";
+
+	/**
 	 * Set Document Type.
 	 *
 	 * <br>Type: List
@@ -592,6 +747,50 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
 
 	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
 	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
@@ -611,6 +810,27 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_PriceActual = new ModelColumn<>(I_I_ModCntr_Log.class, "PriceActual", null);
 	String COLUMNNAME_PriceActual = "PriceActual";
+
+	/**
+	 * Set Price UOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceUOM (@Nullable java.lang.String PriceUOM);
+
+	/**
+	 * Get Price UOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPriceUOM();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_PriceUOM = new ModelColumn<>(I_I_ModCntr_Log.class, "PriceUOM", null);
+	String COLUMNNAME_PriceUOM = "PriceUOM";
 
 	/**
 	 * Set Price Unit.
@@ -652,6 +872,26 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Processed = new ModelColumn<>(I_I_ModCntr_Log.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Producer.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProducer_BPartner_ID (int Producer_BPartner_ID);
+
+	/**
+	 * Get Producer.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getProducer_BPartner_ID();
+
+	String COLUMNNAME_Producer_BPartner_ID = "Producer_BPartner_ID";
 
 	/**
 	 * Set Product Value.

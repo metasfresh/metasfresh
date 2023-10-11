@@ -663,3 +663,394 @@ UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-mm-dd', DataType='D',Updated=TO_TIM
 
 
 
+-- Run mode: SWING_CLIENT
+
+-- Column: I_ModCntr_Log.M_Product_ID
+-- 2023-10-05T21:43:30.035Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587532,454,0,19,542372,'M_Product_ID',TO_TIMESTAMP('2023-10-05 22:43:05.295','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Produkt, Leistung, Artikel','de.metas.contracts',0,10,'Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Produkt',0,0,TO_TIMESTAMP('2023-10-05 22:43:05.295','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T21:43:30.055Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587532 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T21:43:30.077Z
+/* DDL */  select update_Column_Translation_From_AD_Element(454)
+;
+
+-- 2023-10-05T21:59:30.172Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN M_Product_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T21:59:30.181Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT MProduct_IModCntrLog FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.Producer_BPartner_ID
+-- 2023-10-05T22:00:15.986Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587533,582415,0,18,541252,542372,'Producer_BPartner_ID',TO_TIMESTAMP('2023-10-05 23:00:15.586','YYYY-MM-DD HH24:MI:SS.US'),100,'N','de.metas.contracts',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Produzent',0,0,TO_TIMESTAMP('2023-10-05 23:00:15.586','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T22:00:15.990Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587533 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T22:00:15.996Z
+/* DDL */  select update_Column_Translation_From_AD_Element(582415)
+;
+
+-- 2023-10-05T22:00:21.113Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN Producer_BPartner_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T22:00:21.121Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT ProducerBPartner_IModCntrLog FOREIGN KEY (Producer_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.Harvesting_Year_ID
+-- 2023-10-05T22:00:50.567Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587534,582471,0,18,540133,542372,'Harvesting_Year_ID',TO_TIMESTAMP('2023-10-05 23:00:50.204','YYYY-MM-DD HH24:MI:SS.US'),100,'N','de.metas.contracts',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Erntejahr',0,0,TO_TIMESTAMP('2023-10-05 23:00:50.204','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T22:00:50.569Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587534 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T22:00:50.571Z
+/* DDL */  select update_Column_Translation_From_AD_Element(582471)
+;
+
+-- 2023-10-05T22:00:54.099Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN Harvesting_Year_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T22:00:54.105Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT HarvestingYear_IModCntrLog FOREIGN KEY (Harvesting_Year_ID) REFERENCES public.C_Year DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.C_UOM_ID
+-- 2023-10-05T22:01:10.979Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587535,215,0,19,542372,'C_UOM_ID',TO_TIMESTAMP('2023-10-05 23:01:10.53','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Maßeinheit','de.metas.contracts',0,10,'Eine eindeutige (nicht monetäre) Maßeinheit','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Maßeinheit',0,0,TO_TIMESTAMP('2023-10-05 23:01:10.53','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T22:01:10.985Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587535 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T22:01:10.992Z
+/* DDL */  select update_Column_Translation_From_AD_Element(215)
+;
+
+-- 2023-10-05T22:01:12.464Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN C_UOM_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T22:01:12.471Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT CUOM_IModCntrLog FOREIGN KEY (C_UOM_ID) REFERENCES public.C_UOM DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.C_Currency_ID
+-- 2023-10-05T22:01:23.980Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587536,193,0,19,542372,'C_Currency_ID',TO_TIMESTAMP('2023-10-05 23:01:23.473','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Die Währung für diesen Eintrag','de.metas.contracts',0,10,'Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Währung',0,0,TO_TIMESTAMP('2023-10-05 23:01:23.473','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T22:01:23.983Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587536 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T22:01:23.989Z
+/* DDL */  select update_Column_Translation_From_AD_Element(193)
+;
+
+-- 2023-10-05T22:01:25.380Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN C_Currency_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T22:01:25.386Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT CCurrency_IModCntrLog FOREIGN KEY (C_Currency_ID) REFERENCES public.C_Currency DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.Bill_BPartner_ID
+-- 2023-10-05T22:01:45.248Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587537,2039,0,18,541045,542372,'Bill_BPartner_ID',TO_TIMESTAMP('2023-10-05 23:01:44.97','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Geschäftspartner für die Rechnungsstellung','de.metas.contracts',0,10,'Wenn leer, wird die Rechnung an den Geschäftspartner der Lieferung gestellt','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Rechnungspartner',0,0,TO_TIMESTAMP('2023-10-05 23:01:44.97','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T22:01:45.251Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587537 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T22:01:45.257Z
+/* DDL */  select update_Column_Translation_From_AD_Element(2039)
+;
+
+-- 2023-10-05T22:01:46.985Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN Bill_BPartner_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T22:01:46.991Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT BillBPartner_IModCntrLog FOREIGN KEY (Bill_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.M_Warehouse_ID
+-- 2023-10-05T22:02:52.763Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587538,459,0,19,542372,'M_Warehouse_ID',TO_TIMESTAMP('2023-10-05 23:02:51.325','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Lager oder Ort für Dienstleistung','de.metas.contracts',0,10,'Das Lager identifiziert ein einzelnes Lager für Artikel oder einen Standort an dem Dienstleistungen geboten werden.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Lager',0,0,TO_TIMESTAMP('2023-10-05 23:02:51.325','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T22:02:52.767Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587538 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T22:02:52.772Z
+/* DDL */  select update_Column_Translation_From_AD_Element(459)
+;
+
+-- 2023-10-05T22:02:54.316Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN M_Warehouse_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T22:02:54.323Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT MWarehouse_IModCntrLog FOREIGN KEY (M_Warehouse_ID) REFERENCES public.M_Warehouse DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.C_Flatrate_Term_ID
+-- 2023-10-05T22:03:31.329Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587539,541447,0,19,542372,'C_Flatrate_Term_ID',TO_TIMESTAMP('2023-10-05 23:03:31.056','YYYY-MM-DD HH24:MI:SS.US'),100,'N','de.metas.contracts',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Pauschale - Vertragsperiode',0,0,TO_TIMESTAMP('2023-10-05 23:03:31.056','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T22:03:31.333Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587539 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T22:03:31.339Z
+/* DDL */  select update_Column_Translation_From_AD_Element(541447)
+;
+
+-- 2023-10-05T22:03:33.395Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN C_Flatrate_Term_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T22:03:33.401Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT CFlatrateTerm_IModCntrLog FOREIGN KEY (C_Flatrate_Term_ID) REFERENCES public.C_Flatrate_Term DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.CollectionPoint_BPartner_ID
+-- 2023-10-05T22:04:06.188Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587540,582414,0,18,541252,542372,'CollectionPoint_BPartner_ID',TO_TIMESTAMP('2023-10-05 23:04:05.729','YYYY-MM-DD HH24:MI:SS.US'),100,'N','de.metas.contracts',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Sammelstelle',0,0,TO_TIMESTAMP('2023-10-05 23:04:05.729','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-05T22:04:06.191Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587540 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-05T22:04:06.196Z
+/* DDL */  select update_Column_Translation_From_AD_Element(582414)
+;
+
+-- 2023-10-05T22:04:15.551Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN CollectionPoint_BPartner_ID NUMERIC(10)')
+;
+
+-- 2023-10-05T22:04:15.557Z
+ALTER TABLE I_ModCntr_Log ADD CONSTRAINT CollectionPointBPartner_IModCntrLog FOREIGN KEY (CollectionPoint_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-05T22:32:03.973Z
+UPDATE AD_Column SET AD_Reference_ID=15,Updated=TO_TIMESTAMP('2023-10-05 23:32:03.973','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587519
+;
+
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-05T22:33:00.455Z
+UPDATE AD_Column SET AD_Reference_ID=10,Updated=TO_TIMESTAMP('2023-10-05 23:33:00.455','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587519
+;
+
+
+
+
+
+-- Run mode: SWING_CLIENT
+
+-- Value: ImportModularContractLogs
+-- Classname: de.metas.contracts.modular.log.impexp.ImportModularContractLog
+-- 2023-10-06T21:34:56.270Z
+UPDATE AD_Process SET Classname='de.metas.contracts.modular.log.impexp.ImportModularContractLog',Updated=TO_TIMESTAMP('2023-10-06 22:34:56.269','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585323
+;
+
+
+
+
+-- Run mode: SWING_CLIENT
+
+-- 2023-10-10T10:04:49.915Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582753,0,'ModCntr_InvoicingGroupName',TO_TIMESTAMP('2023-10-10 11:04:44.213','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Invoicing Group Name','Invoicing Group Name',TO_TIMESTAMP('2023-10-10 11:04:44.213','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-10-10T10:04:49.926Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582753 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: ModCntr_InvoicingGroupName
+-- 2023-10-10T10:06:44.926Z
+UPDATE AD_Element_Trl SET Name='Name der Rechnungsstellungsgruppe', PrintName='Name der Rechnungsstellungsgruppe',Updated=TO_TIMESTAMP('2023-10-10 11:06:44.926','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582753 AND AD_Language='de_CH'
+;
+
+-- 2023-10-10T10:06:44.942Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582753,'de_CH')
+;
+
+-- Element: ModCntr_InvoicingGroupName
+-- 2023-10-10T10:06:50.315Z
+UPDATE AD_Element_Trl SET Name='Name der Rechnungsstellungsgruppe', PrintName='Name der Rechnungsstellungsgruppe',Updated=TO_TIMESTAMP('2023-10-10 11:06:50.315','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582753 AND AD_Language='de_DE'
+;
+
+-- 2023-10-10T10:06:50.316Z
+UPDATE AD_Element SET Name='Name der Rechnungsstellungsgruppe', PrintName='Name der Rechnungsstellungsgruppe' WHERE AD_Element_ID=582753
+;
+
+-- 2023-10-10T10:06:50.619Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582753,'de_DE')
+;
+
+-- 2023-10-10T10:06:50.620Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582753,'de_DE')
+;
+
+-- Element: ModCntr_InvoicingGroupName
+-- 2023-10-10T10:06:54.038Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-10-10 11:06:54.038','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582753 AND AD_Language='en_US'
+;
+
+-- 2023-10-10T10:06:54.039Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582753,'en_US')
+;
+
+-- Column: I_ModCntr_Log.ModCntr_InvoicingGroupName
+-- 2023-10-10T10:07:15.109Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,FilterOperator,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587542,582753,0,10,542372,'ModCntr_InvoicingGroupName',TO_TIMESTAMP('2023-10-10 11:07:14.823','YYYY-MM-DD HH24:MI:SS.US'),100,'N','de.metas.contracts',0,255,'E','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N',0,'Name der Rechnungsstellungsgruppe',0,0,TO_TIMESTAMP('2023-10-10 11:07:14.823','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-10T10:07:15.110Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587542 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-10T10:07:15.115Z
+/* DDL */  select update_Column_Translation_From_AD_Element(582753)
+;
+
+-- 2023-10-10T10:07:25.639Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN ModCntr_InvoicingGroupName VARCHAR(255)')
+;
+
+-- 2023-10-10T10:08:37.088Z
+UPDATE AD_ImpFormat_Row SET AD_Column_ID=587542, Name='ModCntr_InvoicingGroupName',Updated=TO_TIMESTAMP('2023-10-10 11:08:37.087','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541957
+;
+
+-- 2023-10-10T10:13:57.837Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582754,0,'PriceUOM',TO_TIMESTAMP('2023-10-10 11:13:57.517','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Preiseinheit','Preiseinheit',TO_TIMESTAMP('2023-10-10 11:13:57.517','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2023-10-10T10:13:57.840Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582754 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: PriceUOM
+-- 2023-10-10T10:14:19.953Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Price UOM', PrintName='Price UOM',Updated=TO_TIMESTAMP('2023-10-10 11:14:19.953','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582754 AND AD_Language='en_US'
+;
+
+-- 2023-10-10T10:14:19.954Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582754,'en_US')
+;
+
+-- Column: I_ModCntr_Log.PriceUOM
+-- 2023-10-10T10:14:43.264Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,587543,582754,0,10,542372,'PriceUOM',TO_TIMESTAMP('2023-10-10 11:14:42.96','YYYY-MM-DD HH24:MI:SS.US'),100,'N','de.metas.contracts',0,40,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Preiseinheit',0,0,TO_TIMESTAMP('2023-10-10 11:14:42.96','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2023-10-10T10:14:43.265Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=587543 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-10-10T10:14:43.267Z
+/* DDL */  select update_Column_Translation_From_AD_Element(582754)
+;
+
+-- 2023-10-10T10:14:48.075Z
+/* DDL */ SELECT public.db_alter_table('I_ModCntr_Log','ALTER TABLE public.I_ModCntr_Log ADD COLUMN PriceUOM VARCHAR(40)')
+;
+
+-- 2023-10-10T10:16:00.666Z
+UPDATE AD_ImpFormat_Row SET AD_Column_ID=587543, DataType='S',Updated=TO_TIMESTAMP('2023-10-10 11:16:00.666','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541958
+;
+
+
+
+-- Run mode: SWING_CLIENT
+
+-- 2023-10-11T10:19:45.316Z
+UPDATE AD_ImpFormat SET Description='Import Modular Contract Log', Name='Import Modular Contract Log',Updated=TO_TIMESTAMP('2023-10-11 11:19:45.315','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_ImpFormat_ID=540092
+;
+
+-- 2023-10-11T10:30:56.565Z
+UPDATE AD_ImpFormat_Row SET DataType='D',Updated=TO_TIMESTAMP('2023-10-11 11:30:56.564','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541954
+;
+
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-11T10:31:33.722Z
+UPDATE AD_Column SET AD_Reference_ID=15, DefaultValue='N', FieldLength=1,Updated=TO_TIMESTAMP('2023-10-11 11:31:33.722','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587519
+;
+
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-11T10:32:02.246Z
+UPDATE AD_Column SET AD_Reference_ID=16,Updated=TO_TIMESTAMP('2023-10-11 11:32:02.246','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587519
+;
+
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-11T10:34:16.868Z
+UPDATE AD_Column SET FieldLength=29,Updated=TO_TIMESTAMP('2023-10-11 11:34:16.868','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587519
+;
+
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-11T10:34:55.539Z
+UPDATE AD_Column SET IsActive='N',Updated=TO_TIMESTAMP('2023-10-11 11:34:55.539','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587519
+;
+
+-- 2023-10-11T10:35:08.674Z
+UPDATE AD_ImpFormat_Row SET IsActive='N',Updated=TO_TIMESTAMP('2023-10-11 11:35:08.673','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541954
+;
+
+-- 2023-10-11T10:35:23.068Z
+DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_Row_ID=541954
+;
+
+-- UI Element: Import Vertragsbaustein Log(541737,de.metas.contracts) -> Import Contract Module Logs(547233,de.metas.contracts) -> primary -> 20 -> dates.Vorgangsdatum
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-11T10:36:39.777Z
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=620629
+;
+
+-- 2023-10-11T10:36:39.785Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=720733
+;
+
+-- Field: Import Vertragsbaustein Log(541737,de.metas.contracts) -> Import Contract Module Logs(547233,de.metas.contracts) -> Vorgangsdatum
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-11T10:36:39.793Z
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=720733
+;
+
+-- 2023-10-11T10:36:39.795Z
+DELETE FROM AD_Field WHERE AD_Field_ID=720733
+;
+
+-- Column: I_ModCntr_Log.DateTrx
+-- 2023-10-11T10:36:47.572Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=587519
+;
+
+-- 2023-10-11T10:36:47.574Z
+DELETE FROM AD_Column WHERE AD_Column_ID=587519
+;
+
+
+
