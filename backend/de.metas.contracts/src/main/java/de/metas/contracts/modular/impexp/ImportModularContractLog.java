@@ -121,28 +121,20 @@ public class ImportModularContractLog extends SimpleImportProcessTemplate<I_I_Mo
 	private LogEntryCreateRequest getLogEntryCreateRequestFrom(@NonNull final I_I_ModCntr_Log record)
 	{
 		return LogEntryCreateRequest.builder()
-				//
 				.referencedRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
-				//
 				.contractId(FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID()))
-				.documentType(LogEntryDocumentType.ofCode(record.getModCntr_Log_DocumentType()))
+				.documentType(LogEntryDocumentType.IMPORT_LOG)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
-				//
 				.collectionPointBPartnerId(BPartnerId.ofRepoId(record.getCollectionPoint_BPartner_ID()))
 				.producerBPartnerId(BPartnerId.ofRepoId(record.getProducer_BPartner_ID()))
 				.invoicingBPartnerId(BPartnerId.ofRepoId(record.getBill_BPartner_ID()))
-				//
 				.productId(ProductId.ofRepoId(record.getRecord_ID()))
 				.quantity(Quantity.ofNullable(record.getQty(), uomDAO.getById(record.getC_UOM_ID())))
 				.amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
-				//
 				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
-				//
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
-				//
 				.processed(record.isProcessed())
-				//
 				.build();
 	}
 
