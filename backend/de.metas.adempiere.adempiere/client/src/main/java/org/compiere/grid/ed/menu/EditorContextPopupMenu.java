@@ -348,7 +348,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		final Container parentComp = (Container)parent.getComponent();
 
 		//
-		// Add separator if we got more then one child
+		// Add separator if we got more than one child
 		final boolean moreThanOneChildren = children.length > 1;
 		if (moreThanOneChildren)
 		{
