@@ -17,7 +17,6 @@ pull_request_rules:
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
               - base=adorable_badger_uat
-              - base=ant_pharm_uat
               - base=anxious_hippos_uat
               - base=arctic_north_uat
               - base=big_coconut_uat
@@ -25,7 +24,6 @@ pull_request_rules:
               - base=clone_wars_uat
               - base=epic_party_uat
               - base=hard_encoded_uat
-              - base=holy_cow_uat
               - base=hostile_tractor_uat
               - base=inner_silence_uat
               - base=intensive_care_uat
@@ -36,7 +34,6 @@ pull_request_rules:
               - base=massive_entropy_uat
               - base=modified_carbon_uat
               - base=neon_underwear_uat
-              - base=nerdy_frog_uat
               - base=pot_hole_uat
               - base=release
               - base=soft_panda_uat
@@ -44,11 +41,9 @@ pull_request_rules:
               - base=secondary_opinion_uat
               - base=tasty_ham_uat
               - base=tenacious_d_uat
-              - base=week_end_uat
               - base=yoyo_uat
               - base=zulu_alpha_uat
           - or: &PROJECT_BRANCHES_HOTFIX
-              - base=adorable_badger_hotfix
               - base=big_coconut_hotfix
               - base=blonde_monkey_hotfix
               - base=hard_encoded_hotfix

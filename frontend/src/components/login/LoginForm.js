@@ -210,7 +210,7 @@ class LoginForm extends Component {
     return (
       <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
         <div className="text-center">
-          <img src={logo} className="header-logo mt-2 mb-2" alt="logo" />
+          <img src={logo} className="login-logo mt-2 mb-2" alt="logo" />
         </div>
         {currentView === VIEW_USER_AND_PASSWORD && (
           <LoginUserAndPasswordView
