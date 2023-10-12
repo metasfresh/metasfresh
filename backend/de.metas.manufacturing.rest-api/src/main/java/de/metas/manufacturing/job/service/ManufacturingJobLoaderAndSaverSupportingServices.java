@@ -12,6 +12,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleSer
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.manufacturing.job.model.ProductInfo;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
@@ -32,6 +33,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -145,5 +147,16 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 				.build();
 
 		return Optional.of(scaleTolerance);
+	}
+
+	@NonNull
+	public ProductInfo getProductInfo(@NonNull final ProductId productId) {
+		final I_M_Product product = productBL.getById(productId);
+
+		return ProductInfo.builder()
+				.productId(productId)
+				.name(productBL.getProductNameTrl(product))
+				.value(product.getValue())
+				.build();
 	}
 }

@@ -13,6 +13,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -183,9 +184,19 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
+		if (query.getOnlyPlanningStatuses() != null)
+		{
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMNNAME_PlanningStatus, query.getOnlyPlanningStatuses());
+		}
+
 		//
 		// Order BYs
-		queryBuilder.orderBy(I_PP_Order.COLUMN_DocumentNo);
+		query.getSortingOptions()
+				.stream()
+				.map(PPOrderDAO::sortingOption2ColumnName)
+				.forEach(queryBuilder::orderBy);
+
+		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_DocumentNo);
 		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_PP_Order_ID);
 
 		// Limit
@@ -320,5 +331,19 @@ public class PPOrderDAO implements IPPOrderDAO
 				.filter(filter)
 				.create()
 				.iterateAndStream();
+	}
+
+	@NonNull
+	private static String sortingOption2ColumnName(@NonNull final ManufacturingOrderQuery.SortingOption sortingOption)
+	{
+		switch (sortingOption)
+		{
+			case SEQ_NO:
+				return I_PP_Order.COLUMNNAME_SeqNo;
+			default:
+				throw new AdempiereException("Given sortingOption is not supported!")
+						.appendParametersToMessage()
+						.setParameter("SortingOption", sortingOption);
+		}
 	}
 }
