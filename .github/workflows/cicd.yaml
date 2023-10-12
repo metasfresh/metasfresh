@@ -596,7 +596,7 @@ jobs:
   update-is184-base-version:
     if: github.ref == 'refs/heads/mzorn/auto-update-base-version'
     runs-on: ubuntu-latest
-    needs: [compatibility-images]
+    needs: [init, compatibility-images]
     steps:
       - name: dispatching-redeploy
         run: |
