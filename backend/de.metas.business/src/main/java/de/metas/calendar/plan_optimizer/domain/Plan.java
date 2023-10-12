@@ -15,6 +15,7 @@ import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Data;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.time.Duration;
 import java.time.ZoneId;
@@ -59,7 +60,6 @@ public class Plan
 			{
 				sb.append("\n").append(projectId).append(" (").append(priorityByProjectId.get(projectId)).append(")");
 				stepsByProjectId.get(projectId).forEach(step -> sb.append("\n\t").append(step));
-
 			}
 		}
 		else
@@ -125,4 +125,34 @@ public class Plan
 
 		return newPlan;
 	}
+
+	public void prepareProblem()
+	{
+		if (stepsList == null || stepsList.isEmpty())
+		{
+			throw new AdempiereException("No steps");
+		}
+
+		//
+		// Fix step's DueDate in case next step is pinned
+		for (final Step step : stepsList)
+		{
+			final Step nextStep = step.getNextStep();
+			if (nextStep != null
+					&& nextStep.getPinnedStartDate() != null
+					&& nextStep.getPinnedStartDate().isBefore(step.getDueDate()))
+			{
+				step.setDueDate(nextStep.getPinnedStartDate());
+			}
+		}
+
+		//
+		// Check steps are valid
+		for (int i = 0, lastIndex = stepsList.size() - 1; i <= lastIndex; i++)
+		{
+			final Step step = stepsList.get(i);
+			step.checkProblemFactsValid().assertTrue();
+		}
+	}
+
 }

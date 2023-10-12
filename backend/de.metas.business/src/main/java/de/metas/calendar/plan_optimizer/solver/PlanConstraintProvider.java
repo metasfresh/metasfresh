@@ -111,7 +111,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEachIncludingNullVars(Step.class)
 				.filter(step -> step.getDelay() == null || step.getEndDate() == null)
-				.penalize(ONE_SOFT_1, step -> 1)
+				.penalize(ONE_SOFT_1, step -> step.getProjectPriority().toIntMinorToUrgent() * step.getProjectPriority().toIntMinorToUrgent())
 				.asConstraint("nullable delay");
 	}
 

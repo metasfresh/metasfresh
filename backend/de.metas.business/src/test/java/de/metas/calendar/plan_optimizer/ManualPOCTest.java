@@ -93,7 +93,7 @@ public class ManualPOCTest
 
 		final ArrayList<Step> stepsList = new ArrayList<>();
 
-		for (int projectIdx = 1; projectIdx <= 2; projectIdx++)
+		for (int projectIdx = 1; projectIdx <= 3; projectIdx++)
 		{
 			final ProjectId projectId = projectId(projectIdx);
 
@@ -113,7 +113,11 @@ public class ManualPOCTest
 						.delay(0)
 						.build();
 
-				if(projectIdx == 1 && resourceIdx == 5)
+				if (projectIdx == 1)
+				{
+					step.setProjectPriority(InternalPriority.HIGH);
+				}
+				if (projectIdx == 1 && resourceIdx == 5)
 				{
 					step.setPinnedStartDate(LocalDateTime.parse("2023-04-02T00:00"));
 				}
