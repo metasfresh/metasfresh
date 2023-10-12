@@ -28,7 +28,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	public static final int HARD_LEVELS_SIZE = 2;
 	public static final int SOFT_LEVELS_SIZE = 4;
 
-	private static final BendableScore ONE_HARD = BendableScore.ofHard(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 0, 1);
+	private static final BendableScore ONE_HARD_1 = BendableScore.ofHard(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 0, 1);
 	private static final BendableScore ONE_HARD_2 = BendableScore.ofHard(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 1, 1);
 	private static final BendableScore ONE_SOFT_1 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 0, 1);
 	private static final BendableScore ONE_SOFT_2 = BendableScore.ofSoft(HARD_LEVELS_SIZE, SOFT_LEVELS_SIZE, 1, 1);
@@ -63,7 +63,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 						Step.class,
 						Joiners.equal(Step::getResource),
 						stepsOverlapping())
-				.penalize(ONE_HARD, PlanConstraintProvider::getOverlappingDuration)
+				.penalize(ONE_HARD_1, PlanConstraintProvider::getOverlappingDuration)
 				.asConstraint("Resource conflict");
 	}
 
@@ -73,7 +73,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(step -> !step.isStartDateMinRespected())
-				.penalize(ONE_HARD, Step::getDurationBeforeStartDateMinAsInt)
+				.penalize(ONE_HARD_1, Step::getDurationBeforeStartDateMinAsInt)
 				.asConstraint("StartDateMin not respected");
 	}
 
@@ -81,7 +81,7 @@ public class PlanConstraintProvider implements ConstraintProvider
 	{
 		return constraintFactory.forEach(Step.class)
 				.filter(Step::isDueDateNotRespected)
-				.penalize(ONE_HARD, Step::getDurationAfterDueAsInt)
+				.penalize(ONE_HARD_1, Step::getDurationAfterDueAsInt)
 				.asConstraint("DueDate not respected");
 	}
 
