@@ -196,6 +196,7 @@ jobs:
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
+          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         run: |
           docker buildx build \
@@ -433,6 +434,7 @@ jobs:
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
+          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -546,6 +548,7 @@ jobs:
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
+          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
