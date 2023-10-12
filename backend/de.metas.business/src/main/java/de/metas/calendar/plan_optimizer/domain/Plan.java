@@ -1,5 +1,10 @@
 package de.metas.calendar.plan_optimizer.domain;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.ScoreExplanation;
+import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.calendar.plan_optimizer.solver.PlanCloner;
@@ -8,11 +13,6 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Data;
-import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
-import ai.timefold.solver.core.api.domain.solution.PlanningScore;
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.ScoreExplanation;
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 
 import java.time.Duration;
 import java.time.ZoneId;
@@ -58,6 +58,10 @@ public class Plan
 				stepsByProjectId.get(projectId).forEach(step -> sb.append("\n\t").append(step));
 
 			}
+		}
+		else
+		{
+			sb.append("\n\t(No steps)");
 		}
 
 		if (scoreExplanation != null)

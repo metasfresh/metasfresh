@@ -208,6 +208,11 @@ public class Step
 		return previousStepEndDate;
 	}
 
+	public void setPreviousStepEndDateAndUpdate(@Nullable final LocalDateTime previousStepEndDate)
+	{
+		setPreviousStepEndDateAndUpdate(previousStepEndDate, null);
+	}
+
 	public void setPreviousStepEndDateAndUpdate(@Nullable final LocalDateTime previousStepEndDate, @Nullable final ScoreDirector<Plan> scoreDirector)
 	{
 		if (scoreDirector != null)

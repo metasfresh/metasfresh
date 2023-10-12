@@ -230,6 +230,8 @@ public class DatabasePlanLoaderInstance
 			step.setPreviousStep(prevStep);
 		}
 
+		step.setPreviousStepEndDateAndUpdate(prevStep != null ? prevStep.getEndDate() : startDateMin);
+
 		return step;
 	}
 
@@ -245,9 +247,9 @@ public class DatabasePlanLoaderInstance
 		return new de.metas.calendar.plan_optimizer.domain.Resource(resource.getResourceId(), resource.getName().getDefaultValue(), resource.getHumanResourceTestGroupId());
 	}
 
-	public static int computeDelay(@NonNull final LocalDateTime lastStepEndDate, @Nullable final LocalDateTime thisStepStartDate)
+	public static int computeDelay(@Nullable final LocalDateTime lastStepEndDate, @Nullable final LocalDateTime thisStepStartDate)
 	{
-		return thisStepStartDate != null && thisStepStartDate.isAfter(lastStepEndDate)
+		return lastStepEndDate != null && thisStepStartDate != null && thisStepStartDate.isAfter(lastStepEndDate)
 				? (int)Plan.PLANNING_TIME_PRECISION.between(lastStepEndDate, thisStepStartDate)
 				: 0;
 	}
