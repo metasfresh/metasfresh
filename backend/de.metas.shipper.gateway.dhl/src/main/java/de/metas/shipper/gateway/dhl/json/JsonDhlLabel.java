@@ -2,7 +2,7 @@
  * #%L
  * de.metas.shipper.gateway.dhl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,27 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl.model;
+package de.metas.shipper.gateway.dhl.json;
 
-import de.metas.currency.Amount;
-import de.metas.quantity.Quantity;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 
-@Value
-@Builder
-public class DhlCustomsDocument
+@Builder(toBuilder = true)
+@JsonDeserialize(builder = JsonDhlLabel.JsonDhlLabelBuilder.class)
+public record JsonDhlLabel(@NonNull @JsonProperty("b64") String b64,
+						   @Nullable @JsonProperty("fileFormat") String fileFormat,
+						   @Nullable @JsonProperty("printFormat") String printFormat)
 {
 	@NonNull
-	String exportType = "COMMERCIAL_GOODS";
-	@NonNull String itemDescription;
-	int packagedQuantity;
-	@Nullable String shipperEORI;
-	@Nullable String consigneeEORI;
-	@NonNull Amount itemValue;
-	@NonNull Quantity weight;
-	@NonNull Amount postalCharges;
-	@Nullable String invoiceNo;
+	public JsonDhlLabel withNoLabelData()
+	{
+		return toBuilder()
+				.b64(StringUtils.EMPTY)
+				.build();
+	}
 }

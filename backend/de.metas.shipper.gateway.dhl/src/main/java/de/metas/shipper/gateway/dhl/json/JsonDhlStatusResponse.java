@@ -2,7 +2,7 @@
  * #%L
  * de.metas.shipper.gateway.dhl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,17 +20,21 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl;
+package de.metas.shipper.gateway.dhl.json;
 
-import org.compiere.model.X_M_Shipper;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public class DhlConstants
+@Value
+@Builder
+@JsonDeserialize(builder = JsonDhlStatusResponse.JsonDhlStatusResponseBuilder.class)
+public class JsonDhlStatusResponse
 {
-	public static final String SHIPPER_GATEWAY_ID = X_M_Shipper.SHIPPERGATEWAY_DHL;
-
-	//they don't use X12DE355
-	public static final String KILOGRAM_UOM = "kg";
-
-	public static final String DHL_API_KEY_HTTP_HEADER = "Dhl-Api-Key";
-	public static final String STANDARD_GRUPPENPROFIL = "STANDARD_GRUPPENPROFIL";
+	@JsonProperty("title")
+	@NonNull String title;
+	@JsonProperty("statusCode")
+	@NonNull Integer statusCode;
 }

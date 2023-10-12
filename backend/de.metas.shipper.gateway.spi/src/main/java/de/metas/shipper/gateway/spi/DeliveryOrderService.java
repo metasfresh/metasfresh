@@ -1,8 +1,7 @@
 package de.metas.shipper.gateway.spi;
 
-import org.adempiere.util.lang.ITableRecordReference;
-
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import org.adempiere.util.lang.ITableRecordReference;
 
 /*
  * #%L
@@ -26,7 +25,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
  * #L%
  */
 
-public interface DeliveryOrderRepository
+public interface DeliveryOrderService
 {
 	String getShipperGatewayId();
 

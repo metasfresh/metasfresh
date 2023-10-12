@@ -247,7 +247,7 @@ class DhlTestHelper
 				.lengthUomId(dummyUom)
 				.trackingUrlBase("dummy")
 				.build(),
-				DhlDatabaseClientLogger.instance);
+				DhlDatabaseClientLogger.instance, null /*restTemplate*/);
 
 		//
 		// check 1: draft DO <->> initial dummy DO

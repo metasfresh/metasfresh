@@ -39,7 +39,7 @@ public class DeliveryOrderLine
 	@Nullable
 	String content;
 
-	private final int grossWeightKg;
+	int grossWeightKg;
 
 	@NonNull
 	PackageDimensions packageDimensions;

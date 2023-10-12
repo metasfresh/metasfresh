@@ -29,6 +29,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Builder(toBuilder = true)
 @Value
 public class DhlCustomDeliveryData implements CustomDeliveryData
@@ -67,5 +69,18 @@ public class DhlCustomDeliveryData implements CustomDeliveryData
 				.filter(it -> it.getSequenceNumber().equals(sequenceNumber))
 				.findFirst()
 				.get();
+	}
+
+	@NonNull
+	public DhlCustomDeliveryData withDhlCustomDeliveryDataDetails(@Nullable final ImmutableList<DhlCustomDeliveryDataDetail> details)
+	{
+		if (details == null)
+		{
+			return this;
+		}
+		return toBuilder()
+				.clearDetails()
+				.details(details)
+				.build();
 	}
 }

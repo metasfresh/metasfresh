@@ -33,7 +33,6 @@ import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrderLine;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -47,34 +46,16 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
+public class DpdDeliveryOrderRepository
 {
 	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 
-	@Override
-	public String getShipperGatewayId()
-	{
-		return DpdConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@NonNull
-	@Override
-	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
-	{
-		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getId();
-		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null");
-		return TableRecordReference.of(I_DPD_StoreOrder.Table_Name, deliveryOrderRepoId);
-	}
-
-	@Override
 	public DeliveryOrder getByRepoId(final DeliveryOrderId deliveryOrderRepoId)
 	{
 
@@ -91,7 +72,6 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	 * - I_Dpd_StoreOrder is the persisted object for that DTO (which has lines), with data relevant for DPD.
 	 * Each different shipper has its own "shipper-po" with its own relevant data.
 	 */
-	@Override
 	@NonNull
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{

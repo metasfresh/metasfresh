@@ -2,7 +2,7 @@
  * #%L
  * de.metas.shipper.gateway.dhl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,17 +20,28 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl;
+package de.metas.shipper.gateway.dhl.json;
 
-import org.compiere.model.X_M_Shipper;
+import de.metas.quantity.Quantity;
+import de.metas.shipper.gateway.dhl.DhlConstants;
+import lombok.Builder;
+import lombok.NonNull;
 
-public class DhlConstants
+import java.math.BigDecimal;
+
+@Builder
+public record JsonDhlWeight(@NonNull String uom, @NonNull BigDecimal value)
 {
-	public static final String SHIPPER_GATEWAY_ID = X_M_Shipper.SHIPPERGATEWAY_DHL;
+	@Builder
+	public JsonDhlWeight(@NonNull final Quantity quantity)
+	{
+		this(quantity.getUOMSymbol(), quantity.roundToUOMPrecision().toBigDecimal());
+	}
 
-	//they don't use X12DE355
-	public static final String KILOGRAM_UOM = "kg";
+	@Builder(builderMethodName = "_inKg",buildMethodName = "weightInKg")
+	public JsonDhlWeight(@NonNull final Integer qtyInKg)
+	{
+		this(DhlConstants.KILOGRAM_UOM, BigDecimal.valueOf(qtyInKg));
+	}
 
-	public static final String DHL_API_KEY_HTTP_HEADER = "Dhl-Api-Key";
-	public static final String STANDARD_GRUPPENPROFIL = "STANDARD_GRUPPENPROFIL";
 }
