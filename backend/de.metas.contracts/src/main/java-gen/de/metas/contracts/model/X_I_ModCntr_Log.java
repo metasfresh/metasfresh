@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1067816706L;
+	private static final long serialVersionUID = -968474774L;
 
     /** Standard Constructor */
     public X_I_ModCntr_Log (final Properties ctx, final int I_ModCntr_Log_ID, @Nullable final String trxName)
@@ -280,6 +280,18 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	@Override
+	public java.lang.String getDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
 	public void setDocumentNo (final java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
@@ -537,6 +549,33 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	public int getModCntr_Log_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Log_ID);
+	}
+
+	@Override
+	public de.metas.contracts.model.I_ModCntr_Module getModCntr_Module()
+	{
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Module_ID, de.metas.contracts.model.I_ModCntr_Module.class);
+	}
+
+	@Override
+	public void setModCntr_Module(final de.metas.contracts.model.I_ModCntr_Module ModCntr_Module)
+	{
+		set_ValueFromPO(COLUMNNAME_ModCntr_Module_ID, de.metas.contracts.model.I_ModCntr_Module.class, ModCntr_Module);
+	}
+
+	@Override
+	public void setModCntr_Module_ID (final int ModCntr_Module_ID)
+	{
+		if (ModCntr_Module_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_Module_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_Module_ID, ModCntr_Module_ID);
+	}
+
+	@Override
+	public int getModCntr_Module_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Module_ID);
 	}
 
 	@Override

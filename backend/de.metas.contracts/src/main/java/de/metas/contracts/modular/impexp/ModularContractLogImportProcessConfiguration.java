@@ -28,9 +28,9 @@ import org.springframework.context.annotation.Configuration;
 import de.metas.util.Services;
 
 @Configuration
-public class ImportModularContractLogConfiguration
+public class ModularContractLogImportProcessConfiguration
 {
-	public ImportModularContractLogConfiguration()
+	public ModularContractLogImportProcessConfiguration()
 	{
 		registerStandardImportProcesses();
 	}
@@ -38,6 +38,6 @@ public class ImportModularContractLogConfiguration
 	private void registerStandardImportProcesses()
 	{
 		final IImportProcessFactory importProcessesFactory = Services.get(IImportProcessFactory.class);
-		importProcessesFactory.registerImportProcess(I_I_ModCntr_Log.class, ImportModularContractLog.class);
+		importProcessesFactory.registerImportProcess(I_I_ModCntr_Log.class, ModularContractLogImportProcess.class);
 	}
 }

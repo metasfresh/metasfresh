@@ -410,6 +410,27 @@ public interface I_I_ModCntr_Log
 	String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_Description = new ModelColumn<>(I_I_ModCntr_Log.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Document No.
 	 * Document sequence number of the document
 	 *
@@ -745,6 +766,31 @@ public interface I_I_ModCntr_Log
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Log_ID", null);
 	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
+
+	/**
+	 * Set Modules.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Module_ID (int ModCntr_Module_ID);
+
+	/**
+	 * Get Modules.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Module_ID();
+
+	@Nullable de.metas.contracts.model.I_ModCntr_Module getModCntr_Module();
+
+	void setModCntr_Module(@Nullable de.metas.contracts.model.I_ModCntr_Module ModCntr_Module);
+
+	ModelColumn<I_I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_Module> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_I_ModCntr_Log.class, "ModCntr_Module_ID", de.metas.contracts.model.I_ModCntr_Module.class);
+	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
 
 	/**
 	 * Set Product.
