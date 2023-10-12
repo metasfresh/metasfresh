@@ -361,11 +361,25 @@ Feature: accounting for shipping notification
 
     And after not more than 30s, the inout document with identifier shipment_1 has the following accounting records:
       | Fact_Acct_ID.Identifier | Account                     | DR   | CR   | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.NoOfHits |
-      | factAcct_11             | P_Asset_Acct                | 0    | 0    | chf                      | P_Asset_Acct                | 0       |              |
-      | factAcct_12             | P_COGS_Acct                 | 0    | 0    | chf                      | P_COGS_Acct                 | 0       |              |
-      | factAcct_21             | P_ExternallyOwnedStock_Acct | 0    | 56.5 | chf                      | P_ExternallyOwnedStock_Acct | -5      | 2            |
-      | factAcct_22             | P_COGS_Acct                 | 56.5 | 0    | chf                      | P_COGS_Acct                 | 5       |              |
-      | factAcct_32             | P_Asset_Acct                | 56.5 | 0    | chf                      | P_Asset_Acct                | 5       |              |
+      | factAcct_1              | P_Asset_Acct                | 0    | 0    | chf                      | P_Asset_Acct                | 0       |              |
+      | factAcct_2              | P_COGS_Acct                 | 0    | 0    | chf                      | P_COGS_Acct                 | 0       |              |
+      | factAcct_3              | P_ExternallyOwnedStock_Acct | 0    | 56.5 | chf                      | P_ExternallyOwnedStock_Acct | -5      | 2            |
+      | factAcct_4              | P_COGS_Acct                 | 56.5 | 0    | chf                      | P_COGS_Acct                 | 5       |              |
+      | factAcct_5              | P_Asset_Acct                | 56.5 | 0    | chf                      | P_Asset_Acct                | 5       |              |
+
+    And the shipment identified by shipment_1 is reversed
+
+    And after not more than 30s, locate reversal M_InOut
+      | M_InOut_ID.Identifier | Reversal_ID.Identifier |
+      | reversalShipment_1    | shipment_1             |
+
+    And after not more than 30s, the inout document with identifier reversalShipment_1 has the following accounting records:
+      | Fact_Acct_ID.Identifier | Account                     | DR    | CR    | C_Currency_ID.Identifier | OPT.AccountConceptualName   | OPT.Qty | OPT.NoOfHits |
+      | factAcct_r_1            | P_Asset_Acct                | 0     | 0     | chf                      | P_Asset_Acct                | 0       |              |
+      | factAcct_r_2            | P_COGS_Acct                 | 0     | 0     | chf                      | P_COGS_Acct                 | 0       |              |
+      | factAcct_r_3            | P_ExternallyOwnedStock_Acct | 0     | -56.5 | chf                      | P_ExternallyOwnedStock_Acct | 5       | 2            |
+      | factAcct_r_4            | P_COGS_Acct                 | -56.5 | 0     | chf                      | P_COGS_Acct                 | -5      |              |
+      | factAcct_r_5            | P_Asset_Acct                | -56.5 | 0     | chf                      | P_Asset_Acct                | -5      |              |
 
 
   Scenario: set accounting schema back to standard
