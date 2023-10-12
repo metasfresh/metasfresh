@@ -18,6 +18,7 @@ import de.metas.manufacturing.job.model.LocatorInfo;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.model.ProductInfo;
 import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
@@ -196,10 +197,12 @@ public class ManufacturingJobLoaderAndSaver
 		final OrderBOMLineQuantities quantities = supportingServices.getQuantities(orderBOMLine);
 		final Quantity qtyToIssue = quantities.getQtyRequired();
 		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
+		final ProductInfo productInfo = supportingServices.getProductInfo(productId);
 
 		return RawMaterialsIssueLine.builder()
 				.productId(productId)
-				.productName(supportingServices.getProductName(productId))
+				.productName(productInfo.getName())
+				.productValue(productInfo.getValue())
 				.isWeightable(isWeightable)
 				.qtyToIssue(qtyToIssue)
 				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
