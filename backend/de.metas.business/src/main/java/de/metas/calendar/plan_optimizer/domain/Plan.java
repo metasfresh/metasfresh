@@ -6,10 +6,12 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.calendar.plan_optimizer.solver.PlanCloner;
 import de.metas.calendar.plan_optimizer.solver.PlanConstraintProvider;
 import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Data;
@@ -52,9 +54,10 @@ public class Plan
 		if (stepsList != null && !stepsList.isEmpty())
 		{
 			final ImmutableListMultimap<ProjectId, Step> stepsByProjectId = Multimaps.index(stepsList, Step::getProjectId);
+			final ImmutableSetMultimap<ProjectId, InternalPriority> priorityByProjectId = stepsList.stream().collect(ImmutableSetMultimap.toImmutableSetMultimap(Step::getProjectId, Step::getProjectPriority));
 			for (final ProjectId projectId : stepsByProjectId.keySet())
 			{
-				sb.append("\n").append(projectId);
+				sb.append("\n").append(projectId).append(" (").append(priorityByProjectId.get(projectId)).append(")");
 				stepsByProjectId.get(projectId).forEach(step -> sb.append("\n\t").append(step));
 
 			}
