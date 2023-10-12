@@ -41,7 +41,7 @@ public class Step
 	@NonNull private Resource resource;
 	@NonNull private Duration humanResourceTestGroupDuration;
 
-	@NonNull private Duration duration;
+	@NonNull @Getter(AccessLevel.NONE) private Duration duration;
 	@NonNull private LocalDateTime startDateMin;
 	@NonNull private LocalDateTime dueDate;
 
@@ -147,6 +147,10 @@ public class Step
 		sb.append(", ID=").append(id.getWoProjectResourceId().getRepoId());
 
 		sb.append(", delay=").append(delay);
+		if (pinnedStartDate != null && previousStepEndDate != null)
+		{
+			sb.append("(").append(Duration.between(previousStepEndDate, pinnedStartDate)).append(")");
+		}
 
 		return sb.toString();
 	}
