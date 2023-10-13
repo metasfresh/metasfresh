@@ -33,4 +33,5 @@ public class DhlConstants
 
 	public static final String DHL_API_KEY_HTTP_HEADER = "Dhl-Api-Key";
 	public static final String STANDARD_GRUPPENPROFIL = "STANDARD_GRUPPENPROFIL";
+	public static final String REMOVED = "<<removed>>";
 }

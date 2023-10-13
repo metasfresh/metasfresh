@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.shipper.gateway.dhl
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,23 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl.json;
+package de.metas.handlingunits.impl;
 
-import lombok.Builder;
+import de.metas.handlingunits.IInOutPackageBL;
+import de.metas.handlingunits.IInOutPackageDAO;
+import de.metas.mpackage.Package;
+import de.metas.mpackage.PackageId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
-@Builder
-public record JsonDHLItem(@NonNull String itemDescription,
-				   @NonNull Integer packagedQuantity,
-				   @NonNull JsonDhlAmount itemValue,
-				   @NonNull JsonDhlWeight itemWeight)
+public class InOutPackageBL implements IInOutPackageBL
 {
+	private final IInOutPackageDAO inOutPackageDAO = Services.get(IInOutPackageDAO.class);
+
+	@Override
+	public Package getPackageByIdIncludingDetails(@NonNull final PackageId packageId)
+	{
+		 return inOutPackageDAO.getPackageById(packageId);
+	}
+
 }

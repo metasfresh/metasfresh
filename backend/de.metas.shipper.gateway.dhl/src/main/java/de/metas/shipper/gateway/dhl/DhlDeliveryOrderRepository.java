@@ -49,10 +49,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 public class DhlDeliveryOrderRepository
@@ -174,7 +174,7 @@ public class DhlDeliveryOrderRepository
 						.lengthInCM(firstOrder.getDHL_LengthInCm())
 						.heightInCM(firstOrder.getDHL_HeightInCm())
 						.build())
-				.grossWeightKg(firstOrder.getDHL_WeightInKg().intValue());
+				.grossWeightKg(firstOrder.getDHL_WeightInKg());
 		return packageIds.stream()
 				.map(orderLineBuilder::packageId)
 				.map(DeliveryOrderLine.DeliveryOrderLineBuilder::build)
@@ -208,6 +208,7 @@ public class DhlDeliveryOrderRepository
 					shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
 					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
 					shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
+					shipmentOrder.setInternationalDelivery(!Objects.equals(deliveryOrder.getDeliveryAddress().getCountry(),deliveryOrder.getPickupAddress().getCountry()));
 				}
 
 				{
@@ -224,7 +225,7 @@ public class DhlDeliveryOrderRepository
 						shipmentOrder.setDHL_LengthInCm(packageDimensions.getLengthInCM());
 						shipmentOrder.setDHL_WidthInCm(packageDimensions.getWidthInCM());
 					}
-					shipmentOrder.setDHL_WeightInKg(BigDecimal.valueOf(deliveryOrderLine.getGrossWeightKg()));
+					shipmentOrder.setDHL_WeightInKg(deliveryOrderLine.getGrossWeightKg());
 					// (2.2.1.10)
 					//noinspection ConstantConditions
 					shipmentOrder.setDHL_RecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);

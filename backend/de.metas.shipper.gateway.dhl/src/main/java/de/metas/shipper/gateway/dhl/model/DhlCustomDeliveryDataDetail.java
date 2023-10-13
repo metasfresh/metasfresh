@@ -22,17 +22,18 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
+import de.metas.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
 @Value
 public class DhlCustomDeliveryDataDetail
 {
-	int packageId;
+	@NonNull PackageId packageId;
 
 	@Nullable
 	DhlSequenceNumber sequenceNumber;
@@ -53,7 +54,7 @@ public class DhlCustomDeliveryDataDetail
 
 	@Builder(toBuilder = true)
 	private DhlCustomDeliveryDataDetail(
-			final int packageId,
+			@NonNull final PackageId packageId,
 			@Nullable final DhlSequenceNumber sequenceNumber,
 			@Nullable final byte[] pdfLabelData,
 			@Nullable final String awb,
@@ -62,7 +63,7 @@ public class DhlCustomDeliveryDataDetail
 			@Nullable final DhlCustomsDocument customsDocument
 	)
 	{
-		Check.assumeGreaterThanZero(packageId, "packageId");
+		Check.assumeGreaterThanZero(PackageId.toRepoId(packageId), "packageId");
 
 		this.packageId = packageId;
 		this.sequenceNumber = sequenceNumber;
@@ -70,10 +71,6 @@ public class DhlCustomDeliveryDataDetail
 		this.awb = awb;
 		this.trackingUrl = trackingUrl;
 		this.internationalDelivery = internationalDelivery;
-		if (internationalDelivery && customsDocument == null)
-		{
-			throw new AdempiereException("International delivery must have a valid Customs Document");
-		}
 		this.customsDocument = customsDocument;
 	}
 

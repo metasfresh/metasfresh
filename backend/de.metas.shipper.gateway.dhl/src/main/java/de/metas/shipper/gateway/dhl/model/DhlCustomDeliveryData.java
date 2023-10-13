@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,6 +31,7 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Builder(toBuilder = true)
 @Value
@@ -52,11 +54,11 @@ public class DhlCustomDeliveryData implements CustomDeliveryData
 	}
 
 	@NonNull
-	public DhlCustomDeliveryDataDetail getDetailByPackageId(final int packageId)
+	public DhlCustomDeliveryDataDetail getDetailByPackageId(final PackageId packageId)
 	{
 		//noinspection OptionalGetWithoutIsPresent
 		return details.stream()
-				.filter(it -> it.getPackageId() == packageId)
+				.filter(it -> Objects.equals(it.getPackageId(),  packageId))
 				.findFirst()
 				.get();
 	}
@@ -83,4 +85,5 @@ public class DhlCustomDeliveryData implements CustomDeliveryData
 				.details(details)
 				.build();
 	}
+
 }

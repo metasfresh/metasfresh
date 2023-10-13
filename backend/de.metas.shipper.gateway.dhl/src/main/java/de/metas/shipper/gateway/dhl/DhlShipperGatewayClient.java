@@ -26,9 +26,15 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderRequest;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderResponse;
+import de.metas.shipper.gateway.dhl.json.JsonDHLItem;
 import de.metas.shipper.gateway.dhl.json.JsonDhlAddress;
+import de.metas.shipper.gateway.dhl.json.JsonDhlAmount;
+import de.metas.shipper.gateway.dhl.json.JsonDhlCustomsDeclaration;
 import de.metas.shipper.gateway.dhl.json.JsonDhlDimension;
 import de.metas.shipper.gateway.dhl.json.JsonDhlItemResponse;
 import de.metas.shipper.gateway.dhl.json.JsonDhlPackageDetails;
@@ -39,12 +45,15 @@ import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
+import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
+import de.metas.shipper.gateway.dhl.model.DhlCustomsItem;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.OrderId;
@@ -121,18 +130,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final JSONDhlCreateOrderRequest dhlOrderRequest = createNewDHLShipmentOrderRequest(deliveryOrder);
 		final JSONDhlCreateOrderResponse dhlResponse = callDhl(dhlOrderRequest, deliveryOrder.getId());
 
-		// final String exceptionMessage = Objects.requireNonNull(dhlResponse.getItems())
-		// 		.stream()
-		// 		.filter(item -> HttpStatus.valueOf(item.getSstatus().getStatusCode()).isError())
-		// 		.map(JsonDhlItemResponse::getValidationMessages)
-		// 		.filter(Objects::nonNull)
-		// 		.flatMap(List::stream)
-		// 		.map(it -> it.validationState() + " " + it.validationMessage())
-		// 		.collect(Collectors.joining("; "));
-		// if (Check.isNotBlank(exceptionMessage))
-		// {
-		// 	throw new ShipperGatewayException(exceptionMessage);
-		// }
 		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(deliveryOrder, dhlResponse);
 
 		epicLogger.addLog("Completed deliveryOrder is {}", completedDeliveryOrder);
@@ -222,7 +219,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					.shipDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
 					.shipper(getJsonDhlAddress(deliveryOrder.getPickupAddress(), null))
 					.consignee(getJsonDhlAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))
-					.details(getJsonDhlDetails(deliveryOrderLine));
+					.details(getJsonDhlDetails(deliveryOrderLine))
+					.customs(getJsonCustomsDeclaration(deliveryOrder.getCustomDeliveryData(), deliveryOrderLine.getPackageId()));
 
 			shipments.add(shipmentBuilder.build());
 
@@ -230,6 +228,58 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		orderRequestBuilder.shipments(shipments.build());
 
 		return orderRequestBuilder.build();
+	}
+
+	@Nullable
+	private JsonDhlCustomsDeclaration getJsonCustomsDeclaration(@Nullable final CustomDeliveryData customDeliveryData, final @NonNull PackageId packageId)
+	{
+		if (customDeliveryData == null)
+		{
+			return null;
+		}
+		final DhlCustomsDocument customsDocument = getDhlCustomsDocument(customDeliveryData, packageId);
+		if (customsDocument == null)
+		{
+			return null;
+		}
+		return JsonDhlCustomsDeclaration.builder()
+				.shipperCustomsRef(customsDocument.getShipperEORI())
+				.consigneeCustomsRef(customsDocument.getConsigneeEORI())
+				.postalCharges(JsonDhlAmount.builder()
+						.amount(Amount.of(0, CurrencyCode.EUR))
+						.build())
+				.items(customsDocument.getItems()
+						.stream()
+						.map(this::toJsonDHLItem)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	@Nullable
+	private static DhlCustomsDocument getDhlCustomsDocument(final @NonNull CustomDeliveryData customDeliveryData, final @NonNull PackageId packageId)
+	{
+		final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(customDeliveryData);
+		final DhlCustomDeliveryDataDetail dhlCustomDeliveryDataDetail = dhlCustomDeliveryData.getDetailByPackageId(packageId);
+		final DhlCustomsDocument customsDocument = dhlCustomDeliveryDataDetail.getCustomsDocument();
+		if (dhlCustomDeliveryDataDetail.isInternationalDelivery() && customsDocument == null)
+		{
+			throw new AdempiereException("Customs document needs to be provided for international shipments!");
+		}
+		return customsDocument;
+	}
+
+	private JsonDHLItem toJsonDHLItem(@NonNull final DhlCustomsItem dhlCustomsItem)
+	{
+		return JsonDHLItem.builder()
+				.itemDescription(dhlCustomsItem.getItemDescription())
+				.packagedQuantity(dhlCustomsItem.getPackagedQuantity())
+				.itemWeight(JsonDhlWeight._inKg()
+						.qtyInKg(dhlCustomsItem.getWeightInKg())
+						.weightInKg())
+				.itemValue(JsonDhlAmount.builder()
+						.amount(dhlCustomsItem.getItemValue())
+						.build())
+				.build();
 	}
 
 	private JsonDhlPackageDetails getJsonDhlDetails(@NonNull final DeliveryOrderLine deliveryOrderLine)

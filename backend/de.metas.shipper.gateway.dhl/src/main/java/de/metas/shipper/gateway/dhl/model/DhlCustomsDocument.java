@@ -22,26 +22,18 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
-import de.metas.currency.Amount;
-import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
 public class DhlCustomsDocument
 {
-	@NonNull
-	String exportType = "COMMERCIAL_GOODS";
-	@NonNull String itemDescription;
-	int packagedQuantity;
 	@Nullable String shipperEORI;
 	@Nullable String consigneeEORI;
-	@NonNull Amount itemValue;
-	@NonNull Quantity weight;
-	@NonNull Amount postalCharges;
-	@Nullable String invoiceNo;
+	@NonNull List<DhlCustomsItem> items;
 }

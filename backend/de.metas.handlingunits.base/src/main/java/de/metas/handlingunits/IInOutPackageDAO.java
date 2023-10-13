@@ -2,6 +2,8 @@ package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
+import de.metas.mpackage.Package;
+import de.metas.mpackage.PackageId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_Package;
@@ -34,4 +36,6 @@ public interface IInOutPackageDAO extends ISingletonService
 {
 	@NonNull
 	ImmutableList<I_M_Package> createM_Packages(List<CreatePackagesRequest> packagesRequestList);
+
+	Package getPackageById(@NonNull PackageId packageId);
 }

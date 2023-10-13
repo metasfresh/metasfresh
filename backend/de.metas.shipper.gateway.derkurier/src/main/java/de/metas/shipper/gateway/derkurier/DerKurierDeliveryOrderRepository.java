@@ -37,8 +37,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -100,17 +98,6 @@ public class DerKurierDeliveryOrderRepository
 	{
 		this.converters = converters;
 	}
-
-	public String getShipperGatewayId()
-	{
-		return SHIPPER_GATEWAY_ID;
-	}
-
-	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
-	{
-		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getId());
-	}
-
 
 	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderId)
 	{

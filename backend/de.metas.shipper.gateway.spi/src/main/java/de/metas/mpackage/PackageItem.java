@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.shipper.gateway.dhl
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,20 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl.json;
+package de.metas.mpackage;
 
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
-@Builder
-public record JsonDHLItem(@NonNull String itemDescription,
-				   @NonNull Integer packagedQuantity,
-				   @NonNull JsonDhlAmount itemValue,
-				   @NonNull JsonDhlWeight itemWeight)
+@Value
+@Builder(toBuilder = true)
+public class PackageItem
 {
+	@NonNull ProductId productId;
+	@NonNull Quantity quantity;
+	OrderLineId orderLineId;
 }

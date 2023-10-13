@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.shipper.gateway.dhl
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,24 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl.json;
+package de.metas.mpackage;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.shipper.gateway.dhl.DhlConstants;
-import de.metas.util.Check;
+import de.metas.inout.InOutId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
 
+@Value
 @Builder(toBuilder = true)
-@JsonDeserialize(builder = JsonDhlLabel.JsonDhlLabelBuilder.class)
-public record JsonDhlLabel(@NonNull @JsonProperty("b64") String b64,
-						   @Nullable @JsonProperty("fileFormat") String fileFormat,
-						   @Nullable @JsonProperty("printFormat") String printFormat)
+public class Package
 {
-	@NonNull
-	public JsonDhlLabel withNoLabelData()
-	{
-		if (Check.isBlank(b64))
-		{
-			return this;
-		}
-		return toBuilder()
-				.b64(DhlConstants.REMOVED)
-				.build();
-	}
+	@NonNull PackageId id;
+	@Nullable BigDecimal weightInKg;
+	@Nullable InOutId inOutId;
+	@NonNull List<PackageItem> packageContents;
+
 }

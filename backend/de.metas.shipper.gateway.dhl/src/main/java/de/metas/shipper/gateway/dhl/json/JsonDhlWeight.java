@@ -22,16 +22,22 @@
 
 package de.metas.shipper.gateway.dhl.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.dhl.DhlConstants;
 import lombok.Builder;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 @Builder
 public record JsonDhlWeight(@NonNull String uom, @NonNull BigDecimal value)
 {
+	@JsonIgnore
+	public static final MathContext MATH_CONTEXT = new MathContext(3, RoundingMode.UP);
+
 	@Builder
 	public JsonDhlWeight(@NonNull final Quantity quantity)
 	{
@@ -39,9 +45,9 @@ public record JsonDhlWeight(@NonNull String uom, @NonNull BigDecimal value)
 	}
 
 	@Builder(builderMethodName = "_inKg",buildMethodName = "weightInKg")
-	public JsonDhlWeight(@NonNull final Integer qtyInKg)
+	public JsonDhlWeight(@NonNull final BigDecimal qtyInKg)
 	{
-		this(DhlConstants.KILOGRAM_UOM, BigDecimal.valueOf(qtyInKg));
+		this(DhlConstants.KILOGRAM_UOM, qtyInKg.round(MATH_CONTEXT));
 	}
 
 }

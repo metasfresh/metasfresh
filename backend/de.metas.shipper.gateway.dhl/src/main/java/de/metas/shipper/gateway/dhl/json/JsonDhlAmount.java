@@ -30,7 +30,7 @@ import lombok.Value;
 import java.math.BigDecimal;
 
 @Value
-class JsonDhlAmount
+public class JsonDhlAmount
 {
 	@Builder
 	public JsonDhlAmount(@NonNull final Amount amount)

@@ -49,6 +49,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
@@ -164,7 +165,7 @@ public class DpdDeliveryOrderRepository
 
 				//noinspection ConstantConditions
 				orderLinePO.setPackageContent(deliveryOrderLine.getContent());
-				orderLinePO.setWeightInKg(deliveryOrderLine.getGrossWeightKg());
+				orderLinePO.setWeightInKg(deliveryOrderLine.getGrossWeightKg().intValue());
 				orderLinePO.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
 				orderLinePO.setDPD_StoreOrder_ID(orderPO.getDPD_StoreOrder_ID());
 
@@ -222,7 +223,7 @@ public class DpdDeliveryOrderRepository
 							.widthInCM(linePO.getWidthInCm())
 							.heightInCM(linePO.getHeightInCm())
 							.build())
-					.grossWeightKg(linePO.getWeightInKg())
+					.grossWeightKg(BigDecimal.valueOf(linePO.getWeightInKg()))
 					.content(linePO.getPackageContent())
 					.build();
 			deliveryOrderLIneBuilder.add(line);

@@ -35,8 +35,8 @@ import java.util.List;
 public class JsonDhlCustomsDeclaration
 {
 	String exportType = "COMMERCIAL_GOODS";
-	@NonNull JsonDhlAmount postalCharges;
 	@Nullable String shipperCustomsRef;// Zoll-Nummer or EORI-Number
 	@Nullable String consigneeCustomsRef;// Zoll-Nummer or EORI-Number
+	@NonNull JsonDhlAmount postalCharges;
 	@NonNull @NotEmpty List<JsonDHLItem> items;
 }

@@ -24,27 +24,48 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.handlingunits.IInOutPackageDAO;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyId;
+import de.metas.mpackage.Package;
+import de.metas.mpackage.PackageId;
+import de.metas.mpackage.PackageItem;
+import de.metas.order.IOrderDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
+import de.metas.shipper.gateway.dhl.model.DhlCustomsItem;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 
 import static de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.getAllShipmentOrdersForRequest;
@@ -54,6 +75,12 @@ import static de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.getAllShip
 public class DhlDeliveryOrderService implements DeliveryOrderService
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IInOutPackageDAO inOutPackageDAO = Services.get(IInOutPackageDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	final CurrencyRepository currencyRepository;
 
 	private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository;
 
@@ -111,7 +138,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 					}
 
 					return DhlCustomDeliveryDataDetail.builder()
-							.packageId(po.getPackageId())
+							.packageId(PackageId.ofRepoId(po.getPackageId()))
 							.awb(po.getawb())
 							.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
 							.pdfLabelData(po.getPdfLabelData())
@@ -130,12 +157,44 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private DhlCustomsDocument getCustomsDocument(@NonNull final I_DHL_ShipmentOrder firstOrder, @NonNull final I_DHL_ShipmentOrder po, @Nullable final String orgBpEORI)
 	{
 		final I_C_BPartner consigneeBpartner = bpartnerDAO.getById(firstOrder.getC_BPartner_ID());
-		po.getPackageId();
-		// inOutDAO.retrieveLinesForInOutId(InOutId.ofRepoId())
+		final Package mPackage = inOutPackageDAO.getPackageById(PackageId.ofRepoId(po.getPackageId()));
+
+		final ImmutableList<DhlCustomsItem> dhlCustomsItems = mPackage.getPackageContents()
+				.stream()
+				.map(this::toDhlCustomsItem)
+				.collect(ImmutableList.toImmutableList());
 
 		return DhlCustomsDocument.builder()
 				.consigneeEORI(consigneeBpartner.getEORI())
 				.shipperEORI(orgBpEORI)
+				.items(dhlCustomsItems)
+				.build();
+	}
+
+	private DhlCustomsItem toDhlCustomsItem(@NonNull final PackageItem packageItem)
+	{
+		final ProductId productId = packageItem.getProductId();
+		final I_M_Product product = productDAO.getById(productId);
+		final BigDecimal weightInKg = productBL.getWeight(product, productBL.getWeightUOM(product));
+		Quantity packagedQuantity;
+		try
+		{
+			packagedQuantity = uomConversionBL.convertQuantityTo(packageItem.getQuantity(), productId, UomId.EACH);
+		}
+		catch (final NoUOMConversionException exception)
+		{
+			//can't convert to EACH, so we don't have an exact number. Just put 1
+			packagedQuantity = Quantitys.create(1, UomId.EACH);
+		}
+
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(packageItem.getOrderLineId());
+		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+
+		return DhlCustomsItem.builder()
+				.itemDescription(product.getName())
+				.weightInKg(weightInKg)
+				.packagedQuantity(packagedQuantity.intValueExact())
+				.itemValue(Amount.of(orderLine.getPriceEntered(), currencyCode))
 				.build();
 	}
 }

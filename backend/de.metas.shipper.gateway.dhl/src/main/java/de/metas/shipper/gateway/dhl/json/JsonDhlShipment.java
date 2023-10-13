@@ -39,6 +39,6 @@ public class JsonDhlShipment
 	@NonNull JsonDhlAddress shipper;
 	@NonNull JsonDhlAddress consignee;
 	@NonNull JsonDhlPackageDetails details;
-	@Nullable JsonDhlCustomsDeclaration customs; // We currently don't support this customs declaration
+	@Nullable JsonDhlCustomsDeclaration customs;
 
 }
