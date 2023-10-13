@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -36,6 +37,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
@@ -179,14 +181,15 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 	@NonNull
 	private ModuleConfig getModuleConfigFrom(@NonNull final I_I_ModCntr_Log importRecord)
 	{
-		final FlatrateTermId contracTermId = FlatrateTermId.ofRepoId(importRecord.getC_Flatrate_Term_ID());
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(contracTermId);
 		final I_ModCntr_Module module = importRecord.getModCntr_Module();
+		final I_ModCntr_Settings settings = module.getModCntr_Settings();
 		final I_ModCntr_Type modCntrType = module.getModCntr_Type();
 
-		//
+		final ModularContractSettingsId settingsId = ModularContractSettingsId.ofRepoId(settings.getModCntr_Settings_ID());
+
+		// build config
 		return ModuleConfig.builder()
-				.id(ModuleConfigId.ofRepoId(settings.getId(), module.getModCntr_Module_ID()))
+				.id(ModuleConfigId.ofRepoId(settingsId, module.getModCntr_Module_ID()))
 				.name(module.getName())
 				.productId(ProductId.ofRepoId(module.getM_Product_ID()))
 				.seqNo(SeqNo.ofInt(module.getSeqNo()))
