@@ -56,5 +56,6 @@ public class WorkflowLaunchersFacetGroupId
 	public String toString() {return getAsString();}
 
 	@JsonValue
+	@NonNull
 	public String getAsString() {return asString;}
 }

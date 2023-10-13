@@ -22,7 +22,6 @@
 
 package de.metas.handlingunits.picking.job.model;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import lombok.Builder;

@@ -1,6 +1,5 @@
 package de.metas.workflow.rest_api.service;
 
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
@@ -11,10 +10,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 
-import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.function.UnaryOperator;
 
 public interface WorkflowBasedMobileApplication extends MobileApplication
