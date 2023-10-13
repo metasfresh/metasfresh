@@ -445,7 +445,7 @@ public class MProductImportTableSqlUpdater
 				.append(" and plv.IsActive='Y' order by plv.M_PriceList_Version_ID limit 1)")
 				.append(" where true")
 				.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
-				.append(" and i.M_PriceList_Version_Name is not null")
+				.append(" and i.M_PriceList_Version_Name is not null and i.M_PriceList_Version_ID is null")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
