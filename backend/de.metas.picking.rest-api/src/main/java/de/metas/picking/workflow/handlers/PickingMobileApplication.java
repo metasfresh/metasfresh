@@ -56,6 +56,8 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -103,18 +105,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		if (filterByQRCode != null)
+		if (query.getFilterByQRCode() != null)
 		{
-			throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+			throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
 		}
 
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
+		return wfLaunchersProvider.provideLaunchers(query);
+	}
+
+	@Override
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
+	{
+		return wfLaunchersProvider.getFacets(userId);
 	}
 
 	@NonNull

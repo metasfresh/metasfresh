@@ -20,6 +20,27 @@ export const getLaunchers = (applicationId, filterByQRCode) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+export const countLaunchers = ({ applicationId, facets }) => {
+  return axios
+    .post(`${apiBasePath}/userWorkflows/launchers/query`, {
+      applicationId,
+      facets,
+      countOnly: true,
+    })
+    .then((response) => unboxAxiosResponse(response))
+    .then((response) => response.count);
+};
+
+export const getFacets = (applicationId) => {
+  return axios
+    .get(`${apiBasePath}/userWorkflows/facets`, {
+      params: {
+        applicationId,
+      },
+    })
+    .then((response) => unboxAxiosResponse(response));
+};
+
 /**
  * @method startWorkflowRequest
  * @summary Start a workflow from the launchers list

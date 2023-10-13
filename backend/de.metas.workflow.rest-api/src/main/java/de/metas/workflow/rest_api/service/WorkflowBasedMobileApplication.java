@@ -8,6 +8,8 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 
@@ -24,11 +26,7 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 	@NonNull
 	MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId);
 
-	WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@Nullable final GlobalQRCode filterByQRCode,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted);
+	WorkflowLaunchersList provideLaunchers(WorkflowLaunchersQuery query);
 
 	WFProcess startWorkflow(WorkflowStartRequest request);
 
@@ -37,6 +35,8 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 	void abort(WFProcessId wfProcessId, UserId callerId);
 
 	void abortAll(UserId callerId);
+
+	default WorkflowLaunchersFacetGroupList getFacets(@NonNull UserId userId) {return WorkflowLaunchersFacetGroupList.EMPTY;}
 
 	WFProcess getWFProcessById(WFProcessId wfProcessId);
 

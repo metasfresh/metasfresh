@@ -27,8 +27,8 @@ import de.metas.Profiles;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.workflow.rest_api.controller.v2.json.JsonLaunchersQuery;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplicationsList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -36,12 +36,15 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeReques
 import de.metas.workflow.rest_api.controller.v2.json.JsonSettings;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -57,7 +60,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -106,15 +108,36 @@ public class WorkflowRestController
 	}
 
 	@GetMapping("/launchers")
+	@Deprecated
 	public JsonWorkflowLaunchersList getLaunchers(
 			@RequestParam("applicationId") final String applicationIdStr,
 			@RequestParam(value = "filterByQRCode", required = false) final String filterByQRCodeStr)
 	{
+		return getLaunchers(JsonLaunchersQuery.builder()
+				.applicationId(MobileApplicationId.ofString(applicationIdStr))
+				.filterByQRCode(GlobalQRCode.ofNullableString(filterByQRCodeStr))
+				.build());
+	}
+
+	@PostMapping("/launchers/query")
+	public JsonWorkflowLaunchersList getLaunchers(@RequestBody @NonNull final JsonLaunchersQuery query)
+	{
+		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(WorkflowLaunchersQuery.builder()
+				.applicationId(query.getApplicationId())
+				.userId(Env.getLoggedUserId())
+				.filterByQRCode(query.getFilterByQRCode())
+				.build());
+
+		return JsonWorkflowLaunchersList.of(launchers, query, newJsonOpts());
+	}
+
+	@GetMapping("/facets")
+	public JsonWorkflowLaunchersFacetGroupList getFacets(@RequestParam("applicationId") final String applicationIdStr)
+	{
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final MobileApplicationId applicationId = MobileApplicationId.ofString(applicationIdStr);
-		final GlobalQRCode filterByQRCode = GlobalQRCode.ofNullableString(filterByQRCodeStr);
-		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(applicationId, loggedUserId, filterByQRCode, Duration.ZERO);
-		return JsonWorkflowLaunchersList.of(launchers, newJsonOpts());
+		final WorkflowLaunchersFacetGroupList facets = workflowRestAPIService.getFacets(applicationId, loggedUserId);
+		return JsonWorkflowLaunchersFacetGroupList.of(facets, newJsonOpts());
 	}
 
 	@GetMapping("/wfProcess/{wfProcessId}")

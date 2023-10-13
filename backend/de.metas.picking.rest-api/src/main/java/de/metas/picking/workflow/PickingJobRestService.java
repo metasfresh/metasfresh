@@ -24,6 +24,7 @@ package de.metas.picking.workflow;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
@@ -66,6 +67,11 @@ public class PickingJobRestService
 			@NonNull final Set<ShipmentScheduleId> excludeShipmentScheduleIds)
 	{
 		return pickingJobService.streamPickingJobCandidates(userId, excludeShipmentScheduleIds);
+	}
+
+	public PickingJobFacets getFacets(final @NonNull UserId userId, final @NonNull Set<ShipmentScheduleId> excludeShipmentScheduleIds)
+	{
+		return pickingJobService.getFacets(userId, excludeShipmentScheduleIds);
 	}
 
 	public PickingJob createPickingJob(

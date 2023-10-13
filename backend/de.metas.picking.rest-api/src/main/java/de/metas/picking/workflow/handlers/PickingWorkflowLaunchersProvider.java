@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
@@ -13,12 +15,16 @@ import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -31,48 +37,40 @@ class PickingWorkflowLaunchersProvider
 	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
 			.build();
 
+	private static final WorkflowLaunchersFacetGroupId CUSTOMERS_FACET_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString("customer");
+	private static final WorkflowLaunchersFacetGroupId DELIVERY_DAY_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString("deliveryDay");
+
 	PickingWorkflowLaunchersProvider(
 			@NonNull final PickingJobRestService pickingJobRestService)
 	{
 		this.pickingJobRestService = pickingJobRestService;
 	}
 
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
-		return launchersCache.getOrLoad(userId, SynchronizedMutable::empty)
-				.compute(previousLaunchers -> checkStateAndComputeLaunchers(userId, suggestedLimit, maxStaleAccepted, previousLaunchers));
+		return launchersCache.getOrLoad(query.getUserId(), SynchronizedMutable::empty)
+				.compute(previousLaunchers -> checkStateAndComputeLaunchers(query, previousLaunchers));
 	}
 
 	private WorkflowLaunchersList checkStateAndComputeLaunchers(
-			final @NonNull UserId userId,
-			final @NonNull QueryLimit suggestedLimit,
-			final @NonNull Duration maxStaleAccepted,
-			final @Nullable WorkflowLaunchersList previousLaunchers)
+			@NonNull WorkflowLaunchersQuery query,
+			@Nullable WorkflowLaunchersList previousLaunchers)
 	{
-		if (previousLaunchers == null)
+		if (previousLaunchers == null || previousLaunchers.isStaled(query.getMaxStaleAccepted()))
 		{
-			//System.out.println("*** No previous value. A new value will be computed!");
-			return computeLaunchers(userId, suggestedLimit);
-		}
-		else if (previousLaunchers.isStaled(maxStaleAccepted))
-		{
-			//System.out.println("*** Value staled. A new value will be computed!");
-			return computeLaunchers(userId, suggestedLimit);
+			return computeLaunchers(query);
 		}
 		else
 		{
-			//System.out.println("*** Value NOT staled");
 			return previousLaunchers;
 		}
 	}
 
-	private WorkflowLaunchersList computeLaunchers(
-			final @NonNull UserId userId,
-			final @NonNull QueryLimit limit)
+	private WorkflowLaunchersList computeLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
+		final UserId userId = query.getUserId();
+		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
+
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
 		//
@@ -126,6 +124,50 @@ class PickingWorkflowLaunchersProvider
 						.customerName(pickingJobReference.getCustomerName())
 						.build())
 				.startedWFProcessId(WFProcessId.ofIdPart(APPLICATION_ID, pickingJobReference.getPickingJobId()))
+				.build();
+	}
+
+	public WorkflowLaunchersFacetGroupList getFacets(final UserId userId)
+	{
+		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(userId, ImmutableSet.of());
+		return toWorkflowLaunchersFacets(pickingFacets);
+	}
+
+	private static WorkflowLaunchersFacetGroupList toWorkflowLaunchersFacets(@NonNull final PickingJobFacets pickingFacets)
+	{
+		return WorkflowLaunchersFacetGroupList.of(
+				WorkflowLaunchersFacetGroup.builder()
+						.id(CUSTOMERS_FACET_GROUP_ID)
+						.caption(TranslatableStrings.adElementOrMessage("Customer_ID"))
+						.facets(pickingFacets.getCustomers().stream()
+								.map(PickingWorkflowLaunchersProvider::toWorkflowLaunchersFacet)
+								.distinct()
+								.collect(ImmutableList.toImmutableList()))
+						.build(),
+				WorkflowLaunchersFacetGroup.builder()
+						.id(DELIVERY_DAY_GROUP_ID)
+						.caption(TranslatableStrings.adElementOrMessage("DeliveryDate"))
+						.facets(pickingFacets.getDeliveryDays().stream()
+								.map(PickingWorkflowLaunchersProvider::toWorkflowLaunchersFacet)
+								.distinct()
+								.collect(ImmutableList.toImmutableList()))
+						.build()
+		);
+	}
+
+	private static WorkflowLaunchersFacet toWorkflowLaunchersFacet(@NonNull final PickingJobFacets.CustomerFacet customer)
+	{
+		return WorkflowLaunchersFacet.builder()
+				.value(String.valueOf(customer.getBpartnerId().getRepoId()))
+				.caption(TranslatableStrings.anyLanguage(customer.getCustomerBPValue() + " " + customer.getCustomerName()))
+				.build();
+	}
+
+	private static WorkflowLaunchersFacet toWorkflowLaunchersFacet(@NonNull final PickingJobFacets.DeliveryDayFacet deliveryDay)
+	{
+		return WorkflowLaunchersFacet.builder()
+				.value(deliveryDay.getDeliveryDate().toString())
+				.caption(TranslatableStrings.date(deliveryDay.getDeliveryDate()))
 				.build();
 	}
 

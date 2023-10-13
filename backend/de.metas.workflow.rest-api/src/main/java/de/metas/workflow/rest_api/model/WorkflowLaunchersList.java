@@ -37,6 +37,8 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 		this.timestamp = timestamp;
 	}
 
+	public int size() {return launchers.size();}
+
 	@Override
 	public Iterator<WorkflowLauncher> iterator() {return launchers.iterator();}
 

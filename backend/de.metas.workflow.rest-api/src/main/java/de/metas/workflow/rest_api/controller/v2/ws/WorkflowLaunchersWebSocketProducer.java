@@ -11,6 +11,7 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
@@ -73,17 +74,28 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer
 	@NonNull
 	private ImmutableList<JsonWorkflowLaunchersList> toJson(final WorkflowLaunchersList launchers)
 	{
-		final String adLanguage = userBL.getUserLanguage(userId).getAD_Language();
-		final JsonOpts jsonOpts = JsonOpts.builder()
-				.adLanguage(adLanguage)
-				.build();
+		final JsonOpts jsonOpts = newJsonOpts();
 
-		return ImmutableList.of(JsonWorkflowLaunchersList.of(launchers, jsonOpts));
+		return ImmutableList.of(JsonWorkflowLaunchersList.of(launchers, false, jsonOpts));
+	}
+
+	private JsonOpts newJsonOpts()
+	{
+		return JsonOpts.builder()
+				.adLanguage(userBL.getUserLanguage(userId).getAD_Language())
+				.build();
 	}
 
 	private WorkflowLaunchersList computeNewResult()
 	{
-		return workflowRestAPIService.getLaunchers(applicationId, userId, filterByQRCode, getMaxStaleAccepted());
+		return workflowRestAPIService.getLaunchers(
+				WorkflowLaunchersQuery.builder()
+						.applicationId(applicationId)
+						.userId(userId)
+						.filterByQRCode(filterByQRCode)
+						.maxStaleAccepted(getMaxStaleAccepted())
+						.build()
+		);
 	}
 
 	private Duration getMaxStaleAccepted()

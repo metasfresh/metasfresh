@@ -7,6 +7,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
@@ -22,6 +23,8 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
@@ -34,6 +37,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -42,6 +48,7 @@ import java.util.stream.Stream;
 @Service
 public class PickingJobService
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	private final PickingJobRepository pickingJobRepository;
 	private final PickingJobLockService pickingJobLockService;
@@ -163,20 +170,25 @@ public class PickingJobService
 			@NonNull final Set<ShipmentScheduleId> excludeShipmentScheduleIds)
 	{
 		return packagingDAO
-				.stream(PackageableQuery.builder()
-						.onlyFromSalesOrder(true)
-						.lockedBy(userId)
-						.includeNotLocked(true)
-						.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
-						.orderBys(ImmutableSet.of(
-								PackageableQuery.OrderBy.PriorityRule,
-								PackageableQuery.OrderBy.PreparationDate,
-								PackageableQuery.OrderBy.SalesOrderId,
-								PackageableQuery.OrderBy.DeliveryBPLocationId,
-								PackageableQuery.OrderBy.WarehouseTypeId))
-						.build())
+				.stream(toPackageableQuery(userId, excludeShipmentScheduleIds))
 				.map(PickingJobService::extractPickingJobCandidate)
 				.distinct();
+	}
+
+	private static PackageableQuery toPackageableQuery(final @NonNull UserId userId, final @NonNull Set<ShipmentScheduleId> excludeShipmentScheduleIds)
+	{
+		return PackageableQuery.builder()
+				.onlyFromSalesOrder(true)
+				.lockedBy(userId)
+				.includeNotLocked(true)
+				.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
+				.orderBys(ImmutableSet.of(
+						PackageableQuery.OrderBy.PriorityRule,
+						PackageableQuery.OrderBy.PreparationDate,
+						PackageableQuery.OrderBy.SalesOrderId,
+						PackageableQuery.OrderBy.DeliveryBPLocationId,
+						PackageableQuery.OrderBy.WarehouseTypeId))
+				.build();
 	}
 
 	private static PickingJobCandidate extractPickingJobCandidate(@NonNull final Packageable item)
@@ -190,6 +202,37 @@ public class PickingJobService
 				.warehouseTypeId(item.getWarehouseTypeId())
 				.partiallyPickedBefore(computePartiallyPickedBefore(item))
 				.build();
+	}
+
+	public PickingJobFacets getFacets(final @NonNull UserId userId, final @NonNull Set<ShipmentScheduleId> excludeShipmentScheduleIds)
+	{
+		final HashSet<PickingJobFacets.CustomerFacet> customers = new HashSet<>();
+		final HashSet<PickingJobFacets.DeliveryDayFacet> deliveryDays = new HashSet<>();
+
+		packagingDAO
+				.stream(toPackageableQuery(userId, excludeShipmentScheduleIds))
+				.forEach(packageable -> {
+					customers.add(extractCustomerFacet(packageable));
+					deliveryDays.add(extractDeliveryDateFacet(packageable));
+				});
+
+		return PickingJobFacets.builder()
+				.customers(ImmutableSet.copyOf(customers))
+				.deliveryDays(ImmutableSet.copyOf(deliveryDays))
+				.build();
+	}
+
+	private static PickingJobFacets.CustomerFacet extractCustomerFacet(final Packageable packageable)
+	{
+		return PickingJobFacets.CustomerFacet.of(packageable.getCustomerId(), packageable.getCustomerBPValue(), packageable.getCustomerName());
+	}
+
+	private PickingJobFacets.DeliveryDayFacet extractDeliveryDateFacet(final Packageable packageable)
+	{
+		final InstantAndOrgId deliveryDate = packageable.getDeliveryDate();
+		final ZoneId timeZone = orgDAO.getTimeZone(deliveryDate.getOrgId());
+		final LocalDate deliveryDay = deliveryDate.toZonedDateTime(timeZone).toLocalDate();
+		return PickingJobFacets.DeliveryDayFacet.of(deliveryDay, timeZone);
 	}
 
 	private static boolean computePartiallyPickedBefore(final Packageable item)
