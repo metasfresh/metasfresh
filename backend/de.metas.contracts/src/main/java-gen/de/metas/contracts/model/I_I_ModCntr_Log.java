@@ -391,20 +391,20 @@ public interface I_I_ModCntr_Log
 	 * Transaction Date
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateTrx (@Nullable java.sql.Timestamp DateTrx);
+	void setDateTrx (java.sql.Timestamp DateTrx);
 
 	/**
 	 * Get Date.
 	 * Transaction Date
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateTrx();
+	java.sql.Timestamp getDateTrx();
 
 	ModelColumn<I_I_ModCntr_Log, Object> COLUMN_DateTrx = new ModelColumn<>(I_I_ModCntr_Log.class, "DateTrx", null);
 	String COLUMNNAME_DateTrx = "DateTrx";

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -968474774L;
+	private static final long serialVersionUID = -1173004821L;
 
     /** Standard Constructor */
     public X_I_ModCntr_Log (final Properties ctx, final int I_ModCntr_Log_ID, @Nullable final String trxName)
@@ -268,7 +268,7 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public void setDateTrx (final @Nullable java.sql.Timestamp DateTrx)
+	public void setDateTrx (final java.sql.Timestamp DateTrx)
 	{
 		set_Value (COLUMNNAME_DateTrx, DateTrx);
 	}

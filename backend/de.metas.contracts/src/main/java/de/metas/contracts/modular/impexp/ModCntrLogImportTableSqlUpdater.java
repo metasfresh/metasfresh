@@ -26,10 +26,10 @@ import com.jgoodies.common.base.Strings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Module;
-import de.metas.contracts.modular.invgroup.InvoicingGroupProductId;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,6 +39,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_ModCntr_InvoicingGroup;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_AD_Org_ID;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_BPartnerValue;
@@ -422,6 +424,17 @@ public class ModCntrLogImportTableSqlUpdater
 		{
 			logger.warn("No " + request.mandatoryColumnName() + " = {}", no);
 		}
+	}
+
+
+	@Builder
+	public record DBUpdateErrorMessageRequest(
+			@NonNull ImportRecordsSelection selection,
+			@NonNull String mandatoryColumnName,
+			@Nullable String linkColumnName,
+			@NonNull String errorMessage
+	)
+	{
 	}
 
 }
