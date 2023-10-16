@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -180,6 +180,16 @@ public class C_DataImport_StepDef
 				+ activityValue + ";";
 
 		testContext.setRequestPayload(payload.replaceAll("null", ""));
+	}
+
+	@And("store String as requestBody in context")
+	public void store_string_as_requestBody_in_context(@NonNull final DataTable dataTable) throws IOException
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		final String content = DataTableUtil.extractStringOrNullForColumnName(row, "String");
+
+		testContext.setRequestPayload(content);
 	}
 
 	@And("store file content as requestBody in context")
