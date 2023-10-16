@@ -6,8 +6,9 @@ import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
+import de.metas.handlingunits.picking.job.model.PickingJobFacetsQuery;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
@@ -16,9 +17,6 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -26,7 +24,6 @@ import org.adempiere.util.lang.SynchronizedMutable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Set;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
@@ -36,9 +33,6 @@ class PickingWorkflowLaunchersProvider
 
 	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
 			.build();
-
-	private static final WorkflowLaunchersFacetGroupId CUSTOMERS_FACET_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString("customer");
-	private static final WorkflowLaunchersFacetGroupId DELIVERY_DAY_GROUP_ID = WorkflowLaunchersFacetGroupId.ofString("deliveryDay");
 
 	PickingWorkflowLaunchersProvider(
 			@NonNull final PickingJobRestService pickingJobRestService)
@@ -70,12 +64,14 @@ class PickingWorkflowLaunchersProvider
 	{
 		final UserId userId = query.getUserId();
 		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
+		final PickingJobFacetsQuery facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
 
 		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
 
 		//
 		// Already started launchers
 		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(userId)
+				.filter(facets::isMatching)
 				.collect(ImmutableList.toImmutableList());
 		existingPickingJobs.stream()
 				.map(PickingWorkflowLaunchersProvider::toExistingWorkflowLauncher)
@@ -85,11 +81,15 @@ class PickingWorkflowLaunchersProvider
 		// New launchers
 		if (!limit.isLimitHitOrExceeded(existingPickingJobs))
 		{
-			final Set<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
+			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
 					.flatMap(existingPickingJob -> existingPickingJob.getShipmentScheduleIds().stream())
 					.collect(ImmutableSet.toImmutableSet());
 
-			pickingJobRestService.streamPickingJobCandidates(userId, shipmentScheduleIdsAlreadyInPickingJobs)
+			pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
+							.userId(userId)
+							.excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
+							.facets(facets)
+							.build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.map(PickingWorkflowLaunchersProvider::toNewWorkflowLauncher)
 					.forEach(currentResult::add);
@@ -127,48 +127,10 @@ class PickingWorkflowLaunchersProvider
 				.build();
 	}
 
-	public WorkflowLaunchersFacetGroupList getFacets(final UserId userId)
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final UserId userId)
 	{
-		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(userId, ImmutableSet.of());
-		return toWorkflowLaunchersFacets(pickingFacets);
-	}
-
-	private static WorkflowLaunchersFacetGroupList toWorkflowLaunchersFacets(@NonNull final PickingJobFacets pickingFacets)
-	{
-		return WorkflowLaunchersFacetGroupList.of(
-				WorkflowLaunchersFacetGroup.builder()
-						.id(CUSTOMERS_FACET_GROUP_ID)
-						.caption(TranslatableStrings.adElementOrMessage("Customer_ID"))
-						.facets(pickingFacets.getCustomers().stream()
-								.map(PickingWorkflowLaunchersProvider::toWorkflowLaunchersFacet)
-								.distinct()
-								.collect(ImmutableList.toImmutableList()))
-						.build(),
-				WorkflowLaunchersFacetGroup.builder()
-						.id(DELIVERY_DAY_GROUP_ID)
-						.caption(TranslatableStrings.adElementOrMessage("DeliveryDate"))
-						.facets(pickingFacets.getDeliveryDays().stream()
-								.map(PickingWorkflowLaunchersProvider::toWorkflowLaunchersFacet)
-								.distinct()
-								.collect(ImmutableList.toImmutableList()))
-						.build()
-		);
-	}
-
-	private static WorkflowLaunchersFacet toWorkflowLaunchersFacet(@NonNull final PickingJobFacets.CustomerFacet customer)
-	{
-		return WorkflowLaunchersFacet.builder()
-				.value(String.valueOf(customer.getBpartnerId().getRepoId()))
-				.caption(TranslatableStrings.anyLanguage(customer.getCustomerBPValue() + " " + customer.getCustomerName()))
-				.build();
-	}
-
-	private static WorkflowLaunchersFacet toWorkflowLaunchersFacet(@NonNull final PickingJobFacets.DeliveryDayFacet deliveryDay)
-	{
-		return WorkflowLaunchersFacet.builder()
-				.value(deliveryDay.getDeliveryDate().toString())
-				.caption(TranslatableStrings.date(deliveryDay.getDeliveryDate()))
-				.build();
+		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(PickingJobQuery.ofUserId(userId));
+		return PickingJobFacetsUtils.toWorkflowLaunchersFacetGroupList(pickingFacets);
 	}
 
 	public void invalidateCacheByUserId(@NonNull final UserId invokerId)

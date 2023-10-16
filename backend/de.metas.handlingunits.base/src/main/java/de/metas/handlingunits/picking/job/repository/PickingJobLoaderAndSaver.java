@@ -368,6 +368,7 @@ class PickingJobLoaderAndSaver
 				.header(PickingJobHeader.builder()
 						.salesOrderDocumentNo(loadingSupportingServices().getSalesOrderDocumentNo(salesOrderId))
 						.preparationDate(loadingSupportingServices().toZonedDateTime(record.getPreparationDate(), orgId))
+						.deliveryDate(loadingSupportingServices().toZonedDateTime(record.getDeliveryDate(), orgId))
 						.customerName(loadingSupportingServices().getBPartnerName(deliveryBPLocationId.getBpartnerId()))
 						.deliveryBPLocationId(deliveryBPLocationId)
 						.deliveryRenderedAddress(record.getDeliveryToAddress())

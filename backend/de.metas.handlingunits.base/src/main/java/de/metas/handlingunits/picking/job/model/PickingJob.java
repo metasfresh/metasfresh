@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
@@ -97,6 +98,10 @@ public final class PickingJob
 	public String getSalesOrderDocumentNo() {return header.getSalesOrderDocumentNo();}
 
 	public ZonedDateTime getPreparationDate() {return header.getPreparationDate();}
+
+	public ZonedDateTime getDeliveryDate() {return header.getDeliveryDate();}
+
+	public BPartnerId getCustomerId() {return header.getDeliveryBPLocationId().getBpartnerId();}
 
 	public String getCustomerName() {return header.getCustomerName();}
 

@@ -1,27 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import PropTypes from 'prop-types';
 import { countLaunchers, getFacets } from '../../api/launchers';
 
-const toggleFacet = ({ groups, groupId, facetId }) => {
-  return groups.map((group) => {
-    if (group.groupId === groupId) {
-      return {
-        ...group,
-        facets: group.facets.map((facet) => {
-          if (facet.facetId === facetId) {
-            return {
-              ...facet,
-              active: !facet.active,
-            };
-          } else {
-            return facet;
-          }
-        }),
-      };
-    } else {
-      return group;
+const toggleFacet = (groups, facetId) => {
+  return changeFacets(groups, (facet) => (facet.facetId === facetId ? { ...facet, active: !facet.active } : facet));
+};
+
+const changeFacets = (groups, facetMapper) => {
+  const result = [];
+  let groupChages = false;
+  for (const group of groups) {
+    const newFacets = [];
+    let facetChanged = false;
+    for (const facet of group.facets) {
+      const newFacet = facetMapper(facet);
+      newFacets.push(newFacet);
+      if (facet !== newFacet) {
+        facetChanged = true;
+      }
     }
+
+    const newGroup = facetChanged ? { ...group, facets: newFacets } : group;
+    result.push(newGroup);
+    if (group !== newGroup) {
+      groupChages = true;
+    }
+  }
+
+  return groupChages ? result : groups;
+};
+
+const activateFacets = (groups, activeFacets) => {
+  const activeFacetIds = activeFacets ? activeFacets.map((facet) => facet.facetId) : [];
+
+  return changeFacets(groups, (facet) => {
+    return !facet.active && activeFacetIds.includes(facet.facetId) ? { ...facet, active: true } : facet;
   });
 };
 
@@ -38,49 +52,43 @@ const getActiveFacets = (groups) => {
   return result;
 };
 
-const WFLaunchersFilters = ({ applicationId, onDone }) => {
+const WFLaunchersFilters = ({ applicationId, facets: facetsInitial, onDone }) => {
   const [groups, setGroups] = useState([]);
   const [resultsCount, setResultsCount] = useState(-1);
+  const facets = useMemo(() => getActiveFacets(groups), [groups]);
 
+  //
+  // Fetch available facets
   useEffect(() => {
     getFacets(applicationId).then((response) => {
-      console.log('Got response', { response });
-      setGroups(response.groups);
+      setGroups(activateFacets(response.groups, facetsInitial));
     });
-  }, []);
+  }, [facetsInitial]);
 
+  //
+  // Compute items count for currently active facets
   useEffect(() => {
-    const facets = getActiveFacets(groups);
     countLaunchers({ applicationId, facets }).then((count) => {
       setResultsCount(count);
     });
-  }, [groups]);
+  }, [facets]);
 
-  const onFacetClicked = ({ groupId, facetId }) => {
-    console.log('facet clicked', { groupId, facetId });
-    setGroups(toggleFacet({ groups, groupId, facetId }));
+  const onFacetClicked = ({ facetId }) => {
+    setGroups(toggleFacet(groups, facetId));
   };
 
   const onApplyFilters = () => {
-    console.log('Apply filters');
-    onDone?.();
+    onDone(getActiveFacets(groups));
   };
   const onClearFilters = () => {
-    console.log('Clear filters');
-    onDone?.();
+    onDone([]);
   };
 
   return (
     <div className="filters">
       {groups &&
         groups.map((group) => (
-          <FacetGroup
-            key={group.groupId}
-            groupId={group.groupId}
-            caption={group.caption}
-            facets={group.facets}
-            onClick={onFacetClicked}
-          />
+          <FacetGroup key={group.groupId} caption={group.caption} facets={group.facets} onClick={onFacetClicked} />
         ))}
       <div className="bottom-buttons">
         <ButtonWithIndicator caption={`Show ${resultsCount} results`} onClick={onApplyFilters} />
@@ -92,10 +100,11 @@ const WFLaunchersFilters = ({ applicationId, onDone }) => {
 
 WFLaunchersFilters.propTypes = {
   applicationId: PropTypes.string.isRequired,
-  onDone: PropTypes.func,
+  facets: PropTypes.array.isRequired,
+  onDone: PropTypes.func.isRequired,
 };
 
-const FacetGroup = ({ groupId, caption, facets, onClick }) => {
+const FacetGroup = ({ caption, facets, onClick }) => {
   return (
     <div className="group">
       <div className="caption">{caption}</div>
@@ -104,7 +113,6 @@ const FacetGroup = ({ groupId, caption, facets, onClick }) => {
           <Facet
             key={facet.facetId}
             facetId={facet.facetId}
-            groupId={groupId}
             caption={facet.caption}
             active={!!facet.active}
             onClick={onClick}
@@ -114,24 +122,22 @@ const FacetGroup = ({ groupId, caption, facets, onClick }) => {
   );
 };
 FacetGroup.propTypes = {
-  groupId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   facets: PropTypes.array.isRequired,
   onClick: PropTypes.func.isRequired,
 };
 
-const Facet = ({ facetId, groupId, caption, active, onClick }) => {
+const Facet = ({ facetId, caption, active, onClick }) => {
   return (
     <ButtonWithIndicator
       caption={caption}
       typeFASIconName={active ? 'fa-check' : null}
-      onClick={() => onClick({ groupId, facetId })}
+      onClick={() => onClick({ facetId })}
     />
   );
 };
 Facet.propTypes = {
   facetId: PropTypes.string.isRequired,
-  groupId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   active: PropTypes.bool.isRequired,
   onClick: PropTypes.func.isRequired,

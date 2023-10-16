@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Value
@@ -43,6 +45,16 @@ public class WorkflowLaunchersFacetGroupList
 	public static WorkflowLaunchersFacetGroupList of(final WorkflowLaunchersFacetGroup... groups)
 	{
 		if (groups == null || groups.length == 0)
+		{
+			return EMPTY;
+		}
+
+		return new WorkflowLaunchersFacetGroupList(ImmutableList.copyOf(groups));
+	}
+
+	public static WorkflowLaunchersFacetGroupList ofList(@Nullable final List<WorkflowLaunchersFacetGroup> groups)
+	{
+		if (groups == null || groups.isEmpty())
 		{
 			return EMPTY;
 		}

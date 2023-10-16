@@ -24,6 +24,7 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupId;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,7 +36,7 @@ import lombok.extern.jackson.Jacksonized;
 public class JsonWorkflowLaunchersFacet
 {
 	@NonNull WorkflowLaunchersFacetGroupId groupId;
-	@NonNull String facetId;
+	@NonNull WorkflowLaunchersFacetId facetId;
 	@NonNull String caption;
 
 	public static JsonWorkflowLaunchersFacet of(
@@ -45,7 +46,7 @@ public class JsonWorkflowLaunchersFacet
 	{
 		return JsonWorkflowLaunchersFacet.builder()
 				.groupId(groupId)
-				.facetId(facet.getValue())
+				.facetId(facet.getFacetId())
 				.caption(facet.getCaption().translate(jsonOpts.getAdLanguage()))
 				.build();
 	}

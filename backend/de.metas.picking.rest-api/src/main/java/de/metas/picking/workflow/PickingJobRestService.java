@@ -26,11 +26,11 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -38,7 +38,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -62,16 +61,14 @@ public class PickingJobRestService
 		return pickingJobService.streamDraftPickingJobReferences(userId);
 	}
 
-	public Stream<PickingJobCandidate> streamPickingJobCandidates(
-			@NonNull final UserId userId,
-			@NonNull final Set<ShipmentScheduleId> excludeShipmentScheduleIds)
+	public Stream<PickingJobCandidate> streamPickingJobCandidates(@NonNull final PickingJobQuery query)
 	{
-		return pickingJobService.streamPickingJobCandidates(userId, excludeShipmentScheduleIds);
+		return pickingJobService.streamPickingJobCandidates(query);
 	}
 
-	public PickingJobFacets getFacets(final @NonNull UserId userId, final @NonNull Set<ShipmentScheduleId> excludeShipmentScheduleIds)
+	public PickingJobFacets getFacets(@NonNull PickingJobQuery query)
 	{
-		return pickingJobService.getFacets(userId, excludeShipmentScheduleIds);
+		return pickingJobService.getFacets(query);
 	}
 
 	public PickingJob createPickingJob(

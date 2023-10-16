@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.workflow.rest-api
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,17 +20,24 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.model.facets;
+package de.metas.handlingunits.picking.job.model;
 
-import de.metas.i18n.ITranslatableString;
+import com.google.common.collect.ImmutableSet;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class WorkflowLaunchersFacet
+public class PickingJobQuery
 {
-	@NonNull WorkflowLaunchersFacetId facetId;
-	@NonNull ITranslatableString caption;
+	@NonNull UserId userId;
+	@NonNull @Builder.Default ImmutableSet<ShipmentScheduleId> excludeShipmentScheduleIds = ImmutableSet.of();
+	@Nullable PickingJobFacetsQuery facets;
+
+	public static PickingJobQuery ofUserId(@NonNull final UserId userId) {return builder().userId(userId).build();}
 }

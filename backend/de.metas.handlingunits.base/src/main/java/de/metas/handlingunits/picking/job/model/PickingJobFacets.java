@@ -24,18 +24,27 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.picking.api.Packageable;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 @Value
 @Builder
 public class PickingJobFacets
 {
-	@NonNull ImmutableSet<CustomerFacet> customers;
+	@NonNull @Singular ImmutableSet<CustomerFacet> customers;
 
 	@Value(staticConstructor = "of")
 	public static class CustomerFacet
@@ -45,7 +54,7 @@ public class PickingJobFacets
 		@NonNull String customerName;
 	}
 
-	@NonNull ImmutableSet<DeliveryDayFacet> deliveryDays;
+	@NonNull @Singular ImmutableSet<DeliveryDayFacet> deliveryDays;
 
 	@Value(staticConstructor = "of")
 	public static class DeliveryDayFacet
@@ -53,4 +62,37 @@ public class PickingJobFacets
 		@NonNull LocalDate deliveryDate;
 		@NonNull ZoneId timeZone;
 	}
+
+	public static Collector<Packageable, ?, PickingJobFacets> collectFromPackageables()
+	{
+		final Supplier<PickingJobFacetsBuilder> supplier = PickingJobFacets::builder;
+		final BiConsumer<PickingJobFacetsBuilder, Packageable> accumulator = (builder, item) -> {
+			builder.customer(extractCustomerFacet(item));
+			builder.deliveryDay(extractDeliveryDateFacet(item));
+		};
+		final BinaryOperator<PickingJobFacetsBuilder> combiner = (builder1, builder2) -> {
+			final PickingJobFacets facetsToAdd = builder2.build();
+			builder1.customers(facetsToAdd.getCustomers());
+			builder1.deliveryDays(facetsToAdd.getDeliveryDays());
+			return builder1;
+		};
+		final Function<PickingJobFacetsBuilder, PickingJobFacets> finisher = PickingJobFacetsBuilder::build;
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	private static PickingJobFacets.CustomerFacet extractCustomerFacet(final Packageable packageable)
+	{
+		return PickingJobFacets.CustomerFacet.of(packageable.getCustomerId(), packageable.getCustomerBPValue(), packageable.getCustomerName());
+	}
+
+	private static PickingJobFacets.DeliveryDayFacet extractDeliveryDateFacet(final Packageable packageable)
+	{
+		final InstantAndOrgId deliveryDate = packageable.getDeliveryDate();
+		//final ZoneId timeZone = orgDAO.getTimeZone(deliveryDate.getOrgId());
+		final ZoneId timeZone = SystemTime.zoneId();
+		final LocalDate deliveryDay = deliveryDate.toZonedDateTime(timeZone).toLocalDate();
+		return PickingJobFacets.DeliveryDayFacet.of(deliveryDay, timeZone);
+	}
+
 }

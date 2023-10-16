@@ -14,6 +14,7 @@ import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
 import WFLaunchersFilters from './WFLaunchersFilters';
+import WFLaunchersFilterButton from './WFLaunchersFilterButton';
 
 const WFLaunchersScreen = () => {
   const {
@@ -21,7 +22,8 @@ const WFLaunchersScreen = () => {
   } = useRouteMatch();
 
   const [currentPanel, setCurrentPanel] = useState('default');
-  //  const [showQRCodeScanner, setShowQRCodeScanner] = useState(false);
+  const [facets, setFacets] = useState([]);
+
   const { requiresLaunchersQRCodeFilter } = useSelector((state) => getApplicationInfoById({ state, applicationId }));
   const {
     filterByQRCode: currentFilterByQRCode,
@@ -35,7 +37,6 @@ const WFLaunchersScreen = () => {
   //
   // Load application launchers
   const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
-    setCurrentPanel('default');
     dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
   };
   const dispatch = useDispatch();
@@ -45,10 +46,18 @@ const WFLaunchersScreen = () => {
       return;
     }
 
-    getLaunchers(applicationId, filterByQRCode).then((applicationLaunchers) => {
+    console.log('calling getLaunchers', {
+      isAllowQueryingLaunchers,
+      applicationId,
+      filterByQRCode: toQRCodeString(filterByQRCode),
+      facets,
+      requestTimestamp,
+    });
+
+    getLaunchers({ applicationId, filterByQRCode, facets }).then((applicationLaunchers) => {
       onNewLaunchers({ applicationId, applicationLaunchers });
     });
-  }, [isAllowQueryingLaunchers, applicationId, toQRCodeString(filterByQRCode), requestTimestamp]);
+  }, [isAllowQueryingLaunchers, applicationId, toQRCodeString(filterByQRCode), facets, requestTimestamp]);
 
   //
   // Connect to WebSocket topic
@@ -58,6 +67,7 @@ const WFLaunchersScreen = () => {
     userToken,
     applicationId,
     filterByQRCode,
+    facets,
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) =>
       onNewLaunchers({ applicationId, applicationLaunchers }),
   });
@@ -83,12 +93,19 @@ const WFLaunchersScreen = () => {
       )}
       {currentPanel === 'default' && !requiresLaunchersQRCodeFilter && (
         <>
-          <ButtonWithIndicator caption="Filter..." disabled={false} onClick={() => setCurrentPanel('filters')} />
+          <WFLaunchersFilterButton facets={facets} onClick={() => setCurrentPanel('filters')} />
           <br />
         </>
       )}
       {currentPanel === 'filters' && (
-        <WFLaunchersFilters applicationId={applicationId} onDone={() => setCurrentPanel('default')} />
+        <WFLaunchersFilters
+          applicationId={applicationId}
+          facets={facets}
+          onDone={(facets) => {
+            setFacets(facets);
+            setCurrentPanel('default');
+          }}
+        />
       )}
       {currentPanel === 'default' &&
         launchers &&

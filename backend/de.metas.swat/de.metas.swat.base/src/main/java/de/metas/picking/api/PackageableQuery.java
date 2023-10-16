@@ -31,6 +31,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
@@ -45,11 +46,11 @@ public class PackageableQuery
 {
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
-	@Nullable BPartnerId customerId;
+	@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	@Nullable WarehouseId warehouseId;
-	@Nullable LocalDate deliveryDate;
+	@NonNull @Singular ImmutableSet<LocalDate> deliveryDays;
 	@Nullable LocalDate preparationDate;
 	@Nullable ShipperId shipperId;
 

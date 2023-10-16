@@ -29,17 +29,24 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @EqualsAndHashCode
-public class WorkflowLaunchersFacetGroupId
+public final class WorkflowLaunchersFacetGroupId
 {
 	@NonNull String asString;
 
-	public WorkflowLaunchersFacetGroupId(@NonNull final String string)
+	private WorkflowLaunchersFacetGroupId(@NonNull final String string)
 	{
 		final String stringNorm = StringUtils.trimBlankToNull(string);
 		if (stringNorm == null)
 		{
-			throw new AdempiereException("Invalid ID: " + string);
+			throw new AdempiereException("Empty/null string is not a valid group ID");
+		}
+		if (stringNorm.contains(WorkflowLaunchersFacetId.SEPARATOR))
+		{
+			throw new AdempiereException("Group ID `" + string + "` cannot contain `" + WorkflowLaunchersFacetId.SEPARATOR + "`");
 		}
 
 		this.asString = stringNorm;
@@ -58,4 +65,6 @@ public class WorkflowLaunchersFacetGroupId
 	@JsonValue
 	@NonNull
 	public String getAsString() {return asString;}
+
+	public static boolean equals(@Nullable WorkflowLaunchersFacetGroupId id1, @Nullable WorkflowLaunchersFacetGroupId id2) {return Objects.equals(id1, id2);}
 }
