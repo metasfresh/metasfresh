@@ -64,8 +64,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Client_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
 
 /*
  * #%L
@@ -863,8 +863,8 @@ public class LayoutFactory
 	{
 		return switch (field.getFieldName())
 				{
-					case COLUMNNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
-					case COLUMNNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
+					case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
+					case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
 					default -> false;
 				};
 	}
