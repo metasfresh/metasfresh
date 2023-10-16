@@ -67,6 +67,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Properties;
 
 public class ModularContractLogImportProcess extends SimpleImportProcessTemplate<I_I_ModCntr_Log>
@@ -171,8 +172,7 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 
 	private boolean isImportLog(@NonNull final I_I_ModCntr_Log importRecord)
 	{
-		return importRecord.getModCntr_Log_DocumentType()
-				.equals(X_I_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ImportLog);
+		return Objects.equals(importRecord.getModCntr_Log_DocumentType(), X_I_ModCntr_Log.MODCNTR_LOG_DOCUMENTTYPE_ImportLog);
 	}
 
 	@NonNull
