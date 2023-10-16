@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
@@ -228,8 +229,10 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 
 		hus.forEach(hu -> {
 			updateAttributes(hu, receiptSchedule);
-			view.addHUId(HuId.ofRepoId(hu.getM_HU_ID()));
+
 		});
+
+		view.addHUIds(hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableList.toImmutableList()));
 
 		return MSG_OK;
 	}
