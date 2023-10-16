@@ -78,6 +78,8 @@ public interface IAllocationRequestBuilder
 	 */
 	IAllocationRequestBuilder setFromReferencedTableRecord(@Nullable TableRecordReference fromReferencedTableRecord);
 
+	IAllocationRequestBuilder setDestroyExistingHUs(boolean destroyExistingHUs);
+
 	IAllocationRequestBuilder addEmptyHUListener(EmptyHUListener emptyHUListener);
 
 	IAllocationRequestBuilder setClearanceStatusInfo(@Nullable ClearanceStatusInfo clearanceStatusInfo);

@@ -5,10 +5,12 @@ package de.metas.handlingunits.receiptschedule;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
@@ -75,6 +77,14 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	 */
 	@NonNull
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
+
+	List<I_M_HU> createPlanningHUs(I_M_ReceiptSchedule receiptSchedule,
+			I_M_HU_LUTU_Configuration lutuConfiguration,
+			IMutableHUContext huContextInitial,
+			boolean isUpdateReceiptScheduleDefaultConfiguration,
+			boolean isDestroyExistingHUs);
+
+	I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(I_M_ReceiptSchedule receiptSchedule);
 
 	@Value
 	@Builder

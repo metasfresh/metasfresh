@@ -17,6 +17,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -132,7 +133,10 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
+
+
 	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
+	private ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
 	@Override
 	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
@@ -328,6 +332,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			return new DocumentLUTUConfigurationManager<>(receiptSchedules, lutuConfigurationListHandler);
 		}
 	}
+
+
 
 	@Override
 	public InOutGenerateResult processReceiptSchedules(@NonNull final CreateReceiptsParameters parameters)
@@ -697,5 +703,55 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			huWeightNetAdjuster.addReceiptSchedule(receiptSchedule);
 		}
 	}
+
+	@Override
+	public List<I_M_HU> createPlanningHUs(final I_M_ReceiptSchedule receiptSchedule,
+			final I_M_HU_LUTU_Configuration lutuConfiguration,
+			final IMutableHUContext huContextInitial,
+			boolean isUpdateReceiptScheduleDefaultConfiguration,
+			boolean isDestroyExistingHUs)
+	{
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContextInitial)
+				.addM_ReceiptSchedule(receiptSchedule)
+				.setUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration);
+
+		huGenerator.setM_HU_LUTU_Configuration(lutuConfiguration);
+
+		//
+		// Calculate the target CUs that we want to allocate
+		final ILUTUProducerAllocationDestination lutuProducer = huGenerator.getLUTUProducerAllocationDestination();
+		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
+		if (qtyCUsTotal.isInfinite())
+		{
+			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
+		}
+		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
+
+		//
+		// Generate the HUs
+
+		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
+
+		return hus;
+	}
+
+	@Override
+	public I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
+	{
+
+		final I_M_HU_LUTU_Configuration lutuConfig = createLUTUConfigurationManager(receiptSchedule)
+				.getCreateLUTUConfiguration();
+
+		// Make sure nobody is overriding the existing configuration
+		if (lutuConfig.getM_HU_LUTU_Configuration_ID() > 0)
+		{
+			InterfaceWrapperHelper.setSaveDeleteDisabled(lutuConfig, true);
+		}
+
+		return lutuConfig;
+	}
+
+
+
 
 }
