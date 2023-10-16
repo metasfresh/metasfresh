@@ -8,6 +8,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -197,6 +198,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -392,6 +394,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -627,6 +630,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -847,6 +851,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
