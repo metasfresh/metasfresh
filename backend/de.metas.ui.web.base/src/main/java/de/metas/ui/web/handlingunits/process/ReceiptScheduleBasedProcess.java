@@ -9,10 +9,10 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.JavaProcess;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
 import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -23,10 +23,8 @@ import org.adempiere.mm.attributes.api.LotNoContext;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_DocType;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -60,6 +58,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
+	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 	private Optional<String> lotNumberFromSeq = null;
 
@@ -72,8 +71,8 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	{
 		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
 		setAttributeLotNumber(hu, receiptSchedule, huAttributes);
-		setAttributeBBD(receiptSchedule, huAttributes);
-		setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
+		huReceiptScheduleBL.setAttributeBBD(receiptSchedule, huAttributes);
+		huReceiptScheduleBL.setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
 	}
 
 	private void setAttributeLotNumber(final @NonNull I_M_HU hu, final @NonNull I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
@@ -108,55 +107,11 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 			if (lotNoSequenceId != null)
 			{
 				lotNumberFromSeq = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
-						.sequenceId(lotNoSequenceId)
-						.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
-						.build());
+																			.sequenceId(lotNoSequenceId)
+																			.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
+																			.build());
 			}
 		}
 		return lotNumberFromSeq.orElse(null);
-	}
-
-	private void setAttributeBBD(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
-	{
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
-				&& huAttributesBL.isAutomaticallySetBestBeforeDate()
-		)
-		{
-			final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
-			if (bestBeforeDate != null)
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-				huAttributes.saveChangesIfNeeded();
-			}
-		}
-	}
-
-	private void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
-	{
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
-				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
-		{
-			final int bpId = receiptSchedule.getC_BPartner_ID();
-			if (bpId > 0)
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
-				huAttributes.setSaveOnChange(true);
-				huAttributes.saveChangesIfNeeded();
-			}
-		}
-	}
-
-	@Nullable
-	LocalDate computeBestBeforeDate(@NonNull final ProductId productId, final @NonNull LocalDate datePromised)
-	{
-		final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
-
-		if (guaranteeDaysMin <= 0)
-		{
-			return null;
-		}
-
-		return datePromised.plusDays(guaranteeDaysMin);
 	}
 }

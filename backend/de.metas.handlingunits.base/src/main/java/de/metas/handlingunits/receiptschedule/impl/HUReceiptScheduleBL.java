@@ -21,6 +21,7 @@ import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
@@ -51,6 +52,8 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -68,6 +71,7 @@ import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -78,11 +82,13 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -134,7 +140,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 
-
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
 	private ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
@@ -753,5 +759,50 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 
 
+	@Override
+	public void setAttributeBBD(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
+	{
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
+				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
+				&& huAttributesBL.isAutomaticallySetBestBeforeDate()
+		)
+		{
+			final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
+			if (bestBeforeDate != null)
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+				huAttributes.saveChangesIfNeeded();
+			}
+		}
+	}
+
+	@Override
+	public void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
+	{
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
+				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
+		{
+			final int bpId = receiptSchedule.getC_BPartner_ID();
+			if (bpId > 0)
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
+				huAttributes.setSaveOnChange(true);
+				huAttributes.saveChangesIfNeeded();
+			}
+		}
+	}
+
+	@Nullable
+	LocalDate computeBestBeforeDate(@NonNull final ProductId productId, final @NonNull LocalDate datePromised)
+	{
+		final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
+
+		if (guaranteeDaysMin <= 0)
+		{
+			return null;
+		}
+
+		return datePromised.plusDays(guaranteeDaysMin);
+	}
 
 }

@@ -17,6 +17,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -24,11 +25,12 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -204,11 +206,8 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 	{
 		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
 
-		//
-		// Get/Create the initial LU/TU configuration
 		final I_M_HU_LUTU_Configuration lutuConfigurationOrig = huReceiptScheduleBL.getCurrentLUTUConfiguration(receiptSchedule);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = createM_HU_LUTU_Configuration(lutuConfigurationOrig);
-
 
 		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
 
@@ -227,55 +226,23 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 
 	private void updateAttributes(@NonNull final I_M_HU hu, @NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		// TODO
 		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
-		// setAttributeLotNumber(hu, receiptSchedule, huAttributes); TODO
-		//setAttributeBBD(receiptSchedule, huAttributes);
-		//setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
+		preserveLotNumber(huAttributes);
+		huReceiptScheduleBL.setAttributeBBD(receiptSchedule, huAttributes);
+		huReceiptScheduleBL.setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
 	}
 
-	// private void setAttributeBBD(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
-	// {
-	// 	if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-	// 			&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
-	// 			&& huAttributesBL.isAutomaticallySetBestBeforeDate()
-	// 	)
-	// 	{
-	// 		final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
-	// 		if (bestBeforeDate != null)
-	// 		{
-	// 			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-	// 			huAttributes.saveChangesIfNeeded();
-	// 		}
-	// 	}
-	// }
-	//
-	// private void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
-	// {
-	// 	if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
-	// 			&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
-	// 	{
-	// 		final int bpId = receiptSchedule.getC_BPartner_ID();
-	// 		if (bpId > 0)
-	// 		{
-	// 			huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
-	// 			huAttributes.setSaveOnChange(true);
-	// 			huAttributes.saveChangesIfNeeded();
-	// 		}
-	// 	}
-	// }
-	//
-	// @Nullable
-	// LocalDate computeBestBeforeDate(@NonNull final ProductId productId, final @NonNull LocalDate datePromised)
-	// {
-	// 	final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
-	//
-	// 	if (guaranteeDaysMin <= 0)
-	// 	{
-	// 		return null;
-	// 	}
-	//
-	// 	return datePromised.plusDays(guaranteeDaysMin);
-	// }
+	private void preserveLotNumber(final IAttributeStorage huAttributes)
+	{
+		final Optional<String> lotNumber = getView().streamByIds(HUEditorRowFilter.ALL)
+				.map(row -> row.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber))
+				.findAny();
+
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber.orElse(null));
+			huAttributes.saveChangesIfNeeded();
+		}
+	}
 
 }

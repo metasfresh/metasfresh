@@ -9,6 +9,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -85,6 +86,10 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 			boolean isDestroyExistingHUs);
 
 	I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(I_M_ReceiptSchedule receiptSchedule);
+
+	void setAttributeBBD(@NonNull I_M_ReceiptSchedule receiptSchedule, @NonNull IAttributeStorage huAttributes);
+
+	void setVendorValueFromReceiptSchedule(@NonNull I_M_ReceiptSchedule receiptSchedule, @NonNull IAttributeStorage huAttributes);
 
 	@Value
 	@Builder
