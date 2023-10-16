@@ -78,8 +78,6 @@ Feature: Import Invoice Candidates via DataImportRestController
                                 "code": "ext-Other-S0325",
                                 "active": true,
                                 "name": "name S0325",
-                                "firstName": "firstname S0325",
-                                "lastName": "lastname S0325",
                                 "phone": "+41 123456789"
                             },
                             "jsonAlbertaContact": null,
