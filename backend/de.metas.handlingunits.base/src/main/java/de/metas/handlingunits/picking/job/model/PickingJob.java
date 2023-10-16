@@ -195,9 +195,4 @@ public final class PickingJob
 
 		return withChangedLines(line -> line.withChangedSteps(stepIds, stepMapper));
 	}
-
-	public PickingJob withChangedSteps(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
-	{
-		return withChangedLines(line -> line.withChangedSteps(stepMapper));
-	}
 }
