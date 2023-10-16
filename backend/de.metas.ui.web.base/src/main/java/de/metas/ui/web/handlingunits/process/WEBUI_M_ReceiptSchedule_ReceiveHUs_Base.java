@@ -6,6 +6,7 @@ import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.CreatePlanningHUsRequest;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.organization.ClientAndOrgId;
@@ -119,8 +120,17 @@ import java.util.List;
 		lutuConfigurationFactory.save(lutuConfiguration);
 		final IMutableHUContext huContextInitial =huContextFactory.createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
 
-		final List<I_M_HU> hus = huReceiptScheduleBL.createPlanningHUs(receiptSchedule, lutuConfiguration, huContextInitial,
-																	   isUpdateReceiptScheduleDefaultConfiguration(), true);
+		final boolean isUpdateReceiptScheduleDefaultConfiguration = isUpdateReceiptScheduleDefaultConfiguration();
+
+
+		final CreatePlanningHUsRequest request = CreatePlanningHUsRequest.builder()
+				.lutuConfiguration(lutuConfiguration)
+				.huContextInitial(huContextInitial)
+				.receiptSchedule(receiptSchedule)
+				.isUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration)
+				.isDestroyExistingHUs(true)
+				.build();
+		final List<I_M_HU> hus = huReceiptScheduleBL.createPlanningHUs(request);
 
 		hus.forEach(hu -> {
 			updateAttributes(hu, receiptSchedule);

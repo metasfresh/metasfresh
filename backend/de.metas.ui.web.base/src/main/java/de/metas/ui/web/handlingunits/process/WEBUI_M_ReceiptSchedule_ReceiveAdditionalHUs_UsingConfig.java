@@ -10,6 +10,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.CreatePlanningHUsRequest;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IProcessDefaultParameter;
@@ -211,8 +212,17 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 
 		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
 
-		final List<I_M_HU> hus = huReceiptScheduleBL.createPlanningHUs(receiptSchedule, lutuConfiguration, huContextInitial,
-																	   isUpdateReceiptScheduleDefaultConfiguration(), false);
+		final boolean isUpdateReceiptScheduleDefaultConfiguration = isUpdateReceiptScheduleDefaultConfiguration();
+
+		final CreatePlanningHUsRequest request = CreatePlanningHUsRequest.builder()
+				.lutuConfiguration(lutuConfiguration)
+				.huContextInitial(huContextInitial)
+				.receiptSchedule(receiptSchedule)
+				.isUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration)
+				.isDestroyExistingHUs(false)
+				.build();
+
+		final List<I_M_HU> hus = huReceiptScheduleBL.createPlanningHUs(request);
 
 		final HUEditorView view = getView();
 

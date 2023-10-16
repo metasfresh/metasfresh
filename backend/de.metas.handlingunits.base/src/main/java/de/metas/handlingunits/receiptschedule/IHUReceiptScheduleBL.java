@@ -79,11 +79,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	@NonNull
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
 
-	List<I_M_HU> createPlanningHUs(I_M_ReceiptSchedule receiptSchedule,
-			I_M_HU_LUTU_Configuration lutuConfiguration,
-			IMutableHUContext huContextInitial,
-			boolean isUpdateReceiptScheduleDefaultConfiguration,
-			boolean isDestroyExistingHUs);
+	List<I_M_HU> createPlanningHUs(CreatePlanningHUsRequest request);
 
 	I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(I_M_ReceiptSchedule receiptSchedule);
 
