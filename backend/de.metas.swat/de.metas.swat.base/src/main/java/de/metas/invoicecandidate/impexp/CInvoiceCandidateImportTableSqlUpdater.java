@@ -96,8 +96,6 @@ public class CInvoiceCandidateImportTableSqlUpdater
 
 	public void updateInvoiceCandImportTable(@NonNull final ImportRecordsSelection selection)
 	{
-		dbUpdateErrorMessagesBeforeUpdates(selection);
-
 		dbUpdateOrg(selection);
 		dbUpdateProducts(selection);
 		dbUpdateBPartners(selection);
@@ -118,103 +116,6 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " WHERE I_IsImported='E' "
 				+ selection.toSqlWhereClause();
 		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql);
-	}
-
-	private void dbUpdateErrorMessagesBeforeUpdates(@NonNull final ImportRecordsSelection selection)
-	{
-		dbUpdateErrorMessagesBeforeUpdatesToManyColumnsSet(selection);
-		dbUpdateErrorMessagesBeforeUpdatesExternalSystem(selection);
-	}
-
-	private void dbUpdateErrorMessagesBeforeUpdatesToManyColumnsSet(@NonNull final ImportRecordsSelection selection)
-	{
-		final String BillPartnerColumnsSetCount = "((CASE WHEN " + COLUMNNAME_Bill_BPartner_ExternalReference + " IS NOT NULL THEN 1 ELSE 0 END) "
-				+ " + (CASE WHEN " + COLUMNNAME_Bill_BPartner_ID + " IS NOT NULL THEN 1 ELSE 0 END) "
-				+ " + (CASE WHEN " + COLUMNNAME_Bill_BPartner_Value + " IS NOT NULL THEN 1 ELSE 0 END)) ";
-
-		final String sqlBillPartnerColumns = "UPDATE " + I_I_Invoice_Candidate.Table_Name
-				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Only 1 Bill BPartner Column should be set, '"
-				+ " WHERE " + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ " AND " + BillPartnerColumnsSetCount + " > 1"
-				+ selection.toSqlWhereClause();
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlBillPartnerColumns, ITrx.TRXNAME_ThreadInherited);
-
-		if (no != 0)
-		{
-			logger.warn("Only 1 Bill BPartner Column should be set = {}", no);
-		}
-
-		final String sqlBillLocationColumns = "UPDATE " + I_I_Invoice_Candidate.Table_Name
-				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Only 1 Bill Location Column should be set, '"
-				+ " WHERE " + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ " AND " + COLUMNNAME_Bill_Location_ExternalReference + " IS NOT NULL"
-				+ " AND " + COLUMNNAME_Bill_Location_ID + " IS NOT NULL"
-				+ selection.toSqlWhereClause();
-		final int no2 = DB.executeUpdateAndThrowExceptionOnFail(sqlBillLocationColumns, ITrx.TRXNAME_ThreadInherited);
-
-		if (no2 != 0)
-		{
-			logger.warn("Only 1 Bill Location Column should be set = {}", no2);
-		}
-
-		final String sqlBillUserColumns = "UPDATE " + I_I_Invoice_Candidate.Table_Name
-				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Only 1 Bill User Column should be set, '"
-				+ " WHERE " + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ " AND " + COLUMNNAME_Bill_User_ExternalReference + " IS NOT NULL"
-				+ " AND " + COLUMNNAME_Bill_User_ID + " IS NOT NULL"
-				+ selection.toSqlWhereClause();
-		final int no3 = DB.executeUpdateAndThrowExceptionOnFail(sqlBillUserColumns, ITrx.TRXNAME_ThreadInherited);
-
-		if (no3 != 0)
-		{
-			logger.warn("Only 1 Bill User Column should be set = {}", no3);
-		}
-
-		final String sqlResponsibleColumns = "UPDATE " + I_I_Invoice_Candidate.Table_Name
-				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Only 1 Responsible Column should be set, '"
-				+ " WHERE " + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ " AND " + COLUMNNAME_AD_User_InCharge_ExternalReference + " IS NOT NULL"
-				+ " AND " + COLUMNNAME_AD_User_InCharge_ID + " IS NOT NULL"
-				+ selection.toSqlWhereClause();
-		final int no4 = DB.executeUpdateAndThrowExceptionOnFail(sqlResponsibleColumns, ITrx.TRXNAME_ThreadInherited);
-
-		if (no4 != 0)
-		{
-			logger.warn("Only 1 Responsible Column should be set = {}", no4);
-		}
-	}
-
-	private void dbUpdateErrorMessagesBeforeUpdatesExternalSystem(@NonNull final ImportRecordsSelection selection)
-	{
-		final String ExternalReferencesUsed = " AND ( " + COLUMNNAME_Bill_BPartner_ExternalReference + " IS NOT NULL"
-				+ " OR " + COLUMNNAME_Bill_Location_ExternalReference + " IS NOT NULL"
-				+ " OR " + COLUMNNAME_Bill_User_ExternalReference + " IS NOT NULL"
-				+ " OR " + COLUMNNAME_AD_User_InCharge_ExternalReference + " IS NOT NULL )";
-
-		final String sqlMissingExternalSystem = "UPDATE " + I_I_Invoice_Candidate.Table_Name
-				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = " + COLUMNNAME_ExternalSystem + " missing for External References, '"
-				+ " WHERE " + COLUMNNAME_ExternalSystem + " IS NULL "
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ ExternalReferencesUsed
-				+ selection.toSqlWhereClause();
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlMissingExternalSystem, ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
-		{
-			logger.warn("No " + COLUMNNAME_ExternalSystem + " for External References = {}", no);
-		}
-
-		final String sqlInvalidExternalSystem = "UPDATE " + I_I_Invoice_Candidate.Table_Name
-				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Invalid " + COLUMNNAME_ExternalSystem + ", '"
-				+ " WHERE " + COLUMNNAME_ExternalSystem + " NOT IN (SELECT value FROM AD_Ref_List where AD_Reference_ID = 541117)" //Reference name: ExternalSystem
-				+ " AND " + COLUMNNAME_ExternalSystem + " IS NOT NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ ExternalReferencesUsed
-				+ selection.toSqlWhereClause();
-		final int no2 = DB.executeUpdateAndThrowExceptionOnFail(sqlInvalidExternalSystem, ITrx.TRXNAME_ThreadInherited);
-		if (no2 != 0)
-		{
-			logger.warn("Invalid " + COLUMNNAME_ExternalSystem + " = {}", no2);
-		}
 	}
 
 	private static void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
@@ -326,7 +227,6 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_Bill_User_ID + " = (" + sqlBPartnerContactIdByExternalReference + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_Bill_User_ID + " IS NULL "
-				//+ " AND i." + COLUMNNAME_I_ErrorMsg + " IS NULL "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -485,6 +385,10 @@ public class CInvoiceCandidateImportTableSqlUpdater
 	{
 		final String missingMandatoryFieldMessage = "Mandatory " + I_C_Invoice_Candidate.Table_Name + ".";
 
+		dbUpdateErrorMessageExternalSystem(selection);
+
+		dbUpdateErrorMessageBillPartnerToManyColumnsSet(selection);
+
 		//
 		// No BillBPartner
 		updateErrorMessage(selection, COLUMNNAME_Bill_BPartner_ID, missingMandatoryFieldMessage + COLUMNNAME_Bill_BPartner_ID + " is missing!");
@@ -523,6 +427,39 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		updateActivityErrorMessage(selection);
 	}
 
+	private static void dbUpdateErrorMessageExternalSystem(@NonNull final ImportRecordsSelection selection)
+	{
+		final String ExternalReferencesUsed = " AND ( i." + COLUMNNAME_Bill_BPartner_ExternalReference + " IS NOT NULL"
+				+ " OR i." + COLUMNNAME_Bill_Location_ExternalReference + " IS NOT NULL"
+				+ " OR i." + COLUMNNAME_Bill_User_ExternalReference + " IS NOT NULL"
+				+ " OR i." + COLUMNNAME_AD_User_InCharge_ExternalReference + " IS NOT NULL )";
+
+		final String sqlMissingExternalSystem = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = " + COLUMNNAME_ExternalSystem + " missing for External References, '"
+				+ " WHERE i." + COLUMNNAME_ExternalSystem + " IS NULL "
+				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ ExternalReferencesUsed
+				+ selection.toSqlWhereClause("i");
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlMissingExternalSystem, ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("No " + COLUMNNAME_ExternalSystem + " for External References = {}", no);
+		}
+
+		final String sqlInvalidExternalSystem = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Invalid " + COLUMNNAME_ExternalSystem + ", '"
+				+ " WHERE i." + COLUMNNAME_ExternalSystem + " NOT IN (SELECT value FROM AD_Ref_List where AD_Reference_ID = 541117)" //Reference name: ExternalSystem
+				+ " AND i." + COLUMNNAME_ExternalSystem + " IS NOT NULL"
+				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ ExternalReferencesUsed
+				+ selection.toSqlWhereClause("i");
+		final int no2 = DB.executeUpdateAndThrowExceptionOnFail(sqlInvalidExternalSystem, ITrx.TRXNAME_ThreadInherited);
+		if (no2 != 0)
+		{
+			logger.warn("Invalid " + COLUMNNAME_ExternalSystem + " = {}", no2);
+		}
+	}
+
 	private void updateErrorMessage(
 			@NonNull final ImportRecordsSelection selection,
 			@NonNull final String mandatoryColumnName,
@@ -537,6 +474,22 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		if (no != 0)
 		{
 			logger.warn("No " + mandatoryColumnName + " = {}", no);
+		}
+	}
+
+	private static void dbUpdateErrorMessageBillPartnerToManyColumnsSet(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sqlBillPartnerColumns = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + " = 'E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Only 1 Bill BPartner Value Or ExternalReference should be set, '"
+				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ " AND i." + COLUMNNAME_Bill_BPartner_ExternalReference + " IS NOT NULL"
+				+ " AND i." + COLUMNNAME_Bill_BPartner_Value + " IS NOT NULL"
+				+ selection.toSqlWhereClause("i");
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlBillPartnerColumns, ITrx.TRXNAME_ThreadInherited);
+
+		if (no != 0)
+		{
+			logger.warn("Only Bill BPartner Value Or ExternalReference should be set = {}", no);
 		}
 	}
 
@@ -614,7 +567,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 	{
 		final String sqlResponsibleIdForExternalReference = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
 				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = " + COLUMNNAME_AD_User_InCharge_ID + " not found for " + COLUMNNAME_AD_User_InCharge_ExternalReference + "!" + ", '"
-				+ " WHERE i." + COLUMNNAME_Bill_User_ExternalReference + " IS NOT NULL "
+				+ " WHERE i." + COLUMNNAME_AD_User_InCharge_ExternalReference + " IS NOT NULL "
 				+ " AND i." + COLUMNNAME_AD_User_InCharge_ID + " IS NULL"
 				+ " AND i." + COLUMNNAME_ExternalSystem + " IS NOT NULL"
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
