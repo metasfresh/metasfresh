@@ -449,7 +449,7 @@ public class ReceiptScheduleHUGenerator
 		// * on loading side, HUItemStorage is considering our enforced capacity even if we do force allocation
 		final boolean forceQtyAllocation = true;
 
-		final boolean isDestroyExistingHUs = _destroyExistingHUs;
+		final boolean isDestroyExistingHUs = isDestroyExistingHUs();
 
 		//
 		// Create Allocation Request

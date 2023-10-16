@@ -206,6 +206,11 @@ import java.util.List;
 
 	private boolean isDestroyExistingHUs()
 	{
+		if(destroyExistingHUs && baseAllocationRequest != null)
+		{
+			return baseAllocationRequest.isDestroyExistingHUs();
+		}
+
 		return destroyExistingHUs;
 	}
 

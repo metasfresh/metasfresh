@@ -477,9 +477,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	public final IAllocationResult load(final IAllocationRequest request)
 	{
 		// Notify that we are about to start the loading
-		if (!request.isDestroyExistingHUs())
+		if (request.isDestroyExistingHUs())
 		{
-
 			loadStarting(request);
 		}
 

@@ -35,6 +35,7 @@ import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.receiptschedule.CreatePlanningHUsRequest;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
@@ -711,16 +712,13 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
-	public List<I_M_HU> createPlanningHUs(final I_M_ReceiptSchedule receiptSchedule,
-			final I_M_HU_LUTU_Configuration lutuConfiguration,
-			final IMutableHUContext huContextInitial,
-			boolean isUpdateReceiptScheduleDefaultConfiguration,
-			boolean isDestroyExistingHUs)
+	public List<I_M_HU> createPlanningHUs(@NonNull final CreatePlanningHUsRequest request)
 	{
-		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContextInitial)
-				.addM_ReceiptSchedule(receiptSchedule)
-				.setUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration);
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(request.getHuContextInitial())
+				.addM_ReceiptSchedule(request.getReceiptSchedule())
+				.setUpdateReceiptScheduleDefaultConfiguration(request.isUpdateReceiptScheduleDefaultConfiguration());
 
+		final I_M_HU_LUTU_Configuration lutuConfiguration = request.getLutuConfiguration();
 		huGenerator.setM_HU_LUTU_Configuration(lutuConfiguration);
 
 		//
@@ -732,6 +730,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
 		}
 		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
+
+		huGenerator.setDestroyExistingHUs(request.isDestroyExistingHUs());
 
 		//
 		// Generate the HUs
