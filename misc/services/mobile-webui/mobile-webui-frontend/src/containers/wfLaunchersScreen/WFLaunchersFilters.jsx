@@ -55,6 +55,7 @@ const getActiveFacets = (groups) => {
 const WFLaunchersFilters = ({ applicationId, facets: facetsInitial, onDone }) => {
   const [groups, setGroups] = useState([]);
   const [resultsCount, setResultsCount] = useState(-1);
+  const [resultsCountLoading, setResultsCountLoading] = useState(false);
   const facets = useMemo(() => getActiveFacets(groups), [groups]);
 
   //
@@ -68,9 +69,14 @@ const WFLaunchersFilters = ({ applicationId, facets: facetsInitial, onDone }) =>
   //
   // Compute items count for currently active facets
   useEffect(() => {
-    countLaunchers({ applicationId, facets }).then((count) => {
-      setResultsCount(count);
-    });
+    setResultsCountLoading(true);
+    countLaunchers({ applicationId, facets })
+      .then((count) => {
+        setResultsCount(count);
+      })
+      .finally(() => {
+        setResultsCountLoading(false);
+      });
   }, [facets]);
 
   const onFacetClicked = ({ facetId }) => {
@@ -91,7 +97,12 @@ const WFLaunchersFilters = ({ applicationId, facets: facetsInitial, onDone }) =>
           <FacetGroup key={group.groupId} caption={group.caption} facets={group.facets} onClick={onFacetClicked} />
         ))}
       <div className="bottom-buttons">
-        <ButtonWithIndicator caption={`Show ${resultsCount} results`} onClick={onApplyFilters} />
+        <ButtonWithIndicator
+          caption={`Show ${resultsCount} results`}
+          typeFASIconName={resultsCountLoading ? 'fa-spinner fa-spin' : null}
+          disabled={resultsCountLoading}
+          onClick={onApplyFilters}
+        />
         <ButtonWithIndicator caption="Clear filters" onClick={onClearFilters} />
       </div>
     </div>
