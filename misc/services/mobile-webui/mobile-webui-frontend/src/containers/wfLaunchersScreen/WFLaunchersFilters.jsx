@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import PropTypes from 'prop-types';
 import { countLaunchers, getFacets } from '../../api/launchers';
+import { trl } from '../../utils/translations';
 
 const toggleFacet = (groups, facetId) => {
   return changeFacets(groups, (facet) => (facet.facetId === facetId ? { ...facet, active: !facet.active } : facet));
@@ -97,13 +98,15 @@ const WFLaunchersFilters = ({ applicationId, facets: facetsInitial, onDone }) =>
           <FacetGroup key={group.groupId} caption={group.caption} facets={group.facets} onClick={onFacetClicked} />
         ))}
       <div className="bottom-buttons">
-        <ButtonWithIndicator
-          caption={`Show ${resultsCount} results`}
-          typeFASIconName={resultsCountLoading ? 'fa-spinner fa-spin' : null}
-          disabled={resultsCountLoading}
-          onClick={onApplyFilters}
-        />
-        <ButtonWithIndicator caption="Clear filters" onClick={onClearFilters} />
+        {resultsCount > 0 && (
+          <ButtonWithIndicator
+            caption={trl('general.filter.showResults', { count: resultsCount })}
+            typeFASIconName={resultsCountLoading ? 'fa-spinner fa-spin' : null}
+            disabled={resultsCountLoading}
+            onClick={onApplyFilters}
+          />
+        )}
+        <ButtonWithIndicator caption={trl('general.filter.clearFilters')} onClick={onClearFilters} />
       </div>
     </div>
   );

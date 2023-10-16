@@ -21,6 +21,10 @@ const translations = {
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
+    filter: {
+      showResults: 'Ergebnisse anzeigen (%(count)s)',
+      clearFilters: 'Filter löschen',
+    },
   },
   login: {
     submitButton: 'Login',
