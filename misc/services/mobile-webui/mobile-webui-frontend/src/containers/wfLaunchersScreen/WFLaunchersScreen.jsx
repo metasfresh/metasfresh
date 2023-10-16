@@ -46,14 +46,6 @@ const WFLaunchersScreen = () => {
       return;
     }
 
-    console.log('calling getLaunchers', {
-      isAllowQueryingLaunchers,
-      applicationId,
-      filterByQRCode: toQRCodeString(filterByQRCode),
-      facets,
-      requestTimestamp,
-    });
-
     getLaunchers({ applicationId, filterByQRCode, facets }).then((applicationLaunchers) => {
       onNewLaunchers({ applicationId, applicationLaunchers });
     });
