@@ -250,10 +250,6 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		final BigDecimal priceList = imp.getPriceList();
 		final BigDecimal priceStd = imp.getPriceStd();
 		final BigDecimal priceLimit = imp.getPriceLimit();
-		if (priceStd.signum() == 0 && priceLimit.signum() == 0 && priceList.signum() == 0)
-		{
-			return;
-		}
 
 		//
 		// Get/Create Product Price record
