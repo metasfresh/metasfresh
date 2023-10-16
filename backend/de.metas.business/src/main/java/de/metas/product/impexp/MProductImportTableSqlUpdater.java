@@ -445,7 +445,7 @@ public class MProductImportTableSqlUpdater
 				.append(" and plv.IsActive='Y' order by plv.M_PriceList_Version_ID limit 1)")
 				.append(" where true")
 				.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
-				.append(" and i.M_PriceList_Version_Name is not null")
+				.append(" and i.M_PriceList_Version_Name is not null and i.M_PriceList_Version_ID is null")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -568,7 +568,7 @@ public class MProductImportTableSqlUpdater
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Value not unique,' ")
 				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" <>'Y'")
-				.append(" AND Value IN (SELECT Value FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY Value, M_PriceList_Version_Name, C_TaxCategory_Name HAVING COUNT(*) > 1)")
+				.append(" AND Value IN (SELECT Value FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID AND I_IsImported <> 'Y' GROUP BY Value, M_PriceList_Version_Name, C_TaxCategory_Name HAVING COUNT(*) > 1)")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
