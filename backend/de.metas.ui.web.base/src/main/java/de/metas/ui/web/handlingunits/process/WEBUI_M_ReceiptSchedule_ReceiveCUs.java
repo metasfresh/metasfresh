@@ -2,48 +2,24 @@ package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.time.SystemTime;
-import de.metas.handlingunits.ClearanceStatus;
-import de.metas.handlingunits.ClearanceStatusInfo;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.springframework.context.annotation.Profile;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -78,26 +54,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProcess
 {
-	private final static AdMessageKey MESSAGE_ClearanceStatusInfo_Receipt = AdMessageKey.of("ClearanceStatusInfo.Receipt");
 
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
-	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
+
 
 	private boolean allowMultipleReceiptsSchedules = true; // by default we shall allow multiple lines
 	private boolean allowNoQuantityAvailable = false; // by default we shall not allow lines which have no quantity available
 
-	protected final void setAllowMultipleReceiptsSchedules(final boolean allowMultipleReceiptsSchedules)
-	{
-		this.allowMultipleReceiptsSchedules = allowMultipleReceiptsSchedules;
-	}
+	protected final void setDisallowMultipleReceiptsSchedules() {this.allowMultipleReceiptsSchedules = false;}
 
-	protected final void setAllowNoQuantityAvailable(final boolean allowNoQuantityAvailable)
-	{
-		this.allowNoQuantityAvailable = allowNoQuantityAvailable;
-	}
+	protected final void setAllowNoQuantityAvailable() {this.allowNoQuantityAvailable = true;}
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -116,8 +83,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 		//
 		// Fetch the receipt schedules which have some qty available for receiving
-		final List<I_M_ReceiptSchedule> receiptSchedules = context.getSelectedModels(I_M_ReceiptSchedule.class)
-				.stream()
+		final List<I_M_ReceiptSchedule> receiptSchedules = context.streamSelectedModels(I_M_ReceiptSchedule.class)
 				.filter(receiptSchedule -> allowNoQuantityAvailable || getDefaultAvailableQtyToReceive(receiptSchedule).signum() > 0)
 				.collect(ImmutableList.toImmutableList());
 		if (receiptSchedules.isEmpty())
@@ -145,7 +111,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 	protected Stream<I_M_ReceiptSchedule> streamReceiptSchedulesToReceive()
 	{
-		return retrieveSelectedRecordsQueryBuilder(I_M_ReceiptSchedule.class)
+		return retrieveActiveSelectedRecordsQueryBuilder(I_M_ReceiptSchedule.class)
 				.create()
 				.stream(I_M_ReceiptSchedule.class);
 	}

@@ -1,27 +1,20 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.organization.ClientAndOrgId;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.CreatePlanningHUsRequest;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
-import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
+
+import java.util.List;
 
 /*
  * #%L
@@ -85,27 +78,7 @@ import de.metas.util.Services;
 		return checkEligibleForReceivingHUs(receiptSchedule);
 	}
 
-	/**
-	 * @return true if given receipt schedule is eligible for receiving HUs
-	 */
-	public static ProcessPreconditionsResolution checkEligibleForReceivingHUs(@NonNull final I_M_ReceiptSchedule receiptSchedule)
-	{
-		// Receipt schedule shall not be already closed
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-		if (receiptScheduleBL.isClosed(receiptSchedule))
-		{
-			return ProcessPreconditionsResolution.reject("receipt schedule closed");
-		}
 
-		// Receipt schedule shall not be about packing materials
-		if (receiptSchedule.isPackagingMaterial())
-		{
-			return ProcessPreconditionsResolution.reject("not applying for packing materials");
-		}
-
-		return ProcessPreconditionsResolution.accept();
-
-	}
 
 	protected static I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
 	{

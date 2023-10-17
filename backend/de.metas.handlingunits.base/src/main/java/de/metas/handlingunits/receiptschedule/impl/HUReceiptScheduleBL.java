@@ -3,6 +3,7 @@ package de.metas.handlingunits.receiptschedule.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
@@ -14,12 +15,11 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
@@ -33,6 +33,7 @@ import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.receiptschedule.CreatePlanningHUsRequest;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
@@ -43,6 +44,7 @@ import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inout.InOutId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -50,7 +52,9 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -69,6 +73,7 @@ import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
@@ -305,14 +310,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				.receiptSchedule(rs)
 				.enforceCapacity(true)
 				.build();
-	}
-
-	@Override
-	public IAllocationSource createAllocationSource(final I_M_ReceiptSchedule receiptSchedule)
-	{
-		final IProductStorage productStorage = createProductStorage(receiptSchedule);
-		final IAllocationSource allocationSource = new GenericAllocationSourceDestination(productStorage, receiptSchedule);
-		return allocationSource;
 	}
 
 	@Override
@@ -618,7 +615,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	/**
 	 * Generate it's LU-TU structure automatically
 	 */
-	@Override
 	public void generateHUsIfNeeded(final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
 		// Skip Receipt schedules which are about Packing Materials
