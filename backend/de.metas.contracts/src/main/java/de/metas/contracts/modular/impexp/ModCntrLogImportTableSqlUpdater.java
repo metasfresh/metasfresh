@@ -26,13 +26,17 @@ import com.jgoodies.common.base.Strings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -59,6 +63,7 @@ import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_ISO_Code;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_I_ErrorMsg;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_I_IsImported;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_IsActive;
+import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_IsSOTrx;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_M_Product_ID;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_M_Warehouse_ID;
 import static de.metas.contracts.model.I_I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroupName;
@@ -79,11 +84,12 @@ public class ModCntrLogImportTableSqlUpdater
 	private static final Logger logger = LogManager.getLogger(ModCntrLogImportTableSqlUpdater.class);
 	private final static String targetTableName = I_I_ModCntr_Log.Table_Name;
 
+	private final ModularContractSettingsDAO settingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+
 	public void updateModularImportTable(@NonNull final ImportRecordsSelection selection)
 	{
 		dbUpdateDocumentType(selection);
 		dbUpdateContract(selection);
-		dbUpdateContractModule(selection);
 
 		dbUpdateHarvestingYear(selection);
 		dbUpdateWarehouse(selection);
@@ -98,6 +104,8 @@ public class ModCntrLogImportTableSqlUpdater
 		dbUpdateUOM(selection);
 		dbUpdatePriceUOM(selection);
 		dbUpdateCurrency(selection);
+
+		dbUpdateContractModule(selection);
 
 		// update error message
 		dbUpdateErrorMessage(selection);
@@ -119,12 +127,23 @@ public class ModCntrLogImportTableSqlUpdater
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
+
 	private void dbUpdateContractModule(@NonNull final ImportRecordsSelection selection)
 	{
-		final String sqlContractModuleId = "SELECT c." + I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID
-				+ " FROM " + I_ModCntr_Module.Table_Name + " c"
-				+ " WHERE c." + I_ModCntr_Module.COLUMNNAME_Name + " = i." + COLUMNNAME_ContractModuleName
-				+ " AND c." + COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+		final String sqlModularContractSettingId = "SELECT s." + I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID
+				+ " FROM " + I_ModCntr_Settings.Table_Name + " s"
+				+ " WHERE s." + I_ModCntr_Settings.COLUMNNAME_M_Product_ID + " = i." + COLUMNNAME_M_Product_ID
+				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_C_Year_ID + " = i." + COLUMNNAME_Harvesting_Year_ID
+				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_IsSOTrx + " = i." + COLUMNNAME_IsSOTrx
+				+ " AND s." + I_ModCntr_Settings.COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " LIMIT 1 ";
+
+		final String sqlContractModuleId = "SELECT m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID
+				+ " FROM " + I_ModCntr_Module.Table_Name + " m"
+				+ " WHERE m." + I_ModCntr_Module.COLUMNNAME_Name + " = i." + COLUMNNAME_ContractModuleName
+				+ " AND m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID + " = (" + sqlModularContractSettingId + ")"
+				+ " AND m." + COLUMNNAME_M_Product_ID + " = i." + COLUMNNAME_M_Product_ID
+				+ " AND m." + COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
 				+ " LIMIT 1 ";
 
 		final String sql = "UPDATE " + targetTableName + " i "
@@ -222,13 +241,6 @@ public class ModCntrLogImportTableSqlUpdater
 								   .linkColumnName(COLUMNNAME_DocumentNo)
 								   .errorMessage(COLUMNNAME_C_Flatrate_Term_ID + " No C_Flatrate_Term Match!")
 								   .build());
-		//  ModCnr_Module_ID
-		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-								   .selection(selection)
-								   .mandatoryColumnName(COLUMNNAME_ModCntr_Module_ID)
-								   .linkColumnName(COLUMNNAME_ContractModuleName)
-								   .errorMessage(COLUMNNAME_ModCntr_Module_ID + " No Contract Module Match!")
-								   .build());
 
 		// Harvesting_Year_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
@@ -300,6 +312,14 @@ public class ModCntrLogImportTableSqlUpdater
 								   .mandatoryColumnName(COLUMNNAME_M_Warehouse_ID)
 								   .linkColumnName(COLUMNNAME_WarehouseName)
 								   .errorMessage(COLUMNNAME_M_Warehouse_ID + " No Warehouse Match!")
+								   .build());
+
+		//  ModCnr_Module_ID
+		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_ModCntr_Module_ID)
+								   .linkColumnName(COLUMNNAME_ContractModuleName)
+								   .errorMessage(COLUMNNAME_ModCntr_Module_ID + " No Contract Module Match!")
 								   .build());
 
 		// Qty
@@ -425,7 +445,6 @@ public class ModCntrLogImportTableSqlUpdater
 			logger.warn("No " + request.mandatoryColumnName() + " = {}", no);
 		}
 	}
-
 
 	@Builder
 	public record DBUpdateErrorMessageRequest(
