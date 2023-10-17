@@ -61,6 +61,7 @@ public class HUPackingAwareCopy
 		to.setQty(from.getQty());
 		to.setM_HU_PI_Item_Product_ID(from.getM_HU_PI_Item_Product_ID());
 		to.setQtyTU(from.getQtyTU());
+		from.getQtyCUsPerTU().ifPresent(to::setQtyCUsPerTU);
 
 		copyBPartner(to);
 	}
