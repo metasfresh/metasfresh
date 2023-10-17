@@ -192,9 +192,6 @@ public class PickingHUsRepositoryTests
 				new HUReservationService(new HUReservationRepository()),
 				Services.get(IBPartnerBL.class),
 				new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
-				new HuId2SourceHUsService(new HUTraceRepository()),
-				new HUReservationService(new HUReservationRepository()),
-				Services.get(IBPartnerBL.class));
 
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(
 				() -> huEditorViewRepository,
