@@ -26,6 +26,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
@@ -64,9 +65,9 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Filter: Customer
-		if (query.getCustomerId() != null)
+		if (!query.getCustomerIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, query.getCustomerId());
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, query.getCustomerIds());
 		}
 
 		//
@@ -91,13 +92,14 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: DeliveryDate
-		if (query.getDeliveryDate() != null)
+		// Filter: DeliveryDays
+		if (!query.getDeliveryDays().isEmpty())
 		{
-			queryBuilder.addCompositeQueryFilter()
+			final ICompositeQueryFilter<I_M_Packageable_V> deliveryDaysFilter = queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
-					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, query.getDeliveryDate(), DateTruncQueryFilterModifier.DAY)
 					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, null);
+
+			query.getDeliveryDays().forEach(deliveryDay -> deliveryDaysFilter.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, deliveryDay, DateTruncQueryFilterModifier.DAY));
 		}
 
 		//

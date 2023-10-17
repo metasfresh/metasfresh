@@ -74,6 +74,7 @@ class PickingJobCreateRepoCommand
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setC_Order_ID(request.getSalesOrderId().getRepoId());
 		record.setPreparationDate(request.getPreparationDate().toTimestamp());
+		record.setDeliveryDate(request.getDeliveryDate().toTimestamp());
 		record.setC_BPartner_ID(request.getDeliveryBPLocationId().getBpartnerId().getRepoId());
 		record.setC_BPartner_Location_ID(request.getDeliveryBPLocationId().getRepoId());
 		record.setDeliveryToAddress(request.getDeliveryRenderedAddress());

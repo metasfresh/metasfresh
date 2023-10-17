@@ -100,6 +100,7 @@ class PickingJobRepositoryTest
 						.orgId(orgId)
 						.salesOrderId(salesOrderId)
 						.preparationDate(instantAndOrgId("2021-11-02T07:39:16Z"))
+						.deliveryDate(instantAndOrgId("2021-11-02T07:39:16Z"))
 						.deliveryBPLocationId(BPartnerLocationId.ofRepoId(3, 4))
 						.deliveryRenderedAddress("deliveryRenderedAddress")
 						.pickerId(UserId.ofRepoId(5))

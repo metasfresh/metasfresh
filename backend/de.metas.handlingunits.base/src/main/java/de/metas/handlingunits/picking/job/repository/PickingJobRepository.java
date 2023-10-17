@@ -88,7 +88,9 @@ public class PickingJobRepository
 		return PickingJobReference.builder()
 				.pickingJobId(pickingJob.getId())
 				.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
+				.customerId(pickingJob.getCustomerId())
 				.customerName(pickingJob.getCustomerName())
+				.deliveryDate(pickingJob.getDeliveryDate())
 				.shipmentScheduleIds(pickingJob.getShipmentScheduleIds())
 				.build();
 	}

@@ -109,6 +109,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -398,6 +399,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -693,6 +695,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -988,6 +991,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -1281,6 +1285,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -1613,6 +1618,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -2052,6 +2058,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -2374,6 +2381,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -2591,6 +2599,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -2885,6 +2894,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -3182,6 +3192,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -3601,6 +3612,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -3890,6 +3902,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -4076,6 +4089,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -4370,6 +4384,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
@@ -4667,6 +4682,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "bpartnerId" : 1000000,
           "repoId" : 1000000
         },
+        "deliveryDate" : "2021-11-09T08:58:52Z",
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
         "lockedBy" : 1234,
         "preparationDate" : "2021-11-09T08:58:52Z",
