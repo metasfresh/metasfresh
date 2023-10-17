@@ -50,6 +50,7 @@ import java.util.TreeSet;
  * Contains common BL used when loading from an {@link IAllocationRequest} to an {@link IAllocationResult}
  *
  * @author al
+ *
  */
 public abstract class AbstractProducerDestination implements IHUProducerAllocationDestination
 {
@@ -58,23 +59,13 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
-	/**
-	 * Error message which is thrown when the result of allocating to a new HU is ZERO
-	 */
+	/** Error message which is thrown when the result of allocating to a new HU is ZERO */
 	private static final AdMessageKey MSG_QTY_LOAD_ERROR = AdMessageKey.of("AbstractProducerDestination.load_Error");
 	/**
 	 * DynAttr used to flag HUs which were internally created by this producer
 	 */
 	private static final ModelDynAttributeAccessor<I_M_HU, AbstractProducerDestination> DYNATTR_Producer = new ModelDynAttributeAccessor<>(AbstractProducerDestination.class);
 	private static final ModelDynAttributeAccessor<I_M_HU, Boolean> DYNATTR_IsEmptyHU = new ModelDynAttributeAccessor<>(AbstractProducerDestination.class.getName(), "IsEmptyHU", Boolean.class);
-	private final HashMap<ArrayKey, HUListCursor> currentHUs = new HashMap<>();
-	/**
-	 * Set of created HUs or already existing HUs that need to be considered as "created".
-	 * <p>
-	 * NOTE: this set will not accept a HU to be added if there is another one with the same M_HU_ID
-	 */
-	private final Set<I_M_HU> _createdHUs = new TreeSet<>(HUByIdComparator.instance);
-	private final Set<I_M_HU> _createdNonAggregateHUs = new TreeSet<>(HUByIdComparator.instance);
 
 	//
 	// Parameters
@@ -86,9 +77,21 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
 	/**
+	 *
 	 * <code>true</code> if this producer is in configurable state (i.e. nothing was produced yet)
 	 */
 	private boolean _configurable = true;
+
+	private final HashMap<ArrayKey, HUListCursor> currentHUs = new HashMap<>();
+
+	/**
+	 * Set of created HUs or already existing HUs that need to be considered as "created".
+	 * NOTE: this set will not accept a HU to be added if there is another one with the same M_HU_ID
+	 */
+	private final Set<I_M_HU> _createdHUs = new TreeSet<>(HUByIdComparator.instance);
+
+	private final Set<I_M_HU> _createdNonAggregateHUs = new TreeSet<>(HUByIdComparator.instance);
+
 	/**
 	 * The number of HUs that were not really created as {@link I_M_HU} instances, but are represented within a HU-aggregation item and its VHU.<br>
 	 * This number together with the size of {@link #_createdNonAggregateHUs} is returned by {@link #getCreatedHUsCount()}.
@@ -668,16 +671,16 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return AllocationUtils.nullResult();
 	}
 
-	public final I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
-	{
-		return _lutuConfiguration;
-	}
-
 	public final AbstractProducerDestination setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		assertConfigurable();
 		_lutuConfiguration = lutuConfiguration;
 		return this;
+	}
+
+	public final I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
+	{
+		return _lutuConfiguration;
 	}
 
 	@Override
