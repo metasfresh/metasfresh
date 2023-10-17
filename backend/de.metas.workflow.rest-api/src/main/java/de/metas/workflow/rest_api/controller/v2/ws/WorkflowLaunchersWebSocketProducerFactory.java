@@ -81,7 +81,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 					.map(MobileApplicationId::ofString)
 					.orElseThrow(() -> new AdempiereException("Parameter " + TOPIC_PARAM_applicationId + " is mandatory"));
 			final GlobalQRCode filterByQRCode = StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_qrCode))
-					.map(GlobalQRCode::ofBase64Encoded)
+					.map(GlobalQRCode::ofString)
 					.orElse(null);
 			final ImmutableSet<WorkflowLaunchersFacetId> facetIds = extractFacetIdsFromQueryParams(queryParams);
 
