@@ -62,37 +62,13 @@ import java.util.Set;
 @ToString(doNotUseGetters = true)
 public class ReceiptScheduleHUGenerator
 {
-	// services
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
-	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final List<I_M_ReceiptSchedule> _receiptSchedules = new ArrayList<>();
-	private final Map<Integer, IProductStorage> _receiptSchedule2productStorage = new HashMap<>();
-	private final Map<Integer, IHUAllocations> _receiptSchedule2huAllocations = new HashMap<>();
-	//
-	// Parameters
-	private IContextAware _contextInitial;
-	private Quantity _qtyToAllocateTarget = null;
-	//
-	private boolean updateReceiptScheduleDefaultConfiguration = false; // default false, backward compatible; this flag is not considered by #generateAllPlanningHUs_InChunks()
-	//
-	// Status
-	private boolean _configurable = true;
-	private IDocumentLUTUConfigurationManager _lutuConfigurationManager;
-	private I_M_HU_LUTU_Configuration _lutuConfiguration;
-	private ILUTUProducerAllocationDestination _lutuProducer;
-	private boolean _destroyExistingHUs = true;
-	private ReceiptScheduleHUGenerator()
-	{
-	}
-
 	/**
+	 *
 	 * @param context: the context to be used when creating the HUs. This context will also be used for the {@link IHUContext} the HU processing will have place with. <br>
-	 *                 If its {@code trxName} is not {@link ITrx#TRXNAME_ThreadInherited}, then this method will create a new context that only has the given context's {@link IContextAware#getCtx()} but not trxName.<br>
-	 *                 Because the {@link #generateWithinOwnTransaction()} method depends on the {@code trxName} being thread-inherited.
+	 *            If its {@code trxName} is not {@link ITrx#TRXNAME_ThreadInherited}, then this method will create a new context that only has the given context's {@link IContextAware#getCtx()} but not trxName.<br>
+	 *            Because the {@link #generateWithinOwnTransaction()} method depends on the {@code trxName} being thread-inherited.
 	 */
-	public static ReceiptScheduleHUGenerator newInstance(final IContextAware context)
+	public static final ReceiptScheduleHUGenerator newInstance(final IContextAware context)
 	{
 		final IContextAware contextToUse;
 		if (ITrx.TRXNAME_ThreadInherited.equals(context.getTrxName()))
@@ -107,7 +83,33 @@ public class ReceiptScheduleHUGenerator
 				.setContext(contextToUse);
 	}
 
-	private void assertConfigurable()
+	// services
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	//
+	// Parameters
+	private IContextAware _contextInitial;
+	private final List<I_M_ReceiptSchedule> _receiptSchedules = new ArrayList<>();
+	private final Map<Integer, IProductStorage> _receiptSchedule2productStorage = new HashMap<>();
+	private final Map<Integer, IHUAllocations> _receiptSchedule2huAllocations = new HashMap<>();
+	private Quantity _qtyToAllocateTarget = null;
+	//
+	private boolean updateReceiptScheduleDefaultConfiguration = false; // default false, backward compatible; this flag is not considered by #generateAllPlanningHUs_InChunks()
+	//
+	// Status
+	private boolean _configurable = true;
+	private IDocumentLUTUConfigurationManager _lutuConfigurationManager;
+	private I_M_HU_LUTU_Configuration _lutuConfiguration;
+	private ILUTUProducerAllocationDestination _lutuProducer;
+	private boolean _destroyExistingHUs = true;
+	private ReceiptScheduleHUGenerator()
+	{
+	}
+
+	private final void assertConfigurable()
 	{
 		Check.assume(_configurable, "{} is still configurable", this);
 	}
@@ -134,11 +136,6 @@ public class ReceiptScheduleHUGenerator
 		return this;
 	}
 
-	public boolean isUpdateReceiptScheduleDefaultConfiguration()
-	{
-		return updateReceiptScheduleDefaultConfiguration;
-	}
-
 	/**
 	 * Sets if, after generating the HUs, we shall also update receipt schedule's LUTU configuration.
 	 * <p>
@@ -151,7 +148,12 @@ public class ReceiptScheduleHUGenerator
 		return this;
 	}
 
-	private Quantity getQtyToAllocateTarget()
+	public boolean isUpdateReceiptScheduleDefaultConfiguration()
+	{
+		return updateReceiptScheduleDefaultConfiguration;
+	}
+
+	private final Quantity getQtyToAllocateTarget()
 	{
 		Check.errorIf(_qtyToAllocateTarget == null || _qtyToAllocateTarget.signum() <= 0, "QtyToAllocateTarget needs to be > 0; this={}", this);
 		return _qtyToAllocateTarget;
@@ -474,6 +476,18 @@ public class ReceiptScheduleHUGenerator
 	}
 
 	/**
+	 * Sets the LU/TU configuration to be used when generating HUs.
+	 */
+	public ReceiptScheduleHUGenerator setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		assertConfigurable();
+
+		Check.assumeNotNull(lutuConfiguration, "Parameter lutuConfiguration is not null");
+		_lutuConfiguration = lutuConfiguration;
+		return this;
+	}
+
+	/**
 	 * @return the LU/TU configuration to be used when generating HUs.
 	 */
 	public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
@@ -488,18 +502,6 @@ public class ReceiptScheduleHUGenerator
 
 		markNotConfigurable();
 		return _lutuConfiguration;
-	}
-
-	/**
-	 * Sets the LU/TU configuration to be used when generating HUs.
-	 */
-	public ReceiptScheduleHUGenerator setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
-	{
-		assertConfigurable();
-
-		Check.assumeNotNull(lutuConfiguration, "Parameter lutuConfiguration is not null");
-		_lutuConfiguration = lutuConfiguration;
-		return this;
 	}
 
 	public ILUTUProducerAllocationDestination getLUTUProducerAllocationDestination()

@@ -22,21 +22,21 @@
 
 package de.metas.handlingunits.receiptschedule;
 
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class CreatePlanningHUsRequest
-
 {
 	@NonNull I_M_ReceiptSchedule receiptSchedule;
 	@NonNull I_M_HU_LUTU_Configuration lutuConfiguration;
-	@NonNull IMutableHUContext huContextInitial;
 	boolean isUpdateReceiptScheduleDefaultConfiguration;
-	boolean isDestroyExistingHUs;
+	@Builder.Default boolean isDestroyExistingHUs = true;
+	@Nullable String lotNumber;
 }

@@ -81,6 +81,8 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	List<I_M_HU> createPlanningHUs(CreatePlanningHUsRequest request);
 
+	void updatePlanningHUAttributes(@NonNull I_M_HU hu, @NonNull I_M_ReceiptSchedule receiptSchedule);
+
 	I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(I_M_ReceiptSchedule receiptSchedule);
 
 	void setAttributeBBD(@NonNull I_M_ReceiptSchedule receiptSchedule, @NonNull IAttributeStorage huAttributes);

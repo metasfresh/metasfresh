@@ -1,34 +1,26 @@
 package de.metas.ui.web.handlingunits.process;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.CreatePlanningHUsRequest;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
-import de.metas.ui.web.handlingunits.HUEditorRowFilter;
-import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -63,6 +55,10 @@ import java.util.Optional;
  */
 public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HUEditorProcessTemplate implements IProcessDefaultParametersProvider
 {
+	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
+
 	private static final String PARAM_IsSaveLUTUConfiguration = "IsSaveLUTUConfiguration";
 	//
 	// Parameters
@@ -75,15 +71,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 	private static final String PARAM_QtyTU = "QtyTU";
 	//
 	private static final String PARAM_QtyLU = "QtyLU";
-	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
-	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-	private final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-
-	@Autowired
-	private DocumentCollection documentsCollection;
 	private I_M_HU_LUTU_Configuration _defaultLUTUConfiguration; // lazy
 	@Param(parameterName = PARAM_IsSaveLUTUConfiguration)
 	private boolean p_IsSaveLUTUConfiguration;
@@ -121,11 +109,10 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
-
+		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule().orElse(null);
 		if (receiptSchedule == null)
 		{
-			return ProcessPreconditionsResolution.reject("not applying for HUs without receipt schedule");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not applying for HUs without receipt schedule");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -136,7 +123,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 	{
 		if (_defaultLUTUConfiguration == null)
 		{
-			final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
+			final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule().orElseThrow(() -> new AdempiereException("No receipt schedule found"));
 			final I_M_HU_LUTU_Configuration defaultLUTUConfiguration = huReceiptScheduleBL.getCurrentLUTUConfiguration(receiptSchedule);
 			huReceiptScheduleBL.adjustLUTUConfiguration(defaultLUTUConfiguration, receiptSchedule);
 			_defaultLUTUConfiguration = defaultLUTUConfiguration;
@@ -144,14 +131,14 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 		return _defaultLUTUConfiguration;
 	}
 
-	private I_M_ReceiptSchedule getM_ReceiptSchedule()
+	private Optional<I_M_ReceiptSchedule> getM_ReceiptSchedule()
 	{
-
 		return getView()
 				.getReferencingDocumentPaths().stream()
 				.map(referencingDocumentPath -> getReceiptSchedule(referencingDocumentPath))
 				.collect(GuavaCollectors.toImmutableList())
-				.stream().findFirst().orElse(null); // TODO is this ok ?
+				.stream()
+				.findFirst();
 	}
 
 	private I_M_ReceiptSchedule getReceiptSchedule(@NonNull final DocumentPath referencingDocumentPath)
@@ -166,7 +153,13 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 		return p_IsSaveLUTUConfiguration;
 	}
 
-	private I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration template)
+	private I_M_HU_LUTU_Configuration createLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		final I_M_HU_LUTU_Configuration lutuConfigurationOrig = huReceiptScheduleBL.getCurrentLUTUConfiguration(receiptSchedule);
+		return createLUTUConfigurationFromTemplate(lutuConfigurationOrig);
+	}
+
+	private I_M_HU_LUTU_Configuration createLUTUConfigurationFromTemplate(final I_M_HU_LUTU_Configuration template)
 	{
 		// Validate parameters
 		final int M_LU_HU_PI_ID = p_M_LU_HU_PI_ID;
@@ -204,58 +197,26 @@ public class WEBUI_M_ReceiptSchedule_ReceiveAdditionalHUs_UsingConfig extends HU
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
+		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule().orElseThrow(() -> new AdempiereException("No receipt schedule found"));
 
-		final I_M_HU_LUTU_Configuration lutuConfigurationOrig = huReceiptScheduleBL.getCurrentLUTUConfiguration(receiptSchedule);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = createM_HU_LUTU_Configuration(lutuConfigurationOrig);
+		final List<I_M_HU> hus = huReceiptScheduleBL.createPlanningHUs(
+				CreatePlanningHUsRequest.builder()
+						.lutuConfiguration(createLUTUConfiguration(receiptSchedule))
+						.receiptSchedule(receiptSchedule)
+						.isUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration())
+						.isDestroyExistingHUs(false)
+						.build());
 
-		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
-
-		final boolean isUpdateReceiptScheduleDefaultConfiguration = isUpdateReceiptScheduleDefaultConfiguration();
-
-		final CreatePlanningHUsRequest request = CreatePlanningHUsRequest.builder()
-				.lutuConfiguration(lutuConfiguration)
-				.huContextInitial(huContextInitial)
-				.receiptSchedule(receiptSchedule)
-				.isUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration)
-				.isDestroyExistingHUs(false)
-				.build();
-
-		final List<I_M_HU> hus = huReceiptScheduleBL.createPlanningHUs(request);
-
-		final HUEditorView view = getView();
-
-		hus.forEach(hu -> {
-			updateAttributes(hu, receiptSchedule);
-
-		});
-
-		view.addHUIds(hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableList.toImmutableList()));
+		addToCurrentView(hus);
 
 		return MSG_OK;
 	}
 
-	private void updateAttributes(@NonNull final I_M_HU hu, @NonNull final I_M_ReceiptSchedule receiptSchedule)
+	private void addToCurrentView(final List<I_M_HU> hus)
 	{
-		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
-		preserveLotNumber(huAttributes);
-		huReceiptScheduleBL.setAttributeBBD(receiptSchedule, huAttributes);
-		huReceiptScheduleBL.setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
+		final ImmutableSet<HuId> huIds = hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
+		getView().addHUIds(huIds);
 	}
-
-	private void preserveLotNumber(final IAttributeStorage huAttributes)
-	{
-		final Optional<String> lotNumber = getView().streamByIds(HUEditorRowFilter.ALL)
-				.map(row -> row.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber))
-				.findAny();
-
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
-		{
-			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber.orElse(null));
-			huAttributes.saveChangesIfNeeded();
-		}
-	}
-
 }
