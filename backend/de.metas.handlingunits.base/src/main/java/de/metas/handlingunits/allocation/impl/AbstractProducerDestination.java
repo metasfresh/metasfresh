@@ -61,7 +61,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/** Error message which is thrown when the result of allocating to a new HU is ZERO */
 	private static final AdMessageKey MSG_QTY_LOAD_ERROR = AdMessageKey.of("AbstractProducerDestination.load_Error");
-
 	/**
 	 * DynAttr used to flag HUs which were internally created by this producer
 	 */
@@ -77,7 +76,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
-
 	/**
 	 *
 	 * <code>true</code> if this producer is in configurable state (i.e. nothing was produced yet)
@@ -88,7 +86,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Set of created HUs or already existing HUs that need to be considered as "created".
-	 *
 	 * NOTE: this set will not accept a HU to be added if there is another one with the same M_HU_ID
 	 */
 	private final Set<I_M_HU> _createdHUs = new TreeSet<>(HUByIdComparator.instance);
@@ -108,8 +105,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * @return {@code true} if we are allowed to create a new HU <b>or allocate to the current aggregate/"bag"-HU</b> in case is needed.
-	 *         Generally, "needed" means that we still have an {@link IAllocationRequest} that is not yet completely fulfilled.
-	 * 
+	 * Generally, "needed" means that we still have an {@link IAllocationRequest} that is not yet completely fulfilled.
 	 */
 	public abstract boolean isAllowCreateNewHU();
 
@@ -198,7 +194,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Creates a new handling unit for given <code>request</code>.
-	 *
+	 * <p>
 	 * The newly created HU will be also added to created HUs list.
 	 *
 	 * @return created handling unit; never return null
@@ -273,9 +269,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	/**
-	 *
 	 * @return the parent item to which newly created HUs shall be added. May return <code>null</code>, if the new HU shall have no parent.
-	 *
 	 * @see #createNewHU(IAllocationRequest)
 	 * @see IHUBuilder#setM_HU_Item_Parent(I_M_HU_Item)
 	 */
@@ -387,7 +381,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Method called after an HU was added to HU created list.
-	 *
+	 * <p>
 	 * To be implemented by extending classes.
 	 */
 	protected void afterHUAddedToCreatedList(final I_M_HU hu)
@@ -426,7 +420,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Method called after an HU was removed from HU created list.
-	 *
+	 * <p>
 	 * To be implemented by extending classes.
 	 */
 	protected void afterHURemovedFromCreatedList(final I_M_HU hu)
@@ -619,7 +613,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Called by {@link #load(IAllocationRequest)} right before actual load is starting.
-	 *
+	 * <p>
 	 * In this method, implementators can do further configurations and loadings if needed.
 	 */
 	protected void loadStarting(final IAllocationRequest request)
